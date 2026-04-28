@@ -8,7 +8,7 @@ services:
       - "7474"
       - "7687"
     volumes:
-      - neo4j_data:/data
+      - neo4j_data_v2:/data
     restart: unless-stopped
 
   ollama:
@@ -47,5 +47,5 @@ services:
       - ./backend/uploads:/app/backend/uploads
 
 volumes:
-  neo4j_data:
+  neo4j_data_v2:
   ollama_data:
