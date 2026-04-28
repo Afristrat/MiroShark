@@ -4,9 +4,9 @@ services:
     container_name: miroshark-neo4j
     environment:
       - NEO4J_AUTH=neo4j/miroshark
-    ports:
-      - "7474:7474"
-      - "7687:7687"
+    expose:
+      - "7474"
+      - "7687"
     volumes:
       - neo4j_data:/data
     restart: unless-stopped
@@ -14,8 +14,8 @@ services:
   ollama:
     image: ollama/ollama:latest
     container_name: miroshark-ollama
-    ports:
-      - "11434:11434"
+    expose:
+      - "11434"
     volumes:
       - ollama_data:/root/.ollama
     restart: unless-stopped
@@ -36,9 +36,9 @@ services:
       - EMBEDDING_BASE_URL=http://ollama:11434
       - OPENAI_API_KEY=ollama
       - OPENAI_API_BASE_URL=http://ollama:11434/v1
-    ports:
-      - "3000:3000"
-      - "5001:5001"
+    expose:
+      - "3000"
+      - "5001"
     depends_on:
       - neo4j
       - ollama
