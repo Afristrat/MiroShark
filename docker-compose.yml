@@ -1,7 +1,6 @@
 services:
   neo4j:
     image: neo4j:5.15-community
-    container_name: miroshark-neo4j
     environment:
       - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD:-miroshark}
     expose:
@@ -13,7 +12,6 @@ services:
 
   ollama:
     image: ollama/ollama:latest
-    container_name: miroshark-ollama
     expose:
       - "11434"
     volumes:
@@ -24,7 +22,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: miroshark
     environment:
       - LLM_API_KEY=ollama
       - LLM_BASE_URL=http://ollama:11434/v1
