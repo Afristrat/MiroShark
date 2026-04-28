@@ -21,9 +21,9 @@ services:
     restart: unless-stopped
 
   miroshark:
-    image: ghcr.io/aaronjmars/miroshark:latest
-    # Mirror image (replace the address above if pulling is slow)
-    # image: ghcr.nju.edu.cn/aaronjmars/miroshark:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: miroshark
     environment:
       - LLM_API_KEY=ollama
