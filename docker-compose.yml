@@ -18,6 +18,24 @@ services:
       - ollama_data:/root/.ollama
     restart: unless-stopped
 
+  ollama-init:
+    image: curlimages/curl:latest
+    depends_on:
+      - ollama
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        until curl -sf http://ollama:11434/ >/dev/null 2>&1; do
+          echo "Waiting for ollama...";
+          sleep 2;
+        done;
+        echo "Pulling nomic-embed-text...";
+        curl -fsS -X POST http://ollama:11434/api/pull \
+          -H "Content-Type: application/json" \
+          -d '{"name":"nomic-embed-text","stream":false}';
+        echo "Done.";
+    restart: "no"
+
   miroshark:
     build:
       context: .
