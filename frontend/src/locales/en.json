@@ -746,6 +746,34 @@
       "title": "Want to bet against us?",
       "body": "Submit an event you'd like us to forecast. We commit to publishing the prediction before the real verdict drops. If we're wrong, you'll see it here.",
       "button": "Submit an event to forecast"
+    },
+    "evaluables": {
+      "title": "Simulations to evaluate",
+      "intro": "Mark each public simulation with a verdict to move the Brier score live. The evidence URL is optional but encouraged.",
+      "filterPending": "Pending",
+      "filterEvaluated": "Evaluated",
+      "filterAll": "All",
+      "markCalledIt": "Called it",
+      "markPartial": "Partial",
+      "markWrong": "Wrong",
+      "markNA": "N/A",
+      "urlPlaceholder": "Evidence URL (https://…)",
+      "predictedLabel": "Predicted bullish",
+      "currentOutcome": "Current verdict",
+      "empty": "No simulation to evaluate right now.",
+      "errorLoad": "Could not load the simulations.",
+      "errorMark": "Could not save the verdict.",
+      "previous": "Previous",
+      "next": "Next",
+      "toastSuccess": "Verdict saved.",
+      "toastError": "Failed — verdict not saved.",
+      "relativeTimeJustNow": "just now",
+      "relativeTimeMinutesAgo": "{count} min ago",
+      "relativeTimeHoursAgo": "{count} h ago",
+      "relativeTimeDaysAgo": "{count} d ago",
+      "loading": "Loading…",
+      "savingNotice": "Saving…",
+      "invalidUrl": "Invalid URL — use http(s)://"
     }
   }
 }

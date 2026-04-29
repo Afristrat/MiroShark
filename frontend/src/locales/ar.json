@@ -746,6 +746,34 @@
       "title": "تتحدّى توقعاتنا؟",
       "body": "اقترح علينا حدثًا لمحاكاته، ونلتزم بنشر التوقّع قبل أن يقع الحكم الفعلي. إن أخطأنا، فستراه هنا.",
       "button": "اقترح حدثًا للمحاكاة"
+    },
+    "evaluables": {
+      "title": "محاكاات للتقييم",
+      "intro": "ضع حكمًا على كلّ محاكاة عموميّة لتحريك درجة براير مباشرةً. رابط الإثبات اختياري لكنّه موصى به.",
+      "filterPending": "قيد التقييم",
+      "filterEvaluated": "تمّ تقييمها",
+      "filterAll": "الكلّ",
+      "markCalledIt": "أصبنا الهدف",
+      "markPartial": "جزئي",
+      "markWrong": "أخطأنا",
+      "markNA": "غير منطبق",
+      "urlPlaceholder": "رابط الإثبات (https://…)",
+      "predictedLabel": "التوقّع الإيجابي",
+      "currentOutcome": "الحكم الحالي",
+      "empty": "لا توجد محاكاة للتقييم في الوقت الحالي.",
+      "errorLoad": "تعذّر تحميل المحاكاات.",
+      "errorMark": "تعذّر حفظ الحكم.",
+      "previous": "السابق",
+      "next": "التالي",
+      "toastSuccess": "تمّ حفظ الحكم.",
+      "toastError": "فشل — لم يُحفَظ الحكم.",
+      "relativeTimeJustNow": "الآن",
+      "relativeTimeMinutesAgo": "منذ {count} د",
+      "relativeTimeHoursAgo": "منذ {count} س",
+      "relativeTimeDaysAgo": "منذ {count} ي",
+      "loading": "جارٍ التحميل…",
+      "savingNotice": "جارٍ الحفظ…",
+      "invalidUrl": "رابط غير صالح — استخدم http(s)://"
     }
   }
 }

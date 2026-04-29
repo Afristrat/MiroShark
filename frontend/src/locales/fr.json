@@ -746,6 +746,34 @@
       "title": "Envie de défier nos sims ?",
       "body": "Soumets-nous un événement à simuler et on s’engage à publier la prédiction avant le verdict réel. Si on se trompe, ça apparaîtra ici.",
       "button": "Soumettre un événement"
+    },
+    "evaluables": {
+      "title": "Sims à évaluer",
+      "intro": "Marque chaque simulation publique avec un verdict pour faire bouger le score de Brier en temps réel. L’URL de preuve est optionnelle mais recommandée.",
+      "filterPending": "À évaluer",
+      "filterEvaluated": "Déjà évaluées",
+      "filterAll": "Toutes",
+      "markCalledIt": "Bien anticipé",
+      "markPartial": "Partiel",
+      "markWrong": "Manqué",
+      "markNA": "N/A",
+      "urlPlaceholder": "URL de preuve (https://…)",
+      "predictedLabel": "Prédiction haussière",
+      "currentOutcome": "Verdict actuel",
+      "empty": "Aucune simulation à évaluer pour le moment.",
+      "errorLoad": "Impossible de charger les simulations.",
+      "errorMark": "Impossible d’enregistrer le verdict.",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "toastSuccess": "Verdict enregistré.",
+      "toastError": "Échec — verdict non enregistré.",
+      "relativeTimeJustNow": "à l’instant",
+      "relativeTimeMinutesAgo": "il y a {count} min",
+      "relativeTimeHoursAgo": "il y a {count} h",
+      "relativeTimeDaysAgo": "il y a {count} j",
+      "loading": "Chargement…",
+      "savingNotice": "Enregistrement en cours…",
+      "invalidUrl": "URL invalide — utilise http(s)://"
     }
   }
 }
