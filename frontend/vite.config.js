@@ -31,6 +31,21 @@ export default defineConfig({
       }
     }
   },
+  // `vite preview` mode (production static serve) — bind 0.0.0.0:3000,
+  // permettre tous les hosts (Cloudflare tunnel domain) et proxy /api vers
+  // le backend Flask local. Utilisé par le CMD docker `npm run start`.
+  preview: {
+    port: 3000,
+    host: true,
+    allowedHosts: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5001',
+        changeOrigin: true,
+        secure: false
+      }
+    }
+  },
   build: {
     rollupOptions: {
       output: {

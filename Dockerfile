@@ -23,7 +23,12 @@ RUN npm ci \
 # Copy project source code
 COPY . .
 
+# Build the frontend bundle to frontend/dist (minified, tree-shaken, gzip+brotli)
+# `vite preview` ensuite sert ce bundle static + SPA fallback.
+RUN npm run build
+
 EXPOSE 3000 5001
 
-# Start both frontend and backend simultaneously (development mode)
-CMD ["npm", "run", "dev"]
+# Production : Flask backend (port 5001) + vite preview (static dist sur 3000,
+# proxy /api → backend, SPA fallback intégré).
+CMD ["npm", "run", "start"]
