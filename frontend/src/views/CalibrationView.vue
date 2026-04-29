@@ -260,7 +260,7 @@
             <span class="cal-field-label">{{ $t('calibration.filters.template') }}</span>
             <select v-model="filters.template" class="ms-select" :disabled="loading">
               <option value="">{{ $t('calibration.filters.allTemplates') }}</option>
-              <option v-for="tpl in availableTemplates" :key="tpl" :value="tpl">{{ tpl }}</option>
+              <option v-for="tpl in availableTemplates" :key="tpl.id" :value="tpl.id">{{ tpl.name }}</option>
             </select>
           </label>
 
@@ -435,13 +435,24 @@ const deltaChip = computed(() => {
 
 const availableTemplates = computed(() => {
   if (!data.value) return []
-  // Le brief mentionne data.filters.templates_available. On supporte aussi
-  // une forme top-level pour rester souple.
+  // Le backend renvoie soit un array d'objets `[{id, name}, ...]` (forme
+  // canonique depuis fix c8ec8fd), soit un array de strings legacy
+  // `["id1", "id2"]` (avant fix). On normalise vers `[{id, name}]` dans
+  // les deux cas pour que le <option> rende toujours le label humain.
   const d = data.value
-  const list = (d.filters && Array.isArray(d.filters.templates_available))
+  const raw = (d.filters && Array.isArray(d.filters.templates_available))
     ? d.filters.templates_available
     : (Array.isArray(d.templates_available) ? d.templates_available : [])
-  return list.filter(Boolean)
+  return raw
+    .filter(Boolean)
+    .map((entry) => {
+      if (typeof entry === 'string') return { id: entry, name: entry }
+      if (entry && typeof entry === 'object' && entry.id) {
+        return { id: String(entry.id), name: String(entry.name || entry.id) }
+      }
+      return null
+    })
+    .filter(Boolean)
 })
 
 const plotPoints = computed(() => {
