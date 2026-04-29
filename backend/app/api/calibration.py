@@ -73,7 +73,7 @@ import json
 import os
 import traceback
 from pathlib import Path
-from typing import Iterable, List, Optional
+from typing import Any, Dict, Iterable, List, Optional
 
 from flask import Blueprint, jsonify, request
 
@@ -496,6 +496,293 @@ def brier_score():
 
     except Exception as exc:
         logger.error(f"calibration: failed to compute brier score: {exc}")
+        return jsonify({
+            "success": False,
+            "error": str(exc),
+            "traceback": traceback.format_exc(),
+        }), 500
+
+
+# ─── US-045: list-evaluables endpoint ────────────────────────────────────────
+#
+# Why this lives here (not in simulation.py): conceptually it's a "calibration
+# inbox" — the operator opens /calibration, scans which public sims still need
+# a verdict, marks them inline, and the aggregate Brier on the same page
+# updates immediately. Co-locating it with the brier-score helpers keeps the
+# template-id / outcome / trajectory readers in one module so the contract is
+# obvious from a single file.
+
+
+_DEFAULT_LIST_LIMIT = 20
+_MAX_LIST_LIMIT = 100
+
+# Allowed values for the ``status`` query parameter.
+_ALLOWED_LIST_STATUSES = ("pending", "evaluated", "all")
+
+
+def _read_simulation_config(sim_dir: str) -> Dict[str, Any]:
+    """Return the parsed ``simulation_config.json`` or an empty dict.
+
+    Never raises — a missing or malformed config must not blank out the
+    inbox; we still want to surface the sim with whatever fields we have
+    (``id``, ``status``, ``created_at``) so the operator can at least
+    open it.
+    """
+    path = os.path.join(sim_dir, "simulation_config.json")
+    if not os.path.exists(path):
+        return {}
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            return json.load(f) or {}
+    except Exception:
+        return {}
+
+
+def _read_outcome_for_inbox(sim_dir: str) -> Optional[Dict[str, Any]]:
+    """Return ``{label, outcome_url}`` from ``outcome.json`` or ``None``.
+
+    Lighter than ``simulation._read_outcome_file`` — we only need the two
+    fields the inbox card renders. We accept both the canonical labels
+    (``correct``/``partial``/``incorrect``) and the spec aliases
+    (``called_it``/``wrong``) so a sim marked via any frontend
+    vocabulary still shows up in the « evaluated » filter.
+    """
+    path = os.path.join(sim_dir, "outcome.json")
+    if not os.path.exists(path):
+        return None
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            data = json.load(f) or {}
+    except Exception:
+        return None
+    label = (data.get("label") or "").strip().lower()
+    if label not in _LABEL_TO_Y:
+        return None
+    url = (data.get("outcome_url") or "").strip()
+    if url and not (url.startswith("http://") or url.startswith("https://")):
+        url = ""
+    return {"label": label, "outcome_url": url}
+
+
+def _build_summary_first_words(
+    cfg: Dict[str, Any],
+    fallback_id: str,
+) -> str:
+    """Tweet-sized headline for the inbox card.
+
+    Priority:
+      1. First sentence of ``simulation_requirement`` (chopped on ``.``,
+         ``!``, ``?``, then capped to 180 chars).
+      2. Top-level ``title`` if the config carries one.
+      3. The simulation id as the final fallback so a card always has a
+         visible label.
+    """
+    requirement = (cfg.get("simulation_requirement") or "").strip()
+    if requirement:
+        # Split on the first sentence terminator (with following whitespace
+        # so an in-word period like "U.S." doesn't truncate prematurely).
+        for terminator in (". ", "! ", "? ", ".\n", "!\n", "?\n"):
+            idx = requirement.find(terminator)
+            if 0 < idx < 180:
+                return requirement[: idx + 1].strip()
+        # No clean terminator found — just trim to keep cards visually
+        # even on the gallery grid.
+        if len(requirement) > 180:
+            return requirement[:177].rstrip() + "…"
+        return requirement
+    title = (cfg.get("title") or "").strip()
+    if title:
+        return title[:180]
+    return fallback_id
+
+
+def _resolve_template_name(template_id: Optional[str], cache: Dict[str, str]) -> Optional[str]:
+    """Look up the human-readable template ``name`` for ``template_id``.
+
+    Cached per-request — a 47-sim inbox would otherwise re-read the
+    same template JSON 47 times. Returns ``None`` if the preset is no
+    longer on disk or the JSON is malformed; the frontend renders the
+    raw id in that case.
+    """
+    if not template_id:
+        return None
+    if template_id in cache:
+        return cache[template_id] or None
+    candidate = _PRESET_TEMPLATES_DIR / f"{template_id}.json"
+    name: Optional[str] = None
+    if candidate.is_file():
+        try:
+            data = json.loads(candidate.read_text(encoding="utf-8"))
+            raw = data.get("name")
+            if isinstance(raw, str) and raw.strip():
+                name = raw.strip()
+        except (OSError, json.JSONDecodeError):
+            name = None
+    cache[template_id] = name or ""
+    return name
+
+
+def _gather_evaluable_simulations(
+    *,
+    status_filter: str,
+    template: Optional[str],
+) -> list[dict]:
+    """Walk every public simulation, build the inbox payload, apply the
+    status + template filters.
+
+    Returns the full filtered list (sorted by ``created_at`` desc); the
+    caller is responsible for paginating. We materialise everything
+    rather than yielding because the list is bounded by the public sim
+    count (≪ 10k in practice) and the caller needs the total to compute
+    ``has_more``.
+    """
+    manager = SimulationManager()
+    sims = manager.list_simulations()
+
+    # is_public + completed-or-running statuses only. We accept ``running``
+    # in case the operator wants to mark mid-flight (rare but supported by
+    # the existing /outcome endpoint), and ``stopped`` because a manually
+    # stopped sim is still annotatable. Status ``failed`` is excluded —
+    # there is no prediction to score against.
+    eligible_statuses = {"completed", "running", "stopped", "paused"}
+
+    template_name_cache: Dict[str, str] = {}
+    rows: list[dict] = []
+
+    for state in sims:
+        if not bool(getattr(state, "is_public", False)):
+            continue
+
+        status_val = (
+            state.status.value
+            if hasattr(state.status, 'value')
+            else str(state.status)
+        )
+        if status_val not in eligible_statuses:
+            continue
+
+        sim_dir = os.path.join(
+            Config.WONDERWALL_SIMULATION_DATA_DIR, state.simulation_id
+        )
+
+        cfg = _read_simulation_config(sim_dir)
+        template_id = cfg.get("template_id") if isinstance(cfg.get("template_id"), str) else None
+
+        # Apply template filter early.
+        if template and template_id != template:
+            continue
+
+        outcome = _read_outcome_for_inbox(sim_dir)
+        has_outcome = outcome is not None
+
+        # Apply status (= pending | evaluated | all) filter.
+        if status_filter == "pending" and has_outcome:
+            continue
+        if status_filter == "evaluated" and not has_outcome:
+            continue
+
+        title = (cfg.get("title") or "").strip() or state.simulation_id
+        summary = _build_summary_first_words(cfg, fallback_id=state.simulation_id)
+        predicted = _read_predicted_bullish_prob(sim_dir)
+        template_name = _resolve_template_name(template_id, template_name_cache)
+
+        rows.append({
+            "id": state.simulation_id,
+            "title": title,
+            "template_id": template_id,
+            "template_name": template_name,
+            "created_at": state.created_at or "",
+            "status": status_val,
+            "is_public": True,
+            "predicted_bullish_pct": predicted,
+            "outcome": outcome["label"] if outcome else None,
+            "outcome_url": outcome["outcome_url"] if outcome else None,
+            "summary_first_words": summary,
+        })
+
+    # Most-recent first so the operator sees brand-new sims at the top
+    # of the inbox without having to scroll.
+    rows.sort(key=lambda r: r["created_at"] or "", reverse=True)
+    return rows
+
+
+@calibration_bp.route('/simulations', methods=['GET'])
+def list_calibration_simulations():
+    """List the sims a calibration operator can mark inline.
+
+    Companion to ``GET /api/calibration/brier-score`` — that one
+    aggregates the Brier; this one feeds the inbox UI on the same page
+    so the operator can clear pending verdicts and watch the aggregate
+    move in real time.
+
+    Query parameters (all optional):
+        status: ``pending`` (default — sims completed/running/stopped
+            without an ``outcome.json``), ``evaluated`` (sims with an
+            outcome) or ``all``. Anything else is normalised to the
+            default rather than 400-ing — frontends can pass typo'd
+            values without crashing the page.
+        limit: max items per page (default 20, clamped to [1, 100]).
+        offset: pagination offset (default 0).
+        template: restrict to sims spawned from a given preset id
+            (e.g. ``crypto_launch``). Sims without ``template_id`` are
+            excluded when this filter is set.
+
+    Public endpoint (no auth) — same posture as the brier-score URL.
+    The data is already opted-in to the public gallery, so there is no
+    privacy delta in listing it.
+
+    Response shape mirrors the brief — ``data`` for items, ``pagination``
+    for paging metadata, ``filters.applied`` so the frontend can echo
+    the active filter without re-deriving it.
+    """
+    try:
+        # Pagination — clamp aggressively so a buggy client cannot make
+        # the server walk every public sim into one giant response.
+        limit_raw = request.args.get('limit', _DEFAULT_LIST_LIMIT, type=int)
+        offset_raw = request.args.get('offset', 0, type=int)
+        limit = max(1, min(_MAX_LIST_LIMIT, int(limit_raw or _DEFAULT_LIST_LIMIT)))
+        offset = max(0, int(offset_raw or 0))
+
+        # Status — normalise unknown values to the default. Surfacing
+        # 400 here would break the UI's "the URL has a stale ?status="
+        # bookmark; we'd rather silently fall back to ``pending``.
+        status_raw = (request.args.get('status') or '').strip().lower()
+        status_filter = status_raw if status_raw in _ALLOWED_LIST_STATUSES else "pending"
+
+        template = (request.args.get('template') or '').strip() or None
+
+        rows = _gather_evaluable_simulations(
+            status_filter=status_filter,
+            template=template,
+        )
+
+        total = len(rows)
+        page = rows[offset:offset + limit]
+        has_more = offset + len(page) < total
+
+        response = jsonify({
+            "success": True,
+            "data": page,
+            "pagination": {
+                "limit": limit,
+                "offset": offset,
+                "total": total,
+                "has_more": has_more,
+            },
+            "filters": {
+                "applied": {
+                    "status": status_filter,
+                    "template": template,
+                },
+            },
+        })
+        # Same short-cache window as the public gallery — newly-marked
+        # sims should disappear from the « pending » list within ~30 s.
+        response.headers["Cache-Control"] = "public, max-age=30"
+        return response
+
+    except Exception as exc:
+        logger.error(f"calibration: failed to list simulations: {exc}")
         return jsonify({
             "success": False,
             "error": str(exc),
