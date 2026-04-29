@@ -1,8 +1,17 @@
 import axios from 'axios'
 
 // Create axios instance
+//
+// baseURL must remain RELATIVE ('') in prod so axios calls /api/* via the
+// reverse-proxy (Cloudflare tunnel → Traefik → vite preview → Flask backend).
+// The fallback 'http://localhost:5001' came from the upstream MiroShark fork
+// and broke the prod build : the bundled JS sent to the browser tried to fetch
+// localhost:5001 from the user's own machine (not the container), returning
+// 503 « Network error » on every API call. Setting baseURL='' lets axios fire
+// same-origin /api/* requests which the reverse-proxy routes correctly in
+// dev (vite dev `server.proxy`) and in prod (vite preview `preview.proxy`).
 const service = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001',
+  baseURL: import.meta.env.VITE_API_BASE_URL || '',
   timeout: 300000, // 5-minute timeout (ontology generation may take a long time)
   headers: {
     'Content-Type': 'application/json'
