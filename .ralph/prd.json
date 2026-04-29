@@ -933,9 +933,29 @@
         "Tests pytest snapshot rapport sur 1 sim canonique → contient les 4 sections + cite le scenario",
         "Lighthouse readability > 60 sur le rapport HTML"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-04-29T17:50:00Z",
       "dependencies": ["US-042", "US-038"],
-      "metadata": { "priority": "P0", "chantier_priority_rank": 5 }
+      "metadata": {
+        "priority": "P0",
+        "chantier_priority_rank": 5,
+        "commit_hash": "fd8af51",
+        "files_touched": [
+          "backend/app/services/report_agent.py (+340/-16, +324 nettes : constantes _NARRATIVE_SECTIONS_REQUIRED + _NARRATIVE_SECTIONS_PLAN_BLOCK + _NARRATIVE_SECTION_DIRECTIVES, helpers _render_plan_system_prompt + _build_narrative_section_directive, refactor PLAN_SYSTEM_PROMPT en PLAN_SYSTEM_PROMPT_BASE avec placeholder {simulation_requirement} + alias backward-compat, plan_outline() utilise renderer + auto-append des 4 sections manquantes, _generate_section_react() append directive narrative au system_prompt section)",
+          "backend/tests/test_unit_report_agent_narrative.py (nouveau, 247 lignes, 17 tests)"
+        ],
+        "test_baseline_before": 279,
+        "test_baseline_after": 296,
+        "tests_added": 17,
+        "narrative_sections_required": [
+          "Le pari a-t-il été tenu ?",
+          "Qui a basculé ?",
+          "Qu'est-ce qui nous a surpris ?",
+          "Qu'aurait-il fallu pour basculer le résultat ?"
+        ],
+        "implementation_notes": "Garde-fou Python ré-injecte les sections manquantes par exact title match après le retour LLM. Risque (à surveiller) : si LLM traduit/reformule les titres au runtime malgré la consigne « do not translate, do not rephrase », double section EN+FR pourrait apparaître. `title_en` est présent en data dans la structure mais pas encore utilisé pour matching fuzzy — extension simple si Amine voit le doublon en prod.",
+        "delegated_to_subagent": true
+      }
     },
     {
       "id": "US-042",
