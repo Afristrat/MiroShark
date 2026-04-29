@@ -87,28 +87,28 @@
                <span class="diamond-icon">◇</span> {{ $t('home.steps.title') }}
             </div>
             <div class="workflow-list">
-              <div class="workflow-item">
+              <div class="workflow-item" :ref="el => setStepCardRef(el, 0)">
                 <span class="step-num">01</span>
                 <div class="step-info">
                   <div class="step-title">{{ $t('home.steps.s1.title') }}</div>
                   <div class="step-desc">{{ $t('home.steps.s1.desc') }}</div>
                 </div>
               </div>
-              <div class="workflow-item">
+              <div class="workflow-item" :ref="el => setStepCardRef(el, 1)">
                 <span class="step-num">02</span>
                 <div class="step-info">
                   <div class="step-title">{{ $t('home.steps.s2.title') }}</div>
                   <div class="step-desc">{{ $t('home.steps.s2.desc') }}</div>
                 </div>
               </div>
-              <div class="workflow-item">
+              <div class="workflow-item" :ref="el => setStepCardRef(el, 2)">
                 <span class="step-num">03</span>
                 <div class="step-info">
                   <div class="step-title">{{ $t('home.steps.s3.title') }}</div>
                   <div class="step-desc">{{ $t('home.steps.s3.desc') }}</div>
                 </div>
               </div>
-              <div class="workflow-item">
+              <div class="workflow-item" :ref="el => setStepCardRef(el, 3)">
                 <span class="step-num">04</span>
                 <div class="step-info">
                   <div class="step-title">{{ $t('home.steps.s4.title') }}</div>
@@ -326,6 +326,15 @@ import ScenarioSuggestions from '../components/ScenarioSuggestions.vue'
 import TrendingTopics from '../components/TrendingTopics.vue'
 import { fetchUrl } from '../api/graph'
 import { askMode } from '../api/simulation'
+import { useScrollFadeIn } from '../composables/useScrollFadeIn'
+
+// Refs for the 4 workflow step cards — populated via :ref callback in the
+// template so the IntersectionObserver picks each one up individually.
+const stepCardRefs = ref([])
+const setStepCardRef = (el, idx) => {
+  if (el) stepCardRefs.value[idx] = el
+}
+useScrollFadeIn(stepCardRefs)
 
 const { t } = useI18n()
 

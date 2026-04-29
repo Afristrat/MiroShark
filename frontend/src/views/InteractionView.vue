@@ -8,22 +8,22 @@
       
       <div class="header-center">
         <div class="view-switcher">
-          <button 
+          <button
             v-for="mode in ['graph', 'workbench']"
             :key="mode"
             class="switch-btn"
             :class="{ active: viewMode === mode }"
             @click="viewMode = mode"
           >
-            {{ { graph: 'Graph', workbench: 'Workbench' }[mode] }}
+            {{ { graph: $t('simulation.view.stage.graph'), workbench: $t('simulation.view.stage.interaction') }[mode] }}
           </button>
         </div>
       </div>
 
       <div class="header-right">
         <div class="workflow-step">
-          <span class="step-num">Step 4/4</span>
-          <span class="step-name">Deep Interaction</span>
+          <span class="step-num">{{ $t('simulation.interaction.title') }}</span>
+          <span class="step-name">{{ $t('simulation.view.stage.interaction') }}</span>
         </div>
         <div class="step-divider"></div>
         <span class="status-indicator" :class="statusClass">
@@ -65,6 +65,9 @@
 <script setup>
 import { ref, computed, watchEffect, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 import GraphPanel from '../components/GraphPanel.vue'
 import Step5Interaction from '../components/Step5Interaction.vue'
 import { getProject, getGraphData } from '../api/graph'
@@ -110,10 +113,10 @@ const statusClass = computed(() => {
 })
 
 const statusText = computed(() => {
-  if (currentStatus.value === 'error') return 'Error'
-  if (currentStatus.value === 'completed') return 'Completed'
-  if (currentStatus.value === 'processing') return 'Processing'
-  return 'Ready'
+  if (currentStatus.value === 'error') return t('common.error')
+  if (currentStatus.value === 'completed') return t('simulation.run.completed')
+  if (currentStatus.value === 'processing') return t('process.common.processing')
+  return t('process.common.readyToLaunch')
 })
 
 // --- Helpers ---

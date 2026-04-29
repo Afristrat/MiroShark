@@ -23,7 +23,7 @@
     <!-- Title Area -->
     <div class="section-header">
       <div class="section-line"></div>
-      <span class="section-title">Simulation Records</span>
+      <span class="section-title">{{ $t('panels.history.title') }}</span>
       <div class="section-line"></div>
       <button
         v-if="projects.length >= 2"
@@ -39,17 +39,17 @@
         <input
           v-model="searchQuery"
           class="search-input"
-          placeholder="Search scenarios..."
+          :placeholder="$t('panels.history.search')"
           type="text"
         />
         <span v-if="searchQuery" class="search-clear" @click="searchQuery = ''">×</span>
       </div>
       <div class="filter-controls">
         <select v-model="statusFilter" class="filter-select">
-          <option value="all">All Status</option>
-          <option value="completed">Completed</option>
-          <option value="in-progress">In Progress</option>
-          <option value="not-started">Not Started</option>
+          <option value="all">{{ $t('panels.history.filterAll') }}</option>
+          <option value="completed">{{ $t('panels.history.filterCompleted') }}</option>
+          <option value="in-progress">{{ $t('panels.history.filterRunning') }}</option>
+          <option value="not-started">{{ $t('panels.history.filterFailed') }}</option>
         </select>
         <select v-model="dateFilter" class="filter-select">
           <option value="all">All Time</option>
@@ -483,6 +483,9 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, onActivated, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 import { getSimulationHistory, forkSimulation, resolveSimulation, getSimulationQuality } from '../api/simulation'
 import { truncate as truncateText } from '../utils/text'
 import EmbedDialog from './EmbedDialog.vue'

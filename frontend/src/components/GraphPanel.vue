@@ -1,14 +1,14 @@
 <template>
   <div class="graph-panel">
     <div class="panel-header">
-      <span class="panel-title">Graph Overview</span>
+      <span class="panel-title">{{ $t('charts.graph.title') }}</span>
       <!-- Top Toolbar (Internal Top Right) -->
       <div class="header-tools">
-        <button class="tool-btn" @click="$emit('refresh')" :disabled="loading" title="Refresh Graph">
+        <button class="tool-btn" @click="$emit('refresh')" :disabled="loading" :title="$t('common.retry')">
           <span class="icon-refresh" :class="{ 'spinning': loading }">↻</span>
-          <span class="btn-text">Refresh</span>
+          <span class="btn-text">{{ $t('common.retry') }}</span>
         </button>
-        <button class="tool-btn" @click="$emit('toggle-maximize')" title="Maximize/Restore">
+        <button class="tool-btn" @click="$emit('toggle-maximize')" :title="$t('common.confirm')">
           <span class="icon-maximize">⛶</span>
         </button>
       </div>
@@ -326,8 +326,11 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, watch, nextTick, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import * as d3 from 'd3'
 import { getSimulationActions } from '../api/simulation'
+
+const { t } = useI18n()
 
 const props = defineProps({
   graphData: Object,

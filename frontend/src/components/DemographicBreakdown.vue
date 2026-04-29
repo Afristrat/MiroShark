@@ -4,7 +4,7 @@
     <div class="demo-header">
       <div class="demo-title">
         <span class="demo-icon">◇</span>
-        <span class="demo-label">DEMOGRAPHIC BREAKDOWN</span>
+        <span class="demo-label">{{ $t('charts.demographic.title').toUpperCase() }}</span>
       </div>
       <div class="demo-header-actions">
         <span v-if="meta" class="demo-meta">
@@ -14,9 +14,9 @@
           class="demo-export-btn"
           :disabled="!hasData"
           @click="refresh"
-          title="Refresh demographic breakdown"
+          :title="$t('common.retry')"
         >
-          ↻ Refresh
+          ↻ {{ $t('common.retry') }}
         </button>
       </div>
     </div>
@@ -38,7 +38,7 @@
     <!-- Loading -->
     <div v-if="loading" class="demo-state">
       <div class="pulse-ring"></div>
-      <span>Computing demographic breakdown...</span>
+      <span>{{ $t('charts.common.loading') }}</span>
     </div>
 
     <!-- Error -->
@@ -46,8 +46,8 @@
 
     <!-- No data -->
     <div v-else-if="!hasData" class="demo-state">
-      <span>No demographic data available.</span>
-      <span class="demo-hint">Run a simulation to generate agent profiles.</span>
+      <span>{{ $t('charts.demographic.noData') }}</span>
+      <span class="demo-hint">{{ $t('charts.demographic.subtitle') }}</span>
     </div>
 
     <!-- Main content -->
@@ -142,7 +142,10 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { getDemographicBreakdown } from '../api/simulation'
+
+const { t } = useI18n()
 
 const props = defineProps({
   simulationId: { type: String, required: true },

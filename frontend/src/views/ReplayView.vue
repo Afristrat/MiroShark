@@ -7,24 +7,24 @@
       </div>
 
       <div class="header-center">
-        <div class="replay-badge">REPLAY</div>
+        <div class="replay-badge">{{ $t('simulation.replay.title').toUpperCase() }}</div>
       </div>
 
       <div class="header-right">
-        <button class="back-btn" @click="goBack">← Back</button>
+        <button class="back-btn" @click="goBack">{{ $t('simulation.replay.back') }}</button>
       </div>
     </header>
 
     <!-- Loading State -->
     <div v-if="loading" class="loading-state">
       <div class="pulse-ring"></div>
-      <span>Loading simulation data...</span>
+      <span>{{ $t('simulation.replay.loading') }}</span>
     </div>
 
     <!-- Error State -->
     <div v-else-if="error" class="error-state">
       <span>{{ error }}</span>
-      <button class="action-btn secondary" @click="router.push('/')">Home</button>
+      <button class="action-btn secondary" @click="router.push('/')">{{ $t('nav.brand') }}</button>
     </div>
 
     <!-- Main Replay -->
@@ -56,7 +56,7 @@
 
           <!-- Round Info -->
           <div class="round-display">
-            <span class="round-label">ROUND</span>
+            <span class="round-label">{{ $t('simulation.replay.round').toUpperCase() }}</span>
             <span class="round-current">{{ currentRound }}</span>
             <span class="round-separator">/</span>
             <span class="round-total">{{ totalRounds }}</span>
@@ -250,6 +250,9 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 import { useRoute, useRouter } from 'vue-router'
 import { getRunStatusDetail } from '../api/simulation'
 import { truncate } from '../utils/text'

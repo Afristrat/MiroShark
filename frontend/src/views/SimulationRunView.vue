@@ -15,15 +15,15 @@
             :class="{ active: viewMode === mode }"
             @click="viewMode = mode"
           >
-            {{ { graph: 'Graph', network: 'Network', split: 'Split View', workbench: 'Workbench' }[mode] }}
+            {{ { graph: $t('simulation.view.stage.graph'), network: $t('charts.network.title'), split: $t('simulation.view.stage.config'), workbench: $t('simulation.view.stage.config') }[mode] }}
           </button>
         </div>
       </div>
 
       <div class="header-right">
         <div class="workflow-step">
-          <span class="step-num">Step 3/4</span>
-          <span class="step-name">Simulation</span>
+          <span class="step-num">{{ $t('simulation.run.title') }}</span>
+          <span class="step-name">{{ $t('simulation.view.stage.running') }}</span>
         </div>
         <div class="step-divider"></div>
         <span class="status-indicator" :class="statusClass">
@@ -76,6 +76,9 @@
 <script setup>
 import { ref, computed, watchEffect, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 import GraphPanel from '../components/GraphPanel.vue'
 import NetworkPanel from '../components/NetworkPanel.vue'
 import Step3Simulation from '../components/Step3Simulation.vue'
@@ -123,9 +126,9 @@ const statusClass = computed(() => {
 })
 
 const statusText = computed(() => {
-  if (currentStatus.value === 'error') return 'Error'
-  if (currentStatus.value === 'completed') return 'Completed'
-  return 'Running'
+  if (currentStatus.value === 'error') return t('common.error')
+  if (currentStatus.value === 'completed') return t('simulation.run.completed')
+  return t('simulation.run.running')
 })
 
 const isSimulating = computed(() => currentStatus.value === 'processing')

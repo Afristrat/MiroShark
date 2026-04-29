@@ -4,15 +4,15 @@
     <div class="lb-header">
       <div class="lb-title">
         <span class="lb-icon">◈</span>
-        <span class="lb-label">AGENT INFLUENCE LEADERBOARD</span>
+        <span class="lb-label">{{ $t('charts.influence.title').toUpperCase() }}</span>
       </div>
       <button
         class="export-btn"
         :disabled="!agents.length"
         @click="exportReport"
-        title="Download influence report as JSON"
+        :title="$t('panels.debug.exportJson')"
       >
-        Export JSON ↓
+        {{ $t('panels.debug.exportJson') }} ↓
       </button>
     </div>
 
@@ -177,7 +177,10 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { getInfluenceLeaderboard, traceInterviewAgent, getAgentInterview } from '../api/simulation'
+
+const { t } = useI18n()
 
 const props = defineProps({
   simulationId: { type: String, required: true },

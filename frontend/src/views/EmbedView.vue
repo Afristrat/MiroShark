@@ -5,13 +5,13 @@
   >
     <div v-if="loading" class="embed-state">
       <div class="embed-spinner"></div>
-      <span>Loading simulation…</span>
+      <span>{{ $t('simulation.view.loading') }}</span>
     </div>
 
     <div v-else-if="error" class="embed-state embed-error">
       <span>{{ error }}</span>
       <a class="embed-footer-link" :href="simulationUrl" target="_blank" rel="noopener">
-        Open on MiroShark ↗
+        {{ $t('embed.openInNewTab') }} ↗
       </a>
     </div>
 
@@ -21,9 +21,9 @@
         <div class="embed-meta">
           <span class="embed-pill status" :class="statusClass">{{ statusLabel }}</span>
           <span v-if="hasRounds" class="embed-pill">
-            Round {{ summary.current_round }}/{{ summary.total_rounds || summary.current_round }}
+            {{ $t('charts.common.round') }} {{ summary.current_round }}/{{ summary.total_rounds || summary.current_round }}
           </span>
-          <span class="embed-pill">{{ summary.profiles_count || 0 }} agents</span>
+          <span class="embed-pill">{{ $t('explore.card.agents', { count: summary.profiles_count || 0 }) }}</span>
           <span v-if="summary.quality && summary.quality.health" class="embed-pill quality" :class="qualityClass">
             {{ summary.quality.health }}
           </span>
@@ -53,21 +53,21 @@
           />
         </svg>
         <div v-else class="embed-empty-chart">
-          <span>No belief trajectory yet</span>
+          <span>{{ $t('charts.belief.noData') || $t('charts.common.noData') }}</span>
         </div>
 
         <div v-if="hasBelief && !chartOnly" class="embed-final-row">
           <span class="final-chip bullish">
             <span class="chip-dot"></span>
-            Bullish {{ finalBullish }}%
+            {{ $t('scenarios.bull') }} {{ finalBullish }}%
           </span>
           <span class="final-chip neutral">
             <span class="chip-dot"></span>
-            Neutral {{ finalNeutral }}%
+            {{ $t('scenarios.neutral') }} {{ finalNeutral }}%
           </span>
           <span class="final-chip bearish">
             <span class="chip-dot"></span>
-            Bearish {{ finalBearish }}%
+            {{ $t('scenarios.bear') }} {{ finalBearish }}%
           </span>
         </div>
       </div>
@@ -80,7 +80,7 @@
           </span>
         </div>
         <a class="embed-footer-link" :href="simulationUrl" target="_blank" rel="noopener">
-          Powered by <strong>MiroShark</strong> ↗
+          <strong>{{ $t('nav.brand') }}</strong> ↗
         </a>
       </footer>
     </template>
@@ -90,7 +90,10 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { getEmbedSummary } from '../api/simulation'
+
+const { t } = useI18n()
 
 const props = defineProps({
   simulationId: {
@@ -115,7 +118,7 @@ const summary = ref(null)
 
 const scenarioTitle = computed(() => {
   const raw = (summary.value?.scenario || '').trim()
-  if (!raw) return 'Untitled simulation'
+  if (!raw) return t('panels.history.noTitle')
   return raw.length > 140 ? raw.slice(0, 140).trimEnd() + '…' : raw
 })
 
@@ -125,12 +128,12 @@ const simulationUrl = computed(() => {
 })
 
 const statusLabel = computed(() => {
-  if (!summary.value) return 'Unknown'
+  if (!summary.value) return t('process.step2.step2.unknown')
   const s = (summary.value.runner_status || summary.value.status || '').toLowerCase()
-  if (s === 'completed' || s === 'finished' || s === 'stopped') return 'Completed'
-  if (s === 'running' || s === 'in_progress') return 'Running'
-  if (s === 'error' || s === 'failed') return 'Failed'
-  return s ? s.charAt(0).toUpperCase() + s.slice(1) : 'Ready'
+  if (s === 'completed' || s === 'finished' || s === 'stopped') return t('simulation.run.completed')
+  if (s === 'running' || s === 'in_progress') return t('simulation.run.running')
+  if (s === 'error' || s === 'failed') return t('simulation.run.failed')
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : t('process.common.readyToLaunch')
 })
 
 const statusClass = computed(() => {

@@ -1,12 +1,12 @@
 <template>
   <div class="network-panel">
     <div class="panel-header">
-      <span class="panel-title">Agent Network</span>
+      <span class="panel-title">{{ $t('charts.network.title') }}</span>
       <div class="header-tools">
-        <span class="node-count" v-if="networkStats.nodes">{{ networkStats.nodes }} agents · {{ networkStats.edges }} links</span>
-        <button class="tool-btn" @click="resetView" title="Reset View">
+        <span class="node-count" v-if="networkStats.nodes">{{ $t('explore.card.agents', { count: networkStats.nodes }) }} · {{ networkStats.edges }} {{ $t('charts.network.edges').toLowerCase() }}</span>
+        <button class="tool-btn" @click="resetView" :title="$t('panels.settings.reset')">
           <span class="icon-refresh">↻</span>
-          <span class="btn-text">Reset</span>
+          <span class="btn-text">{{ $t('panels.settings.reset') }}</span>
         </button>
       </div>
     </div>
@@ -84,8 +84,11 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
 import * as d3 from 'd3'
 import { getSimulationActions } from '../api/simulation'
+
+const { t } = useI18n()
 
 const props = defineProps({
   simulationId: String,

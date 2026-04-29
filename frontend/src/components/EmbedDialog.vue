@@ -7,7 +7,7 @@
           <div class="embed-dialog-header">
             <div class="embed-dialog-title">
               <span class="title-icon">⌘</span>
-              <span>Embed simulation</span>
+              <span>{{ $t('embed.title') }}</span>
               <span class="title-sub">{{ formatSimulationId(simulationId) }}</span>
             </div>
             <button class="embed-dialog-close" @click="$emit('close')">×</button>
@@ -15,8 +15,7 @@
 
           <!-- Description -->
           <p class="embed-dialog-desc">
-            Paste the iframe below into Notion, Substack, Medium, a GitHub README, or any HTML page.
-            The widget loads live from this MiroShark instance and updates automatically as the simulation changes.
+            {{ $t('embed.description') }}
           </p>
 
           <!-- Public toggle -->
@@ -32,7 +31,7 @@
 
           <!-- Size presets -->
           <div class="embed-size-row">
-            <span class="embed-size-label">Size</span>
+            <span class="embed-size-label">{{ $t('embed.size') }}</span>
             <div class="embed-size-buttons">
               <button
                 v-for="preset in sizePresets"
@@ -46,10 +45,10 @@
               </button>
             </div>
             <label class="embed-theme-toggle">
-              <span>Theme</span>
+              <span>{{ $t('embed.theme') }}</span>
               <select v-model="theme" class="embed-theme-select">
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
+                <option value="light">{{ $t('embed.light') }}</option>
+                <option value="dark">{{ $t('embed.dark') }}</option>
               </select>
             </label>
           </div>
@@ -74,7 +73,7 @@
               <div class="snippet-head">
                 <span class="snippet-label">HTML iframe</span>
                 <button class="snippet-copy-btn" @click="copy('iframe')">
-                  {{ copied === 'iframe' ? '✓ Copied' : 'Copy' }}
+                  {{ copied === 'iframe' ? '✓ ' + $t('embed.copied') : $t('embed.copy') }}
                 </button>
               </div>
               <pre class="snippet-code"><code>{{ iframeSnippet }}</code></pre>
@@ -84,7 +83,7 @@
               <div class="snippet-head">
                 <span class="snippet-label">Markdown (Notion / Substack auto-embed)</span>
                 <button class="snippet-copy-btn" @click="copy('markdown')">
-                  {{ copied === 'markdown' ? '✓ Copied' : 'Copy' }}
+                  {{ copied === 'markdown' ? '✓ ' + $t('embed.copied') : $t('embed.copy') }}
                 </button>
               </div>
               <pre class="snippet-code"><code>{{ markdownSnippet }}</code></pre>
@@ -94,7 +93,7 @@
               <div class="snippet-head">
                 <span class="snippet-label">Direct URL</span>
                 <button class="snippet-copy-btn" @click="copy('url')">
-                  {{ copied === 'url' ? '✓ Copied' : 'Copy' }}
+                  {{ copied === 'url' ? '✓ ' + $t('embed.copied') : $t('embed.copy') }}
                 </button>
               </div>
               <pre class="snippet-code"><code>{{ embedUrl }}</code></pre>
@@ -366,6 +365,9 @@
 
 <script setup>
 import { reactive, ref, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 import {
   publishSimulation,
   getEmbedSummary,

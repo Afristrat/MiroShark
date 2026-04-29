@@ -6,11 +6,11 @@
         <div class="brand" @click="router.push('/')">MIROSHARK</div>
       </div>
       <div class="header-center">
-        <span class="page-tag">Simulation Comparison</span>
+        <span class="page-tag">{{ $t('simulation.comparison.title') }}</span>
       </div>
       <div class="header-right">
         <button v-if="data" class="download-btn" @click="downloadComparison">
-          ↓ Export JSON
+          ↓ {{ $t('panels.debug.exportJson') }}
         </button>
       </div>
     </header>
@@ -18,9 +18,9 @@
     <!-- Simulation Selector -->
     <div class="selector-bar">
       <div class="selector-group">
-        <label class="selector-label">Simulation A</label>
+        <label class="selector-label">{{ $t('simulation.comparison.branchA') }}</label>
         <select class="sim-select" v-model="selectedId1" @change="onSelectionChange">
-          <option value="">Select simulation…</option>
+          <option value="">{{ $t('simulation.interaction.selectAgent') }}</option>
           <option v-for="s in simulations" :key="s.simulation_id" :value="s.simulation_id">
             {{ formatId(s.simulation_id) }} — {{ s.status }}
           </option>
@@ -30,9 +30,9 @@
       <div class="vs-badge">VS</div>
 
       <div class="selector-group">
-        <label class="selector-label">Simulation B</label>
+        <label class="selector-label">{{ $t('simulation.comparison.branchB') }}</label>
         <select class="sim-select" v-model="selectedId2" @change="onSelectionChange">
-          <option value="">Select simulation…</option>
+          <option value="">{{ $t('simulation.interaction.selectAgent') }}</option>
           <option v-for="s in simulations" :key="s.simulation_id" :value="s.simulation_id">
             {{ formatId(s.simulation_id) }} — {{ s.status }}
           </option>
@@ -45,7 +45,7 @@
         @click="runComparison"
       >
         <span v-if="loading" class="loading-spinner-small"></span>
-        {{ loading ? 'Comparing…' : 'Compare' }}
+        {{ loading ? $t('simulation.comparison.loading') : $t('simulation.comparison.title') }}
       </button>
     </div>
 
@@ -55,7 +55,7 @@
     <!-- Loading -->
     <div v-else-if="loading" class="cmp-loading">
       <div class="loading-ring"></div>
-      <span>Running comparison…</span>
+      <span>{{ $t('simulation.comparison.loading') }}</span>
     </div>
 
     <!-- Results -->
@@ -113,7 +113,7 @@
       <div class="two-col-layout">
 
         <!-- Influence Leaderboard Comparison -->
-        <div class="cmp-section full-width">
+        <div class="cmp-section full-width" :ref="el => setSectionRef(el, 0)">
           <div class="section-title">Influence Leaderboard</div>
           <div class="leaderboard-compare">
             <div class="lb-col">
@@ -157,7 +157,11 @@
         </div>
 
         <!-- Activity Timeline Chart -->
-        <div class="cmp-section full-width" v-if="data.sim1.timeline.length || data.sim2.timeline.length">
+        <div
+          class="cmp-section full-width"
+          v-if="data.sim1.timeline.length || data.sim2.timeline.length"
+          :ref="el => setSectionRef(el, 1)"
+        >
           <div class="section-title">Activity per Round</div>
           <div class="chart-container">
             <svg ref="chartSvg" class="activity-chart" :viewBox="`0 0 ${chartW} ${chartH}`" preserveAspectRatio="none">
@@ -219,6 +223,7 @@
         <div
           class="cmp-section full-width"
           v-if="data.sim1.markets.length || data.sim2.markets.length"
+          :ref="el => setSectionRef(el, 2)"
         >
           <div class="section-title">Prediction Market Final Prices</div>
           <div class="markets-compare">
@@ -258,7 +263,19 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 import { compareSimulations, listSimulations } from '../api/simulation'
+import { useScrollFadeIn } from '../composables/useScrollFadeIn'
+
+// Refs for the 3 result sections (leaderboard / activity chart / market
+// prices). Populated via :ref callbacks once `data` resolves.
+const sectionRefs = ref([])
+const setSectionRef = (el, idx) => {
+  if (el) sectionRefs.value[idx] = el
+}
+useScrollFadeIn(sectionRefs)
 
 const router = useRouter()
 const route = useRoute()
@@ -309,6 +326,9 @@ const runComparison = async () => {
   loading.value = true
   error.value = null
   data.value = null
+  // Drop the previous run's section refs so the IntersectionObserver
+  // re-arms cleanly when fresh sections mount.
+  sectionRefs.value = []
   try {
     const res = await compareSimulations(selectedId1.value, selectedId2.value)
     if (res.data?.success) {
@@ -609,8 +629,21 @@ const downloadComparison = () => {
 .two-col-layout { display: flex; flex-direction: column; gap: 20px; }
 
 /* Section */
-.cmp-section { background: #111; border: 1px solid #2A2A2A; border-radius: 8px; padding: 20px; }
+.cmp-section {
+  background: #111;
+  border: 1px solid #2A2A2A;
+  border-radius: 8px;
+  padding: 20px;
+  /* Initial state for the scroll-triggered fade-in. The composable adds
+     .ms-anim-fade-in once the section enters the viewport. */
+  opacity: 0;
+}
+.cmp-section.ms-anim-fade-in { opacity: 1; }
 .cmp-section.full-width { width: 100%; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cmp-section { opacity: 1; }
+}
 .section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #666; margin-bottom: 16px; }
 
 /* Leaderboard */

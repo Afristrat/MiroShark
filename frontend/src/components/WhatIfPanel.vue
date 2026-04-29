@@ -4,7 +4,7 @@
     <div class="wi-header">
       <div class="wi-title">
         <span class="wi-icon">◐</span>
-        <span class="wi-label">WHAT IF? — COUNTERFACTUAL</span>
+        <span class="wi-label">{{ $t('panels.whatIf.title').toUpperCase() }}</span>
       </div>
       <div class="wi-header-actions">
         <button
@@ -13,7 +13,7 @@
           :title="copySupported ? 'Copy chart as PNG (with MiroShark watermark)' : 'Image copy not supported in this browser'"
           @click="copyChart"
         >
-          {{ copiedFlash ? 'Copied' : 'Copy' }}
+          {{ copiedFlash ? $t('embed.copied') : $t('embed.copy') }}
         </button>
         <button
           class="wi-export-btn"
@@ -34,12 +34,12 @@
     <!-- Loading agents -->
     <div v-if="agentsLoading" class="wi-state">
       <div class="pulse-ring"></div>
-      <span>Loading agents...</span>
+      <span>{{ $t('simulation.interaction.loading') }}</span>
     </div>
 
     <!-- No agents -->
     <div v-else-if="!agents.length" class="wi-state">
-      <span>No influence data yet — run the simulation first.</span>
+      <span>{{ $t('charts.influence.noData') }}</span>
     </div>
 
     <template v-else>
@@ -257,7 +257,10 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { getInfluenceLeaderboard, getCounterfactualDrift } from '../api/simulation'
+
+const { t } = useI18n()
 import {
   renderSvgToCanvas,
   downloadCanvas,

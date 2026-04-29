@@ -8,22 +8,22 @@
       
       <div class="header-center">
         <div class="view-switcher">
-          <button 
-            v-for="mode in ['graph', 'split', 'workbench']" 
+          <button
+            v-for="mode in ['graph', 'split', 'workbench']"
             :key="mode"
             class="switch-btn"
             :class="{ active: viewMode === mode }"
             @click="viewMode = mode"
           >
-            {{ { graph: 'Graph', split: 'Split View', workbench: 'Workbench' }[mode] }}
+            {{ { graph: $t('simulation.view.stage.graph'), split: $t('simulation.view.stage.config'), workbench: $t('simulation.view.stage.config') }[mode] }}
           </button>
         </div>
       </div>
 
       <div class="header-right">
         <div class="workflow-step">
-          <span class="step-num">Step 2/4</span>
-          <span class="step-name">Agent Setup</span>
+          <span class="step-num">{{ $t('process.step2.step1.title') }}</span>
+          <span class="step-name">{{ $t('simulation.view.stage.config') }}</span>
         </div>
         <div class="step-divider"></div>
         <span class="status-indicator" :class="statusClass">
@@ -35,6 +35,32 @@
 
     <!-- Main Content Area -->
     <main class="content-area">
+      <!-- Initial-fetch skeleton overlay — shown until the simulation /
+           project / graph round-trip resolves. Uses .ms-skeleton from
+           src/styles/components.css for shimmer + reduced-motion handling. -->
+      <div v-if="initialLoading" class="initial-skeleton" aria-hidden="true">
+        <div class="skeleton-pane skeleton-pane-left">
+          <div class="ms-skeleton sk-toolbar"></div>
+          <div class="sk-graph-area">
+            <div class="ms-skeleton sk-node sk-node-a"></div>
+            <div class="ms-skeleton sk-node sk-node-b"></div>
+            <div class="ms-skeleton sk-node sk-node-c"></div>
+            <div class="ms-skeleton sk-node sk-node-d"></div>
+            <div class="ms-skeleton sk-edge sk-edge-1"></div>
+            <div class="ms-skeleton sk-edge sk-edge-2"></div>
+          </div>
+        </div>
+        <div class="skeleton-pane skeleton-pane-right">
+          <div class="ms-skeleton sk-line sk-line-title"></div>
+          <div class="ms-skeleton sk-line sk-line-sub"></div>
+          <div class="ms-skeleton sk-block sk-block-status"></div>
+          <div class="ms-skeleton sk-line sk-line-section"></div>
+          <div class="ms-skeleton sk-block sk-block-feed"></div>
+          <div class="ms-skeleton sk-line sk-line-section"></div>
+          <div class="ms-skeleton sk-block sk-block-market"></div>
+        </div>
+      </div>
+
       <!-- Left Panel: Graph -->
       <div class="panel-wrapper left" :style="leftPanelStyle">
         <GraphPanel
@@ -68,6 +94,9 @@
 <script setup>
 import { ref, computed, watchEffect, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 import GraphPanel from '../components/GraphPanel.vue'
 import Step2EnvSetup from '../components/Step2EnvSetup.vue'
 import { getProject, getGraphData } from '../api/graph'
@@ -93,6 +122,10 @@ const systemLogs = ref([])
 const currentStatus = ref('processing') // processing | completed | error
 const currentPhase = ref(0) // 0: Initializing, 1: Profiles, 2: Config, 3: Orchestrating, 4: Ready
 
+// True until the first project + graph round-trip resolves. Drives the
+// skeleton overlay that replaces the panels' bare "Loading..." flicker.
+const initialLoading = ref(true)
+
 // --- Computed Layout Styles ---
 const leftPanelStyle = computed(() => {
   if (viewMode.value === 'graph') return { width: '100%', opacity: 1, transform: 'translateX(0)' }
@@ -112,15 +145,15 @@ const statusClass = computed(() => {
 })
 
 const statusText = computed(() => {
-  if (currentStatus.value === 'error') return 'Error'
-  if (currentStatus.value === 'completed') return 'Ready'
+  if (currentStatus.value === 'error') return t('common.error')
+  if (currentStatus.value === 'completed') return t('process.common.readyToLaunch')
   switch (currentPhase.value) {
-    case 0: return 'Initializing'
-    case 1: return 'Generating Profiles'
-    case 2: return 'Generating Config'
-    case 3: return 'Orchestrating'
-    case 4: return 'Ready'
-    default: return 'Preparing'
+    case 0: return t('process.common.initializing')
+    case 1: return t('process.step2.step2.title')
+    case 2: return t('process.step2.step3.title')
+    case 3: return t('process.step2.step4.title')
+    case 4: return t('process.common.readyToLaunch')
+    default: return t('process.common.loading')
   }
 })
 
@@ -257,7 +290,7 @@ const loadSimulationData = async () => {
     const simRes = await getSimulation(currentSimulationId.value)
     if (simRes.success && simRes.data) {
       const simData = simRes.data
-      
+
       // Get project info
       if (simData.project_id) {
         const projRes = await getProject(simData.project_id)
@@ -276,6 +309,11 @@ const loadSimulationData = async () => {
     }
   } catch (err) {
     addLog(`Loading error: ${err.message}`)
+  } finally {
+    // Hide the initial skeleton overlay once the first round-trip is done,
+    // whether it succeeded or not — the panels themselves render their own
+    // empty / error states beyond this point.
+    initialLoading.value = false
   }
 }
 
@@ -457,5 +495,94 @@ onMounted(async () => {
 .panel-wrapper.left {
   border-right: 2px solid rgba(10,10,10,0.08);
 }
+
+/* ── Initial-fetch skeleton overlay ──
+   Sits on top of the two panels until the first project + graph fetch
+   resolves. Uses the global `.ms-skeleton` shimmer (defined in
+   src/styles/components.css), which already opts out of animation under
+   prefers-reduced-motion: reduce. */
+.initial-skeleton {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  z-index: 5;
+  background: #FAFAFA;
+  pointer-events: none;
+}
+
+.skeleton-pane {
+  flex: 1;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.skeleton-pane-left {
+  border-right: 2px solid rgba(10, 10, 10, 0.08);
+  position: relative;
+}
+
+.sk-toolbar {
+  height: 32px;
+  width: 60%;
+  border-radius: 4px;
+}
+
+.sk-graph-area {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.sk-node {
+  position: absolute;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+}
+.sk-node-a { top: 18%; left: 22%; }
+.sk-node-b { top: 28%; left: 60%; }
+.sk-node-c { top: 60%; left: 30%; }
+.sk-node-d { top: 70%; left: 65%; }
+
+.sk-edge {
+  position: absolute;
+  height: 4px;
+  border-radius: 2px;
+  transform-origin: left center;
+}
+.sk-edge-1 {
+  top: 26%;
+  left: 28%;
+  width: 32%;
+  transform: rotate(8deg);
+}
+.sk-edge-2 {
+  top: 64%;
+  left: 36%;
+  width: 28%;
+  transform: rotate(-12deg);
+}
+
+.skeleton-pane-right {
+  background: #FAFAFA;
+}
+
+.sk-line {
+  height: 14px;
+  border-radius: 3px;
+}
+.sk-line-title { height: 22px; width: 70%; }
+.sk-line-sub { width: 50%; }
+.sk-line-section { width: 40%; height: 16px; margin-top: 12px; }
+
+.sk-block {
+  border-radius: 6px;
+}
+.sk-block-status { height: 96px; width: 100%; }
+.sk-block-feed { height: 180px; width: 100%; }
+.sk-block-market { height: 110px; width: 100%; }
 </style>
 

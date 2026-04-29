@@ -4,7 +4,7 @@
     <div class="net-header">
       <div class="net-title">
         <span class="net-icon">⬡</span>
-        <span class="net-label">INTERACTION NETWORK</span>
+        <span class="net-label">{{ $t('charts.network.title').toUpperCase() }}</span>
       </div>
       <div class="net-header-actions">
         <button
@@ -13,7 +13,7 @@
           :title="copySupported ? 'Copy graph as PNG (with MiroShark watermark)' : 'Image copy not supported in this browser'"
           @click="copyChart"
         >
-          {{ copiedFlash ? 'Copied' : 'Copy' }}
+          {{ copiedFlash ? $t('embed.copied') : $t('embed.copy') }}
         </button>
         <button
           class="net-export-btn"
@@ -178,7 +178,10 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { getInteractionNetwork } from '../api/simulation'
+
+const { t } = useI18n()
 import {
   renderSvgToCanvas,
   downloadCanvas,

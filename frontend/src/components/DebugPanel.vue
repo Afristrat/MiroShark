@@ -4,16 +4,16 @@
     <div class="debug-header" @click="isCollapsed = !isCollapsed">
       <div class="debug-header__left">
         <span class="debug-header__icon">&#9881;</span>
-        <span class="debug-header__title">OBSERVABILITY</span>
+        <span class="debug-header__title">{{ $t('panels.debug.title').toUpperCase() }}</span>
         <span v-if="connected" class="debug-header__status debug-header__status--live">LIVE</span>
         <span v-else class="debug-header__status debug-header__status--off">OFF</span>
         <span v-if="stats.llm_calls" class="debug-header__stat">{{ stats.llm_calls }} calls</span>
         <span v-if="stats.tokens_total" class="debug-header__stat">{{ formatTokens(stats.tokens_total) }} tok</span>
       </div>
       <div class="debug-header__right">
-        <button class="debug-btn debug-btn--icon" :class="{ 'debug-btn--copied': justCopied }" @click.stop="copyAll" :title="justCopied ? 'Copied!' : 'Copy all events'">{{ justCopied ? '&#10003;' : '&#9112;' }}</button>
-        <button class="debug-btn debug-btn--icon" @click.stop="clearEvents" title="Clear">&#10005;</button>
-        <button class="debug-btn debug-btn--icon" @click.stop="isVisible = false" title="Close (Ctrl+Shift+D)">&#9866;</button>
+        <button class="debug-btn debug-btn--icon" :class="{ 'debug-btn--copied': justCopied }" @click.stop="copyAll" :title="justCopied ? $t('panels.debug.copied') : $t('panels.debug.copy')">{{ justCopied ? '&#10003;' : '&#9112;' }}</button>
+        <button class="debug-btn debug-btn--icon" @click.stop="clearEvents" :title="$t('panels.debug.clear')">&#10005;</button>
+        <button class="debug-btn debug-btn--icon" @click.stop="isVisible = false" :title="$t('panels.debug.close')">&#9866;</button>
       </div>
     </div>
 
@@ -58,7 +58,7 @@
         <!-- Live Feed -->
         <div v-if="activeTab === 'feed'" class="debug-feed">
           <div v-if="filteredEvents.length === 0" class="debug-empty">
-            No events yet. Waiting for activity...
+            {{ $t('panels.debug.noEvents') }}
           </div>
           <div
             v-for="event in filteredEvents"
@@ -220,9 +220,11 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick, reactive } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { streamEvents, getObservabilityStats } from '../api/observability'
 
 const route = useRoute()
+const { t } = useI18n()
 
 // State
 const isVisible = ref(false)

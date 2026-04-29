@@ -3,7 +3,7 @@
     <div class="cf-header">
       <div class="cf-title">
         <span class="cf-icon">⤷</span>
-        <span class="cf-label">COUNTERFACTUAL BRANCH</span>
+        <span class="cf-label">{{ $t('panels.counterfactual.title').toUpperCase() }}</span>
       </div>
       <span class="cf-hint">
         Fork this simulation from round N with a narrative injection.
@@ -88,14 +88,14 @@
         class="cf-cancel"
         @click="$emit('close')"
         :disabled="busy"
-      >Cancel</button>
+      >{{ $t('panels.counterfactual.cancel') }}</button>
       <button
         class="cf-submit"
         :disabled="!canSubmit || busy"
         @click="submit"
       >
         <span v-if="busy" class="cf-spinner"></span>
-        {{ busy ? 'Forking…' : 'Fork branch →' }}
+        {{ busy ? $t('panels.counterfactual.creating') : $t('panels.counterfactual.create') + ' →' }}
       </button>
     </div>
   </div>
@@ -104,7 +104,10 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { branchCounterfactual } from '../api/simulation'
+
+const { t } = useI18n()
 
 const props = defineProps({
   simulationId: { type: String, required: true },

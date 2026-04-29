@@ -5,9 +5,9 @@
         <!-- Header -->
         <div class="modal-header">
           <div class="modal-title">
-            <span class="title-label">⚙ Settings</span>
+            <span class="title-label">⚙ {{ $t('panels.settings.title') }}</span>
           </div>
-          <button class="close-btn" @click="$emit('close')">✕</button>
+          <button class="close-btn" @click="$emit('close')" :aria-label="$t('panels.settings.close')">✕</button>
         </div>
 
         <div class="warning-stripe"></div>
@@ -549,8 +549,11 @@
 
 <script setup>
 import { ref, reactive, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { getSettings, updateSettings, testLlmConnection, testWebhook } from '../api/settings'
 import { getMcpStatus } from '../api/mcp'
+
+const { t } = useI18n()
 
 const props = defineProps({
   open: { type: Boolean, required: true }

@@ -2,10 +2,10 @@
   <div class="explore-container">
     <!-- Top Navigation Bar (mirrors Home.vue nav for visual consistency) -->
     <nav class="navbar">
-      <router-link to="/" class="nav-brand" title="Back to home">MIROSHARK</router-link>
+      <router-link to="/" class="nav-brand" :title="$t('simulation.view.back')">MIROSHARK</router-link>
       <div class="nav-links">
-        <router-link to="/" class="nav-link" title="Back to home">
-          <span class="arrow">←</span> Home
+        <router-link to="/" class="nav-link" :title="$t('simulation.view.back')">
+          <span class="arrow">←</span> {{ $t('nav.brand') }}
         </router-link>
         <a
           href="https://github.com/aaronjmars/MiroShark"
@@ -13,7 +13,7 @@
           rel="noopener"
           class="github-link"
         >
-          GitHub <span class="arrow">↗</span>
+          {{ $t('nav.github') }} <span class="arrow">↗</span>
         </a>
       </div>
     </nav>
@@ -22,13 +22,13 @@
       <!-- Header -->
       <header class="explore-header">
         <div class="tag-row">
-          <span class="orange-tag">{{ verifiedOnly ? '📍 Verified' : '◎ Explore' }}</span>
+          <span class="orange-tag">{{ verifiedOnly ? '📍 ' + $t('explore.header.verified') : '◎ ' + $t('explore.header.title') }}</span>
           <span class="meta-sep">·</span>
           <span class="meta-text">
-            {{ verifiedOnly ? 'Predictions that called real events' : 'Public simulation gallery' }}
+            {{ verifiedOnly ? $t('explore.header.verified') : $t('explore.header.subtitle') }}
           </span>
         </div>
-        <h1 class="page-title">{{ verifiedOnly ? 'Calls that landed.' : 'Simulations the community ran.' }}</h1>
+        <h1 class="page-title">{{ verifiedOnly ? $t('explore.header.verified') : $t('explore.header.title') }}</h1>
         <p class="page-subtitle">
           <template v-if="verifiedOnly">
             Each card is a public MiroShark run whose operator marked the
@@ -63,44 +63,62 @@
             :class="{ 'filter-chip-active': verifiedFilter }"
             @click="toggleVerifiedFilter"
             :disabled="loading"
-            :title="verifiedFilter ? 'Show all public simulations' : 'Show only simulations with a recorded outcome'"
+            :title="verifiedFilter ? $t('explore.header.title') : $t('explore.header.verified')"
           >
             <span class="filter-chip-icon">📍</span>
-            <span>Verified only</span>
+            <span>{{ $t('explore.filters.verified') }}</span>
           </button>
 
           <button
             class="refresh-btn"
             @click="refresh"
             :disabled="loading"
-            title="Re-fetch the gallery"
+            :title="$t('common.retry')"
           >
             <span v-if="loading">…</span>
-            <span v-else>↻ Refresh</span>
+            <span v-else>↻ {{ $t('common.retry') }}</span>
           </button>
         </div>
       </header>
 
-      <!-- Loading -->
+      <!-- Loading skeletons — uses .ms-skeleton (shimmer + reduced-motion
+           handling) from src/styles/components.css. -->
       <div v-if="loading && items.length === 0" class="gallery-loading">
         <div class="loading-grid">
-          <div v-for="n in 6" :key="n" class="loading-card"></div>
+          <div v-for="n in 8" :key="n" class="skeleton-card" aria-hidden="true">
+            <div class="ms-skeleton skeleton-thumb"></div>
+            <div class="skeleton-body">
+              <div class="ms-skeleton skeleton-line skeleton-line-title"></div>
+              <div class="ms-skeleton skeleton-line skeleton-line-title-short"></div>
+              <div class="skeleton-pills">
+                <div class="ms-skeleton skeleton-pill"></div>
+                <div class="ms-skeleton skeleton-pill"></div>
+                <div class="ms-skeleton skeleton-pill"></div>
+              </div>
+              <div class="ms-skeleton skeleton-bar"></div>
+              <div class="ms-skeleton skeleton-line skeleton-line-meta"></div>
+              <div class="skeleton-actions">
+                <div class="ms-skeleton skeleton-btn"></div>
+                <div class="ms-skeleton skeleton-btn"></div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Error -->
       <div v-else-if="error" class="gallery-error">
         <div class="error-icon">⚠</div>
-        <div class="error-title">Couldn't load the gallery</div>
+        <div class="error-title">{{ $t('explore.error') }}</div>
         <div class="error-msg">{{ error }}</div>
-        <button class="error-retry" @click="refresh">Try again</button>
+        <button class="error-retry" @click="refresh">{{ $t('common.retry') }}</button>
       </div>
 
       <!-- Empty -->
       <div v-else-if="items.length === 0" class="gallery-empty">
         <div class="empty-icon">{{ verifiedFilter ? '📍' : '◇' }}</div>
         <div class="empty-title">
-          {{ verifiedFilter ? 'No verified predictions yet.' : 'No public simulations yet.' }}
+          {{ $t('explore.empty') }}
         </div>
         <div class="empty-msg">
           <template v-if="verifiedFilter">
@@ -125,8 +143,9 @@
       <!-- Grid -->
       <div v-else class="gallery-grid">
         <article
-          v-for="item in items"
+          v-for="(item, idx) in items"
           :key="item.simulation_id"
+          :ref="el => setGalleryCardRef(el, idx)"
           class="gallery-card"
           :class="{
             'card-resolved': item.resolution_outcome,
@@ -295,12 +314,16 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 import { useRouter } from 'vue-router'
 import {
   getPublicSimulations,
   forkSimulation,
   getShareCardUrl,
 } from '../api/simulation'
+import { useScrollFadeIn } from '../composables/useScrollFadeIn'
 
 const props = defineProps({
   // When true, the view boots in verified-only mode. Wired to the
@@ -321,6 +344,15 @@ const error = ref('')
 const forkingId = ref('')
 const forkErrors = ref({})
 const verifiedFilter = ref(props.verifiedOnly)
+
+// Refs for the gallery cards — populated via :ref callback so the scroll
+// observer can fade each card in once it enters the viewport. Cleared on
+// every refresh so stale entries from a previous page don't leak in.
+const galleryCardRefs = ref([])
+const setGalleryCardRef = (el, idx) => {
+  if (el) galleryCardRefs.value[idx] = el
+}
+useScrollFadeIn(galleryCardRefs)
 
 const resolvedCount = computed(
   () => items.value.filter((item) => item.resolution_outcome).length,
@@ -478,6 +510,9 @@ watch(
 const refresh = async () => {
   loading.value = true
   error.value = ''
+  // Reset card refs so the observer doesn't try to fade in elements from
+  // the previous page. The :ref callback will repopulate the array.
+  galleryCardRefs.value = []
   try {
     const page = await loadPage(0)
     items.value = page.data
@@ -697,7 +732,10 @@ onMounted(refresh)
   cursor: not-allowed;
 }
 
-/* ── Loading skeleton ── */
+/* ── Loading skeleton ──
+   Builds on `.ms-skeleton` from src/styles/components.css — that class
+   already handles the shimmer keyframes + `prefers-reduced-motion` opt-out,
+   so we only style sizes / layout here. */
 .gallery-loading { margin-top: var(--space-lg); }
 
 .loading-grid {
@@ -706,22 +744,63 @@ onMounted(refresh)
   gap: var(--space-md);
 }
 
-.loading-card {
-  height: 360px;
-  background: linear-gradient(
-    90deg,
-    rgba(10, 10, 10, 0.04) 0%,
-    rgba(10, 10, 10, 0.08) 50%,
-    rgba(10, 10, 10, 0.04) 100%
-  );
-  background-size: 200% 100%;
+.skeleton-card {
+  display: flex;
+  flex-direction: column;
   border: var(--border-light);
-  animation: shimmer-bg 1.4s ease-in-out infinite;
+  background: var(--color-white);
 }
 
-@keyframes shimmer-bg {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+.skeleton-thumb {
+  aspect-ratio: 1200 / 630;
+  width: 100%;
+  border-radius: 0;
+}
+
+.skeleton-body {
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  flex: 1;
+}
+
+.skeleton-line {
+  height: 14px;
+  border-radius: 3px;
+}
+.skeleton-line-title { width: 90%; height: 18px; }
+.skeleton-line-title-short { width: 60%; height: 18px; }
+.skeleton-line-meta { width: 70%; height: 11px; }
+
+.skeleton-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.skeleton-pill {
+  height: 18px;
+  width: 64px;
+  border-radius: 2px;
+}
+
+.skeleton-bar {
+  height: 6px;
+  width: 100%;
+  border-radius: 3px;
+}
+
+.skeleton-actions {
+  display: flex;
+  gap: var(--space-xs);
+  margin-top: auto;
+  padding-top: var(--space-sm);
+}
+
+.skeleton-btn {
+  height: 32px;
+  flex: 1;
+  border-radius: 2px;
 }
 
 /* ── Error ── */
@@ -791,7 +870,20 @@ onMounted(refresh)
   display: flex;
   flex-direction: column;
   transition: var(--transition-medium);
-  animation: fade-in 0.4s ease-out;
+  /* Initial state for the scroll-triggered fade-in. The
+     `useScrollFadeIn` composable adds .ms-anim-fade-in once the card
+     enters the viewport, which runs the global ms-fade-in keyframes. */
+  opacity: 0;
+}
+
+.gallery-card.ms-anim-fade-in {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Reduced-motion users get no animation — but they still need to see
+     the cards, so force them visible up-front. */
+  .gallery-card { opacity: 1; }
 }
 
 .gallery-card:hover {

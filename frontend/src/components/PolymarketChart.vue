@@ -4,7 +4,7 @@
     <div class="pm-header">
       <div class="pm-header-left">
         <img src="/pm.png" alt="Polymarket" class="pm-logo" />
-        <span class="pm-header-title">Prediction Markets</span>
+        <span class="pm-header-title">{{ $t('charts.polymarket.title') }}</span>
         <span v-if="live" class="pm-live-dot"><span class="pm-live-pulse"></span>LIVE</span>
       </div>
       <div v-if="selected" class="pm-header-actions">
@@ -14,7 +14,7 @@
           :title="copySupported ? 'Copy chart as PNG (with MiroShark watermark)' : 'Image copy not supported in this browser'"
           @click="copyChart"
         >
-          {{ copiedFlash ? 'Copied' : 'Copy' }}
+          {{ copiedFlash ? $t('embed.copied') : $t('embed.copy') }}
         </button>
         <button
           class="pm-export-btn"
@@ -31,11 +31,11 @@
       <div class="pm-body">
         <!-- Market list -->
         <aside class="pm-market-list">
-          <div v-if="marketsLoading && !markets.length" class="pm-empty">Loading markets...</div>
+          <div v-if="marketsLoading && !markets.length" class="pm-empty">{{ $t('charts.common.loading') }}</div>
           <div v-else-if="marketsError" class="pm-empty pm-error">{{ marketsError }}</div>
           <div v-else-if="!markets.length" class="pm-empty">
-            <div class="pm-empty-title">No markets yet</div>
-            <div class="pm-empty-hint">Markets appear as agents create them during the simulation.</div>
+            <div class="pm-empty-title">{{ $t('charts.polymarket.noMarkets') }}</div>
+            <div class="pm-empty-hint">{{ $t('charts.polymarket.subtitle') }}</div>
           </div>
           <button
             v-for="m in markets"
@@ -185,7 +185,10 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { getPolymarketMarkets, getPolymarketMarketPrices } from '../api/simulation'
+
+const { t } = useI18n()
 import {
   renderSvgToCanvas,
   downloadCanvas,

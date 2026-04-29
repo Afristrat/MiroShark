@@ -7,7 +7,7 @@
         v-if="phase !== 1"
         class="action-btn secondary"
         @click="emit('go-back')"
-      >← Config</button>
+      >{{ $t('process.step3.actions.config') }}</button>
 
       <!-- Pause (while running) -->
       <button
@@ -17,7 +17,7 @@
         @click="handleStopSimulation"
       >
         <span v-if="isStopping" class="loading-spinner-small"></span>
-        {{ isStopping ? 'Pausing...' : 'Pause' }}
+        {{ isStopping ? $t('process.step3.actions.pausing') : $t('process.step3.actions.pause') }}
       </button>
 
       <!-- Restart (when stopped, completed, or failed) -->
@@ -27,7 +27,7 @@
         :disabled="isStarting"
         @click="handleRestart"
       >
-        ↻ {{ runStatus.runner_status === 'failed' ? 'Restart (failed)' : 'Restart' }}
+        ↻ {{ runStatus.runner_status === 'failed' ? $t('process.step3.actions.restartFailed') : $t('process.step3.actions.restart') }}
       </button>
 
       <!-- Replay (when simulation has data) -->
@@ -36,7 +36,7 @@
         class="action-btn secondary"
         @click="openReplay"
       >
-        ▶ Replay
+        {{ $t('process.step3.actions.replay') }}
       </button>
 
       <!-- Generate Article (when simulation has data) -->
@@ -44,9 +44,9 @@
         v-if="phase === 2 && allActions.length > 0"
         class="action-btn secondary"
         @click="openArticleDrawer"
-        title="Generate a publishable article brief from simulation results"
+        :title="$t('process.step3.actions.articleTitle')"
       >
-        ▤ Article
+        {{ $t('process.step3.actions.article') }}
       </button>
 
       <!-- Influence Leaderboard toggle -->
@@ -55,9 +55,9 @@
         class="action-btn secondary"
         :class="{ active: showInfluence }"
         @click="toggleOverlay('influence')"
-        title="Agent influence leaderboard"
+        :title="$t('process.step3.actions.influenceTitle')"
       >
-        ◈ Influence
+        {{ $t('process.step3.actions.influence') }}
       </button>
 
       <!-- Belief Drift Chart toggle -->
@@ -66,9 +66,9 @@
         class="action-btn secondary"
         :class="{ active: showBeliefDrift }"
         @click="toggleOverlay('drift')"
-        title="Aggregate belief drift chart"
+        :title="$t('process.step3.actions.driftTitle')"
       >
-        ◎ Drift
+        {{ $t('process.step3.actions.drift') }}
       </button>
 
       <!-- Interaction Network toggle -->
@@ -77,9 +77,9 @@
         class="action-btn secondary"
         :class="{ active: showNetwork }"
         @click="toggleOverlay('network')"
-        title="Agent interaction network graph"
+        :title="$t('process.step3.actions.networkTitle')"
       >
-        ⬡ Network
+        {{ $t('process.step3.actions.network') }}
       </button>
 
       <!-- Demographic Breakdown toggle -->
@@ -88,9 +88,9 @@
         class="action-btn secondary"
         :class="{ active: showDemographics }"
         @click="toggleOverlay('demographics')"
-        title="Agent demographic breakdown (age, gender, country, actor type, platform)"
+        :title="$t('process.step3.actions.demographicsTitle')"
       >
-        ◇ Demographics
+        {{ $t('process.step3.actions.demographics') }}
       </button>
 
       <!-- Prediction Markets (only when polymarket is enabled/has data) -->
@@ -99,10 +99,10 @@
         class="action-btn secondary polymarket-btn"
         :class="{ active: showPolymarketChart }"
         @click="toggleOverlay('markets')"
-        title="Live prediction market price chart"
+        :title="$t('process.step3.actions.marketsTitle')"
       >
         <img src="/pm.png" class="btn-platform-icon" alt="" />
-        Markets
+        {{ $t('process.step3.actions.markets') }}
       </button>
 
       <!-- What If? Counterfactual toggle -->
@@ -111,9 +111,9 @@
         class="action-btn secondary"
         :class="{ active: showWhatIf }"
         @click="toggleOverlay('whatif')"
-        title="What If? — remove agents and recompute belief drift from existing trajectory"
+        :title="$t('process.step3.actions.whatIfTitle')"
       >
-        ◐ What If?
+        {{ $t('process.step3.actions.whatIf') }}
       </button>
 
       <!-- Director Mode toggle (only while simulation is running) -->
@@ -122,9 +122,9 @@
         class="action-btn secondary director-btn"
         :class="{ active: showDirector }"
         @click="toggleOverlay('director')"
-        :title="directorEventsTotal >= 10 ? 'Director Mode — max events reached' : 'Director Mode — inject a breaking event into the simulation'"
+        :title="directorEventsTotal >= 10 ? $t('process.step3.actions.directorMaxTitle') : $t('process.step3.actions.directorTitle')"
       >
-        ⚡ Director
+        {{ $t('process.step3.actions.director') }}
         <span v-if="directorEventsTotal > 0" class="director-badge">{{ directorEventsTotal }}/10</span>
       </button>
 
@@ -134,9 +134,9 @@
         class="action-btn secondary"
         :class="{ active: showBranch }"
         @click="toggleOverlay('branch')"
-        title="Fork this simulation with a narrative injection scheduled for a specific round"
+        :title="$t('process.step3.actions.branchTitle')"
       >
-        ⤷ Branch
+        {{ $t('process.step3.actions.branch') }}
       </button>
 
       <!-- Resume (when paused/stopped/failed with partial data) -->
@@ -147,7 +147,7 @@
         @click="handleResume"
       >
         <span v-if="isStarting" class="loading-spinner-small"></span>
-        {{ isStarting ? 'Resuming...' : 'Resume' }}
+        {{ isStarting ? $t('process.step3.actions.resuming') : $t('process.step3.actions.resume') }}
       </button>
 
       <!-- Skip to Report / Generate Report -->
@@ -157,22 +157,22 @@
         @click="handleNextStep"
       >
         <span v-if="isGeneratingReport" class="loading-spinner-small"></span>
-        <template v-if="isGeneratingReport">Starting...</template>
-        <template v-else-if="phase === 1">Skip to Report ⟶</template>
-        <template v-else>Report →</template>
+        <template v-if="isGeneratingReport">{{ $t('process.step3.actions.starting') }}</template>
+        <template v-else-if="phase === 1">{{ $t('process.step3.actions.skipToReport') }}</template>
+        <template v-else>{{ $t('process.step3.actions.report') }}</template>
       </button>
     </div>
 
     <!-- Total Events Summary -->
     <div class="events-summary">
-      <span class="events-label">TOTAL EVENTS:</span>
+      <span class="events-label">{{ $t('process.step3.events.totalEvents') }}</span>
       <span class="events-total">{{ (runStatus.twitter_actions_count || 0) + (runStatus.reddit_actions_count || 0) + (runStatus.polymarket_actions_count || 0) }}</span>
       <span class="events-divider"></span>
-      <span class="events-platform">X <span class="events-count">{{ runStatus.twitter_actions_count || 0 }}</span></span>
+      <span class="events-platform">{{ $t('process.step3.events.x') }} <span class="events-count">{{ runStatus.twitter_actions_count || 0 }}</span></span>
       <span class="events-slash">/</span>
-      <span class="events-platform">Reddit <span class="events-count">{{ runStatus.reddit_actions_count || 0 }}</span></span>
+      <span class="events-platform">{{ $t('process.step3.events.reddit') }} <span class="events-count">{{ runStatus.reddit_actions_count || 0 }}</span></span>
       <span class="events-slash">/</span>
-      <span class="events-platform">Polymarket <span class="events-count">{{ runStatus.polymarket_actions_count || 0 }}</span></span>
+      <span class="events-platform">{{ $t('process.step3.events.polymarket') }} <span class="events-count">{{ runStatus.polymarket_actions_count || 0 }}</span></span>
 
       <!-- Status dot removed — page title shows status instead -->
 
@@ -189,32 +189,32 @@
     <!-- Quality Diagnostics Panel (expandable) -->
     <div v-if="showQualityPanel && qualityData" class="quality-panel">
       <div class="qp-header">
-        <span class="qp-title">QUALITY DIAGNOSTICS</span>
+        <span class="qp-title">{{ $t('process.step3.quality.title') }}</span>
         <button class="qp-close" @click="showQualityPanel = false">×</button>
       </div>
       <div class="qp-metrics">
         <div class="qp-metric">
-          <span class="qp-label">Participation</span>
+          <span class="qp-label">{{ $t('process.step3.quality.participation') }}</span>
           <div class="qp-bar-wrap"><div class="qp-bar" :class="qualityData.participation_rate >= 0.8 ? 'qp-good' : qualityData.participation_rate >= 0.6 ? 'qp-ok' : 'qp-low'" :style="{ width: Math.round(qualityData.participation_rate * 100) + '%' }"></div></div>
           <span class="qp-val">{{ Math.round(qualityData.participation_rate * 100) }}%</span>
         </div>
         <div v-if="qualityData.stance_entropy !== null" class="qp-metric">
-          <span class="qp-label">Stance Diversity</span>
+          <span class="qp-label">{{ $t('process.step3.quality.stanceDiversity') }}</span>
           <div class="qp-bar-wrap"><div class="qp-bar" :class="qualityData.stance_entropy >= 0.5 ? 'qp-good' : qualityData.stance_entropy >= 0.3 ? 'qp-ok' : 'qp-low'" :style="{ width: Math.round(qualityData.stance_entropy * 100) + '%' }"></div></div>
           <span class="qp-val">{{ Math.round(qualityData.stance_entropy * 100) }}%</span>
         </div>
         <div class="qp-metric">
-          <span class="qp-label">Cross-Platform</span>
+          <span class="qp-label">{{ $t('process.step3.quality.crossPlatform') }}</span>
           <div class="qp-bar-wrap"><div class="qp-bar" :class="qualityData.cross_platform_rate >= 0.2 ? 'qp-good' : qualityData.cross_platform_rate >= 0.1 ? 'qp-ok' : 'qp-low'" :style="{ width: Math.min(Math.round(qualityData.cross_platform_rate * 100), 100) + '%' }"></div></div>
           <span class="qp-val">{{ Math.round(qualityData.cross_platform_rate * 100) }}%</span>
         </div>
         <div v-if="qualityData.convergence_round !== null" class="qp-metric">
-          <span class="qp-label">Consensus</span>
-          <span class="qp-val qp-convergence">Round {{ qualityData.convergence_round }}</span>
+          <span class="qp-label">{{ $t('process.step3.quality.consensus') }}</span>
+          <span class="qp-val qp-convergence">{{ $t('process.step3.quality.round', { n: qualityData.convergence_round }) }}</span>
         </div>
       </div>
       <div v-if="qualityData.suggestions && qualityData.suggestions.length" class="qp-suggestions">
-        <div class="qp-suggestions-title">Try for next run:</div>
+        <div class="qp-suggestions-title">{{ $t('process.step3.quality.tryNext') }}</div>
         <div v-for="(s, i) in qualityData.suggestions" :key="i" class="qp-suggestion">{{ s }}</div>
       </div>
     </div>
@@ -227,12 +227,12 @@
           <div class="platform-left">
             <svg class="platform-icon" viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
             <span class="platform-name">X</span>
-            <span v-if="runStatus.twitter_completed" class="status-badge done">done</span>
+            <span v-if="runStatus.twitter_completed" class="status-badge done">{{ $t('process.step3.platforms.done') }}</span>
           </div>
           <div class="platform-stats">
-            <span class="stat"><span class="stat-label">RND</span><span class="stat-value mono">{{ runStatus.twitter_current_round || 0 }}<span class="stat-total">/{{ runStatus.total_rounds || maxRounds || '-' }}</span></span></span>
-            <span class="stat"><span class="stat-label">TIME</span><span class="stat-value mono">{{ twitterElapsedTime }}</span></span>
-            <span class="stat"><span class="stat-label">ACTS</span><span class="stat-value mono">{{ runStatus.twitter_actions_count || 0 }}</span></span>
+            <span class="stat"><span class="stat-label">{{ $t('process.step3.platforms.rnd') }}</span><span class="stat-value mono">{{ runStatus.twitter_current_round || 0 }}<span class="stat-total">/{{ runStatus.total_rounds || maxRounds || '-' }}</span></span></span>
+            <span class="stat"><span class="stat-label">{{ $t('process.step3.platforms.time') }}</span><span class="stat-value mono">{{ twitterElapsedTime }}</span></span>
+            <span class="stat"><span class="stat-label">{{ $t('process.step3.platforms.acts') }}</span><span class="stat-value mono">{{ runStatus.twitter_actions_count || 0 }}</span></span>
           </div>
           <div class="platform-actions-list"><span class="action-tag">POST</span><span class="action-tag">LIKE</span><span class="action-tag">REPOST</span><span class="action-tag">QUOTE</span><span class="action-tag">FOLLOW</span></div>
         </div>
@@ -242,12 +242,12 @@
           <div class="platform-left">
             <img src="/reddit.png" class="platform-icon-img" alt="Reddit" />
             <span class="platform-name">Reddit</span>
-            <span v-if="runStatus.reddit_completed" class="status-badge done">done</span>
+            <span v-if="runStatus.reddit_completed" class="status-badge done">{{ $t('process.step3.platforms.done') }}</span>
           </div>
           <div class="platform-stats">
-            <span class="stat"><span class="stat-label">RND</span><span class="stat-value mono">{{ runStatus.reddit_current_round || 0 }}<span class="stat-total">/{{ runStatus.total_rounds || maxRounds || '-' }}</span></span></span>
-            <span class="stat"><span class="stat-label">TIME</span><span class="stat-value mono">{{ redditElapsedTime }}</span></span>
-            <span class="stat"><span class="stat-label">ACTS</span><span class="stat-value mono">{{ runStatus.reddit_actions_count || 0 }}</span></span>
+            <span class="stat"><span class="stat-label">{{ $t('process.step3.platforms.rnd') }}</span><span class="stat-value mono">{{ runStatus.reddit_current_round || 0 }}<span class="stat-total">/{{ runStatus.total_rounds || maxRounds || '-' }}</span></span></span>
+            <span class="stat"><span class="stat-label">{{ $t('process.step3.platforms.time') }}</span><span class="stat-value mono">{{ redditElapsedTime }}</span></span>
+            <span class="stat"><span class="stat-label">{{ $t('process.step3.platforms.acts') }}</span><span class="stat-value mono">{{ runStatus.reddit_actions_count || 0 }}</span></span>
           </div>
           <div class="platform-actions-list"><span class="action-tag">POST</span><span class="action-tag">COMMENT</span><span class="action-tag">LIKE</span><span class="action-tag">DISLIKE</span><span class="action-tag">SEARCH</span><span class="action-tag">FOLLOW</span></div>
         </div>
@@ -257,12 +257,12 @@
           <div class="platform-left">
             <img src="/pm.png" class="platform-icon-img" alt="Polymarket" />
             <span class="platform-name">Polymarket</span>
-            <span v-if="runStatus.polymarket_completed" class="status-badge done">done</span>
+            <span v-if="runStatus.polymarket_completed" class="status-badge done">{{ $t('process.step3.platforms.done') }}</span>
           </div>
           <div class="platform-stats">
-            <span class="stat"><span class="stat-label">RND</span><span class="stat-value mono">{{ runStatus.polymarket_current_round || 0 }}<span class="stat-total">/{{ runStatus.total_rounds || maxRounds || '-' }}</span></span></span>
-            <span class="stat"><span class="stat-label">TIME</span><span class="stat-value mono">{{ polymarketElapsedTime }}</span></span>
-            <span class="stat"><span class="stat-label">TRADES</span><span class="stat-value mono">{{ runStatus.polymarket_actions_count || 0 }}</span></span>
+            <span class="stat"><span class="stat-label">{{ $t('process.step3.platforms.rnd') }}</span><span class="stat-value mono">{{ runStatus.polymarket_current_round || 0 }}<span class="stat-total">/{{ runStatus.total_rounds || maxRounds || '-' }}</span></span></span>
+            <span class="stat"><span class="stat-label">{{ $t('process.step3.platforms.time') }}</span><span class="stat-value mono">{{ polymarketElapsedTime }}</span></span>
+            <span class="stat"><span class="stat-label">{{ $t('process.step3.platforms.trades') }}</span><span class="stat-value mono">{{ runStatus.polymarket_actions_count || 0 }}</span></span>
           </div>
           <div class="platform-actions-list"><span class="action-tag">BROWSE</span><span class="action-tag">BUY</span><span class="action-tag">SELL</span><span class="action-tag">CREATE</span><span class="action-tag">COMMENT</span></div>
         </div>
@@ -735,6 +735,7 @@
 <script setup>
 import { ref, computed, watch, watchEffect, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import {
   startSimulation,
   stopSimulation,
@@ -772,6 +773,7 @@ const props = defineProps({
 const emit = defineEmits(['go-back', 'next-step', 'add-log', 'update-status'])
 
 const router = useRouter()
+const { t } = useI18n()
 
 // State
 const isGeneratingReport = ref(false)

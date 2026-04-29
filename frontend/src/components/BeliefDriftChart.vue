@@ -4,7 +4,7 @@
     <div class="bd-header">
       <div class="bd-title">
         <span class="bd-icon">◎</span>
-        <span class="bd-label">DRIFT</span>
+        <span class="bd-label">{{ $t('charts.belief.title').toUpperCase() }}</span>
       </div>
       <div class="bd-header-actions">
         <button
@@ -13,7 +13,7 @@
           :title="copySupported ? 'Copy chart as PNG (with MiroShark watermark)' : 'Image copy not supported in this browser'"
           @click="copyChart"
         >
-          {{ copiedFlash ? 'Copied' : 'Copy' }}
+          {{ copiedFlash ? $t('embed.copied') : $t('embed.copy') }}
         </button>
         <button
           class="bd-export-btn"
@@ -36,7 +36,7 @@
     <!-- Loading -->
     <div v-if="loading" class="bd-state">
       <div class="pulse-ring"></div>
-      <span>Computing belief drift...</span>
+      <span>{{ $t('charts.common.loading') }}</span>
     </div>
 
     <!-- Error -->
@@ -44,8 +44,8 @@
 
     <!-- No trajectory data -->
     <div v-else-if="!hasData" class="bd-state">
-      <span>No belief trajectory data available.</span>
-      <span class="bd-hint">Run a simulation with belief tracking enabled.</span>
+      <span>{{ $t('charts.common.noData') }}</span>
+      <span class="bd-hint">{{ $t('charts.belief.subtitle') }}</span>
     </div>
 
     <!-- Chart -->
@@ -156,7 +156,10 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { getBeliefDrift } from '../api/simulation'
+
+const { t } = useI18n()
 import {
   renderSvgToCanvas,
   downloadCanvas,
