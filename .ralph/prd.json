@@ -1015,6 +1015,53 @@
         ],
         "wall_time_observed": "~10 min Ralph autonome (fix CSS)"
       }
+    },
+    {
+      "id": "US-045",
+      "chantier": "4-calibration",
+      "title": "Backend endpoints pour lister + marker les sims évaluables",
+      "description": "Aujourd'hui le backend expose `/api/calibration/brier-score` (US-020) qui agrège le Brier des sims marquées verified, et `POST /api/simulation/<id>/outcome` qui accepte un outcome. Mais aucun endpoint ne LISTE les sims complétées non encore évaluées (l'utilisateur ne peut donc pas voir dans le frontend ce qu'il pourrait noter). Cette story comble le gap.",
+      "acceptanceCriteria": [
+        "GET /api/calibration/simulations retourne la liste des sims avec is_public=True ET status=completed, avec champs : {id, name/title, template_id, template_name, created_at, has_outcome, outcome_label, outcome_url, predicted_bullish_pct, summary_first_words}",
+        "Endpoint paginé optionnel (?limit=20&offset=0&filter=evaluated|pending|all)",
+        "Tests pytest unitaires (filter, pagination, sims sans outcome listées avec has_outcome=false)",
+        "Backward compat : ne casse pas /api/calibration/brier-score existant",
+        "Documentation Swagger update si possible"
+      ],
+      "passes": false,
+      "dependencies": ["US-020"],
+      "metadata": {
+        "priority": "P0",
+        "chantier_priority_rank": 1,
+        "blocks_demo": "Indispensable pour l'argument commercial /calibration : sans cet endpoint le user ne peut pas évaluer ses sims, donc le Brier reste à 0 → page vide → message commercial invalide.",
+        "estimated_iterations_ralph": 1
+      }
+    },
+    {
+      "id": "US-046",
+      "chantier": "4-calibration",
+      "title": "Frontend /calibration ajoute section « Sims à évaluer » avec actions inline",
+      "description": "Compléter la page /calibration (US-021) avec une section sous le calibration plot listant les sims évaluables (depuis US-045 endpoint). Pour chaque sim : un card cream avec titre, template badge, snippet, indicateur outcome actuel (none|called_it|partial|wrong), et 4 boutons inline pour set l'outcome + un input URL preuve. Click → POST /api/simulation/<id>/outcome → refresh la liste + le brier-score (les stats agrégées s'auto-mettent à jour).",
+      "acceptanceCriteria": [
+        "Nouvelle section <section class=\"calib-evaluables\"> sous le 2-column block méthodologie/CTA",
+        "Liste des sims via GET /api/calibration/simulations (paginated, default 20)",
+        "Filtre rapide : Pending (par défaut) / Evaluated / Tous",
+        "Chaque card : title, template badge, date, snippet, predicted_bullish_pct mono, 4 boutons outcome inline (Called it / Partial / Wrong / N/A) avec couleurs --ms-mint/-peach/-rose/-bg-muted",
+        "Click bouton → optimistic UI update + POST + toast confirmation",
+        "Champ URL preuve (optionnel) avec validation URL minimale",
+        "Pagination (Suivant/Précédent) si > 20 sims",
+        "i18n complet calibration.evaluables.* FR/AR/EN",
+        "RTL OK via logical properties (US-009 pattern)",
+        "Refresh auto du brier-score après chaque évaluation (re-fetch /api/calibration/brier-score)"
+      ],
+      "passes": false,
+      "dependencies": ["US-045", "US-021"],
+      "metadata": {
+        "priority": "P0",
+        "chantier_priority_rank": 2,
+        "blocks_demo": "Sans cette section, /calibration reste une page de stats vides — pas exploitable en démo prospect.",
+        "estimated_iterations_ralph": 1
+      }
     }
   ]
 }
