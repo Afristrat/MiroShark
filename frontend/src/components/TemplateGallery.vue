@@ -3,17 +3,17 @@
     <div class="gallery-header">
       <div class="header-left">
         <span class="header-icon">◈</span>
-        <span class="header-label">Quick Start Templates</span>
+        <span class="header-label">{{ $t('templates.gallery.title') }}</span>
       </div>
-      <span class="header-meta">{{ templates.length }} scenarios ready to launch</span>
+      <span class="header-meta">{{ $t('templates.gallery.ready', { count: templates.length }) }}</span>
     </div>
 
     <div v-if="loading" class="gallery-loading">
-      Loading templates...
+      {{ $t('templates.gallery.loading') }}
     </div>
 
     <div v-else-if="templates.length === 0" class="gallery-empty">
-      No templates available.
+      {{ $t('templates.gallery.empty') }}
     </div>
 
     <div v-else class="template-grid">
@@ -33,16 +33,16 @@
         <p class="card-desc">{{ template.description }}</p>
 
         <div class="card-meta">
-          <span class="meta-item" :title="`~${template.estimated_agents} agents`">
-            {{ template.estimated_agents }} agents
+          <span class="meta-item" :title="$t('templates.gallery.agentsTitle', { count: template.estimated_agents })">
+            {{ $t('templates.gallery.agents', { count: template.estimated_agents }) }}
           </span>
           <span class="meta-dot">·</span>
-          <span class="meta-item" :title="`~${template.estimated_rounds} rounds`">
-            {{ template.estimated_rounds }} rounds
+          <span class="meta-item" :title="$t('templates.gallery.roundsTitle', { count: template.estimated_rounds })">
+            {{ $t('templates.gallery.rounds', { count: template.estimated_rounds }) }}
           </span>
           <span class="meta-dot">·</span>
           <span class="meta-item difficulty" :class="template.difficulty">
-            {{ template.difficulty }}
+            {{ difficultyText(template.difficulty) }}
           </span>
         </div>
 
@@ -51,16 +51,16 @@
           <span
             v-if="template.has_counterfactuals"
             class="platform-badge platform-badge--cf"
-            :title="`${template.counterfactual_count} preset counterfactual branches`"
+            :title="$t('templates.gallery.branchesTitle', { count: template.counterfactual_count })"
           >
-            ⤷ {{ template.counterfactual_count }} branches
+            {{ $t('templates.gallery.branches', { count: template.counterfactual_count }) }}
           </span>
           <span
             v-if="template.has_oracle_tools"
             class="platform-badge platform-badge--oracle"
-            :title="`${template.oracle_tool_count} FeedOracle tools declared`"
+            :title="$t('templates.gallery.oracleTitle', { count: template.oracle_tool_count })"
           >
-            ◎ live data
+            {{ $t('templates.gallery.oracleData') }}
           </span>
         </div>
 
@@ -69,8 +69,8 @@
           class="oracle-toggle"
           :class="{ disabled: !capabilities.oracle_seed_enabled }"
           :title="capabilities.oracle_seed_enabled
-            ? 'Dispatch this template\'s oracle_tools against FeedOracle MCP before ingest.'
-            : 'Oracle seeds disabled server-side. Set ORACLE_SEED_ENABLED=true in .env to enable.'"
+            ? $t('templates.gallery.oracleEnabled')
+            : $t('templates.gallery.oracleDisabled')"
           @click.stop
         >
           <input
@@ -79,7 +79,7 @@
             :disabled="!capabilities.oracle_seed_enabled"
             @change="toggleOracleOpt(template.id, $event.target.checked)"
           />
-          <span>Use live oracle data</span>
+          <span>{{ $t('templates.gallery.useLiveOracle') }}</span>
         </label>
 
         <button
@@ -87,9 +87,9 @@
           :disabled="launchingId === template.id"
           @click.stop="launchTemplate(template)"
         >
-          <span v-if="launchingId === template.id">Loading...</span>
-          <span v-else-if="oracleOptIn[template.id] && capabilities.oracle_seed_enabled">Launch (live) →</span>
-          <span v-else>Launch →</span>
+          <span v-if="launchingId === template.id">{{ $t('templates.gallery.launchLoading') }}</span>
+          <span v-else-if="oracleOptIn[template.id] && capabilities.oracle_seed_enabled">{{ $t('templates.gallery.launchLive') }}</span>
+          <span v-else>{{ $t('templates.gallery.launch') }}</span>
         </button>
       </div>
     </div>
@@ -99,10 +99,22 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { listTemplates, getTemplate, getTemplateCapabilities } from '../api/templates'
 import { setPendingTemplate } from '../store/pendingUpload'
 
 const router = useRouter()
+const { t } = useI18n()
+
+// Translate the difficulty enum returned by the API. Falls back to the raw
+// value if it doesn't match one of our known keys.
+const difficultyText = (level) => {
+  const key = level === 'easy' ? 'templates.difficulty.easy'
+    : level === 'medium' ? 'templates.difficulty.medium'
+    : level === 'hard' ? 'templates.difficulty.hard'
+    : null
+  return key ? t(key) : level
+}
 
 const templates = ref([])
 const loading = ref(true)

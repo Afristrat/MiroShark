@@ -82,9 +82,24 @@
         "ar.json + en.json ont les mêmes clés (valeurs peuvent être placeholders en EN, à traduire AR ensuite)",
         "Bascule ?lang=en sur localhost montre les textes en EN dans ces 4 vues"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-04-29T01:55:00Z",
       "dependencies": ["US-001"],
-      "metadata": { "estimated_hours": 3, "priority": "P0" }
+      "metadata": {
+        "estimated_hours": 3,
+        "priority": "P0",
+        "files_touched": [
+          "frontend/src/views/Home.vue",
+          "frontend/src/components/ScenarioSuggestions.vue",
+          "frontend/src/components/TrendingTopics.vue",
+          "frontend/src/components/TemplateGallery.vue",
+          "frontend/src/locales/fr.json",
+          "frontend/src/locales/ar.json",
+          "frontend/src/locales/en.json"
+        ],
+        "strings_externalized": 67,
+        "delegated_to_subagent": true
+      }
     },
     {
       "id": "US-003",

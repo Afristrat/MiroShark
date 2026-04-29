@@ -3,21 +3,21 @@
     <div v-if="shouldShow" class="ss-wrap">
       <div class="ss-head">
         <span class="ss-label">
-          <span class="ss-dot">◈</span> Smart Setup
+          <span class="ss-dot">◈</span> {{ $t('scenarios.label') }}
           <span class="ss-sub">{{ statusLine }}</span>
         </span>
         <button
           v-if="!loading"
           class="ss-close"
           type="button"
-          title="Dismiss suggestions"
+          :title="$t('scenarios.dismissTitle')"
           @click="dismiss"
         >×</button>
       </div>
 
       <div v-if="loading" class="ss-loading">
         <span class="ss-spinner"></span>
-        Drafting three scenarios from your document…
+        {{ $t('scenarios.loading') }}
       </div>
 
       <div v-else-if="suggestions.length > 0" class="ss-cards">
@@ -28,8 +28,8 @@
           :class="cardClass(s.label)"
         >
           <div class="ss-card-head">
-            <span class="ss-badge" :class="badgeClass(s.label)">{{ s.label }}</span>
-            <span class="ss-range">Initial YES {{ s.expected_yes_range[0] }}–{{ s.expected_yes_range[1] }}%</span>
+            <span class="ss-badge" :class="badgeClass(s.label)">{{ labelText(s.label) }}</span>
+            <span class="ss-range">{{ $t('scenarios.initialYes', { min: s.expected_yes_range[0], max: s.expected_yes_range[1] }) }}</span>
           </div>
           <div class="ss-question">{{ s.question }}</div>
           <div v-if="s.rationale" class="ss-rationale">{{ s.rationale }}</div>
@@ -37,7 +37,7 @@
             class="ss-use"
             type="button"
             @click="useSuggestion(s, idx)"
-          >Use this →</button>
+          >{{ $t('scenarios.useThis') }}</button>
         </div>
       </div>
 
@@ -64,7 +64,10 @@
  */
 
 import { ref, computed, watch, onBeforeUnmount } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { suggestScenarios } from '../api/simulation'
+
+const { t } = useI18n()
 
 const props = defineProps({
   textPreview: { type: String, default: '' },
@@ -93,10 +96,20 @@ const shouldShow = computed(() => {
 })
 
 const statusLine = computed(() => {
-  if (loading.value) return '// generating…'
-  if (suggestions.value.length > 0) return '// pick one or refine your own'
+  if (loading.value) return t('scenarios.subGenerating')
+  if (suggestions.value.length > 0) return t('scenarios.subPick')
   return ''
 })
+
+// Localized label for the scenario badge — falls back to the raw label if
+// the API returns something we don't have a key for.
+const labelText = (label) => {
+  const key = label === 'Bull' ? 'scenarios.bull'
+    : label === 'Bear' ? 'scenarios.bear'
+    : label === 'Neutral' ? 'scenarios.neutral'
+    : null
+  return key ? t(key) : label
+}
 
 const cardClass = (label) => ({
   'ss-card-bull': label === 'Bull',

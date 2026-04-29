@@ -53,6 +53,21 @@
   - flask-cors gère bien les listes Python comme value de `origins`. Pas besoin d'array YAML.
   - Le sub-agent US-002 tourne en parallèle sans conflit (backend vs frontend).
 
+### 2026-04-29 — US-002 Externaliser textes Home + ScenarioSuggestions + TrendingTopics + TemplateGallery
+- **Statut** : passes: true (délégué à sub-agent général en arrière-plan)
+- **Volume** : ~67 chaînes externalisées dans 4 fichiers Vue + 3 fichiers locales
+- **Quality gates** : npm run build exit 0 (731 modules)
+- **Détails** :
+  - Home.vue : ~38 chaînes (hero, panel, steps, console, error toasts via useI18n)
+  - ScenarioSuggestions.vue : ~8 chaînes (Bull/Bear/Neutral, useThis, range)
+  - TrendingTopics.vue : ~8 chaînes (label, refreshes, time relatif)
+  - TemplateGallery.vue : ~13 chaînes (gallery, agents/rounds/branches, oracle, difficulty)
+  - ar.json complet (aucun TODO) — bonus livré par le sub-agent
+- **Learnings** :
+  - useI18n() en `<script setup>` requiert `const { t } = useI18n()` puis `t('key')` (pas `$t` qui est uniquement disponible en `<template>`)
+  - Renommer `const t = Date.parse(...)` en `const ts = ...` pour éviter shadowing du t i18n
+  - Symboles purs (◎ ◈ ↑ ↓ →) et identifiants techniques (PDF, MD, TXT, MiroShark-V1.0) laissés tels quels — ne sont pas du chrome UI
+
 ### 2026-04-29 — US-001 Setup vue-i18n + structure locales
 - **Statut** : passes: true
 - **Fichiers** : frontend/src/i18n.js, frontend/src/locales/{fr,ar,en}.json, main.js, vite.config.js, package.json

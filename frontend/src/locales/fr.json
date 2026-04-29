@@ -25,5 +25,131 @@
     "ar": "العربية",
     "en": "English",
     "switch": "Changer de langue"
+  },
+  "home": {
+    "nav": {
+      "exploreTitle": "Parcourir les simulations publiques",
+      "settingsTitle": "Paramètres"
+    },
+    "preview": {
+      "chars": "{count} caractères",
+      "closeTitle": "Fermer l’aperçu"
+    },
+    "hero": {
+      "tag": "Moteur d’intelligence collective universel",
+      "title": "Simulez tout, pour 1 $",
+      "descriptionPart1": "Déposez n’importe quoi — un communiqué de presse, un titre d’actualité, un projet de loi, une question sans réponse, un « et si ? » historique — et",
+      "brand": "MiroShark",
+      "descriptionPart2": "fait apparaître",
+      "agents": "des centaines d’agents",
+      "descriptionPart3": "qui réagissent heure par heure. Ils publient, débattent, échangent, changent d’avis.",
+      "slogan": "Ne prédisez pas l’avenir. Simulez-le",
+      "scrollDownTitle": "Aller plus bas"
+    },
+    "panel": {
+      "systemStatus": "Statut du système",
+      "ready": "Prêt",
+      "readyDesc": "Première simulation en ~10 min, ~1 $ avec le préréglage Économique. Déposez un document ou choisissez un titre tendance pour commencer."
+    },
+    "steps": {
+      "title": "Ce que ça fait",
+      "s1": {
+        "title": "Vous apportez un scénario",
+        "desc": "MiroShark construit le monde autour — il extrait les acteurs, les enjeux et les questions ouvertes de votre saisie."
+      },
+      "s2": {
+        "title": "Des centaines d’agents ancrés",
+        "desc": "Réagissent sur Twitter, Reddit et un marché de prédiction. Heure par heure, tour après tour."
+      },
+      "s3": {
+        "title": "Pilotez la chronologie",
+        "desc": "Discutez avec n’importe quel agent. Glissez une actualité en cours de route. Bifurquez sur un contrefactuel et regardez-le diverger."
+      },
+      "s4": {
+        "title": "Recevez un rapport",
+        "desc": "Une synthèse façon Substack de ce qui s’est passé, citant les vraies publications et transactions de la simulation."
+      }
+    },
+    "console": {
+      "seedsLabel": "01 / Graines de réalité",
+      "seedsMeta": "Formats pris en charge : PDF, MD, TXT",
+      "uploadTitle": "Déposez vos fichiers à téléverser",
+      "uploadHint": "ou cliquez pour parcourir le système de fichiers",
+      "askLabel": "01a / Posez simplement",
+      "askMeta": "Pas de document ? Posez une question, nous synthétisons un briefing.",
+      "askPlaceholder": "ex. La clause biométrie de l’IA Act survivra-t-elle au trilogue final ?",
+      "researchBtn": "Rechercher →",
+      "researchBusy": "Synthèse du briefing en cours — utilise le modèle Smart, ~20–30 s.",
+      "askDocTitle": "Cliquez pour prévisualiser le briefing généré",
+      "urlLabel": "01b / Importer une URL",
+      "urlMeta": "Collez l’URL d’un article ou d’un rapport",
+      "urlPlaceholder": "https://exemple.com/article",
+      "fetchBtn": "Récupérer →",
+      "urlDocTitle": "Cliquez pour prévisualiser le contenu extrait",
+      "duplicateUrl": "Cette URL a déjà été ajoutée.",
+      "alreadyLoadedUrl": "Cette URL est déjà chargée.",
+      "fetchFailed": "Échec de la récupération de l’URL.",
+      "askFailed": "Échec du mode question.",
+      "params": "Paramètres d’entrée",
+      "promptLabel": ">_ 02 / Invite de simulation",
+      "promptPlaceholder": "// Décrivez vos exigences de simulation ou de prédiction en langage naturel (ex. : si une université annonce la levée d’une sanction disciplinaire contre un étudiant, quelles tendances d’opinion publique vont émerger ?)",
+      "engine": "Moteur : MiroShark-V1.0",
+      "launch": "Lancer la simulation",
+      "initializing": "Initialisation…"
+    }
+  },
+  "scenarios": {
+    "label": "Configuration intelligente",
+    "subGenerating": "// génération…",
+    "subPick": "// choisissez ou affinez la vôtre",
+    "dismissTitle": "Ignorer les suggestions",
+    "loading": "Rédaction de trois scénarios à partir de votre document…",
+    "initialYes": "YES initial {min}–{max} %",
+    "useThis": "Choisir →",
+    "bull": "Bull",
+    "bear": "Bear",
+    "neutral": "Neutre"
+  },
+  "trending": {
+    "label": "À la une",
+    "subFetching": "// récupération…",
+    "subCached": "// en cache · actualisé {ago}",
+    "subRefreshed": "// actualisé {ago}",
+    "refreshTitle": "Actualiser les flux",
+    "loading": "Récupération des titres récents depuis les flux publics…",
+    "simulate": "Simuler",
+    "time": {
+      "justNow": "à l’instant",
+      "minAgo": "il y a {n} min",
+      "hAgo": "il y a {n} h",
+      "dAgo": "il y a {n} j"
+    }
+  },
+  "templates": {
+    "gallery": {
+      "title": "Modèles à démarrage rapide",
+      "ready": "{count} scénarios prêts à lancer",
+      "loading": "Chargement des modèles…",
+      "empty": "Aucun modèle disponible.",
+      "agents": "{count} agents",
+      "rounds": "{count} tours",
+      "agentsTitle": "~{count} agents",
+      "roundsTitle": "~{count} tours",
+      "branchesTitle": "{count} branches contrefactuelles préréglées",
+      "branches": "⤷ {count} branches",
+      "oracleTitle": "{count} outils FeedOracle déclarés",
+      "oracleData": "◎ données en direct",
+      "oracleEnabled": "Lancer les oracle_tools de ce modèle sur FeedOracle MCP avant l’ingestion.",
+      "oracleDisabled": "Graines oracle désactivées côté serveur. Définissez ORACLE_SEED_ENABLED=true dans .env pour activer.",
+      "useLiveOracle": "Utiliser les données oracle en direct",
+      "launchLoading": "Chargement…",
+      "launchLive": "Lancer (en direct) →",
+      "launch": "Lancer →"
+    },
+    "difficulty": {
+      "easy": "facile",
+      "medium": "moyen",
+      "hard": "difficile"
+    }
   }
 }

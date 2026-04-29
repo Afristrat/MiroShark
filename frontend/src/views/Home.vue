@@ -2,15 +2,15 @@
   <div class="home-container">
     <!-- Top Navigation Bar -->
     <nav class="navbar">
-      <div class="nav-brand">MIROSHARK</div>
+      <div class="nav-brand">{{ $t('nav.brand') }}</div>
       <div class="nav-links">
-        <router-link to="/explore" class="explore-link" title="Browse public simulations">
-          <span class="compass">◎</span> Explore
+        <router-link to="/explore" class="explore-link" :title="$t('home.nav.exploreTitle')">
+          <span class="compass">◎</span> {{ $t('nav.explore') }}
         </router-link>
         <a href="https://github.com/aaronjmars/MiroShark" target="_blank" class="github-link">
-          GitHub <span class="arrow">↗</span>
+          {{ $t('nav.github') }} <span class="arrow">↗</span>
         </a>
-        <button class="settings-btn" @click="settingsOpen = true" title="Settings">
+        <button class="settings-btn" @click="settingsOpen = true" :title="$t('home.nav.settingsTitle')">
           ⚙
         </button>
       </div>
@@ -31,7 +31,7 @@
           </div>
           <div class="doc-preview-warning"></div>
           <div class="doc-preview-meta">
-            {{ previewDoc.char_count.toLocaleString() }} chars
+            {{ $t('home.preview.chars', { count: previewDoc.char_count.toLocaleString() }) }}
             <span v-if="previewDoc.url" class="doc-preview-meta-sep">·</span>
             <span v-if="previewDoc.url" class="doc-preview-url">{{ previewDoc.url }}</span>
           </div>
@@ -44,25 +44,25 @@
       <!-- Upper Section: Hero Area -->
       <section class="hero-section">
         <div class="tag-row">
-          <span class="orange-tag">Universal Swarm Intelligence Engine</span>
+          <span class="orange-tag">{{ $t('home.hero.tag') }}</span>
         </div>
 
         <h1 class="main-title">
-          <span class="gradient-text">Simulate anything, for $1</span>
+          <span class="gradient-text">{{ $t('home.hero.title') }}</span>
         </h1>
 
         <div class="hero-desc">
           <p>
-            Drop in anything — a press release, a news headline, a policy draft, a question you can't answer, a historical what-if — and <span class="highlight-bold">MiroShark</span> spawns <span class="highlight-orange">hundreds of agents</span> that react to it hour by hour. Posting, arguing, trading, changing their minds.
+            {{ $t('home.hero.descriptionPart1') }} <span class="highlight-bold">{{ $t('home.hero.brand') }}</span> {{ $t('home.hero.descriptionPart2') }} <span class="highlight-orange">{{ $t('home.hero.agents') }}</span> {{ $t('home.hero.descriptionPart3') }}
           </p>
           <p class="slogan-text">
-            Don't predict the future. Simulate it<span class="blinking-cursor">_</span>
+            {{ $t('home.hero.slogan') }}<span class="blinking-cursor">_</span>
           </p>
         </div>
 
         <div class="decoration-square"></div>
 
-        <button class="scroll-down-btn" @click="scrollToBottom">
+        <button class="scroll-down-btn" @click="scrollToBottom" :title="$t('home.hero.scrollDownTitle')">
           ↓
         </button>
       </section>
@@ -72,47 +72,47 @@
         <!-- Left Column: Status & Steps -->
         <div class="left-panel">
           <div class="panel-header">
-            <span class="status-dot">■</span> System Status
+            <span class="status-dot">■</span> {{ $t('home.panel.systemStatus') }}
           </div>
-          
-          <h2 class="section-title">Ready</h2>
+
+          <h2 class="section-title">{{ $t('home.panel.ready') }}</h2>
           <p class="section-desc">
-            First simulation in ~10 min, ~$1 on the Cheap preset. Drop in a doc or pick a trending headline to start.
+            {{ $t('home.panel.readyDesc') }}
           </p>
 
 
           <!-- What it does (from README) -->
           <div class="steps-container">
             <div class="steps-header">
-               <span class="diamond-icon">◇</span> What it does
+               <span class="diamond-icon">◇</span> {{ $t('home.steps.title') }}
             </div>
             <div class="workflow-list">
               <div class="workflow-item">
                 <span class="step-num">01</span>
                 <div class="step-info">
-                  <div class="step-title">You bring a scenario</div>
-                  <div class="step-desc">MiroShark builds the world around it — extracts actors, stakes, and open questions from your input.</div>
+                  <div class="step-title">{{ $t('home.steps.s1.title') }}</div>
+                  <div class="step-desc">{{ $t('home.steps.s1.desc') }}</div>
                 </div>
               </div>
               <div class="workflow-item">
                 <span class="step-num">02</span>
                 <div class="step-info">
-                  <div class="step-title">Hundreds of grounded agents</div>
-                  <div class="step-desc">React on Twitter, Reddit, and a prediction market. Hour by hour, round after round.</div>
+                  <div class="step-title">{{ $t('home.steps.s2.title') }}</div>
+                  <div class="step-desc">{{ $t('home.steps.s2.desc') }}</div>
                 </div>
               </div>
               <div class="workflow-item">
                 <span class="step-num">03</span>
                 <div class="step-info">
-                  <div class="step-title">Steer the timeline</div>
-                  <div class="step-desc">Chat with any agent. Drop breaking news mid-run. Fork a counterfactual and watch it diverge.</div>
+                  <div class="step-title">{{ $t('home.steps.s3.title') }}</div>
+                  <div class="step-desc">{{ $t('home.steps.s3.desc') }}</div>
                 </div>
               </div>
               <div class="workflow-item">
                 <span class="step-num">04</span>
                 <div class="step-info">
-                  <div class="step-title">Get a report</div>
-                  <div class="step-desc">A Substack-style write-up of what happened, citing actual posts and trades from the run.</div>
+                  <div class="step-title">{{ $t('home.steps.s4.title') }}</div>
+                  <div class="step-desc">{{ $t('home.steps.s4.desc') }}</div>
                 </div>
               </div>
             </div>
@@ -125,8 +125,8 @@
             <!-- Upload Area -->
             <div class="console-section">
               <div class="console-header">
-                <span class="console-label">01 / Reality Seeds</span>
-                <span class="console-meta">Supported formats: PDF, MD, TXT</span>
+                <span class="console-label">{{ $t('home.console.seedsLabel') }}</span>
+                <span class="console-meta">{{ $t('home.console.seedsMeta') }}</span>
               </div>
               
               <div 
@@ -149,8 +149,8 @@
                 
                 <div v-if="files.length === 0" class="upload-placeholder">
                   <div class="upload-icon">↑</div>
-                  <div class="upload-title">Drop Files to Upload</div>
-                  <div class="upload-hint">or click to browse the file system</div>
+                  <div class="upload-title">{{ $t('home.console.uploadTitle') }}</div>
+                  <div class="upload-hint">{{ $t('home.console.uploadHint') }}</div>
                 </div>
                 
                 <div v-else class="file-list">
@@ -166,15 +166,15 @@
             <!-- Ask Mode (no document needed) -->
             <div class="console-section url-section">
               <div class="console-header">
-                <span class="console-label">01a / Just Ask</span>
-                <span class="console-meta">No document? Type a question, we synthesize a briefing.</span>
+                <span class="console-label">{{ $t('home.console.askLabel') }}</span>
+                <span class="console-meta">{{ $t('home.console.askMeta') }}</span>
               </div>
               <div class="url-input-row">
                 <input
                   v-model="askQuestion"
                   class="url-input"
                   type="text"
-                  placeholder="e.g. Will the EU AI Act's biometrics clause survive the final trilogue?"
+                  :placeholder="$t('home.console.askPlaceholder')"
                   :disabled="loading || askBusy"
                   @keydown.enter.prevent="runAskMode"
                 />
@@ -184,11 +184,11 @@
                   :disabled="!askQuestion.trim() || loading || askBusy"
                 >
                   <span v-if="askBusy">...</span>
-                  <span v-else>Research →</span>
+                  <span v-else>{{ $t('home.console.researchBtn') }}</span>
                 </button>
               </div>
               <div v-if="askError" class="url-error">{{ askError }}</div>
-              <div v-if="askBusy" class="url-doc-meta" style="margin-top:6px">Synthesizing briefing — this uses the Smart model and takes ~20–30s.</div>
+              <div v-if="askBusy" class="url-doc-meta" style="margin-top:6px">{{ $t('home.console.researchBusy') }}</div>
               <div v-if="askDocs.length > 0" class="url-doc-list">
                 <div
                   v-for="doc in askDocs"
@@ -196,7 +196,7 @@
                   class="url-doc-item"
                   role="button"
                   tabindex="0"
-                  title="Click to preview the generated briefing"
+                  :title="$t('home.console.askDocTitle')"
                   @click="previewDoc = doc"
                   @keydown.enter.prevent="previewDoc = doc"
                   @keydown.space.prevent="previewDoc = doc"
@@ -204,7 +204,7 @@
                   <span class="url-doc-icon">◈</span>
                   <div class="url-doc-info">
                     <div class="url-doc-title" :title="doc.title">{{ truncate(doc.title, 70) }}</div>
-                    <div class="url-doc-meta" :title="doc.url">{{ doc.char_count.toLocaleString() }} chars · {{ truncate(doc.url, 72) }}</div>
+                    <div class="url-doc-meta" :title="doc.url">{{ $t('home.preview.chars', { count: doc.char_count.toLocaleString() }) }} · {{ truncate(doc.url, 72) }}</div>
                   </div>
                   <button @click.stop="removeUrlDocByRef(doc)" class="remove-btn">×</button>
                 </div>
@@ -214,15 +214,15 @@
             <!-- URL Input Section -->
             <div class="console-section url-section">
               <div class="console-header">
-                <span class="console-label">01b / URL Import</span>
-                <span class="console-meta">Paste article or report URL</span>
+                <span class="console-label">{{ $t('home.console.urlLabel') }}</span>
+                <span class="console-meta">{{ $t('home.console.urlMeta') }}</span>
               </div>
               <div class="url-input-row">
                 <input
                   v-model="urlInput"
                   class="url-input"
                   type="url"
-                  placeholder="https://example.com/article"
+                  :placeholder="$t('home.console.urlPlaceholder')"
                   :disabled="loading || urlFetching"
                   @keydown.enter.prevent="fetchUrlDoc"
                 />
@@ -232,7 +232,7 @@
                   :disabled="!urlInput.trim() || loading || urlFetching"
                 >
                   <span v-if="urlFetching">...</span>
-                  <span v-else>Fetch →</span>
+                  <span v-else>{{ $t('home.console.fetchBtn') }}</span>
                 </button>
               </div>
               <div v-if="urlError" class="url-error">{{ urlError }}</div>
@@ -243,7 +243,7 @@
                   class="url-doc-item"
                   role="button"
                   tabindex="0"
-                  title="Click to preview the extracted content"
+                  :title="$t('home.console.urlDocTitle')"
                   @click="previewDoc = doc"
                   @keydown.enter.prevent="previewDoc = doc"
                   @keydown.space.prevent="previewDoc = doc"
@@ -251,7 +251,7 @@
                   <span class="url-doc-icon">◈</span>
                   <div class="url-doc-info">
                     <div class="url-doc-title" :title="doc.title">{{ truncate(doc.title, 70) }}</div>
-                    <div class="url-doc-meta" :title="doc.url">{{ doc.char_count.toLocaleString() }} chars · {{ truncate(doc.url, 72) }}</div>
+                    <div class="url-doc-meta" :title="doc.url">{{ $t('home.preview.chars', { count: doc.char_count.toLocaleString() }) }} · {{ truncate(doc.url, 72) }}</div>
                   </div>
                   <button @click.stop="removeUrlDocByRef(doc)" class="remove-btn">×</button>
                 </div>
@@ -264,13 +264,13 @@
 
             <!-- Divider -->
             <div class="console-divider">
-              <span>Input Parameters</span>
+              <span>{{ $t('home.console.params') }}</span>
             </div>
 
             <!-- Input Area -->
             <div class="console-section">
               <div class="console-header">
-                <span class="console-label">>_ 02 / Simulation Prompt</span>
+                <span class="console-label">{{ $t('home.console.promptLabel') }}</span>
               </div>
               <ScenarioSuggestions
                 :text-preview="scenarioSuggestPreview"
@@ -281,23 +281,23 @@
                 <textarea
                   v-model="formData.simulationRequirement"
                   class="code-input"
-                  placeholder="// Enter your simulation or prediction requirements in natural language (e.g., If a university announces the revocation of a disciplinary action against a student, what public opinion trends will emerge?)"
+                  :placeholder="$t('home.console.promptPlaceholder')"
                   rows="6"
                   :disabled="loading"
                 ></textarea>
-                <div class="model-badge">Engine: MiroShark-V1.0</div>
+                <div class="model-badge">{{ $t('home.console.engine') }}</div>
               </div>
             </div>
 
             <!-- Start Button -->
             <div class="console-section btn-section">
-              <button 
+              <button
                 class="start-engine-btn"
                 @click="startSimulation"
                 :disabled="!canSubmit || loading"
               >
-                <span v-if="!loading">Launch Simulation</span>
-                <span v-else>Initializing...</span>
+                <span v-if="!loading">{{ $t('home.console.launch') }}</span>
+                <span v-else>{{ $t('home.console.initializing') }}</span>
                 <span class="btn-arrow">→</span>
               </button>
             </div>
@@ -318,6 +318,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import HistoryDatabase from '../components/HistoryDatabase.vue'
 import TemplateGallery from '../components/TemplateGallery.vue'
 import SettingsPanel from '../components/SettingsPanel.vue'
@@ -325,6 +326,8 @@ import ScenarioSuggestions from '../components/ScenarioSuggestions.vue'
 import TrendingTopics from '../components/TrendingTopics.vue'
 import { fetchUrl } from '../api/graph'
 import { askMode } from '../api/simulation'
+
+const { t } = useI18n()
 
 const settingsOpen = ref(false)
 const previewDoc = ref(null)
@@ -487,7 +490,7 @@ const fetchUrlDoc = async () => {
 
   // Prevent duplicate URLs
   if (urlDocs.value.some(d => d.url === url)) {
-    urlError.value = 'This URL has already been added.'
+    urlError.value = t('home.console.duplicateUrl')
     return
   }
 
@@ -499,10 +502,10 @@ const fetchUrlDoc = async () => {
       urlDocs.value.push(res.data)
       urlInput.value = ''
     } else {
-      urlError.value = res.error || 'Failed to fetch URL.'
+      urlError.value = res.error || t('home.console.fetchFailed')
     }
   } catch (err) {
-    urlError.value = err.message || 'Failed to fetch URL.'
+    urlError.value = err.message || t('home.console.fetchFailed')
   } finally {
     urlFetching.value = false
   }
@@ -519,7 +522,7 @@ const runAskMode = async () => {
   try {
     const res = await askMode(q)
     if (!res.success) {
-      askError.value = res.error || 'Ask mode failed.'
+      askError.value = res.error || t('home.console.askFailed')
       return
     }
     const d = res.data
@@ -539,7 +542,7 @@ const runAskMode = async () => {
     }
     askQuestion.value = ''
   } catch (err) {
-    askError.value = err?.response?.data?.error || err?.message || 'Ask mode failed.'
+    askError.value = err?.response?.data?.error || err?.message || t('home.console.askFailed')
   } finally {
     askBusy.value = false
   }
@@ -552,7 +555,7 @@ const runAskMode = async () => {
 const handleTrendingSelect = ({ url }) => {
   if (!url || urlFetching.value) return
   if (urlDocs.value.some(d => d.url === url)) {
-    urlError.value = 'This URL is already loaded.'
+    urlError.value = t('home.console.alreadyLoadedUrl')
     return
   }
   urlInput.value = url

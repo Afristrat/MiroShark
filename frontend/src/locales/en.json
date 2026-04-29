@@ -25,5 +25,131 @@
     "ar": "العربية",
     "en": "English",
     "switch": "Switch language"
+  },
+  "home": {
+    "nav": {
+      "exploreTitle": "Browse public simulations",
+      "settingsTitle": "Settings"
+    },
+    "preview": {
+      "chars": "{count} chars",
+      "closeTitle": "Close preview"
+    },
+    "hero": {
+      "tag": "Universal Swarm Intelligence Engine",
+      "title": "Simulate anything, for $1",
+      "descriptionPart1": "Drop in anything — a press release, a news headline, a policy draft, a question you can't answer, a historical what-if — and",
+      "brand": "MiroShark",
+      "descriptionPart2": "spawns",
+      "agents": "hundreds of agents",
+      "descriptionPart3": "that react to it hour by hour. Posting, arguing, trading, changing their minds.",
+      "slogan": "Don't predict the future. Simulate it",
+      "scrollDownTitle": "Scroll down"
+    },
+    "panel": {
+      "systemStatus": "System Status",
+      "ready": "Ready",
+      "readyDesc": "First simulation in ~10 min, ~$1 on the Cheap preset. Drop in a doc or pick a trending headline to start."
+    },
+    "steps": {
+      "title": "What it does",
+      "s1": {
+        "title": "You bring a scenario",
+        "desc": "MiroShark builds the world around it — extracts actors, stakes, and open questions from your input."
+      },
+      "s2": {
+        "title": "Hundreds of grounded agents",
+        "desc": "React on Twitter, Reddit, and a prediction market. Hour by hour, round after round."
+      },
+      "s3": {
+        "title": "Steer the timeline",
+        "desc": "Chat with any agent. Drop breaking news mid-run. Fork a counterfactual and watch it diverge."
+      },
+      "s4": {
+        "title": "Get a report",
+        "desc": "A Substack-style write-up of what happened, citing actual posts and trades from the run."
+      }
+    },
+    "console": {
+      "seedsLabel": "01 / Reality Seeds",
+      "seedsMeta": "Supported formats: PDF, MD, TXT",
+      "uploadTitle": "Drop Files to Upload",
+      "uploadHint": "or click to browse the file system",
+      "askLabel": "01a / Just Ask",
+      "askMeta": "No document? Type a question, we synthesize a briefing.",
+      "askPlaceholder": "e.g. Will the EU AI Act's biometrics clause survive the final trilogue?",
+      "researchBtn": "Research →",
+      "researchBusy": "Synthesizing briefing — this uses the Smart model and takes ~20–30s.",
+      "askDocTitle": "Click to preview the generated briefing",
+      "urlLabel": "01b / URL Import",
+      "urlMeta": "Paste article or report URL",
+      "urlPlaceholder": "https://example.com/article",
+      "fetchBtn": "Fetch →",
+      "urlDocTitle": "Click to preview the extracted content",
+      "duplicateUrl": "This URL has already been added.",
+      "alreadyLoadedUrl": "This URL is already loaded.",
+      "fetchFailed": "Failed to fetch URL.",
+      "askFailed": "Ask mode failed.",
+      "params": "Input Parameters",
+      "promptLabel": ">_ 02 / Simulation Prompt",
+      "promptPlaceholder": "// Enter your simulation or prediction requirements in natural language (e.g., If a university announces the revocation of a disciplinary action against a student, what public opinion trends will emerge?)",
+      "engine": "Engine: MiroShark-V1.0",
+      "launch": "Launch Simulation",
+      "initializing": "Initializing..."
+    }
+  },
+  "scenarios": {
+    "label": "Smart Setup",
+    "subGenerating": "// generating…",
+    "subPick": "// pick one or refine your own",
+    "dismissTitle": "Dismiss suggestions",
+    "loading": "Drafting three scenarios from your document…",
+    "initialYes": "Initial YES {min}–{max}%",
+    "useThis": "Use this →",
+    "bull": "Bull",
+    "bear": "Bear",
+    "neutral": "Neutral"
+  },
+  "trending": {
+    "label": "What's Trending",
+    "subFetching": "// fetching…",
+    "subCached": "// cached · refreshed {ago}",
+    "subRefreshed": "// refreshed {ago}",
+    "refreshTitle": "Refresh feeds",
+    "loading": "Pulling current headlines from public feeds…",
+    "simulate": "Simulate",
+    "time": {
+      "justNow": "just now",
+      "minAgo": "{n}m ago",
+      "hAgo": "{n}h ago",
+      "dAgo": "{n}d ago"
+    }
+  },
+  "templates": {
+    "gallery": {
+      "title": "Quick Start Templates",
+      "ready": "{count} scenarios ready to launch",
+      "loading": "Loading templates...",
+      "empty": "No templates available.",
+      "agents": "{count} agents",
+      "rounds": "{count} rounds",
+      "agentsTitle": "~{count} agents",
+      "roundsTitle": "~{count} rounds",
+      "branchesTitle": "{count} preset counterfactual branches",
+      "branches": "⤷ {count} branches",
+      "oracleTitle": "{count} FeedOracle tools declared",
+      "oracleData": "◎ live data",
+      "oracleEnabled": "Dispatch this template's oracle_tools against FeedOracle MCP before ingest.",
+      "oracleDisabled": "Oracle seeds disabled server-side. Set ORACLE_SEED_ENABLED=true in .env to enable.",
+      "useLiveOracle": "Use live oracle data",
+      "launchLoading": "Loading...",
+      "launchLive": "Launch (live) →",
+      "launch": "Launch →"
+    },
+    "difficulty": {
+      "easy": "easy",
+      "medium": "medium",
+      "hard": "hard"
+    }
   }
 }
