@@ -1,116 +1,123 @@
-== PASSATION MiroShark 2026-04-29T18:00:00+01:00 ==
+== PASSATION MiroShark/Bassira 2026-04-29T20:30:00+01:00 ==
 
 [ETAT]
-- branche `main` `160376b` à jour avec `origin/main`
-- prod **ONLINE** sur https://prospectives.ai-mpower.com (HTTP 200, build mode prod minifié)
-- Coolify app status : `running:unknown` (Sentinel pas en healthcheck mais HTTP OK)
-- 31/46 stories Ralph passes:true (67%)
-- 296 backend tests passing (vs 167 baseline début session) · zéro régression
-- npm run build : OK (~305 kB main / 90 kB gzip)
-- 4 sub-agents pilotés en parallèle cette session : tous done & pushed
-- branche worktree `agent-a189a386` toujours présente (legacy, non mergée)
+- branche `main` `ab2d985` à jour avec `origin/main`
+- prod **ONLINE** sur https://prospectives.ai-mpower.com (HTTP 200)
+- 40/48 stories Ralph passes:true (83 %)
+- 338 tests backend passing (vs 167 baseline début projet, vs 296 fin session 1) · zéro régression
+- npm run build : OK (~340 kB main / ~110 kB gzip)
+- 12 commits poussés cette session post-passation précédente
+- 5 sub-agents pilotés cette session : tous done & pushed
 
-[FAIT cette session — 14 stories Ralph + 5 fixes infra]
-✓ **Fix DNS BuildKit** Coolify : systemd-resolved + buildkitd.toml configurés (côté serveur Linux), prod reverse-proxy fonctionne
-✓ **US-036** Build prod Coolify : `Dockerfile` ajoute `RUN npm run build` avant CMD, root `package.json` ajoute script `start` (concurrently backend + `vite preview --host --port 3000`), `vite.config.js` ajoute block `preview:` avec proxy `/api`. Plus de Vite dev server en prod.
-✓ **US-042** 5 scénarios canoniques pan-Afrique : `pmf_startup_tech` / `crisis_24h_brand` / `adcheck_pre_launch` / `policy_brief_stress` / `product_launch_v2`, chacun avec 2 fichiers (`01_attachment.md` brief customer + `02_engine.md` config technique : `simulation_requirement` >1500 chars FR + 6 agent system_prompts ancrés persona/sources + 5 director events injection text + verdict shape) + `<id>.json` template metadata. 30 personas nominaux pan-Afrique (Karim Casa, Aïcha Dakar, Ousmane Abidjan, Fatou Lagos, etc.). Helper `scripts/build_attachment_pdfs.py` (reportlab) si Amine veut PDFs plus tard.
-✓ **US-019** TemplateGallery card She Start avec 3 sub-actions A/B/C (Replay/Twin/Blind Spot). i18n FR/AR/EN, click pré-remplit form simulation avec params variant.
-✓ **US-021** Page publique `/calibration` (sub-agent en début de session) : SVG vanilla scatter + 4 stats cards + filters sidebar.
-✓ **US-037** SimulationConfigGenerator parse `simulation_requirement` → time config adaptive (4 priorités : template recommended_settings > regex > keyword > default 72h). Court-circuite l'appel LLM `_generate_time_config` quand source ≠ default → -1 LLM call par préparation.
-✓ **US-038** Per-agent system_prompts (200-400 mots déterministes ancrés persona/scenario) + propagation locale via `SimulationState.locale` au Wonderwall subprocess. Plan A (champ natif) + Plan B (prepend dans `persona` entre balises sentinelles) combinés.
-✓ **US-011** Design migration `.ms-*` Step2EnvSetup + Step4Report + Step5Interaction (mode hybride classes legacy + .ms-* additives — code livré dans commit hybride accidentel `241ffd6`)
-✓ **US-015** Design migration MainView + SimulationRunView + ReportView (idem, marker `f067038`). ProcessView.vue n'existe pas dans le repo (vérifié router/index.js).
-✓ **US-041** ReportAgent narratif : 4 sections obligatoires FR auto-injectées (« Le pari a-t-il été tenu ? » / « Qui a basculé ? » / « Qu'est-ce qui nous a surpris ? » / « Qu'aurait-il fallu pour basculer le résultat ? ») + `PLAN_SYSTEM_PROMPT_BASE` templatable avec `{simulation_requirement}` + `_NARRATIVE_SECTIONS_REQUIRED` constants + garde-fou Python ré-injecte sections manquantes par exact title match.
-✓ **US-043** Backend honore locale UI dans tous les LLM outputs sync : helper `backend/app/utils/locale_prompt.py` avec `LOCALE_FULL_NAMES`, `get_request_locale()` (lit `X-Bassira-Locale` header, default `fr`), `localize_system_prompt()` (append directive forte + sentinel idempotent + exception identifiants techniques PascalCase/UPPER_SNAKE_CASE/JSON keys). Wrappé sur 10 system_prompts (ontology + 4 graph_tools + 3 report_agent + 2 simulation). Frontend axios interceptor envoie le header.
-✓ **US-044** LanguageSwitcher visibilité renforcée : `!important position:fixed` (combat le scoped style du composant), background `--ms-orange-soft` au lieu de blanc timide, border 1.5px orange, shadow orange teintée, animation lang-switcher-fadein 600ms, z-index 1500.
-✓ **US-044b** Refonte navbar Home + Explore Playful & Soft : drop GitHub + Explorer (demande Amine), ajout Calibration + Scénarios (button scrollIntoView vers `#templates-gallery`), background cream au lieu de noir, hauteur 56px, settings btn circulaire avec hover rotate(40deg).
-✓ **US-045** Backend `GET /api/calibration/simulations` paginé public : status=pending|evaluated|all + template + limit/offset, filtre sims completed avec/sans `outcome.json`, intègre `_resolve_template_name`, `_build_summary_first_words` (split intelligent ponctuation pour pas tronquer « U.S. »), 15 nouveaux tests.
-✓ **US-046** Frontend `/calibration` section « Sims à évaluer » : cards `.ms-card` empilées, 4 boutons inline outcome (Called it/Partial/Wrong/N/A) avec backgrounds `--ms-mint/-peach/-rose/-bg-muted`, optimistic UI + revert si erreur, toast CSS-only 200ms, refresh auto brier-score après chaque évaluation, filtre rapide Pending (default)/Evaluated/Tous, pagination Précédent/Suivant. N/A est no-op (pas de DELETE outcome backend, documenté).
+[FAIT cette session — 8 stories Ralph + 1 fix UX critique + nouvelle US-049]
 
-✓ **Quick fixes infra livrés** :
-  - `a7df38f` axios baseURL `''` (était `http://localhost:5001` legacy fork upstream → 503 sur tout `/api/*` en prod)
-  - `3c041ba` LanguageSwitcher CSS scoped override
-  - `c8ec8fd` `/api/calibration/brier-score` expose `filters.templates_available` peuplé depuis preset_templates dir
-  - `875e768` CalibrationView dropdown rend `tpl.name` au lieu de `tpl.id` (fix mismatch shape)
-  - `160376b` consolidation prd.json US-041+US-045+US-046 passes:true
+✓ **Step03-Fix** (commit `2399f99`) : hints contextuels Step 03 (entities/profiles/timeout/llm) + extraction err.response.data.error dans handleConfigRetry + locales fr/en/ar débrandées d'OpenRouter + admin US-038 passes:true. Cas signalé par Amine sur sim_cc793c9c99b5 où il voyait "Request failed with status code 400" au lieu d'un message localisé.
 
-[BLOQUE]
-- Aucun blocage technique majeur.
-- Worktree `agent-a189a386` legacy toujours présent en local. PNG logo `/miroshark-nobg.png` (watermark des charts) montre encore l'ancien brand visuellement — à régénérer par un designer (TODO non bloquant).
-- Auth `POST /api/simulation/<id>/outcome` côté frontend ne passe pas de `Authorization: Bearer` (état antérieur, pas une régression de cette session). Soit `MIROSHARK_ADMIN_TOKEN=""` en mode dev sur Coolify, soit reverse-proxy injecte le header. À valider en démo prospect.
+✓ **US-047** (commits `7771bf0` backend + `6ba99b1` frontend) : Validation graph non-vide à /api/simulation/create + UI préventive. Backend fail-fast avec error_code=GRAPH_EMPTY si filtered_count==0. Frontend bouton "Lancer la simulation" disabled tant que graphStats.nodes===0 + hint i18n disabledEmptyGraph + tooltip. **Bug systémique détecté** : le pre-check non-bloquant (politique volontaire) laisse passer si EntityReader lève. À monitorer.
+
+✓ **US-039** (commit `a8d9f99`) : Step1 form enrichi "Refine context". Carte dépliable dans le workbench Step1 avec 5 champs : key_actors (chips × 8 × 60), geo_locale (MA/DZ/TN/SN/CI/multi), time_horizon (24h/72h/1w/2w/30d/60d), key_tensions (textarea 200 chars), expected_stakeholders (chips × 8). Defaults intelligents par template via détection keyword. Persistance localStorage. POST /api/graph/build avec refinement_only:true. 37 clés i18n × 3 langues.
+
+✓ **US-040** (commit `c026fc5` + fix `186c4bb`) : Step1.5 Review entities. EntityRefiner class avec 4 ops Cypher (rename/merge/delete/add) en transaction unique. ReviewEntitiesView Vue avec group by type, rename inline (Enter/blur), select merge same-type, toggle delete, ajout par type + custom type. Banner orange dans MainView. **Fix critique** post-livraison : la branche v-else-if entities.length===0 affichait juste un message "empty" sans le bloc Add — bloquait le user signalé par Amine. Corrigé.
+
+✓ **US-007** (commit `822b1f3`) : 259 retours d'erreur structurés sur 50 codes uniques (4 fichiers backend). Helper formatApiError(error, t) avec fallback gracieux. 64 clés errors.* × 3 langues. 4 composants frontend migrés (Step2EnvSetup, Step1GraphBuild, CalibrationView, ReviewEntitiesView). Backward-compat préservée (clé `error` toujours présente). 11 nouveaux tests pytest.
+
+✓ **US-049 (NOUVELLE)** (commit `35b5837`) : Suppression de simulation depuis l'historique. Cas signalé par Amine sur proj_58bb8370c473 qui accumulait 3 sims fantômes en status:created sans moyen de nettoyer (fonctionnalité manquante upstream). Backend DELETE /api/simulation/<id> idempotent + 409 SIMULATION_RUNNING + 6 tests. Frontend bouton trash sur chaque card HistoryDatabase + modal confirmation + warning conditionnel pour sims publiques avec outcome (préserve /calibration) + optimistic UI + locales 3 langues.
+
+✓ **US-023** (commit `781fc0e` + refonte `2b0d08e`) : Page publique /offres avec 3 packages. **Première version générique recadrée** suite à signalement Amine que le design ne correspondait pas au mockup Stitch. Refonte complète selon stitch_bassira_simulation_pricing_page/ : hero pill bolt + h1 Outfit 48px + 3 cards avec badges sector + 6 bullets check_circle + section trust strip Brier 0.18 / Multi-locale / Africa-grounded + FAQ 6 questions. **Prix corrigés** : 12k/35k/20k MAD et $1.2k/$3.5k/$2k USD (étaient initialement 12k/25k/8k MAD, mauvaises hypothèses).
+
+✓ **US-025** (commit `3e926f5` + refonte `2b0d08e`) : Form devis multi-step + webhook email backend. Backend POST /api/quote avec validation regex email + enum package + RGPD required + truncate textes + HTML escape + rate-limit en mémoire 5/IP/h + stockage JSON + email best-effort smtplib via env EMAIL_SMTP_*. Codes erreur structurés (MISSING_FIELD/INVALID_EMAIL/INVALID_PACKAGE/RGPD_NOT_ACCEPTED/RATE_LIMITED). Frontend QuoteView refondu **3 steps** (au lieu de 4) selon Stitch : Step1 = 3 radio cards situation (crisis/policy/campaign) + textarea other ; Step2 = coordonnées + deadline + RGPD ; Step3 = success/error. Trust banner top "Your message goes directly to the founders" + 3 trust signals icons sous form (Multi-Agent Intelligence / Air-Gapped Privacy / 48h Setup). 8 tests backend.
+
+✓ **US-016** (commit `ab2d985`) : Audit final design tokens + cleanup CSS dupliqué. 1052 → 257 hex (-75.6 %). 34 → 0 !important hors Stitch (16 préservés dans Stitch comme demandé). DESIGN.md enrichi 6 sections (palette legacy + chart + status + z-index + classes factorisées + règles d'or). Classes factorisées dans components.css : .ms-stat-card, .ms-spinner (--sm/--lg/--orange/--legacy-orange), .ms-empty-state, .ms-toast, .ms-status-*. **AC#3 NON atteint** : bundle +5.9 % gzip au lieu de -10 %. Cause : `var(--lo)` (10ch) > `#FF6B1A` (7ch) sur 600+ occurrences → augmentation arithmétique du brut. Compromis maintenabilité long-terme assumé. Cf section [PARTIEL] ci-dessous.
+
+[BLOQUÉ — incident utilisateur en cours]
+- **Projet `proj_58bb8370c473`** : graph Neo4j a `has_ontology:true` mais `entities_count:0`. 3 sims fantômes en status:created (sim_eabf56674a12, sim_d96161be2e8f, sim_425718238a6c) que le user peut désormais supprimer via US-049. Pour avancer : aller sur /review-entities/proj_58bb8370c473 et ajouter manuellement des entités via le bloc Add (correction post-US-040), OU recréer le projet avec un meilleur document.
+- **Bug US-047 systémique non résolu** : le pre-check à /create est non-bloquant si EntityReader lève. Si Neo4j renvoie une exception ou si le graph_id ne suit pas le format attendu, la sim est créée malgré le graph vide. À durcir si récurrent.
 
 [ALERTE]
-!! Risque double-padding sur certains boutons après US-011/US-015 (mode hybride classes legacy + `.ms-*` additives) : `.action-btn .primary`, `.next-step-btn`, `.export-btn`, `.send-btn`, `.survey-submit-btn`, `.retry-config-btn`. Validation visuelle Playwright (US-010 pas encore implémentée) recommandée. Si conflit observé, retirer padding legacy en 2e passe rapide (~10 min).
-!! Garde-fou US-041 : si LLM traduit/reformule les titres des 4 sections narratives malgré la consigne « do not translate », doublon EN+FR pourrait apparaître. `title_en` est pré-câblé en data, à activer pour matching fuzzy si Amine voit le doublon en démo.
-!! Commit hybride `241ffd6` mal-attribué : `[US-038]` mais contient AUSSI les 6 fichiers Vue de US-011/US-015 (auto-stage harness multi-worktree). Marker `f067038` traçable. Resplit propre possible mais non strictement nécessaire — code en prod déjà.
-?? `git reset HEAD~2` détecté dans le reflog (entre HEAD@{1} et HEAD@{2} de cette session) — origine inconnue (probablement un harness de sub-agent). Mon commit US-045/046 prd.json a dû être recovered via cherry-pick. Pas de perte finale mais comportement à surveiller en futures sessions multi-agents.
+!! **US-016 AC#3 non atteint** : bundle CSS +5.9 % gzip au lieu de -10 %. Compromis architectural assumé. Si Amine veut atteindre l'objectif strict, il faudrait introduire postcss-custom-properties au build pour replacer var() par hex en prod (perte de maintenabilité runtime).
+!! **OffersView/QuoteView palette Stitch isolée** : variables `--stitch-*` hardcodent des hex localement (52 hex dans ces 2 fichiers). Voulu pour ne pas polluer la palette globale. À noter si dark mode US-027 doit couvrir ces 2 vues.
+!! **Backend SMTP non configuré en prod** : variables EMAIL_SMTP_HOST/PORT/USER/PASSWORD/FROM/TO non définies sur Coolify. Tant qu'absentes, les devis s'enregistrent dans backend/uploads/quotes/quote_*.json mais aucun email n'est envoyé. À configurer avant la 1ère démo prospect (cf doc dans le commit US-025).
+!! **Anti-pattern SimulationManager découvert au passage** (US-049) : `_get_simulation_dir` et `_load_simulation_state` font `os.makedirs(exist_ok=True)` même pour de la lecture → recrée silencieusement des dossiers vides. Contourné dans `delete_simulation` en construisant le path directement. Bug pré-existant upstream non corrigé ailleurs (risque latent dans d'autres opérations).
+!! **3 fichiers backups Office résiduels** non versionnés : `backend/app/preset_templates/crisis_24h_brand/~$_attachment.md`, `~$_engine.md`, `product_launch_v2/~$_engine.md`. Peuvent être ignorés ou supprimés.
 
-[NEXT prio P0]
-1. **US-039** Step1 form enrichi : key actors (chips, max 8), geo locale (select MA/DZ/TN/SN/CI/multi), time horizon (adapté à US-037), key tensions (textarea), expected stakeholders. Defaults intelligents par template choisi. i18n + RTL via `inset-inline-*`.
-2. **US-040** Step1.5 (nouveau) Review & refine entities entre graph build et profile generation : nouvelle vue `ReviewEntitiesView.vue`, liste entités par type avec actions inline (rename, merge dropdown, delete), ajout manuel, POST `/api/graph/entities/refine` (nouveau endpoint Neo4j), bouton Skip pour user pressés.
+[PARTIEL — ce qui n'est pas à 100 %]
 
-Avec ces 2 stories le **chantier 9-simulation-quality est entièrement clôt**.
+### US-016 Audit design tokens (3/4 AC, ~92 %)
+- ✅ AC#1 hex centralisés : -75.6 % (objectif 100 %)
+- ✅ AC#2 !important : 0 hors Stitch (objectif <5)
+- ❌ **AC#3 bundle -10 %** : +5.9 % gzip (compromis maintenabilité)
+- ✅ AC#4 DESIGN.md mis à jour
+- **Restants 257 hex** : 60 dans design-tokens.css (source de vérité, OK), 52 dans Stitch isolé (OK), 4 dans components.css (rgba, OK), ~141 dans strings JS chart D3 et palettes dark-mode locales documentées (à tolérer). Si nécessaire, étape supplémentaire pour migrer les chart D3 dans une nouvelle var.
 
-[NEXT prio P1 — chantiers commerciaux]
-- **US-023** Page publique `/offres` 3 packages (Crisis Drill 24h MAD/USD, Policy Brief Stress, Pre-Launch Adcheck) — Stitch mockup déjà disponible https://stitch.withgoogle.com/projects/2155552315589216528 (sharing public activé)
-- **US-025** Form devis multi-step (deps US-023) — Stitch mockup dans le même projet
-- **US-024** Génération PDF brandé AIMPOWER (deps US-016 design tokens audit final)
-- **US-007** Backend renvoie `error_code` + frontend traduit via `errors.<code>` (~30 messages dans simulation.py + report.py + graph.py + share.py + settings.py + helper error-handler.js frontend)
-- **US-010** Suite Playwright multi-locale (5 vues × 3 locales, vérifier pas de clé brute affichée, dir=rtl) — clôt la dette technique des AC Playwright différées de US-002→009 + US-019 + US-021 + US-046
+### US-023 Page /offres (refondue 100 % Stitch)
+- ✅ Tous les AC atteints après refonte
+- ⚠️ **Pricing 12k/35k/20k MAD à valider commercialement avant démo** (codé en dur dans le catalogue script setup, facile à ajuster)
+- ⚠️ Lien `/calibration` depuis la card "Brier 0.18" — vérifier en prod que le router-link rend bien
 
-[NEXT prio P1 — design cleanup]
-- **US-012** + **US-013** + **US-014** design migration des composants restants (panels, charts, ExploreView/EmbedView/ReplayView/ComparisonView)
-- **US-016** Audit final design tokens + cleanup CSS dupliqué (débloque US-024 + US-027 + US-028 cascade)
+### US-025 Form devis (100 %)
+- ✅ Tous les AC atteints
+- ⚠️ **SMTP non configuré en prod** (cf alerte). Activable via env vars Coolify quand Amine veut.
+- ⚠️ Rate limiter in-memory process-local : OK avec single-worker derrière Cloudflare. Migrer vers Redis si scale horizontal.
 
-[NEXT prio P2 — UX polish]
-- US-027 Dark mode toggle (deps US-016)
-- US-028 Audit contraste WCAG AA (deps US-016)
-- US-022 3 case studies retro publiables dans `/verified` — `requires_human_codesign: true` (Amine doit choisir 3 sujets)
+### US-047 Validation graph non-vide (100 % codé, partiel en robustesse)
+- ✅ Backend pre-check + 5 tests
+- ✅ Frontend bouton disabled
+- ⚠️ **Pre-check non-bloquant si EntityReader lève** (politique volontaire pour ne pas masquer un crash storage). Cas observé en prod sur `proj_58bb8370c473` où la sim a été créée malgré graph vide. À durcir potentiellement en US-050 si le user en souffre encore.
 
-[CTX session — démarrée ~2026-04-29 09:00, durée ~9h]
-- ~600+ tool calls cumulés (toutes interactions Claude + 5 sub-agents)
-- 18+ commits poussés sur main : `64cc393`, `d680a39`, `5f3638c`, `a7df38f`, `3c041ba`, `57bb150`, `d6d228a`, `ad0d4b3`, `6598271`, `241ffd6`, `f067038`, `4efc306`, `c8ec8fd`, `e6c5eb5`, `875e768`, `b07ec25`, `3dc3fb2`, `fd8af51`, `144a952`, `160376b` (et autres patches)
-- 5 sub-agents pilotés : Calibration page (US-021), US-037, US-038, US-011+015 (hybride), US-045+046, US-041
-- Bassira rebrand (déjà fait en session précédente) : marque user-facing partout, identifiant technique `miroshark` reste dans backend (MCP server key, loggers, repo GitHub)
-- Tests : 167 → 296 passed (+129)
+### US-040 Review entities (100 % codé, fix post-livraison)
+- ✅ Backend EntityRefiner + 12 tests
+- ✅ Frontend ReviewEntitiesView complet
+- ✅ Fix `186c4bb` : empty state ne bloque plus l'Add (régression sub-agent corrigée)
+
+[NEXT prio P1 — chantiers commerciaux restants]
+- **US-024** Génération PDF brandé AIMPOWER pour rapports clients (deps US-016 ✓ débloquée). Effort estimé 4-6h. Stack Python : weasyprint ou reportlab côté backend. Frontend bouton "Télécharger PDF" sur ReportView.
+- **US-022** 3 case studies retro `/verified` : `requires_human_codesign:true` — Amine doit choisir 3 sujets avant de coder.
+
+[NEXT prio P2 — qualité]
+- **US-010** Suite Playwright multi-locale (5 vues × 3 locales, vérifier pas de clé brute affichée, dir=rtl). Couvre la dette de validation des batches récents (Step03-Fix, US-007/039/040/047/049/023/025).
+- **US-027** Dark mode toggle (prefers-color-scheme + override manuel). Deps US-016 ✓ débloquée. **Attention** : OffersView/QuoteView palette Stitch isolée — décider si dark mode couvre ces vues ou pas.
+- **US-028** Audit contraste WCAG AA + corrections. Deps US-016 ✓ débloquée.
+
+[NEXT prio P2 — design migration restant]
+- **US-012** Migrer ExploreView + EmbedView + ReplayView + ComparisonView + InteractionView vers .ms-* (déjà partiellement fait via US-016 hex migration, mais pas la structure HTML).
+- **US-013** Migrer charts (BeliefDriftChart, PolymarketChart, InteractionNetwork, DemographicBreakdown). Note : strings JS chart D3 hardcodent encore des hex (laissés volontairement par US-016). À traiter avec une var `--ms-chart-*` consommée via JS.
+- **US-014** Migrer panels (SettingsPanel, DebugPanel, WhatIfPanel, CounterfactualBranchPanel, HistoryDatabase). Idem partiellement débloqué par US-016.
+
+[CTX session]
+- ~700+ tool calls cumulés (toutes interactions Claude + 5 sub-agents)
+- 12 commits poussés sur main : `2399f99`, `7771bf0`, `a8d9f99`, `c026fc5`, `822b1f3`, `6ba99b1`, `186c4bb`, `35b5837`, `781fc0e`, `3e926f5`, `2b0d08e`, `ab2d985`
+- 5 sub-agents pilotés : US-039 Refine context, US-040 Review entities, US-007 error_code structurés, US-023 Offers, US-025 Quote, refonte Stitch Offers+Quote, US-016 design tokens
+- Tests : 296 → 338 backend pytest (+42)
 - $ : non instrumenté
 
 [MEMO inter-sessions]
-- API Coolify token : `mZV3t49u058ar3Gaq8POCHzjZ2LU7x3lJlRIPCXW5700c32d`
-- App UUID Coolify : `u6pn5mr2pgi88s13un55pkzb`
-- Project UUID : `e6kerffaobuwy2uo9n5sdihu` (Ventures)
-- Server UUID : `etbh3cvs6qxr9l6w5hrcunj5` (localhost = host.docker.internal)
-- Trigger deploy manuel : `curl -X GET -H "Authorization: Bearer <token>" "https://coolify.ai-mpower.com/api/v1/deploy?uuid=u6pn5mr2pgi88s13un55pkzb&force=true"`
-- Webhook GitHub auto-deploy : actif sur `main` push
-- Tunnel CF : `nahda-tunnel`, service `cloudflared-nahda.service`, config `/home/serveurai/.cloudflared/config-nahda.yml`
-- Domain : `prospectives.ai-mpower.com` → `localhost:80` (Traefik) → container miroshark port 3000 (`vite preview` depuis US-036)
-- LLM_MODEL_NAME prod : `kimi-k2-turbo-preview` (Moonshot, base_url `https://api.moonshot.ai/v1`)
-- API key Moonshot rotated (la précédente avait fuité dans capture screenshot)
-- **Brand split Bassira / miroshark depuis 2026-04-29** : marque user-facing = **Bassira** (بصيرة) sur tout le frontend (titres, hero, locales, watermarks, exports PNG, manifest PWA). Identifiant technique `miroshark` reste dans le backend : MCP server key, loggers `get_logger('miroshark.*')`, CSS class `.miroshark-banner`, default graph name `'MiroShark Graph'`, GitHub repo `aaronjmars/MiroShark`, app Coolify `miro-shark`. Logo `/miroshark-nobg.png` reste pour ne pas casser les watermarks.
-- **Devises** : MAD + USD jamais EUR (règle durable Amine, valable pour tous projets futurs cf. memory `currency_usd_never_eur.md`).
-- **Personas pan-Afrique** : 30 personas nominaux disponibles dans les 5 templates US-042 (réutilisables comme banque pour de futurs templates ou démos).
-- **i18n** : storage key `bassira_locale` (renommé depuis `miroshark_locale` lors du rebrand). Langues : `fr` (default), `ar` (RTL avec Tajawal Google Fonts), `en`. Detection 4 niveaux : URL `?lang=` → localStorage → navigator.language → `fr`.
-- **Stitch projects** : `https://stitch.withgoogle.com/projects/2155552315589216528` (Pricing + Calibration + Devis 3 screens dans 1 projet, sharing public activé). Projet exploration `880731974029839904` (variante calibration cyan/dark) à supprimer si voulu.
-- **Sub-agents pattern observé** : déléguer fichiers DISJOINTS, leur dire `NE PUSH PAS` pour que je consolide, mais sub-agent peut commit. Risque : auto-stage harness multi-worktree peut bundler des fichiers non-attendus dans le commit (cf incident US-038/241ffd6). Solution future : git stash + commit paths explicites.
-- **5 templates US-042 file shape** :
-  - Racine : `backend/app/preset_templates/<id>.json` (metadata pour `/api/templates/list`)
-  - Sous-dossier : `<id>/01_attachment.md` (brief customer prêt-à-PDF), `<id>/02_engine.md` (sim_requirement + 6 system_prompts + 5 director events + verdict shape), `<id>/README.md` (overview)
-- **Time config matching** (US-037) : la regex backend reconnaît FR + EN sur `mois|months`, `semaines|weeks|sem`, `jours ouvrés|business days`, `jours|days|j`, `heures|hours|h`. Pour les 5 templates, le `simulation_requirement` mentionne explicitement la durée → priorité 2 regex couvre d'office (template recommended_settings priorité 1 pas encore câblée caller-side, story future).
-- Quality gates Ralph : `cd frontend && npm run build` (must pass) + `cd backend && uv run pytest tests/ --tb=short -x` (must pass). Playwright `npx playwright test --reporter=list` non implémenté (US-010 pending).
-- Convention commit : `[US-XXX] Titre` puis `Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>`
-- Branche stratégie : direct main avec commits atomiques par story (sub-agents OK).
-- Compte GitHub : `Afristrat/MiroShark` (token gh CLI configuré).
+- API Coolify token, App UUID, Project UUID, Server UUID, Trigger deploy : cf passation précédente (toujours valides)
+- LLM_MODEL_NAME prod : `kimi-k2-turbo-preview` (Moonshot)
+- **Variables d'env SMTP à configurer sur Coolify pour activer email devis** :
+  ```
+  EMAIL_SMTP_HOST=smtp.gmail.com   # ou Sendgrid, Outlook
+  EMAIL_SMTP_PORT=587
+  EMAIL_SMTP_USER=<…>
+  EMAIL_SMTP_PASSWORD=<app password>
+  EMAIL_FROM=noreply@ai-mpower.com
+  EMAIL_TO=contact@ai-mpower.com
+  ```
+- **Stitch projects** consultés cette session : `stitch_bassira_simulation_pricing_page/bassira_pricing_packages_simulation_solutions_2/{code.html,screen.png}` + `bassira_devis_get_a_quote/{code.html,screen.png}` + `bassira_calibration_verified_track_record/` + `warm_intelligence/`. Source de vérité absolue pour le design des pages commerciales.
+- **Pattern observé Stitch** : variables CSS scopées par composant (`--stitch-primary-container: #ff8551`, etc.) pour ne pas polluer la palette `--ms-*` globale. Reproductible pour d'autres écrans Stitch futurs.
+- **Devises** : MAD + USD jamais EUR (règle durable Amine, valable tous projets).
+- **Convention commit** : `[US-XXX] Titre` puis `Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>`. Pour les fixes : `[fix US-XXX] Titre`. Pour les batches : `[Ralph batch] ...`.
+- **Apprentissage Ralph** : avant tout dispatch sub-agent sur une story qui mentionne un mockup, lister systématiquement les assets Stitch/Figma et les inclure dans le brief avec consigne explicite de lecture. La première version générique de US-023+US-025 a coûté un cycle de refonte.
+- **Anti-pattern SimulationManager** : `_get_simulation_dir` et `_load_simulation_state` font `os.makedirs(exist_ok=True)` — recrée silencieusement les dossiers en lecture. Contourné dans `delete_simulation` ; à étendre si d'autres opérations en souffrent.
 
 [Recommandations pour la nouvelle session]
-1. Lire `.ralph/prd.json` pour identifier les stories `passes: false` restantes (15 stories).
-2. Lire `.ralph/progress.md` pour patterns détaillés et pièges déjà rencontrés.
-3. Lire `AGENTS.md` racine pour le mode opératoire Ralph.
-4. **AVANT de toucher au code** : vérifier que la prod est UP (`curl -o /dev/null -w "%{http_code}" https://prospectives.ai-mpower.com/`).
-5. **Pour valider l'argument commercial /calibration** : marker manuellement les 2 sims complétées en prod via la nouvelle UI « Sims à évaluer » → Brier doit monter en temps réel.
-6. **Pour la démo Maghreb/Afrique** : tester la bascule FR/AR via le LanguageSwitcher floating top-right → tout l'UI bascule en arabe avec dir=rtl + Tajawal font + brand بصيرة.
-7. **US-039 + US-040 prio next** pour clôturer chantier 9-simulation-quality.
-8. **Skipper US-022** (3 case studies retro) tant qu'Amine n'a pas choisi les 3 sujets.
-9. Pour les stories volumineuses (US-007, US-027 cascade), déléguer à des sub-agents en parallèle avec fichiers disjoints. Si auto-stage suspect, brief le sub-agent avec `git stash` avant commit + commit paths explicites.
-10. Si modifs locales sur prd.json + progress.md : commit en batch après que tous les sub-agents finissent pour éviter les conflits inter-agents.
+1. Lire `.ralph/prd.json` pour identifier les 8 stories `passes:false` restantes.
+2. Lire `.ralph/progress.md` pour patterns détaillés (en particulier le runbook Step 03 et le pattern Step 1.5 review entities généralisable).
+3. **AVANT toute démo prospect** : configurer les env vars SMTP sur Coolify pour activer l'envoi d'email devis. Sans elles, les leads s'enregistrent dans `backend/uploads/quotes/` mais Amine ne reçoit rien.
+4. **Pour valider visuellement US-016** : tester en prod (hard-refresh + clear cache) les composants à risque listés dans le commit `ab2d985` (Step3 director-card hover, History project-card hover, TemplateGallery variant disabled, App language-switcher, Step2 spinner).
+5. **Pour démarrer US-024 PDF AIMPOWER** : ajouter `weasyprint` ou `reportlab` au backend, créer template HTML brandé Bassira/AIMPOWER, route GET /api/simulation/<id>/report.pdf, frontend bouton sur ReportView.
+6. **US-022 case studies** : demander à Amine de choisir les 3 sujets avant de toucher au code (deps human-codesign).
+7. Pour les stories design-finish (US-012/013/014) : largement débloquées par US-016, peuvent être faites en parallèle sub-agents disjoints.
+8. **Pour US-027 dark mode** : décider explicitement avec Amine si OffersView/QuoteView (palette Stitch) doivent être couvertes (probablement non — ces pages restent light).
+9. Si l'incident `proj_58bb8370c473` graph vide se reproduit avec un autre projet, créer **US-050 « Durcir pre-check US-047 contre les exceptions storage »** pour bloquer dur même si EntityReader lève.
 
 — fin passation —
