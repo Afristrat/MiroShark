@@ -72,13 +72,18 @@ from __future__ import annotations
 import json
 import os
 import traceback
-from typing import Iterable, Optional
+from pathlib import Path
+from typing import Iterable, List, Optional
 
 from flask import Blueprint, jsonify, request
 
 from ..config import Config
 from ..services.simulation_manager import SimulationManager
 from ..utils.logger import get_logger
+
+
+# Where the canonical preset templates live (read for the dropdown filter).
+_PRESET_TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "preset_templates"
 
 
 calibration_bp = Blueprint('calibration', __name__)
@@ -394,6 +399,30 @@ def _gather_samples(
 # ─── Routes ──────────────────────────────────────────────────────────────────
 
 
+def _list_available_templates() -> List[dict]:
+    """Scan the preset_templates directory and return [{id, name}] sorted
+    by name. Used by the calibration page to populate the « filter by
+    template » dropdown so the user can isolate the Brier of one scenario
+    vs another. Cheap (one disk listing on a directory of ~10 small
+    files), so we just rebuild it on each request rather than caching —
+    keeps the endpoint stateless and reload-friendly when Amine adds a
+    new template.
+    """
+    out: List[dict] = []
+    if not _PRESET_TEMPLATES_DIR.is_dir():
+        return out
+    for path in _PRESET_TEMPLATES_DIR.glob("*.json"):
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        tid = data.get("id") or path.stem
+        name = data.get("name") or tid
+        out.append({"id": str(tid), "name": str(name)})
+    out.sort(key=lambda t: t["name"].lower())
+    return out
+
+
 @calibration_bp.route('/brier-score', methods=['GET'])
 def brier_score():
     """Aggregate Brier score + 10-bucket calibration plot over every
@@ -442,6 +471,18 @@ def brier_score():
             date_to=date_to,
         )
         result = _compute_calibration(samples)
+
+        # Populate the « filter by template » dropdown so the frontend
+        # CalibrationView can render a usable select even when no
+        # simulation is yet marked verified (which is the day-1 state).
+        result["filters"] = {
+            "templates_available": _list_available_templates(),
+            "applied": {
+                "template": template,
+                "from": date_from,
+                "to": date_to,
+            },
+        }
 
         response = jsonify({
             "success": True,
