@@ -432,31 +432,32 @@ onUnmounted(() => {
 <style scoped>
 /* Hyperstitions Design System v2.0 — Local Tokens */
 .main-view {
-  --color-orange: #FF6B1A;
-  --color-green: #43C165;
-  --color-black: #0A0A0A;
-  --color-white: #FAFAFA;
-  --color-gray: #F5F5F5;
-  --color-red: #FF4444;
-  --color-amber: #FFB347;
-  --font-display: 'Young Serif', Georgia, serif;
-  --font-mono: 'Space Mono', 'Courier New', monospace;
-  --border-light: 2px solid rgba(10,10,10,0.08);
-  --border-medium: 2px solid rgba(10,10,10,0.12);
-  --space-xs: 6px;
-  --space-sm: 11px;
-  --space-md: 22px;
-  --space-lg: 34px;
-  --space-xl: 56px;
+  /* Bridges legacy ramp onto canonical --ms-* tokens. */
+  --color-orange: var(--ms-orange);
+  --color-green: var(--ms-mint);
+  --color-black: var(--ms-text);
+  --color-white: var(--ms-bg);
+  --color-gray: var(--ms-bg-muted);
+  --color-red: var(--ms-rose);
+  --color-amber: var(--ms-peach);
+  --font-display: var(--ms-font-display);
+  --font-mono: var(--ms-font-mono);
+  --border-light: 1px solid var(--ms-border);
+  --border-medium: 1px solid var(--ms-border-strong);
+  --space-xs: var(--ms-space-1);
+  --space-sm: var(--ms-space-3);
+  --space-md: var(--ms-space-5);
+  --space-lg: var(--ms-space-8);
+  --space-xl: var(--ms-space-12);
 }
 
 .main-view {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--color-white);
+  background: var(--ms-bg);
   overflow: hidden;
-  font-family: var(--font-display);
+  font-family: var(--ms-font-body);
 }
 
 /* Header */
@@ -467,8 +468,8 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 0 var(--space-md);
-  background: var(--color-black);
-  color: var(--color-white);
+  background: var(--ms-text);
+  color: var(--ms-text-on-color);
   z-index: 100;
   position: relative;
 }
@@ -480,13 +481,13 @@ onUnmounted(() => {
 }
 
 .brand {
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-display);
   font-weight: 800;
   font-size: 18px;
   letter-spacing: 3px;
   cursor: pointer;
   text-transform: uppercase;
-  color: var(--color-white);
+  color: var(--ms-text-on-color);
 }
 
 .view-switcher {
@@ -500,27 +501,28 @@ onUnmounted(() => {
   border: none;
   background: transparent;
   padding: var(--space-xs) 16px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-body);
   font-size: 13px;
   font-weight: 600;
   color: rgba(250,250,250,0.5);
   text-transform: uppercase;
   letter-spacing: 3px;
   cursor: pointer;
-  transition: all 0.2s;
+  border-radius: var(--ms-radius-sm);
+  transition: all var(--ms-transition);
 }
 
 .switch-btn.active {
-  background: var(--color-white);
-  color: var(--color-black);
-  border: var(--border-light);
+  background: var(--ms-bg-elevated);
+  color: var(--ms-text);
+  border: 1px solid var(--ms-orange);
 }
 
 .status-indicator {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-body);
   font-size: 13px;
   color: rgba(250,250,250,0.5);
   font-weight: 500;
@@ -542,14 +544,14 @@ onUnmounted(() => {
 }
 
 .step-num {
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 700;
   color: rgba(250,250,250,0.4);
 }
 
 .step-name {
   font-weight: 700;
-  color: var(--color-white);
+  color: var(--ms-text-on-color);
 }
 
 .step-divider {
@@ -561,13 +563,14 @@ onUnmounted(() => {
 .dot {
   width: 8px;
   height: 8px;
+  border-radius: 50%;
   background: rgba(250,250,250,0.2);
 }
 
-.status-indicator.processing .dot { background: var(--color-orange); animation: pulse 1s infinite; }
-.status-indicator.completed .dot { background: var(--color-green); }
-.status-indicator.idle .dot { background: var(--color-amber); }
-.status-indicator.error .dot { background: var(--color-red); }
+.status-indicator.processing .dot { background: var(--ms-orange); animation: pulse 1s infinite; }
+.status-indicator.completed .dot { background: var(--ms-mint); }
+.status-indicator.idle .dot { background: var(--ms-peach); }
+.status-indicator.error .dot { background: var(--ms-rose); }
 
 @keyframes pulse { 50% { opacity: 0.5; } }
 

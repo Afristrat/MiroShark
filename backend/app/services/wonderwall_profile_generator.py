@@ -16,6 +16,7 @@ from datetime import datetime
 
 from ..config import Config
 from ..utils.llm_client import create_llm_client
+from ..utils.locale_prompt import LOCALE_FULL_NAMES, DEFAULT_LOCALE
 from ..utils.logger import get_logger
 from ..utils.trace_context import TraceContext
 from .entity_reader import EntityNode
@@ -65,6 +66,14 @@ class WonderwallAgentProfile:
     # off, this field is metadata only.
     tools_enabled: bool = False
     allowed_tools: List[str] = field(default_factory=list)
+
+    # US-038: per-agent narrative system prompt anchored on the simulation
+    # scenario, role, values, and authority sources. Built deterministically
+    # by `_build_agent_system_prompt` (no LLM call). Flows downstream into
+    # the persona/bio so the Wonderwall subprocess actually picks it up
+    # (Plan B), AND is exposed verbatim as a separate JSON field (Plan A)
+    # for upstream consumers that read it natively.
+    system_prompt: str = ""
 
     created_at: str = field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d"))
     
@@ -166,6 +175,8 @@ class WonderwallAgentProfile:
             "source_entity_uuid": self.source_entity_uuid,
             "source_entity_type": self.source_entity_type,
             "created_at": self.created_at,
+            # US-038
+            "system_prompt": self.system_prompt,
         }
 
 
@@ -274,6 +285,7 @@ class WonderwallProfileGenerator:
         storage: Optional[GraphStorage] = None,
         graph_id: Optional[str] = None,
         simulation_requirement: Optional[str] = None,
+        locale: Optional[str] = None,
     ):
         self.model_name = model_name or Config.LLM_MODEL_NAME
         self.llm = create_llm_client(
@@ -289,6 +301,12 @@ class WonderwallProfileGenerator:
         # Web enrichment for notable figures / thin context
         self.web_enricher = WebEnricher()
         self.simulation_requirement = simulation_requirement or ""
+
+        # US-038: locale used to build per-agent system_prompts. Defaults to
+        # 'fr' (Maghreb-Africa francophone target). Validated against the
+        # known LOCALE_FULL_NAMES dictionary; invalid values silently fall
+        # back to the default rather than crashing the prep pipeline.
+        self.locale = locale if locale in LOCALE_FULL_NAMES else DEFAULT_LOCALE
     
     def generate_profile_from_entity(
         self, 
@@ -342,12 +360,49 @@ class WonderwallProfileGenerator:
         # entity's structural role rather than random.randint().
         social_defaults = _social_metrics_for_entity_type(entity_type, entity)
 
+        # US-038: build the per-agent narrative system_prompt. It anchors
+        # the agent on the simulation scenario, role, values, authority
+        # sources, and locale — preventing the "free-floating agent" issue
+        # observed before US-038 (posts incoherent with the role).
+        system_prompt_input = {
+            "name": name,
+            "user_name": user_name,
+            "realname": name,
+            "username": user_name,
+            "bio": profile_data.get("bio", ""),
+            "persona": profile_data.get("persona", ""),
+            "profession": profile_data.get("profession", ""),
+            "city": profile_data.get("city") or profile_data.get("country") or "",
+            "country": profile_data.get("country", ""),
+            "stance": profile_data.get("stance", ""),
+            "interested_topics": profile_data.get("interested_topics", []),
+        }
+        system_prompt = self._build_agent_system_prompt(
+            profile=system_prompt_input,
+            simulation_requirement=self.simulation_requirement,
+            locale=self.locale,
+        )
+
+        # Plan B: prepend the system_prompt into the persona field via a
+        # sentinel-marked block so it survives the JSON roundtrip and is
+        # actually consumed by the Wonderwall subprocess (which feeds
+        # `persona` into its LLM system message). The sentinel keeps the
+        # block recoverable for tests + future consumers that want to
+        # split it back out.
+        original_persona = profile_data.get(
+            "persona", entity.summary or f"A {entity_type} named {name}."
+        )
+        wrapped_persona = (
+            f"<!-- system_prompt -->\n{system_prompt}\n<!-- /system_prompt -->\n"
+            f"{original_persona}"
+        )
+
         return WonderwallAgentProfile(
             user_id=user_id,
             user_name=user_name,
             name=name,
             bio=profile_data.get("bio", f"{entity_type}: {name}"),
-            persona=profile_data.get("persona", entity.summary or f"A {entity_type} named {name}."),
+            persona=wrapped_persona,
             risk_tolerance=risk_tolerance,
             karma=profile_data.get("karma", social_defaults["karma"]),
             friend_count=profile_data.get("friend_count", social_defaults["friend_count"]),
@@ -361,6 +416,10 @@ class WonderwallProfileGenerator:
             interested_topics=profile_data.get("interested_topics", []),
             source_entity_uuid=entity.uuid,
             source_entity_type=entity_type,
+            # Plan A: also expose the raw system_prompt as a separate field
+            # for upstream consumers (or future Wonderwall versions) that
+            # know how to read it natively.
+            system_prompt=system_prompt,
         )
     
     def _generate_username(self, name: str) -> str:
@@ -408,6 +467,180 @@ class WonderwallProfileGenerator:
             if any(w in p for w in ("accountant", "official", "administrator", "lawyer")):
                 return "low"
         return random.choice(["high", "moderate", "moderate", "low"])
+
+    # ── US-038: per-agent narrative system_prompt ────────────────────────
+    #
+    # Builds a deterministic, locale-aware system_prompt anchored on the
+    # simulation scenario + the agent's role. NO LLM call — pure string
+    # composition over the persona profile fields. This was added because
+    # Wonderwall agents historically received only `AgentActivityConfig`
+    # (stance / sentiment_bias / topics) without a narrative anchor, which
+    # produced "free-floating" agents whose posts didn't match their role.
+    #
+    # The output is structurally close to the reference templates under
+    # `backend/app/preset_templates/<id>/02_engine.md` section 4 but
+    # synthesized programmatically from existing profile fields — robust,
+    # not literary.
+    @staticmethod
+    def _extract_profile_field(profile: Dict[str, Any], *keys: str, default: str = "") -> str:
+        """Return the first non-empty string value among the given keys.
+        Used to gracefully handle profiles where city/realname/profession
+        live under different key names depending on platform format.
+        """
+        for key in keys:
+            value = profile.get(key)
+            if value is None:
+                continue
+            text = str(value).strip()
+            if text:
+                return text
+        return default
+
+    @classmethod
+    def _build_agent_system_prompt(
+        cls,
+        profile: Dict[str, Any],
+        simulation_requirement: str,
+        locale: str = DEFAULT_LOCALE,
+    ) -> str:
+        """Build a deterministic 200-1000 char narrative system_prompt for one agent.
+
+        Args:
+            profile: Dict-like persona (must expose at least `name` or
+                `realname`; all other fields fall back to safe placeholders).
+            simulation_requirement: Free text describing the scenario being
+                simulated. Truncated to 600 chars when too long.
+            locale: Output language code (`fr`, `ar`, `en`). Invalid codes
+                silently fall back to `'fr'`.
+
+        Returns:
+            A multi-line string ready to be prepended into the agent's
+            persona/bio (Plan B) or stored verbatim as a `system_prompt`
+            field (Plan A).
+        """
+        if locale not in LOCALE_FULL_NAMES:
+            locale = DEFAULT_LOCALE
+        locale_full_name = LOCALE_FULL_NAMES[locale]
+
+        # Persona basics with multiple fallback aliases (defensive: profile
+        # shapes vary across reddit_profiles.json, twitter_profiles.csv,
+        # polymarket_profiles.json and the in-memory dataclass).
+        realname = cls._extract_profile_field(
+            profile, "realname", "name", "user_name", "username", default="cet agent"
+        )
+        profession = cls._extract_profile_field(
+            profile, "profession", "occupation", "job_title", "role",
+            default="profession non précisée",
+        )
+        city = cls._extract_profile_field(
+            profile, "city", "location", "country", default="",
+        )
+        city_clause = city or "localisation non précisée"
+
+        # Bio: prefer explicit bio, otherwise fall back to the long persona
+        # field truncated to a sentence-ish length so we don't blow past
+        # the 1000-char ceiling.
+        bio = cls._extract_profile_field(profile, "bio", "persona", "description", default="")
+        if bio:
+            # Keep at most ~280 chars (≈ 1-3 lines) to stay well under the
+            # narrative budget while preserving signal.
+            bio_clause = bio[:280].strip()
+        else:
+            bio_clause = (
+                f"{realname} participe à une simulation multi-agent et y "
+                f"contribue selon son rôle."
+            )
+
+        # Truncate the simulation requirement so a 5k-char scenario doesn't
+        # explode the prompt (the bulk of agents share the same scenario).
+        sim_req = (simulation_requirement or "Scénario non précisé.").strip()
+        if len(sim_req) > 600:
+            sim_req = sim_req[:600].rstrip() + "..."
+
+        # Values: derived from stance + topics. Stance shapes the
+        # confrontational vs. supportive framing; topics anchor the
+        # specifics. Keep 3 generic-but-role-aware bullets — fancy
+        # narrative is a job for the LLM upstream, not this helper.
+        stance = cls._extract_profile_field(profile, "stance", default="").lower()
+        topics = profile.get("interested_topics") or profile.get("topics") or []
+        if not isinstance(topics, list):
+            topics = [str(topics)]
+        topics = [str(t).strip() for t in topics if str(t).strip()][:5]
+
+        if stance == "supportive":
+            value_lead = "Tu défends activement les positions cohérentes avec ton expérience"
+        elif stance == "opposing":
+            value_lead = "Tu challenges les positions qui ignorent ton expérience de terrain"
+        elif stance == "observer":
+            value_lead = "Tu observes avant de te prononcer ; tes interventions sont rares mais argumentées"
+        else:
+            value_lead = "Tu raisonnes selon ton rôle, pas selon une vision neutre"
+
+        topics_clause = (
+            ", ".join(topics) if topics else "les enjeux liés à ton rôle dans ce scénario"
+        )
+
+        # Authority sources: minimal heuristic on profession keywords; we
+        # always emit a generic fallback so the prompt never has an empty
+        # bullet list.
+        prof_lower = profession.lower()
+        if any(w in prof_lower for w in ("journalist", "media", "press", "reporter")):
+            authority_sources = (
+                "tes propres enquêtes terrain, "
+                "tes pairs journalistes vérifiés, "
+                "les rapports d'organismes indépendants"
+            )
+        elif any(w in prof_lower for w in ("doctor", "researcher", "scientist", "academic", "professor", "faculty")):
+            authority_sources = (
+                "les publications scientifiques peer-reviewed, "
+                "les méta-analyses récentes, "
+                "tes pairs académiques de ta discipline"
+            )
+        elif any(w in prof_lower for w in ("ceo", "founder", "entrepreneur", "executive", "manager", "director")):
+            authority_sources = (
+                "ton expérience opérationnelle, "
+                "tes pairs dirigeants du secteur, "
+                "les benchmarks marché auxquels tu accèdes"
+            )
+        elif any(w in prof_lower for w in ("trader", "investor", "analyst", "fund")):
+            authority_sources = (
+                "tes données de marché en temps réel, "
+                "les rapports d'analystes que tu suis, "
+                "ton historique de trades documenté"
+            )
+        elif any(w in prof_lower for w in ("official", "regulator", "politician", "diplomat", "agency")):
+            authority_sources = (
+                "le cadre réglementaire en vigueur, "
+                "les avis officiels de ton institution, "
+                "les retours de tes homologues internationaux"
+            )
+        else:
+            authority_sources = (
+                "tes pairs, ta propre expérience, la presse business locale"
+            )
+
+        prompt_lines = [
+            f"Tu es {realname}, {profession}, basé(e) à {city_clause}.",
+            bio_clause,
+            "",
+            "CONTEXTE DE LA SIMULATION :",
+            sim_req,
+            "",
+            "TON RÔLE ET TES VALEURS :",
+            f"- {value_lead}.",
+            f"- Tu es ancré(e) dans tes thèmes de prédilection : {topics_clause}.",
+            "- Tu maintiens des positions cohérentes au fil des rounds, "
+            "sauf information nouvelle décisive.",
+            "",
+            "SOURCES D'AUTORITÉ que tu cites quand tu argumentes :",
+            f"- {authority_sources}.",
+            "",
+            "CONSIGNES DE JEU :",
+            "- Tu maintiens tes positions au fil des rounds sauf info nouvelle décisive.",
+            f"- Tu écris en {locale_full_name} ({locale}), même style/registre que ton persona réel.",
+            "- Tu raisonnes selon ton rôle, pas selon une vision neutre/équilibrée.",
+        ]
+        return "\n".join(prompt_lines)
 
     def _search_graph_for_entity(self, entity: EntityNode) -> Dict[str, Any]:
         """
@@ -1341,7 +1574,14 @@ IMPORTANT: Do NOT include karma, friend_count, follower_count, or statuses_count
                 item["profession"] = profile.profession
             if profile.interested_topics:
                 item["interested_topics"] = profile.interested_topics
-            
+            # US-038: surface the per-agent narrative system_prompt as a
+            # native top-level field so future Wonderwall versions (or a
+            # patched runner) can read it directly. Already redundantly
+            # encoded inside `persona` between sentinel markers for the
+            # current Wonderwall consumer that only knows about persona.
+            if profile.system_prompt:
+                item["system_prompt"] = profile.system_prompt
+
             data.append(item)
         
         with open(file_path, 'w', encoding='utf-8') as f:

@@ -91,6 +91,12 @@ class SimulationState:
     # their owner explicitly publishes.
     is_public: bool = False
 
+    # US-038: locale used to seed per-agent system_prompts when Wonderwall
+    # profiles are generated. Defaults to 'fr' for backward compat with
+    # state.json files written before this field existed (loader provides
+    # the same fallback). Validated against LOCALE_FULL_NAMES at write time.
+    locale: str = "fr"
+
     def to_dict(self) -> Dict[str, Any]:
         """Full state dictionary (for internal use)"""
         return {
@@ -116,6 +122,7 @@ class SimulationState:
             "parent_simulation_id": self.parent_simulation_id,
             "config_diff": self.config_diff,
             "is_public": self.is_public,
+            "locale": self.locale,
         }
     
     def to_simple_dict(self) -> Dict[str, Any]:
@@ -213,6 +220,10 @@ class SimulationManager:
             parent_simulation_id=data.get("parent_simulation_id"),
             config_diff=data.get("config_diff"),
             is_public=data.get("is_public", False),
+            # US-038: backward compat — projects created before US-038 have
+            # no `locale` key in state.json; default to 'fr' so they keep
+            # working exactly as before (Maghreb-Africa francophone target).
+            locale=data.get("locale", "fr"),
         )
         
         self._simulations[simulation_id] = state
@@ -269,6 +280,7 @@ class SimulationManager:
         progress_callback: Optional[callable] = None,
         parallel_profile_count: int = 3,
         storage: 'GraphStorage' = None,
+        locale: Optional[str] = None,
     ) -> SimulationState:
         """
         Prepare simulation environment (fully automated)
@@ -295,6 +307,14 @@ class SimulationManager:
         state = self._load_simulation_state(simulation_id)
         if not state:
             raise ValueError(f"Simulation does not exist: {simulation_id}")
+
+        # US-038: persist explicit locale override (caller passes the value
+        # captured from the Flask request context — we cannot read the
+        # X-Bassira-Locale header here because prepare_simulation runs in a
+        # background thread without request context).
+        if locale:
+            from ..utils.locale_prompt import LOCALE_FULL_NAMES
+            state.locale = locale if locale in LOCALE_FULL_NAMES else "fr"
 
         try:
             state.status = SimulationStatus.PREPARING
@@ -353,11 +373,14 @@ class SimulationManager:
 
             TraceContext.set(sim_phase="setup", prompt_type="persona_generation")
 
-            # Pass graph_id to enable graph retrieval for richer context
+            # Pass graph_id to enable graph retrieval for richer context.
+            # US-038: forward locale so each agent gets a localized
+            # system_prompt anchored to the simulation_requirement.
             generator = WonderwallProfileGenerator(
                 storage=storage,
                 graph_id=state.graph_id,
                 simulation_requirement=simulation_requirement,
+                locale=state.locale,
             )
             
             def profile_progress(current, total, msg):

@@ -150,7 +150,7 @@
               {{ $t('process.step2.step3.errorHint') }}
             </div>
             <button
-              class="retry-config-btn"
+              class="retry-config-btn ms-btn ms-btn-danger ms-btn--sm"
               :disabled="isConfigRetrying"
               @click="handleConfigRetry"
             >
@@ -575,13 +575,13 @@
 
           <div class="action-group dual">
             <button
-              class="action-btn secondary"
+              class="action-btn secondary ms-btn ms-btn-ghost"
               @click="$emit('go-back')"
             >
               {{ $t('process.step2.step5.backToGraph') }}
             </button>
             <button
-              class="action-btn primary"
+              class="action-btn primary ms-btn ms-btn-primary"
               :disabled="phase < 4"
               @click="handleStartSimulation"
             >
@@ -1239,7 +1239,7 @@ onUnmounted(() => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: #FAFAFA;
+  background: var(--ms-bg-elevated);
   font-family: var(--font-mono);
 }
 
@@ -1254,7 +1254,7 @@ onUnmounted(() => {
 
 /* Step Card */
 .step-card {
-  background: #FAFAFA;
+  background: var(--ms-bg-elevated);
   padding: 22px;
   border: 2px solid rgba(10,10,10,0.08);
   transition: all 0.3s ease;
@@ -1268,7 +1268,7 @@ onUnmounted(() => {
   inset-inline-start: 0;
   width: 34px;
   height: 3px;
-  background: #FF6B1A;
+  background: var(--ms-orange);
 }
 
 .step-card::after {
@@ -1278,11 +1278,11 @@ onUnmounted(() => {
   inset-inline-end: 0;
   width: 34px;
   height: 3px;
-  background: #43C165;
+  background: var(--ms-mint);
 }
 
 .step-card.active {
-  border-color: #FF6B1A;
+  border-color: var(--ms-orange);
 }
 
 .card-header {
@@ -1307,7 +1307,7 @@ onUnmounted(() => {
 
 .step-card.active .step-num,
 .step-card.completed .step-num {
-  color: #0A0A0A;
+  color: var(--ms-text);
 }
 
 .step-title {
@@ -1337,19 +1337,19 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
-.badge.success { background: #43C165; color: #FAFAFA; }
-.badge.processing { background: #FF6B1A; color: #FAFAFA; }
+.badge.success { background: var(--ms-mint); color: var(--ms-bg-elevated); }
+.badge.processing { background: var(--ms-orange); color: var(--ms-bg-elevated); }
 .badge.processing .badge-dot { animation: badge-pulse 1s infinite; }
 .badge.pending { background: var(--color-gray); color: rgba(10,10,10,0.4); }
-.badge.accent { background: rgba(255,107,26,0.1); color: #FF6B1A; }
-.badge.error { background: #FF4444; color: #FAFAFA; }
+.badge.accent { background: rgba(255,107,26,0.1); color: var(--ms-orange); }
+.badge.error { background: var(--ms-rose); color: var(--ms-bg-elevated); }
 
 @keyframes badge-pulse { 50% { opacity: 0.4; } }
 
 .step-card.error { border-color: rgba(255,68,68,0.3); }
 
 .config-error-panel {
-  border: 2px solid #FF4444;
+  border: 2px solid var(--ms-rose);
   background: rgba(255,68,68,0.04);
   padding: 16px;
   margin-bottom: 16px;
@@ -1361,7 +1361,7 @@ onUnmounted(() => {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 3px;
-  color: #FF4444;
+  color: var(--ms-rose);
   margin-bottom: 8px;
 }
 
@@ -1391,8 +1391,8 @@ onUnmounted(() => {
   align-items: center;
   gap: 6px;
   padding: 7px 16px;
-  background: #FF4444;
-  color: #FAFAFA;
+  background: var(--ms-rose);
+  color: var(--ms-bg-elevated);
   border: none;
   font-family: var(--font-mono);
   font-size: 10px;
@@ -1411,7 +1411,7 @@ onUnmounted(() => {
   width: 12px;
   height: 12px;
   border: 2px solid rgba(255,255,255,0.3);
-  border-top-color: #FAFAFA;
+  border-top-color: var(--ms-bg-elevated);
   animation: spin 0.8s linear infinite;
 }
 
@@ -1455,8 +1455,8 @@ onUnmounted(() => {
 }
 
 .action-btn.primary {
-  background: #0A0A0A;
-  color: #FAFAFA;
+  background: var(--ms-text);
+  color: var(--ms-bg-elevated);
 }
 
 .action-btn.primary:hover:not(:disabled) {
@@ -1510,12 +1510,12 @@ onUnmounted(() => {
 }
 
 .info-row:hover .info-value.copyable {
-  color: #0A0A0A;
+  color: var(--ms-text);
   text-decoration: underline;
 }
 
 .info-row:active .info-value.copyable {
-  color: #43C165;
+  color: var(--ms-mint);
 }
 
 .info-row:last-child {
@@ -1557,7 +1557,7 @@ onUnmounted(() => {
   display: block;
   font-size: 20px;
   font-weight: 700;
-  color: #0A0A0A;
+  color: var(--ms-text);
   font-family: var(--font-mono);
 }
 
@@ -1622,7 +1622,7 @@ onUnmounted(() => {
 }
 
 .profile-card {
-  background: #FAFAFA;
+  background: var(--ms-bg-elevated);
   border: 2px solid rgba(10,10,10,0.08);
   padding: 14px;
   cursor: pointer;
@@ -1632,8 +1632,8 @@ onUnmounted(() => {
 }
 
 .profile-card:hover {
-  border-color: #FF6B1A;
-  background: #FAFAFA;
+  border-color: var(--ms-orange);
+  background: var(--ms-bg-elevated);
 }
 
 .profile-header {
@@ -1654,7 +1654,7 @@ onUnmounted(() => {
   font-family: var(--font-display);
   font-size: 14px;
   font-weight: 700;
-  color: #0A0A0A;
+  color: var(--ms-text);
 }
 
 .profile-username {
@@ -1695,7 +1695,7 @@ onUnmounted(() => {
 .topic-tag {
   font-family: var(--font-mono);
   font-size: 10px;
-  color: #FF6B1A;
+  color: var(--ms-orange);
   background: rgba(255,107,26,0.1);
   padding: 2px 8px;
 }
@@ -1775,7 +1775,7 @@ onUnmounted(() => {
   font-family: var(--font-mono);
   font-size: 16px;
   font-weight: 600;
-  color: #0A0A0A;
+  color: var(--ms-text);
 }
 
 /* Time Periods */
@@ -1813,7 +1813,7 @@ onUnmounted(() => {
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 600;
-  color: #FF6B1A;
+  color: var(--ms-orange);
   background: rgba(255,107,26,0.1);
   padding: 2px 6px;
 }
@@ -1836,8 +1836,8 @@ onUnmounted(() => {
 }
 
 .agent-card:hover {
-  border-color: #FF6B1A;
-  background: #FAFAFA;
+  border-color: var(--ms-orange);
+  background: var(--ms-bg-elevated);
 }
 
 /* Agent Card Header */
@@ -1866,7 +1866,7 @@ onUnmounted(() => {
   font-family: var(--font-display);
   font-size: 14px;
   font-weight: 600;
-  color: #0A0A0A;
+  color: var(--ms-text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1901,17 +1901,17 @@ onUnmounted(() => {
 
 .stance-supportive {
   background: rgba(67,193,101,0.1);
-  color: #43C165;
+  color: var(--ms-mint);
 }
 
 .stance-opposing {
   background: rgba(255,68,68,0.1);
-  color: #FF4444;
+  color: var(--ms-rose);
 }
 
 .stance-observer {
   background: rgba(255,179,71,0.1);
-  color: #FFB347;
+  color: var(--ms-peach);
 }
 
 /* Agent Profile Info */
@@ -1934,8 +1934,8 @@ onUnmounted(() => {
   letter-spacing: 0.5px;
 }
 
-.profile-profession-tag { border-color: var(--color-orange, #FF6B1A); color: var(--color-orange, #FF6B1A); }
-.profile-mbti-tag { border-color: var(--color-green, #43C165); color: var(--color-green, #43C165); }
+.profile-profession-tag { border-color: var(--ms-orange); color: var(--ms-orange); }
+.profile-mbti-tag { border-color: var(--ms-mint); color: var(--ms-mint); }
 
 .profile-bio-snippet {
   width: 100%;
@@ -1979,7 +1979,7 @@ onUnmounted(() => {
 }
 
 .timeline-hour.active {
-  background: #FF6B1A;
+  background: var(--ms-orange);
 }
 
 .timeline-marks {
@@ -2031,17 +2031,17 @@ onUnmounted(() => {
 
 .mini-bar {
   height: 4px;
-  background: #FF6B1A;
+  background: var(--ms-orange);
   min-width: 4px;
   max-width: 40px;
 }
 
 .param-value.positive {
-  color: #43C165;
+  color: var(--ms-mint);
 }
 
 .param-value.negative {
-  color: #FF4444;
+  color: var(--ms-rose);
 }
 
 .param-value.neutral {
@@ -2049,7 +2049,7 @@ onUnmounted(() => {
 }
 
 .param-value.highlight {
-  color: #FF6B1A;
+  color: var(--ms-orange);
 }
 
 /* Platforms Grid */
@@ -2100,7 +2100,7 @@ onUnmounted(() => {
   font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 600;
-  color: #0A0A0A;
+  color: var(--ms-text);
 }
 
 /* Reasoning Content */
@@ -2138,7 +2138,7 @@ onUnmounted(() => {
 }
 
 .profile-modal {
-  background: #FAFAFA;
+  background: var(--ms-bg-elevated);
   width: 90%;
   max-width: 600px;
   max-height: 85vh;
@@ -2153,7 +2153,7 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: flex-start;
   padding: 22px;
-  background: #FAFAFA;
+  background: var(--ms-bg-elevated);
   border-bottom: 2px solid rgba(10,10,10,0.08);
 }
 
@@ -2172,7 +2172,7 @@ onUnmounted(() => {
   font-family: var(--font-display);
   font-size: 20px;
   font-weight: 700;
-  color: #0A0A0A;
+  color: var(--ms-text);
 }
 
 .modal-username {
@@ -2251,7 +2251,7 @@ onUnmounted(() => {
 
 .info-value.mbti {
   font-family: var(--font-mono);
-  color: #FF6B1A;
+  color: var(--ms-orange);
 }
 
 /* Section Area */
@@ -2290,7 +2290,7 @@ onUnmounted(() => {
 .topic-item {
   font-family: var(--font-mono);
   font-size: 11px;
-  color: #FF6B1A;
+  color: var(--ms-orange);
   background: rgba(255,107,26,0.1);
   padding: 4px 10px;
   transition: all 0.2s;
@@ -2299,7 +2299,7 @@ onUnmounted(() => {
 
 .topic-item:hover {
   background: rgba(255,107,26,0.2);
-  color: #FF6B1A;
+  color: var(--ms-orange);
 }
 
 /* Detailed Persona */
@@ -2319,7 +2319,7 @@ onUnmounted(() => {
 
 .dimension-card:hover {
   background: rgba(10,10,10,0.05);
-  border-inline-start-color: #FF6B1A;
+  border-inline-start-color: var(--ms-orange);
 }
 
 .dim-title {
@@ -2365,7 +2365,7 @@ onUnmounted(() => {
 
 /* System Logs */
 .system-logs {
-  background: #0A0A0A;
+  background: var(--ms-text);
   color: rgba(250,250,250,0.8);
   padding: 16px;
   font-family: var(--font-mono);
@@ -2436,7 +2436,7 @@ onUnmounted(() => {
   width: 16px;
   height: 16px;
   border: 2px solid rgba(10,10,10,0.08);
-  border-top-color: #FF6B1A;
+  border-top-color: var(--ms-orange);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -2464,7 +2464,7 @@ onUnmounted(() => {
 }
 
 .narrative-box {
-  background: #FAFAFA;
+  background: var(--ms-bg-elevated);
   padding: 22px;
   border: 2px solid rgba(10,10,10,0.08);
   transition: all 0.3s ease;
@@ -2501,7 +2501,7 @@ onUnmounted(() => {
 }
 
 .topics-section {
-  background: #FAFAFA;
+  background: var(--ms-bg-elevated);
 }
 
 .hot-topics-grid {
@@ -2513,7 +2513,7 @@ onUnmounted(() => {
 .hot-topic-tag {
   font-family: var(--font-mono);
   font-size: 12px;
-  color: #FF6B1A;
+  color: var(--ms-orange);
   background: rgba(255,107,26,0.1);
   padding: 4px 10px;
   font-weight: 500;
@@ -2624,7 +2624,7 @@ onUnmounted(() => {
   font-family: var(--font-display);
   font-size: 14px;
   font-weight: 600;
-  color: #0A0A0A;
+  color: var(--ms-text);
 }
 
 .section-desc {
@@ -2635,7 +2635,7 @@ onUnmounted(() => {
 .desc-highlight {
   font-family: var(--font-mono);
   font-weight: 600;
-  color: #0A0A0A;
+  color: var(--ms-text);
   background: var(--color-gray);
   padding: 1px 6px;
   margin: 0 2px;
@@ -2674,12 +2674,12 @@ onUnmounted(() => {
   top: 2px;
   width: 16px;
   height: 16px;
-  background: #FAFAFA;
+  background: var(--ms-bg-elevated);
   transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
 .switch-control input:checked + .switch-track {
-  background: #0A0A0A;
+  background: var(--ms-text);
 }
 
 .switch-control input:checked + .switch-track::after {
@@ -2694,7 +2694,7 @@ onUnmounted(() => {
 }
 
 .switch-control input:checked ~ .switch-label {
-  color: #0A0A0A;
+  color: var(--ms-text);
 }
 
 /* Slider Content */
@@ -2719,7 +2719,7 @@ onUnmounted(() => {
   font-family: var(--font-mono);
   font-size: 24px;
   font-weight: 700;
-  color: #0A0A0A;
+  color: var(--ms-text);
 }
 
 .val-unit {
@@ -2748,7 +2748,7 @@ onUnmounted(() => {
   height: 4px;
   background: rgba(10,10,10,0.08);
   outline: none;
-  background-image: linear-gradient(#0A0A0A, #0A0A0A);
+  background-image: linear-gradient(var(--ms-text), var(--ms-text));
   background-size: var(--percent, 0%) 100%;
   background-repeat: no-repeat;
   cursor: pointer;
@@ -2758,8 +2758,8 @@ onUnmounted(() => {
   -webkit-appearance: none;
   width: 16px;
   height: 16px;
-  background: #FAFAFA;
-  border: 2px solid #0A0A0A;
+  background: var(--ms-bg-elevated);
+  border: 2px solid var(--ms-text);
   cursor: pointer;
   transition: transform 0.1s;
   margin-top: -6px; /* Center thumb */
@@ -2790,11 +2790,11 @@ onUnmounted(() => {
 }
 
 .mark-recommend:hover {
-  color: #0A0A0A;
+  color: var(--ms-text);
 }
 
 .mark-recommend.active {
-  color: #0A0A0A;
+  color: var(--ms-text);
   font-weight: 600;
 }
 
@@ -2848,7 +2848,7 @@ onUnmounted(() => {
   font-size: 11px;
   font-weight: 500;
   color: rgba(10,10,10,0.5);
-  background: #FAFAFA;
+  background: var(--ms-bg-elevated);
   border: 2px solid rgba(10,10,10,0.08);
   padding: 3px 8px;
 }
@@ -2869,7 +2869,7 @@ onUnmounted(() => {
 .highlight-tip {
   margin-top: 4px !important;
   font-size: 12px !important;
-  color: #0A0A0A !important;
+  color: var(--ms-text) !important;
   font-weight: 500;
   cursor: pointer;
 }

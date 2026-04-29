@@ -1755,7 +1755,15 @@ def prepare_simulation():
         entity_types_list = data.get('entity_types')
         use_llm_for_profiles = data.get('use_llm_for_profiles', True)
         parallel_profile_count = data.get('parallel_profile_count', 5)
-        
+
+        # ========== US-038: capture locale from Flask request ==========
+        # Wonderwall runs as a background subprocess outside Flask's request
+        # context, so it cannot read the X-Bassira-Locale header itself.
+        # We snapshot the locale here and pass it through to the prepare
+        # pipeline, where it is persisted on SimulationState and forwarded
+        # to the WonderwallProfileGenerator for per-agent system_prompts.
+        request_locale = get_request_locale()
+
         # ========== Get GraphStorage (capture reference before background task starts) ==========
         storage = current_app.extensions.get('neo4j_storage')
         if not storage:
@@ -1877,7 +1885,8 @@ def prepare_simulation():
                     use_llm_for_profiles=use_llm_for_profiles,
                     progress_callback=progress_callback,
                     parallel_profile_count=parallel_profile_count,
-                    storage=storage
+                    storage=storage,
+                    locale=request_locale,  # US-038: forward request locale
                 )
                 
                 # Task complete

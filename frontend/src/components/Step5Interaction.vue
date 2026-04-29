@@ -298,8 +298,8 @@
               rows="1"
               ref="chatInputRef"
             ></textarea>
-            <button 
-              class="send-btn"
+            <button
+              class="send-btn ms-btn ms-btn-primary ms-btn--sm"
               @click="sendMessage"
               :disabled="!chatInput.trim() || isSending || (!selectedAgent && chatTarget === 'agent')"
             >
@@ -368,8 +368,8 @@
               ></textarea>
             </div>
 
-            <button 
-              class="survey-submit-btn"
+            <button
+              class="survey-submit-btn ms-btn ms-btn-primary ms-btn--full"
               :disabled="selectedAgents.size === 0 || !surveyQuestion.trim() || isSurveying"
               @click="submitSurvey"
             >
@@ -1002,7 +1002,7 @@ watch(() => props.simulationId, (newId) => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: var(--color-gray, #F5F5F5);
+  background: var(--ms-bg-muted);
   font-family: var(--font-mono);
   overflow: hidden;
 }
@@ -1023,7 +1023,7 @@ watch(() => props.simulationId, (newId) => {
 .left-panel.report-style {
   width: 45%;
   min-width: 450px;
-  background: #FAFAFA;
+  background: var(--ms-bg-elevated);
   border-inline-end: 2px solid rgba(10,10,10,0.12);
   overflow-y: auto;
   display: flex;
@@ -1071,8 +1071,8 @@ watch(() => props.simulationId, (newId) => {
 }
 
 .report-tag {
-  background: #0A0A0A;
-  color: #FAFAFA;
+  background: var(--ms-text);
+  color: var(--ms-bg-elevated);
   font-size: 11px;
   font-family: var(--font-mono);
   font-weight: 700;
@@ -1093,7 +1093,7 @@ watch(() => props.simulationId, (newId) => {
   font-family: var(--font-display);
   font-size: 36px;
   font-weight: 700;
-  color: #0A0A0A;
+  color: var(--ms-text);
   line-height: 1.2;
   margin: 0 0 22px 0;
   letter-spacing: -0.02em;
@@ -1142,7 +1142,7 @@ watch(() => props.simulationId, (newId) => {
 }
 
 .section-header-row.clickable:hover {
-  background-color: var(--color-gray, #F5F5F5);
+  background-color: var(--ms-bg-muted);
 }
 
 .collapse-icon {
@@ -1169,7 +1169,7 @@ watch(() => props.simulationId, (newId) => {
   font-family: var(--font-display);
   font-size: 24px;
   font-weight: 600;
-  color: #0A0A0A;
+  color: var(--ms-text);
   margin: 0;
   transition: color 0.3s ease;
 }
@@ -1189,7 +1189,7 @@ watch(() => props.simulationId, (newId) => {
 
 .report-section-item.is-active .section-title,
 .report-section-item.is-completed .section-title {
-  color: #0A0A0A;
+  color: var(--ms-text);
 }
 
 .section-body {
@@ -1213,7 +1213,7 @@ watch(() => props.simulationId, (newId) => {
 .generated-content :deep(.md-h3),
 .generated-content :deep(.md-h4) {
   font-family: var(--font-display);
-  color: #0A0A0A;
+  color: var(--ms-text);
   margin-top: 1.5em;
   margin-bottom: 0.8em;
   font-weight: 700;
@@ -1243,7 +1243,7 @@ watch(() => props.simulationId, (newId) => {
 }
 
 .generated-content :deep(.code-block) {
-  background: var(--color-gray, #F5F5F5);
+  background: var(--ms-bg-muted);
   padding: 11px;
   font-family: var(--font-mono);
   font-size: 12px;
@@ -1254,7 +1254,7 @@ watch(() => props.simulationId, (newId) => {
 
 .generated-content :deep(strong) {
   font-weight: 600;
-  color: #0A0A0A;
+  color: var(--ms-text);
 }
 
 /* Loading State */
@@ -1343,7 +1343,7 @@ watch(() => props.simulationId, (newId) => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: #FAFAFA;
+  background: var(--ms-bg-elevated);
 }
 
 /* Action Bar - Professional Design */
@@ -1353,7 +1353,7 @@ watch(() => props.simulationId, (newId) => {
   justify-content: space-between;
   padding: 11px 22px;
   border-bottom: 2px solid rgba(10,10,10,0.12);
-  background: #FAFAFA;
+  background: var(--ms-bg-elevated);
   gap: 22px;
   position: relative;
   z-index: 20;
@@ -1368,7 +1368,7 @@ watch(() => props.simulationId, (newId) => {
 }
 
 .action-bar-icon {
-  color: #0A0A0A;
+  color: var(--ms-text);
   flex-shrink: 0;
 }
 
@@ -1382,7 +1382,7 @@ watch(() => props.simulationId, (newId) => {
   font-size: 13px;
   font-family: var(--font-mono);
   font-weight: 600;
-  color: #0A0A0A;
+  color: var(--ms-text);
   letter-spacing: -0.01em;
 }
 
@@ -1413,7 +1413,7 @@ watch(() => props.simulationId, (newId) => {
   font-family: var(--font-mono);
   font-weight: 500;
   color: rgba(10,10,10,0.5);
-  background: var(--color-gray, #F5F5F5);
+  background: var(--ms-bg-muted);
   border: 2px solid transparent;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -1428,8 +1428,8 @@ watch(() => props.simulationId, (newId) => {
 }
 
 .tab-pill.active {
-  background: #0A0A0A;
-  color: #FAFAFA;
+  background: var(--ms-text);
+  color: var(--ms-bg-elevated);
 }
 
 .tab-pill svg {
@@ -1463,24 +1463,24 @@ watch(() => props.simulationId, (newId) => {
 
 .survey-pill {
   background: rgba(67,193,101,0.1);
-  color: #43C165;
+  color: var(--ms-mint);
 }
 
 .survey-pill:hover {
   background: rgba(67,193,101,0.15);
-  color: #43C165;
+  color: var(--ms-mint);
 }
 
 .survey-pill.active {
-  background: #43C165;
-  color: #FAFAFA;
+  background: var(--ms-mint);
+  color: var(--ms-bg-elevated);
 }
 
 /* Interaction Header */
 .interaction-header {
   padding: 22px;
   border-bottom: 2px solid rgba(10,10,10,0.12);
-  background: #FAFAFA;
+  background: var(--ms-bg-elevated);
 }
 
 .tab-switcher {
@@ -1506,14 +1506,14 @@ watch(() => props.simulationId, (newId) => {
 }
 
 .tab-btn:hover {
-  background: var(--color-gray, #F5F5F5);
+  background: var(--ms-bg-muted);
   border-color: rgba(10,10,10,0.2);
 }
 
 .tab-btn.active {
-  background: #0A0A0A;
-  color: #FAFAFA;
-  border-color: #0A0A0A;
+  background: var(--ms-text);
+  color: var(--ms-bg-elevated);
+  border-color: var(--ms-text);
 }
 
 .tab-btn svg {
@@ -1531,7 +1531,7 @@ watch(() => props.simulationId, (newId) => {
 /* Report Agent Tools Card */
 .report-agent-tools-card {
   border-bottom: 2px solid rgba(10,10,10,0.12);
-  background: var(--color-gray, #F5F5F5);
+  background: var(--ms-bg-muted);
 }
 
 .tools-card-header {
@@ -1546,8 +1546,8 @@ watch(() => props.simulationId, (newId) => {
   height: 44px;
   min-width: 44px;
   min-height: 44px;
-  background: #0A0A0A;
-  color: #FAFAFA;
+  background: var(--ms-text);
+  color: var(--ms-bg-elevated);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1565,7 +1565,7 @@ watch(() => props.simulationId, (newId) => {
 .tools-card-name {
   font-size: 15px;
   font-weight: 600;
-  color: #0A0A0A;
+  color: var(--ms-text);
   margin-bottom: 2px;
 }
 
@@ -1578,7 +1578,7 @@ watch(() => props.simulationId, (newId) => {
 .tools-card-toggle {
   width: 28px;
   height: 28px;
-  background: #FAFAFA;
+  background: var(--ms-bg-elevated);
   border: 2px solid rgba(10,10,10,0.08);
   cursor: pointer;
   display: flex;
@@ -1590,7 +1590,7 @@ watch(() => props.simulationId, (newId) => {
 }
 
 .tools-card-toggle:hover {
-  background: var(--color-gray, #F5F5F5);
+  background: var(--ms-bg-muted);
   border-color: rgba(10,10,10,0.12);
 }
 
@@ -1616,7 +1616,7 @@ watch(() => props.simulationId, (newId) => {
   display: flex;
   gap: 11px;
   padding: 11px;
-  background: #FAFAFA;
+  background: var(--ms-bg-elevated);
   border: 2px solid rgba(10,10,10,0.08);
   transition: all 0.2s ease;
 }
@@ -1642,17 +1642,17 @@ watch(() => props.simulationId, (newId) => {
 
 .tool-blue .tool-icon-wrapper {
   background: rgba(255,107,26,0.1);
-  color: #FF6B1A;
+  color: var(--ms-orange);
 }
 
 .tool-orange .tool-icon-wrapper {
   background: rgba(255,107,26,0.1);
-  color: #FF6B1A;
+  color: var(--ms-orange);
 }
 
 .tool-green .tool-icon-wrapper {
   background: rgba(67,193,101,0.1);
-  color: #43C165;
+  color: var(--ms-mint);
 }
 
 .tool-content {
@@ -1664,7 +1664,7 @@ watch(() => props.simulationId, (newId) => {
   font-size: 12px;
   font-family: var(--font-mono);
   font-weight: 600;
-  color: #0A0A0A;
+  color: var(--ms-text);
   margin-bottom: 4px;
 }
 
@@ -1681,7 +1681,7 @@ watch(() => props.simulationId, (newId) => {
 /* Agent Profile Card */
 .agent-profile-card {
   border-bottom: 2px solid rgba(10,10,10,0.12);
-  background: var(--color-gray, #F5F5F5);
+  background: var(--ms-bg-muted);
 }
 
 .profile-card-header {
@@ -1696,8 +1696,8 @@ watch(() => props.simulationId, (newId) => {
   height: 44px;
   min-width: 44px;
   min-height: 44px;
-  background: #0A0A0A;
-  color: #FAFAFA;
+  background: var(--ms-text);
+  color: var(--ms-bg-elevated);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1715,7 +1715,7 @@ watch(() => props.simulationId, (newId) => {
 .profile-card-name {
   font-size: 15px;
   font-weight: 600;
-  color: #0A0A0A;
+  color: var(--ms-text);
   margin-bottom: 2px;
 }
 
@@ -1743,7 +1743,7 @@ watch(() => props.simulationId, (newId) => {
 .profile-card-toggle {
   width: 28px;
   height: 28px;
-  background: #FAFAFA;
+  background: var(--ms-bg-elevated);
   border: 2px solid rgba(10,10,10,0.08);
   cursor: pointer;
   display: flex;
@@ -1755,7 +1755,7 @@ watch(() => props.simulationId, (newId) => {
 }
 
 .profile-card-toggle:hover {
-  background: var(--color-gray, #F5F5F5);
+  background: var(--ms-bg-muted);
   border-color: rgba(10,10,10,0.12);
 }
 
@@ -1785,7 +1785,7 @@ watch(() => props.simulationId, (newId) => {
 }
 
 .profile-card-bio {
-  background: #FAFAFA;
+  background: var(--ms-bg-elevated);
   padding: 11px;
   border: 2px solid rgba(10,10,10,0.08);
 }
@@ -1827,7 +1827,7 @@ watch(() => props.simulationId, (newId) => {
   font-family: var(--font-mono);
   font-weight: 500;
   color: rgba(10,10,10,0.7);
-  background: var(--color-gray, #F5F5F5);
+  background: var(--ms-bg-muted);
   border: 2px solid rgba(10,10,10,0.08);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -1840,9 +1840,9 @@ watch(() => props.simulationId, (newId) => {
 }
 
 .target-option.active {
-  background: #0A0A0A;
-  color: #FAFAFA;
-  border-color: #0A0A0A;
+  background: var(--ms-text);
+  color: var(--ms-bg-elevated);
+  border-color: var(--ms-text);
 }
 
 /* Agent Dropdown */
@@ -1865,7 +1865,7 @@ watch(() => props.simulationId, (newId) => {
   top: calc(100% + 4px);
   inset-inline-start: 0;
   width: 280px;
-  background: #FAFAFA;
+  background: var(--ms-bg-elevated);
   border: 2px solid rgba(10,10,10,0.12);
   max-height: 50vh;
   overflow-y: auto;
@@ -1894,8 +1894,8 @@ watch(() => props.simulationId, (newId) => {
 }
 
 .dropdown-item:hover {
-  background: var(--color-gray, #F5F5F5);
-  border-inline-start-color: #FF6B1A;
+  background: var(--ms-bg-muted);
+  border-inline-start-color: var(--ms-orange);
 }
 
 .dropdown-item:first-of-type {
@@ -1911,8 +1911,8 @@ watch(() => props.simulationId, (newId) => {
   height: 32px;
   min-width: 32px;
   min-height: 32px;
-  background: #0A0A0A;
-  color: #FAFAFA;
+  background: var(--ms-text);
+  color: var(--ms-bg-elevated);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1933,7 +1933,7 @@ watch(() => props.simulationId, (newId) => {
 .agent-name {
   font-size: 13px;
   font-weight: 600;
-  color: #0A0A0A;
+  color: var(--ms-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2004,8 +2004,8 @@ watch(() => props.simulationId, (newId) => {
 }
 
 .chat-message.user .message-avatar {
-  background: #0A0A0A;
-  color: #FAFAFA;
+  background: var(--ms-text);
+  color: var(--ms-bg-elevated);
 }
 
 .chat-message.assistant .message-avatar {
@@ -2055,13 +2055,13 @@ watch(() => props.simulationId, (newId) => {
 }
 
 .chat-message.user .message-text {
-  background: #0A0A0A;
-  color: #FAFAFA;
-  border-color: #0A0A0A;
+  background: var(--ms-text);
+  color: var(--ms-bg-elevated);
+  border-color: var(--ms-text);
 }
 
 .chat-message.assistant .message-text {
-  background: var(--color-gray, #F5F5F5);
+  background: var(--ms-bg-muted);
   color: rgba(10,10,10,0.7);
   border-color: rgba(10,10,10,0.08);
 }
@@ -2115,7 +2115,7 @@ watch(() => props.simulationId, (newId) => {
   display: flex;
   gap: 4px;
   padding: 11px;
-  background: var(--color-gray, #F5F5F5);
+  background: var(--ms-bg-muted);
   border: 2px solid rgba(10,10,10,0.08);
 }
 
@@ -2154,24 +2154,24 @@ watch(() => props.simulationId, (newId) => {
   font-family: inherit;
   line-height: 1.5;
   transition: border-color 0.2s ease;
-  background: #FAFAFA;
+  background: var(--ms-bg-elevated);
 }
 
 .chat-input:focus {
   outline: none;
-  border-color: #FF6B1A;
+  border-color: var(--ms-orange);
 }
 
 .chat-input:disabled {
-  background: var(--color-gray, #F5F5F5);
+  background: var(--ms-bg-muted);
   cursor: not-allowed;
 }
 
 .send-btn {
   width: 44px;
   height: 44px;
-  background: #0A0A0A;
-  color: #FAFAFA;
+  background: var(--ms-text);
+  color: var(--ms-bg-elevated);
   border: none;
   cursor: pointer;
   display: flex;
@@ -2251,7 +2251,7 @@ watch(() => props.simulationId, (newId) => {
 }
 
 .section-header-toggle:hover {
-  background-color: var(--color-gray, #F5F5F5);
+  background-color: var(--ms-bg-muted);
 }
 
 .section-header-left {
@@ -2285,7 +2285,7 @@ watch(() => props.simulationId, (newId) => {
   align-items: center;
   gap: 11px;
   padding: 11px;
-  background: var(--color-gray, #F5F5F5);
+  background: var(--ms-bg-muted);
   border: 2px solid rgba(10,10,10,0.08);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -2297,7 +2297,7 @@ watch(() => props.simulationId, (newId) => {
 
 .agent-checkbox.checked {
   background: rgba(67,193,101,0.1);
-  border-color: #43C165;
+  border-color: var(--ms-mint);
 }
 
 .agent-checkbox input {
@@ -2321,8 +2321,8 @@ watch(() => props.simulationId, (newId) => {
 }
 
 .agent-checkbox.checked .checkbox-avatar {
-  background: #43C165;
-  color: #FAFAFA;
+  background: var(--ms-mint);
+  color: var(--ms-bg-elevated);
 }
 
 .checkbox-info {
@@ -2334,7 +2334,7 @@ watch(() => props.simulationId, (newId) => {
   display: block;
   font-size: 12px;
   font-weight: 600;
-  color: #0A0A0A;
+  color: var(--ms-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2362,9 +2362,9 @@ watch(() => props.simulationId, (newId) => {
 }
 
 .agent-checkbox.checked .checkbox-indicator {
-  background: #43C165;
-  border-color: #43C165;
-  color: #FAFAFA;
+  background: var(--ms-mint);
+  border-color: var(--ms-mint);
+  color: var(--ms-bg-elevated);
 }
 
 .checkbox-indicator svg {
@@ -2395,7 +2395,7 @@ watch(() => props.simulationId, (newId) => {
 }
 
 .action-link:hover {
-  color: #0A0A0A;
+  color: var(--ms-text);
   text-decoration: underline;
 }
 
@@ -2413,12 +2413,12 @@ watch(() => props.simulationId, (newId) => {
   font-family: inherit;
   line-height: 1.5;
   transition: border-color 0.2s ease;
-  background: #FAFAFA;
+  background: var(--ms-bg-elevated);
 }
 
 .survey-input:focus {
   outline: none;
-  border-color: #FF6B1A;
+  border-color: var(--ms-orange);
 }
 
 .survey-submit-btn {
@@ -2427,8 +2427,8 @@ watch(() => props.simulationId, (newId) => {
   font-size: 14px;
   font-family: var(--font-mono);
   font-weight: 600;
-  color: #FAFAFA;
-  background: #0A0A0A;
+  color: var(--ms-bg-elevated);
+  background: var(--ms-text);
   border: none;
   cursor: pointer;
   transition: background 0.2s ease;
@@ -2455,7 +2455,7 @@ watch(() => props.simulationId, (newId) => {
   width: 18px;
   height: 18px;
   border: 2px solid rgba(250, 250, 250, 0.3);
-  border-top-color: #FAFAFA;
+  border-top-color: var(--ms-bg-elevated);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -2482,7 +2482,7 @@ watch(() => props.simulationId, (newId) => {
   font-size: 14px;
   font-family: var(--font-mono);
   font-weight: 600;
-  color: #0A0A0A;
+  color: var(--ms-text);
 }
 
 .results-count {
@@ -2498,7 +2498,7 @@ watch(() => props.simulationId, (newId) => {
 }
 
 .result-card {
-  background: var(--color-gray, #F5F5F5);
+  background: var(--ms-bg-muted);
   border: 2px solid rgba(10,10,10,0.08);
   padding: 22px;
 }
@@ -2515,8 +2515,8 @@ watch(() => props.simulationId, (newId) => {
   height: 36px;
   min-width: 36px;
   min-height: 36px;
-  background: #0A0A0A;
-  color: #FAFAFA;
+  background: var(--ms-text);
+  color: var(--ms-bg-elevated);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -2535,7 +2535,7 @@ watch(() => props.simulationId, (newId) => {
 .result-name {
   font-size: 14px;
   font-weight: 600;
-  color: #0A0A0A;
+  color: var(--ms-text);
 }
 
 .result-role {
@@ -2549,7 +2549,7 @@ watch(() => props.simulationId, (newId) => {
   align-items: flex-start;
   gap: 6px;
   padding: 11px;
-  background: #FAFAFA;
+  background: var(--ms-bg-elevated);
   margin-bottom: 11px;
   font-size: 13px;
   color: rgba(10,10,10,0.5);
@@ -2576,7 +2576,7 @@ watch(() => props.simulationId, (newId) => {
   font-size: 20px;
   font-family: var(--font-display);
   font-weight: 700;
-  color: #0A0A0A;
+  color: var(--ms-text);
   margin: 22px 0 11px 0;
 }
 
@@ -2618,15 +2618,15 @@ watch(() => props.simulationId, (newId) => {
 .result-answer :deep(.md-quote) {
   margin: 11px 0;
   padding: 11px 22px;
-  background: var(--color-gray, #F5F5F5);
-  border-inline-start: 3px solid #0A0A0A;
+  background: var(--ms-bg-muted);
+  border-inline-start: 3px solid var(--ms-text);
   color: rgba(10,10,10,0.5);
 }
 
 :deep(.code-block) {
   margin: 11px 0;
   padding: 11px 22px;
-  background: #0A0A0A;
+  background: var(--ms-text);
   overflow-x: auto;
 }
 
@@ -2639,9 +2639,9 @@ watch(() => props.simulationId, (newId) => {
 :deep(.inline-code) {
   font-family: var(--font-mono);
   font-size: 13px;
-  background: var(--color-gray, #F5F5F5);
+  background: var(--ms-bg-muted);
   padding: 2px 6px;
-  color: #0A0A0A;
+  color: var(--ms-text);
 }
 
 :deep(.md-hr) {
@@ -2662,7 +2662,7 @@ watch(() => props.simulationId, (newId) => {
 }
 
 .profile-popup {
-  background: #FAFAFA;
+  background: var(--ms-bg-elevated);
   width: 520px;
   max-width: 90vw;
   max-height: 80vh;
@@ -2681,7 +2681,7 @@ watch(() => props.simulationId, (newId) => {
   border-bottom: 2px solid rgba(10,10,10,0.08);
   position: sticky;
   top: 0;
-  background: #FAFAFA;
+  background: var(--ms-bg-elevated);
   z-index: 1;
 }
 
@@ -2689,8 +2689,8 @@ watch(() => props.simulationId, (newId) => {
   width: 40px;
   height: 40px;
   min-width: 40px;
-  background: #0A0A0A;
-  color: #FAFAFA;
+  background: var(--ms-text);
+  color: var(--ms-bg-elevated);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -2701,7 +2701,7 @@ watch(() => props.simulationId, (newId) => {
 }
 
 .profile-popup-info { flex: 1; min-width: 0; }
-.profile-popup-name { font-size: 16px; font-weight: 600; color: #0A0A0A; }
+.profile-popup-name { font-size: 16px; font-weight: 600; color: var(--ms-text); }
 .profile-popup-meta { font-size: 12px; color: rgba(10,10,10,0.4); margin-top: 2px; }
 
 .profile-popup-close {
@@ -2766,7 +2766,7 @@ watch(() => props.simulationId, (newId) => {
   font-family: var(--font-mono);
   font-weight: 500;
   padding: 3px 6px;
-  background: var(--color-gray, #F5F5F5);
+  background: var(--ms-bg-muted);
   color: rgba(10,10,10,0.5);
 }
 
@@ -2820,9 +2820,9 @@ watch(() => props.simulationId, (newId) => {
   flex-shrink: 0;
 }
 
-.popup-action-badge.type-create_post, .popup-action-badge.type-quote_post { background: rgba(67,193,101,0.1); color: #43C165; }
-.popup-action-badge.type-like_post, .popup-action-badge.type-upvote_post { background: rgba(255,107,26,0.1); color: #FF6B1A; }
-.popup-action-badge.type-create_comment { background: rgba(255,107,26,0.1); color: #FF6B1A; }
+.popup-action-badge.type-create_post, .popup-action-badge.type-quote_post { background: rgba(67,193,101,0.1); color: var(--ms-mint); }
+.popup-action-badge.type-like_post, .popup-action-badge.type-upvote_post { background: rgba(255,107,26,0.1); color: var(--ms-orange); }
+.popup-action-badge.type-create_comment { background: rgba(255,107,26,0.1); color: var(--ms-orange); }
 .popup-action-badge.type-repost { background: rgba(139, 92, 246, 0.1); color: #7B1FA2; }
 .popup-action-badge.type-follow { background: rgba(14, 116, 144, 0.1); color: #00838F; }
 
@@ -2850,7 +2850,7 @@ watch(() => props.simulationId, (newId) => {
 }
 
 .popup-action-item { cursor: pointer; padding: 6px; }
-.popup-action-item:hover { background: #FAFAFA; }
+.popup-action-item:hover { background: var(--ms-bg-elevated); }
 
 .popup-action-item.expanded .popup-action-preview { display: none; }
 .popup-action-item.expanded .popup-action-badge { display: none; }
@@ -2858,7 +2858,7 @@ watch(() => props.simulationId, (newId) => {
 .popup-action-full {
   margin-top: 6px;
   padding: 6px 11px;
-  background: var(--color-gray, #F5F5F5);
+  background: var(--ms-bg-muted);
   font-size: 12px;
   color: rgba(10,10,10,0.7);
   line-height: 1.6;
