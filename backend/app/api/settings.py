@@ -191,6 +191,7 @@ def update_settings():
         if preset_id not in _PRESETS:
             return jsonify({
                 'success': False,
+                'error_code': 'INVALID_INPUT',
                 'error': f"Unknown preset '{preset_id}'. Valid: {list(_PRESETS)}"
             }), 400
         _apply_preset(preset_id, body.get('preset_api_key', ''))
@@ -241,7 +242,11 @@ def update_settings():
         new_url = (webhook['url'] or '').strip()
         err = validate_webhook_url(new_url)
         if err:
-            return jsonify({'success': False, 'error': err}), 400
+            return jsonify({
+                'success': False,
+                'error_code': 'INVALID_WEBHOOK_URL',
+                'error': err
+            }), 400
         Config.WEBHOOK_URL = new_url
     if 'public_base_url' in webhook and webhook['public_base_url'] is not None:
         new_base = (webhook['public_base_url'] or '').strip().rstrip('/')
@@ -250,6 +255,7 @@ def update_settings():
             if not (lowered.startswith('http://') or lowered.startswith('https://')):
                 return jsonify({
                     'success': False,
+                    'error_code': 'INVALID_INPUT',
                     'error': 'public_base_url must start with http:// or https://',
                 }), 400
         Config.PUBLIC_BASE_URL = new_base
@@ -299,6 +305,7 @@ def test_llm():
         logger.warning("LLM test failed: %s", e)
         return jsonify({
             'success': False,
+            'error_code': 'LLM_TEST_FAILED',
             'error': str(e),
         }), 200  # Return 200 so the frontend can read the error body
 
@@ -323,12 +330,17 @@ def test_webhook():
     if not url:
         return jsonify({
             'success': False,
+            'error_code': 'MISSING_WEBHOOK_URL',
             'error': 'No webhook URL configured — provide one in the request or save it in Settings first.',
         }), 200
 
     err = validate_webhook_url(url)
     if err:
-        return jsonify({'success': False, 'error': err}), 200
+        return jsonify({
+            'success': False,
+            'error_code': 'INVALID_WEBHOOK_URL',
+            'error': err
+        }), 200
 
     try:
         result = send_test_webhook(url, base_url=base_url)
@@ -336,6 +348,7 @@ def test_webhook():
         logger.warning("Webhook test failed: %s", exc)
         return jsonify({
             'success': False,
+            'error_code': 'WEBHOOK_TEST_FAILED',
             'error': str(exc),
         }), 200
 

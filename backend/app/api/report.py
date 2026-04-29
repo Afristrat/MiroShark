@@ -29,7 +29,11 @@ def _validate_url_simulation_id():
         try:
             validate_simulation_id(sim_id)
         except ValueError as exc:
-            return jsonify({"success": False, "error": str(exc)}), 400
+            return jsonify({
+                "success": False,
+                "error_code": "INVALID_SIMULATION_ID",
+                "error": str(exc)
+            }), 400
 
 
 # ============== Report Generation Endpoints ==============
@@ -66,12 +70,17 @@ def generate_report():
         if not simulation_id:
             return jsonify({
                 "success": False,
+                "error_code": "MISSING_SIMULATION_ID",
                 "error": "Please provide simulation_id"
             }), 400
         try:
             validate_simulation_id(simulation_id)
         except ValueError as exc:
-            return jsonify({"success": False, "error": str(exc)}), 400
+            return jsonify({
+                "success": False,
+                "error_code": "INVALID_SIMULATION_ID",
+                "error": str(exc)
+            }), 400
 
         force_regenerate = data.get('force_regenerate', False)
 
@@ -82,6 +91,7 @@ def generate_report():
         if not state:
             return jsonify({
                 "success": False,
+                "error_code": "SIMULATION_NOT_FOUND",
                 "error": f"Simulation not found: {simulation_id}"
             }), 404
 
@@ -105,6 +115,7 @@ def generate_report():
         if not project:
             return jsonify({
                 "success": False,
+                "error_code": "PROJECT_NOT_FOUND",
                 "error": f"Project not found: {state.project_id}"
             }), 404
 
@@ -112,6 +123,7 @@ def generate_report():
         if not graph_id:
             return jsonify({
                 "success": False,
+                "error_code": "GRAPH_NOT_BUILT",
                 "error": "Missing graph ID, please ensure the graph has been built"
             }), 400
 
@@ -119,6 +131,7 @@ def generate_report():
         if not simulation_requirement:
             return jsonify({
                 "success": False,
+                "error_code": "MISSING_FIELD",
                 "error": "Missing simulation requirement description"
             }), 400
 
@@ -141,7 +154,11 @@ def generate_report():
         # (current_app is not available inside background threads)
         storage = current_app.extensions.get('neo4j_storage')
         if not storage:
-            return jsonify({"success": False, "error": "Neo4j storage not initialized"}), 503
+            return jsonify({
+                "success": False,
+                "error_code": "STORAGE_UNAVAILABLE",
+                "error": "Neo4j storage not initialized"
+            }), 503
         graph_tools = GraphToolsService(storage=storage)
 
         # Define background task
@@ -215,6 +232,7 @@ def generate_report():
         logger.error(f"Failed to start report generation task: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "REPORT_GENERATION_FAILED",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -251,7 +269,11 @@ def get_generate_status():
             try:
                 validate_simulation_id(simulation_id)
             except ValueError as exc:
-                return jsonify({"success": False, "error": str(exc)}), 400
+                return jsonify({
+                    "success": False,
+                    "error_code": "INVALID_SIMULATION_ID",
+                    "error": str(exc)
+                }), 400
 
         # If simulation_id is provided, first check if a completed report exists
         if simulation_id:
@@ -272,6 +294,7 @@ def get_generate_status():
         if not task_id:
             return jsonify({
                 "success": False,
+                "error_code": "MISSING_FIELD",
                 "error": "Please provide task_id or simulation_id"
             }), 400
 
@@ -281,6 +304,7 @@ def get_generate_status():
         if not task:
             return jsonify({
                 "success": False,
+                "error_code": "TASK_NOT_FOUND",
                 "error": f"Task not found: {task_id}"
             }), 404
 
@@ -293,6 +317,7 @@ def get_generate_status():
         logger.error(f"Failed to query task status: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e)
         }), 500
 
@@ -324,6 +349,7 @@ def get_report(report_id: str):
         if not report:
             return jsonify({
                 "success": False,
+                "error_code": "REPORT_NOT_FOUND",
                 "error": f"Report not found: {report_id}"
             }), 404
 
@@ -336,6 +362,7 @@ def get_report(report_id: str):
         logger.error(f"Failed to get report: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -361,6 +388,7 @@ def get_report_by_simulation(simulation_id: str):
         if not report:
             return jsonify({
                 "success": False,
+                "error_code": "REPORT_NOT_FOUND",
                 "error": f"No report available for this simulation: {simulation_id}",
                 "has_report": False
             }), 404
@@ -375,6 +403,7 @@ def get_report_by_simulation(simulation_id: str):
         logger.error(f"Failed to get report: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -393,6 +422,7 @@ def download_report(report_id: str):
         if not report:
             return jsonify({
                 "success": False,
+                "error_code": "REPORT_NOT_FOUND",
                 "error": f"Report not found: {report_id}"
             }), 404
 
@@ -421,6 +451,7 @@ def download_report(report_id: str):
         logger.error(f"Failed to download report: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -435,6 +466,7 @@ def delete_report(report_id: str):
         if not success:
             return jsonify({
                 "success": False,
+                "error_code": "REPORT_NOT_FOUND",
                 "error": f"Report not found: {report_id}"
             }), 404
 
@@ -447,6 +479,7 @@ def delete_report(report_id: str):
         logger.error(f"Failed to delete report: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -491,16 +524,22 @@ def chat_with_report_agent():
         if not simulation_id:
             return jsonify({
                 "success": False,
+                "error_code": "MISSING_SIMULATION_ID",
                 "error": "Please provide simulation_id"
             }), 400
         try:
             validate_simulation_id(simulation_id)
         except ValueError as exc:
-            return jsonify({"success": False, "error": str(exc)}), 400
+            return jsonify({
+                "success": False,
+                "error_code": "INVALID_SIMULATION_ID",
+                "error": str(exc)
+            }), 400
 
         if not message:
             return jsonify({
                 "success": False,
+                "error_code": "MISSING_FIELD",
                 "error": "Please provide message"
             }), 400
 
@@ -511,6 +550,7 @@ def chat_with_report_agent():
         if not state:
             return jsonify({
                 "success": False,
+                "error_code": "SIMULATION_NOT_FOUND",
                 "error": f"Simulation not found: {simulation_id}"
             }), 404
 
@@ -518,6 +558,7 @@ def chat_with_report_agent():
         if not project:
             return jsonify({
                 "success": False,
+                "error_code": "PROJECT_NOT_FOUND",
                 "error": f"Project not found: {state.project_id}"
             }), 404
 
@@ -525,6 +566,7 @@ def chat_with_report_agent():
         if not graph_id:
             return jsonify({
                 "success": False,
+                "error_code": "GRAPH_NOT_BUILT",
                 "error": "Missing graph ID"
             }), 400
 
@@ -533,7 +575,11 @@ def chat_with_report_agent():
         # Create Agent and start conversation
         storage = current_app.extensions.get('neo4j_storage')
         if not storage:
-            return jsonify({"success": False, "error": "Neo4j storage not initialized"}), 503
+            return jsonify({
+                "success": False,
+                "error_code": "STORAGE_UNAVAILABLE",
+                "error": "Neo4j storage not initialized"
+            }), 503
         graph_tools = GraphToolsService(storage=storage)
 
         agent = ReportAgent(
@@ -554,6 +600,7 @@ def chat_with_report_agent():
         logger.error(f"Chat failed: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "CHAT_FAILED",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -607,6 +654,7 @@ def check_report_status(simulation_id: str):
         logger.error(f"Failed to check report status: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -668,6 +716,7 @@ def get_agent_log(report_id: str):
         logger.error(f"Failed to get Agent log: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -702,6 +751,7 @@ def stream_agent_log(report_id: str):
         logger.error(f"Failed to get Agent log: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -750,6 +800,7 @@ def get_console_log(report_id: str):
         logger.error(f"Failed to get console log: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -784,6 +835,7 @@ def stream_console_log(report_id: str):
         logger.error(f"Failed to get console log: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -813,6 +865,7 @@ def search_graph_tool():
         if not graph_id or not query:
             return jsonify({
                 "success": False,
+                "error_code": "MISSING_FIELD",
                 "error": "Please provide graph_id and query"
             }), 400
 
@@ -821,7 +874,11 @@ def search_graph_tool():
 
         storage = current_app.extensions.get('neo4j_storage')
         if not storage:
-            return jsonify({"success": False, "error": "Neo4j storage is not initialized"}), 503
+            return jsonify({
+                "success": False,
+                "error_code": "STORAGE_UNAVAILABLE",
+                "error": "Neo4j storage is not initialized"
+            }), 503
 
         tools = GraphToolsService(storage=storage)
         result = tools.search_graph(
@@ -839,6 +896,7 @@ def search_graph_tool():
         logger.error(f"Graph search failed: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -862,6 +920,7 @@ def get_graph_statistics_tool():
         if not graph_id:
             return jsonify({
                 "success": False,
+                "error_code": "MISSING_GRAPH_ID",
                 "error": "Please provide graph_id"
             }), 400
 
@@ -870,7 +929,11 @@ def get_graph_statistics_tool():
 
         storage = current_app.extensions.get('neo4j_storage')
         if not storage:
-            return jsonify({"success": False, "error": "Neo4j storage is not initialized"}), 503
+            return jsonify({
+                "success": False,
+                "error_code": "STORAGE_UNAVAILABLE",
+                "error": "Neo4j storage is not initialized"
+            }), 503
 
         tools = GraphToolsService(storage=storage)
         result = tools.get_graph_statistics(graph_id)
@@ -884,6 +947,7 @@ def get_graph_statistics_tool():
         logger.error(f"Failed to get graph statistics: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500

@@ -290,6 +290,7 @@ import {
   getGraphEntities,
   refineEntities
 } from '../api/graph'
+import { formatApiError } from '../utils/error-handler'
 
 const props = defineProps({
   projectId: { type: String, required: true }
@@ -509,7 +510,9 @@ async function loadEntities() {
       errorMsg.value = (res && res.error) || t('process.review.error.loadFailed')
     }
   } catch (err) {
-    errorMsg.value = (err && err.message) || t('process.review.error.loadFailed')
+    // US-007: localised, error_code-aware fallback so codes like
+    // STORAGE_UNAVAILABLE / MISSING_GRAPH_ID surface in fr/ar.
+    errorMsg.value = formatApiError(err, t) || t('process.review.error.loadFailed')
   } finally {
     loading.value = false
   }
@@ -551,7 +554,7 @@ async function saveAndContinue() {
       errorMsg.value = (res && res.error) || t('process.review.error.saveFailed')
     }
   } catch (err) {
-    errorMsg.value = (err && err.message) || t('process.review.error.saveFailed')
+    errorMsg.value = formatApiError(err, t) || t('process.review.error.saveFailed')
   } finally {
     saving.value = false
   }

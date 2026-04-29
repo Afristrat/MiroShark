@@ -104,10 +104,11 @@ def get_project(project_id: str):
     Get project details
     """
     project = ProjectManager.get_project(project_id)
-    
+
     if not project:
         return jsonify({
             "success": False,
+            "error_code": "PROJECT_NOT_FOUND",
             "error": f"Project not found: {project_id}"
         }), 404
 
@@ -144,7 +145,11 @@ def fetch_url():
         url = data.get('url', '').strip()
 
         if not url:
-            return jsonify({"success": False, "error": "url is required"}), 400
+            return jsonify({
+                "success": False,
+                "error_code": "MISSING_FIELD",
+                "error": "url is required"
+            }), 400
 
         from ..utils.url_fetcher import fetch_url_text
         result = fetch_url_text(url)
@@ -152,11 +157,16 @@ def fetch_url():
         return jsonify({"success": True, "data": result})
 
     except ValueError as e:
-        return jsonify({"success": False, "error": str(e)}), 400
+        return jsonify({
+            "success": False,
+            "error_code": "INVALID_INPUT",
+            "error": str(e)
+        }), 400
     except Exception as e:
         logger.error(f"URL fetch error: {e}")
         return jsonify({
             "success": False,
+            "error_code": "URL_FETCH_FAILED",
             "error": f"Failed to fetch URL: {str(e)}"
         }), 500
 
@@ -207,6 +217,7 @@ def generate_ontology():
         if not simulation_requirement:
             return jsonify({
                 "success": False,
+                "error_code": "MISSING_FIELD",
                 "error": "Please provide a simulation requirement description (simulation_requirement)"
             }), 400
 
@@ -225,6 +236,7 @@ def generate_ontology():
         if not has_files and not url_docs:
             return jsonify({
                 "success": False,
+                "error_code": "MISSING_FIELD",
                 "error": "Please upload at least one document file or provide URL documents"
             }), 400
 
@@ -277,6 +289,7 @@ def generate_ontology():
             ProjectManager.delete_project(project.project_id)
             return jsonify({
                 "success": False,
+                "error_code": "INVALID_INPUT",
                 "error": "No documents were successfully processed, please check file formats"
             }), 400
         
@@ -323,6 +336,7 @@ def generate_ontology():
     except Exception as e:
         return jsonify({
             "success": False,
+            "error_code": "ONTOLOGY_GENERATION_FAILED",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -362,9 +376,10 @@ def build_graph():
             logger.error("Neo4j storage not initialized")
             return jsonify({
                 "success": False,
+                "error_code": "STORAGE_UNAVAILABLE",
                 "error": "Neo4j storage is not initialized"
             }), 503
-        
+
         # Parse request
         data = request.get_json() or {}
         project_id = data.get('project_id')
@@ -373,6 +388,7 @@ def build_graph():
         if not project_id:
             return jsonify({
                 "success": False,
+                "error_code": "MISSING_PROJECT_ID",
                 "error": "Please provide project_id"
             }), 400
 
@@ -381,6 +397,7 @@ def build_graph():
         if not project:
             return jsonify({
                 "success": False,
+                "error_code": "PROJECT_NOT_FOUND",
                 "error": f"Project not found: {project_id}"
             }), 404
 
@@ -420,12 +437,14 @@ def build_graph():
         if project.status == ProjectStatus.CREATED:
             return jsonify({
                 "success": False,
+                "error_code": "ONTOLOGY_NOT_GENERATED",
                 "error": "Ontology not yet generated for this project, please call /ontology/generate first"
             }), 400
-        
+
         if project.status == ProjectStatus.GRAPH_BUILDING and not force:
             return jsonify({
                 "success": False,
+                "error_code": "GRAPH_BUILD_IN_PROGRESS",
                 "error": "Graph is currently being built, please do not resubmit. To force rebuild, add force: true",
                 "task_id": project.graph_build_task_id
             }), 400
@@ -451,14 +470,16 @@ def build_graph():
         if not text:
             return jsonify({
                 "success": False,
+                "error_code": "EXTRACTED_TEXT_NOT_FOUND",
                 "error": "Extracted text content not found"
             }), 400
-        
+
         # Get ontology
         ontology = project.ontology
         if not ontology:
             return jsonify({
                 "success": False,
+                "error_code": "ONTOLOGY_NOT_FOUND",
                 "error": "Ontology definition not found"
             }), 400
         
@@ -607,6 +628,7 @@ def build_graph():
     except Exception as e:
         return jsonify({
             "success": False,
+            "error_code": "GRAPH_BUILD_FAILED",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -620,10 +642,11 @@ def get_task(task_id: str):
     Query task status
     """
     task = TaskManager().get_task(task_id)
-    
+
     if not task:
         return jsonify({
             "success": False,
+            "error_code": "TASK_NOT_FOUND",
             "error": f"Task not found: {task_id}"
         }), 404
     
@@ -645,6 +668,7 @@ def get_graph_data(graph_id: str):
         if not storage:
             return jsonify({
                 "success": False,
+                "error_code": "STORAGE_UNAVAILABLE",
                 "error": "Neo4j storage is not initialized"
             }), 503
 
@@ -659,6 +683,7 @@ def get_graph_data(graph_id: str):
     except Exception as e:
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500

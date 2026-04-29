@@ -38,7 +38,11 @@ def _validate_url_simulation_id():
         try:
             validate_simulation_id(sim_id)
         except ValueError as exc:
-            return jsonify({"success": False, "error": str(exc)}), 400
+            return jsonify({
+                "success": False,
+                "error_code": "INVALID_SIMULATION_ID",
+                "error": str(exc)
+            }), 400
 
 
 # ============== Admin Auth (mutation endpoints) ==============
@@ -126,6 +130,7 @@ def require_admin_token(view_func):
             )
             return jsonify({
                 "success": False,
+                "error_code": "ADMIN_AUTH_NOT_CONFIGURED",
                 "error": "Admin authentication is not configured on this deployment.",
             }), 503
 
@@ -138,6 +143,7 @@ def require_admin_token(view_func):
         ):
             return jsonify({
                 "success": False,
+                "error_code": "UNAUTHORIZED",
                 "error": "Unauthorized",
             }), 401
 
@@ -153,11 +159,19 @@ def _get_simulation_id_or_400(data: dict) -> tuple:
     """
     simulation_id = data.get('simulation_id')
     if not simulation_id:
-        return None, (jsonify({"success": False, "error": "Please provide simulation_id"}), 400)
+        return None, (jsonify({
+            "success": False,
+            "error_code": "MISSING_SIMULATION_ID",
+            "error": "Please provide simulation_id"
+        }), 400)
     try:
         validate_simulation_id(simulation_id)
     except ValueError as exc:
-        return None, (jsonify({"success": False, "error": str(exc)}), 400)
+        return None, (jsonify({
+            "success": False,
+            "error_code": "INVALID_SIMULATION_ID",
+            "error": str(exc)
+        }), 400)
     return simulation_id, None
 
 
@@ -468,6 +482,7 @@ def suggest_scenarios():
         if not isinstance(preview, str):
             return jsonify({
                 "success": False,
+                "error_code": "INVALID_INPUT",
                 "error": "text_preview must be a string"
             }), 400
 
@@ -555,6 +570,7 @@ def suggest_scenarios():
         )
         return jsonify({
             "success": False,
+            "error_code": "SCENARIO_SUGGEST_FAILED",
             "error": "scenario_suggest_failed"
         }), 500
 
@@ -689,6 +705,7 @@ def ask_mode():
         if _ask_rate_limited(client_ip):
             return jsonify({
                 "success": False,
+                "error_code": "RATE_LIMITED",
                 "error": "rate_limited",
             }), 429
 
@@ -697,11 +714,13 @@ def ask_mode():
         if not isinstance(question, str) or len(question) < 8:
             return jsonify({
                 "success": False,
+                "error_code": "INVALID_INPUT",
                 "error": "question must be at least 8 characters",
             }), 400
         if len(question) > _ASK_QUESTION_MAX_CHARS:
             return jsonify({
                 "success": False,
+                "error_code": "INVALID_INPUT",
                 "error": f"question too long (max {_ASK_QUESTION_MAX_CHARS} chars)",
             }), 400
 
@@ -717,7 +736,11 @@ def ask_mode():
             llm = create_smart_llm_client(timeout=60.0)
         except Exception as exc:
             logger.warning(f"ask: smart LLM unavailable: {exc}")
-            return jsonify({"success": False, "error": "llm_unavailable"}), 503
+            return jsonify({
+                "success": False,
+                "error_code": "LLM_UNAVAILABLE",
+                "error": "llm_unavailable"
+            }), 503
 
         messages = [
             {"role": "system", "content": localize_system_prompt(_ASK_SYSTEM_PROMPT, get_request_locale())},
@@ -735,11 +758,19 @@ def ask_mode():
             parsed = llm.chat_json(messages, temperature=0.4, max_tokens=3500)
         except Exception as exc:
             logger.warning(f"ask: LLM call failed: {exc}")
-            return jsonify({"success": False, "error": "llm_error"}), 502
+            return jsonify({
+                "success": False,
+                "error_code": "LLM_GENERATION_FAILED",
+                "error": "llm_error"
+            }), 502
 
         cleaned = _ask_clean_result(parsed, question)
         if cleaned is None:
-            return jsonify({"success": False, "error": "llm_returned_invalid_briefing"}), 502
+            return jsonify({
+                "success": False,
+                "error_code": "LLM_GENERATION_FAILED",
+                "error": "llm_returned_invalid_briefing"
+            }), 502
 
         cleaned["model"] = getattr(llm, 'model', None) or Config.SMART_MODEL_NAME or Config.LLM_MODEL_NAME
         _ask_cache_put(cache_key, cleaned)
@@ -747,7 +778,11 @@ def ask_mode():
 
     except Exception as e:
         logger.error(f"ask mode failed: {e}\n{traceback.format_exc()}")
-        return jsonify({"success": False, "error": "ask_failed"}), 500
+        return jsonify({
+            "success": False,
+            "error_code": "INTERNAL_ERROR",
+            "error": "ask_failed"
+        }), 500
 
 
 # ============== Trending Topics ==============
@@ -1260,6 +1295,7 @@ def get_graph_entities(graph_id: str):
         logger.error(f"Failed to fetch graph entities: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -1274,22 +1310,24 @@ def get_entity_detail(graph_id: str, entity_uuid: str):
             raise ValueError("GraphStorage not initialized")
         reader = EntityReader(storage)
         entity = reader.get_entity_with_context(graph_id, entity_uuid)
-        
+
         if not entity:
             return jsonify({
                 "success": False,
+                "error_code": "ENTITY_NOT_FOUND",
                 "error": f"Entity not found: {entity_uuid}"
             }), 404
-        
+
         return jsonify({
             "success": True,
             "data": entity.to_dict()
         })
-        
+
     except Exception as e:
         logger.error(f"Failed to get entity details: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -1310,7 +1348,7 @@ def get_entities_by_type(graph_id: str, entity_type: str):
             entity_type=entity_type,
             enrich_with_edges=enrich
         )
-        
+
         return jsonify({
             "success": True,
             "data": {
@@ -1319,11 +1357,12 @@ def get_entities_by_type(graph_id: str, entity_type: str):
                 "entities": [e.to_dict() for e in entities]
             }
         })
-        
+
     except Exception as e:
         logger.error(f"Failed to get entities: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -1368,16 +1407,18 @@ def create_simulation():
         if not project_id:
             return jsonify({
                 "success": False,
+                "error_code": "MISSING_PROJECT_ID",
                 "error": "Please provide project_id"
             }), 400
-        
+
         project = ProjectManager.get_project(project_id)
         if not project:
             return jsonify({
                 "success": False,
+                "error_code": "PROJECT_NOT_FOUND",
                 "error": f"Project not found: {project_id}"
             }), 404
-        
+
         graph_id = data.get('graph_id') or project.graph_id
         if not graph_id:
             return jsonify({
@@ -1432,6 +1473,7 @@ def create_simulation():
         logger.error(f"Failed to create simulation: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "SIMULATION_CREATE_FAILED",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -1466,17 +1508,37 @@ def branch_counterfactual_simulation():
         branch_id = data.get("branch_id")
 
         if not parent_id:
-            return jsonify({"success": False, "error": "parent_simulation_id is required"}), 400
+            return jsonify({
+                "success": False,
+                "error_code": "MISSING_FIELD",
+                "error": "parent_simulation_id is required"
+            }), 400
         if not injection:
-            return jsonify({"success": False, "error": "injection_text is required"}), 400
+            return jsonify({
+                "success": False,
+                "error_code": "MISSING_FIELD",
+                "error": "injection_text is required"
+            }), 400
         if len(injection) > 2000:
-            return jsonify({"success": False, "error": "injection_text must be <= 2000 chars"}), 400
+            return jsonify({
+                "success": False,
+                "error_code": "INVALID_INPUT",
+                "error": "injection_text must be <= 2000 chars"
+            }), 400
         try:
             trigger_int = int(trigger)
         except (TypeError, ValueError):
-            return jsonify({"success": False, "error": "trigger_round must be an integer >= 0"}), 400
+            return jsonify({
+                "success": False,
+                "error_code": "INVALID_INPUT",
+                "error": "trigger_round must be an integer >= 0"
+            }), 400
         if trigger_int < 0:
-            return jsonify({"success": False, "error": "trigger_round must be >= 0"}), 400
+            return jsonify({
+                "success": False,
+                "error_code": "INVALID_INPUT",
+                "error": "trigger_round must be >= 0"
+            }), 400
 
         manager = SimulationManager()
         state = manager.branch_counterfactual(
@@ -1489,11 +1551,16 @@ def branch_counterfactual_simulation():
         return jsonify({"success": True, "data": state.to_dict()})
 
     except ValueError as e:
-        return jsonify({"success": False, "error": str(e)}), 404
+        return jsonify({
+            "success": False,
+            "error_code": "SIMULATION_NOT_FOUND",
+            "error": str(e)
+        }), 404
     except Exception as e:
         logger.error(f"Failed to branch counterfactual: {e}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc(),
         }), 500
@@ -1528,6 +1595,7 @@ def fork_simulation():
         if not parent_simulation_id:
             return jsonify({
                 "success": False,
+                "error_code": "MISSING_FIELD",
                 "error": "Please provide parent_simulation_id"
             }), 400
 
@@ -1547,6 +1615,7 @@ def fork_simulation():
     except ValueError as e:
         return jsonify({
             "success": False,
+            "error_code": "SIMULATION_NOT_FOUND",
             "error": str(e)
         }), 404
 
@@ -1554,6 +1623,7 @@ def fork_simulation():
         logger.error(f"Failed to fork simulation: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -1734,9 +1804,10 @@ def prepare_simulation():
         if not state:
             return jsonify({
                 "success": False,
+                "error_code": "SIMULATION_NOT_FOUND",
                 "error": f"Simulation not found: {simulation_id}"
             }), 404
-        
+
         # Check if force regeneration is requested
         force_regenerate = data.get('force_regenerate', False)
         logger.info(f"Processing /prepare request: simulation_id={simulation_id}, force_regenerate={force_regenerate}")
@@ -1766,14 +1837,16 @@ def prepare_simulation():
         if not project:
             return jsonify({
                 "success": False,
+                "error_code": "PROJECT_NOT_FOUND",
                 "error": f"Project not found: {state.project_id}"
             }), 404
-        
+
         # Get simulation requirement
         simulation_requirement = project.simulation_requirement or ""
         if not simulation_requirement:
             return jsonify({
                 "success": False,
+                "error_code": "MISSING_FIELD",
                 "error": "Project missing simulation requirement description (simulation_requirement)"
             }), 400
         
@@ -1954,13 +2027,15 @@ def prepare_simulation():
     except ValueError as e:
         return jsonify({
             "success": False,
+            "error_code": "SIMULATION_NOT_FOUND",
             "error": str(e)
         }), 404
-        
+
     except Exception as e:
         logger.error(f"Failed to start preparation task: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "PROFILES_GENERATION_FAILED",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -2005,7 +2080,11 @@ def get_prepare_status():
             try:
                 validate_simulation_id(simulation_id)
             except ValueError as exc:
-                return jsonify({"success": False, "error": str(exc)}), 400
+                return jsonify({
+                    "success": False,
+                    "error_code": "INVALID_SIMULATION_ID",
+                    "error": str(exc)
+                }), 400
 
         # If simulation_id is provided, first check if preparation is complete
         if simulation_id:
@@ -2039,12 +2118,13 @@ def get_prepare_status():
                 })
             return jsonify({
                 "success": False,
+                "error_code": "MISSING_FIELD",
                 "error": "Please provide task_id or simulation_id"
             }), 400
-        
+
         task_manager = TaskManager()
         task = task_manager.get_task(task_id)
-        
+
         if not task:
             # Task not found, but if simulation_id is provided, check if preparation is complete
             if simulation_id:
@@ -2062,24 +2142,26 @@ def get_prepare_status():
                             "prepare_info": prepare_info
                         }
                     })
-            
+
             return jsonify({
                 "success": False,
+                "error_code": "TASK_NOT_FOUND",
                 "error": f"Task not found: {task_id}"
             }), 404
-        
+
         task_dict = task.to_dict()
         task_dict["already_prepared"] = False
-        
+
         return jsonify({
             "success": True,
             "data": task_dict
         })
-        
+
     except Exception as e:
         logger.error(f"Failed to query task status: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e)
         }), 500
 
@@ -2090,10 +2172,11 @@ def get_simulation(simulation_id: str):
     try:
         manager = SimulationManager()
         state = manager.get_simulation(simulation_id)
-        
+
         if not state:
             return jsonify({
                 "success": False,
+                "error_code": "SIMULATION_NOT_FOUND",
                 "error": f"Simulation not found: {simulation_id}"
             }), 404
         
@@ -2112,6 +2195,7 @@ def get_simulation(simulation_id: str):
         logger.error(f"Failed to get simulation status: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -2141,6 +2225,7 @@ def list_simulations():
         logger.error(f"Failed to list simulations: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -2342,6 +2427,7 @@ def get_simulation_history():
         logger.error(f"Failed to get simulation history: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -2373,13 +2459,15 @@ def get_simulation_profiles(simulation_id: str):
     except ValueError as e:
         return jsonify({
             "success": False,
+            "error_code": "PROFILES_MISSING",
             "error": str(e)
         }), 404
-        
+
     except Exception as e:
         logger.error(f"Failed to get profiles: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -2426,6 +2514,7 @@ def get_simulation_profiles_realtime(simulation_id: str):
         if not os.path.exists(sim_dir):
             return jsonify({
                 "success": False,
+                "error_code": "SIMULATION_NOT_FOUND",
                 "error": f"Simulation not found: {simulation_id}"
             }), 404
 
@@ -2490,6 +2579,7 @@ def get_simulation_profiles_realtime(simulation_id: str):
         logger.error(f"Failed to get profiles in real-time: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -2529,6 +2619,7 @@ def get_simulation_config_realtime(simulation_id: str):
         if not os.path.exists(sim_dir):
             return jsonify({
                 "success": False,
+                "error_code": "SIMULATION_NOT_FOUND",
                 "error": f"Simulation not found: {simulation_id}"
             }), 404
 
@@ -2618,6 +2709,7 @@ def get_simulation_config_realtime(simulation_id: str):
         logger.error(f"Failed to get config in real-time: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -2643,7 +2735,11 @@ def retry_simulation_config(simulation_id: str):
         manager = SimulationManager()
         state = manager.get_simulation(simulation_id)
         if not state:
-            return jsonify({"success": False, "error": f"Simulation not found: {simulation_id}"}), 404
+            return jsonify({
+                "success": False,
+                "error_code": "SIMULATION_NOT_FOUND",
+                "error": f"Simulation not found: {simulation_id}"
+            }), 404
 
         # Profiles must exist before we can retry config generation
         sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
@@ -2654,20 +2750,29 @@ def retry_simulation_config(simulation_id: str):
         if not profiles_exist:
             return jsonify({
                 "success": False,
+                "error_code": "PROFILES_MISSING",
                 "error": "Agent profiles not found — run /prepare first"
             }), 400
 
         # Get project data needed for config generation
         project = ProjectManager.get_project(state.project_id)
         if not project:
-            return jsonify({"success": False, "error": f"Project not found: {state.project_id}"}), 404
+            return jsonify({
+                "success": False,
+                "error_code": "PROJECT_NOT_FOUND",
+                "error": f"Project not found: {state.project_id}"
+            }), 404
 
         simulation_requirement = project.simulation_requirement or ""
         document_text = ProjectManager.get_extracted_text(state.project_id) or ""
 
         storage = current_app.extensions.get('neo4j_storage')
         if not storage:
-            return jsonify({"success": False, "error": "GraphStorage not initialized"}), 500
+            return jsonify({
+                "success": False,
+                "error_code": "STORAGE_UNAVAILABLE",
+                "error": "GraphStorage not initialized"
+            }), 500
 
         # Reset state so the frontend polling loop sees "preparing" again
         state.status = SimulationStatus.PREPARING
@@ -2746,7 +2851,11 @@ def retry_simulation_config(simulation_id: str):
 
     except Exception as e:
         logger.error(f"Failed to start config retry: {e}")
-        return jsonify({"success": False, "error": str(e)}), 500
+        return jsonify({
+            "success": False,
+            "error_code": "CONFIG_GENERATION_FAILED",
+            "error": str(e)
+        }), 500
 
 
 @simulation_bp.route('/<simulation_id>/config', methods=['GET'])
@@ -2768,6 +2877,7 @@ def get_simulation_config(simulation_id: str):
         if not config:
             return jsonify({
                 "success": False,
+                "error_code": "CONFIG_NOT_GENERATED",
                 "error": "Simulation configuration does not exist, please call /prepare endpoint first"
             }), 404
         
@@ -2780,6 +2890,7 @@ def get_simulation_config(simulation_id: str):
         logger.error(f"Failed to get configuration: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -2794,7 +2905,11 @@ def download_project_file(project_id: str, saved_filename: str):
         # Reject path-traversal attempts — saved_filename is supposed
         # to be a single segment, not a path.
         if '/' in saved_filename or '\\' in saved_filename or '..' in saved_filename:
-            return jsonify({"success": False, "error": "Invalid filename"}), 400
+            return jsonify({
+                "success": False,
+                "error_code": "INVALID_INPUT",
+                "error": "Invalid filename"
+            }), 400
 
         files_dir = os.path.abspath(
             ProjectManager._get_project_files_dir(project_id)
@@ -2802,9 +2917,17 @@ def download_project_file(project_id: str, saved_filename: str):
         file_path = os.path.abspath(os.path.join(files_dir, saved_filename))
         # Defense-in-depth: ensure resolved path is still inside files_dir
         if not file_path.startswith(files_dir + os.sep):
-            return jsonify({"success": False, "error": "Invalid filename"}), 400
+            return jsonify({
+                "success": False,
+                "error_code": "INVALID_INPUT",
+                "error": "Invalid filename"
+            }), 400
         if not os.path.exists(file_path):
-            return jsonify({"success": False, "error": "File not found"}), 404
+            return jsonify({
+                "success": False,
+                "error_code": "FILE_NOT_FOUND",
+                "error": "File not found"
+            }), 404
 
         # Look up the original filename from the project record so the
         # browser saves it with a meaningful name, not the UUID.
@@ -2823,7 +2946,11 @@ def download_project_file(project_id: str, saved_filename: str):
 
     except Exception as e:
         logger.error(f"Failed to download project file: {str(e)}")
-        return jsonify({"success": False, "error": str(e)}), 500
+        return jsonify({
+            "success": False,
+            "error_code": "INTERNAL_ERROR",
+            "error": str(e)
+        }), 500
 
 
 @simulation_bp.route('/<simulation_id>/config/download', methods=['GET'])
@@ -2837,19 +2964,21 @@ def download_simulation_config(simulation_id: str):
         if not os.path.exists(config_path):
             return jsonify({
                 "success": False,
+                "error_code": "CONFIG_NOT_GENERATED",
                 "error": "Configuration file does not exist, please call /prepare endpoint first"
             }), 404
-        
+
         return send_file(
             config_path,
             as_attachment=True,
             download_name="simulation_config.json"
         )
-        
+
     except Exception as e:
         logger.error(f"Failed to download configuration: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -2881,27 +3010,30 @@ def download_simulation_script(script_name: str):
         if script_name not in allowed_scripts:
             return jsonify({
                 "success": False,
+                "error_code": "INVALID_INPUT",
                 "error": f"Unknown script: {script_name}, options: {allowed_scripts}"
             }), 400
-        
+
         script_path = os.path.join(scripts_dir, script_name)
-        
+
         if not os.path.exists(script_path):
             return jsonify({
                 "success": False,
+                "error_code": "FILE_NOT_FOUND",
                 "error": f"Script file does not exist: {script_name}"
             }), 404
-        
+
         return send_file(
             script_path,
             as_attachment=True,
             download_name=script_name
         )
-        
+
     except Exception as e:
         logger.error(f"Failed to download script: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -2929,9 +3061,10 @@ def generate_profiles():
         if not graph_id:
             return jsonify({
                 "success": False,
+                "error_code": "MISSING_GRAPH_ID",
                 "error": "Please provide graph_id"
             }), 400
-        
+
         entity_types = data.get('entity_types')
         use_llm = data.get('use_llm', True)
         platform = data.get('platform', 'reddit')
@@ -2945,10 +3078,11 @@ def generate_profiles():
             defined_entity_types=entity_types,
             enrich_with_edges=True
         )
-        
+
         if filtered.filtered_count == 0:
             return jsonify({
                 "success": False,
+                "error_code": "GRAPH_EMPTY",
                 "error": "No matching entities found"
             }), 400
         
@@ -2979,6 +3113,7 @@ def generate_profiles():
         logger.error(f"Failed to generate profile: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "PROFILES_GENERATION_FAILED",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -3055,17 +3190,20 @@ def start_simulation():
                 if max_rounds <= 0:
                     return jsonify({
                         "success": False,
+                        "error_code": "INVALID_INPUT",
                         "error": "max_rounds must be a positive integer"
                     }), 400
             except (ValueError, TypeError):
                 return jsonify({
                     "success": False,
+                    "error_code": "INVALID_INPUT",
                     "error": "max_rounds must be a valid integer"
                 }), 400
 
         if platform not in ['twitter', 'reddit', 'polymarket', 'parallel']:
             return jsonify({
                 "success": False,
+                "error_code": "INVALID_INPUT",
                 "error": f"Invalid platform type: {platform}, options: twitter/reddit/polymarket/parallel"
             }), 400
 
@@ -3078,6 +3216,7 @@ def start_simulation():
         if not state:
             return jsonify({
                 "success": False,
+                "error_code": "SIMULATION_NOT_FOUND",
                 "error": f"Simulation not found: {simulation_id}"
             }), 404
 
@@ -3105,6 +3244,7 @@ def start_simulation():
                         else:
                             return jsonify({
                                 "success": False,
+                                "error_code": "SIMULATION_ALREADY_RUNNING",
                                 "error": "Simulation is running, please call /stop endpoint to stop first, or use force=true to force restart"
                             }), 400
 
@@ -3124,6 +3264,7 @@ def start_simulation():
                 # Preparation incomplete
                 return jsonify({
                     "success": False,
+                    "error_code": "SIMULATION_NOT_READY",
                     "error": f"Simulation not ready, current status: {state.status.value}, please call /prepare endpoint first"
                 }), 400
         
@@ -3141,6 +3282,7 @@ def start_simulation():
             if not graph_id:
                 return jsonify({
                     "success": False,
+                    "error_code": "GRAPH_NOT_BUILT",
                     "error": "Enabling graph memory update requires a valid graph_id, please ensure the project has built a graph"
                 }), 400
             
@@ -3186,13 +3328,15 @@ def start_simulation():
     except ValueError as e:
         return jsonify({
             "success": False,
+            "error_code": "INVALID_INPUT",
             "error": str(e)
         }), 400
-        
+
     except Exception as e:
         logger.error(f"Failed to start simulation: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "SIMULATION_RUN_FAILED",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -3242,13 +3386,15 @@ def stop_simulation():
     except ValueError as e:
         return jsonify({
             "success": False,
+            "error_code": "INVALID_INPUT",
             "error": str(e)
         }), 400
-        
+
     except Exception as e:
         logger.error(f"Failed to stop simulation: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -3309,6 +3455,7 @@ def get_run_status(simulation_id: str):
         logger.error(f"Failed to get running status: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -3410,6 +3557,7 @@ def get_run_status_detail(simulation_id: str):
         logger.error(f"Failed to get detailed status: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -3464,6 +3612,7 @@ def get_simulation_actions(simulation_id: str):
         logger.error(f"Failed to get action history: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -3504,6 +3653,7 @@ def get_simulation_timeline(simulation_id: str):
         logger.error(f"Failed to get timeline: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -3531,6 +3681,7 @@ def get_agent_stats(simulation_id: str):
         logger.error(f"Failed to get agent statistics: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -3656,7 +3807,11 @@ def get_influence_leaderboard(simulation_id: str):
     try:
         sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
         if not os.path.exists(sim_dir):
-            return jsonify({"success": False, "error": f"Simulation not found: {simulation_id}"}), 404
+            return jsonify({
+                "success": False,
+                "error_code": "SIMULATION_NOT_FOUND",
+                "error": f"Simulation not found: {simulation_id}"
+            }), 404
 
         ranked = _compute_influence_ranked(simulation_id, top_n=20)
 
@@ -3672,6 +3827,7 @@ def get_influence_leaderboard(simulation_id: str):
         logger.error(f"Failed to compute influence leaderboard: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -3689,7 +3845,11 @@ def get_belief_drift(simulation_id: str):
     try:
         sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
         if not os.path.exists(sim_dir):
-            return jsonify({"success": False, "error": f"Simulation not found: {simulation_id}"}), 404
+            return jsonify({
+                "success": False,
+                "error_code": "SIMULATION_NOT_FOUND",
+                "error": f"Simulation not found: {simulation_id}"
+            }), 404
 
         trajectory_path = os.path.join(sim_dir, "trajectory.json")
         if not os.path.exists(trajectory_path):
@@ -3801,6 +3961,7 @@ def get_belief_drift(simulation_id: str):
         logger.error(f"Failed to compute belief drift: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -3892,7 +4053,11 @@ def get_counterfactual_drift(simulation_id: str):
     try:
         sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
         if not os.path.exists(sim_dir):
-            return jsonify({"success": False, "error": f"Simulation not found: {simulation_id}"}), 404
+            return jsonify({
+                "success": False,
+                "error_code": "SIMULATION_NOT_FOUND",
+                "error": f"Simulation not found: {simulation_id}"
+            }), 404
 
         trajectory_path = os.path.join(sim_dir, "trajectory.json")
         if not os.path.exists(trajectory_path):
@@ -4046,6 +4211,7 @@ def get_counterfactual_drift(simulation_id: str):
         logger.error(f"Failed to compute counterfactual drift: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -4066,7 +4232,11 @@ def get_simulation_quality(simulation_id: str):
     try:
         sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
         if not os.path.exists(sim_dir):
-            return jsonify({"success": False, "error": f"Simulation not found: {simulation_id}"}), 404
+            return jsonify({
+                "success": False,
+                "error_code": "SIMULATION_NOT_FOUND",
+                "error": f"Simulation not found: {simulation_id}"
+            }), 404
 
         quality_path = os.path.join(sim_dir, "quality.json")
         if os.path.exists(quality_path):
@@ -4090,6 +4260,7 @@ def get_simulation_quality(simulation_id: str):
         logger.error(f"Failed to compute quality diagnostics: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -4377,10 +4548,18 @@ def get_simulation_frame(simulation_id: str, round_num: int):
             },
         })
     except ValueError as exc:
-        return jsonify({"success": False, "error": str(exc)}), 400
+        return jsonify({
+            "success": False,
+            "error_code": "INVALID_INPUT",
+            "error": str(exc)
+        }), 400
     except Exception as e:
         logger.error(f"frame: failed for {simulation_id} round {round_num}: {e}\n{traceback.format_exc()}")
-        return jsonify({"success": False, "error": str(e)}), 500
+        return jsonify({
+            "success": False,
+            "error_code": "INTERNAL_ERROR",
+            "error": str(e)
+        }), 500
 
 
 # ============== Polymarket Live Chart ==============
@@ -4445,10 +4624,18 @@ def polymarket_markets(simulation_id: str):
             })
         return jsonify({"success": True, "data": {"markets": markets}})
     except ValueError as exc:
-        return jsonify({"success": False, "error": str(exc)}), 400
+        return jsonify({
+            "success": False,
+            "error_code": "INVALID_INPUT",
+            "error": str(exc)
+        }), 400
     except Exception as e:
         logger.error(f"polymarket_markets: {simulation_id}: {e}")
-        return jsonify({"success": False, "error": str(e)}), 500
+        return jsonify({
+            "success": False,
+            "error_code": "INTERNAL_ERROR",
+            "error": str(e)
+        }), 500
 
 
 @simulation_bp.route('/<simulation_id>/polymarket/market/<int:market_id>/prices', methods=['GET'])
@@ -4467,7 +4654,11 @@ def polymarket_market_prices(simulation_id: str, market_id: int):
         validate_simulation_id(simulation_id)
         db_path = _polymarket_db_path(simulation_id)
         if not os.path.exists(db_path):
-            return jsonify({"success": False, "error": "Polymarket not enabled for this simulation"}), 404
+            return jsonify({
+                "success": False,
+                "error_code": "POLYMARKET_NOT_ENABLED",
+                "error": "Polymarket not enabled for this simulation"
+            }), 404
 
         import sqlite3
         with sqlite3.connect(db_path) as con:
@@ -4478,7 +4669,11 @@ def polymarket_market_prices(simulation_id: str, market_id: int):
                 (market_id,),
             ).fetchone()
             if not market_row:
-                return jsonify({"success": False, "error": f"Market {market_id} not found"}), 404
+                return jsonify({
+                    "success": False,
+                    "error_code": "MARKET_NOT_FOUND",
+                    "error": f"Market {market_id} not found"
+                }), 404
             trades = cur.execute(
                 "SELECT trade_id, user_id, side, outcome, shares, price, created_at "
                 "FROM trade WHERE market_id = ? ORDER BY created_at ASC, trade_id ASC",
@@ -4532,10 +4727,18 @@ def polymarket_market_prices(simulation_id: str, market_id: int):
             },
         })
     except ValueError as exc:
-        return jsonify({"success": False, "error": str(exc)}), 400
+        return jsonify({
+            "success": False,
+            "error_code": "INVALID_INPUT",
+            "error": str(exc)
+        }), 400
     except Exception as e:
         logger.error(f"polymarket_market_prices: {simulation_id}/{market_id}: {e}")
-        return jsonify({"success": False, "error": str(e)}), 500
+        return jsonify({
+            "success": False,
+            "error_code": "INTERNAL_ERROR",
+            "error": str(e)
+        }), 500
 
 
 # ============== Embed Widget ==============
@@ -4554,7 +4757,11 @@ def publish_simulation(simulation_id: str):
         manager = SimulationManager()
         state = manager.get_simulation(simulation_id)
         if not state:
-            return jsonify({"success": False, "error": f"Simulation not found: {simulation_id}"}), 404
+            return jsonify({
+                "success": False,
+                "error_code": "SIMULATION_NOT_FOUND",
+                "error": f"Simulation not found: {simulation_id}"
+            }), 404
 
         payload = request.get_json(silent=True) or {}
         new_value = bool(payload.get("public", True))
@@ -4564,7 +4771,11 @@ def publish_simulation(simulation_id: str):
         return jsonify({"success": True, "data": {"simulation_id": simulation_id, "is_public": state.is_public}})
     except Exception as e:
         logger.error(f"Failed to publish simulation: {str(e)}")
-        return jsonify({"success": False, "error": str(e)}), 500
+        return jsonify({
+            "success": False,
+            "error_code": "INTERNAL_ERROR",
+            "error": str(e)
+        }), 500
 
 
 def _build_embed_summary_payload(simulation_id: str) -> dict:
@@ -4725,11 +4936,16 @@ def get_embed_summary(simulation_id: str):
         try:
             summary = _build_embed_summary_payload(simulation_id)
         except LookupError as exc:
-            return jsonify({"success": False, "error": str(exc)}), 404
+            return jsonify({
+                "success": False,
+                "error_code": "SIMULATION_NOT_FOUND",
+                "error": str(exc)
+            }), 404
 
         if not summary.get("is_public"):
             return jsonify({
                 "success": False,
+                "error_code": "SIMULATION_NOT_PUBLIC",
                 "error": "Simulation is not published for embedding. POST /api/simulation/<id>/publish to enable.",
             }), 403
 
@@ -4742,6 +4958,7 @@ def get_embed_summary(simulation_id: str):
         logger.error(f"Failed to build embed summary: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -4763,11 +4980,16 @@ def get_share_card(simulation_id: str):
         try:
             summary = _build_embed_summary_payload(simulation_id)
         except LookupError as exc:
-            return jsonify({"success": False, "error": str(exc)}), 404
+            return jsonify({
+                "success": False,
+                "error_code": "SIMULATION_NOT_FOUND",
+                "error": str(exc)
+            }), 404
 
         if not summary.get("is_public"):
             return jsonify({
                 "success": False,
+                "error_code": "SIMULATION_NOT_PUBLIC",
                 "error": "Simulation is not published. POST /api/simulation/<id>/publish to enable.",
             }), 403
 
@@ -4799,6 +5021,7 @@ def get_share_card(simulation_id: str):
         logger.error(f"share-card: failed for {simulation_id}: {e}\n{traceback.format_exc()}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
         }), 500
 
@@ -4823,11 +5046,16 @@ def get_replay_gif(simulation_id: str):
         try:
             summary = _build_embed_summary_payload(simulation_id)
         except LookupError as exc:
-            return jsonify({"success": False, "error": str(exc)}), 404
+            return jsonify({
+                "success": False,
+                "error_code": "SIMULATION_NOT_FOUND",
+                "error": str(exc)
+            }), 404
 
         if not summary.get("is_public"):
             return jsonify({
                 "success": False,
+                "error_code": "SIMULATION_NOT_PUBLIC",
                 "error": "Simulation is not published. POST /api/simulation/<id>/publish to enable.",
             }), 403
 
@@ -4860,6 +5088,7 @@ def get_replay_gif(simulation_id: str):
         logger.error(f"replay-gif: failed for {simulation_id}: {e}\n{traceback.format_exc()}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
         }), 500
 
@@ -5138,6 +5367,7 @@ def list_public_simulations():
         logger.error(f"Failed to list public simulations: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -5218,6 +5448,7 @@ def get_simulation_posts(simulation_id: str):
         logger.error(f"Failed to get posts: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -5291,12 +5522,14 @@ def interview_agent():
         if agent_id is None:
             return jsonify({
                 "success": False,
+                "error_code": "MISSING_FIELD",
                 "error": "Please provide agent_id"
             }), 400
-        
+
         if not prompt:
             return jsonify({
                 "success": False,
+                "error_code": "MISSING_FIELD",
                 "error": "Please provide prompt (interview question)"
             }), 400
 
@@ -5304,6 +5537,7 @@ def interview_agent():
         if platform and platform not in ("twitter", "reddit"):
             return jsonify({
                 "success": False,
+                "error_code": "INVALID_INPUT",
                 "error": "platform parameter can only be 'twitter' or 'reddit'"
             }), 400
 
@@ -5311,6 +5545,7 @@ def interview_agent():
         if not _ensure_env_alive(simulation_id):
             return jsonify({
                 "success": False,
+                "error_code": "SIMULATION_ENV_UNAVAILABLE",
                 "error": "Simulation environment could not be started. Please try again."
             }), 400
 
@@ -5333,19 +5568,22 @@ def interview_agent():
     except ValueError as e:
         return jsonify({
             "success": False,
+            "error_code": "INVALID_INPUT",
             "error": str(e)
         }), 400
-        
+
     except TimeoutError as e:
         return jsonify({
             "success": False,
+            "error_code": "INTERVIEW_TIMEOUT",
             "error": f"Timed out waiting for interview response: {str(e)}"
         }), 504
-        
+
     except Exception as e:
         logger.error(f"Interview failed: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERVIEW_FAILED",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -5408,6 +5646,7 @@ def interview_agents_batch():
         if not interviews or not isinstance(interviews, list):
             return jsonify({
                 "success": False,
+                "error_code": "MISSING_FIELD",
                 "error": "Please provide interviews (interview list)"
             }), 400
 
@@ -5415,6 +5654,7 @@ def interview_agents_batch():
         if platform and platform not in ("twitter", "reddit"):
             return jsonify({
                 "success": False,
+                "error_code": "INVALID_INPUT",
                 "error": "platform parameter can only be 'twitter' or 'reddit'"
             }), 400
 
@@ -5423,11 +5663,13 @@ def interview_agents_batch():
             if 'agent_id' not in interview:
                 return jsonify({
                     "success": False,
+                    "error_code": "MISSING_FIELD",
                     "error": f"Interview list item {i+1} is missing agent_id"
                 }), 400
             if 'prompt' not in interview:
                 return jsonify({
                     "success": False,
+                    "error_code": "MISSING_FIELD",
                     "error": f"Interview list item {i+1} is missing prompt"
                 }), 400
             # Validate each item's platform (if present)
@@ -5435,6 +5677,7 @@ def interview_agents_batch():
             if item_platform and item_platform not in ("twitter", "reddit"):
                 return jsonify({
                     "success": False,
+                    "error_code": "INVALID_INPUT",
                     "error": f"Interview list item {i+1} platform can only be 'twitter' or 'reddit'"
                 }), 400
 
@@ -5442,6 +5685,7 @@ def interview_agents_batch():
         if not _ensure_env_alive(simulation_id):
             return jsonify({
                 "success": False,
+                "error_code": "SIMULATION_ENV_UNAVAILABLE",
                 "error": "Simulation environment could not be started. Please try again."
             }), 400
 
@@ -5467,12 +5711,14 @@ def interview_agents_batch():
     except ValueError as e:
         return jsonify({
             "success": False,
+            "error_code": "INVALID_INPUT",
             "error": str(e)
         }), 400
 
     except TimeoutError as e:
         return jsonify({
             "success": False,
+            "error_code": "INTERVIEW_TIMEOUT",
             "error": f"Timed out waiting for batch interview response: {str(e)}"
         }), 504
 
@@ -5480,6 +5726,7 @@ def interview_agents_batch():
         logger.error(f"Batch interview failed: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERVIEW_FAILED",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -5548,6 +5795,7 @@ def get_interview_history():
         logger.error(f"Failed to get interview history: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -5609,6 +5857,7 @@ def get_env_status():
         logger.error(f"Failed to get environment status: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -5640,7 +5889,11 @@ def restart_env():
         # Check if simulation is prepared
         is_prepared, _ = _check_simulation_prepared(simulation_id)
         if not is_prepared:
-            return jsonify({"success": False, "error": "Simulation not prepared"}), 400
+            return jsonify({
+                "success": False,
+                "error_code": "SIMULATION_NOT_READY",
+                "error": "Simulation not prepared"
+            }), 400
 
         # Start the simulation script with --env-only
         run_state = SimulationRunner.start_simulation(
@@ -5664,6 +5917,7 @@ def restart_env():
         logger.error(f"Failed to restart env: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "SIMULATION_RUN_FAILED",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -5723,13 +5977,15 @@ def close_simulation_env():
     except ValueError as e:
         return jsonify({
             "success": False,
+            "error_code": "INVALID_INPUT",
             "error": str(e)
         }), 400
-        
+
     except Exception as e:
         logger.error(f"Failed to shut down environment: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -5759,6 +6015,7 @@ def export_simulation_data(simulation_id: str):
         if export_format not in ('json', 'csv'):
             return jsonify({
                 "success": False,
+                "error_code": "INVALID_INPUT",
                 "error": "Unsupported format. Use 'json' or 'csv'."
             }), 400
 
@@ -5835,6 +6092,7 @@ def export_simulation_data(simulation_id: str):
         if not rows:
             return jsonify({
                 "success": False,
+                "error_code": "NO_DATA",
                 "error": "No action data available to export as CSV"
             }), 404
 
@@ -5865,6 +6123,7 @@ def export_simulation_data(simulation_id: str):
         logger.error(f"Failed to export simulation data: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -5898,10 +6157,18 @@ def compare_simulations():
         id2 = request.args.get('id2', '').strip()
 
         if not id1 or not id2:
-            return jsonify({"success": False, "error": "Both id1 and id2 are required"}), 400
+            return jsonify({
+                "success": False,
+                "error_code": "MISSING_FIELD",
+                "error": "Both id1 and id2 are required"
+            }), 400
 
         if id1 == id2:
-            return jsonify({"success": False, "error": "id1 and id2 must be different simulations"}), 400
+            return jsonify({
+                "success": False,
+                "error_code": "INVALID_INPUT",
+                "error": "id1 and id2 must be different simulations"
+            }), 400
 
         def _load_state(sim_id):
             m = SimulationManager()
@@ -5965,9 +6232,17 @@ def compare_simulations():
         state2 = _load_state(id2)
 
         if not state1:
-            return jsonify({"success": False, "error": f"Simulation not found: {id1}"}), 404
+            return jsonify({
+                "success": False,
+                "error_code": "SIMULATION_NOT_FOUND",
+                "error": f"Simulation not found: {id1}"
+            }), 404
         if not state2:
-            return jsonify({"success": False, "error": f"Simulation not found: {id2}"}), 404
+            return jsonify({
+                "success": False,
+                "error_code": "SIMULATION_NOT_FOUND",
+                "error": f"Simulation not found: {id2}"
+            }), 404
 
         influence1 = _compute_influence_ranked(id1, top_n=10)
         influence2 = _compute_influence_ranked(id2, top_n=10)
@@ -6028,6 +6303,7 @@ def compare_simulations():
         logger.error(f"Failed to compare simulations: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -6083,6 +6359,7 @@ def resolve_simulation(simulation_id: str):
         if actual_outcome not in ("YES", "NO"):
             return jsonify({
                 "success": False,
+                "error_code": "INVALID_INPUT",
                 "error": "actual_outcome must be 'YES' or 'NO'"
             }), 400
 
@@ -6091,6 +6368,7 @@ def resolve_simulation(simulation_id: str):
         if not state:
             return jsonify({
                 "success": False,
+                "error_code": "SIMULATION_NOT_FOUND",
                 "error": f"Simulation not found: {simulation_id}"
             }), 404
 
@@ -6168,6 +6446,7 @@ def resolve_simulation(simulation_id: str):
         logger.error(f"Failed to resolve simulation: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -6216,19 +6495,28 @@ def simulation_outcome(simulation_id: str):
             )
             return jsonify({
                 "success": False,
+                "error_code": "ADMIN_AUTH_NOT_CONFIGURED",
                 "error": "Admin authentication is not configured on this deployment.",
             }), 503
         provided = _extract_bearer_token()
         if not provided or not hmac.compare_digest(
             provided.encode("utf-8"), expected.encode("utf-8")
         ):
-            return jsonify({"success": False, "error": "Unauthorized"}), 401
+            return jsonify({
+                "success": False,
+                "error_code": "UNAUTHORIZED",
+                "error": "Unauthorized"
+            }), 401
 
     try:
         manager = SimulationManager()
         state = manager.get_simulation(simulation_id)
         if not state:
-            return jsonify({"success": False, "error": f"Simulation not found: {simulation_id}"}), 404
+            return jsonify({
+                "success": False,
+                "error_code": "SIMULATION_NOT_FOUND",
+                "error": f"Simulation not found: {simulation_id}"
+            }), 404
 
         sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
 
@@ -6239,6 +6527,7 @@ def simulation_outcome(simulation_id: str):
         if not bool(getattr(state, "is_public", False)):
             return jsonify({
                 "success": False,
+                "error_code": "SIMULATION_NOT_PUBLIC",
                 "error": "Simulation must be public to record an outcome. POST /api/simulation/<id>/publish to enable.",
             }), 403
 
@@ -6247,6 +6536,7 @@ def simulation_outcome(simulation_id: str):
         if label not in _VALID_OUTCOME_LABELS:
             return jsonify({
                 "success": False,
+                "error_code": "INVALID_INPUT",
                 "error": "label must be one of: correct, incorrect, partial",
             }), 400
 
@@ -6254,11 +6544,13 @@ def simulation_outcome(simulation_id: str):
         if outcome_url and not (outcome_url.startswith("http://") or outcome_url.startswith("https://")):
             return jsonify({
                 "success": False,
+                "error_code": "INVALID_INPUT",
                 "error": "outcome_url must be an http(s) URL",
             }), 400
         if len(outcome_url) > 500:
             return jsonify({
                 "success": False,
+                "error_code": "INVALID_INPUT",
                 "error": "outcome_url must be 500 characters or fewer",
             }), 400
 
@@ -6266,6 +6558,7 @@ def simulation_outcome(simulation_id: str):
         if len(outcome_summary) > 280:
             return jsonify({
                 "success": False,
+                "error_code": "INVALID_INPUT",
                 "error": "outcome_summary must be 280 characters or fewer",
             }), 400
 
@@ -6273,7 +6566,11 @@ def simulation_outcome(simulation_id: str):
             os.makedirs(sim_dir, exist_ok=True)
         except OSError as exc:
             logger.error(f"outcome: failed to ensure sim_dir for {simulation_id}: {exc}")
-            return jsonify({"success": False, "error": "Could not persist outcome."}), 500
+            return jsonify({
+                "success": False,
+                "error_code": "STORAGE_ERROR",
+                "error": "Could not persist outcome."
+            }), 500
 
         record = {
             "simulation_id": simulation_id,
@@ -6289,7 +6586,11 @@ def simulation_outcome(simulation_id: str):
                 json.dump(record, f, ensure_ascii=False, indent=2)
         except OSError as exc:
             logger.error(f"outcome: failed to write {outcome_path}: {exc}")
-            return jsonify({"success": False, "error": "Could not persist outcome."}), 500
+            return jsonify({
+                "success": False,
+                "error_code": "STORAGE_ERROR",
+                "error": "Could not persist outcome."
+            }), 500
 
         logger.info(
             f"outcome: recorded label={label} for {simulation_id} (url_set={bool(outcome_url)})"
@@ -6301,6 +6602,7 @@ def simulation_outcome(simulation_id: str):
         logger.error(f"Failed to handle outcome for {simulation_id}: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc(),
         }), 500
@@ -6341,6 +6643,7 @@ def generate_simulation_article(simulation_id: str):
         if not os.path.exists(sim_dir):
             return jsonify({
                 "success": False,
+                "error_code": "SIMULATION_NOT_FOUND",
                 "error": f"Simulation not found: {simulation_id}"
             }), 404
 
@@ -6627,6 +6930,7 @@ Return only the article in Markdown."""
         logger.error(f"Failed to generate article for {simulation_id}: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "ARTICLE_GENERATION_FAILED",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -6758,11 +7062,19 @@ def trace_interview_agent(simulation_id: str, agent_name: str):
         history = body.get('history') or []
 
         if not question:
-            return jsonify({"success": False, "error": "Please provide a question"}), 400
+            return jsonify({
+                "success": False,
+                "error_code": "MISSING_FIELD",
+                "error": "Please provide a question"
+            }), 400
 
         sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
         if not os.path.exists(sim_dir):
-            return jsonify({"success": False, "error": f"Simulation not found: {simulation_id}"}), 404
+            return jsonify({
+                "success": False,
+                "error_code": "SIMULATION_NOT_FOUND",
+                "error": f"Simulation not found: {simulation_id}"
+            }), 404
 
         # --- Get simulation scenario ---
         scenario = ''
@@ -6909,6 +7221,7 @@ def trace_interview_agent(simulation_id: str, agent_name: str):
         logger.error(f"Trace interview failed for {agent_name} in {simulation_id}: {e}")
         return jsonify({
             "success": False,
+            "error_code": "INTERVIEW_FAILED",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -6938,7 +7251,11 @@ def get_agent_interview_transcript(simulation_id: str, agent_name: str):
     try:
         sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
         if not os.path.exists(sim_dir):
-            return jsonify({"success": False, "error": f"Simulation not found: {simulation_id}"}), 404
+            return jsonify({
+                "success": False,
+                "error_code": "SIMULATION_NOT_FOUND",
+                "error": f"Simulation not found: {simulation_id}"
+            }), 404
 
         safe_name = ''.join(c if c.isalnum() or c in '-_.' else '_' for c in agent_name)
         transcript_path = os.path.join(sim_dir, 'interviews', f'{safe_name}.json')
@@ -6970,6 +7287,7 @@ def get_agent_interview_transcript(simulation_id: str, agent_name: str):
         logger.error(f"Failed to get interview transcript for {agent_name}: {e}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -7004,6 +7322,7 @@ def get_push_vapid_public_key():
         logger.error(f"Failed to get VAPID public key: {e}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
         }), 500
 
@@ -7037,16 +7356,32 @@ def subscribe_push_notification():
         subscription = data.get('subscription')
 
         if not simulation_id:
-            return jsonify({"success": False, "error": "simulation_id is required"}), 400
+            return jsonify({
+                "success": False,
+                "error_code": "MISSING_SIMULATION_ID",
+                "error": "simulation_id is required"
+            }), 400
         if not subscription or not isinstance(subscription, dict):
-            return jsonify({"success": False, "error": "subscription object is required"}), 400
+            return jsonify({
+                "success": False,
+                "error_code": "MISSING_FIELD",
+                "error": "subscription object is required"
+            }), 400
         if not subscription.get('endpoint'):
-            return jsonify({"success": False, "error": "subscription.endpoint is required"}), 400
+            return jsonify({
+                "success": False,
+                "error_code": "MISSING_FIELD",
+                "error": "subscription.endpoint is required"
+            }), 400
 
         try:
             validate_simulation_id(simulation_id)
         except ValueError as exc:
-            return jsonify({"success": False, "error": str(exc)}), 400
+            return jsonify({
+                "success": False,
+                "error_code": "INVALID_SIMULATION_ID",
+                "error": str(exc)
+            }), 400
 
         from ..services.push_notification_service import save_subscription
         save_subscription(simulation_id, subscription)
@@ -7057,6 +7392,7 @@ def subscribe_push_notification():
         logger.error(f"Failed to store push subscription: {e}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
         }), 500
 
@@ -7080,12 +7416,20 @@ def test_push_notification():
         simulation_id = data.get('simulation_id', '').strip()
 
         if not simulation_id:
-            return jsonify({"success": False, "error": "simulation_id is required"}), 400
+            return jsonify({
+                "success": False,
+                "error_code": "MISSING_SIMULATION_ID",
+                "error": "simulation_id is required"
+            }), 400
 
         try:
             validate_simulation_id(simulation_id)
         except ValueError as exc:
-            return jsonify({"success": False, "error": str(exc)}), 400
+            return jsonify({
+                "success": False,
+                "error_code": "INVALID_SIMULATION_ID",
+                "error": str(exc)
+            }), 400
 
         from ..services.push_notification_service import send_push_notification
         send_push_notification(
@@ -7101,6 +7445,7 @@ def test_push_notification():
         logger.error(f"Failed to send test push notification: {e}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
         }), 500
 
@@ -7139,24 +7484,44 @@ def inject_director_event(simulation_id: str):
         event_text = (data.get('event_text') or '').strip()
 
         if not event_text:
-            return jsonify({"success": False, "error": "event_text is required"}), 400
+            return jsonify({
+                "success": False,
+                "error_code": "MISSING_FIELD",
+                "error": "event_text is required"
+            }), 400
 
         if len(event_text) > 500:
-            return jsonify({"success": False, "error": "event_text must be under 500 characters"}), 400
+            return jsonify({
+                "success": False,
+                "error_code": "INVALID_INPUT",
+                "error": "event_text must be under 500 characters"
+            }), 400
 
         sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
         if not os.path.exists(sim_dir):
-            return jsonify({"success": False, "error": f"Simulation not found: {simulation_id}"}), 404
+            return jsonify({
+                "success": False,
+                "error_code": "SIMULATION_NOT_FOUND",
+                "error": f"Simulation not found: {simulation_id}"
+            }), 404
 
         # Check simulation is running
         state = SimulationRunner.get_run_state(simulation_id)
         if not state or state.runner_status not in [RunnerStatus.RUNNING]:
-            return jsonify({"success": False, "error": "Simulation is not currently running"}), 400
+            return jsonify({
+                "success": False,
+                "error_code": "SIMULATION_NOT_RUNNING",
+                "error": "Simulation is not currently running"
+            }), 400
 
         # Enforce max 10 events per simulation
         total = get_event_count(sim_dir)
         if total >= 10:
-            return jsonify({"success": False, "error": "Maximum 10 events per simulation reached"}), 400
+            return jsonify({
+                "success": False,
+                "error_code": "RATE_LIMITED",
+                "error": "Maximum 10 events per simulation reached"
+            }), 400
 
         current_round = state.current_round or 0
         event = add_event(sim_dir, event_text, current_round)
@@ -7169,7 +7534,11 @@ def inject_director_event(simulation_id: str):
 
     except Exception as e:
         logger.error(f"Failed to inject director event: {e}")
-        return jsonify({"success": False, "error": str(e)}), 500
+        return jsonify({
+            "success": False,
+            "error_code": "INTERNAL_ERROR",
+            "error": str(e)
+        }), 500
 
 
 @simulation_bp.route('/<simulation_id>/director/events', methods=['GET'])
@@ -7191,7 +7560,11 @@ def get_director_events(simulation_id: str):
     try:
         sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
         if not os.path.exists(sim_dir):
-            return jsonify({"success": False, "error": f"Simulation not found: {simulation_id}"}), 404
+            return jsonify({
+                "success": False,
+                "error_code": "SIMULATION_NOT_FOUND",
+                "error": f"Simulation not found: {simulation_id}"
+            }), 404
 
         return jsonify({
             "success": True,
@@ -7201,7 +7574,11 @@ def get_director_events(simulation_id: str):
 
     except Exception as e:
         logger.error(f"Failed to get director events: {e}")
-        return jsonify({"success": False, "error": str(e)}), 500
+        return jsonify({
+            "success": False,
+            "error_code": "INTERNAL_ERROR",
+            "error": str(e)
+        }), 500
 
 
 @simulation_bp.route('/<simulation_id>/interaction-network', methods=['GET'])
@@ -7217,7 +7594,11 @@ def get_interaction_network(simulation_id: str):
     try:
         sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
         if not os.path.exists(sim_dir):
-            return jsonify({"success": False, "error": f"Simulation not found: {simulation_id}"}), 404
+            return jsonify({
+                "success": False,
+                "error_code": "SIMULATION_NOT_FOUND",
+                "error": f"Simulation not found: {simulation_id}"
+            }), 404
 
         cache_path = os.path.join(sim_dir, "network.json")
         if os.path.exists(cache_path):
@@ -7470,6 +7851,7 @@ def get_interaction_network(simulation_id: str):
         logger.error(f"Failed to compute interaction network: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500
@@ -7715,7 +8097,11 @@ def get_demographic_breakdown(simulation_id: str):
     try:
         sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
         if not os.path.exists(sim_dir):
-            return jsonify({"success": False, "error": f"Simulation not found: {simulation_id}"}), 404
+            return jsonify({
+                "success": False,
+                "error_code": "SIMULATION_NOT_FOUND",
+                "error": f"Simulation not found: {simulation_id}"
+            }), 404
 
         force_refresh = request.args.get('refresh', '').lower() in ('1', 'true', 'yes')
         cache_path = os.path.join(sim_dir, "demographics.json")
@@ -7916,6 +8302,7 @@ def get_demographic_breakdown(simulation_id: str):
         logger.error(f"Failed to compute demographic breakdown: {str(e)}")
         return jsonify({
             "success": False,
+            "error_code": "INTERNAL_ERROR",
             "error": str(e),
             "traceback": traceback.format_exc()
         }), 500

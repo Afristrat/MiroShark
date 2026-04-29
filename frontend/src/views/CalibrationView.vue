@@ -522,6 +522,7 @@ import { useI18n } from 'vue-i18n'
 import api from '../api/index.js'
 import { submitSimulationOutcome } from '../api/simulation.js'
 import { useScrollFadeIn } from '../composables/useScrollFadeIn'
+import { formatApiError } from '../utils/error-handler'
 
 const { t } = useI18n()
 
@@ -559,8 +560,8 @@ const fetchData = async () => {
     const payload = res && res.data ? res.data : res
     data.value = payload
   } catch (err) {
-    const msg = err && err.message ? err.message : String(err)
-    error.value = msg
+    // US-007: surface localised, error_code-aware messages.
+    error.value = formatApiError(err, t)
   } finally {
     loading.value = false
   }
@@ -811,7 +812,7 @@ const fetchEvaluables = async () => {
       evalPagination.has_more = !!payload.pagination.has_more
     }
   } catch (err) {
-    evalError.value = (err && err.message) ? err.message : String(err)
+    evalError.value = formatApiError(err, t)
     evaluables.value = []
   } finally {
     evalLoading.value = false
@@ -889,7 +890,7 @@ const markOutcome = async (sim, label) => {
     // Revert optimistic update on network failure.
     sim.outcome = previousOutcome
     sim.outcome_url = previousUrl
-    const reason = (err && err.message) ? err.message : ''
+    const reason = formatApiError(err, t)
     showToast(t('calibration.evaluables.toastError') + (reason ? ` (${reason})` : ''), 'error', 4000)
   } finally {
     savingId.value = null

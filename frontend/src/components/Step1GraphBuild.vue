@@ -401,6 +401,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { createSimulation, listSimulations } from '../api/simulation'
 import service from '../api'
+import { formatApiError } from '../utils/error-handler'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -707,7 +708,9 @@ const handleEnterEnvSetup = async () => {
     }
   } catch (err) {
     console.error('Simulation creation error:', err)
-    alert(t('process.step1.complete.createError', { error: err.message }))
+    // US-007: feed the localised, error_code-aware message into the existing
+    // i18n template so codes like GRAPH_EMPTY (US-047) surface in fr/ar.
+    alert(t('process.step1.complete.createError', { error: formatApiError(err, t) }))
   } finally {
     creatingSimulation.value = false
   }

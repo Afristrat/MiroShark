@@ -707,6 +707,7 @@ import {
   retrySimulationConfig,
   getRunStatus
 } from '../api/simulation'
+import { formatApiError } from '../utils/error-handler'
 
 const { t } = useI18n()
 
@@ -929,7 +930,7 @@ const startPrepareSimulation = async () => {
       emit('update-status', 'error')
     }
   } catch (err) {
-    addLog(`Preparation error: ${err.message}`)
+    addLog(`Preparation error: ${formatApiError(err, t)}`)
     emit('update-status', 'error')
   }
 }
@@ -1166,9 +1167,11 @@ const handleConfigRetry = async () => {
       addLog(`✗ Retry failed: ${res.error || 'unknown error'}`)
     }
   } catch (err) {
-    const backendMsg = err?.response?.data?.error
-    configError.value = backendMsg || err?.message || 'Retry request failed'
-    addLog(`✗ Retry error: ${backendMsg || err?.message}`)
+    // US-007: surface a localised, error_code-aware message rather than the raw
+    // English `error` string so the operator sees a helpful translation in fr/ar.
+    const localised = formatApiError(err, t)
+    configError.value = localised
+    addLog(`✗ Retry error: ${localised}`)
   } finally {
     isConfigRetrying.value = false
   }
@@ -1207,7 +1210,7 @@ const loadPreparedData = async () => {
       }
     }
   } catch (err) {
-    addLog(`Failed to load configuration: ${err.message}`)
+    addLog(`Failed to load configuration: ${formatApiError(err, t)}`)
     emit('update-status', 'error')
   }
 }
