@@ -310,9 +310,21 @@
         "Badges utilisent .ms-badge-*",
         "npm run build passe"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-04-29T16:08:00Z",
       "dependencies": [],
-      "metadata": { "estimated_hours": 2, "priority": "P1" }
+      "metadata": {
+        "estimated_hours": 2,
+        "priority": "P1",
+        "files_touched": [
+          "frontend/src/components/Step2EnvSetup.vue (138 lignes touchées)",
+          "frontend/src/components/Step4Report.vue (300 lignes touchées)",
+          "frontend/src/components/Step5Interaction.vue (218 lignes touchées)"
+        ],
+        "approach": "Sub-agent B en parallèle Ralph. Mode hybride : classes legacy conservées + classes .ms-* AJOUTÉES côté template, fallbacks `var(--color-X, #hex)` migrés vers tokens --ms-* dans le scoped CSS. Risk identifié : double-padding possible sur certains boutons (.action-btn .primary, .next-step-btn, etc.) — à valider visuellement, retirer padding legacy en 2e passe si conflit observé.",
+        "commit_attribution_note": "Code livré via commit hybride accidentel `241ffd6` (label US-038 mais contient aussi les 3 fichiers Vue de US-011 par effet auto-stage harness multi-worktree). Marker traçable créé via commit empty `f067038`. Pour resplit propre : git revert 241ffd6 puis cherry-pick séparé backend/frontend (cf rapport Agent B).",
+        "delegated_to_subagent": true
+      }
     },
     {
       "id": "US-012",
@@ -368,9 +380,22 @@
         "Layout utilise les helpers .ms-stack et .ms-row",
         "npm run build passe"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-04-29T16:08:00Z",
       "dependencies": [],
-      "metadata": { "estimated_hours": 2, "priority": "P1" }
+      "metadata": {
+        "estimated_hours": 2,
+        "priority": "P1",
+        "files_touched": [
+          "frontend/src/views/MainView.vue (71 lignes)",
+          "frontend/src/views/SimulationRunView.vue (42 lignes)",
+          "frontend/src/views/ReportView.vue (42 lignes)"
+        ],
+        "process_view_status": "ProcessView.vue n'existe pas dans le repo (vérifié frontend/src/views/ + router/index.js) → exclu du scope, le routing /process utilise MainView.vue à la place.",
+        "approach": "Sub-agent B en parallèle Ralph. Mode hybride identique à US-011 (classes legacy + .ms-* additives, fallbacks migrés vers tokens --ms-*). Bundle size delta minimal (+~2.6 kB CSS sur 6 fichiers cumulés).",
+        "commit_attribution_note": "Mêmes commits que US-011 — code livré via `241ffd6` (label US-038 par accident harness), marker `f067038` créé.",
+        "delegated_to_subagent": true
+      }
     },
     {
       "id": "US-016",
