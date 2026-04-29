@@ -29,6 +29,16 @@
 
 ## Log d'itérations
 
+### 2026-04-29 — US-034 Security headers (HSTS, X-Frame-Options, CSP, Referrer-Policy, Permissions-Policy)
+- **Statut** : passes: true
+- **Fichiers** : backend/app/security_headers.py (nouveau), backend/app/__init__.py, backend/tests/test_unit_security_headers.py
+- **Quality gates** : 8/8 tests security passent
+- **Approche** :
+  - Middleware Flask `after_request` → setdefault les headers (n'override pas si déjà posé)
+  - `/share/*`, `/embed/*`, `/api/simulation/<id>/share-card.png|replay.gif` SANS X-Frame-Options ni CSP (pour social unfurl Slack/Discord/Twitter)
+  - HSTS conditionnel à `FLASK_ENV != 'development'` (sinon dev local en HTTP foire)
+  - CSP minimal qui tolère encore unsafe-inline + Google Fonts (à durcir post US-016)
+
 ### 2026-04-29 — US-031 + US-032 + US-033 Hardening prod minimal
 - **Statut** : passes: true (3 stories en un seul commit, fichier config.py touché par les 3)
 - **Fichiers** : backend/app/config.py, backend/app/__init__.py, backend/tests/test_unit_hardening.py

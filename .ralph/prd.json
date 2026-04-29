@@ -579,9 +579,15 @@
         "Tests pytest pour chaque header sur /api et /share",
         "Lighthouse Best Practices > 90"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-04-29T01:45:00Z",
       "dependencies": ["US-000"],
-      "metadata": { "estimated_hours": 2, "priority": "P0" }
+      "metadata": {
+        "estimated_hours": 2,
+        "priority": "P0",
+        "files_touched": ["backend/app/security_headers.py", "backend/app/__init__.py", "backend/tests/test_unit_security_headers.py"],
+        "lighthouse_target": "Best Practices > 90"
+      }
     }
   ]
 }

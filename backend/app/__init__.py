@@ -58,6 +58,10 @@ def create_app(config_class=Config):
     # Enable gzip/brotli response compression
     Compress(app)
 
+    # Security headers (X-Frame-Options, X-Content-Type-Options, HSTS, CSP)
+    from .security_headers import init_security_headers
+    init_security_headers(app)
+
     # --- Initialize Neo4jStorage singleton (DI via app.extensions) ---
     from .storage import Neo4jStorage
     try:
