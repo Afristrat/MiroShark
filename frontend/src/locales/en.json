@@ -268,6 +268,68 @@
         }
       }
     },
+    "review": {
+      "title": "Review & refine entities",
+      "helpText": "Inspect the entities your knowledge graph extracted. Rename ambiguous ones, merge duplicates (e.g. ‘CEO’ and ‘chief_executive_officer’), delete the noise, or add a key actor that was missed. These corrections feed directly into the agent profile generator.",
+      "nav": {
+        "back": "Back to project",
+        "backTitle": "Return to the project workbench"
+      },
+      "banner": {
+        "title": "Step 1.5 — Review your entities",
+        "description": "Before generating agents, inspect the graph: rename, merge, delete duplicates, or add a missing actor.",
+        "cta": "Review entities"
+      },
+      "stats": {
+        "entities": "entities",
+        "types": "types",
+        "pending": "pending changes"
+      },
+      "actions": {
+        "rename": "Click to rename",
+        "merge": "Merge into…",
+        "mergePlaceholder": "— Merge into… —",
+        "delete": "Delete",
+        "undo": "Undo",
+        "skip": "Looks good — skip",
+        "saveAndContinue": "Apply changes",
+        "saving": "Applying…"
+      },
+      "badges": {
+        "renamed": "Renamed",
+        "merged": "Merged",
+        "deleted": "Deleted",
+        "added": "Added"
+      },
+      "add": {
+        "button": "Add",
+        "placeholderInGroup": "Add a new {type}…",
+        "namePlaceholder": "Entity name (e.g. Marketing Director)",
+        "typePlaceholder": "Type (e.g. Person)",
+        "newTypeTitle": "Add an entity with a custom type",
+        "newTypeHelp": "Use this when none of the existing types match. Type names accept letters, digits, and underscores only.",
+        "remove": "Remove this addition"
+      },
+      "footer": {
+        "pending": "{count} pending change(s)",
+        "noChanges": "No pending changes — feel free to skip."
+      },
+      "validation": {
+        "invalidType": "Type must contain at least one letter, digit, or underscore."
+      },
+      "error": {
+        "title": "Something went wrong",
+        "retry": "Retry",
+        "loadFailed": "Failed to load entities for this graph.",
+        "saveFailed": "Failed to apply your changes.",
+        "projectNotFound": "Project not found.",
+        "graphNotBuilt": "Graph not built yet for this project."
+      },
+      "empty": "No entities have been extracted yet. The graph build may have produced an empty result — go back and rebuild from your documents.",
+      "misc": {
+        "untyped": "Untyped"
+      }
+    },
     "step2": {
       "step1": {
         "title": "Simulation Instance Initialization",

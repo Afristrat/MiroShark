@@ -14,6 +14,16 @@ const routes = [
     props: true
   },
   {
+    // US-040 — Step 1.5 « Review & refine entities » between graph build
+    // and agent setup. Lists the generated entities grouped by type with
+    // inline rename / merge / delete / add actions. « Looks good » sends
+    // the user back to the project workbench so Step 2 can resume.
+    path: '/review-entities/:projectId',
+    name: 'ReviewEntities',
+    component: () => import('../views/ReviewEntitiesView.vue'),
+    props: true
+  },
+  {
     path: '/simulation/:simulationId',
     name: 'Simulation',
     component: () => import('../views/SimulationView.vue'),

@@ -48,8 +48,28 @@
 
       <!-- Right Panel: Step Components -->
       <div class="panel-wrapper right" :style="rightPanelStyle">
+        <!-- US-040 — Step 1.5 review banner. Shown only when the graph
+             build has finished and the user has not yet entered Step 2. -->
+        <div
+          v-if="currentStep === 1 && currentPhase >= 2 && currentProjectId !== 'new'"
+          class="review-entities-banner"
+        >
+          <div class="reb-text">
+            <span class="reb-pill">1.5</span>
+            <div class="reb-body">
+              <div class="reb-title">{{ $t('process.review.banner.title') }}</div>
+              <div class="reb-desc">{{ $t('process.review.banner.description') }}</div>
+            </div>
+          </div>
+          <div class="reb-actions">
+            <button class="ms-btn ms-btn-secondary ms-btn--sm" type="button" @click="goToReviewEntities">
+              {{ $t('process.review.banner.cta') }} →
+            </button>
+          </div>
+        </div>
+
         <!-- Step 1: Graph Construction -->
-        <Step1GraphBuild 
+        <Step1GraphBuild
           v-if="currentStep === 1"
           :currentPhase="currentPhase"
           :projectData="projectData"
@@ -396,6 +416,16 @@ const refreshGraph = () => {
   }
 }
 
+// US-040 — Step 1.5 « Review & refine entities » before agent setup.
+const goToReviewEntities = () => {
+  if (!currentProjectId.value || currentProjectId.value === 'new') return
+  addLog('Opening entity review (Step 1.5)...')
+  router.push({
+    name: 'ReviewEntities',
+    params: { projectId: currentProjectId.value }
+  })
+}
+
 const stopPolling = () => {
   if (pollTimer) {
     clearInterval(pollTimer)
@@ -591,5 +621,62 @@ onUnmounted(() => {
 
 .panel-wrapper.left {
   border-inline-end: var(--border-light);
+}
+
+/* ─── US-040 — Step 1.5 review banner ─── */
+.review-entities-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--ms-orange-soft, #ffe7d2);
+  border-bottom: 1px solid var(--ms-orange, #e96a2a);
+  color: var(--ms-text-primary);
+  flex-wrap: wrap;
+}
+
+.reb-text {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.reb-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ms-orange, #e96a2a);
+  color: #fff;
+  font-family: var(--ms-font-mono);
+  font-weight: 700;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.reb-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.reb-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ms-text-primary);
+}
+
+.reb-desc {
+  font-size: 12px;
+  color: var(--ms-text-primary);
+  opacity: 0.85;
+}
+
+.reb-actions {
+  display: flex;
+  flex-shrink: 0;
 }
 </style>

@@ -83,3 +83,50 @@ export function fetchUrl(url) {
     })
   )
 }
+
+/**
+ * US-040 — Fetch entities of a graph grouped by type, used by the
+ * Step 1.5 review screen. Wraps GET /api/simulation/entities/{graph_id}.
+ *
+ * @param {String} graphId
+ * @param {Object} [opts]
+ * @param {Boolean} [opts.enrich=false] include incident edges (slower).
+ * @returns {Promise}
+ */
+export function getGraphEntities(graphId, { enrich = false } = {}) {
+  return service({
+    url: `/api/simulation/entities/${graphId}`,
+    method: 'get',
+    params: { enrich: enrich ? 'true' : 'false' }
+  })
+}
+
+/**
+ * US-040 — Step 1.5 « Review & refine entities ».
+ *
+ * Apply a user-curated diff (rename / merge / delete / add) on the
+ * entities of a freshly built graph, atomically (single Neo4j txn).
+ *
+ * @param {String} graphId - Target graph UUID.
+ * @param {Object} diff
+ * @param {Array<{entity_uuid: string, new_name: string}>} [diff.renames]
+ * @param {Array<{src_uuid: string, target_uuid: string}>} [diff.merges]
+ * @param {Array<{entity_uuid: string}>} [diff.deletes]
+ * @param {Array<{name: string, entity_type: string}>} [diff.additions]
+ * @returns {Promise}
+ */
+export function refineEntities(graphId, diff = {}) {
+  return requestWithRetry(() =>
+    service({
+      url: '/api/graph/entities/refine',
+      method: 'post',
+      data: {
+        graph_id: graphId,
+        renames: diff.renames || [],
+        merges: diff.merges || [],
+        deletes: diff.deletes || [],
+        additions: diff.additions || [],
+      }
+    })
+  )
+}

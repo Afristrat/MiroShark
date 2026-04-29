@@ -268,6 +268,68 @@
         }
       }
     },
+    "review": {
+      "title": "Réviser et affiner les entités",
+      "helpText": "Inspectez les entités extraites par le graphe de connaissances. Renommez celles qui sont ambiguës, fusionnez les doublons (« CEO » et « chief_executive_officer »), supprimez le bruit, ou ajoutez un acteur clé oublié. Ces corrections alimentent directement la génération des profils d’agents.",
+      "nav": {
+        "back": "Retour au projet",
+        "backTitle": "Revenir à l’atelier du projet"
+      },
+      "banner": {
+        "title": "Étape 1.5 — Révisez vos entités",
+        "description": "Avant de générer les agents, inspectez le graphe : renommez, fusionnez, supprimez les doublons, ou ajoutez un acteur manquant.",
+        "cta": "Réviser les entités"
+      },
+      "stats": {
+        "entities": "entités",
+        "types": "types",
+        "pending": "modifications en attente"
+      },
+      "actions": {
+        "rename": "Cliquer pour renommer",
+        "merge": "Fusionner avec…",
+        "mergePlaceholder": "— Fusionner avec… —",
+        "delete": "Supprimer",
+        "undo": "Annuler",
+        "skip": "Tout est bon — ignorer",
+        "saveAndContinue": "Appliquer les modifications",
+        "saving": "Application en cours…"
+      },
+      "badges": {
+        "renamed": "Renommée",
+        "merged": "Fusionnée",
+        "deleted": "Supprimée",
+        "added": "Ajoutée"
+      },
+      "add": {
+        "button": "Ajouter",
+        "placeholderInGroup": "Ajouter une nouvelle entité {type}…",
+        "namePlaceholder": "Nom de l’entité (ex. Directrice Marketing)",
+        "typePlaceholder": "Type (ex. Person)",
+        "newTypeTitle": "Ajouter une entité avec un type personnalisé",
+        "newTypeHelp": "Utilisez ce bloc si aucun type existant ne correspond. Les noms de type acceptent uniquement les lettres, chiffres et tirets bas.",
+        "remove": "Retirer cet ajout"
+      },
+      "footer": {
+        "pending": "{count} modification(s) en attente",
+        "noChanges": "Aucune modification en attente — vous pouvez passer à la suite."
+      },
+      "validation": {
+        "invalidType": "Le type doit contenir au moins une lettre, un chiffre ou un tiret bas."
+      },
+      "error": {
+        "title": "Une erreur est survenue",
+        "retry": "Réessayer",
+        "loadFailed": "Impossible de charger les entités de ce graphe.",
+        "saveFailed": "Impossible d’appliquer vos modifications.",
+        "projectNotFound": "Projet introuvable.",
+        "graphNotBuilt": "Graphe non encore construit pour ce projet."
+      },
+      "empty": "Aucune entité n’a été extraite pour l’instant. La construction du graphe a peut-être produit un résultat vide — revenez en arrière et reconstruisez depuis vos documents.",
+      "misc": {
+        "untyped": "Sans type"
+      }
+    },
     "step2": {
       "step1": {
         "title": "Initialisation de l’instance de simulation",

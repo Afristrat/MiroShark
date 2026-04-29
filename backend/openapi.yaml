@@ -356,6 +356,70 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/SuccessEnvelope" }
 
+  /api/graph/entities/refine:
+    post:
+      tags: [Graph Build]
+      summary: |
+        Step 1.5 — Apply a user-curated diff (rename / merge / delete / add)
+        to the entities of a freshly built graph. All four operations land
+        in a single Neo4j transaction (atomic rollback on any error).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [graph_id]
+              properties:
+                graph_id: { type: string }
+                renames:
+                  type: array
+                  items:
+                    type: object
+                    required: [entity_uuid, new_name]
+                    properties:
+                      entity_uuid: { type: string }
+                      new_name:    { type: string, maxLength: 200 }
+                merges:
+                  type: array
+                  items:
+                    type: object
+                    required: [src_uuid, target_uuid]
+                    properties:
+                      src_uuid:    { type: string }
+                      target_uuid: { type: string }
+                deletes:
+                  type: array
+                  items:
+                    type: object
+                    required: [entity_uuid]
+                    properties:
+                      entity_uuid: { type: string }
+                additions:
+                  type: array
+                  items:
+                    type: object
+                    required: [name, entity_type]
+                    properties:
+                      name:        { type: string, maxLength: 200 }
+                      entity_type: { type: string, maxLength: 60 }
+      responses:
+        "200":
+          description: Refinement applied (or no-op for empty diff).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SuccessEnvelope" }
+        "400":
+          description: Invalid diff (missing graph_id, malformed entries, etc.).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+        "503":
+          description: Neo4j storage unavailable.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+
   /api/simulation/entities/{graph_id}:
     get:
       tags: [Graph Build]

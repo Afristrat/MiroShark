@@ -655,12 +655,124 @@ def get_graph_data(graph_id: str):
             "success": True,
             "data": graph_data
         })
-        
+
     except Exception as e:
         return jsonify({
             "success": False,
             "error": str(e),
             "traceback": traceback.format_exc()
+        }), 500
+
+
+# ============== US-040 — Step 1.5 « Review & refine entities » ==============
+
+@graph_bp.route('/entities/refine', methods=['POST'])
+def refine_entities():
+    """Apply a user-curated diff (rename / merge / delete / add) on the
+    entities of a freshly built graph, before the agent profile generation
+    step kicks in. All four operations land in a single Neo4j transaction.
+
+    Request (JSON):
+        {
+            "graph_id": "<uuid>",
+            "renames":   [{"entity_uuid": "...", "new_name": "..."}, ...],
+            "merges":    [{"src_uuid": "...", "target_uuid": "..."}, ...],
+            "deletes":   [{"entity_uuid": "..."}, ...],
+            "additions": [{"name": "...", "entity_type": "Person"}, ...]
+        }
+
+    Response (200):
+        {
+            "success": true,
+            "data": {
+                "graph_id": "...",
+                "renames_applied":   N,
+                "merges_applied":    N,
+                "deletes_applied":   N,
+                "additions_applied": N,
+                "added_entities":    [{"uuid": "...", "name": "...",
+                                        "entity_type": "..."}, ...]
+            }
+        }
+    """
+    try:
+        from ..services.entity_refiner import (
+            EntityRefiner,
+            EntityRefineError,
+            sanitise_refine_diff,
+        )
+
+        storage = current_app.extensions.get('neo4j_storage')
+        if not storage:
+            return jsonify({
+                "success": False,
+                "error": "Neo4j storage is not initialized",
+                "error_code": "STORAGE_UNAVAILABLE",
+            }), 503
+
+        data = request.get_json() or {}
+        graph_id = data.get('graph_id')
+        if not graph_id or not isinstance(graph_id, str):
+            return jsonify({
+                "success": False,
+                "error": "graph_id is required",
+                "error_code": "MISSING_GRAPH_ID",
+            }), 400
+
+        try:
+            diff = sanitise_refine_diff(data)
+        except EntityRefineError as ve:
+            return jsonify({
+                "success": False,
+                "error": str(ve),
+                "error_code": "INVALID_DIFF",
+            }), 400
+
+        if diff.total_ops == 0:
+            return jsonify({
+                "success": True,
+                "data": {
+                    "graph_id": graph_id,
+                    "renames_applied": 0,
+                    "merges_applied": 0,
+                    "deletes_applied": 0,
+                    "additions_applied": 0,
+                    "added_entities": [],
+                    "message": "No-op — empty diff",
+                }
+            })
+
+        refiner = EntityRefiner(storage=storage)
+        try:
+            summary = refiner.apply(graph_id, diff)
+        except EntityRefineError as ve:
+            # Stale UUID, malformed merge, etc. — surface as 400.
+            return jsonify({
+                "success": False,
+                "error": str(ve),
+                "error_code": "INVALID_DIFF",
+            }), 400
+
+        logger.info(
+            f"[refine] {graph_id} — applied "
+            f"{summary['renames_applied']} renames, "
+            f"{summary['merges_applied']} merges, "
+            f"{summary['deletes_applied']} deletes, "
+            f"{summary['additions_applied']} additions"
+        )
+
+        return jsonify({
+            "success": True,
+            "data": summary,
+        })
+
+    except Exception as e:
+        logger.error(f"refine_entities error: {e}")
+        return jsonify({
+            "success": False,
+            "error": str(e),
+            "error_code": "REFINE_FAILED",
+            "traceback": traceback.format_exc(),
         }), 500
 
 
