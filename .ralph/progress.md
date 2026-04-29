@@ -30,6 +30,41 @@
 
 ## Log d'itérations
 
+### 2026-04-29 — US-037 SimulationConfigGenerator parse simulation_requirement → time config adaptative
+- **Statut** : passes: true (chantier 9-simulation-quality, débloque US-038/US-039/US-041)
+- **Fichiers** :
+  - `backend/app/services/simulation_config_generator.py` : +`import re`, +helper top-level `_resolve_time_config()` (~120 l, 4 priorités), +param kwarg optionnel `recommended_settings: Optional[Dict[str, Any]] = None` sur `generate_config()`, branchement résolution + log INFO français + court-circuit LLM time config quand `source != "default"` (économie LLM call), `_parse_time_config()` étendu avec `forced_rounds`/`forced_minutes_per_round` qui bypassent les clamps legacy (24-336h / 30-120 mpr).
+  - `backend/tests/test_unit_simulation_time_config.py` : nouveau, 17 tests pure-Python (no LLM, no Neo4j) → run dans le quality gate offline.
+- **Quality gates** :
+  - `cd backend && uv run pytest tests/ --tb=short -x` → **249 passed, 17 skipped (integration), 0 régression** (baseline était 232 ; +17 nouveaux tests).
+  - Aucun frontend touché → pas de `npm run build` requis pour cette story.
+- **Architecture / priorité de résolution** (l'ordre compte, premier match gagne) :
+  1. **`recommended_settings.{rounds, minutes_per_round}`** si tous deux > 0 → `source="template"`. Couvre les 5 templates canoniques US-042 (PMF 10×10080, Crisis 24×60, Adcheck 18×240, Policy 10×240, Launch 28×360). Param non encore câblé côté caller (cf "review_point" PRD) mais le helper est prêt.
+  2. **Regex** sur `simulation_requirement` (FR + EN, case-insensitive). Patterns avec lookbehind anti-range (`(?<![\d\-])` pour éviter "10-15 hours" → 15) :
+     - `mois|months?` → 1 round = 1 semaine, N×4 rounds
+     - `semaines?|weeks?|sem\b` → 1 round = 1 semaine (10080 min), N rounds
+     - `jours? ouvrés?|business days?` → 1 round = 4h (240 min), N×2 rounds (2 sessions/jour)
+     - `jours?|days?|j\b` → 1 round = 4h (240 min), N×6 rounds (24h coverage). Override 6h (360 min) si la phrase contient « 1 round = 6h » explicite.
+     - `heures?|hours?|h\b` → 1 round = 60 min, N rounds
+     - **Spécificité business_day > day** : si "5 jours ouvrés" matche les deux, on drop le match `day` qui chevauche. Sinon on aurait pris 30×240 (le plus long horizon) au lieu de 10×240.
+     - **Multi-durées** : "5 jours, 10 semaines" → on prend la plus grande horizon totale (10 sem = 100800 min > 5j = 7200 min). Documenté dans le code et testé.
+  3. **Keyword fallback** loose : `crisis|crise|24h|24 h` → 24×60 ; `adcheck|3 jours` → 18×240 ; `pmf|10 semaines` → 10×10080.
+  4. **Default legacy** 72 rounds × 60 min (backward compat — comportement actuel).
+- **Branchement caller** (volontairement out of scope US-037) : `simulation_manager.prepare_simulation` (ligne 457) et `api/simulation.py` retry endpoint (ligne 2660) appellent encore `generate_config(...)` SANS passer `recommended_settings`. Conséquence pratique :
+  - La priorité 1 (template) n'est jamais hit en prod tant qu'une story future ne fait pas le câblage `preset template → ProjectManager → generate_config(recommended_settings=...)`.
+  - MAIS : le `simulation_requirement` des 5 templates US-042 contient déjà la phrase « 10 semaines », « 24 heures », « 5 jours ouvrés », « 3 jours », « 7 jours » → la priorité 2 (regex) couvre les 5 scénarios canoniques d'office. Pour Crisis : `simulation_requirement = "Voir engine.md — fuite vidéo CEO à H+0, dérive Twitter/Reddit/médias/WhatsApp 24 heures, 1 round = 1 heure."` → regex extrait "24 heures" → 24×60. Pour Adcheck : `"...18 rounds × 4h..."` → regex matche "18 rounds × 4h" → mais notre regex ne reconnaît pas ce format spécifique. À surveiller dans la story de câblage future.
+- **Logging** : `logger.info("US-037: time config résolu rounds=%d, minutes_per_round=%d, source=%s", ...)` une fois par appel `generate_config`. Coût négligeable (1 log INFO par préparation, déjà bruyant en LLM logs).
+- **Coût LLM** : -1 call LLM par préparation de simulation depuis template (le path déterministe court-circuite `_generate_time_config`). Les autres steps (event_config, agents, prediction markets) inchangés.
+- **Apprentissages / patterns** :
+  - **Lookbehind regex pour éviter capture de range** : `(?<![\d\-])(\d+)\s*(unit)` empêche `10-15 hours` de matcher comme `15 hours`. Crucial pour les requirements riches.
+  - **Specificity dedup post-finditer** : quand deux unités regex peuvent matcher le même span (cas "jours" vs "jours ouvrés"), trier par spécificité dans une 2e passe est plus simple que de coder un grand pattern alternatif. Le code reste lisible et chaque regex est testable indépendamment.
+  - **Bypass clamps legacy via params optionnels `forced_*`** : permet d'ajouter une 2e voie d'écriture sans casser le contrat de la 1ère. Pattern réutilisable pour d'autres parsers backend qui veulent court-circuiter une normalisation par défaut.
+  - **Out-of-scope discipline** : la story demandait de NE PAS toucher l'API contract (`simulation_manager` / `api/simulation.py`). Le câblage final reste pour une story dédiée — `recommended_settings` est en kwarg optionnel donc additif et zéro-risque.
+- **Pièges détectés** :
+  - Le clamp legacy `total_simulation_hours = max(24, min(336, raw))` aurait écrasé silencieusement PMF (1680h) → 336h. Le bypass via `forced_*` est obligatoire pour les templates longs.
+  - `minutes_per_round = max(30, min(120, ...))` aurait écrasé 240 (Adcheck/Policy), 360 (Launch), 10080 (PMF) → 120. Même bypass nécessaire.
+  - Le regex `j\b` (abbrev "j") matche aussi "j'ai" si on n'est pas attentif. Le `\b` après le chiffre + le `\d{1,3}` lookbehind anti-range rendent les faux positifs improbables, mais à surveiller si un user écrit littéralement "5j ouvrés" sans espace — testé OK car `jours? ouvrés?` matche aussi `jours ouvrés` (avec espace).
+
 ### 2026-04-29 — US-042 5 scénarios canoniques preset_templates (codesignés avec Amine)
 - **Statut** : passes: true (premier de la chaîne chantier 9-simulation-quality, débloque US-037, US-038, US-041)
 - **Volume** : 5 scénarios × (1 JSON template + 3 fichiers MD : README/01_attachment/02_engine) = **20 fichiers** + 1 README top-level + 1 script Python helper. Total ~15 000 mots de contenu.

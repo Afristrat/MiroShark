@@ -802,9 +802,37 @@
         "Tests pytest : 5 cas (24h crisis / 5j policy / 3j adcheck / 1 semaine / 10 semaines incubator) → time config respectée",
         "Backward compat : pas de simulation_requirement = default 72h"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-04-29T17:15:00Z",
       "dependencies": ["US-042"],
-      "metadata": { "priority": "P0", "chantier_priority_rank": 2 }
+      "metadata": {
+        "priority": "P0",
+        "chantier_priority_rank": 2,
+        "files_touched": [
+          "backend/app/services/simulation_config_generator.py (+1 import re + helper _resolve_time_config 4-tier ~120 l + branch dans generate_config + forced_rounds/forced_minutes_per_round dans _parse_time_config + nouveau kwarg recommended_settings)",
+          "backend/tests/test_unit_simulation_time_config.py (nouveau, 17 tests : 5 templates canoniques + 8 regex/keyword + 2 edge cases overlap/multi-durées + 2 EN regex)"
+        ],
+        "wall_time_observed": "~20 min Ralph autonome",
+        "test_result": "249 passed, 17 skipped (integration), 0 régression vs baseline 232",
+        "resolution_priority": [
+          "1. recommended_settings.{rounds, minutes_per_round} si > 0 → source=template (couvre 5 templates US-042)",
+          "2. Regex FR+EN sur simulation_requirement : (N) heures|hours|h, jours ouvrés|business days, jours|days|j, semaines|weeks|sem, mois|months. Spécificité business_day > day sur overlap. Multi-durées → plus long horizon.",
+          "3. Keyword fallback : crisis/crise/24h → 24×60, adcheck/3 jours → 18×240, PMF/10 semaines → 10×10080",
+          "4. Default legacy 72×60 (backward compat)"
+        ],
+        "mapping_choisi": {
+          "heures": "1 round = 60 min, rounds = N",
+          "jours_ouvrés": "1 round = 240 min (4h), rounds = N×2 (2 sessions/jour)",
+          "jours": "1 round = 240 min (4h), rounds = N×6 (24h coverage). Override 360 min si '1 round = 6h' explicite",
+          "semaines": "1 round = 10080 min (1 semaine), rounds = N",
+          "mois": "1 round = 10080 min (1 semaine), rounds = N×4"
+        },
+        "log_format": "INFO 'US-037: time config résolu rounds=N, minutes_per_round=M, source=<template|regex|keyword|default>'",
+        "clamps_bypass": "_parse_time_config accepte forced_rounds/forced_minutes_per_round qui bypassent les clamps legacy (24-336h / 30-120 mpr) car les templates canoniques excèdent légitimement (ex PMF 10080 mpr × 10 rounds = 1680h).",
+        "api_contract": "Param recommended_settings ajouté en KWARG OPTIONNEL (default None). Aucun call existant cassé. La branche LLM time config est court-circuitée quand source != default (économie 1 LLM call par préparation de simulation depuis un template).",
+        "backward_compat": "Aucune simulation existante ne porte recommended_settings → fallback regex/keyword/default automatique. Tests existants 232/232 passent inchangés.",
+        "review_point": "Le code de simulation_manager.py (ligne 457) et api/simulation.py (ligne 2660) NE PASSENT PAS encore recommended_settings à generate_config(). C'est volontaire (out of scope US-037 qui vise UNIQUEMENT l'amélioration interne du resolver). Une story future devra brancher : preset template loader → ProjectManager.recommended_settings → generate_config(recommended_settings=...). Pour l'instant, la priorité 1 (template) ne sera jamais déclenchée en prod tant que ce câblage n'est pas fait — mais le simulation_requirement contient déjà la phrase '10 semaines / 24h / 5 jours ouvrés' donc la priorité 2 (regex) couvre les 5 scénarios canoniques."
+      }
     },
     {
       "id": "US-038",

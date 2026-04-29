@@ -13,8 +13,9 @@ Uses a step-by-step generation strategy to avoid failure from generating overly 
 
 import json
 import math
+import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Dict, Any, List, Optional, Callable
+from typing import Dict, Any, List, Optional, Callable, Tuple
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
 
@@ -217,6 +218,176 @@ class SimulationParameters:
         return json.dumps(self.to_dict(), ensure_ascii=False, indent=indent)
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# US-037 — Time config resolution from simulation_requirement / recommended_settings
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Default fallback values (matches legacy behaviour: 72 rounds × 60 min = 72h)
+_DEFAULT_TIME_HOURS = 72
+_DEFAULT_MINUTES_PER_ROUND = 60
+
+# Regex patterns covering FR + EN timeframes. Order matters: we check from
+# longest unit (months) down to shortest (hours) so "10 semaines" doesn't
+# get caught by an "h" sub-match. We also exclude a leading dash before the
+# number (e.g. "10-15 hours") to avoid matching ranges as a single value.
+_TIMEFRAME_REGEXES: List[Tuple[str, re.Pattern]] = [
+    # Months (FR mois / EN months) — convert to weeks×4
+    ("month", re.compile(
+        r"(?<![\d\-])(\d{1,3})\s*(mois|months?)\b",
+        re.IGNORECASE,
+    )),
+    # Weeks (FR semaines / EN weeks / abbrev sem)
+    ("week", re.compile(
+        r"(?<![\d\-])(\d{1,3})\s*(semaines?|weeks?|sem\b)",
+        re.IGNORECASE,
+    )),
+    # Business days (FR jours ouvrés / EN business days)
+    ("business_day", re.compile(
+        r"(?<![\d\-])(\d{1,3})\s*(jours?\s+ouvr(?:é|e)s?|business\s+days?)",
+        re.IGNORECASE,
+    )),
+    # Plain days (FR jours / EN days / abbrev j)
+    ("day", re.compile(
+        r"(?<![\d\-])(\d{1,3})\s*(jours?|days?|j\b)",
+        re.IGNORECASE,
+    )),
+    # Hours (FR heures / EN hours / abbrev h)
+    ("hour", re.compile(
+        r"(?<![\d\-])(\d{1,3})\s*(heures?|hours?|h\b)",
+        re.IGNORECASE,
+    )),
+]
+
+
+def _resolve_time_config(
+    simulation_requirement: Optional[str],
+    recommended_settings: Optional[Dict[str, Any]] = None,
+    default_hours: int = _DEFAULT_TIME_HOURS,
+    default_minutes_per_round: int = _DEFAULT_MINUTES_PER_ROUND,
+) -> Tuple[int, int, str]:
+    """Resolve (rounds, minutes_per_round, source) from scenario inputs.
+
+    Priority order (US-037):
+        1. ``recommended_settings.{rounds, minutes_per_round}`` if both > 0
+           (covers all 5 canonical US-042 templates).
+        2. Regex match on ``simulation_requirement`` for FR/EN timeframes
+           (heures, jours [ouvrés], semaines, mois). When several units are
+           found we keep the **longest** total wall-clock so a phrase like
+           "5 jours, 10 semaines" maps to the larger horizon (10 weeks).
+        3. Loose keyword fallback (crisis 24h / adcheck 3 jours / PMF 10 sem).
+        4. Default fallback (72 rounds × 60 min) — backward-compatible.
+
+    Day-granularity choice: 1 round = 4h (240 min) → 6 rounds/day. Fine
+    enough to observe intra-day peaks without bloating round count. The
+    explicit phrase "1 round = 6h" overrides this to 6h/round.
+
+    Returns:
+        Tuple ``(rounds, minutes_per_round, source)`` where source is one
+        of ``"template"``, ``"regex"``, ``"keyword"``, ``"default"``.
+    """
+    sim_req = (simulation_requirement or "").strip()
+
+    # ── Priority 1: explicit recommended_settings from a US-042 template ──
+    if isinstance(recommended_settings, dict):
+        rounds_rec = recommended_settings.get("rounds")
+        mpr_rec = recommended_settings.get("minutes_per_round")
+        try:
+            rounds_rec_int = int(rounds_rec) if rounds_rec is not None else 0
+            mpr_rec_int = int(mpr_rec) if mpr_rec is not None else 0
+        except (TypeError, ValueError):
+            rounds_rec_int = 0
+            mpr_rec_int = 0
+        if rounds_rec_int > 0 and mpr_rec_int > 0:
+            return rounds_rec_int, mpr_rec_int, "template"
+
+    # ── Priority 2: regex on simulation_requirement (free-form projects) ──
+    if sim_req:
+        explicit_6h = bool(
+            re.search(r"1\s*round\s*=\s*6\s*h", sim_req, re.IGNORECASE)
+        )
+        # Per-day granularity: 4h default, 6h if explicitly requested
+        day_minutes_per_round = 360 if explicit_6h else 240
+        rounds_per_day = 4 if explicit_6h else 6  # 24h / mpr
+
+        # Collect raw matches first (with span), then dedupe overlapping
+        # matches favouring the more specific unit (e.g. "business_day" wins
+        # over "day" when they cover the same span like "5 jours ouvrés").
+        raw_matches: List[Tuple[str, int, int, int]] = []  # (unit, n, span_start, span_end)
+        for unit, pattern in _TIMEFRAME_REGEXES:
+            for m in pattern.finditer(sim_req):
+                try:
+                    n = int(m.group(1))
+                except (TypeError, ValueError):
+                    continue
+                if n <= 0:
+                    continue
+                raw_matches.append((unit, n, m.start(), m.end()))
+
+        # Specificity: business_day strictly wins over day on overlap.
+        def _drop_overlapped_day(matches):
+            kept = []
+            for unit, n, s, e in matches:
+                if unit == "day":
+                    overlapped = any(
+                        u2 == "business_day" and not (e <= s2 or e2 <= s)
+                        for u2, _, s2, e2 in matches
+                    )
+                    if overlapped:
+                        continue
+                kept.append((unit, n, s, e))
+            return kept
+
+        raw_matches = _drop_overlapped_day(raw_matches)
+
+        candidates: List[Tuple[int, int, int]] = []  # (total_minutes, rounds, mpr)
+        for unit, n, _s, _e in raw_matches:
+            if unit == "hour":
+                rounds = n
+                mpr = 60
+            elif unit == "business_day":
+                # 1 round = 4h × 2 sessions/day → mpr=240, rounds = N×2
+                # (matches policy_brief_stress: 5j ouvrés → 10 rounds × 240)
+                rounds = n * 2
+                mpr = 240
+            elif unit == "day":
+                # 1 round = 4h → mpr=240, rounds = N×6 (24h coverage)
+                # Override to 6h if explicit.
+                rounds = n * rounds_per_day
+                mpr = day_minutes_per_round
+            elif unit == "week":
+                # 1 round = 1 week (10080 min) → matches PMF / She Start
+                rounds = n
+                mpr = 10080
+            elif unit == "month":
+                # 1 round = 1 week, N months ≈ N×4 weeks
+                rounds = n * 4
+                mpr = 10080
+            else:
+                continue
+            total = rounds * mpr
+            candidates.append((total, rounds, mpr))
+
+        if candidates:
+            # Pick the longest total horizon so "5 jours, 10 semaines" → 10 sem.
+            candidates.sort(key=lambda c: c[0], reverse=True)
+            _, rounds_pick, mpr_pick = candidates[0]
+            return rounds_pick, mpr_pick, "regex"
+
+    # ── Priority 3: loose keyword fallback ──
+    if sim_req:
+        lower = sim_req.lower()
+        if any(k in lower for k in ("crisis", "crise", " 24h", "24 h")):
+            return 24, 60, "keyword"
+        if any(k in lower for k in ("adcheck", "ad check")) or "3 jours" in lower:
+            return 18, 240, "keyword"
+        if "pmf" in lower or "10 semaines" in lower:
+            return 10, 10080, "keyword"
+
+    # ── Priority 4: legacy default (72 × 60 = 72h) ──
+    rounds_default = max(1, int(default_hours * 60 // default_minutes_per_round))
+    return rounds_default, default_minutes_per_round, "default"
+
+
 class SimulationConfigGenerator:
     """
     Simulation configuration intelligent generator
@@ -273,6 +444,7 @@ class SimulationConfigGenerator:
         enable_reddit: bool = True,
         polymarket_market_count: int = 1,
         progress_callback: Optional[Callable[[int, int, str], None]] = None,
+        recommended_settings: Optional[Dict[str, Any]] = None,
     ) -> SimulationParameters:
         """
         Intelligently generate complete simulation configuration (step-by-step generation)
@@ -287,11 +459,25 @@ class SimulationConfigGenerator:
             enable_twitter: Whether to enable Twitter
             enable_reddit: Whether to enable Reddit
             progress_callback: Progress callback function(current_step, total_steps, message)
+            recommended_settings: Optional dict from a preset template carrying
+                ``rounds`` + ``minutes_per_round`` (US-037). When provided and
+                both fields > 0, they take priority over regex / keyword
+                resolution from ``simulation_requirement``.
 
         Returns:
             SimulationParameters: Complete simulation parameters
         """
         logger.info(f"Starting intelligent simulation config generation: simulation_id={simulation_id}, entity_count={len(entities)}")
+
+        # ── US-037: resolve adaptive time config from scenario inputs ──
+        resolved_rounds, resolved_mpr, resolved_source = _resolve_time_config(
+            simulation_requirement=simulation_requirement,
+            recommended_settings=recommended_settings,
+        )
+        logger.info(
+            "US-037: time config résolu rounds=%d, minutes_per_round=%d, source=%s",
+            resolved_rounds, resolved_mpr, resolved_source,
+        )
 
         # Calculate total steps
         num_batches = math.ceil(len(entities) / self.AGENTS_PER_BATCH)
@@ -317,8 +503,25 @@ class SimulationConfigGenerator:
         # ========== Step 1: Generate time configuration ==========
         report_progress(1, "Generating time configuration...")
         num_entities = len(entities)
-        time_config_result = self._generate_time_config(context, num_entities)
-        time_config = self._parse_time_config(time_config_result, num_entities)
+        if resolved_source != "default":
+            # US-037: deterministic resolution wins. We still call the LLM-light
+            # path to get sensible activity bands (agents_per_hour / peak_hours)
+            # but we override the *duration* fields with the resolved values
+            # and skip clamping (templates legitimately exceed the legacy
+            # 24-336h / 30-120 mpr bounds, e.g. PMF = 10080 mpr × 10 rounds).
+            time_config_result = self._get_default_time_config(num_entities)
+            time_config_result["reasoning"] = (
+                f"US-037 deterministic ({resolved_source}): "
+                f"rounds={resolved_rounds}, minutes_per_round={resolved_mpr}"
+            )
+            time_config = self._parse_time_config(
+                time_config_result, num_entities,
+                forced_rounds=resolved_rounds,
+                forced_minutes_per_round=resolved_mpr,
+            )
+        else:
+            time_config_result = self._generate_time_config(context, num_entities)
+            time_config = self._parse_time_config(time_config_result, num_entities)
         reasoning_parts.append(f"Time config: {time_config_result.get('reasoning', 'success')}")
 
         # ========== Step 2: Generate event configuration ==========
@@ -655,8 +858,19 @@ Field descriptions:
             "reasoning": "Using default daily schedule configuration (1 hour per round)"
         }
 
-    def _parse_time_config(self, result: Dict[str, Any], num_entities: int) -> TimeSimulationConfig:
-        """Parse time configuration result and validate agents_per_hour values don't exceed total agent count"""
+    def _parse_time_config(
+        self,
+        result: Dict[str, Any],
+        num_entities: int,
+        forced_rounds: Optional[int] = None,
+        forced_minutes_per_round: Optional[int] = None,
+    ) -> TimeSimulationConfig:
+        """Parse time configuration result and validate agents_per_hour values don't exceed total agent count.
+
+        When ``forced_rounds`` + ``forced_minutes_per_round`` are provided
+        (US-037 path), the duration fields bypass the legacy clamps because
+        canonical templates legitimately exceed them (e.g. 1 week per round).
+        """
         # Get raw values
         agents_per_hour_min = result.get("agents_per_hour_min", max(1, num_entities // 15))
         agents_per_hour_max = result.get("agents_per_hour_max", max(5, num_entities // 5))
@@ -675,15 +889,23 @@ Field descriptions:
             agents_per_hour_min = max(1, agents_per_hour_max // 2)
             logger.warning(f"agents_per_hour_min >= max, corrected to {agents_per_hour_min}")
 
-        # Clamp total_simulation_hours to sane range (24h–336h / 2 weeks max)
-        raw_hours = result.get("total_simulation_hours", 72)
-        clamped_hours = max(24, min(336, raw_hours))
-        if raw_hours != clamped_hours:
-            logger.warning(f"total_simulation_hours {raw_hours} clamped to {clamped_hours}")
+        if forced_rounds is not None and forced_minutes_per_round is not None:
+            # US-037: deterministic path — honor template / regex resolution.
+            minutes_per_round = max(1, int(forced_minutes_per_round))
+            # total_simulation_hours kept as a derived informative value; use
+            # ceil so a 24×60 = 1440 min plan stays >= 24h.
+            total_hours = max(1, math.ceil((forced_rounds * minutes_per_round) / 60))
+        else:
+            # Clamp total_simulation_hours to sane range (24h–336h / 2 weeks max)
+            raw_hours = result.get("total_simulation_hours", 72)
+            total_hours = max(24, min(336, raw_hours))
+            if raw_hours != total_hours:
+                logger.warning(f"total_simulation_hours {raw_hours} clamped to {total_hours}")
+            minutes_per_round = max(30, min(120, result.get("minutes_per_round", 60)))
 
         return TimeSimulationConfig(
-            total_simulation_hours=clamped_hours,
-            minutes_per_round=max(30, min(120, result.get("minutes_per_round", 60))),
+            total_simulation_hours=total_hours,
+            minutes_per_round=minutes_per_round,
             agents_per_hour_min=agents_per_hour_min,
             agents_per_hour_max=agents_per_hour_max,
             peak_hours=result.get("peak_hours", [19, 20, 21, 22]),
