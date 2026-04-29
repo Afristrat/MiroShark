@@ -1,10 +1,12 @@
 <template>
   <router-view />
+  <LanguageSwitcher class="lang-switcher--floating" />
   <DebugPanel />
 </template>
 
 <script setup>
 import DebugPanel from './components/DebugPanel.vue'
+import LanguageSwitcher from './components/LanguageSwitcher.vue'
 </script>
 
 <style>
@@ -153,4 +155,12 @@ button {
 .animate-fade-in { animation: fade-in 0.5s ease-out; }
 .animate-shimmer { animation: shimmer 2s ease-in-out infinite; }
 .animate-pulse-border { animation: pulse-border 2s ease-in-out infinite; }
+
+/* Floating LanguageSwitcher — visible on every route, RTL-flipped */
+.lang-switcher--floating {
+  position: fixed;
+  top: 16px;
+  inset-inline-end: 16px;
+  z-index: 999;
+}
 </style>

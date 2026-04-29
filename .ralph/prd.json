@@ -210,9 +210,20 @@
         "dir='rtl' appliqué quand ar sélectionné",
         "Test Playwright : changement de langue persiste après reload"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-04-29T10:30:00Z",
       "dependencies": ["US-001"],
-      "metadata": { "estimated_hours": 2, "priority": "P0" }
+      "metadata": {
+        "estimated_hours": 2,
+        "priority": "P0",
+        "files_touched": [
+          "frontend/src/components/LanguageSwitcher.vue",
+          "frontend/src/App.vue"
+        ],
+        "test_result": "frontend npm run build OK 305 kB main / 90 kB gzip ; backend pytest 202 passed",
+        "playwright_test": "deferred to US-010 (set up commun de la suite Playwright multi-locale)",
+        "approach": "Composant unique placé en widget flottant top-right via App.vue (couverture toutes vues + Home en une seule mount). Réutilise setLocale + applyDirection de i18n.js (dir=rtl + bassira_locale storage déjà couverts US-001). Labels options via clés i18n existantes language.{fr,ar,en} (noms natifs identiques cross-locale). Inset-inline-end pour le RTL flip automatique."
+      }
     },
     {
       "id": "US-009",

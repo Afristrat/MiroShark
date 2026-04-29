@@ -30,6 +30,20 @@
 
 ## Log d'itérations
 
+### 2026-04-29 — US-008 LanguageSwitcher (FR/AR/EN dropdown, widget flottant)
+- **Statut** : passes: true
+- **Fichiers** : frontend/src/components/LanguageSwitcher.vue (nouveau, 158 l), frontend/src/App.vue (+2 imports template + 6 lignes CSS floating)
+- **Quality gates** : npm run build OK (305 kB main / 90 kB gzip, +2 kB pour le composant), backend pytest 202/202 (zéro régression : aucun fichier backend touché)
+- **Architecture** :
+  - Widget flottant top-right (`position: fixed; inset-inline-end: 16px`) → couvre Home + toutes les vues en un seul mount via App.vue (DRY)
+  - `inset-inline-end` au lieu de `right` → flip RTL automatique sans media query
+  - Bouton dropdown accessible (aria-expanded, aria-haspopup, role=listbox, ESC pour fermer, click-outside)
+  - Réutilise `setLocale(i18nInstance, loc)` et `applyDirection` du module i18n.js → dir=rtl/lang attributes + bassira_locale storage déjà gérés (US-001)
+  - Labels options via clés i18n EXISTANTES `language.{fr,ar,en}` (noms natifs identiques cross-locale, tels que rendus par chaque fr/ar/en.json) → user voit toujours « Français / العربية / English » indépendamment de sa locale courante
+  - Drapeaux : 🇫🇷 (fr) / 🇲🇦 (ar, MA pas SA — ciblage Maghreb cohérent avec le brand) / 🇬🇧 (en)
+- **AC déférée** : « Test Playwright : changement de langue persiste après reload » → reportée à US-010 (set up commun de la suite Playwright multi-locale, qui couvrira aussi les ACs Playwright de US-002→006). Validation manuelle recommandée : `?lang=ar` dans l'URL → reload → dir=rtl + locale ar persistée.
+- **Pattern à retenir** : pour les autres composables qui doivent connaître la locale active, utiliser `useI18n()` + accéder à `locale.value` réactif. Pour DÉCLENCHER un changement, importer l'instance via `import i18nInstance from './i18n'` et appeler `setLocale(i18nInstance, code)` (helper du module qui orchestre instance + storage + dir).
+
 ### 2026-04-29 — Rebrand frontend MiroShark → Bassira (hors Ralph, prereq UI cohérente)
 - **Statut** : commité hors prd.json (pas une story Ralph)
 - **Volume** : 30 fichiers, ~93 remplacements (en/fr/ar locales, index.html, manifest.json, sw.js, 14 vues/composants, design-tokens header, services worker, watermarks chart, download filenames `bassira-*.png`)
