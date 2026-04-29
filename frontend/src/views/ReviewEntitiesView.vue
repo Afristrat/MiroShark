@@ -60,16 +60,13 @@
         <div class="ms-skeleton rev-skeleton-block"></div>
       </section>
 
-      <!-- ─── Empty state ─── -->
-      <section v-else-if="!loading && entities.length === 0" class="rev-empty ms-card">
-        <p>{{ $t('process.review.empty') }}</p>
-        <button class="ms-btn ms-btn-secondary" @click="goBackToProcess">
-          {{ $t('process.review.actions.skip') }}
-        </button>
-      </section>
-
       <!-- ─── Entity groups (one card per entity_type) ─── -->
       <template v-else>
+        <!-- Empty-state hint when the graph extracted nothing — keeps the
+             "Add a brand-new type" block accessible so the user can recover. -->
+        <section v-if="entities.length === 0" class="rev-empty-hint ms-card">
+          <p>{{ $t('process.review.empty') }}</p>
+        </section>
         <section
           v-for="group in groupedTypes"
           :key="group.type"
@@ -724,6 +721,18 @@ onMounted(loadEntities)
   flex-direction: column;
   gap: 12px;
   align-items: center;
+}
+
+.rev-empty-hint {
+  padding: 16px 20px;
+  border-inline-start: 3px solid var(--ms-orange, #ff6f3c);
+  background: var(--ms-rose, #fde8ec);
+}
+.rev-empty-hint p {
+  margin: 0;
+  color: var(--ms-text-primary, #1a1a1a);
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 /* ─── Group card ─── */
