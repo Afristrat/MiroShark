@@ -1053,13 +1053,25 @@
         "Backward compat : ne casse pas /api/calibration/brier-score existant",
         "Documentation Swagger update si possible"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-04-29T01:00:00Z",
       "dependencies": ["US-020"],
       "metadata": {
         "priority": "P0",
         "chantier_priority_rank": 1,
         "blocks_demo": "Indispensable pour l'argument commercial /calibration : sans cet endpoint le user ne peut pas évaluer ses sims, donc le Brier reste à 0 → page vide → message commercial invalide.",
-        "estimated_iterations_ralph": 1
+        "estimated_iterations_ralph": 1,
+        "commit_hash": "b07ec25",
+        "files_touched": [
+          "backend/app/api/calibration.py",
+          "backend/tests/test_unit_calibration_simulations.py"
+        ],
+        "tests_added": 15,
+        "test_baseline_before": 264,
+        "test_baseline_after": 279,
+        "endpoint_path": "GET /api/calibration/simulations",
+        "auth": "public (no token, mirrors /brier-score posture)",
+        "implementation_notes": "Co-located with the brier-score helpers in calibration.py so all template_id / outcome / trajectory readers stay in one module. Eligible statuses: completed/running/stopped/paused (failed and created excluded — no prediction to score). status query param normalised to 'pending' on unknown values rather than 400. limit clamped to [1, 100]. summary_first_words = first sentence of simulation_requirement (split on '. ' / '! ' / '? ' so 'U.S.' doesn't truncate), then title fallback, then sim_id fallback."
       }
     },
     {
@@ -1079,13 +1091,24 @@
         "RTL OK via logical properties (US-009 pattern)",
         "Refresh auto du brier-score après chaque évaluation (re-fetch /api/calibration/brier-score)"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-04-29T01:30:00Z",
       "dependencies": ["US-045", "US-021"],
       "metadata": {
         "priority": "P0",
         "chantier_priority_rank": 2,
         "blocks_demo": "Sans cette section, /calibration reste une page de stats vides — pas exploitable en démo prospect.",
-        "estimated_iterations_ralph": 1
+        "estimated_iterations_ralph": 1,
+        "commit_hash": "3dc3fb2",
+        "files_touched": [
+          "frontend/src/views/CalibrationView.vue",
+          "frontend/src/locales/fr.json",
+          "frontend/src/locales/en.json",
+          "frontend/src/locales/ar.json"
+        ],
+        "build_size": "CalibrationView-DaIL9u4o.js → 20.52 kB (gzip 6.06 kB)",
+        "build_time": "5.77 s",
+        "implementation_notes": "Optimistic UI on outcome POST + revert on network error; toast banner CSS-only (200ms slide-in, auto-dismiss after 3s). After successful mark in 'pending' filter, the card is filtered out locally + brier-score is re-fetched so the headline number moves live. N/A button is a no-op (documented choice) to avoid silent overwrite of an existing outcome — there is no DELETE endpoint on outcome.json yet. Logical properties used (margin-inline-end, text-align: start) for RTL safety. Outcome buttons use scoped CSS overrides on .outcome-btn--called-it/-partial/-wrong/-na with background var(--ms-mint/-peach/-rose) + ghost variant."
       }
     }
   ]

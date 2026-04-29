@@ -30,6 +30,32 @@
 
 ## Log d'itérations
 
+### 2026-04-29 — US-045 + US-046 Calibration inbox (backend + frontend)
+- **Statut** : passes: true (les deux stories) — débloque l'argument commercial /calibration en permettant à Amine de marquer ses sims existantes pour faire bouger le Brier sur la page publique.
+- **Fichiers** :
+  - `backend/app/api/calibration.py` : +`GET /api/calibration/simulations` (~250 l ajoutées), helpers `_read_simulation_config`, `_read_outcome_for_inbox`, `_build_summary_first_words`, `_resolve_template_name`, `_gather_evaluable_simulations`. Co-localisé avec le brier-score pour garder template_id / outcome / trajectory readers en un seul module.
+  - `backend/tests/test_unit_calibration_simulations.py` : nouveau, 15 tests (filter pending/evaluated/all, template filter, private-sim exclusion, failed-status exclusion, missing-config degradation, sort order, HTTP-level smoke).
+  - `frontend/src/views/CalibrationView.vue` : nouvelle `<section class="calib-evaluables">` ~470 l (template + script + scoped CSS) sous le block méthodologie/CTA.
+  - `frontend/src/locales/{fr,ar,en}.json` : nouveau bloc `calibration.evaluables.*` (28 lignes par locale).
+- **Quality gates** : `pytest 279 passed (15 new), 17 skipped` ; `npm run build` ✓ 5.77 s, CalibrationView-DaIL9u4o.js → 20.52 kB gzip 6.06 kB.
+- **Commits** : `b07ec25` (US-045), `3dc3fb2` (US-046).
+- **Endpoint shape** : `GET /api/calibration/simulations?status=pending|evaluated|all&limit=20&offset=0&template=<id>` → `{success, data: [{id, title, template_id, template_name, created_at, status, is_public, predicted_bullish_pct, outcome, outcome_url, summary_first_words}], pagination: {limit, offset, total, has_more}, filters: {applied: {status, template}}}`.
+- **Décisions techniques** :
+  - Status query param normalisé à `pending` sur valeur inconnue plutôt que 400 (UX : un bookmark stale ne casse pas la page).
+  - Statuts éligibles : `completed`/`running`/`stopped`/`paused` (failed et created exclus — pas de prédiction à scorer).
+  - `summary_first_words` = première phrase de `simulation_requirement` (split sur `. `/`! `/`? ` avec espace pour ne pas tronquer « U.S. »), fallback `title`, fallback `simulation_id`.
+  - Sims sans `simulation_config.json` ni `trajectory.json` apparaissent quand même dans l'inbox avec champs minimums (id, title=id, status, predicted_bullish_pct=null) — l'opérateur peut au moins les ouvrir.
+  - Bouton « N/A » côté frontend = no-op POST (pas de DELETE outcome.json côté backend) → toast success en 2 s sans toucher l'état serveur. Documenté dans le commit pour ne pas surprendre.
+  - Optimistic UI : on mute la card côté Vue avant le POST, on revert sur `catch`.
+  - Toast : CSS-only fade-in 200 ms + auto-dismiss 3 s (pas de toast lib ajoutée à la stack).
+  - Après POST réussi en filter `pending`, la card est filtrée localement de la liste + `fetchData()` re-fetch /brier-score → big number Brier bouge en live sans full reload.
+- **Auth posture** : `GET /simulations` est public (no token) — même posture que /brier-score, déjà documentée dans le module. Le `POST /outcome` reste gated par `MIROSHARK_ADMIN_TOKEN` côté backend ; le frontend l'appelle sans token comme le fait déjà EmbedDialog.vue, le déploiement gère ça via reverse-proxy.
+- **Learnings** :
+  - Réutiliser `_read_predicted_bullish_prob` (déjà dans calibration.py) pour la cohérence avec /brier-score : si le calcul change un jour, il change pour les deux endpoints d'un coup.
+  - Cache `_resolve_template_name` per-request via dict local — un inbox de 47 sims ne re-lit pas 47 fois `crypto_launch.json` du disque.
+  - `Number.isFinite(sim.predicted_bullish_pct)` côté frontend gère `null` proprement → on n'affiche pas le chip mono dans ce cas.
+  - `vue-i18n` `{count}` interpolation marche en `t('key', { count })` dans `<script setup>` exactement comme `$t` dans `<template>`.
+
 ### 2026-04-29 — US-037 SimulationConfigGenerator parse simulation_requirement → time config adaptative
 - **Statut** : passes: true (chantier 9-simulation-quality, débloque US-038/US-039/US-041)
 - **Fichiers** :
