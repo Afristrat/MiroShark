@@ -25,9 +25,19 @@
         "pytest.ini ou pyproject.toml [tool.pytest.ini_options] markers déclare 'integration'",
         "Documentation 1 ligne dans backend/README.md ou tests/README.md sur comment lancer integration tests à la demande"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-04-29T00:00:00Z",
       "dependencies": [],
-      "metadata": { "estimated_hours": 1, "priority": "P0" }
+      "metadata": {
+        "estimated_hours": 1,
+        "priority": "P0",
+        "files_touched": [
+          "backend/pyproject.toml",
+          "backend/tests/test_unit_smoke.py",
+          "backend/tests/README.md"
+        ],
+        "test_result": "167 passed, 17 skipped (integration), 3 warnings"
+      }
     },
     {
       "id": "US-001",

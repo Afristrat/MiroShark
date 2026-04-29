@@ -66,6 +66,16 @@ override-dependencies = [
     "tiktoken>=0.8.0",  # camel-ai pins 0.7.0 which doesn't build on Python 3.13
 ]
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --tb=short"
+asyncio_mode = "auto"
+markers = [
+    "integration: requires a live MiroShark backend at MIROSHARK_API_URL (run with `pytest -m integration`)",
+    "slow: long-running tests (multi-minute E2E simulations)",
+    "neo4j: requires a running Neo4j at $NEO4J_URI",
+]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

@@ -29,11 +29,12 @@
 
 ## Log d'itérations
 
-### YYYY-MM-DD HH:MM — US-XXX [titre]
-- **Statut** : passes: true / passes: false (avec raison)
-- **Fichiers touchés** : ...
-- **Durée** : ...
-- **Commit** : ...
-- **Learnings** : (si pattern intéressant ou piège évité)
-
-(à compléter par chaque itération)
+### 2026-04-29 — US-000 Sécuriser pytest pour quality gates Ralph
+- **Statut** : passes: true
+- **Fichiers touchés** : backend/pyproject.toml, backend/tests/test_unit_smoke.py, backend/tests/README.md
+- **Durée** : ~10 min
+- **Quality gates** : pytest 167 passed / 17 skipped intégration ✓ ; npm run build ✓
+- **Learnings** :
+  - Le repo avait déjà `conftest.py` avec markers + skip auto des integration. Bonne hygiène.
+  - 17 fichiers `test_unit_*.py` déjà présents : le projet est plus mature qu'attendu côté tests.
+  - Smoke tests minimaux (create_app, blueprints, Config.validate) suffisent pour US-000 car le reste de la suite valide déjà la majorité des composants.
