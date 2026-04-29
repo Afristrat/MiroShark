@@ -55,7 +55,9 @@
       ],
       "passes": true,
       "completedAt": "2026-04-29T00:10:00Z",
-      "dependencies": ["US-000"],
+      "dependencies": [
+        "US-000"
+      ],
       "metadata": {
         "estimated_hours": 3,
         "priority": "P0",
@@ -84,7 +86,9 @@
       ],
       "passes": true,
       "completedAt": "2026-04-29T01:55:00Z",
-      "dependencies": ["US-001"],
+      "dependencies": [
+        "US-001"
+      ],
       "metadata": {
         "estimated_hours": 3,
         "priority": "P0",
@@ -113,7 +117,9 @@
       ],
       "passes": true,
       "completedAt": "2026-04-29T07:25:00Z",
-      "dependencies": ["US-002"],
+      "dependencies": [
+        "US-002"
+      ],
       "metadata": {
         "estimated_hours": 4,
         "priority": "P0",
@@ -133,7 +139,9 @@
       ],
       "passes": true,
       "completedAt": "2026-04-29T07:25:00Z",
-      "dependencies": ["US-002"],
+      "dependencies": [
+        "US-002"
+      ],
       "metadata": {
         "estimated_hours": 4,
         "priority": "P0",
@@ -154,7 +162,9 @@
       ],
       "passes": true,
       "completedAt": "2026-04-29T07:25:00Z",
-      "dependencies": ["US-002"],
+      "dependencies": [
+        "US-002"
+      ],
       "metadata": {
         "estimated_hours": 2,
         "priority": "P0",
@@ -173,7 +183,9 @@
       ],
       "passes": true,
       "completedAt": "2026-04-29T07:25:00Z",
-      "dependencies": ["US-002"],
+      "dependencies": [
+        "US-002"
+      ],
       "metadata": {
         "estimated_hours": 5,
         "priority": "P1",
@@ -195,8 +207,13 @@
         "Test Playwright : déclencher une erreur et voir le message traduit en FR et EN"
       ],
       "passes": false,
-      "dependencies": ["US-002"],
-      "metadata": { "estimated_hours": 6, "priority": "P1" }
+      "dependencies": [
+        "US-002"
+      ],
+      "metadata": {
+        "estimated_hours": 6,
+        "priority": "P1"
+      }
     },
     {
       "id": "US-008",
@@ -212,7 +229,9 @@
       ],
       "passes": true,
       "completedAt": "2026-04-29T10:30:00Z",
-      "dependencies": ["US-001"],
+      "dependencies": [
+        "US-001"
+      ],
       "metadata": {
         "estimated_hours": 2,
         "priority": "P0",
@@ -239,7 +258,12 @@
       ],
       "passes": true,
       "completedAt": "2026-04-29T11:00:00Z",
-      "dependencies": ["US-001", "US-002", "US-003", "US-008"],
+      "dependencies": [
+        "US-001",
+        "US-002",
+        "US-003",
+        "US-008"
+      ],
       "metadata": {
         "estimated_hours": 6,
         "priority": "P0",
@@ -295,8 +319,17 @@
         "npx playwright test --reporter=list passe (vert)"
       ],
       "passes": false,
-      "dependencies": ["US-002", "US-003", "US-005", "US-008", "US-009"],
-      "metadata": { "estimated_hours": 3, "priority": "P1" }
+      "dependencies": [
+        "US-002",
+        "US-003",
+        "US-005",
+        "US-008",
+        "US-009"
+      ],
+      "metadata": {
+        "estimated_hours": 3,
+        "priority": "P1"
+      }
     },
     {
       "id": "US-011",
@@ -339,7 +372,10 @@
       ],
       "passes": false,
       "dependencies": [],
-      "metadata": { "estimated_hours": 3, "priority": "P1" }
+      "metadata": {
+        "estimated_hours": 3,
+        "priority": "P1"
+      }
     },
     {
       "id": "US-013",
@@ -353,7 +389,10 @@
       ],
       "passes": false,
       "dependencies": [],
-      "metadata": { "estimated_hours": 3, "priority": "P1" }
+      "metadata": {
+        "estimated_hours": 3,
+        "priority": "P1"
+      }
     },
     {
       "id": "US-014",
@@ -368,7 +407,10 @@
       ],
       "passes": false,
       "dependencies": [],
-      "metadata": { "estimated_hours": 3, "priority": "P1" }
+      "metadata": {
+        "estimated_hours": 3,
+        "priority": "P1"
+      }
     },
     {
       "id": "US-015",
@@ -409,8 +451,17 @@
         "frontend/DESIGN.md mis à jour si nouvelles classes ajoutées"
       ],
       "passes": false,
-      "dependencies": ["US-011", "US-012", "US-013", "US-014", "US-015"],
-      "metadata": { "estimated_hours": 3, "priority": "P1" }
+      "dependencies": [
+        "US-011",
+        "US-012",
+        "US-013",
+        "US-014",
+        "US-015"
+      ],
+      "metadata": {
+        "estimated_hours": 3,
+        "priority": "P1"
+      }
     },
     {
       "id": "US-017",
@@ -425,7 +476,9 @@
       ],
       "passes": true,
       "completedAt": "2026-04-29T02:10:00Z",
-      "dependencies": ["US-000"],
+      "dependencies": [
+        "US-000"
+      ],
       "metadata": {
         "estimated_hours": 3,
         "priority": "P1",
@@ -450,7 +503,9 @@
       ],
       "passes": true,
       "completedAt": "2026-04-29T02:10:00Z",
-      "dependencies": ["US-017"],
+      "dependencies": [
+        "US-017"
+      ],
       "metadata": {
         "estimated_hours": 2,
         "priority": "P1",
@@ -475,7 +530,10 @@
       ],
       "passes": true,
       "completedAt": "2026-04-29T17:45:00Z",
-      "dependencies": ["US-017", "US-002"],
+      "dependencies": [
+        "US-017",
+        "US-002"
+      ],
       "metadata": {
         "estimated_hours": 3,
         "priority": "P1",
@@ -502,7 +560,9 @@
       ],
       "passes": true,
       "completedAt": "2026-04-29T02:00:00Z",
-      "dependencies": ["US-000"],
+      "dependencies": [
+        "US-000"
+      ],
       "metadata": {
         "estimated_hours": 4,
         "priority": "P1",
@@ -531,7 +591,10 @@
       ],
       "passes": true,
       "completedAt": "2026-04-29T12:30:00Z",
-      "dependencies": ["US-020", "US-002"],
+      "dependencies": [
+        "US-020",
+        "US-002"
+      ],
       "metadata": {
         "estimated_hours": 4,
         "priority": "P1",
@@ -565,8 +628,14 @@
         "Une page /case-studies/<id> par sim avec narration complète"
       ],
       "passes": false,
-      "dependencies": ["US-020"],
-      "metadata": { "estimated_hours": 4, "priority": "P2", "requires_human": true }
+      "dependencies": [
+        "US-020"
+      ],
+      "metadata": {
+        "estimated_hours": 4,
+        "priority": "P2",
+        "requires_human": true
+      }
     },
     {
       "id": "US-023",
@@ -582,8 +651,13 @@
         "Test Playwright"
       ],
       "passes": false,
-      "dependencies": ["US-002"],
-      "metadata": { "estimated_hours": 3, "priority": "P2" }
+      "dependencies": [
+        "US-002"
+      ],
+      "metadata": {
+        "estimated_hours": 3,
+        "priority": "P2"
+      }
     },
     {
       "id": "US-024",
@@ -598,8 +672,13 @@
         "Bouton 'Export PDF' dans EmbedDialog"
       ],
       "passes": false,
-      "dependencies": ["US-016"],
-      "metadata": { "estimated_hours": 5, "priority": "P2" }
+      "dependencies": [
+        "US-016"
+      ],
+      "metadata": {
+        "estimated_hours": 5,
+        "priority": "P2"
+      }
     },
     {
       "id": "US-025",
@@ -614,8 +693,13 @@
         "Test Playwright pour submit + confirmation"
       ],
       "passes": false,
-      "dependencies": ["US-023"],
-      "metadata": { "estimated_hours": 3, "priority": "P2" }
+      "dependencies": [
+        "US-023"
+      ],
+      "metadata": {
+        "estimated_hours": 3,
+        "priority": "P2"
+      }
     },
     {
       "id": "US-026",
@@ -659,8 +743,13 @@
         "Aucun composant ne casse en dark (audit visuel des 5 vues principales via Playwright screenshots)"
       ],
       "passes": false,
-      "dependencies": ["US-016"],
-      "metadata": { "estimated_hours": 4, "priority": "P2" }
+      "dependencies": [
+        "US-016"
+      ],
+      "metadata": {
+        "estimated_hours": 4,
+        "priority": "P2"
+      }
     },
     {
       "id": "US-028",
@@ -673,8 +762,13 @@
         "design-tokens.css ajusté si nécessaire"
       ],
       "passes": false,
-      "dependencies": ["US-016"],
-      "metadata": { "estimated_hours": 2, "priority": "P2" }
+      "dependencies": [
+        "US-016"
+      ],
+      "metadata": {
+        "estimated_hours": 2,
+        "priority": "P2"
+      }
     },
     {
       "id": "US-029",
@@ -738,11 +832,16 @@
       ],
       "passes": true,
       "completedAt": "2026-04-29T01:36:00Z",
-      "dependencies": ["US-000"],
+      "dependencies": [
+        "US-000"
+      ],
       "metadata": {
         "estimated_hours": 1,
         "priority": "P0",
-        "files_touched": ["backend/app/config.py", "backend/tests/test_unit_hardening.py"]
+        "files_touched": [
+          "backend/app/config.py",
+          "backend/tests/test_unit_hardening.py"
+        ]
       }
     },
     {
@@ -758,11 +857,16 @@
       ],
       "passes": true,
       "completedAt": "2026-04-29T01:36:00Z",
-      "dependencies": ["US-000"],
+      "dependencies": [
+        "US-000"
+      ],
       "metadata": {
         "estimated_hours": 2,
         "priority": "P0",
-        "files_touched": ["backend/app/__init__.py", "backend/tests/test_unit_hardening.py"]
+        "files_touched": [
+          "backend/app/__init__.py",
+          "backend/tests/test_unit_hardening.py"
+        ]
       }
     },
     {
@@ -777,11 +881,16 @@
       ],
       "passes": true,
       "completedAt": "2026-04-29T01:36:00Z",
-      "dependencies": ["US-000"],
+      "dependencies": [
+        "US-000"
+      ],
       "metadata": {
         "estimated_hours": 1,
         "priority": "P0",
-        "files_touched": ["backend/app/config.py", "backend/tests/test_unit_hardening.py"]
+        "files_touched": [
+          "backend/app/config.py",
+          "backend/tests/test_unit_hardening.py"
+        ]
       }
     },
     {
@@ -797,11 +906,17 @@
       ],
       "passes": true,
       "completedAt": "2026-04-29T01:45:00Z",
-      "dependencies": ["US-000"],
+      "dependencies": [
+        "US-000"
+      ],
       "metadata": {
         "estimated_hours": 2,
         "priority": "P0",
-        "files_touched": ["backend/app/security_headers.py", "backend/app/__init__.py", "backend/tests/test_unit_security_headers.py"],
+        "files_touched": [
+          "backend/app/security_headers.py",
+          "backend/app/__init__.py",
+          "backend/tests/test_unit_security_headers.py"
+        ],
         "lighthouse_target": "Best Practices > 90"
       }
     },
@@ -822,7 +937,11 @@
       "dependencies": [],
       "metadata": {
         "priority": "P1",
-        "files_touched": ["Dockerfile", "package.json", "frontend/vite.config.js"],
+        "files_touched": [
+          "Dockerfile",
+          "package.json",
+          "frontend/vite.config.js"
+        ],
         "wall_time_observed": "~15min Ralph autonome",
         "verification": "curl prospectives.ai-mpower.com retourne <script src=\"/assets/index-*.js\"> au lieu de /@vite/client"
       }
@@ -841,7 +960,9 @@
       ],
       "passes": true,
       "completedAt": "2026-04-29T17:15:00Z",
-      "dependencies": ["US-042"],
+      "dependencies": [
+        "US-042"
+      ],
       "metadata": {
         "priority": "P0",
         "chantier_priority_rank": 2,
@@ -883,9 +1004,17 @@
         "Tests pytest : sample 5 agents x 5 scenarios → system_prompts distincts, cohérents",
         "Pas de regression sur format AgentActivityConfig existant"
       ],
-      "passes": false,
-      "dependencies": ["US-042"],
-      "metadata": { "priority": "P0", "chantier_priority_rank": 3 }
+      "passes": true,
+      "dependencies": [
+        "US-042"
+      ],
+      "metadata": {
+        "priority": "P0",
+        "chantier_priority_rank": 3,
+        "recoveredFromCommit": "f067038",
+        "note": "passes:true admin fix — code mergé en session précédente"
+      },
+      "completedAt": "2026-04-29"
     },
     {
       "id": "US-039",
@@ -900,8 +1029,14 @@
         "Mobile responsive + RTL via inset-inline-* (déjà US-009 pattern)"
       ],
       "passes": false,
-      "dependencies": ["US-042", "US-038"],
-      "metadata": { "priority": "P0", "chantier_priority_rank": 4 }
+      "dependencies": [
+        "US-042",
+        "US-038"
+      ],
+      "metadata": {
+        "priority": "P0",
+        "chantier_priority_rank": 4
+      }
     },
     {
       "id": "US-040",
@@ -917,8 +1052,13 @@
         "Skip possible (bouton 'Looks good') pour user pressés"
       ],
       "passes": false,
-      "dependencies": ["US-039"],
-      "metadata": { "priority": "P0", "chantier_priority_rank": 6 }
+      "dependencies": [
+        "US-039"
+      ],
+      "metadata": {
+        "priority": "P0",
+        "chantier_priority_rank": 6
+      }
     },
     {
       "id": "US-041",
@@ -935,7 +1075,10 @@
       ],
       "passes": true,
       "completedAt": "2026-04-29T17:50:00Z",
-      "dependencies": ["US-042", "US-038"],
+      "dependencies": [
+        "US-042",
+        "US-038"
+      ],
       "metadata": {
         "priority": "P0",
         "chantier_priority_rank": 5,
@@ -1050,7 +1193,9 @@
       ],
       "passes": true,
       "completedAt": "2026-04-29T16:30:00Z",
-      "dependencies": ["US-008"],
+      "dependencies": [
+        "US-008"
+      ],
       "metadata": {
         "priority": "P0",
         "chantier_priority_rank": 8,
@@ -1075,7 +1220,9 @@
       ],
       "passes": true,
       "completedAt": "2026-04-29T01:00:00Z",
-      "dependencies": ["US-020"],
+      "dependencies": [
+        "US-020"
+      ],
       "metadata": {
         "priority": "P0",
         "chantier_priority_rank": 1,
@@ -1113,7 +1260,10 @@
       ],
       "passes": true,
       "completedAt": "2026-04-29T01:30:00Z",
-      "dependencies": ["US-045", "US-021"],
+      "dependencies": [
+        "US-045",
+        "US-021"
+      ],
       "metadata": {
         "priority": "P0",
         "chantier_priority_rank": 2,

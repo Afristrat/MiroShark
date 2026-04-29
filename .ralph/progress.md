@@ -28,6 +28,23 @@
 - **`ports:` host-mode** dans le compose causent des conflits multi-app sur le même hôte Coolify. Utiliser `expose:` (réseau Docker interne).
 - **Brand split Bassira / miroshark** depuis 2026-04-29 : la marque visible utilisateur est **Bassira** (بصيرة) sur tout le frontend (titres, hero, locales, watermarks, exports PNG, manifest PWA). MAIS l'identifiant technique `miroshark` reste partout dans le backend : MCP server key (`mcpServers: { miroshark: ... }` exposé à Claude Desktop / Cursor / `@miroshark`), loggers `get_logger('miroshark.api.*')`, CSS class `.miroshark-banner`, default graph name `'MiroShark Graph'`, doc title Swagger, GitHub repo `aaronjmars/MiroShark`, app Coolify `miro-shark`, container name. Les rares strings frontend qui réfèrent à un identifiant backend (mcp.js comment, SettingsPanel "Wire MiroShark's knowledge graph" → matche `@miroshark` que tape l'utilisateur) gardent volontairement « MiroShark ». Logo `frontend/public/miroshark-nobg.png` : path conservé, le PNG visuel doit être regénéré au branding « Bassira » par un designer (TODO non bloquant).
 
+### Runbook — « Échec de la génération de la configuration » Step 03
+
+**Symptôme** : utilisateur voit Step 03 en erreur sur `/simulation/<id>` avec message backend.
+
+**Diagnostic en 1 commande** :
+```bash
+curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime" | jq -r '.data.config_error'
+```
+
+**Mapping cause → résolution** :
+- `"No matching entities found, please check if the graph is built correctly"` → graphe Neo4j vide pour ce `graph_id`. Le user a sauté Step 1 ou l'extraction document a échoué. **Fix** : recréer la simulation depuis le début en s'assurant que Step 1 a bien construit le graphe (vérifier `/api/graph/<graph_id>/entities`).
+- `"Agent profiles not found — run /prepare first"` (sur clic Retry) → conséquence du cas précédent : le bouton « Relancer » n'aide pas si /prepare n'a jamais réussi. **Fix** : recréer la simulation, ne pas spammer Retry.
+- `"Config generation timed out after 90 seconds"` → LLM lent ou indisponible. **Fix** : vérifier prod LLM (`LLM_BASE_URL=https://api.moonshot.ai/v1`), retry après 1-2 min.
+- `"...API key... / quota / model..."` → env vars backend Coolify. **Fix** : vérifier `LLM_API_KEY`, `LLM_MODEL_NAME=kimi-k2-turbo-preview`, `LLM_BASE_URL`.
+
+**Note historique** : avant 2026-04-29 le hint UI mentionnait `OPENROUTER_API_KEY` (legacy upstream), trompeur depuis la migration Moonshot. Corrigé : hint dynamique selon le `config_error` (`hintEntities` / `hintProfiles` / `hintTimeout` / `hintLLM`) + retry frontend extrait `err.response.data.error` au lieu d'afficher `err.message` axios brut.
+
 ## Log d'itérations
 
 ### 2026-04-29 — US-045 + US-046 Calibration inbox (backend + frontend)

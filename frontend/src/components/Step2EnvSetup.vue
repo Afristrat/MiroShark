@@ -147,7 +147,7 @@
             <div class="config-error-title">{{ $t('process.step2.step3.errorTitle') }}</div>
             <div class="config-error-msg">{{ configError }}</div>
             <div class="config-error-hint">
-              {{ $t('process.step2.step3.errorHint') }}
+              {{ contextualErrorHint }}
             </div>
             <button
               class="retry-config-btn ms-btn ms-btn-danger ms-btn--sm"
@@ -736,6 +736,24 @@ const agentCardsExpanded = ref(false)
 const configError = ref(null)       // Error message when config generation fails
 const isConfigRetrying = ref(false) // True while retry is in progress
 
+const contextualErrorHint = computed(() => {
+  const msg = (configError.value || '').toLowerCase()
+  if (!msg) return t('process.step2.step3.errorHint')
+  if (msg.includes('matching entities') || msg.includes('graph is built') || msg.includes('graph_id')) {
+    return t('process.step2.step3.hintEntities')
+  }
+  if (msg.includes('profiles not found') || msg.includes('profile') && msg.includes('prepare')) {
+    return t('process.step2.step3.hintProfiles')
+  }
+  if (msg.includes('timed out') || msg.includes('timeout')) {
+    return t('process.step2.step3.hintTimeout')
+  }
+  if (msg.includes('api key') || msg.includes('quota') || msg.includes('model') || msg.includes('llm')) {
+    return t('process.step2.step3.hintLLM')
+  }
+  return t('process.step2.step3.errorHint')
+})
+
 // Config polling timeout: stop after 90 seconds with no result
 const CONFIG_POLL_TIMEOUT_MS = 90000
 let configPollStartTime = null
@@ -1078,7 +1096,7 @@ const fetchConfigRealtime = async () => {
       // Backend reported a generation failure
       if (data.config_error || data.status === 'failed') {
         stopConfigPolling()
-        const reason = data.config_error || 'Generation failed — check your OpenRouter API key and model name'
+        const reason = data.config_error || 'Generation failed — check backend logs and graph state'
         configError.value = reason
         addLog(`✗ Config generation failed: ${reason}`)
         return
@@ -1148,8 +1166,9 @@ const handleConfigRetry = async () => {
       addLog(`✗ Retry failed: ${res.error || 'unknown error'}`)
     }
   } catch (err) {
-    configError.value = err.message || 'Retry request failed'
-    addLog(`✗ Retry error: ${err.message}`)
+    const backendMsg = err?.response?.data?.error
+    configError.value = backendMsg || err?.message || 'Retry request failed'
+    addLog(`✗ Retry error: ${backendMsg || err?.message}`)
   } finally {
     isConfigRetrying.value = false
   }
