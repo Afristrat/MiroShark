@@ -101,6 +101,8 @@ _BLUEPRINT_PREFIXES = {
     "docs_bp":           "/api",
     # share_bp is mounted at the root with no prefix — see app/__init__.py.
     "share_bp":          "",
+    # quote_bp serves the public commercial-form receiver (US-025).
+    "quote_bp":          "/api/quote",
 }
 
 

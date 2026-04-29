@@ -717,14 +717,29 @@
         "Tests pytest pour la validation",
         "Test Playwright pour submit + confirmation"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-023"
       ],
       "metadata": {
         "estimated_hours": 3,
-        "priority": "P2"
-      }
+        "priority": "P2",
+        "commit_pending": true,
+        "files_touched": [
+          "backend/app/api/quote.py",
+          "backend/app/services/quote_service.py",
+          "backend/app/__init__.py",
+          "backend/openapi.yaml",
+          "backend/tests/test_unit_quote.py",
+          "backend/tests/test_unit_openapi.py",
+          "frontend/src/views/QuoteView.vue",
+          "frontend/src/api/quote.js",
+          "frontend/src/router/index.js",
+          "frontend/src/locales/{fr,en,ar}.json"
+        ],
+        "implementation_notes": "Backend POST /api/quote avec validation regex email + enum package + RGPD required + truncate textes + HTML escape + rate-limit en memoire 5/IP/h + stockage JSON dans WONDERWALL_DATA_DIR/quotes/ + email best-effort smtplib via env EMAIL_SMTP_*. Codes erreur structures (MISSING_FIELD/INVALID_EMAIL/INVALID_PACKAGE/RGPD_NOT_ACCEPTED/RATE_LIMITED/STORAGE_ERROR). Frontend QuoteView 4 steps (coordonnees / besoin / message+RGPD / success-error) avec stepper 4 dots + bouton retour + presection package via ?package= URL param. 70 cles quote.* x 3 langues parite stricte. 8/8 tests + 338 backend total. SMTP en prod : EMAIL_SMTP_HOST/PORT/USER/PASSWORD/FROM/TO env vars optionnelles, si absent stockage seul + 200 quand meme."
+      },
+      "completedAt": "2026-04-29"
     },
     {
       "id": "US-026",

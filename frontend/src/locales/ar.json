@@ -1047,5 +1047,127 @@
         }
       }
     }
+  },
+  "quote": {
+    "nav": {
+      "backTitle": "العودة إلى العروض"
+    },
+    "eyebrow": "طلب عرض سعر",
+    "hero": {
+      "title": "حدّثونا عن حاجتكم",
+      "subtitle": "صفوا حالتكم في دقيقتين. نعود إليكم خلال 24 ساعة عمل بمقترح مُؤطَّر."
+    },
+    "stepper": {
+      "step": "الخطوة {current} من {total}",
+      "stepNames": {
+        "contact": "بياناتكم",
+        "need": "حاجتكم",
+        "message": "رسالتكم",
+        "done": "التأكيد"
+      }
+    },
+    "step1": {
+      "title": "بياناتكم",
+      "fullName": {
+        "label": "الاسم الكامل",
+        "placeholder": "كريم بنسعيد",
+        "required": "إلزامي"
+      },
+      "email": {
+        "label": "البريد المهني",
+        "placeholder": "vous{'@'}entreprise.com",
+        "required": "إلزامي",
+        "invalid": "صيغة البريد غير صحيحة"
+      },
+      "company": {
+        "label": "المؤسسة / المنظمة",
+        "placeholder": "Banque Populaire MA",
+        "required": "إلزامي"
+      },
+      "role": {
+        "label": "الوظيفة (اختياري)",
+        "placeholder": "مدير الاتصال"
+      },
+      "phone": {
+        "label": "الهاتف (اختياري)",
+        "placeholder": "+212 6 00 12 34 56"
+      }
+    },
+    "step2": {
+      "title": "حاجتكم",
+      "package": {
+        "label": "الباقة المطلوبة",
+        "options": {
+          "crisis_drill_24h": "Crisis Drill 24h — تدريب على التواصل في الأزمات",
+          "policy_brief_stress": "Policy Brief Stress Test — اختبار الرأي العام",
+          "pre_launch_adcheck": "Pre-Launch Adcheck — حملة تسويقية",
+          "custom": "حسب الطلب / لست متأكدًا بعد"
+        }
+      },
+      "volume": {
+        "label": "حجم المحاكاة المتوقّع في السنة (اختياري)",
+        "placeholder": "مثلًا 4"
+      },
+      "deadline": {
+        "label": "الموعد النهائي (اختياري)",
+        "options": {
+          "not_urgent": "غير مستعجل",
+          "1_month": "خلال شهر",
+          "2_weeks": "خلال أسبوعين",
+          "this_week": "هذا الأسبوع"
+        }
+      },
+      "industry": {
+        "label": "القطاع (اختياري)",
+        "options": {
+          "banking": "البنوك",
+          "telecom": "الاتصالات",
+          "government": "القطاع العام / الحكومي",
+          "ngo": "منظمة غير حكومية",
+          "marketing": "التسويق / العلامة",
+          "media": "إعلام",
+          "other": "أخرى"
+        }
+      },
+      "geoFocus": {
+        "label": "النطاق الجغرافي (اختياري)",
+        "help": "يمكن اختيار عدة خيارات.",
+        "options": {
+          "MA": "المغرب",
+          "DZ": "الجزائر",
+          "TN": "تونس",
+          "SN": "السنغال",
+          "CI": "ساحل العاج",
+          "Other": "أخرى"
+        }
+      }
+    },
+    "step3": {
+      "title": "رسالتكم",
+      "message": {
+        "label": "اشرحوا حالتكم (اختياري)",
+        "placeholder": "السياق، الهدف، القيود، الموعد…",
+        "counter": "{count} / 800 حرفًا"
+      },
+      "consent": {
+        "label": "أوافق على معالجة بصيرة (AI MPOWER SAS) لبياناتي قصد الردّ على طلبي، طبقًا لقواعد RGPD والقانون 09-08 (المغرب).",
+        "required": "إلزامي لإرسال الطلب."
+      }
+    },
+    "step4": {
+      "successTitle": "تمّ إرسال الطلب",
+      "successSubtitle": "سنعود إليكم خلال 24 ساعة عمل.",
+      "quoteIdLabel": "المرجع",
+      "errorTitle": "تعذّر الإرسال",
+      "errorFallback": "حدث خطأ في الشبكة. حاولوا بعد لحظات.",
+      "backToOffers": "العودة إلى العروض",
+      "tryAgain": "إعادة المحاولة"
+    },
+    "actions": {
+      "next": "التالي",
+      "back": "رجوع",
+      "submit": "إرسال الطلب",
+      "submitting": "جارٍ الإرسال…"
+    }
   }
 }

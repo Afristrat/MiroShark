@@ -94,6 +94,14 @@ const routes = [
     path: '/offres',
     name: 'Offers',
     component: () => import('../views/OffersView.vue')
+  },
+  {
+    // Tunnel commercial — formulaire multi-step de demande de devis
+    // (US-025). Atteint depuis /offres via les CTA « Demander un devis ».
+    // Query param ``?package=`` pré-remplit le sélecteur du Step 2.
+    path: '/devis',
+    name: 'Quote',
+    component: () => import('../views/QuoteView.vue')
   }
 ]
 

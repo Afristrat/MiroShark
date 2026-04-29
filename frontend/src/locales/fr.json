@@ -1047,5 +1047,127 @@
         }
       }
     }
+  },
+  "quote": {
+    "nav": {
+      "backTitle": "Retour aux offres"
+    },
+    "eyebrow": "Demande de devis",
+    "hero": {
+      "title": "Parlons de votre besoin",
+      "subtitle": "Décrivez votre cas en 2 minutes. Nous revenons vers vous sous 24 h ouvrées avec une proposition cadrée."
+    },
+    "stepper": {
+      "step": "Étape {current} sur {total}",
+      "stepNames": {
+        "contact": "Vos coordonnées",
+        "need": "Votre besoin",
+        "message": "Votre message",
+        "done": "Confirmation"
+      }
+    },
+    "step1": {
+      "title": "Vos coordonnées",
+      "fullName": {
+        "label": "Nom complet",
+        "placeholder": "Karim Bensaid",
+        "required": "Obligatoire"
+      },
+      "email": {
+        "label": "Email professionnel",
+        "placeholder": "vous{'@'}entreprise.com",
+        "required": "Obligatoire",
+        "invalid": "Format email invalide"
+      },
+      "company": {
+        "label": "Entreprise / organisation",
+        "placeholder": "Banque Populaire MA",
+        "required": "Obligatoire"
+      },
+      "role": {
+        "label": "Fonction (optionnel)",
+        "placeholder": "Head of Communications"
+      },
+      "phone": {
+        "label": "Téléphone (optionnel)",
+        "placeholder": "+212 6 00 12 34 56"
+      }
+    },
+    "step2": {
+      "title": "Votre besoin",
+      "package": {
+        "label": "Pack souhaité",
+        "options": {
+          "crisis_drill_24h": "Crisis Drill 24h — entraînement crise",
+          "policy_brief_stress": "Policy Brief Stress Test — opinion publique",
+          "pre_launch_adcheck": "Pre-Launch Adcheck — campagne marketing",
+          "custom": "Sur-mesure / je ne sais pas encore"
+        }
+      },
+      "volume": {
+        "label": "Volume de simulations attendu / an (optionnel)",
+        "placeholder": "Ex. 4"
+      },
+      "deadline": {
+        "label": "Échéance (optionnel)",
+        "options": {
+          "not_urgent": "Pas urgent",
+          "1_month": "D'ici 1 mois",
+          "2_weeks": "D'ici 2 semaines",
+          "this_week": "Cette semaine"
+        }
+      },
+      "industry": {
+        "label": "Secteur (optionnel)",
+        "options": {
+          "banking": "Banque",
+          "telecom": "Télécom",
+          "government": "Public / Gouvernement",
+          "ngo": "ONG",
+          "marketing": "Marketing / Marque",
+          "media": "Média",
+          "other": "Autre"
+        }
+      },
+      "geoFocus": {
+        "label": "Focus géographique (optionnel)",
+        "help": "Plusieurs choix possibles.",
+        "options": {
+          "MA": "Maroc",
+          "DZ": "Algérie",
+          "TN": "Tunisie",
+          "SN": "Sénégal",
+          "CI": "Côte d'Ivoire",
+          "Other": "Autre"
+        }
+      }
+    },
+    "step3": {
+      "title": "Votre message",
+      "message": {
+        "label": "Décrivez votre cas (optionnel)",
+        "placeholder": "Contexte, objectif, contraintes, échéance…",
+        "counter": "{count} / 800 caractères"
+      },
+      "consent": {
+        "label": "J'accepte que Bassira (AI MPOWER SAS) traite mes coordonnées pour répondre à ma demande, conformément au RGPD et à la loi 09-08 (Maroc).",
+        "required": "Obligatoire pour soumettre la demande."
+      }
+    },
+    "step4": {
+      "successTitle": "Demande envoyée",
+      "successSubtitle": "Nous revenons vers vous sous 24 h ouvrées.",
+      "quoteIdLabel": "Référence",
+      "errorTitle": "Envoi impossible",
+      "errorFallback": "Une erreur réseau est survenue. Réessayez dans un instant.",
+      "backToOffers": "Retour aux offres",
+      "tryAgain": "Réessayer"
+    },
+    "actions": {
+      "next": "Suivant",
+      "back": "Retour",
+      "submit": "Envoyer la demande",
+      "submitting": "Envoi en cours…"
+    }
   }
 }

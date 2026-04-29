@@ -114,6 +114,10 @@ def create_app(config_class=Config):
     # endpoint at /api/calibration/brier-score (no auth — calibration
     # numbers are the commercial argument).
     app.register_blueprint(calibration_bp, url_prefix='/api/calibration')
+    # quote_bp serves the commercial-form receiver at POST /api/quote
+    # (US-025) — public, rate-limited, fires a notification email.
+    from .api.quote import quote_bp
+    app.register_blueprint(quote_bp, url_prefix='/api/quote')
     
     # Health check
     @app.route('/health')
