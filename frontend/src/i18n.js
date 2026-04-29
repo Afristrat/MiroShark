@@ -1,5 +1,5 @@
 /**
- * MiroShark — internationalization setup
+ * Bassira — internationalization setup
  *
  * Locales :
  *   - fr (pivot, default)
@@ -8,7 +8,7 @@
  *
  * Détection de la locale au démarrage, par ordre de priorité :
  *   1. URL parameter ?lang=<code>
- *   2. localStorage.miroshark_locale
+ *   2. localStorage.bassira_locale
  *   3. navigator.language matchant un code supporté
  *   4. fallback fr
  */
@@ -19,7 +19,7 @@ import ar from './locales/ar.json'
 import en from './locales/en.json'
 
 const SUPPORTED_LOCALES = ['fr', 'ar', 'en']
-const STORAGE_KEY = 'miroshark_locale'
+const STORAGE_KEY = 'bassira_locale'
 const RTL_LOCALES = new Set(['ar'])
 
 export function detectLocale() {

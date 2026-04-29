@@ -11,7 +11,7 @@
         <button
           class="pm-export-btn"
           :disabled="exporting || !copySupported"
-          :title="copySupported ? 'Copy chart as PNG (with MiroShark watermark)' : 'Image copy not supported in this browser'"
+          :title="copySupported ? 'Copy chart as PNG (with Bassira watermark)' : 'Image copy not supported in this browser'"
           @click="copyChart"
         >
           {{ copiedFlash ? $t('embed.copied') : $t('embed.copy') }}
@@ -19,7 +19,7 @@
         <button
           class="pm-export-btn"
           :disabled="exporting"
-          title="Download chart as PNG (with MiroShark watermark)"
+          title="Download chart as PNG (with Bassira watermark)"
           @click="downloadChart"
         >
           Download ↓
@@ -373,7 +373,7 @@ function handleHover(event) {
   }
 }
 
-// ── Chart export (copy + download as PNG, with MiroShark watermark) ──
+// ── Chart export (copy + download as PNG, with Bassira watermark) ──
 
 const PX = 32 // header horizontal padding
 
@@ -528,7 +528,7 @@ async function downloadChart() {
   try {
     const canvas = await _buildExportCanvas()
     const marketId = selected.value?.market?.market_id ?? 'x'
-    const fname = `miroshark-market-${marketId}-${props.simulationId || 'sim'}.png`
+    const fname = `bassira-market-${marketId}-${props.simulationId || 'sim'}.png`
     downloadCanvas(canvas, fname)
   } catch (err) {
     console.error('[markets] download failed:', err)
@@ -569,7 +569,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* MiroShark-native Polymarket panel — renders inline inside the parent
+/* Bassira-native Polymarket panel — renders inline inside the parent
    .influence-overlay, matching the other toolbar overlays (Influence/Drift/
    Network/Demographics/What If?/Branch). No fixed positioning, no modal. */
 

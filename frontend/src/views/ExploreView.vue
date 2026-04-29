@@ -2,7 +2,7 @@
   <div class="explore-container">
     <!-- Top Navigation Bar (mirrors Home.vue nav for visual consistency) -->
     <nav class="navbar">
-      <router-link to="/" class="nav-brand" :title="$t('simulation.view.back')">MIROSHARK</router-link>
+      <router-link to="/" class="nav-brand" :title="$t('simulation.view.back')">BASSIRA</router-link>
       <div class="nav-links">
         <router-link to="/" class="nav-link" :title="$t('simulation.view.back')">
           <span class="arrow">←</span> {{ $t('nav.brand') }}
@@ -31,13 +31,13 @@
         <h1 class="page-title">{{ verifiedOnly ? $t('explore.header.verified') : $t('explore.header.title') }}</h1>
         <p class="page-subtitle">
           <template v-if="verifiedOnly">
-            Each card is a public MiroShark run whose operator marked the
+            Each card is a public Bassira run whose operator marked the
             real-world outcome. Hover the badge for the source link, open
             one to see how the agent consensus formed, or fork it to test
             the same agent population on a fresh scenario.
           </template>
           <template v-else>
-            Every card is a real MiroShark run someone published. Open one to see
+            Every card is a real Bassira run someone published. Open one to see
             the full belief drift, agent network, and prediction outcome — or fork
             it in one click and run your own variant with the same agent population.
           </template>

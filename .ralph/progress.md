@@ -26,8 +26,20 @@
 - **Tunnel vers `https://...:port` côté Coolify Domains** crée des boucles HTTP redirect. Toujours utiliser `http://...:port` quand Cloudflare termine déjà le TLS.
 - **Image GHCR privée** dans le compose upstream → toujours préférer `build: .` depuis le Dockerfile local sauf si l'image est publique.
 - **`ports:` host-mode** dans le compose causent des conflits multi-app sur le même hôte Coolify. Utiliser `expose:` (réseau Docker interne).
+- **Brand split Bassira / miroshark** depuis 2026-04-29 : la marque visible utilisateur est **Bassira** (بصيرة) sur tout le frontend (titres, hero, locales, watermarks, exports PNG, manifest PWA). MAIS l'identifiant technique `miroshark` reste partout dans le backend : MCP server key (`mcpServers: { miroshark: ... }` exposé à Claude Desktop / Cursor / `@miroshark`), loggers `get_logger('miroshark.api.*')`, CSS class `.miroshark-banner`, default graph name `'MiroShark Graph'`, doc title Swagger, GitHub repo `aaronjmars/MiroShark`, app Coolify `miro-shark`, container name. Les rares strings frontend qui réfèrent à un identifiant backend (mcp.js comment, SettingsPanel "Wire MiroShark's knowledge graph" → matche `@miroshark` que tape l'utilisateur) gardent volontairement « MiroShark ». Logo `frontend/public/miroshark-nobg.png` : path conservé, le PNG visuel doit être regénéré au branding « Bassira » par un designer (TODO non bloquant).
 
 ## Log d'itérations
+
+### 2026-04-29 — Rebrand frontend MiroShark → Bassira (hors Ralph, prereq UI cohérente)
+- **Statut** : commité hors prd.json (pas une story Ralph)
+- **Volume** : 30 fichiers, ~93 remplacements (en/fr/ar locales, index.html, manifest.json, sw.js, 14 vues/composants, design-tokens header, services worker, watermarks chart, download filenames `bassira-*.png`)
+- **Quality gates** : npm run build OK (303 kB main), backend pytest 202/202 (zéro régression : aucun fichier backend touché)
+- **Scope préservé (4 catégories de strings techniques)** :
+  - `aaronjmars/MiroShark` GitHub URLs (3 occurrences) — repo upstream
+  - `https://miroshark.app` placeholder URL d'exemple
+  - `/miroshark-nobg.png` LOGO_URL — fichier asset existant en `frontend/public/`
+  - `miroshark` MCP server key — backend identifier que l'utilisateur tape (`@miroshark` dans Cursor)
+- **Outils** : `scripts/rebrand_bassira.py` Python script avec sentinels pour protéger les 4 catégories. AR transliteration `ميروشارك` → `بصيرة`. Locale storage key migré `miroshark_locale` → `bassira_locale` (pas de users prod existants).
 
 ### 2026-04-29 — US-034 Security headers (HSTS, X-Frame-Options, CSP, Referrer-Policy, Permissions-Policy)
 - **Statut** : passes: true

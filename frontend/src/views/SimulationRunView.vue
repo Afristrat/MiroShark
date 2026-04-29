@@ -3,7 +3,7 @@
     <!-- Header -->
     <header class="app-header">
       <div class="header-left">
-        <div class="brand" @click="router.push('/')">MIROSHARK</div>
+        <div class="brand" @click="router.push('/')">BASSIRA</div>
       </div>
       
       <div class="header-center">
@@ -308,7 +308,7 @@ watch(isSimulating, (newValue) => {
 watchEffect(() => {
   const status = statusClass.value
   const dot = status === 'processing' ? '\uD83D\uDFE0' : status === 'error' ? '\uD83D\uDD34' : status === 'completed' ? '\uD83D\uDFE2' : ''
-  document.title = dot ? `${dot} (3/4) MiroShark` : '(3/4) MiroShark'
+  document.title = dot ? `${dot} (3/4) Bassira` : '(3/4) Bassira'
 })
 
 onMounted(() => {

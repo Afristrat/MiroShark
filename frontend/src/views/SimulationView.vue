@@ -3,7 +3,7 @@
     <!-- Header -->
     <header class="app-header">
       <div class="header-left">
-        <div class="brand" @click="router.push('/')">MIROSHARK</div>
+        <div class="brand" @click="router.push('/')">BASSIRA</div>
       </div>
       
       <div class="header-center">
@@ -341,7 +341,7 @@ const refreshGraph = () => {
 watchEffect(() => {
   const status = statusClass.value
   const dot = status === 'error' ? '\uD83D\uDD34' : status === 'completed' ? '\uD83D\uDFE2' : '\uD83D\uDFE0'
-  document.title = `${dot} (2/4) ${statusText.value} · MiroShark`
+  document.title = `${dot} (2/4) ${statusText.value} · Bassira`
 })
 
 onMounted(async () => {

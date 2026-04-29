@@ -1,5 +1,5 @@
 /**
- * MiroShark Service Worker — Browser Push Notifications
+ * Bassira Service Worker — Browser Push Notifications
  *
  * Handles incoming Web Push events and displays browser notifications
  * when a simulation completes. Notification clicks focus the browser
@@ -18,7 +18,7 @@ self.addEventListener('activate', (event) => {
 
 // ── Push: show a notification when a simulation completes ───────────────────
 self.addEventListener('push', (event) => {
-  let payload = { title: 'MiroShark', body: 'Simulation update', url: '/' }
+  let payload = { title: 'Bassira', body: 'Simulation update', url: '/' }
 
   if (event.data) {
     try {
@@ -32,7 +32,7 @@ self.addEventListener('push', (event) => {
     body: payload.body,
     icon: '/favicon.ico',
     badge: '/favicon.ico',
-    tag: payload.simulation_id ? `sim-${payload.simulation_id}` : 'miroshark',
+    tag: payload.simulation_id ? `sim-${payload.simulation_id}` : 'bassira',
     renotify: false,
     requireInteraction: false,
     data: { url: payload.url || '/' },

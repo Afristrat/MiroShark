@@ -535,7 +535,7 @@ const runAskMode = async () => {
       return
     }
     const d = res.data
-    const synthUrl = `miroshark://ask/${encodeURIComponent(q.slice(0, 64))}`
+    const synthUrl = `bassira://ask/${encodeURIComponent(q.slice(0, 64))}`
     // Don't duplicate if re-run.
     const idx = urlDocs.value.findIndex(x => x.url === synthUrl)
     const payload = {
@@ -593,10 +593,10 @@ const truncate = (s, max) => {
 // Split docs by origin — Ask-synthesized briefings show under Just Ask,
 // real URL fetches show under URL Import.
 const askDocs = computed(() =>
-  urlDocs.value.filter(d => typeof d.url === 'string' && d.url.startsWith('miroshark://ask/'))
+  urlDocs.value.filter(d => typeof d.url === 'string' && d.url.startsWith('bassira://ask/'))
 )
 const fetchedDocs = computed(() =>
-  urlDocs.value.filter(d => !(typeof d.url === 'string' && d.url.startsWith('miroshark://ask/')))
+  urlDocs.value.filter(d => !(typeof d.url === 'string' && d.url.startsWith('bassira://ask/')))
 )
 
 // Start simulation - navigate immediately, API calls happen on the Process page

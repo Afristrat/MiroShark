@@ -62,7 +62,7 @@
                 :style="iframeStyle"
                 frameborder="0"
                 loading="lazy"
-                title="MiroShark simulation embed preview"
+                title="Bassira simulation embed preview"
               ></iframe>
             </div>
           </div>
@@ -121,7 +121,7 @@
                 :src="shareCardUrl"
                 :key="shareCardCacheBust"
                 class="share-card-preview"
-                alt="MiroShark share card preview"
+                alt="Bassira share card preview"
                 @error="onShareCardError"
               />
               <div v-else class="share-card-empty">
@@ -154,7 +154,7 @@
                 v-if="isPublic && shareCardUrl"
                 class="share-download-btn"
                 :href="shareCardUrl"
-                :download="`miroshark-${simulationId.slice(0, 12)}.png`"
+                :download="`bassira-${simulationId.slice(0, 12)}.png`"
               >
                 ↓ Download PNG
               </a>
@@ -187,7 +187,7 @@
                   :src="replayGifUrl"
                   class="replay-preview"
                   :class="{ 'replay-preview-loaded': replayLoaded }"
-                  alt="MiroShark belief replay GIF"
+                  alt="Bassira belief replay GIF"
                   @load="onReplayLoad"
                   @error="onReplayError"
                 />
@@ -219,7 +219,7 @@
                   v-if="isPublic && replayGifUrl"
                   class="share-download-btn"
                   :href="replayGifUrl"
-                  :download="`miroshark-${simulationId.slice(0, 12)}-replay.gif`"
+                  :download="`bassira-${simulationId.slice(0, 12)}-replay.gif`"
                 >
                   ↓ Download GIF
                 </a>
@@ -355,7 +355,7 @@
           <div class="embed-dialog-hint">
             <span class="hint-icon">ⓘ</span>
             The widget reads from this instance's API, so viewers must be able to reach
-            <code>{{ origin }}</code>. For public embeds, deploy MiroShark somewhere reachable from the internet.
+            <code>{{ origin }}</code>. For public embeds, deploy Bassira somewhere reachable from the internet.
           </div>
         </div>
       </div>
@@ -434,12 +434,12 @@ const embedUrl = computed(() => {
 
 const iframeSnippet = computed(() => {
   const { width, height } = currentSize.value
-  return `<iframe src="${embedUrl.value}" width="${width}" height="${height}" frameborder="0" loading="lazy" title="MiroShark simulation"></iframe>`
+  return `<iframe src="${embedUrl.value}" width="${width}" height="${height}" frameborder="0" loading="lazy" title="Bassira simulation"></iframe>`
 })
 
 const markdownSnippet = computed(() => {
   if (!embedUrl.value) return ''
-  return `[MiroShark simulation ↗](${embedUrl.value})`
+  return `[Bassira simulation ↗](${embedUrl.value})`
 })
 
 const shareCardCacheBust = ref(0)

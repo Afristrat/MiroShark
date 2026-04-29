@@ -1,6 +1,6 @@
 {
   "nav": {
-    "brand": "MIROSHARK",
+    "brand": "BASSIRA",
     "explore": "Explore",
     "github": "GitHub",
     "settings": "Settings",
@@ -39,7 +39,7 @@
       "tag": "Universal Swarm Intelligence Engine",
       "title": "Simulate anything, for $1",
       "descriptionPart1": "Drop in anything — a press release, a news headline, a policy draft, a question you can't answer, a historical what-if — and",
-      "brand": "MiroShark",
+      "brand": "Bassira",
       "descriptionPart2": "spawns",
       "agents": "hundreds of agents",
       "descriptionPart3": "that react to it hour by hour. Posting, arguing, trading, changing their minds.",
@@ -55,7 +55,7 @@
       "title": "What it does",
       "s1": {
         "title": "You bring a scenario",
-        "desc": "MiroShark builds the world around it — extracts actors, stakes, and open questions from your input."
+        "desc": "Bassira builds the world around it — extracts actors, stakes, and open questions from your input."
       },
       "s2": {
         "title": "Hundreds of grounded agents",
@@ -93,7 +93,7 @@
       "params": "Input Parameters",
       "promptLabel": ">_ 02 / Simulation Prompt",
       "promptPlaceholder": "// Enter your simulation or prediction requirements in natural language (e.g., If a university announces the revocation of a disciplinary action against a student, what public opinion trends will emerge?)",
-      "engine": "Engine: MiroShark-V1.0",
+      "engine": "Engine: Bassira-V1.0",
       "launch": "Launch Simulation",
       "initializing": "Initializing..."
     }
@@ -280,7 +280,7 @@
         "title": "Preparation Complete",
         "description": "Simulation environment is ready, you can start running the simulation",
         "roundSettings": "Simulation Round Settings",
-        "roundSettingsDesc": "MiroShark automatically plans to simulate {hours} hours of reality, each round represents {min} minutes of elapsed time",
+        "roundSettingsDesc": "Bassira automatically plans to simulate {hours} hours of reality, each round represents {min} minutes of elapsed time",
         "custom": "Custom",
         "estimatedDuration": "Estimated duration ~{n} min",
         "recommended": "40 (Recommended)",
@@ -465,7 +465,7 @@
   "explore": {
     "header": {
       "title": "Explore",
-      "subtitle": "Public simulations from the MiroShark community",
+      "subtitle": "Public simulations from the Bassira community",
       "verified": "Verified predictions",
       "all": "All"
     },
@@ -542,7 +542,7 @@
       "saved": "Saved",
       "reset": "Reset",
       "version": "Version",
-      "about": "About MiroShark"
+      "about": "About Bassira"
     },
     "debug": {
       "title": "Debug Panel",

@@ -3,7 +3,7 @@
     <!-- Header -->
     <header class="app-header">
       <div class="header-left">
-        <div class="brand" @click="router.push('/')">MIROSHARK</div>
+        <div class="brand" @click="router.push('/')">BASSIRA</div>
       </div>
       
       <div class="header-center">
@@ -217,10 +217,10 @@ watch(() => route.params.reportId, (newId) => {
 watchEffect(() => {
   const status = statusClass.value
   const dot = status === 'processing' ? '\uD83D\uDFE0' : status === 'error' ? '\uD83D\uDD34' : status === 'completed' ? '\uD83D\uDFE2' : ''
-  document.title = dot ? `${dot} (4/4) MiroShark` : '(4/4) MiroShark'
+  document.title = dot ? `${dot} (4/4) Bassira` : '(4/4) Bassira'
 })
 
-onUnmounted(() => { document.title = 'MiroShark' })
+onUnmounted(() => { document.title = 'Bassira' })
 
 onMounted(() => {
   addLog('ReportView initialized')

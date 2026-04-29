@@ -1,6 +1,6 @@
 {
   "nav": {
-    "brand": "MIROSHARK",
+    "brand": "BASSIRA",
     "explore": "Explorer",
     "github": "GitHub",
     "settings": "Paramètres",
@@ -39,7 +39,7 @@
       "tag": "Moteur d’intelligence collective universel",
       "title": "Simulez tout, pour 1 $",
       "descriptionPart1": "Déposez n’importe quoi — un communiqué de presse, un titre d’actualité, un projet de loi, une question sans réponse, un « et si ? » historique — et",
-      "brand": "MiroShark",
+      "brand": "Bassira",
       "descriptionPart2": "fait apparaître",
       "agents": "des centaines d’agents",
       "descriptionPart3": "qui réagissent heure par heure. Ils publient, débattent, échangent, changent d’avis.",
@@ -55,7 +55,7 @@
       "title": "Ce que ça fait",
       "s1": {
         "title": "Vous apportez un scénario",
-        "desc": "MiroShark construit le monde autour — il extrait les acteurs, les enjeux et les questions ouvertes de votre saisie."
+        "desc": "Bassira construit le monde autour — il extrait les acteurs, les enjeux et les questions ouvertes de votre saisie."
       },
       "s2": {
         "title": "Des centaines d’agents ancrés",
@@ -93,7 +93,7 @@
       "params": "Paramètres d’entrée",
       "promptLabel": ">_ 02 / Invite de simulation",
       "promptPlaceholder": "// Décrivez vos exigences de simulation ou de prédiction en langage naturel (ex. : si une université annonce la levée d’une sanction disciplinaire contre un étudiant, quelles tendances d’opinion publique vont émerger ?)",
-      "engine": "Moteur : MiroShark-V1.0",
+      "engine": "Moteur : Bassira-V1.0",
       "launch": "Lancer la simulation",
       "initializing": "Initialisation…"
     }
@@ -280,7 +280,7 @@
         "title": "Préparation terminée",
         "description": "L’environnement de simulation est prêt, vous pouvez démarrer l’exécution",
         "roundSettings": "Paramètres des tours de simulation",
-        "roundSettingsDesc": "MiroShark prévoit automatiquement de simuler {hours} heures de réalité, chaque tour représentant {min} minutes écoulées",
+        "roundSettingsDesc": "Bassira prévoit automatiquement de simuler {hours} heures de réalité, chaque tour représentant {min} minutes écoulées",
         "custom": "Personnalisé",
         "estimatedDuration": "Durée estimée ~{n} min",
         "recommended": "40 (recommandé)",
@@ -465,7 +465,7 @@
   "explore": {
     "header": {
       "title": "Explorer",
-      "subtitle": "Simulations publiques de la communauté MiroShark",
+      "subtitle": "Simulations publiques de la communauté Bassira",
       "verified": "Prédictions vérifiées",
       "all": "Toutes"
     },
@@ -542,7 +542,7 @@
       "saved": "Enregistré",
       "reset": "Réinitialiser",
       "version": "Version",
-      "about": "À propos de MiroShark"
+      "about": "À propos de Bassira"
     },
     "debug": {
       "title": "Panneau de débogage",

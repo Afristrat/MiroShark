@@ -1,6 +1,6 @@
 /**
  * Chart export utility — rasterises an inline SVG element to a canvas with a
- * MiroShark watermark strip at the bottom, then offers download and clipboard
+ * Bassira watermark strip at the bottom, then offers download and clipboard
  * variants. Used by PolymarketChart, BeliefDriftChart, WhatIfPanel, and
  * InteractionNetwork so exported images share the same provenance footer.
  */
@@ -113,7 +113,7 @@ async function _ensureFontsReady() {
 /**
  * Render the given <svg> element (already mounted in the DOM) to a canvas at
  * the specified logical width/height, with an optional titled header above
- * the chart and a MiroShark provenance footer below.
+ * the chart and a Bassira provenance footer below.
  *
  * @param {SVGElement} svgEl
  * @param {object} options
@@ -193,7 +193,7 @@ export async function renderSvgToCanvas(svgEl, {
     img.src = svgUrl
   })
 
-  // ── Footer: MiroShark logo + wordmark + provenance ──
+  // ── Footer: Bassira logo + wordmark + provenance ──
   const footerY = headerHeight + height
   const midY = footerY + FOOTER_HEIGHT / 2
   // Thin top divider
@@ -212,14 +212,14 @@ export async function renderSvgToCanvas(svgEl, {
     textStartX = logoX + logoSize + 16
   }
 
-  // Big wordmark — "SIMULATED BY MIROSHARK"
+  // Big wordmark — "SIMULATED BY BASSIRA"
   ctx.fillStyle = '#0A0A0A'
   ctx.font = '700 24px "Space Mono", "JetBrains Mono", ui-monospace, monospace'
   ctx.textBaseline = 'middle'
   ctx.textAlign = 'left'
   // Letter spacing ~2px, implemented manually because canvas lacks the CSS
   // equivalent — keeps the type matching the rest of the design system.
-  const brand = 'SIMULATED BY MIROSHARK'
+  const brand = 'SIMULATED BY BASSIRA'
   const letterSpacing = 2
   let cursor = textStartX
   for (const ch of brand) {

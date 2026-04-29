@@ -10,7 +10,7 @@
         <button
           class="wi-export-btn"
           :disabled="!hasChartData || exporting || !copySupported"
-          :title="copySupported ? 'Copy chart as PNG (with MiroShark watermark)' : 'Image copy not supported in this browser'"
+          :title="copySupported ? 'Copy chart as PNG (with Bassira watermark)' : 'Image copy not supported in this browser'"
           @click="copyChart"
         >
           {{ copiedFlash ? $t('embed.copied') : $t('embed.copy') }}
@@ -19,7 +19,7 @@
           class="wi-export-btn"
           :disabled="!hasChartData || exporting"
           @click="downloadChart"
-          title="Download chart as PNG (with MiroShark watermark)"
+          title="Download chart as PNG (with Bassira watermark)"
         >
           Download ↓
         </button>
@@ -437,7 +437,7 @@ const compute = async () => {
   }
 }
 
-// ── Chart export (copy + download as PNG, with MiroShark watermark) ──
+// ── Chart export (copy + download as PNG, with Bassira watermark) ──
 
 const _buildExportCanvas = () => {
   if (!svgRef.value || !hasChartData.value) {
@@ -481,7 +481,7 @@ async function copyChart() {
     console.warn('[what-if] copy failed, falling back to download:', err)
     try {
       const canvas = await _buildExportCanvas()
-      downloadCanvas(canvas, `miroshark-whatif-${props.simulationId}.png`)
+      downloadCanvas(canvas, `bassira-whatif-${props.simulationId}.png`)
     } catch (err2) {
       console.error('[what-if] download fallback failed:', err2)
     }
@@ -495,7 +495,7 @@ async function downloadChart() {
   exporting.value = true
   try {
     const canvas = await _buildExportCanvas()
-    downloadCanvas(canvas, `miroshark-whatif-${props.simulationId}.png`)
+    downloadCanvas(canvas, `bassira-whatif-${props.simulationId}.png`)
   } catch (err) {
     console.error('[what-if] download failed:', err)
   } finally {

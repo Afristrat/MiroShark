@@ -10,7 +10,7 @@
         <button
           class="bd-export-btn"
           :disabled="!hasData || exporting || !copySupported"
-          :title="copySupported ? 'Copy chart as PNG (with MiroShark watermark)' : 'Image copy not supported in this browser'"
+          :title="copySupported ? 'Copy chart as PNG (with Bassira watermark)' : 'Image copy not supported in this browser'"
           @click="copyChart"
         >
           {{ copiedFlash ? $t('embed.copied') : $t('embed.copy') }}
@@ -19,7 +19,7 @@
           class="bd-export-btn"
           :disabled="!hasData || exporting"
           @click="downloadChart"
-          title="Download chart as PNG (with MiroShark watermark)"
+          title="Download chart as PNG (with Bassira watermark)"
         >
           Download ↓
         </button>
@@ -274,7 +274,7 @@ const load = async () => {
   }
 }
 
-// ── Chart export (copy + download, with MiroShark watermark) ──
+// ── Chart export (copy + download, with Bassira watermark) ──
 
 const _buildExportCanvas = () => {
   if (!svgRef.value || !hasData.value) throw new Error('No chart to export')
@@ -316,7 +316,7 @@ async function copyChart() {
     console.warn('[drift] copy failed, falling back to download:', err)
     try {
       const canvas = await _buildExportCanvas()
-      downloadCanvas(canvas, `miroshark-drift-${props.simulationId}.png`)
+      downloadCanvas(canvas, `bassira-drift-${props.simulationId}.png`)
     } catch (err2) {
       console.error('[drift] download fallback failed:', err2)
     }
@@ -330,7 +330,7 @@ async function downloadChart() {
   exporting.value = true
   try {
     const canvas = await _buildExportCanvas()
-    downloadCanvas(canvas, `miroshark-drift-${props.simulationId}.png`)
+    downloadCanvas(canvas, `bassira-drift-${props.simulationId}.png`)
   } catch (err) {
     console.error('[drift] download failed:', err)
   } finally {
