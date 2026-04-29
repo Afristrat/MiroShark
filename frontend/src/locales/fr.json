@@ -670,5 +670,69 @@
       "platform": "Plateforme",
       "noData": "Aucune donnée démographique."
     }
+  },
+  "calibration": {
+    "nav": {
+      "backTitle": "Retour à l’accueil"
+    },
+    "eyebrow": "Crédibilité vérifiée",
+    "hero": {
+      "headline": "On note chaque prédiction. Voici notre score.",
+      "sub": "Score de Brier calculé sur l’ensemble des simulations marquées « vérifiées » — plus c’est bas, mieux c’est. Mis à jour en continu.",
+      "label": "Score de Brier",
+      "help": "0 = parfait, 0,25 = pile ou face",
+      "brierTitle": "Score de Brier moyen sur les simulations vérifiées"
+    },
+    "stats": {
+      "total": "Total vérifié",
+      "calledIt": "Bien anticipé",
+      "partial": "Partiel",
+      "wrong": "Manqué"
+    },
+    "badges": {
+      "success": "Réussi",
+      "partial": "Partiel",
+      "wrong": "Manqué"
+    },
+    "plot": {
+      "title": "Prédit contre observé",
+      "explainer": "Chaque point représente un intervalle de probabilité. La diagonale en pointillé correspond à une calibration parfaite — un point au-dessus signifie qu’on a sous-estimé, un point en-dessous qu’on a surestimé.",
+      "xAxis": "Probabilité prédite",
+      "yAxis": "Fréquence observée"
+    },
+    "tooltip": {
+      "predicted": "Prédit",
+      "observed": "Observé",
+      "n": "n"
+    },
+    "filters": {
+      "title": "Filtrer les résultats",
+      "template": "Modèle",
+      "allTemplates": "Tous les modèles",
+      "from": "Du",
+      "to": "Au",
+      "publicOnly": "Seules les simulations publiques entrent dans le calcul.",
+      "apply": "Appliquer",
+      "reset": "Réinitialiser"
+    },
+    "empty": {
+      "title": "Pas encore assez de données",
+      "message": "Aucune simulation vérifiée ne correspond à ces filtres pour l’instant. Reviens dans quelques jours, ou élargis la fenêtre temporelle.",
+      "helper": "En attente de premières simulations vérifiées."
+    },
+    "error": {
+      "title": "Impossible de charger les données de calibration"
+    },
+    "methodology": {
+      "title": "Comment on compte",
+      "p1": "Le score de Brier mesure la distance moyenne au carré entre la probabilité que nous avions annoncée et le résultat réel observé. Concrètement : on prend la part d’agents qui ont basculé en « bullish » sur le dernier round de la simulation, on la compare à 1 si l’événement s’est réellement produit, à 0 sinon — et on fait la moyenne de l’erreur quadratique sur toutes les simulations vérifiées. Plus le chiffre est bas, plus nos probabilités collent au monde réel ; 0,25 est la baseline d’une pièce non biaisée.",
+      "p2": "Chaque résultat est annoté manuellement dans une des trois cases « bien anticipé », « partiel » ou « manqué ». « Bien anticipé » correspond à un événement qui s’est passé exactement comme prédit, « partiel » signale qu’on a vu venir la dynamique mais raté l’ampleur ou le calendrier, « manqué » couvre les cas où la réalité a divergé franchement du consensus de la simulation. Cette classification est doublée d’une URL de preuve publique pour chaque sim — on n’ajoute rien aux statistiques sans source vérifiable.",
+      "p3": "Pour entrer dans le calcul, une simulation doit être publique (visible dans /verified), avoir une trajectoire complète permettant d’extraire la probabilité finale, et avoir reçu une annotation d’issue. Les simulations privées ou non terminées sont ignorées : elles n’influencent jamais la note publique. Cette page est rafraîchie à la volée à chaque visite — il n’y a pas de cache statique masquant un mauvais run."
+    },
+    "cta": {
+      "title": "Envie de défier nos sims ?",
+      "body": "Soumets-nous un événement à simuler et on s’engage à publier la prédiction avant le verdict réel. Si on se trompe, ça apparaîtra ici.",
+      "button": "Soumettre un événement"
+    }
   }
 }

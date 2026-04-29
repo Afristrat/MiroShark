@@ -670,5 +670,69 @@
       "platform": "Platform",
       "noData": "No demographic data."
     }
+  },
+  "calibration": {
+    "nav": {
+      "backTitle": "Back to home"
+    },
+    "eyebrow": "Verified track record",
+    "hero": {
+      "headline": "We score every prediction. Here's how we're doing.",
+      "sub": "Brier score across all simulations marked verified — lower is better. Updated continuously.",
+      "label": "Brier score",
+      "help": "0 = perfect, 0.25 = coin flip",
+      "brierTitle": "Average Brier score over verified simulations"
+    },
+    "stats": {
+      "total": "Total verified",
+      "calledIt": "Called it",
+      "partial": "Partial",
+      "wrong": "Wrong"
+    },
+    "badges": {
+      "success": "Hit",
+      "partial": "Partial",
+      "wrong": "Miss"
+    },
+    "plot": {
+      "title": "Predicted vs observed",
+      "explainer": "Each dot is one probability bucket. The dotted diagonal is perfect calibration — points above it mean we under-shot, points below mean we over-shot.",
+      "xAxis": "Predicted probability",
+      "yAxis": "Observed frequency"
+    },
+    "tooltip": {
+      "predicted": "Predicted",
+      "observed": "Observed",
+      "n": "n"
+    },
+    "filters": {
+      "title": "Filter results",
+      "template": "Template",
+      "allTemplates": "All templates",
+      "from": "From",
+      "to": "To",
+      "publicOnly": "Only public simulations are included in the calculation.",
+      "apply": "Apply",
+      "reset": "Reset"
+    },
+    "empty": {
+      "title": "Not enough data yet",
+      "message": "No verified simulation matches these filters yet. Come back in a few days, or widen the date range.",
+      "helper": "Waiting for the first verified simulations."
+    },
+    "error": {
+      "title": "Could not load calibration data"
+    },
+    "methodology": {
+      "title": "How we count it",
+      "p1": "The Brier score measures the mean squared distance between the probability we announced and the actual outcome we observed. Concretely: we take the share of agents that ended up bullish in the final round of a simulation, compare it to 1 if the real event happened or 0 otherwise, and average the squared error across every verified simulation. Lower is closer to reality; 0.25 is the baseline of an unbiased coin flip.",
+      "p2": "Each outcome is hand-annotated into one of three buckets: called it, partial, or wrong. Called it means reality matched the prediction tightly, partial means we caught the direction but missed magnitude or timing, and wrong covers the cases where reality diverged sharply from the simulation's consensus. Every annotation ships with a public evidence URL — nothing enters this dashboard without a verifiable source.",
+      "p3": "To count, a simulation must be public (visible in /verified), have a complete trajectory we can extract a final probability from, and have received an outcome annotation. Private or unfinished simulations are ignored: they never sway the public number. This page is recomputed fresh on every visit — no static cache hiding a bad run."
+    },
+    "cta": {
+      "title": "Want to bet against us?",
+      "body": "Submit an event you'd like us to forecast. We commit to publishing the prediction before the real verdict drops. If we're wrong, you'll see it here.",
+      "button": "Submit an event to forecast"
+    }
   }
 }

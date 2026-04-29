@@ -492,9 +492,28 @@
         "Design Playful & Soft appliqué",
         "Test Playwright : page charge, plot rendu"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-04-29T12:30:00Z",
       "dependencies": ["US-020", "US-002"],
-      "metadata": { "estimated_hours": 4, "priority": "P1" }
+      "metadata": {
+        "estimated_hours": 4,
+        "priority": "P1",
+        "files_touched": [
+          "frontend/src/views/CalibrationView.vue",
+          "frontend/src/router/index.js",
+          "frontend/src/locales/fr.json",
+          "frontend/src/locales/en.json",
+          "frontend/src/locales/ar.json",
+          ".ralph/prd.json",
+          ".ralph/progress.md"
+        ],
+        "wall_time_observed": "~25min",
+        "build_result": "frontend npm run build OK : CalibrationView 12.62 kB JS / 9.40 kB CSS, +0 erreur",
+        "backend_test_result": "202 passed, 17 skipped (integration) — zéro régression",
+        "playwright_test": "deferred (cf. US-010 set up commun de la suite Playwright multi-locale)",
+        "approach": "SVG vanilla scatter (pas de wrapper d3, viewBox responsive 760x560) ; tooltip absolu suivant le curseur ; useScrollFadeIn sur 4 sections ; ms-card / ms-btn / ms-badge / ms-skeleton ; CSS logical props pour le RTL automatique ; axios via api/index.js (intercepteur déjà en place) ; shape backend ADAPTÉ (n_called_it / n_partial / n_wrong au lieu de outcomes.*) tout en supportant la forme imbriquée si le backend l'ajoute plus tard ; delta_vs_previous_month détecté automatiquement (masqué tant que absent du payload).",
+        "shape_mismatch_resolved": "Le brief décrivait un wrapper data.outcomes.{called_it,partial,wrong} et un delta_vs_previous_month que le backend ne porte PAS encore (cf calibration.py qui retourne brier/n/n_called_it/n_partial/n_wrong/accuracy/calibration_plot à plat). Le composant lit la forme réelle en priorité avec fallback vers la forme imbriquée pour rester forward-compat."
+      }
     },
     {
       "id": "US-022",

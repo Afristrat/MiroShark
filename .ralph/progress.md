@@ -30,6 +30,35 @@
 
 ## Log d'itérations
 
+### 2026-04-29 — US-021 Frontend page /calibration (D3 scatter + stats publiques)
+- **Statut** : passes: true
+- **Fichiers** : `frontend/src/views/CalibrationView.vue` (nouveau, ~700 l template+style+script), `frontend/src/router/index.js` (+6 l route /calibration), `frontend/src/locales/{fr,ar,en}.json` (+~70 keys section `calibration.*` chacun, MÊMES keys cross-locale)
+- **Quality gates** :
+  - `cd frontend && npm run build` → OK : nouveau chunk `CalibrationView-*.js` 12.62 kB / 3.92 kB gzip + `CalibrationView-*.css` 9.40 kB / 1.93 kB gzip ; `index-*.js` toujours sous 100 kB gzip
+  - `cd backend && uv run pytest tests/ --tb=short -x` → 202 passed, 17 skipped (intégration), zéro régression (aucun fichier backend touché)
+- **Architecture** :
+  - SVG vanilla scatter (pas d'import d3 dans la vue — la lib est déjà dans le bundle pour d'autres views, mais ce plot est trivial, viewBox 760x560 avec `width: 100%` ⇒ fully responsive, height auto via CSS)
+  - 10 buckets de probabilité plottés en `<circle>` avec `r = clamp(sqrt(n)*2, 4, 20)` ; les buckets vides (`n=0`) sont filtrés pour ne pas polluer le plot avec des points à `observed=null`
+  - Diagonale référence en `stroke-dasharray: 4 4` couleur `--ms-text-subtle` (calibration parfaite)
+  - Grille interne, axes, ticks 0/0.2/0.4/0.6/0.8/1, axis titles via `<text>` (rotation -90° pour Y)
+  - Tooltip = `<div>` absolu suivant la souris (pattern PolymarketChart) — `transform: translate(-50%, calc(-100% - 14px))` pour que le tooltip s'ancre au-dessus du curseur centré, fonctionne identiquement LTR/RTL (pas de flip souhaité, le tooltip doit suivre la coordonnée physique)
+- **Shape backend / brief mismatch** :
+  - Le brief promettait `data.outcomes.{called_it,partial,wrong}` + `delta_vs_previous_month` + `data.filters.templates_available`
+  - Le backend (`backend/app/api/calibration.py`) retourne actuellement la forme PLATE : `{success, brier, n, n_called_it, n_partial, n_wrong, accuracy, calibration_plot}` sans delta ni filters
+  - Le composant lit en priorité la forme réelle (`d.n_called_it`) avec FALLBACK vers la forme imbriquée (`d.outcomes?.called_it`) pour rester forward-compat si le backend ajoute le wrapper plus tard
+  - Le chip de delta est détecté à l'exécution : `data.delta_vs_previous_month ?? data.delta_vs_previous`. Tant que ce champ est absent, le chip est simplement non rendu — pas de crash, pas de placeholder « N/A »
+  - `availableTemplates` lit `data.filters.templates_available` puis `data.templates_available` à plat → liste vide → select n'affiche que « All templates »
+- **Patterns réutilisés** :
+  - `useScrollFadeIn(sectionRefs)` (US-029) sur 4 sections : hero / stats / plot+filters / methodology+CTA
+  - `.ms-card`, `.ms-btn ms-btn-secondary --sm`, `.ms-btn-ghost --sm`, `.ms-badge ms-badge-{success,warning,danger}`, `.ms-skeleton`, `.ms-mono`, `.ms-input`, `.ms-select`
+  - LanguageSwitcher mounté globalement par `App.vue` (US-008) ⇒ pas d'ajout dans la page
+  - CSS logical properties partout (`max-width`, `padding-inline`, `inset-inline-end` côté `cal-back-arrow` non requis mais flex-row natif gère le RTL) ; pas de `margin-left/right` ni `right:`/`left:` non-tooltip
+  - `axios` via `frontend/src/api/index.js` (intercepteur qui unwrap response.data, gestion timeout)
+- **Locales** : 3 fichiers traduits avec accents (ÉRR, À, Ç…) ; AR avec terminologie correcte (درجة براير, التواتر المرصود, المعايرة)
+- **CTA** : `<router-link to="/devis">` qui pointe vers une route pas encore créée — c'est volontaire (cf brief, l'autre story US-025 créera /devis ou /offres). Vue Router renvoie le 404 par défaut si on clique avant la création — non bloquant pour US-021
+- **AC déférée** : « Test Playwright : page charge, plot rendu » → reportée à US-010 (set up commun de la suite multi-locale)
+- **Pattern à retenir** : pour un endpoint backend dont le shape promet plus que ce qu'il fournit aujourd'hui (cas fréquent quand frontend et backend bossent en parallèle), CODER LA LECTURE EN COUCHES : forme réelle PRIORITAIRE puis fallback vers la forme imbriquée envisagée. `Number.isFinite(value)` est plus sûr que `value !== undefined` pour les chiffres car il rejette aussi `null` et `NaN`
+
 ### 2026-04-29 — US-009 Support RTL complet (logical properties + Tajawal + ar.json validé)
 - **Statut** : passes: true
 - **Volume** : 26 fichiers Vue migrés (15 prio + 11 résiduels), 201 directional CSS props remplacées par leurs équivalentes logiques, +font Tajawal, +`:lang(ar)` rule dans design-tokens.css

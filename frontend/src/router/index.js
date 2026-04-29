@@ -69,6 +69,13 @@ const routes = [
     name: 'Verified',
     component: () => import('../views/ExploreView.vue'),
     props: { verifiedOnly: true }
+  },
+  {
+    // Public calibration page — Brier score + calibration plot served
+    // as the commercial argument. No auth wall by design (US-021).
+    path: '/calibration',
+    name: 'Calibration',
+    component: () => import('../views/CalibrationView.vue')
   }
 ]
 
