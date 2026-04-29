@@ -156,11 +156,16 @@ button {
 .animate-shimmer { animation: shimmer 2s ease-in-out infinite; }
 .animate-pulse-border { animation: pulse-border 2s ease-in-out infinite; }
 
-/* Floating LanguageSwitcher — visible on every route, RTL-flipped */
+/* Floating LanguageSwitcher — visible on every route, RTL-flipped.
+   `!important` requis : le composant LanguageSwitcher pose
+   `.lang-switcher { position: relative }` en <style scoped> pour ancrer
+   son dropdown absolute. Vue scoped style ajoute un `[data-v-*]` qui
+   bumpe la spécificité au-delà de cette règle non-scopée. !important
+   est ici l'override intentionnel le plus lisible. */
 .lang-switcher--floating {
-  position: fixed;
-  top: 16px;
-  inset-inline-end: 16px;
-  z-index: 999;
+  position: fixed !important;
+  top: 16px !important;
+  inset-inline-end: 16px !important;
+  z-index: 999 !important;
 }
 </style>
