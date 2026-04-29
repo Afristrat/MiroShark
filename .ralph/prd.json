@@ -748,6 +748,127 @@
         "files_touched": ["backend/app/security_headers.py", "backend/app/__init__.py", "backend/tests/test_unit_security_headers.py"],
         "lighthouse_target": "Best Practices > 90"
       }
+    },
+    {
+      "id": "US-036",
+      "chantier": "8-infra-prod",
+      "title": "Build prod Coolify (npm run build + vite preview)",
+      "description": "Coolify exécutait `CMD npm run dev` en prod, servant Vite dev server (modules raw + /@vite/client). Modifier Dockerfile pour ajouter `RUN npm run build` avant CMD, changer CMD à `npm run start`. Ajouter script `start` dans root package.json avec concurrently backend + `npm run frontend:preview`. Ajouter block `preview:` dans frontend/vite.config.js avec port 3000, host:true, allowedHosts:true, proxy /api → backend:5001.",
+      "acceptanceCriteria": [
+        "Dockerfile builds dist/ avant CMD",
+        "Prod sert /assets/index-*.js minifié, plus de /@vite/client ni /src/main.js raw",
+        "Backend Flask + frontend static preview tournent ensemble via concurrently",
+        "/api proxied correctement vers backend:5001",
+        "SPA fallback fonctionne (vue-router createWebHistory non cassé sur deep links)"
+      ],
+      "passes": true,
+      "completedAt": "2026-04-29T11:30:00Z",
+      "dependencies": [],
+      "metadata": {
+        "priority": "P1",
+        "files_touched": ["Dockerfile", "package.json", "frontend/vite.config.js"],
+        "wall_time_observed": "~15min Ralph autonome",
+        "verification": "curl prospectives.ai-mpower.com retourne <script src=\"/assets/index-*.js\"> au lieu de /@vite/client"
+      }
+    },
+    {
+      "id": "US-037",
+      "chantier": "9-simulation-quality",
+      "title": "SimulationConfigGenerator parse simulation_requirement → time config adaptative",
+      "description": "Aujourd'hui TimeSimulationConfig est hardcoded (72h / 60min/round = 72 rounds) pour TOUT scénario. SimulationConfigGenerator.generate_config() reçoit `simulation_requirement` mais ne le parse pas pour ajuster la durée. Templates contiennent `recommended_settings` (ex she_start.json:70 → minutes_per_round=10080 pour 1-semaine) qui sont ignorés. Fix : parser `simulation_requirement` (regex timeframe + LLM extraction si ambigu) pour adapter `total_simulation_hours` + `minutes_per_round`. Honor `recommended_settings.time_config` du template si présent.",
+      "acceptanceCriteria": [
+        "Regex extrait `(N) (heures|jours|semaines|mois)` du simulation_requirement",
+        "Si pattern non détecté, LLM call court extrait timeframe",
+        "Templates `recommended_settings.time_config` override les defaults",
+        "Tests pytest : 5 cas (24h crisis / 5j policy / 3j adcheck / 1 semaine / 10 semaines incubator) → time config respectée",
+        "Backward compat : pas de simulation_requirement = default 72h"
+      ],
+      "passes": false,
+      "dependencies": ["US-042"],
+      "metadata": { "priority": "P0", "chantier_priority_rank": 2 }
+    },
+    {
+      "id": "US-038",
+      "chantier": "9-simulation-quality",
+      "title": "Per-agent system_prompt ancré sur scenario + persona role",
+      "description": "Aujourd'hui chaque agent reçoit AgentActivityConfig (stance, topics, sentiment_bias) mais aucun system_prompt narratif. Résultat : agents free-floating, posts incohérents avec le rôle. Fix : générer pour chaque agent un system_prompt qui ancre (a) le simulation_requirement (contexte global), (b) le persona role (CEO de startup B, journaliste éco, regulator X), (c) les valeurs/biais explicites attendus dans les arguments, (d) les sources d'autorité que l'agent invoquerait. Injecté dans Wonderwall agent init.",
+      "acceptanceCriteria": [
+        "WonderwallProfileGenerator produit `system_prompt` 200-400 mots par agent",
+        "system_prompt cite simulation_requirement + role spécifique + 3 valeurs ancrées",
+        "Format compatible avec subprocess Wonderwall (passé via agent_configs.system_prompt)",
+        "Tests pytest : sample 5 agents x 5 scenarios → system_prompts distincts, cohérents",
+        "Pas de regression sur format AgentActivityConfig existant"
+      ],
+      "passes": false,
+      "dependencies": ["US-042"],
+      "metadata": { "priority": "P0", "chantier_priority_rank": 3 }
+    },
+    {
+      "id": "US-039",
+      "chantier": "9-simulation-quality",
+      "title": "Step1 form enrichi : key actors, geo, time horizon, tensions",
+      "description": "Aujourd'hui Step1 demande seulement document texte + simulation_prompt 600 chars. Trop pauvre pour contexte initial riche. Ajouter section optionnelle 'Refine context' avec : key actors (chips list, max 8), geographic locale (select MA/DZ/TN/SN/CI/multi), time horizon (select adapté à US-037), key tensions (textarea 200 chars), expected stakeholders (chips list). Defaults intelligents par template. i18n FR/AR/EN.",
+      "acceptanceCriteria": [
+        "Section 'Refine context' déroulante dans Step1, masquée par défaut",
+        "Defaults pré-remplis depuis template choisi (ex Crisis Drill → time=24h, locale=MA)",
+        "Données envoyées au backend dans /api/graph/build via context_refinement{}",
+        "i18n complet sur tous les labels + helper text",
+        "Mobile responsive + RTL via inset-inline-* (déjà US-009 pattern)"
+      ],
+      "passes": false,
+      "dependencies": ["US-042", "US-038"],
+      "metadata": { "priority": "P0", "chantier_priority_rank": 4 }
+    },
+    {
+      "id": "US-040",
+      "chantier": "9-simulation-quality",
+      "title": "Step1.5 (nouveau) : Review & refine entities après graph build",
+      "description": "Aujourd'hui après /api/graph/build l'utilisateur passe direct à Step2 sans inspecter l'ontologie générée. Conséquence : entités dupliquées (`CEO` et `chief_executive_officer`) ou trop génériques restent → profils agents médiocres. Insérer Step1.5 'Review entities' : liste les entités générées par catégorie, permet rename/merge/delete, ajout manuel d'entités manquantes. Persistence Neo4j via /api/graph/entities/refine endpoint (nouveau).",
+      "acceptanceCriteria": [
+        "Nouvelle vue ReviewEntitiesView.vue entre Step1 et Step2",
+        "Liste entités par type avec actions inline (rename, merge dropdown, delete)",
+        "Ajout manuel via input + select type",
+        "POST /api/graph/entities/refine avec diff (renames, merges, deletes, additions)",
+        "Backend applique diff sur Neo4j sans casser les edges existants",
+        "Skip possible (bouton 'Looks good') pour user pressés"
+      ],
+      "passes": false,
+      "dependencies": ["US-039"],
+      "metadata": { "priority": "P0", "chantier_priority_rank": 6 }
+    },
+    {
+      "id": "US-041",
+      "chantier": "9-simulation-quality",
+      "title": "ReportAgent prompts customisés narratifs (vs stats summary)",
+      "description": "Aujourd'hui ReportAgent utilise PLAN_SYSTEM_PROMPT générique, sections auto-planned, content = stats queries (top influencers, demographics, trending topics). Output lit comme résumé de logs, pas comme analyse d'insight. Fix : injecter simulation_requirement dans le system_prompt de chaque section, ajouter 4 sections narratives obligatoires : (1) Did the prediction land? (2) Who flipped? (3) What surprised us? (4) What would have changed the outcome?",
+      "acceptanceCriteria": [
+        "PLAN_SYSTEM_PROMPT customisé par simulation_requirement (template variable)",
+        "4 sections narratives ajoutées au plan auto, en plus des stats",
+        "Section 'What surprised us' compare distribution observée vs prédite (calibration in-sim)",
+        "Section 'What would have changed' fait counterfactual via injection event hypothétique",
+        "Tests pytest snapshot rapport sur 1 sim canonique → contient les 4 sections + cite le scenario",
+        "Lighthouse readability > 60 sur le rapport HTML"
+      ],
+      "passes": false,
+      "dependencies": ["US-042", "US-038"],
+      "metadata": { "priority": "P0", "chantier_priority_rank": 5 }
+    },
+    {
+      "id": "US-042",
+      "chantier": "9-simulation-quality",
+      "title": "5 scénarios canoniques avec seed riche (preset_templates)",
+      "description": "Définir et committer 5 scénarios qui matchent l'attente du moteur Bassira et que l'utilisateur peut choisir 'one-click' depuis TemplateGallery. Chaque scénario = 1 fichier preset_templates/<id>.json + sous-dossier seed/personas/expected_outcome. Domaines à cadrer avec Amine (cf chantier 9 Q&A). Chaque scénario inclut : simulation_requirement riche (>1500 chars), seed_personas (5-8 archétypes nommés), time_config adapté (US-037), expected_outcome_shape (sections obligatoires du rapport US-041), 3 director_event_slots pré-définis.",
+      "acceptanceCriteria": [
+        "5 fichiers backend/app/preset_templates/<id>.json créés (ids cadrés avec Amine)",
+        "Chaque template a sous-dossier avec seed_template.md + personas.md + expected_outcome.md",
+        "GET /api/templates/list les retourne tous + has_variants",
+        "Tests pytest valident schéma + cohérence (time_config alignée avec simulation_requirement timeframe)",
+        "Frontend TemplateGallery affiche les 5 cards avec preview",
+        "Documentation racine backend/app/preset_templates/README.md"
+      ],
+      "passes": false,
+      "dependencies": [],
+      "metadata": { "priority": "P0", "chantier_priority_rank": 1, "requires_human_codesign": true }
     }
   ]
 }
