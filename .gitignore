@@ -62,6 +62,9 @@ mytest/
 # Test output artifacts
 backend/e2e_test_output/
 backend/pipeline_test_output/
+frontend/test-results/
+frontend/playwright-report/
+frontend/playwright/.cache/
 
 # Log files
 backend/logs/

@@ -334,7 +334,7 @@
         "document.documentElement.dir === 'rtl' quand ar",
         "npx playwright test --reporter=list passe (vert)"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-002",
         "US-003",
@@ -344,8 +344,18 @@
       ],
       "metadata": {
         "estimated_hours": 3,
-        "priority": "P1"
-      }
+        "priority": "P1",
+        "commit_pending": true,
+        "files_touched": [
+          "frontend/playwright.config.ts",
+          "frontend/tests/e2e/{helpers,smoke-fr,smoke-en,smoke-ar,i18n-keys,tunnel-commercial}.spec.ts",
+          "frontend/tests/e2e/README.md",
+          "frontend/package.json",
+          ".gitignore"
+        ],
+        "implementation_notes": "32 tests Playwright runnable contre prod : 5 vues x 3 langues smoke + 15 tests transverse i18n no-raw-keys + 2 tests tunnel commercial /offres -> /devis read-only. Helpers i18n FR/AR/EN partages. RTL vérifié via dir=rtl + lang=ar. Aucune action destructive (no submit, no create sim). 32/32 PASS en 23s. Scripts npm test:e2e, test:e2e:ui, test:e2e:list, test:e2e:install."
+      },
+      "completedAt": "2026-04-29"
     },
     {
       "id": "US-011",
