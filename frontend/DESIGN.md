@@ -157,8 +157,27 @@ Auparavant dupliqués dans 3+ fichiers, désormais dans `styles/components.css` 
 
 `@keyframes spin`, `@keyframes pulse` (`50% { opacity: 0.5 }`), `@keyframes fadeIn` sont également déclarés une seule fois dans `components.css`. Les composants peuvent les réutiliser via `animation: spin 0.8s linear infinite;` sans redéclaration locale.
 
+## Charts (US-052) — palette runtime via `getComputedStyle`
+
+Les configs JS de charts D3 / canvas (PolymarketChart, GraphPanel, futurs charts dynamiques) ne peuvent pas consommer directement `var(--ms-chart-*)` puisque ce sont des strings JavaScript passées à `d3.select().attr('fill', …)` ou `ctx.fillStyle = …`. Avant US-052, les hex étaient hardcodés (`'#FF6B1A'`, `'#43C165'`, etc.), ce qui dupliquait les valeurs et bloquait le futur dark mode.
+
+Pattern à utiliser pour tout nouveau chart :
+
+```js
+import { readChartPalette } from '@/utils/css-vars'
+
+const palette = readChartPalette()           // lecture une fois au setup
+const colors = [palette.chart1, palette.chart2, palette.chart3]
+ctx.fillStyle = palette.chart3                // encre (--ms-chart-3)
+d3.select(node).attr('stroke', palette.chart1) // accent orange (--ms-chart-1)
+```
+
+`readChartPalette()` lit toutes les variables `--ms-chart-1..10`, `--ms-status-success/warning/danger/info/pink/violet` du `<html>` via `getComputedStyle(document.documentElement)`, mémoise le résultat, et retombe sur un fallback hex défensif si une variable est absente (SSR, token retiré). Les clés exposées : `chart1..chart10, success, warning, danger, info, pink, violet`.
+
+Pour le dark mode (US-027), basculer la classe `[data-theme="dark"]` sur `<html>` puis appeler `clearChartPaletteCache()` pour forcer la relecture. Tout chart redessiné après cet appel utilisera automatiquement la nouvelle palette.
+
 ## Règles d'or (US-016)
 
-1. **Aucune valeur hex en dur** dans un nouveau fichier `.vue` ou `.css`. Toujours utiliser `var(--ms-*)`. Exceptions documentées : palettes chart D3 dans des strings JS, palettes Stitch isolées (`OffersView.vue`, `QuoteView.vue`), `design-tokens.css` (source de vérité).
+1. **Aucune valeur hex en dur** dans un nouveau fichier `.vue` ou `.css`. Toujours utiliser `var(--ms-*)` côté CSS et `readChartPalette()` côté JS chart (US-052). Exceptions documentées : palettes Stitch isolées (`OffersView.vue`, `QuoteView.vue`), `design-tokens.css` (source de vérité).
 2. **Aucun `!important`** sauf justification explicite par commentaire (override de style scoped Vue, conflit PWA inline). Préférer monter la spécificité avec un sélecteur composé (ex: `.parent .child.child`).
 3. **Pas de redéclaration** de `@keyframes spin`, `@keyframes pulse`, `.stat-card`, `.badge` base — réutiliser ceux de `components.css`.

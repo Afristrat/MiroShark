@@ -196,6 +196,12 @@ import {
   canCopyImageToClipboard,
   wrapText,
 } from '../utils/chartExport'
+import { readChartPalette } from '../utils/css-vars'
+
+// Palette lue une seule fois au setup. US-052 : auparavant les hex étaient
+// hardcodés (#43C165, #FF4444, #FF6B1A, #0A0A0A) → désormais via design tokens
+// pour rester synchrones avec --ms-chart-*. Voir frontend/src/utils/css-vars.js.
+const palette = readChartPalette()
 
 const props = defineProps({
   simulationId: { type: String, required: true },
@@ -240,9 +246,9 @@ const priceDelta = computed(() => {
 
 const lineColor = computed(() => {
   const p = latestPrice.value
-  if (p >= 0.55) return '#43C165'
-  if (p <= 0.45) return '#FF4444'
-  return '#FF6B1A'
+  if (p >= 0.55) return palette.chart2 // #43C165 — bullish (--ms-chart-2)
+  if (p <= 0.45) return palette.chart5 // #FF4444 — bearish (--ms-chart-5)
+  return palette.chart1                // #FF6B1A — neutral (--ms-chart-1)
 })
 
 const tradeVolume = computed(() => {
@@ -379,9 +385,9 @@ const PX = 32 // header horizontal padding
 
 // Colour matching `priceClass` / `deltaClass` used in the live panel.
 const _priceColor = (p) => {
-  if (p >= 0.55) return '#43C165'
-  if (p <= 0.45) return '#FF4444'
-  return '#FF6B1A'
+  if (p >= 0.55) return palette.chart2 // bullish
+  if (p <= 0.45) return palette.chart5 // bearish
+  return palette.chart1                // neutral
 }
 
 const _buildExportCanvas = async () => {
@@ -399,7 +405,7 @@ const _buildExportCanvas = async () => {
   const deltaStr = delta != null ? `${delta >= 0 ? '▲' : '▼'} ${(Math.abs(delta) * 100).toFixed(1)}%` : null
   const deltaColor = delta == null
     ? null
-    : (delta > 0.005 ? '#43C165' : (delta < -0.005 ? '#FF4444' : '#FF6B1A'))
+    : (delta > 0.005 ? palette.chart2 : (delta < -0.005 ? palette.chart5 : palette.chart1))
 
   const stats = [
     { k: 'TRADES', v: String(Math.max(pts.length - 1, 0)) },
@@ -425,7 +431,7 @@ const _buildExportCanvas = async () => {
     let y = 36
 
     // ── Title ── Young Serif, largest element
-    ctx.fillStyle = '#0A0A0A'
+    ctx.fillStyle = palette.chart3 // #0A0A0A (--ms-chart-3, encre)
     ctx.font = titleFont
     ctx.textAlign = 'left'
     ctx.textBaseline = 'top'
@@ -478,7 +484,7 @@ const _buildExportCanvas = async () => {
       ctx.textBaseline = 'top'
       ctx.fillText(s.k, cx, y)
       // Value
-      ctx.fillStyle = '#0A0A0A'
+      ctx.fillStyle = palette.chart3 // #0A0A0A (--ms-chart-3, encre)
       ctx.font = '700 14px "Space Mono", "JetBrains Mono", ui-monospace, monospace'
       ctx.fillText(s.v, cx, y + 16)
     })

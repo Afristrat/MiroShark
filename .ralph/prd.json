@@ -1541,8 +1541,8 @@
         "Build PASS, charts visuellement identiques en prod (validation manuelle ou Playwright visual diff via US-010)",
         "Documentation dans DESIGN.md : section Charts qui explique le pattern getComputedStyle"
       ],
-      "passes": false,
-      "completedAt": null,
+      "passes": true,
+      "completedAt": "2026-04-29",
       "dependencies": [
         "US-016"
       ],
@@ -1560,7 +1560,15 @@
           "frontend/src/components/EmbedDialog.vue",
           "frontend/src/components/Step4Report.vue",
           "frontend/DESIGN.md"
-        ]
+        ],
+        "commit_pending": true,
+        "files_touched": [
+          "frontend/src/utils/css-vars.js",
+          "frontend/src/components/PolymarketChart.vue",
+          "frontend/src/components/GraphPanel.vue",
+          "frontend/DESIGN.md"
+        ],
+        "implementation_notes": "Helper readChartPalette() lit --ms-chart-1..10 + --ms-status-* via getComputedStyle(document.documentElement) une fois, memoise, fallback hex defensif, Object.freeze. clearChartPaletteCache() pour US-027 dark mode futur. PolymarketChart : 11 hex JS migres (chart1/2/3/5). GraphPanel : palette categorielle 10 entrees + 6 highlights migres + fallback gris. 11 hex au total elimine. 4 composants cibles (BeliefDriftChart, InteractionNetwork, DemographicBreakdown, EmbedDialog, Step4Report) examines : 0 hex en JS chart actif (les hex restants sont en CSS scope hors US-052 ou en commentaires de tracabilite). 32/32 Playwright pass. Note: chartExport.js contient encore 3 hex non listes dans la mission, traiter dans story future si necessaire."
       }
     }
   ]

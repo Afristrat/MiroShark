@@ -329,8 +329,16 @@ import { ref, onMounted, onUnmounted, watch, nextTick, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import * as d3 from 'd3'
 import { getSimulationActions } from '../api/simulation'
+import { readChartPalette } from '../utils/css-vars'
 
 const { t } = useI18n()
+
+// US-052 : palette catégorielle des entités graph + couleur de surlignage
+// (sélection D3) lue depuis les design tokens CSS au lieu d'hex hardcodés.
+// Stable au setup ; à reconstruire si bascule de thème (clearChartPaletteCache).
+const palette = readChartPalette()
+// Fallback de surlignage si palette.chart1 venait à manquer (defensive).
+const HIGHLIGHT_STROKE = palette.chart1 // #FF6B1A — orange accent (--ms-chart-1)
 
 const props = defineProps({
   graphData: Object,
@@ -410,8 +418,11 @@ const toggleSelfLoop = (id) => {
 const entityTypes = computed(() => {
   if (!props.graphData?.nodes) return []
   const typeMap = {}
-  // Aesthetic color palette
-  const colors = ['#FF6B1A', '#43C165', '#0A0A0A', '#FFB347', '#FF4444', '#FF8C42', '#2D9B5E', '#D45B1A', '#7A7A7A', '#B8522E']
+  // Aesthetic color palette (US-052: sourced from --ms-chart-1..10 tokens)
+  const colors = [
+    palette.chart1, palette.chart2, palette.chart3, palette.chart4, palette.chart5,
+    palette.chart6, palette.chart7, palette.chart8, palette.chart9, palette.chart10,
+  ]
   
   props.graphData.nodes.forEach(node => {
     const type = node.labels?.find(l => l !== 'Entity') || 'Entity'
@@ -618,7 +629,7 @@ const renderGraph = () => {
   // Color scale
   const colorMap = {}
   entityTypes.value.forEach(t => colorMap[t.name] = t.color)
-  const getColor = (type) => colorMap[type] || '#999'
+  const getColor = (type) => colorMap[type] || palette.chart9 // #7A7A7A — gris neutre
 
   // Simulation - dynamically adjust node spacing based on edge count
   const simulation = d3.forceSimulation(nodes)
@@ -734,7 +745,7 @@ const renderGraph = () => {
       linkLabelBg.attr('fill', 'rgba(10,10,10,0.85)')
       linkLabels.attr('fill', 'rgba(250,250,250,0.5)')
       // Highlight currently selected edge
-      d3.select(event.target).attr('stroke', '#FF6B1A').attr('stroke-width', 3)
+      d3.select(event.target).attr('stroke', HIGHLIGHT_STROKE).attr('stroke-width', 3)
       
       selectedItem.value = {
         type: 'edge',
@@ -758,7 +769,7 @@ const renderGraph = () => {
       linkLabelBg.attr('fill', 'rgba(10,10,10,0.85)')
       linkLabels.attr('fill', 'rgba(250,250,250,0.5)')
       // Highlight corresponding edge
-      link.filter(l => l === d).attr('stroke', '#FF6B1A').attr('stroke-width', 3)
+      link.filter(l => l === d).attr('stroke', HIGHLIGHT_STROKE).attr('stroke-width', 3)
       d3.select(event.target).attr('fill', 'rgba(255, 107, 26, 0.1)')
       
       selectedItem.value = {
@@ -786,8 +797,8 @@ const renderGraph = () => {
       linkLabelBg.attr('fill', 'rgba(10,10,10,0.85)')
       linkLabels.attr('fill', 'rgba(250,250,250,0.5)')
       // Highlight corresponding edge
-      link.filter(l => l === d).attr('stroke', '#FF6B1A').attr('stroke-width', 3)
-      d3.select(event.target).attr('fill', '#FF6B1A')
+      link.filter(l => l === d).attr('stroke', HIGHLIGHT_STROKE).attr('stroke-width', 3)
+      d3.select(event.target).attr('fill', HIGHLIGHT_STROKE)
 
       selectedItem.value = {
         type: 'edge',
@@ -854,10 +865,10 @@ const renderGraph = () => {
       node.attr('stroke', 'rgba(10,10,10,0.6)').attr('stroke-width', 2.5)
       linkGroup.selectAll('path').attr('stroke', 'rgba(250,250,250,0.15)').attr('stroke-width', 1.5)
       // Highlight selected node
-      d3.select(event.target).attr('stroke', '#FF6B1A').attr('stroke-width', 4)
+      d3.select(event.target).attr('stroke', HIGHLIGHT_STROKE).attr('stroke-width', 4)
       // Highlight edges connected to this node
       link.filter(l => l.source.id === d.id || l.target.id === d.id)
-        .attr('stroke', '#FF6B1A')
+        .attr('stroke', HIGHLIGHT_STROKE)
         .attr('stroke-width', 2.5)
       
       selectedItem.value = {
