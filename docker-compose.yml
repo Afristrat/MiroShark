@@ -43,6 +43,9 @@ services:
       dockerfile: Dockerfile
     environment:
       - FLASK_DEBUG=${FLASK_DEBUG:-false}
+      - FLASK_ENV=${FLASK_ENV:-production}
+      - SECRET_KEY=${SECRET_KEY:-}
+      - CORS_ORIGINS=${CORS_ORIGINS:-}
       - LLM_PROVIDER=${LLM_PROVIDER:-openai}
       - LLM_API_KEY=${LLM_API_KEY:-ollama}
       - LLM_BASE_URL=${LLM_BASE_URL:-http://ollama:11434/v1}
