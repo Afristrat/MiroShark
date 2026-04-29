@@ -147,12 +147,22 @@
       "useLiveOracle": "Utiliser les données oracle en direct",
       "launchLoading": "Chargement…",
       "launchLive": "Lancer (en direct) →",
-      "launch": "Lancer →"
+      "launch": "Lancer →",
+      "variantGeneric": "Variant {letter}",
+      "variantGenericTitle": "Lancer le variant {letter} de ce template"
     },
     "difficulty": {
       "easy": "facile",
       "medium": "moyen",
       "hard": "difficile"
+    },
+    "sheStart": {
+      "variantA": "Replay",
+      "variantATitle": "Variant A — Ground Truth Replay (1 run, 10 semaines, 50 agents) : compare la trajectoire MiroShark à la cohorte She Start réelle.",
+      "variantB": "Twin",
+      "variantBTitle": "Variant B — Cohort Twin (5 runs parallèles, 10 semaines) : mesure la stabilité statistique des prédictions.",
+      "variantC": "Blind Spot",
+      "variantCTitle": "Variant C — Blind Spot Hunt (1 run, 5 leaders réelles retirées) : détecte les angles morts du modèle."
     }
   },
   "process": {

@@ -448,9 +448,21 @@
         "Texte traduit via $t() (clé templates.sheStart.*)",
         "Test Playwright : flux complet sélection template → form pré-rempli"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-04-29T17:45:00Z",
       "dependencies": ["US-017", "US-002"],
-      "metadata": { "estimated_hours": 3, "priority": "P1" }
+      "metadata": {
+        "estimated_hours": 3,
+        "priority": "P1",
+        "files_touched": [
+          "frontend/src/components/TemplateGallery.vue (+~80 lignes : variant-row dans template + variantLabel/variantTitle helpers + augmented launchTemplate avec param variantLetter + CSS .variant-btn .variant-letter .variant-label)",
+          "frontend/src/locales/{fr,ar,en}.json (+templates.sheStart.{variantA,B,C,xTitle} + templates.gallery.{variantGeneric,GenericTitle})"
+        ],
+        "approach": "Détection via `template.has_variants` (déjà exposé par /api/templates/list). Si true → render 3 buttons (lettres A/B/C en mono + label court i18n) au lieu du single Launch button. Click → fetch full template via getTemplate(id) → find variant by letter → augmente simulation_requirement avec un bloc paramètres variant (objectif, runs, rounds, agents, market_question, leaders_removed, expected_outcome) → setPendingTemplate. Le LLM voit le contexte du variant en arrivant sur Step1 et adapte ontologie/profils en conséquence.",
+        "fallback_generic_label": "Pour de futurs templates à variants autres que she_start_cohort_replay, fallback i18n templates.gallery.variantGeneric (« Variant A », etc.) — extensible sans changement de code.",
+        "playwright_deferred": "Test Playwright reporté à US-010 (set up commun multi-locale)",
+        "wall_time_observed": "~20min Ralph autonome (avec build verify)"
+      }
     },
     {
       "id": "US-020",

@@ -82,7 +82,27 @@
           <span>{{ $t('templates.gallery.useLiveOracle') }}</span>
         </label>
 
+        <!-- US-019 — Templates avec variants A/B/C : 3 sub-actions au lieu
+             d'un bouton Launch unique. Couvre `she_start_cohort_replay`
+             (Replay / Twin / Blind Spot). Les libellés courts sont en
+             i18n (templates.sheStart.* pour She Start, fallback générique
+             "Variant A/B/C" pour les futurs templates à variants). -->
+        <div v-if="template.has_variants" class="variant-row">
+          <button
+            v-for="letter in ['A', 'B', 'C']"
+            :key="letter"
+            class="variant-btn"
+            :class="{ loading: launchingVariantKey === template.id + ':' + letter }"
+            :disabled="!!launchingVariantKey"
+            :title="variantTitle(template.id, letter)"
+            @click.stop="launchTemplate(template, letter)"
+          >
+            <span class="variant-letter">{{ letter }}</span>
+            <span class="variant-label">{{ variantLabel(template.id, letter) }}</span>
+          </button>
+        </div>
         <button
+          v-else
           class="launch-btn"
           :disabled="launchingId === template.id"
           @click.stop="launchTemplate(template)"
@@ -120,8 +140,28 @@ const templates = ref([])
 const loading = ref(true)
 const selectedId = ref(null)
 const launchingId = ref(null)
+const launchingVariantKey = ref(null)  // US-019 — clé `${templateId}:${letter}`
 const capabilities = ref({ oracle_seed_enabled: false, mcp_agent_tools_enabled: false })
 const oracleOptIn = reactive({})  // templateId → bool (opt-in per card)
+
+// US-019 — libellés courts par template+letter pour la version She Start.
+// Fallback générique « Variant A/B/C » pour tout autre template à variants.
+const variantLabel = (templateId, letter) => {
+  if (templateId === 'she_start_cohort_replay') {
+    if (letter === 'A') return t('templates.sheStart.variantA')
+    if (letter === 'B') return t('templates.sheStart.variantB')
+    if (letter === 'C') return t('templates.sheStart.variantC')
+  }
+  return t('templates.gallery.variantGeneric', { letter })
+}
+const variantTitle = (templateId, letter) => {
+  if (templateId === 'she_start_cohort_replay') {
+    if (letter === 'A') return t('templates.sheStart.variantATitle')
+    if (letter === 'B') return t('templates.sheStart.variantBTitle')
+    if (letter === 'C') return t('templates.sheStart.variantCTitle')
+  }
+  return t('templates.gallery.variantGenericTitle', { letter })
+}
 
 const toggleOracleOpt = (templateId, checked) => {
   oracleOptIn[templateId] = checked
@@ -172,24 +212,55 @@ const selectTemplate = (template) => {
   selectedId.value = selectedId.value === template.id ? null : template.id
 }
 
-const launchTemplate = async (template) => {
-  launchingId.value = template.id
+const launchTemplate = async (template, variantLetter = null) => {
+  // US-019 — variantLetter est 'A' | 'B' | 'C' pour les templates à variants
+  // (she_start_cohort_replay actuellement). Si null → comportement legacy
+  // mono-launch.
+  if (variantLetter) {
+    launchingVariantKey.value = `${template.id}:${variantLetter}`
+  } else {
+    launchingId.value = template.id
+  }
+
   try {
     const enrich = !!(oracleOptIn[template.id] && capabilities.value.oracle_seed_enabled)
     const res = await getTemplate(template.id, { enrich })
-    if (res?.success) {
-      const full = res.data
-      setPendingTemplate(
-        full.simulation_requirement,
-        full.seed_document,
-        full.name
-      )
-      router.push({ name: 'Process', params: { projectId: 'new' } })
+    if (!res?.success) return
+
+    const full = res.data
+    let requirement = full.simulation_requirement
+    let seed = full.seed_document
+    let name = full.name
+
+    // US-019 — sélection variant : on retrouve l'objet variant dans la liste
+    // par son letter ('A'/'B'/'C') et on enrichit le requirement avec ses
+    // paramètres spécifiques (runs, rounds, agents, leaders_removed). Ainsi
+    // au moment de la préparation côté Step1/Step2, le LLM voit le contexte
+    // du variant choisi et adapte ontologie + profils en conséquence.
+    if (variantLetter && Array.isArray(full.variants)) {
+      const variant = full.variants.find(v => v.letter === variantLetter)
+      if (variant) {
+        const paramsBlock = `\n\n--- Variant choisi : ${variant.name} ---\n` +
+          `Objectif : ${variant.objective || '—'}\n` +
+          `Configuration : ${variant.runs || 1} run(s) × ${variant.rounds || full.estimated_rounds || '?'} rounds, ` +
+          `${(variant.agents && variant.agents.total) || full.estimated_agents || '?'} agents.\n` +
+          `Question marché : ${variant.market_question || full.default_market_question || ''}\n` +
+          (variant.leaders_removed && variant.leaders_removed.length
+            ? `Leaders retirés : ${variant.leaders_removed.join(' ; ')}\n`
+            : '') +
+          `Sortie attendue : ${variant.expected_outcome || ''}\n`
+        requirement = (requirement || '') + paramsBlock
+        name = `${full.name} — ${variant.name}`
+      }
     }
+
+    setPendingTemplate(requirement, seed, name)
+    router.push({ name: 'Process', params: { projectId: 'new' } })
   } catch (e) {
     console.error('Failed to load template:', e)
   } finally {
     launchingId.value = null
+    launchingVariantKey.value = null
   }
 }
 </script>
@@ -392,6 +463,67 @@ const launchTemplate = async (template) => {
 .launch-btn:disabled {
   background: #CCC;
   cursor: not-allowed;
+}
+
+/* US-019 — variant row : 3 sub-actions Replay/Twin/Blind Spot pour
+   les templates à variants (she_start_cohort_replay). */
+.variant-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-block-start: auto;
+}
+
+.variant-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 10px 6px;
+  background: var(--ms-bg-elevated, #fff);
+  color: var(--ms-text, #2A2A35);
+  border: 1px solid var(--ms-orange, #FF8551);
+  border-radius: var(--ms-radius-sm, 8px);
+  cursor: pointer;
+  font-family: var(--ms-font-body, 'Manrope'), sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  transition: background 200ms, color 200ms, transform 200ms, box-shadow 200ms;
+  min-height: 56px;
+}
+
+.variant-btn:hover:not(:disabled) {
+  background: var(--ms-orange, #FF8551);
+  color: var(--ms-text-on-color, #FFFFFF);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 133, 81, 0.28);
+}
+
+.variant-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.variant-btn.loading {
+  background: var(--ms-orange-soft, rgba(255, 133, 81, 0.12));
+  color: var(--ms-orange-strong, #F26B36);
+}
+
+.variant-letter {
+  font-family: var(--ms-font-mono, 'JetBrains Mono'), monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  opacity: 0.7;
+}
+
+.variant-label {
+  font-size: 0.78rem;
+  text-transform: none;
 }
 
 @media (max-width: 1024px) {
