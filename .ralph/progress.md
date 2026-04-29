@@ -53,6 +53,16 @@
   - flask-cors gère bien les listes Python comme value de `origins`. Pas besoin d'array YAML.
   - Le sub-agent US-002 tourne en parallèle sans conflit (backend vs frontend).
 
+### 2026-04-29 — US-020 Backend endpoint /api/calibration/brier-score (sub-agent C)
+- **Statut** : passes: true
+- **Fichiers** : backend/app/api/calibration.py (nouveau, 462 l), test_unit_calibration.py (490 l), __init__.py x2
+- **Quality gates** : 12/12 calibration tests, 197 total passed, 17 skipped
+- **Architecture** : 3 couches testables séparément (compute pure / gather I/O / Flask route)
+- **Source données** : SimulationManager.list_simulations() filtre `is_public=True` + `outcome.json` + `trajectory.json`
+- **Brier formula** : Y={1.0 correct, 0.5 partial, 0.0 wrong}, p=bullish_share du dernier snapshot trajectory, Brier=mean((Y-p)^2)
+- **Hypothèse documentée** : `template_id` dans simulation_config.json n'est pas encore écrit par le pipeline → filtre template traité comme exclusion silencieuse pour l'instant
+- **Endpoint** : GET /api/calibration/brier-score (public, sans auth) avec `?template=&from=&to=`, cache HTTP 60s, retourne 200 même `n=0`
+
 ### 2026-04-29 — US-002 Externaliser textes Home + ScenarioSuggestions + TrendingTopics + TemplateGallery
 - **Statut** : passes: true (délégué à sub-agent général en arrière-plan)
 - **Volume** : ~67 chaînes externalisées dans 4 fichiers Vue + 3 fichiers locales

@@ -364,9 +364,21 @@
         "Tests pytest unitaires pour le calcul Brier",
         "Endpoint accessible publiquement (pas d'auth) car argument commercial"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-04-29T02:00:00Z",
       "dependencies": ["US-000"],
-      "metadata": { "estimated_hours": 4, "priority": "P1" }
+      "metadata": {
+        "estimated_hours": 4,
+        "priority": "P1",
+        "files_touched": [
+          "backend/app/api/calibration.py",
+          "backend/app/api/__init__.py",
+          "backend/app/__init__.py",
+          "backend/tests/test_unit_calibration.py"
+        ],
+        "test_result": "12/12 calibration tests pass, 197 total passed",
+        "delegated_to_subagent": true
+      }
     },
     {
       "id": "US-021",

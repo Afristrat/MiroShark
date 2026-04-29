@@ -26,3 +26,7 @@ from . import docs  # noqa: E402, F401
 # URL stays clean — see api/share.py.
 from .share import share_bp  # noqa: E402, F401
 
+# calibration_bp serves the public Brier-score endpoint at
+# /api/calibration/brier-score — see api/calibration.py.
+from .calibration import calibration_bp  # noqa: E402, F401
+
