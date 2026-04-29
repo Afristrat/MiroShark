@@ -10,6 +10,7 @@
   "platforms": ["twitter", "reddit", "polymarket"],
   "tags": ["policy", "regulation", "fintech", "stress-test", "afrique", "uemoa"],
   "simulation_requirement": "Voir engine.md — projet de loi fintech mobile P2P stress-testé contre opposition + banques + autorité monétaire BCEAO sur 5 jours ouvrés, 1 round = 4h.",
+  "seed_document": "Voir policy_brief_stress/01_attachment.md (brief conseiller cabinet ministre 8j avant audition Commission Finances, perspective customer) + policy_brief_stress/02_engine.md (sim_requirement + 6 agent system_prompts cabinet/opposition/économiste banque/PDG fintech/avocate compliance/journaliste TelQuel + 5 director events + verdict shape survives + amendments concession).",
   "default_market_question": "Le projet de loi survivra-t-il au stress test des 5 jours sans amendement majeur ?",
   "attachment_path": "policy_brief_stress/01_attachment.md",
   "engine_path": "policy_brief_stress/02_engine.md",

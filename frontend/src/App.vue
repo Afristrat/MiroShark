@@ -161,11 +161,35 @@ button {
    `.lang-switcher { position: relative }` en <style scoped> pour ancrer
    son dropdown absolute. Vue scoped style ajoute un `[data-v-*]` qui
    bumpe la spécificité au-delà de cette règle non-scopée. !important
-   est ici l'override intentionnel le plus lisible. */
+   est ici l'override intentionnel le plus lisible.
+
+   Top: 12px (plus proche du bord pour visibilité maximale top-of-page).
+   z-index: 1500 pour passer au-dessus de tous les overlays Bassira
+   (modals, panels, dropdowns à ~1000-1200) — le switcher doit rester
+   accessible même quand un modal est ouvert. */
 .lang-switcher--floating {
   position: fixed !important;
-  top: 16px !important;
-  inset-inline-end: 16px !important;
-  z-index: 999 !important;
+  top: 12px !important;
+  inset-inline-end: 12px !important;
+  z-index: 1500 !important;
+  /* Animation d'apparition discrète à l'arrivée sur la page */
+  animation: lang-switcher-fadein 600ms var(--ms-ease, cubic-bezier(0.4, 0, 0.2, 1)) both;
+}
+
+@keyframes lang-switcher-fadein {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lang-switcher--floating {
+    animation: none;
+  }
 }
 </style>

@@ -914,6 +914,67 @@
         "language_used": "Français pour la démo (toutes locales)",
         "director_events_validated": "25 events pré-définis par Amine (5 par scénario), tous activables/désactivables via Director Mode UI au runtime"
       }
+    },
+    {
+      "id": "US-043",
+      "chantier": "9-simulation-quality",
+      "title": "Backend honore locale UI dans tous les outputs LLM (ontologie, agents, rapport)",
+      "description": "Tous les system prompts LLM backend étaient hardcoded en anglais (ontology_generator, graph_tools × 4, report_agent × 3, simulation × 2 = 10 prompts) et le backend ne lisait jamais la locale UI. Conséquence : un user FR qui regarde la simulation voit un rapport généré en anglais — bloquant pour la démo Maghreb-Afrique francophone. Helper `app/utils/locale_prompt.py` qui (a) lit `X-Bassira-Locale` header (default `fr`), (b) append une instruction forte au system prompt forçant la réponse dans la locale (en préservant les identifiants techniques PascalCase/UPPER_SNAKE_CASE/JSON keys). Frontend axios interceptor envoie le header avec la locale i18n courante.",
+      "acceptanceCriteria": [
+        "backend/app/utils/locale_prompt.py créé : LOCALE_FULL_NAMES + get_request_locale() + localize_system_prompt()",
+        "backend/tests/test_unit_locale_prompt.py 15 tests passent",
+        "ontology_generator + graph_tools (4 prompts) + report_agent (3 prompts) + simulation (2 prompts via _SCENARIO_SUGGEST + _ASK + agent CHAT) propagent localize_system_prompt(get_request_locale())",
+        "frontend/src/api/index.js axios interceptor injecte header X-Bassira-Locale",
+        "Tests pytest existants passent (zéro régression sur les 174 tests pré-existants)",
+        "Quality gate : 232 passed, 17 skipped, 0 failed"
+      ],
+      "passes": true,
+      "completedAt": "2026-04-29T16:30:00Z",
+      "dependencies": [],
+      "metadata": {
+        "priority": "P0",
+        "chantier_priority_rank": 7,
+        "files_touched": [
+          "backend/app/utils/locale_prompt.py (nouveau, 90 lignes helper + sentinel idempotent)",
+          "backend/tests/test_unit_locale_prompt.py (nouveau, 15 tests)",
+          "backend/app/services/ontology_generator.py (+1 import + wrap 1 system prompt)",
+          "backend/app/services/graph_tools.py (+1 import + wrap 4 system prompts)",
+          "backend/app/services/report_agent.py (+1 import + wrap 4 occurrences via replace_all)",
+          "backend/app/api/simulation.py (+1 import + wrap 3 system prompts : SCENARIO_SUGGEST, ASK, agent CHAT)",
+          "frontend/src/api/index.js (+1 import i18n + 8 lignes interceptor X-Bassira-Locale)",
+          "backend/app/preset_templates/{5 templates}.json (+1 ligne seed_document chacun pour conformité schema test)"
+        ],
+        "wall_time_observed": "~25 min Ralph autonome",
+        "directive_text": "RÉPONSE — LANGUE OBLIGATOIRE : Tu réponds exclusivement en {full_name} (code `{locale}`) ... Exception : identifiants techniques (PascalCase, UPPER_SNAKE_CASE, snake_case, JSON keys) restent en anglais. Si le doc est dans une autre langue, traduis mentalement et renvoie en {full_name}.",
+        "wonderwall_subprocess_uncovered": "Les system_prompts générés par WonderwallProfileGenerator pour les agents en arrière-plan (US-038) ne sont PAS couverts par US-043 — ils sont consommés par un subprocess Wonderwall hors Flask context. US-038 devra propager la locale via le SimulationState persisté (cf engine.md des 5 scénarios canoniques)."
+      }
+    },
+    {
+      "id": "US-044",
+      "chantier": "9-simulation-quality",
+      "title": "LanguageSwitcher visibilité renforcée + accessibilité top-of-page",
+      "description": "Suite à US-008 (LanguageSwitcher dropdown), Amine reportait : 'le sélecteur de langue n'est pas visible'. Diagnostic : (a) la classe .lang-switcher--floating App.vue était écrasée par .lang-switcher position:relative scopée du composant, le widget rendait dans le flux DOM (en bas après router-view) au lieu de flotter ; (b) même fixé, le toggle blanc/grey timide passait inaperçu sur des fonds clairs/sombres. Fix : !important sur les 4 props critiques (US-044a), puis re-skinning du toggle en orange Bassira voyant + animation fadein + z-index 1500 pour passer au-dessus des modals (US-044b).",
+      "acceptanceCriteria": [
+        "LanguageSwitcher est rendu en position:fixed top-right sur toutes les routes (Home, /process, /simulation, /report, /calibration, /explore)",
+        "Toggle background = --ms-orange-soft (tinted), border = --ms-orange 1.5px, shadow orange teintée",
+        "Hover: background --ms-orange plein, color blanc, transform translateY(-2px), shadow renforcée",
+        "Animation lang-switcher-fadein 600ms à l'apparition (respect prefers-reduced-motion)",
+        "z-index: 1500 pour passer au-dessus des modals/panels (~1000-1200)",
+        "top: 12px / inset-inline-end: 12px pour visibilité maximale top-of-page",
+        "RTL : le widget se mirror automatiquement (logical properties)"
+      ],
+      "passes": true,
+      "completedAt": "2026-04-29T16:30:00Z",
+      "dependencies": ["US-008"],
+      "metadata": {
+        "priority": "P0",
+        "chantier_priority_rank": 8,
+        "files_touched": [
+          "frontend/src/App.vue (re-style .lang-switcher--floating + animation + z-index 1500)",
+          "frontend/src/components/LanguageSwitcher.vue (toggle re-skin orange Bassira + hover plus marqué)"
+        ],
+        "wall_time_observed": "~10 min Ralph autonome (fix CSS)"
+      }
     }
   ]
 }

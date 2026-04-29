@@ -1,4 +1,5 @@
 import axios from 'axios'
+import i18nInstance from '../i18n'
 
 // Create axios instance
 //
@@ -21,6 +22,16 @@ const service = axios.create({
 // Request interceptor
 service.interceptors.request.use(
   config => {
+    // US-043 — propage la locale UI courante au backend pour que les
+    // system prompts LLM (ontology, agents, rapport) répondent dans la
+    // langue de l'utilisateur (cf backend/app/utils/locale_prompt.py).
+    try {
+      const locale = i18nInstance.global?.locale?.value || 'fr'
+      config.headers = config.headers || {}
+      config.headers['X-Bassira-Locale'] = locale
+    } catch (_) {
+      // i18n pas encore initialisé (rarissime au boot) → backend default 'fr'
+    }
     return config
   },
   error => {

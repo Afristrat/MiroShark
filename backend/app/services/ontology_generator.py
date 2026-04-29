@@ -5,6 +5,7 @@ Interface 1: Analyze text content to generate entity and relationship type defin
 
 from typing import Dict, Any, List, Optional
 from ..utils.llm_client import LLMClient, create_smart_llm_client
+from ..utils.locale_prompt import get_request_locale, localize_system_prompt
 
 
 # System prompt for ontology generation
@@ -85,8 +86,13 @@ class OntologyGenerator:
             additional_context
         )
 
+        # US-043 — append a strong reply-language directive based on the
+        # `X-Bassira-Locale` header (defaults to fr for the démo Maghreb).
+        # Schema identifiers (PascalCase, UPPER_SNAKE_CASE, snake_case)
+        # remain en anglais pour ne pas casser les downstream parsers.
+        localized_system = localize_system_prompt(ONTOLOGY_SYSTEM_PROMPT, get_request_locale())
         messages = [
-            {"role": "system", "content": ONTOLOGY_SYSTEM_PROMPT},
+            {"role": "system", "content": localized_system},
             {"role": "user", "content": user_message}
         ]
 

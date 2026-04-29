@@ -93,27 +93,35 @@ onBeforeUnmount(() => {
 .lang-switcher__toggle {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: var(--ms-bg-elevated, #fff);
+  gap: 8px;
+  /* Plus généreux pour la cible tactile + plus voyant top-right */
+  padding: 9px 16px;
+  /* Tinted orange background pour pop visuellement du fond cream/dark */
+  background: var(--ms-orange-soft, rgba(255, 133, 81, 0.12));
   color: var(--ms-text, #2A2A35);
-  border: 1px solid var(--ms-border-strong, rgba(42, 42, 53, 0.16));
+  /* Border orange marqué (au lieu d'un grey timide) */
+  border: 1.5px solid var(--ms-orange, #FF8551);
   border-radius: var(--ms-radius-pill, 999px);
   cursor: pointer;
-  font-size: var(--ms-text-sm, 13px);
+  /* Légèrement plus grand pour la lisibilité */
+  font-size: var(--ms-text-base, 15px);
   font-weight: 600;
   line-height: 1.2;
-  box-shadow: var(--ms-shadow-sm, 0 2px 8px rgba(42, 42, 53, 0.05));
+  /* Shadow orange teintée pour le détacher visuellement */
+  box-shadow: var(--ms-shadow-orange, 0 4px 14px rgba(255, 133, 81, 0.25));
   transition:
     background var(--ms-transition, 200ms),
     border-color var(--ms-transition, 200ms),
-    transform var(--ms-transition, 200ms);
+    transform var(--ms-transition, 200ms),
+    box-shadow var(--ms-transition, 200ms);
 }
 
 .lang-switcher__toggle:hover {
-  background: var(--ms-bg-muted, #F2EEE6);
-  border-color: var(--ms-text-muted, #6B6B7D);
-  transform: translateY(-1px);
+  background: var(--ms-orange, #FF8551);
+  color: var(--ms-text-on-color, #FFFFFF);
+  border-color: var(--ms-orange-strong, #F26B36);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 133, 81, 0.4);
 }
 
 .lang-switcher__toggle:focus-visible {

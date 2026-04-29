@@ -21,6 +21,7 @@ from enum import Enum
 
 from ..config import Config
 from ..utils.llm_client import LLMClient, create_smart_llm_client
+from ..utils.locale_prompt import get_request_locale, localize_system_prompt
 from ..utils.logger import get_logger
 from ..utils.validation import validate_simulation_id
 from .graph_tools import (
@@ -2018,7 +2019,7 @@ class ReportAgent:
         try:
             response = self.llm.chat_json(
                 messages=[
-                    {"role": "system", "content": system_prompt},
+                    {"role": "system", "content": localize_system_prompt(system_prompt, get_request_locale())},
                     {"role": "user", "content": user_prompt}
                 ],
                 temperature=0.3
@@ -2128,7 +2129,7 @@ class ReportAgent:
         )
 
         messages = [
-            {"role": "system", "content": system_prompt},
+            {"role": "system", "content": localize_system_prompt(system_prompt, get_request_locale())},
             {"role": "user", "content": user_prompt}
         ]
         
@@ -2465,7 +2466,7 @@ Write in the same analytical style as the report. Use **bold** for emphasis. Do 
         try:
             response = self.llm.chat(
                 messages=[
-                    {"role": "system", "content": system_prompt},
+                    {"role": "system", "content": localize_system_prompt(system_prompt, get_request_locale())},
                     {"role": "user", "content": user_prompt},
                 ],
                 temperature=0.4,
@@ -2829,7 +2830,7 @@ Write in the same analytical style as the report. Use **bold** for emphasis. Do 
         )
 
         # Build messages
-        messages = [{"role": "system", "content": system_prompt}]
+        messages = [{"role": "system", "content": localize_system_prompt(system_prompt, get_request_locale())}]
         
         # Add chat history
         for h in chat_history[-10:]:  # Limit history length

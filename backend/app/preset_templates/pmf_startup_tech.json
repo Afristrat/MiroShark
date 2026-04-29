@@ -10,6 +10,7 @@
   "platforms": ["twitter", "reddit", "polymarket"],
   "tags": ["pmf", "startup", "founder", "saas-b2b", "afrique", "pre-serie-a", "validation-marche"],
   "simulation_requirement": "Voir engine.md — ancrage : SaaS B2B testé contre 50 prospects-cible pan-Afrique sur 10 semaines, 1 round = 1 semaine. Cible verdict PMF = ≥ 30% des prospects expriment intention d'achat à la valeur tarifaire proposée.",
+  "seed_document": "Voir pmf_startup_tech/01_attachment.md (brief founder pré-Série A, perspective customer) + pmf_startup_tech/02_engine.md (sim_requirement + 6 agent system_prompts pan-Afrique + 5 director events + verdict shape viable/borderline/nope).",
   "default_market_question": "Quel pourcentage des 50 prospects synthétiques exprimera une intention d'achat ferme à S10 (cible 30%) ?",
   "attachment_path": "pmf_startup_tech/01_attachment.md",
   "engine_path": "pmf_startup_tech/02_engine.md",

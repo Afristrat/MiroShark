@@ -10,6 +10,7 @@
   "platforms": ["twitter", "reddit", "polymarket"],
   "tags": ["adcheck", "marketing", "ramadan", "creative-pre-test", "afrique", "cultural-fit"],
   "simulation_requirement": "Voir engine.md — 3 concepts pub Ramadan testés sur 60 personas représentatifs de l'audience marocaine élargie au Maghreb-Afrique de l'Ouest, 18 rounds × 4h, A vs B vs C ranking + backfire risk.",
+  "seed_document": "Voir adcheck_pre_launch/01_attachment.md (brief lead marketing 4 jours avant launch, perspective customer) + adcheck_pre_launch/02_engine.md (sim_requirement + 6 agent system_prompts cible/religieux/séculaire/diaspora/conservateur/Gen Z + 5 director events + verdict shape ranking A/B/C avec backfire risk).",
   "default_market_question": "Lequel des 3 concepts (A, B, C) obtiendra le meilleur score combiné (engagement positif - risque backfire) à J+3 ?",
   "attachment_path": "adcheck_pre_launch/01_attachment.md",
   "engine_path": "adcheck_pre_launch/02_engine.md",

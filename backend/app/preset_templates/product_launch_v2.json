@@ -10,6 +10,7 @@
   "platforms": ["twitter", "reddit", "polymarket"],
   "tags": ["product-launch", "gtm", "b2c", "adoption-curve", "churn", "afrique"],
   "simulation_requirement": "Voir engine.md — lancement produit B2C lundi, trajectoire adoption pan-Afrique sur 7 jours, focus pic churn early-adopters J5, 1 round = 6h.",
+  "seed_document": "Voir product_launch_v2/01_attachment.md (brief PM/GTM lead 4j avant launch B2C panafricain, perspective customer) + product_launch_v2/02_engine.md (sim_requirement + 6 agent system_prompts early adopter/pragmatique/sceptique/créatrice contenu/support utilisateur/marketing concurrent + 5 director events + verdict shape adoption_curve + churn_peak + 5 influencers).",
   "default_market_question": "Le produit aura-t-il un taux d'adoption cumulé > 8% à J7 et survit-il au pic de churn de J5 (rétention > 70%) ?",
   "attachment_path": "product_launch_v2/01_attachment.md",
   "engine_path": "product_launch_v2/02_engine.md",

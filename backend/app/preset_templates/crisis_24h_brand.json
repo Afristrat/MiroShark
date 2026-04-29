@@ -10,6 +10,7 @@
   "platforms": ["twitter", "reddit", "polymarket"],
   "tags": ["crisis-comms", "communication", "dircom", "24h", "social-media", "afrique"],
   "simulation_requirement": "Voir engine.md — fuite vidéo CEO à H+0, dérive Twitter/Reddit/médias/WhatsApp 24 heures, 1 round = 1 heure.",
+  "seed_document": "Voir crisis_24h_brand/01_attachment.md (brief DirCom cellule de crise, perspective customer) + crisis_24h_brand/02_engine.md (sim_requirement + 6 agent system_prompts journaliste/militant/influenceuse/employé/grand public/diaspora + 5 director events + verdict shape worst_case_trajectory + 3 messages prêts).",
   "default_market_question": "À quelle heure (H+0 à H+24) le pic de visibilité négatif aura-t-il lieu, et quel sera son ampleur en réactions cumulées ?",
   "attachment_path": "crisis_24h_brand/01_attachment.md",
   "engine_path": "crisis_24h_brand/02_engine.md",

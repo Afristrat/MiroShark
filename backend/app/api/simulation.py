@@ -15,6 +15,7 @@ from flask import request, jsonify, send_file, current_app
 
 from . import simulation_bp
 from ..utils.llm_client import create_smart_llm_client, create_llm_client
+from ..utils.locale_prompt import get_request_locale, localize_system_prompt
 from ..utils.validation import validate_simulation_id
 from ..config import Config
 from ..services.entity_reader import EntityReader
@@ -510,7 +511,7 @@ def suggest_scenarios():
             if sim_prompt else ""
         )
         messages = [
-            {"role": "system", "content": _SCENARIO_SUGGEST_SYSTEM_PROMPT},
+            {"role": "system", "content": localize_system_prompt(_SCENARIO_SUGGEST_SYSTEM_PROMPT, get_request_locale())},
             {
                 "role": "user",
                 "content": (
@@ -719,7 +720,7 @@ def ask_mode():
             return jsonify({"success": False, "error": "llm_unavailable"}), 503
 
         messages = [
-            {"role": "system", "content": _ASK_SYSTEM_PROMPT},
+            {"role": "system", "content": localize_system_prompt(_ASK_SYSTEM_PROMPT, get_request_locale())},
             {
                 "role": "user",
                 "content": (
@@ -6806,7 +6807,7 @@ def trace_interview_agent(simulation_id: str, agent_name: str):
             f"when relevant. Be concise (2-4 paragraphs), specific, and stay true to your persona."
         )
 
-        messages = [{"role": "system", "content": system_content}]
+        messages = [{"role": "system", "content": localize_system_prompt(system_content, get_request_locale())}]
 
         # Append validated conversation history for multi-turn support
         for msg in history:

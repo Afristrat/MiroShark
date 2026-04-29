@@ -15,6 +15,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from ..config import Config
 from ..utils.logger import get_logger
 from ..utils.llm_client import LLMClient, create_llm_client, create_smart_llm_client
+from ..utils.locale_prompt import get_request_locale, localize_system_prompt
 from ..storage import GraphStorage
 
 logger = get_logger('miroshark.graph_tools')
@@ -1047,7 +1048,7 @@ Return the sub-questions as a JSON list."""
         try:
             response = self.fast_llm.chat_json(
                 messages=[
-                    {"role": "system", "content": system_prompt},
+                    {"role": "system", "content": localize_system_prompt(system_prompt, get_request_locale())},
                     {"role": "user", "content": user_prompt}
                 ],
                 temperature=0.3
@@ -1611,7 +1612,7 @@ Select up to {max_agents} agents. Return their indices."""
         try:
             response = self.fast_llm.chat_json(
                 messages=[
-                    {"role": "system", "content": system_prompt},
+                    {"role": "system", "content": localize_system_prompt(system_prompt, get_request_locale())},
                     {"role": "user", "content": user_prompt}
                 ],
                 temperature=0.3
@@ -1765,7 +1766,7 @@ Please generate 3-5 interview questions."""
         try:
             response = self.fast_llm.chat_json(
                 messages=[
-                    {"role": "system", "content": system_prompt},
+                    {"role": "system", "content": localize_system_prompt(system_prompt, get_request_locale())},
                     {"role": "user", "content": user_prompt}
                 ],
                 temperature=0.5
@@ -1821,7 +1822,7 @@ Please generate an interview summary."""
         try:
             summary = self.fast_llm.chat(
                 messages=[
-                    {"role": "system", "content": system_prompt},
+                    {"role": "system", "content": localize_system_prompt(system_prompt, get_request_locale())},
                     {"role": "user", "content": user_prompt}
                 ],
                 temperature=0.3,
