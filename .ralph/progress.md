@@ -47,6 +47,26 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 
 ## Log d'itérations
 
+### 2026-04-29 — Batch robustesse erreurs : US-047 + US-039 + US-040 + US-007
+- **Statut** : passes: true sur les 4 stories — clôt le chantier 9-simulation-quality + le chantier 6-i18n-erreurs.
+- **Déclencheur** : incident sim_cc793c9c99b5 où l'utilisateur voyait « Request failed with status code 400 » au lieu d'un message localisé au Step 03 « Génération de la configuration ». Le diagnostic a révélé une cause racine multi-étapes : graph Neo4j vide → /prepare échoue silencieusement → user clique Retry → POST 400 → frontend affiche err.message axios brut + un hint legacy mentionnant à tort OpenRouter (la prod tourne sur Moonshot kimi-k2 depuis la migration).
+- **Stratégie** : 4 commits atomiques par story + 1 fix UX préalable.
+  - **`2399f99` Step03-Fix** : hints contextuels Step 03 (entities/profiles/timeout/llm) + extraction err.response.data.error dans handleConfigRetry + locales fr/en/ar débrandées d'OpenRouter + admin US-038 passes:true.
+  - **`7771bf0` US-047 backend** : fail-fast à /api/simulation/create — pre-check filtered_count > 0 via EntityReader, sinon 400 error_code=GRAPH_EMPTY. Pre-check non bloquant si Neo4j down. 5 tests hermétiques.
+  - **`a8d9f99` US-039** : carte « Refine context » dépliable dans le workbench Step1 (5 champs : key_actors / geo_locale / time_horizon / key_tensions / expected_stakeholders). Defaults par template via détection keyword. Persistance localStorage. POST /api/graph/build avec refinement_only:true. 37 clés i18n × 3 langues.
+  - **`c026fc5` US-040** : Step1.5 Review entities (rename/merge/delete/add). EntityRefiner class avec 4 ops Cypher en transaction unique. ReviewEntitiesView Vue avec group by type, rename inline, select merge, toggle delete. Banner orange dans MainView. 12/12 tests + 313/313 backend non-régression.
+  - **`822b1f3` US-007** : 259 retours d'erreur structurés sur 50 codes uniques (4 fichiers backend). Helper formatApiError(error, t) avec fallback gracieux. 64 clés errors.* × 3 langues. 4 composants migrés (Step2EnvSetup, Step1GraphBuild, CalibrationView, ReviewEntitiesView). Backward-compat préservée. 11 nouveaux tests pytest.
+  - **Final** : US-047 frontend (bouton Lancer disabled si graphStats.nodes === 0 + hint i18n disabledEmptyGraph + tooltip).
+- **Tests cumulés** : 313 → 324 backend pytest passing (+11). Build frontend PASS sur tous les commits. Aucun rollback.
+- **Pièges détectés** :
+  - Coordination sub-agents multi-locales : 3 sub-agents qui touchent fr.json/en.json/ar.json en parallèle = race condition filesystem. Solution appliquée : séquentialité stricte (US-039 → US-040 → US-007), commit entre chaque pour partir d'une base propre.
+  - Le sub-agent US-040 a dû toucher `backend/openapi.yaml` (non listé) car le test `test_flask_routes_are_documented_or_allowlisted` est strict — légitime, garder en tête pour les futures stories backend.
+  - L'auto-deploy Coolify rebuild à chaque push, donc 5 cycles consommés. Acceptable mais à grouper davantage si pression budget.
+- **Apprentissages pour futures sessions** :
+  - Pour bug UX en prod, faire d'abord un curl `/api/<endpoint>/realtime` avant d'aller dans le code → expose le vrai message backend caché derrière la couche axios.
+  - Quand on a un layer d'erreur multi-couches (axios → frontend hint → backend message → state.json), le pattern de débogage systématique est : trace le flow complet, identifie la couche qui ment ou dégrade, fix au bon niveau, ne JAMAIS patcher juste la couche visible.
+  - Le pattern « Step 1.5 Review entities » (US-040) est généralisable : insérer une étape de validation utilisateur entre génération automatique LLM et opération downstream coûteuse → réduit les échecs en cascade.
+
 ### 2026-04-29 — US-045 + US-046 Calibration inbox (backend + frontend)
 - **Statut** : passes: true (les deux stories) — débloque l'argument commercial /calibration en permettant à Amine de marquer ses sims existantes pour faire bouger le Brier sur la page publique.
 - **Fichiers** :

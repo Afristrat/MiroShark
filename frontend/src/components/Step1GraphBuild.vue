@@ -369,12 +369,16 @@
 
           <button
             class="action-btn"
-            :disabled="currentPhase < 2 || creatingSimulation"
+            :disabled="currentPhase < 2 || creatingSimulation || graphStats.nodes === 0"
+            :title="graphStats.nodes === 0 && currentPhase >= 2 ? $t('process.step1.complete.disabledEmptyGraph') : ''"
             @click="handleEnterEnvSetup"
           >
             <span v-if="creatingSimulation" class="spinner-sm"></span>
             {{ creatingSimulation ? $t('process.step1.complete.creating') : (existingSimulations.length > 0 ? $t('process.step1.complete.newSimulation') : $t('process.step1.complete.enterSetup')) }}
           </button>
+          <p v-if="currentPhase >= 2 && graphStats.nodes === 0" class="empty-graph-hint">
+            {{ $t('process.step1.complete.disabledEmptyGraph') }}
+          </p>
         </div>
       </div>
     </div>
@@ -1167,6 +1171,18 @@ watch(() => props.systemLogs.length, () => {
 .action-btn:disabled {
   background: rgba(10,10,10,0.2);
   cursor: not-allowed;
+}
+
+.empty-graph-hint {
+  margin-block-start: 8px;
+  margin-block-end: 0;
+  padding: 8px 10px;
+  background: var(--ms-rose, #fde8ec);
+  color: var(--ms-text-primary, #1a1a1a);
+  border-inline-start: 3px solid var(--ms-orange, #ff6f3c);
+  font-size: 12px;
+  line-height: 1.45;
+  border-radius: 4px;
 }
 
 .existing-sims {

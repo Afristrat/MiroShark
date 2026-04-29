@@ -212,7 +212,8 @@
         "enterSetup": "Configurer les agents ➝",
         "createFailed": "Échec de la création de la simulation : {error}",
         "createError": "Erreur lors de la création : {error}",
-        "unknownError": "Erreur inconnue"
+        "unknownError": "Erreur inconnue",
+        "disabledEmptyGraph": "Le graphe ne contient aucune entité. Utilisez l’étape Step 1.5 « Review entities » pour ajouter des entités, ou reconstruisez le graphe à partir d’un document plus riche avant de lancer la simulation."
       },
       "refineContext": {
         "title": "Affiner le contexte",

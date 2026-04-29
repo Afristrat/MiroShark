@@ -212,7 +212,8 @@
         "enterSetup": "Enter Agent Setup ➝",
         "createFailed": "Failed to create simulation: {error}",
         "createError": "Simulation creation error: {error}",
-        "unknownError": "Unknown error"
+        "unknownError": "Unknown error",
+        "disabledEmptyGraph": "The graph contains no entities. Use the Step 1.5 « Review entities » page to add entities, or rebuild the graph from a richer document before launching the simulation."
       },
       "refineContext": {
         "title": "Refine context",

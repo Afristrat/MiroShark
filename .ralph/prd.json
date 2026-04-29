@@ -206,14 +206,30 @@
         "Test pytest existant ne casse pas (réponses backward-compatibles si error_code absent)",
         "Test Playwright : déclencher une erreur et voir le message traduit en FR et EN"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-002"
       ],
       "metadata": {
         "estimated_hours": 6,
-        "priority": "P1"
-      }
+        "priority": "P1",
+        "commit_hash": "822b1f3",
+        "files_touched": [
+          "backend/app/api/simulation.py",
+          "backend/app/api/report.py",
+          "backend/app/api/graph.py",
+          "backend/app/api/settings.py",
+          "backend/tests/test_unit_error_codes.py",
+          "frontend/src/utils/error-handler.js",
+          "frontend/src/components/Step2EnvSetup.vue",
+          "frontend/src/components/Step1GraphBuild.vue",
+          "frontend/src/views/CalibrationView.vue",
+          "frontend/src/views/ReviewEntitiesView.vue",
+          "frontend/src/locales/{fr,en,ar}.json"
+        ],
+        "implementation_notes": "259 retours d errreur structurés sur 50 codes uniques. 64 clés errors.* x 3 langues = 192 entrées. Helper formatApiError(error, t) avec fallback gracieux. 4 composants migrés. 11 nouveaux tests pytest. Backward-compat verifiée via test_backward_compat_error_key_always_present qui sweep 5 endpoints. Codes pré-existants US-040 (STORAGE_UNAVAILABLE, MISSING_GRAPH_ID, INVALID_DIFF, REFINE_FAILED) et US-047 (GRAPH_EMPTY, GRAPH_NOT_BUILT) préservés. share.py épargné (renvoie HTML/text)."
+      },
+      "completedAt": "2026-04-29"
     },
     {
       "id": "US-008",
@@ -1028,15 +1044,24 @@
         "i18n complet sur tous les labels + helper text",
         "Mobile responsive + RTL via inset-inline-* (déjà US-009 pattern)"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-042",
         "US-038"
       ],
       "metadata": {
         "priority": "P0",
-        "chantier_priority_rank": 4
-      }
+        "chantier_priority_rank": 4,
+        "commit_hash": "a8d9f99",
+        "files_touched": [
+          "frontend/src/components/Step1GraphBuild.vue",
+          "frontend/src/locales/{fr,en,ar}.json",
+          "backend/app/api/graph.py",
+          "backend/app/models/project.py"
+        ],
+        "implementation_notes": "Carte 03 Refine context dépliable dans le workbench. 5 champs (key_actors chips x8x60, geo_locale MA/DZ/TN/SN/CI/multi, time_horizon aligné US-037, key_tensions 200ch + compteur, expected_stakeholders chips). Defaults par template via détection keyword sur projectData.name + simulation_requirement. Persistance localStorage bassira:context_refinement:<project_id>. POST /api/graph/build avec refinement_only:true pour persister sans rebuild. Joint au payload createSimulation. 37 clés i18n process.step1.refineContext.* x 3 langues = 111 entrées."
+      },
+      "completedAt": "2026-04-29"
     },
     {
       "id": "US-040",
@@ -1051,14 +1076,28 @@
         "Backend applique diff sur Neo4j sans casser les edges existants",
         "Skip possible (bouton 'Looks good') pour user pressés"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-039"
       ],
       "metadata": {
         "priority": "P0",
-        "chantier_priority_rank": 6
-      }
+        "chantier_priority_rank": 6,
+        "commit_hash": "c026fc5",
+        "files_touched": [
+          "backend/app/services/entity_refiner.py",
+          "backend/app/api/graph.py",
+          "backend/openapi.yaml",
+          "backend/tests/test_unit_graph_entities_refine.py",
+          "frontend/src/views/ReviewEntitiesView.vue",
+          "frontend/src/router/index.js",
+          "frontend/src/views/MainView.vue",
+          "frontend/src/api/graph.js",
+          "frontend/src/locales/{fr,en,ar}.json"
+        ],
+        "implementation_notes": "EntityRefiner class avec 4 ops Cypher (rename/merge/delete/add) en transaction unique session.execute_write. Merge redirige edges entrants ET sortants en copiant properties(r) puis DETACH DELETE src. Rollback Neo4j auto. Endpoint POST /api/graph/entities/refine avec codes erreur structurés. ReviewEntitiesView Composition API: groupes par type, rename inline, select merge same-type, toggle delete, ajout par type + custom type. Footer sticky pending changes. Banner orange Step 1.5 dans MainView quand graph build done. 12/12 tests passing + 313/313 backend non-régression."
+      },
+      "completedAt": "2026-04-29"
     },
     {
       "id": "US-041",
@@ -1296,8 +1335,8 @@
         "Réutilise le helper error-handler.js de US-007 pour afficher le message localisé",
         "Pas de régression sur les sims existantes (création reste OK quand graphe peuplé)"
       ],
-      "passes": false,
-      "completedAt": null,
+      "passes": true,
+      "completedAt": "2026-04-29",
       "dependencies": [
         "US-007"
       ],
@@ -1314,7 +1353,15 @@
           "frontend/src/locales/en.json",
           "frontend/src/locales/ar.json"
         ],
-        "follow_up_to": "Step03-Fix commit 2399f99 (hints UX) — US-047 attaque la cause racine, pas juste le message."
+        "follow_up_to": "Step03-Fix commit 2399f99 (hints UX) — US-047 attaque la cause racine, pas juste le message.",
+        "commit_hash": "7771bf0",
+        "files_touched": [
+          "backend/app/api/simulation.py",
+          "backend/tests/test_unit_simulation_create_validation.py",
+          "frontend/src/components/Step1GraphBuild.vue",
+          "frontend/src/locales/{fr,en,ar}.json"
+        ],
+        "implementation_notes": "Backend: pre-check via EntityReader.filter_defined_entities à /api/simulation/create. Si filtered_count == 0 retourne 400 GRAPH_EMPTY. Pre-check non bloquant si Neo4j down (politique volontaire). 5 tests hermétiques (Flask test_client + monkeypatch). Frontend: bouton Lancer la simulation disabled tant que graphStats.nodes === 0, avec hint i18n disabledEmptyGraph + tooltip explicatif + redirige vers Review entities (US-040)."
       }
     }
   ]
