@@ -486,7 +486,7 @@ onUnmounted(() => {
 .debug-panel {
   position: fixed;
   bottom: 0;
-  right: 0;
+  inset-inline-end: 0;
   width: 560px;
   max-height: 70vh;
   background: #0A0A0A;
@@ -494,7 +494,7 @@ onUnmounted(() => {
   font-family: 'Space Mono', 'Courier New', monospace;
   font-size: 11px;
   border-top: 3px solid var(--color-orange, #FF6B1A);
-  border-left: 3px solid var(--color-orange, #FF6B1A);
+  border-inline-start: 3px solid var(--color-orange, #FF6B1A);
   z-index: 9999;
   display: flex;
   flex-direction: column;
@@ -625,7 +625,7 @@ onUnmounted(() => {
 .debug-tab__badge {
   position: absolute;
   top: 2px;
-  right: 4px;
+  inset-inline-end: 4px;
   background: #FF4444;
   color: #fff;
   font-size: 8px;
@@ -826,8 +826,8 @@ onUnmounted(() => {
 .debug-col--time { width: 65px; flex-shrink: 0; color: #555; }
 .debug-col--caller { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #93c5fd; }
 .debug-col--model { width: 100px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; color: #ddd; }
-.debug-col--tokens { width: 70px; flex-shrink: 0; text-align: right; color: #aaa; }
-.debug-col--latency { width: 65px; flex-shrink: 0; text-align: right; }
+.debug-col--tokens { width: 70px; flex-shrink: 0; text-align: end; color: #aaa; }
+.debug-col--latency { width: 65px; flex-shrink: 0; text-align: end; }
 
 .debug-latency--fast { color: #43C165; }
 .debug-latency--medium { color: #FFB347; }
@@ -927,7 +927,7 @@ onUnmounted(() => {
 .debug-error-card {
   padding: 5px 8px;
   border-bottom: 1px solid #151515;
-  border-left: 3px solid #FF4444;
+  border-inline-start: 3px solid #FF4444;
   cursor: pointer;
 }
 

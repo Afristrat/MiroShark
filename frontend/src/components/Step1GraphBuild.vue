@@ -364,22 +364,22 @@ watch(() => props.systemLogs.length, () => {
   content: '';
   position: absolute;
   top: 0;
-  left: 0;
+  inset-inline-start: 0;
   width: 16px;
   height: 16px;
   border-top: 3px solid #FF6B1A;
-  border-left: 3px solid #FF6B1A;
+  border-inline-start: 3px solid #FF6B1A;
 }
 
 .step-card::after {
   content: '';
   position: absolute;
   bottom: 0;
-  right: 0;
+  inset-inline-end: 0;
   width: 16px;
   height: 16px;
   border-bottom: 3px solid #43C165;
-  border-right: 3px solid #43C165;
+  border-inline-end: 3px solid #43C165;
 }
 
 .step-card.active {
@@ -497,8 +497,8 @@ watch(() => props.systemLogs.length, () => {
 .ontology-detail-overlay {
     position: absolute;
     top: 60px;
-    left: 22px;
-    right: 22px;
+    inset-inline-start: 22px;
+    inset-inline-end: 22px;
     bottom: 22px;
     background: rgba(250, 250, 250, 0.98);
     backdrop-filter: blur(4px);
@@ -858,7 +858,7 @@ watch(() => props.systemLogs.length, () => {
 .log-toggle {
   font-size: 8px;
   opacity: 0.5;
-  margin-left: 4px;
+  margin-inline-start: 4px;
 }
 
 .log-content {
@@ -867,7 +867,7 @@ watch(() => props.systemLogs.length, () => {
   gap: 4px;
   height: 80px;
   overflow-y: auto;
-  padding-right: 4px;
+  padding-inline-end: 4px;
 }
 
 .log-content::-webkit-scrollbar {

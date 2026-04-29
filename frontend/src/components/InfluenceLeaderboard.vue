@@ -475,7 +475,7 @@ onMounted(() => { if (props.visible) load() })
 }
 
 .lb-row.top-three {
-  border-left: 3px solid var(--color-orange);
+  border-inline-start: 3px solid var(--color-orange);
 }
 
 /* ── Rank ── */
@@ -485,7 +485,7 @@ onMounted(() => { if (props.visible) load() })
   font-weight: 700;
   color: rgba(10,10,10,0.2);
   flex-shrink: 0;
-  text-align: right;
+  text-align: end;
 }
 
 .lb-rank.rank-1 { color: #f59e0b; }
@@ -771,7 +771,7 @@ onMounted(() => { if (props.visible) load() })
 
 .iv-answer {
   background: rgba(10,10,10,0.02);
-  border-left: 2px solid var(--color-green, #43C165);
+  border-inline-start: 2px solid var(--color-green, #43C165);
   padding: 8px 10px;
 }
 

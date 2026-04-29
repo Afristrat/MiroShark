@@ -489,7 +489,7 @@ onUnmounted(() => {
 
 .header-center {
   position: absolute;
-  left: 50%;
+  inset-inline-start: 50%;
   transform: translateX(-50%);
 }
 
@@ -631,14 +631,14 @@ onUnmounted(() => {
   display: flex;
   align-items: baseline;
   gap: 4px;
-  margin-left: auto;
+  margin-inline-start: auto;
 }
 
 .round-label {
   font-size: 9px;
   letter-spacing: 3px;
   color: rgba(250,250,250,0.3);
-  margin-right: 6px;
+  margin-inline-end: 6px;
 }
 
 .round-current {
@@ -705,7 +705,7 @@ onUnmounted(() => {
 .scrubber-progress {
   position: absolute;
   top: 0;
-  left: 0;
+  inset-inline-start: 0;
   height: 100%;
   background: #FF6B1A;
   pointer-events: none;
@@ -772,7 +772,7 @@ onUnmounted(() => {
 
 .timeline-axis {
   position: absolute;
-  left: 50%;
+  inset-inline-start: 50%;
   top: 0;
   bottom: 0;
   width: 1px;
@@ -790,7 +790,7 @@ onUnmounted(() => {
 
 .round-divider {
   position: absolute;
-  left: 50%;
+  inset-inline-start: 50%;
   top: -20px;
   transform: translateX(-50%);
   z-index: 3;
@@ -810,7 +810,7 @@ onUnmounted(() => {
 
 .timeline-marker {
   position: absolute;
-  left: 50%;
+  inset-inline-start: 50%;
   top: 24px;
   width: 10px;
   height: 10px;
@@ -838,7 +838,7 @@ onUnmounted(() => {
 
 .timeline-card {
   width: calc(100% - 48px);
-  margin-left: 32px;
+  margin-inline-start: 32px;
   background: #FAFAFA;
   padding: 16px 20px;
   border: 2px solid rgba(10,10,10,0.08);
@@ -847,9 +847,9 @@ onUnmounted(() => {
 }
 
 .timeline-card:hover { border-color: #FF6B1A; }
-.timeline-item.twitter .timeline-card { border-left: 2px solid #0A0A0A; }
-.timeline-item.reddit .timeline-card { border-left: 2px solid #FF6B1A; }
-.timeline-item.polymarket .timeline-card { border-left: 2px solid #FF6B1A; }
+.timeline-item.twitter .timeline-card { border-inline-start: 2px solid #0A0A0A; }
+.timeline-item.reddit .timeline-card { border-inline-start: 2px solid #FF6B1A; }
+.timeline-item.polymarket .timeline-card { border-inline-start: 2px solid #FF6B1A; }
 
 .card-header {
   display: flex;

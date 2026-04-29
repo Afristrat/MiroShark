@@ -756,7 +756,7 @@ onUnmounted(() => {
   color: #FF6B1A;
   font-weight: 700;
   min-width: 60px;
-  text-align: right;
+  text-align: end;
   letter-spacing: 1px;
 }
 
@@ -809,11 +809,11 @@ onUnmounted(() => {
 .bar-fill.twitter { background: #0A0A0A; }
 .bar-fill.reddit { background: #FF6B1A; }
 .bar-fill.polymarket { background: #43C165; }
-.bar-count { font-size: 10px; font-weight: 600; color: rgba(10,10,10,0.7); min-width: 20px; text-align: right; }
+.bar-count { font-size: 10px; font-weight: 600; color: rgba(10,10,10,0.7); min-width: 20px; text-align: end; }
 
 .interaction-types { padding: 8px 14px 12px; display: flex; flex-wrap: wrap; gap: 4px; border-top: 1px solid rgba(10,10,10,0.06); }
 .interaction-tag { font-size: 9px; padding: 2px 6px; background: rgba(10,10,10,0.04); border: 1px solid rgba(10,10,10,0.08); color: rgba(10,10,10,0.5); text-transform: uppercase; letter-spacing: 1px; }
-.interaction-tag strong { color: rgba(10,10,10,0.7); margin-left: 2px; }
+.interaction-tag strong { color: rgba(10,10,10,0.7); margin-inline-start: 2px; }
 
 /* Empty State */
 .empty-state {

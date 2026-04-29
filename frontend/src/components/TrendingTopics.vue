@@ -251,14 +251,14 @@ onMounted(() => {
 .tt-card {
   background: var(--color-white);
   border: 2px solid rgba(10, 10, 10, 0.08);
-  border-left: 4px solid var(--color-green);
+  border-inline-start: 4px solid var(--color-green);
   border-radius: 4px;
   padding: 10px 12px;
   display: flex;
   flex-direction: column;
   gap: 6px;
   cursor: pointer;
-  text-align: left;
+  text-align: start;
   font-family: inherit;
   transition: var(--transition-fast);
   min-height: 110px;
@@ -266,7 +266,7 @@ onMounted(() => {
 
 .tt-card:hover:not(:disabled) {
   border-color: var(--color-green);
-  border-left-color: var(--color-green);
+  border-inline-start-color: var(--color-green);
   transform: translateY(-1px);
 }
 

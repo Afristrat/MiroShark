@@ -1051,8 +1051,8 @@ onUnmounted(() => {
   content: '';
   position: absolute;
   top: 0;
-  left: 0;
-  right: 0;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
   height: 3px;
   background: linear-gradient(90deg, #FF6B1A 40px, transparent 40px, transparent calc(100% - 40px), #FF6B1A calc(100% - 40px));
   z-index: 30;
@@ -1063,8 +1063,8 @@ onUnmounted(() => {
   content: '';
   position: absolute;
   bottom: 0;
-  left: 0;
-  right: 0;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
   height: 3px;
   background: linear-gradient(90deg, #43C165 40px, transparent 40px, transparent calc(100% - 40px), #43C165 calc(100% - 40px));
   z-index: 30;
@@ -1074,8 +1074,8 @@ onUnmounted(() => {
 .panel-header {
   position: absolute;
   top: 0;
-  left: 0;
-  right: 0;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
   padding: 16px 20px;
   z-index: 10;
   display: flex;
@@ -1153,7 +1153,7 @@ onUnmounted(() => {
 .graph-state {
   position: absolute;
   top: 50%;
-  left: 50%;
+  inset-inline-start: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
   color: rgba(250,250,250,0.4);
@@ -1170,7 +1170,7 @@ onUnmounted(() => {
 .graph-legend {
   position: absolute;
   bottom: 24px;
-  left: 24px;
+  inset-inline-start: 24px;
   background: rgba(10,10,10,0.85);
   backdrop-filter: blur(8px);
   padding: 12px 16px;
@@ -1234,7 +1234,7 @@ onUnmounted(() => {
 .graph-toggles {
   position: absolute;
   top: 60px;
-  right: 20px;
+  inset-inline-end: 20px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -1268,8 +1268,8 @@ onUnmounted(() => {
   position: absolute;
   cursor: pointer;
   top: 0;
-  left: 0;
-  right: 0;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
   bottom: 0;
   background-color: rgba(250,250,250,0.15);
   transition: 0.3s;
@@ -1280,7 +1280,7 @@ onUnmounted(() => {
   content: "";
   height: 16px;
   width: 16px;
-  left: 3px;
+  inset-inline-start: 3px;
   bottom: 3px;
   background-color: rgba(250,250,250,0.7);
   transition: 0.3s;
@@ -1306,7 +1306,7 @@ input:checked + .slider:before {
 .detail-panel {
   position: absolute;
   top: 60px;
-  right: 20px;
+  inset-inline-end: 20px;
   width: 320px;
   max-height: calc(100% - 100px);
   background: #FAFAFA;
@@ -1343,8 +1343,8 @@ input:checked + .slider:before {
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 500;
-  margin-left: auto;
-  margin-right: 12px;
+  margin-inline-start: auto;
+  margin-inline-end: 12px;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -1578,7 +1578,7 @@ input:checked + .slider:before {
 }
 
 .action-expand-icon {
-  margin-left: auto;
+  margin-inline-start: auto;
   font-family: var(--font-mono);
   font-size: 14px;
   color: rgba(10,10,10,0.3);
@@ -1693,7 +1693,7 @@ input:checked + .slider:before {
 .graph-building-hint {
   position: absolute;
   bottom: 160px;
-  left: 50%;
+  inset-inline-start: 50%;
   transform: translateX(-50%);
   background: #0A0A0A;
   backdrop-filter: blur(8px);
@@ -1715,7 +1715,7 @@ input:checked + .slider:before {
   cursor: pointer;
   font-size: 16px;
   opacity: 0.6;
-  margin-left: 4px;
+  margin-inline-start: 4px;
   line-height: 1;
 }
 
@@ -1775,7 +1775,7 @@ input:checked + .slider:before {
   cursor: pointer;
   color: #FAFAFA;
   transition: all 0.2s;
-  margin-left: 8px;
+  margin-inline-start: 8px;
   flex-shrink: 0;
 }
 
@@ -1804,7 +1804,7 @@ input:checked + .slider:before {
 }
 
 .self-loop-count {
-  margin-left: auto;
+  margin-inline-start: auto;
   font-family: var(--font-mono);
   font-size: 10px;
   color: rgba(10,10,10,0.5);

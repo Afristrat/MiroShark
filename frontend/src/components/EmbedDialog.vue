@@ -799,7 +799,7 @@ watch(isPublic, () => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-left: auto;
+  margin-inline-start: auto;
   font-size: 12px;
   color: #6b6b6b;
   font-weight: 500;

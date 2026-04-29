@@ -1265,7 +1265,7 @@ onUnmounted(() => {
   content: '';
   position: absolute;
   top: 0;
-  left: 0;
+  inset-inline-start: 0;
   width: 34px;
   height: 3px;
   background: #FF6B1A;
@@ -1275,7 +1275,7 @@ onUnmounted(() => {
   content: '';
   position: absolute;
   bottom: 0;
-  right: 0;
+  inset-inline-end: 0;
   width: 34px;
   height: 3px;
   background: #43C165;
@@ -2126,8 +2126,8 @@ onUnmounted(() => {
 .profile-modal-overlay {
   position: fixed;
   top: 0;
-  left: 0;
-  right: 0;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.6);
   display: flex;
@@ -2277,7 +2277,7 @@ onUnmounted(() => {
   margin: 0;
   padding: 16px;
   background: var(--color-gray);
-  border-left: 3px solid rgba(10,10,10,0.12);
+  border-inline-start: 3px solid rgba(10,10,10,0.12);
 }
 
 /* Topic Tags */
@@ -2313,13 +2313,13 @@ onUnmounted(() => {
 .dimension-card {
   background: var(--color-gray);
   padding: 12px;
-  border-left: 3px solid rgba(10,10,10,0.12);
+  border-inline-start: 3px solid rgba(10,10,10,0.12);
   transition: all 0.2s;
 }
 
 .dimension-card:hover {
   background: rgba(10,10,10,0.05);
-  border-left-color: #FF6B1A;
+  border-inline-start-color: #FF6B1A;
 }
 
 .dim-title {
@@ -2394,7 +2394,7 @@ onUnmounted(() => {
 .log-toggle {
   font-size: 8px;
   opacity: 0.5;
-  margin-left: 4px;
+  margin-inline-start: 4px;
 }
 
 .log-content {
@@ -2403,7 +2403,7 @@ onUnmounted(() => {
   gap: 4px;
   height: 80px; /* Approx 4 lines visible */
   overflow-y: auto;
-  padding-right: 4px;
+  padding-inline-end: 4px;
 }
 
 .log-content::-webkit-scrollbar {
@@ -2534,19 +2534,19 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding-left: 8px;
-  border-left: 2px solid rgba(10,10,10,0.08);
+  padding-inline-start: 8px;
+  border-inline-start: 2px solid rgba(10,10,10,0.08);
   margin-top: 12px;
 }
 
 .timeline-item {
   position: relative;
-  padding-left: 20px;
+  padding-inline-start: 20px;
 }
 
 .timeline-marker {
   position: absolute;
-  left: 0;
+  inset-inline-start: 0;
   top: 14px;
   width: 12px;
   height: 2px;
@@ -2590,7 +2590,7 @@ onUnmounted(() => {
 }
 
 .post-username {
-  margin-right: 6px;
+  margin-inline-end: 6px;
 }
 
 .post-text {
@@ -2670,7 +2670,7 @@ onUnmounted(() => {
 .switch-track::after {
   content: '';
   position: absolute;
-  left: 2px;
+  inset-inline-start: 2px;
   top: 2px;
   width: 16px;
   height: 16px;
@@ -2802,7 +2802,7 @@ onUnmounted(() => {
   content: '';
   position: absolute;
   top: -12px;
-  left: 50%;
+  inset-inline-start: 50%;
   transform: translateX(-50%);
   width: 1px;
   height: 4px;
@@ -2823,8 +2823,8 @@ onUnmounted(() => {
   flex-direction: row;
   align-items: baseline;
   gap: 4px;
-  padding-right: 22px;
-  border-right: 2px solid rgba(10,10,10,0.08);
+  padding-inline-end: 22px;
+  border-inline-end: 2px solid rgba(10,10,10,0.08);
 }
 
 .auto-content {

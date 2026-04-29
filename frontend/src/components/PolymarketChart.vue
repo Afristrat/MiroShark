@@ -655,7 +655,7 @@ onBeforeUnmount(() => {
   font-size: 10px;
   letter-spacing: 2px;
   font-weight: 700;
-  margin-left: 8px;
+  margin-inline-start: 8px;
   text-transform: uppercase;
 }
 
@@ -681,7 +681,7 @@ onBeforeUnmount(() => {
 
 /* Market list — subtler separator, rows match .lb-row treatment */
 .pm-market-list {
-  border-right: 1px solid rgba(10, 10, 10, 0.08);
+  border-inline-end: 1px solid rgba(10, 10, 10, 0.08);
   overflow-y: auto;
   padding: 0;
   background: var(--background);
@@ -689,11 +689,11 @@ onBeforeUnmount(() => {
 
 .pm-market-row {
   width: 100%;
-  text-align: left;
+  text-align: start;
   background: transparent;
   border: none;
   border-bottom: 1px solid rgba(10, 10, 10, 0.04);
-  border-left: 3px solid transparent;
+  border-inline-start: 3px solid transparent;
   padding: 10px 14px;
   cursor: pointer;
   color: inherit;
@@ -711,7 +711,7 @@ onBeforeUnmount(() => {
 /* Active row — same orange left-accent pattern as .lb-row.top-three */
 .pm-market-row-active {
   background: rgba(10, 10, 10, 0.02);
-  border-left-color: var(--color-orange);
+  border-inline-start-color: var(--color-orange);
 }
 
 .pm-market-q {
@@ -751,7 +751,7 @@ onBeforeUnmount(() => {
 }
 
 .pm-market-resolved {
-  margin-left: auto;
+  margin-inline-start: auto;
   padding: 2px 6px;
   background: var(--color-black);
   color: var(--color-white);
@@ -854,7 +854,7 @@ onBeforeUnmount(() => {
   font-family: var(--font-mono);
   font-size: 10px;
   color: rgba(10, 10, 10, 0.5);
-  margin-left: 10px;
+  margin-inline-start: 10px;
   letter-spacing: 2px;
   text-transform: uppercase;
 }

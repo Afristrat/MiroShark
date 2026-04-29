@@ -30,6 +30,23 @@
 
 ## Log d'itérations
 
+### 2026-04-29 — US-009 Support RTL complet (logical properties + Tajawal + ar.json validé)
+- **Statut** : passes: true
+- **Volume** : 26 fichiers Vue migrés (15 prio + 11 résiduels), 201 directional CSS props remplacées par leurs équivalentes logiques, +font Tajawal, +`:lang(ar)` rule dans design-tokens.css
+- **Quality gates** : npm run build OK 305 kB main / 90 kB gzip (identique pré-migration : logical props ont la même taille bytes que physiques) ; backend pytest 202/202 ; aucune régression LTR (toujours mêmes valeurs résolues quand dir=ltr)
+- **Mapping appliqué** :
+  - margin-left/right → margin-inline-start/end
+  - padding-left/right → padding-inline-start/end
+  - border-left/right (+ leur shorthand : border-left-color, border-left-style, etc.) → border-inline-start/end
+  - text-align: left/right → text-align: start/end
+  - float: left/right → float: inline-start/end
+  - Standalone `left:`/`right:` (positioning) → inset-inline-start/end (uniquement quand au début de ligne, pour ne pas matcher transitions ou property names)
+- **Tooling** : `scripts/migrate_logical_props.py` Python helper avec regex conservatrices, scope limité aux blocs `<style>` des .vue (pas <template>/<script>). Dry-run + apply. Réutilisable pour d'autres projets.
+- **AR fonts** : Tajawal (Google Fonts, weights 400/500/700) chargée dans `index.html` aux côtés de Young Serif + Space Mono. Activée via `[lang="ar"]` dans `design-tokens.css` qui override `--ms-font-display` et `--ms-font-body` (mono conservée). `<html lang>` est posé par `applyDirection(locale)` du module i18n.js (déjà testé US-001).
+- **ar.json** : 534/534 keys déjà complètes (audit Python : `set(flat(fr).keys()) - set(flat(ar).keys()) = ∅`). Crédit sub-agent A qui avait livré ar.json full en US-002 et continué via US-003→006. 5 valeurs « non-arabes » détectées sont légitimes (noms propres GitHub/Français/English, placeholder X, exemple sk-or-…).
+- **Skip intentionnel** : PolymarketChart.vue ligne 371 — `left: leftSide ? ${tx-160}px : ${tx+12}px` dans un objet style JS Vue inline pour un tooltip positionné aux coordonnées curseur. Logique physique délibérée (le tooltip doit suivre le curseur de la même façon en LTR et RTL, pas flipper).
+- **Bénéfice infra** : tous les composants migrés flippent automatiquement quand `<html dir="rtl">`, sans code Vue/JS supplémentaire. Le LanguageSwitcher (US-008) déclenche déjà le flip via `setLocale → applyDirection`.
+
 ### 2026-04-29 — US-008 LanguageSwitcher (FR/AR/EN dropdown, widget flottant)
 - **Statut** : passes: true
 - **Fichiers** : frontend/src/components/LanguageSwitcher.vue (nouveau, 158 l), frontend/src/App.vue (+2 imports template + 6 lignes CSS floating)

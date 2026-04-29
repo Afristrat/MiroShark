@@ -667,7 +667,7 @@ const downloadComparison = () => {
 }
 .lb-rank { color: #555; font-size: 11px; }
 .lb-name { color: #ccc; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.lb-score { color: #888; text-align: right; font-size: 11px; }
+.lb-score { color: #888; text-align: end; font-size: 11px; }
 .lb-delta { font-size: 10px; text-align: center; font-weight: bold; }
 .delta-up { color: #43C165; }
 .delta-down { color: #FF6B1A; }
@@ -685,7 +685,7 @@ const downloadComparison = () => {
 }
 .chart-legend { display: flex; gap: 20px; font-size: 11px; color: #666; }
 .legend-item { }
-.legend-label { color: #444; margin-left: auto; }
+.legend-label { color: #444; margin-inline-start: auto; }
 .sim-a-color { color: #FF6B1A; }
 .sim-b-color { color: #43C165; }
 
@@ -697,7 +697,7 @@ const downloadComparison = () => {
 .market-id { color: #555; width: 60px; flex-shrink: 0; }
 .market-bar-wrap { flex: 1; height: 8px; background: #1A1A1A; border-radius: 4px; overflow: hidden; }
 .market-bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
-.market-price { width: 70px; text-align: right; color: #ccc; }
+.market-price { width: 70px; text-align: end; color: #ccc; }
 
 /* Loading spinner */
 .loading-spinner-small {

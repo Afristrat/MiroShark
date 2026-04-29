@@ -1037,13 +1037,13 @@ const saveSettings = async () => {
 .setup-val {
   color: #0A0A0A;
   font-weight: 700;
-  text-align: right;
+  text-align: end;
   overflow-wrap: anywhere;
 }
 .setup-aux {
   color: rgba(10,10,10,0.4);
   font-weight: 400;
-  margin-left: 4px;
+  margin-inline-start: 4px;
 }
 .setup-missing {
   color: #FF4444;
@@ -1388,7 +1388,7 @@ const saveSettings = async () => {
 .ai-summary-val {
   color: #0A0A0A;
   font-weight: 700;
-  text-align: right;
+  text-align: end;
   overflow-wrap: anywhere;
 }
 
@@ -1442,7 +1442,7 @@ const saveSettings = async () => {
 .ai-client-file-label {
   letter-spacing: 1px;
   text-transform: uppercase;
-  margin-right: 4px;
+  margin-inline-end: 4px;
 }
 
 .ai-client-file-path {
@@ -1478,7 +1478,7 @@ const saveSettings = async () => {
 .ai-copy-btn {
   position: absolute;
   top: 8px;
-  right: 8px;
+  inset-inline-end: 8px;
   background: #FAFAFA;
   color: #0A0A0A;
   border: 1px solid rgba(250,250,250,0.2);
@@ -1515,7 +1515,7 @@ const saveSettings = async () => {
   text-transform: uppercase;
   color: rgba(10,10,10,0.55);
   cursor: pointer;
-  text-align: left;
+  text-align: start;
   transition: border-color 0.1s, color 0.1s;
 }
 
@@ -1558,7 +1558,7 @@ const saveSettings = async () => {
   font-size: 11px;
   color: rgba(10,10,10,0.55);
   margin-top: 14px;
-  text-align: right;
+  text-align: end;
 }
 
 .ai-docs-link a {

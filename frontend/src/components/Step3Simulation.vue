@@ -1709,7 +1709,7 @@ onUnmounted(() => {
   text-transform: uppercase;
   padding: 2px 10px;
   border: 1px solid;
-  margin-left: 8px;
+  margin-inline-start: 8px;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -1792,7 +1792,7 @@ onUnmounted(() => {
   font-weight: 600;
   color: rgba(10,10,10,0.6);
   width: 44px;
-  text-align: right;
+  text-align: end;
   flex-shrink: 0;
 }
 
@@ -1924,7 +1924,7 @@ onUnmounted(() => {
 .actions-tooltip {
   position: absolute;
   top: 100%;
-  left: 50%;
+  inset-inline-start: 50%;
   transform: translateX(-50%);
   margin-top: 8px;
   padding: 10px 14px;
@@ -1942,10 +1942,10 @@ onUnmounted(() => {
   content: '';
   position: absolute;
   top: -6px;
-  left: 50%;
+  inset-inline-start: 50%;
   transform: translateX(-50%);
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
+  border-inline-start: 6px solid transparent;
+  border-inline-end: 6px solid transparent;
   border-bottom: 6px solid #0A0A0A;
 }
 
@@ -2041,7 +2041,7 @@ onUnmounted(() => {
 }
 
 .status-badge {
-  margin-left: auto;
+  margin-inline-start: auto;
   color: #43C165;
   display: flex;
   align-items: center;
@@ -2209,8 +2209,8 @@ onUnmounted(() => {
 .scroll-bottom-btn {
   position: sticky;
   top: 8px;
-  float: right;
-  margin-right: 12px;
+  float: inline-end;
+  margin-inline-end: 12px;
   z-index: 20;
   width: 28px;
   height: 28px;
@@ -2292,7 +2292,7 @@ onUnmounted(() => {
 
 .timeline-axis {
   position: absolute;
-  left: 50%;
+  inset-inline-start: 50%;
   top: 0;
   bottom: 0;
   width: 1px;
@@ -2310,7 +2310,7 @@ onUnmounted(() => {
 
 .timeline-marker {
   position: absolute;
-  left: 50%;
+  inset-inline-start: 50%;
   top: 24px;
   width: 10px;
   height: 10px;
@@ -2357,13 +2357,13 @@ onUnmounted(() => {
   justify-content: flex-start;
 }
 .timeline-item .timeline-card {
-  margin-left: 32px;
+  margin-inline-start: 32px;
   max-width: 100%;
 }
 
-.timeline-item.twitter .timeline-card { border-left: 2px solid #0A0A0A; }
-.timeline-item.reddit .timeline-card { border-left: 2px solid #FF6B1A; }
-.timeline-item.polymarket .timeline-card { border-left: 2px solid #FF6B1A; }
+.timeline-item.twitter .timeline-card { border-inline-start: 2px solid #0A0A0A; }
+.timeline-item.reddit .timeline-card { border-inline-start: 2px solid #FF6B1A; }
+.timeline-item.polymarket .timeline-card { border-inline-start: 2px solid #FF6B1A; }
 
 /* Card Content Styles */
 .card-header {
@@ -2549,7 +2549,7 @@ onUnmounted(() => {
 .waiting-state {
   position: absolute;
   top: 50%;
-  left: 50%;
+  inset-inline-start: 50%;
   transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
@@ -2623,7 +2623,7 @@ onUnmounted(() => {
 .log-toggle {
   font-size: 8px;
   opacity: 0.5;
-  margin-left: 4px;
+  margin-inline-start: 4px;
 }
 
 .log-id.copyable {
@@ -2642,7 +2642,7 @@ onUnmounted(() => {
   gap: 4px;
   height: 100px;
   overflow-y: auto;
-  padding-right: 4px;
+  padding-inline-end: 4px;
 }
 
 .log-content::-webkit-scrollbar { width: 4px; }
@@ -2693,8 +2693,8 @@ onUnmounted(() => {
   max-height: 75vh;
   background: #FAFAFA;
   border-top: 2px solid rgba(10,10,10,0.1);
-  border-left: 2px solid rgba(10,10,10,0.08);
-  border-right: 2px solid rgba(10,10,10,0.08);
+  border-inline-start: 2px solid rgba(10,10,10,0.08);
+  border-inline-end: 2px solid rgba(10,10,10,0.08);
   border-radius: 8px 8px 0 0;
   display: flex;
   flex-direction: column;
@@ -2861,7 +2861,7 @@ onUnmounted(() => {
 .article-content :deep(.md-li) { margin: 0.3em 0; list-style-type: disc; }
 .article-content :deep(.md-oli) { margin: 0.3em 0; }
 .article-content :deep(.md-hr) { border: none; border-top: 1px solid rgba(10,10,10,0.1); margin: 1em 0; }
-.article-content :deep(.md-quote) { border-left: 3px solid #FF6B1A; margin: 0.8em 0; padding: 4px 12px; color: rgba(10,10,10,0.6); font-style: italic; }
+.article-content :deep(.md-quote) { border-inline-start: 3px solid #FF6B1A; margin: 0.8em 0; padding: 4px 12px; color: rgba(10,10,10,0.6); font-style: italic; }
 
 /* Push notification toggle inside events-summary bar */
 /* Director Mode — amber accent distinguishes from the orange-toggled overlays */
@@ -2871,7 +2871,7 @@ onUnmounted(() => {
 }
 
 .director-badge {
-  margin-left: 4px;
+  margin-inline-start: 4px;
   padding: 1px 6px;
   background: rgba(255, 179, 71, 0.18);
   font-family: var(--font-mono, 'Space Mono', monospace);
@@ -2882,7 +2882,7 @@ onUnmounted(() => {
 
 .director-card {
   background: #FFF8F0 !important;
-  border-left: 3px solid #FF6B1A !important;
+  border-inline-start: 3px solid #FF6B1A !important;
 }
 .director-inline-banner {
   display: flex;
@@ -3032,7 +3032,7 @@ onUnmounted(() => {
 .director-event-card {
   display: block;
   width: 100%;
-  text-align: left;
+  text-align: start;
   padding: 10px 12px;
   border: 1px solid rgba(245, 158, 11, 0.2);
   background: rgba(245, 158, 11, 0.04);
@@ -3052,7 +3052,7 @@ onUnmounted(() => {
 }
 
 .director-event-jump {
-  margin-left: 8px;
+  margin-inline-start: 8px;
   color: rgba(245, 158, 11, 0.55);
   font-size: 11px;
   transition: var(--transition-fast);

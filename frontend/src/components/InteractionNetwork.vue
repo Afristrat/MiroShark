@@ -800,7 +800,7 @@ onBeforeUnmount(() => {
 .net-zoom-controls {
   position: absolute;
   bottom: 10px;
-  right: 14px;
+  inset-inline-end: 14px;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -842,7 +842,7 @@ onBeforeUnmount(() => {
 
 .zoom-level {
   min-width: 36px;
-  text-align: right;
+  text-align: end;
   padding: 0 6px;
   font-size: 10px;
   color: rgba(10, 10, 10, 0.55);

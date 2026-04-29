@@ -306,7 +306,7 @@ onMounted(() => {
 }
 
 .cf-form-meta--right {
-  text-align: right;
+  text-align: end;
   padding: 0 16px 10px;
 }
 
@@ -319,7 +319,7 @@ onMounted(() => {
   line-height: 1.5;
   color: var(--color-red);
   background: rgba(255, 68, 68, 0.06);
-  border-left: 2px solid var(--color-red);
+  border-inline-start: 2px solid var(--color-red);
   letter-spacing: 0.3px;
 }
 
@@ -330,7 +330,7 @@ onMounted(() => {
   font-size: 11px;
   color: rgba(10, 10, 10, 0.8);
   background: rgba(67, 193, 101, 0.06);
-  border-left: 2px solid var(--color-green);
+  border-inline-start: 2px solid var(--color-green);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -346,7 +346,7 @@ onMounted(() => {
 }
 
 .cf-open-btn {
-  margin-left: auto;
+  margin-inline-start: auto;
   background: none;
   border: 1px solid var(--color-green);
   color: var(--color-green);

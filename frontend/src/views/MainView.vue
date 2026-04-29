@@ -475,7 +475,7 @@ onUnmounted(() => {
 
 .header-center {
   position: absolute;
-  left: 50%;
+  inset-inline-start: 50%;
   transform: translateX(-50%);
 }
 
@@ -587,6 +587,6 @@ onUnmounted(() => {
 }
 
 .panel-wrapper.left {
-  border-right: var(--border-light);
+  border-inline-end: var(--border-light);
 }
 </style>

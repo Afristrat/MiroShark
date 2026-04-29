@@ -390,7 +390,7 @@ onMounted(async () => {
 
 .header-center {
   position: absolute;
-  left: 50%;
+  inset-inline-start: 50%;
   transform: translateX(-50%);
 }
 
@@ -493,7 +493,7 @@ onMounted(async () => {
 }
 
 .panel-wrapper.left {
-  border-right: 2px solid rgba(10,10,10,0.08);
+  border-inline-end: 2px solid rgba(10,10,10,0.08);
 }
 
 /* ── Initial-fetch skeleton overlay ──
@@ -520,7 +520,7 @@ onMounted(async () => {
 }
 
 .skeleton-pane-left {
-  border-right: 2px solid rgba(10, 10, 10, 0.08);
+  border-inline-end: 2px solid rgba(10, 10, 10, 0.08);
   position: relative;
 }
 
@@ -555,13 +555,13 @@ onMounted(async () => {
 }
 .sk-edge-1 {
   top: 26%;
-  left: 28%;
+  inset-inline-start: 28%;
   width: 32%;
   transform: rotate(8deg);
 }
 .sk-edge-2 {
   top: 64%;
-  left: 36%;
+  inset-inline-start: 36%;
   width: 28%;
   transform: rotate(-12deg);
 }

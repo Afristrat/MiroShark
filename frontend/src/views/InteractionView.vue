@@ -250,7 +250,7 @@ onMounted(() => {
 
 .header-center {
   position: absolute;
-  left: 50%;
+  inset-inline-start: 50%;
   transform: translateX(-50%);
 }
 
@@ -364,6 +364,6 @@ onMounted(() => {
 }
 
 .panel-wrapper.left {
-  border-right: 2px solid rgba(10,10,10,0.08);
+  border-inline-end: 2px solid rgba(10,10,10,0.08);
 }
 </style>

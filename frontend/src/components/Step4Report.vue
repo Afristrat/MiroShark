@@ -2187,7 +2187,7 @@ watch(() => props.reportId, (newId) => {
   border-radius: 50%;
   background: #0A0A0A;
   border: 2px solid rgba(10,10,10,0.08);
-  margin-right: 11px;
+  margin-inline-end: 11px;
   flex-shrink: 0;
   animation: pulse-dot 1.5s ease-in-out infinite;
 }
@@ -2206,7 +2206,7 @@ watch(() => props.reportId, (newId) => {
   font-family: var(--font-mono);
   font-weight: 600;
   color: rgba(10,10,10,0.4);
-  margin-right: 11px;
+  margin-inline-end: 11px;
   flex-shrink: 0;
 }
 
@@ -2222,7 +2222,7 @@ watch(() => props.reportId, (newId) => {
 }
 
 .header-meta {
-  margin-left: auto;
+  margin-inline-start: auto;
   font-size: 11px;
   font-family: var(--font-mono);
   font-weight: 600;
@@ -2266,7 +2266,7 @@ watch(() => props.reportId, (newId) => {
   width: 45%;
   min-width: 450px;
   background: #FAFAFA;
-  border-right: 2px solid rgba(10,10,10,0.12);
+  border-inline-end: 2px solid rgba(10,10,10,0.12);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -2401,7 +2401,7 @@ watch(() => props.reportId, (newId) => {
 }
 
 .collapse-icon {
-  margin-left: auto;
+  margin-inline-start: auto;
   color: rgba(10,10,10,0.4);
   transition: transform 0.3s ease;
   flex-shrink: 0;
@@ -2439,7 +2439,7 @@ watch(() => props.reportId, (newId) => {
 }
 
 .section-body {
-  padding-left: 22px;
+  padding-inline-start: 22px;
   overflow: hidden;
 }
 
@@ -2471,7 +2471,7 @@ watch(() => props.reportId, (newId) => {
 
 .generated-content :deep(.md-ul),
 .generated-content :deep(.md-ol) {
-  padding-left: 22px;
+  padding-inline-start: 22px;
   margin: 11px 0;
 }
 
@@ -2481,8 +2481,8 @@ watch(() => props.reportId, (newId) => {
 }
 
 .generated-content :deep(.md-quote) {
-  border-left: 3px solid rgba(10,10,10,0.12);
-  padding-left: 22px;
+  border-inline-start: 3px solid rgba(10,10,10,0.12);
+  padding-inline-start: 22px;
   margin: 1.5em 0;
   color: rgba(10,10,10,0.5);
   font-style: italic;
@@ -2689,7 +2689,7 @@ watch(() => props.reportId, (newId) => {
 }
 
 .metric-right {
-  margin-left: auto;
+  margin-inline-start: auto;
 }
 
 .metric-label {
@@ -2831,7 +2831,7 @@ watch(() => props.reportId, (newId) => {
 }
 
 .wf-step-meta {
-  margin-left: auto;
+  margin-inline-start: auto;
   font-size: 11px;
   font-family: var(--font-mono);
   font-weight: 700;
@@ -2987,7 +2987,7 @@ watch(() => props.reportId, (newId) => {
 .footer-actions {
   display: flex;
   gap: 6px;
-  margin-left: auto;
+  margin-inline-start: auto;
 }
 
 .elapsed-badge {
@@ -4173,7 +4173,7 @@ watch(() => props.reportId, (newId) => {
 :deep(.interview-display .summary-content ul),
 :deep(.interview-display .summary-content ol) {
   margin: 6px 0;
-  padding-left: 22px;
+  padding-inline-start: 22px;
 }
 
 :deep(.interview-display .summary-content li) {
@@ -4182,8 +4182,8 @@ watch(() => props.reportId, (newId) => {
 
 :deep(.interview-display .summary-content blockquote) {
   margin: 6px 0;
-  padding-left: 11px;
-  border-left: 3px solid rgba(10,10,10,0.12);
+  padding-inline-start: 11px;
+  border-inline-start: 3px solid rgba(10,10,10,0.12);
   color: rgba(10,10,10,0.5);
   font-style: italic;
 }
@@ -4420,7 +4420,7 @@ watch(() => props.reportId, (newId) => {
   font-size: 9px;
   font-family: var(--font-mono);
   color: rgba(10,10,10,0.4);
-  margin-left: 2px;
+  margin-inline-start: 2px;
 }
 
 /* Legacy entity card styles for backwards compatibility */
@@ -5110,7 +5110,7 @@ watch(() => props.reportId, (newId) => {
 .log-toggle {
   font-size: 8px;
   opacity: 0.5;
-  margin-left: 4px;
+  margin-inline-start: 4px;
 }
 
 .log-title {
@@ -5124,7 +5124,7 @@ watch(() => props.reportId, (newId) => {
   gap: 4px;
   height: 100px;
   overflow-y: auto;
-  padding-right: 4px;
+  padding-inline-end: 4px;
 }
 
 .log-content::-webkit-scrollbar { width: 4px; }

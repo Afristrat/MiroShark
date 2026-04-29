@@ -892,7 +892,7 @@ onMounted(refresh)
 }
 
 .card-resolved {
-  border-left: 3px solid var(--color-green);
+  border-inline-start: 3px solid var(--color-green);
 }
 
 /* ── Thumbnail ── */
@@ -1057,15 +1057,15 @@ a.pill-verified:hover {
    left border) but using the outcome palette so the verified hall reads
    at a glance even when scrolling fast. */
 .card-verified-correct {
-  border-left: 3px solid var(--color-orange);
+  border-inline-start: 3px solid var(--color-orange);
 }
 
 .card-verified-incorrect {
-  border-left: 3px solid var(--color-red);
+  border-inline-start: 3px solid var(--color-red);
 }
 
 .card-verified-partial {
-  border-left: 3px solid #f59e0b;
+  border-inline-start: 3px solid #f59e0b;
 }
 
 /* Filter chip in the stats row — toggles `?verified=1`. Active state

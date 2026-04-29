@@ -788,8 +788,8 @@ const startSimulation = () => {
   font-size: 25px;
   line-height: 1.5;
   color: var(--foreground);
-  border-left: var(--border-orange);
-  padding-left: var(--space-md);
+  border-inline-start: var(--border-orange);
+  padding-inline-start: var(--space-md);
   margin-top: var(--space-md);
 }
 
@@ -941,12 +941,12 @@ const startSimulation = () => {
 .steps-container::before {
   top: 12px; left: 12px;
   border-top: 3px solid var(--color-orange);
-  border-left: 3px solid var(--color-orange);
+  border-inline-start: 3px solid var(--color-orange);
 }
 .steps-container::after {
   bottom: 12px; right: 12px;
   border-bottom: 3px solid var(--color-green);
-  border-right: 3px solid var(--color-green);
+  border-inline-end: 3px solid var(--color-green);
 }
 
 .steps-header {
@@ -1022,12 +1022,12 @@ const startSimulation = () => {
 .console-box::before {
   top: -2px; right: -2px;
   border-top: 3px solid var(--color-orange);
-  border-right: 3px solid var(--color-orange);
+  border-inline-end: 3px solid var(--color-orange);
 }
 .console-box::after {
   bottom: -2px; left: -2px;
   border-bottom: 3px solid var(--color-green);
-  border-left: 3px solid var(--color-green);
+  border-inline-start: 3px solid var(--color-green);
 }
 
 .console-section { padding: var(--space-md); }
@@ -1186,7 +1186,7 @@ const startSimulation = () => {
 .model-badge {
   position: absolute;
   bottom: var(--space-xs);
-  right: var(--space-sm);
+  inset-inline-end: var(--space-sm);
   font-family: var(--font-mono);
   font-size: 11px;
   color: rgba(10,10,10,0.25);
@@ -1321,14 +1321,14 @@ const startSimulation = () => {
   background: var(--background);
   padding: var(--space-xs) var(--space-sm);
   border: var(--border-light);
-  border-left: 3px solid var(--color-green);
+  border-inline-start: 3px solid var(--color-green);
   cursor: pointer;
-  transition: background 0.1s, border-left-color 0.1s;
+  transition: background 0.1s, border-inline-start-color 0.1s;
 }
 .url-doc-item:hover,
 .url-doc-item:focus-visible {
   background: rgba(67, 193, 101, 0.06);
-  border-left-color: var(--color-orange);
+  border-inline-start-color: var(--color-orange);
   outline: none;
 }
 

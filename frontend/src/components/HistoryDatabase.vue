@@ -1205,8 +1205,8 @@ onUnmounted(() => {
 .tech-grid-bg {
   position: absolute;
   top: 0;
-  left: 0;
-  right: 0;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
   bottom: 0;
   overflow: hidden;
   pointer-events: none;
@@ -1216,8 +1216,8 @@ onUnmounted(() => {
 .grid-pattern {
   position: absolute;
   top: 0;
-  left: 0;
-  right: 0;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
   bottom: 0;
   background-image:
     linear-gradient(rgba(67, 193, 101, 0.04) 1px, transparent 1px),
@@ -1229,8 +1229,8 @@ onUnmounted(() => {
 .gradient-overlay {
   position: absolute;
   top: 0;
-  left: 0;
-  right: 0;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
   bottom: 0;
   background:
     linear-gradient(to right, rgba(250, 250, 250, 0.9) 0%, transparent 15%, transparent 85%, rgba(250, 250, 250, 0.9) 100%),
@@ -1292,11 +1292,11 @@ onUnmounted(() => {
   content: '';
   position: absolute;
   top: 0;
-  left: 0;
+  inset-inline-start: 0;
   width: 12px;
   height: 12px;
   border-top: 2px solid #FF6B1A;
-  border-left: 2px solid #FF6B1A;
+  border-inline-start: 2px solid #FF6B1A;
   pointer-events: none;
   z-index: 10;
 }
@@ -1305,11 +1305,11 @@ onUnmounted(() => {
   content: '';
   position: absolute;
   bottom: 0;
-  right: 0;
+  inset-inline-end: 0;
   width: 12px;
   height: 12px;
   border-bottom: 2px solid #43C165;
-  border-right: 2px solid #43C165;
+  border-inline-end: 2px solid #43C165;
   pointer-events: none;
   z-index: 10;
 }
@@ -1510,11 +1510,11 @@ onUnmounted(() => {
 .corner-mark.top-left-only {
   position: absolute;
   top: 6px;
-  left: 6px;
+  inset-inline-start: 6px;
   width: 8px;
   height: 8px;
   border-top: 1.5px solid #FF6B1A;
-  border-left: 1.5px solid #FF6B1A;
+  border-inline-start: 1.5px solid #FF6B1A;
   pointer-events: none;
   z-index: 10;
 }
@@ -1596,7 +1596,7 @@ onUnmounted(() => {
 .card-bottom-line {
   position: absolute;
   bottom: 0;
-  left: 0;
+  inset-inline-start: 0;
   height: 2px;
   width: 0;
   background-color: #FF6B1A;
@@ -1657,8 +1657,8 @@ onUnmounted(() => {
 .modal-overlay {
   position: fixed;
   top: 0;
-  left: 0;
-  right: 0;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
   bottom: 0;
   background: rgba(10, 10, 10, 0.4);
   display: flex;
@@ -1817,7 +1817,7 @@ onUnmounted(() => {
   gap: 11px;
   max-height: 200px;
   overflow-y: auto;
-  padding-right: 4px;
+  padding-inline-end: 4px;
 }
 
 /* Custom scrollbar style */
@@ -2421,7 +2421,7 @@ onUnmounted(() => {
 .outcome-badge { padding: 2px 8px; border: 1px solid currentColor; }
 .outcome-badge.yes { color: #16a34a; background: rgba(34,197,94,0.08); border-color: rgba(34,197,94,0.4); }
 .outcome-badge.no  { color: #dc2626; background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.4); }
-.resolve-confidence { font-size: 10px; font-weight: 400; margin-left: 4px; opacity: 0.7; }
+.resolve-confidence { font-size: 10px; font-weight: 400; margin-inline-start: 4px; opacity: 0.7; }
 .accuracy-value { font-size: 12px; }
 .accuracy-value.correct { color: #16a34a; }
 .accuracy-value.wrong   { color: #dc2626; }
@@ -2491,7 +2491,7 @@ onUnmounted(() => {
 
 .search-clear {
   position: absolute;
-  right: 8px;
+  inset-inline-end: 8px;
   top: 50%;
   transform: translateY(-50%);
   font-size: 1rem;
@@ -2528,7 +2528,7 @@ onUnmounted(() => {
   transition: border-color 0.2s;
   appearance: none;
   -webkit-appearance: none;
-  padding-right: 20px;
+  padding-inline-end: 20px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(10,10,10,0.3)'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 6px center;
@@ -2688,7 +2688,7 @@ onUnmounted(() => {
   font-weight: 600;
   color: rgba(10,10,10,0.7);
   width: 42px;
-  text-align: right;
+  text-align: end;
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
 }

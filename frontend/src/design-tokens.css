@@ -125,3 +125,13 @@
     --transition-medium: 0ms linear;
   }
 }
+
+/* ── RTL Arabic typography ──
+   Tajawal est une sans-serif Arabic+Latin propre de Google Fonts (chargée
+   dans index.html). Activée via [lang="ar"] que applyDirection() dans
+   src/i18n.js pose sur <html> quand locale=ar. */
+[lang="ar"] {
+  --ms-font-display: 'Tajawal', 'Outfit', 'Inter', system-ui, sans-serif;
+  --ms-font-body:    'Tajawal', 'Manrope', 'Inter', system-ui, sans-serif;
+  /* --ms-font-mono conservée pour les strings techniques (model IDs, API URLs) */
+}
