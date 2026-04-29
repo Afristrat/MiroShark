@@ -33,6 +33,18 @@ export const getSimulation = (simulationId) => {
 }
 
 /**
+ * Delete a simulation and all its artefacts (US-049).
+ * Idempotent: a 200 with `data.deleted === false` means the sim was
+ * already absent. A 409 (`error_code: SIMULATION_RUNNING`) means the
+ * caller must stop the runner first.
+ * @param {string} simulationId
+ * @returns {Promise<{success: boolean, data?: {simulation_id: string, deleted: boolean}, error_code?: string, error?: string}>}
+ */
+export const deleteSimulation = (simulationId) => {
+  return service.delete(`/api/simulation/${simulationId}`)
+}
+
+/**
  * Get simulation Agent Profiles
  * @param {string} simulationId
  * @param {string} platform - 'reddit' | 'twitter'

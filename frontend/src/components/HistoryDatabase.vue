@@ -126,6 +126,15 @@
               :class="{ available: project.report_id, unavailable: !project.report_id }"
               title="Analysis Report"
             >◆</span>
+            <!-- US-049: delete simulation -->
+            <button
+              v-if="!compareMode"
+              class="card-delete-btn"
+              :title="$t('history.delete.title')"
+              :aria-label="$t('history.delete.title')"
+              :disabled="deletingId === project.simulation_id"
+              @click.stop="askDeleteConfirm(project)"
+            >✕</button>
           </div>
         </div>
 
@@ -477,6 +486,47 @@
       :simulation-id="embedSimulationId"
       @close="closeEmbedDialog"
     />
+
+    <!-- US-049: Delete confirmation modal -->
+    <Teleport to="body">
+      <Transition name="modal-fade">
+        <div
+          v-if="deleteConfirmFor"
+          class="modal-overlay delete-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          @click.self="cancelDelete"
+        >
+          <div class="delete-modal ms-card">
+            <h3 class="delete-modal-title">{{ $t('history.delete.confirmTitle') }}</h3>
+            <p class="delete-modal-body">
+              {{ $t('history.delete.confirmBody', { id: formatSimulationId(deleteConfirmFor.simulation_id) }) }}
+            </p>
+            <p
+              v-if="deleteConfirmFor.is_public && deleteConfirmFor.outcome"
+              class="delete-modal-warning"
+            >{{ $t('history.delete.publicCalibrationWarning') }}</p>
+            <div class="delete-modal-actions">
+              <button
+                class="ms-btn ms-btn-secondary"
+                :disabled="deletingId === deleteConfirmFor.simulation_id"
+                @click="cancelDelete"
+              >{{ $t('history.delete.cancel') }}</button>
+              <button
+                class="ms-btn ms-btn-danger"
+                :disabled="deletingId === deleteConfirmFor.simulation_id"
+                @click="confirmDelete"
+              >
+                {{ deletingId === deleteConfirmFor.simulation_id
+                  ? $t('history.delete.deleting')
+                  : $t('history.delete.confirm') }}
+              </button>
+            </div>
+            <p v-if="deleteError" class="delete-modal-error">{{ deleteError }}</p>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -486,7 +536,8 @@ import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
-import { getSimulationHistory, forkSimulation, resolveSimulation, getSimulationQuality } from '../api/simulation'
+import { getSimulationHistory, forkSimulation, resolveSimulation, getSimulationQuality, deleteSimulation } from '../api/simulation'
+import { formatApiError } from '../utils/error-handler'
 import { truncate as truncateText } from '../utils/text'
 import EmbedDialog from './EmbedDialog.vue'
 
@@ -1056,6 +1107,52 @@ const loadHistory = async () => {
     projects.value = []
   } finally {
     loading.value = false
+  }
+}
+
+// ─── US-049 — Delete simulation ───────────────────────────────────────
+const deleteConfirmFor = ref(null)   // project being asked about, or null
+const deletingId = ref(null)         // simulation_id while DELETE is in flight
+const deleteError = ref('')          // localized error message inside the modal
+
+const askDeleteConfirm = (project) => {
+  deleteError.value = ''
+  deleteConfirmFor.value = project
+}
+
+const cancelDelete = () => {
+  if (deletingId.value) return  // don't cancel mid-request
+  deleteConfirmFor.value = null
+  deleteError.value = ''
+}
+
+const confirmDelete = async () => {
+  const project = deleteConfirmFor.value
+  if (!project || deletingId.value) return
+  const simId = project.simulation_id
+  deletingId.value = simId
+  deleteError.value = ''
+
+  // Optimistic UI: remove the card immediately, restore on failure.
+  const previousProjects = projects.value.slice()
+  projects.value = projects.value.filter(p => p.simulation_id !== simId)
+
+  try {
+    const res = await deleteSimulation(simId)
+    if (res?.success !== false) {
+      // 200 — close the modal and let the optimistic state stand.
+      deleteConfirmFor.value = null
+    } else {
+      // Backend returned {success:false} (rare with our codes, but defensive).
+      projects.value = previousProjects
+      deleteError.value = formatApiError(res, t)
+    }
+  } catch (err) {
+    // Restore the card and surface the localised message.
+    projects.value = previousProjects
+    deleteError.value = formatApiError(err, t)
+  } finally {
+    deletingId.value = null
   }
 }
 
@@ -2723,5 +2820,86 @@ onUnmounted(() => {
   background: rgba(10,10,10,0.03);
   border: 1px solid rgba(10,10,10,0.06);
   margin-bottom: 4px;
+}
+
+/* ─── US-049 Delete button + modal ─── */
+.card-delete-btn {
+  margin-inline-start: 6px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid rgba(10,10,10,0.15);
+  border-radius: 4px;
+  background: transparent;
+  color: rgba(10,10,10,0.45);
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.card-delete-btn:hover:not(:disabled) {
+  background: var(--ms-rose, #fde8ec);
+  color: #c93b59;
+  border-color: #c93b59;
+}
+.card-delete-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.delete-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10,10,10,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+.delete-modal {
+  max-width: 440px;
+  width: 100%;
+  padding: 24px;
+  background: var(--ms-cream, #fff8f0);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(10,10,10,0.2);
+}
+.delete-modal-title {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ms-text-primary, #1a1a1a);
+}
+.delete-modal-body {
+  margin: 0 0 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ms-text-primary, #1a1a1a);
+}
+.delete-modal-warning {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  background: #fff4e0;
+  border-inline-start: 3px solid var(--ms-orange, #ff6f3c);
+  font-size: 13px;
+  line-height: 1.45;
+  border-radius: 4px;
+}
+.delete-modal-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.delete-modal-error {
+  margin: 12px 0 0;
+  padding: 8px 10px;
+  background: #fde8ec;
+  color: #c93b59;
+  font-size: 13px;
+  border-radius: 4px;
 }
 </style>

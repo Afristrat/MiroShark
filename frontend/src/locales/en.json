@@ -726,7 +726,15 @@
       "loading": "Loading history…",
       "error": "Failed to load history.",
       "open": "Open",
-      "delete": "Delete",
+      "delete": {
+        "title": "Delete simulation",
+        "confirmTitle": "Delete this simulation?",
+        "confirmBody": "Simulation {id} and all its data (agent profiles, configuration, trajectory, report, interviews) will be permanently removed. This cannot be undone.",
+        "publicCalibrationWarning": "Heads up: this simulation is public and has a recorded outcome. Deleting it will remove it from /calibration and affect the displayed Brier score.",
+        "cancel": "Cancel",
+        "confirm": "Delete permanently",
+        "deleting": "Deleting…"
+      },
       "confirmDelete": "Delete this simulation from history?",
       "rounds": "{count} rounds",
       "agents": "{count} agents",

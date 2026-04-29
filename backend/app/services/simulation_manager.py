@@ -560,6 +560,53 @@ class SimulationManager:
         
         return simulations
     
+    def delete_simulation(self, simulation_id: str) -> bool:
+        """Delete a simulation directory and all its artefacts (US-049).
+
+        Removes the entire ``WONDERWALL_SIMULATION_DATA_DIR/<simulation_id>``
+        folder: state.json, profiles, simulation_config, trajectory, outcome,
+        agent interviews, etc.
+
+        Returns:
+            True if the directory existed and was removed, False if the
+            simulation was already absent (idempotent).
+
+        Raises:
+            ValueError: if the simulation is currently running. The caller
+                must stop the runner first to avoid corrupting an active
+                trajectory.
+        """
+        import shutil
+
+        # NB: ``_get_simulation_dir`` and ``_load_simulation_state`` would
+        # auto-create the folder via ``os.makedirs(exist_ok=True)`` (legacy
+        # upstream contract), which would make idempotent deletion return
+        # ``True`` for sims that never existed. Read state.json directly.
+        validate_simulation_id(simulation_id)
+        sim_dir = os.path.join(self.SIMULATION_DATA_DIR, simulation_id)
+        if not os.path.isdir(sim_dir):
+            return False
+
+        # Only block on RUNNING — read state.json without going through
+        # the auto-creating helper.
+        state_file = os.path.join(sim_dir, "state.json")
+        if os.path.exists(state_file):
+            try:
+                with open(state_file, 'r', encoding='utf-8') as fh:
+                    raw_status = json.load(fh).get("status")
+                if raw_status == SimulationStatus.RUNNING.value:
+                    raise ValueError(
+                        f"Simulation {simulation_id} is currently running — stop it first"
+                    )
+            except json.JSONDecodeError:
+                # Corrupted state.json — proceed with deletion (the user
+                # explicitly asked to wipe the simulation, fail-open here).
+                pass
+
+        shutil.rmtree(sim_dir)
+        self._simulations.pop(simulation_id, None)
+        return True
+
     def get_profiles(self, simulation_id: str, platform: str = "reddit") -> List[Dict[str, Any]]:
         """Get simulation Agent Profiles"""
         state = self._load_simulation_state(simulation_id)

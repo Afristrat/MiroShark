@@ -1363,6 +1363,43 @@
         ],
         "implementation_notes": "Backend: pre-check via EntityReader.filter_defined_entities à /api/simulation/create. Si filtered_count == 0 retourne 400 GRAPH_EMPTY. Pre-check non bloquant si Neo4j down (politique volontaire). 5 tests hermétiques (Flask test_client + monkeypatch). Frontend: bouton Lancer la simulation disabled tant que graphStats.nodes === 0, avec hint i18n disabledEmptyGraph + tooltip explicatif + redirige vers Review entities (US-040)."
       }
+    },
+    {
+      "id": "US-049",
+      "chantier": "7-housekeeping",
+      "title": "Suppression de simulation depuis l'historique",
+      "description": "Permettre à l'utilisateur de supprimer une simulation depuis HistoryDatabase. Backend DELETE /api/simulation/<id> qui efface le directory + state.json + tous artefacts. Refuse 409 si status running. Frontend bouton trash sur chaque card + modal de confirmation + optimistic UI + warning si sim publique avec outcome (calibration).",
+      "acceptanceCriteria": [
+        "Backend DELETE /api/simulation/<id> retourne 200 success:true data:{deleted:bool} idempotent",
+        "Backend retourne 409 error_code:SIMULATION_RUNNING si status running",
+        "Backend supprime via shutil.rmtree tout le dossier (state.json, profiles, simulation_config, trajectory, outcome, interviews)",
+        "Pytest 6 tests : delete_existing, delete_absent_idempotent, delete_running_409, delete_double_call, delete_completed_succeeds, delete_does_not_affect_others",
+        "Frontend bouton trash sur chaque card HistoryDatabase avec @click.stop",
+        "Modal de confirmation avec body explicatif + warning conditionnel publicCalibrationWarning",
+        "Optimistic UI : retire la card immédiatement, restore si erreur",
+        "Erreurs localisées via formatApiError (US-007 helper)",
+        "i18n FR/AR/EN sous history.delete.* (title, confirmTitle, confirmBody {id}, publicCalibrationWarning, cancel, confirm, deleting)"
+      ],
+      "passes": true,
+      "completedAt": "2026-04-29",
+      "dependencies": [
+        "US-007"
+      ],
+      "metadata": {
+        "priority": "P2",
+        "chantier_priority_rank": 1,
+        "blocks_demo": "Sans US-049 l'historique accumule des sims fantômes sans moyen de nettoyer (cas signalé par Amine sur proj_58bb8370c473 : 3 sims status:created accumulees).",
+        "estimated_iterations_ralph": 1,
+        "files_touched": [
+          "backend/app/services/simulation_manager.py",
+          "backend/app/api/simulation.py",
+          "backend/tests/test_unit_simulation_delete.py",
+          "frontend/src/api/simulation.js",
+          "frontend/src/components/HistoryDatabase.vue",
+          "frontend/src/locales/{fr,en,ar}.json"
+        ],
+        "implementation_notes": "Manager.delete_simulation construit le path directement sans passer par _get_simulation_dir / _load_simulation_state qui font os.makedirs(exist_ok=True) et casseraient l idempotence. Pop egalement du cache _simulations en memoire. Modal CSS-only avec Teleport to body, optimistic UI avec revert sur erreur."
+      }
     }
   ]
 }

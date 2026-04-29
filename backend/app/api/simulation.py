@@ -2201,6 +2201,56 @@ def get_simulation(simulation_id: str):
         }), 500
 
 
+@simulation_bp.route('/<simulation_id>', methods=['DELETE'])
+def delete_simulation(simulation_id: str):
+    """Delete a simulation and all its artefacts (US-049).
+
+    Removes the entire simulation directory (state.json, profiles,
+    simulation_config, trajectory, outcome, interviews, etc.) so it
+    disappears from the history view and from /api/simulation/list.
+
+    Refuses to delete a simulation whose status is RUNNING — the caller
+    must stop the runner first via POST /api/simulation/stop.
+
+    Returns:
+        200 {success: true, data: {simulation_id, deleted: true|false}}
+            ``deleted`` is False when the simulation was already absent
+            (idempotent — the resource is gone either way, so we return 200).
+        409 {success: false, error_code: SIMULATION_RUNNING} when active.
+        500 {success: false, error_code: DELETE_FAILED} on filesystem error.
+    """
+    try:
+        manager = SimulationManager()
+        try:
+            deleted = manager.delete_simulation(simulation_id)
+        except ValueError:
+            return jsonify({
+                "success": False,
+                "error_code": "SIMULATION_RUNNING",
+                "error": (
+                    f"Simulation {simulation_id} is currently running. "
+                    "Stop it first via POST /api/simulation/stop before deleting."
+                )
+            }), 409
+
+        return jsonify({
+            "success": True,
+            "data": {
+                "simulation_id": simulation_id,
+                "deleted": deleted,
+            }
+        })
+
+    except Exception as e:
+        logger.error(f"Failed to delete simulation {simulation_id}: {e}")
+        return jsonify({
+            "success": False,
+            "error_code": "DELETE_FAILED",
+            "error": str(e),
+            "traceback": traceback.format_exc()
+        }), 500
+
+
 @simulation_bp.route('/list', methods=['GET'])
 def list_simulations():
     """

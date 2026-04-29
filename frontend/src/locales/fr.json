@@ -726,7 +726,15 @@
       "loading": "Chargement de l’historique…",
       "error": "Échec du chargement de l’historique.",
       "open": "Ouvrir",
-      "delete": "Supprimer",
+      "delete": {
+        "title": "Supprimer la simulation",
+        "confirmTitle": "Supprimer cette simulation ?",
+        "confirmBody": "La simulation {id} et toutes ses données (profils d’agents, configuration, trajectoire, rapport, intervieuws) seront supprimés définitivement. Cette action est irréversible.",
+        "publicCalibrationWarning": "Attention : cette simulation est publique et a un verdict enregistré. La supprimer la retirera de la page /calibration et impactera le score Brier affiché.",
+        "cancel": "Annuler",
+        "confirm": "Supprimer définitivement",
+        "deleting": "Suppression…"
+      },
       "confirmDelete": "Supprimer cette simulation de l’historique ?",
       "rounds": "{count} tours",
       "agents": "{count} agents",
