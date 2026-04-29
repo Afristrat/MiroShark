@@ -2,6 +2,9 @@
 .DS_Store
 Thumbs.db
 
+# MS Office lock files (created when a .md/.docx is open in Word/Excel)
+~$*
+
 # Launcher
 .miroshark.pids
 

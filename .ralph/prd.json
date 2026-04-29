@@ -1446,6 +1446,99 @@
         ],
         "implementation_notes": "Manager.delete_simulation construit le path directement sans passer par _get_simulation_dir / _load_simulation_state qui font os.makedirs(exist_ok=True) et casseraient l idempotence. Pop egalement du cache _simulations en memoire. Modal CSS-only avec Teleport to body, optimistic UI avec revert sur erreur."
       }
+    },
+    {
+      "id": "US-050",
+      "chantier": "9-simulation-quality",
+      "title": "Durcir pre-check graph_id non-vide à /create contre exceptions storage",
+      "description": "Le pre-check US-047 à POST /api/simulation/create est volontairement non-bloquant si EntityReader leve une exception (politique fail-open pour ne pas masquer un crash storage). Cas observe en prod sur proj_58bb8370c473 ou la sim a ete creee malgre un graph avec 0 entites parce que le pre-check a probablement echoue silencieusement. US-050 catche les exceptions storage avec un error_code structure GRAPH_CHECK_FAILED 503 et propose au frontend un retry guide.",
+      "acceptanceCriteria": [
+        "Backend POST /api/simulation/create catche les exceptions specifiques de EntityReader.filter_defined_entities (StorageError, Neo4jError, ValueError graph_id mal forme) et retourne 503 error_code:GRAPH_CHECK_FAILED",
+        "Si l'exception est inattendue (Exception generique non typee), garder la politique fail-open actuelle (laisser passer + log warning)",
+        "Pytest 3 tests : test_create_returns_503_on_neo4j_down, test_create_returns_503_on_invalid_graph_id_format, test_create_still_passes_on_unexpected_exception",
+        "Frontend Step1GraphBuild.vue formate l'erreur via formatApiError (US-007), libelle errors.GRAPH_CHECK_FAILED i18n FR/AR/EN avec suggestion : Le service Neo4j est temporairement indisponible. Reessayez dans 30s."
+      ],
+      "passes": false,
+      "completedAt": null,
+      "dependencies": [
+        "US-007",
+        "US-047"
+      ],
+      "metadata": {
+        "priority": "P1",
+        "blocks_demo": "Sans, un crash temporaire Neo4j masque silencieusement la creation d'une sim sur graph vide -> meme bug UX que US-047 pretendait fixer.",
+        "estimated_iterations_ralph": 1,
+        "files_to_touch": [
+          "backend/app/api/simulation.py",
+          "backend/tests/test_unit_simulation_create_validation.py",
+          "frontend/src/locales/{fr,en,ar}.json"
+        ]
+      }
+    },
+    {
+      "id": "US-051",
+      "chantier": "8-tech-debt",
+      "title": "Refactor SimulationManager._get_simulation_dir contre makedirs silencieux",
+      "description": "Anti-pattern detecte lors de US-049 : _get_simulation_dir(simulation_id) appelle os.makedirs(exist_ok=True) meme pour de la lecture, ce qui cree silencieusement des dossiers vides quand on call _load_simulation_state pour une sim absente. Ca a casse l'idempotence du DELETE (corrige par contournement local). US-051 separe l'API en _get_simulation_dir(create=False) (lecture seule, retourne None si absent) et _ensure_simulation_dir() (creation explicite). Audit des ~10 callers.",
+      "acceptanceCriteria": [
+        "_get_simulation_dir signature change : (simulation_id: str, create: bool = False) -> Optional[str]. create=False ne fait jamais de makedirs.",
+        "Nouveau helper _ensure_simulation_dir(simulation_id: str) -> str equivalent a l'ancien comportement (makedirs + return path).",
+        "Tous les callers de _get_simulation_dir audites : creation -> _ensure_simulation_dir, lecture -> _get_simulation_dir(create=False) avec gestion None.",
+        "_load_simulation_state utilise create=False et retourne None directement si dossier absent (pas de creation parasite).",
+        "delete_simulation simplifie : retire le contournement local, utilise _get_simulation_dir(create=False).",
+        "Pytest non-regression : 6 tests existants test_unit_simulation_delete passent + 5 tests US-047 passent.",
+        "Verification side-effect : aucun nouveau dossier vide cree quand on appelle list_simulations / get_simulation sur sim inexistante."
+      ],
+      "passes": false,
+      "completedAt": null,
+      "dependencies": [
+        "US-049"
+      ],
+      "metadata": {
+        "priority": "P2",
+        "blocks_demo": "Pas bloquant mais cree des dossiers fantomes dans WONDERWALL_SIMULATION_DATA_DIR qui polluent list_simulations.",
+        "estimated_iterations_ralph": 1,
+        "files_to_touch": [
+          "backend/app/services/simulation_manager.py",
+          "backend/tests/test_unit_simulation_delete.py"
+        ],
+        "implementation_notes": "Audit grep des callers: _get_simulation_dir apparait dans simulation_manager.py (~7 callers internes), simulation.py (~3 callers route handlers). Verifier chaque cas."
+      }
+    },
+    {
+      "id": "US-052",
+      "chantier": "2-design-finish",
+      "title": "Migrer strings JS chart D3 hex vers --ms-chart-* via getComputedStyle",
+      "description": "Dette CSS residuelle de US-016 : ~30 hex hardcodes dans strings JS (palettes D3) restent dans PolymarketChart.vue, EmbedDialog.vue, GraphPanel.vue, Step4Report.vue. La migration CSS-only ne pouvait pas les toucher car ils sont dans des template literals JS. Solution : lire les variables --ms-chart-1..10 du DOM via getComputedStyle(document.documentElement) au mount, injecter dans les chart configs au lieu des hex en dur.",
+      "acceptanceCriteria": [
+        "Helper frontend/src/utils/css-vars.js avec readChartPalette() -> { chart1: '#xxx', ..., chart10: '#xxx', success: '#xxx', danger: '#xxx', warning: '#xxx' }",
+        "PolymarketChart, GraphPanel, BeliefDriftChart, InteractionNetwork, DemographicBreakdown utilisent ce helper au mount au lieu de hex hardcodes",
+        "EmbedDialog et Step4Report : meme refactor pour les chips colorees",
+        "grep -rE '#[0-9A-Fa-f]{3,6}\\b' sur ces fichiers hors strings i18n et hors commentaires retourne 0 resultat",
+        "Build PASS, charts visuellement identiques en prod (validation manuelle ou Playwright visual diff via US-010)",
+        "Documentation dans DESIGN.md : section Charts qui explique le pattern getComputedStyle"
+      ],
+      "passes": false,
+      "completedAt": null,
+      "dependencies": [
+        "US-016"
+      ],
+      "metadata": {
+        "priority": "P2",
+        "blocks_demo": "Pas bloquant mais empeche US-027 dark mode de basculer correctement les charts (les hex hardcodes ne reagissent pas au switch palette).",
+        "estimated_iterations_ralph": 1,
+        "files_to_touch": [
+          "frontend/src/utils/css-vars.js",
+          "frontend/src/components/PolymarketChart.vue",
+          "frontend/src/components/GraphPanel.vue",
+          "frontend/src/components/BeliefDriftChart.vue",
+          "frontend/src/components/InteractionNetwork.vue",
+          "frontend/src/components/DemographicBreakdown.vue",
+          "frontend/src/components/EmbedDialog.vue",
+          "frontend/src/components/Step4Report.vue",
+          "frontend/DESIGN.md"
+        ]
+      }
     }
   ]
 }
