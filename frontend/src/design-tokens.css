@@ -1,0 +1,127 @@
+/* ═══════════════════════════════════════════════════════════
+   MIROSHARK DESIGN TOKENS — Direction "Playful & Soft"
+   ═══════════════════════════════════════════════════════════
+   Single source of truth for the new visual language.
+   Imported once from App.vue. Tokens kept compatible with the
+   legacy variable names (--color-orange, --space-md, --font-mono…)
+   so older components keep rendering while we migrate.
+   ─────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Palette ── */
+  --ms-orange: #FF8551;            /* primary, warmer than the legacy orange */
+  --ms-orange-soft: rgba(255, 133, 81, 0.12);
+  --ms-orange-strong: #F26B36;     /* hover/pressed */
+  --ms-blue: #5A7FDB;              /* secondary */
+  --ms-blue-soft: rgba(90, 127, 219, 0.12);
+  --ms-mint: #7FD8A6;              /* success */
+  --ms-mint-soft: rgba(127, 216, 166, 0.18);
+  --ms-peach: #FFB347;             /* warning */
+  --ms-peach-soft: rgba(255, 179, 71, 0.18);
+  --ms-rose: #F4847A;              /* danger / error */
+  --ms-rose-soft: rgba(244, 132, 122, 0.18);
+
+  /* ── Surfaces ── */
+  --ms-bg: #FAF7F2;                /* off-white cream background */
+  --ms-bg-elevated: #FFFFFF;       /* card surface */
+  --ms-bg-muted: #F2EEE6;          /* secondary surface, subtle separators */
+  --ms-bg-overlay: rgba(42, 42, 53, 0.55);
+
+  /* ── Text ── */
+  --ms-text: #2A2A35;              /* primary */
+  --ms-text-muted: #6B6B7D;        /* secondary */
+  --ms-text-subtle: #9696A6;       /* tertiary / placeholder */
+  --ms-text-on-color: #FFFFFF;     /* on top of orange/blue */
+
+  /* ── Borders ── */
+  --ms-border: rgba(42, 42, 53, 0.08);
+  --ms-border-strong: rgba(42, 42, 53, 0.16);
+  --ms-border-focus: rgba(255, 133, 81, 0.45);
+
+  /* ── Radius ── */
+  --ms-radius-sm: 8px;             /* buttons, inputs */
+  --ms-radius-md: 12px;            /* cards */
+  --ms-radius-lg: 24px;            /* big containers, modals */
+  --ms-radius-pill: 999px;
+
+  /* ── Shadows (soft, layered) ── */
+  --ms-shadow-xs: 0 1px 2px rgba(42, 42, 53, 0.04);
+  --ms-shadow-sm: 0 2px 8px rgba(42, 42, 53, 0.05);
+  --ms-shadow-md: 0 4px 16px rgba(42, 42, 53, 0.06);
+  --ms-shadow-lg: 0 12px 32px rgba(42, 42, 53, 0.08);
+  --ms-shadow-orange: 0 6px 18px rgba(255, 133, 81, 0.28);
+  --ms-shadow-blue: 0 6px 18px rgba(90, 127, 219, 0.22);
+
+  /* ── Spacing (4 / 8 / 12 / 16 / 20 / 24 / 32 / 48) ── */
+  --ms-space-1: 4px;
+  --ms-space-2: 8px;
+  --ms-space-3: 12px;
+  --ms-space-4: 16px;
+  --ms-space-5: 20px;
+  --ms-space-6: 24px;
+  --ms-space-8: 32px;
+  --ms-space-12: 48px;
+
+  /* ── Typography ── */
+  --ms-font-display: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+  --ms-font-body: 'Manrope', 'Inter', system-ui, -apple-system, sans-serif;
+  --ms-font-mono: 'JetBrains Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+  --ms-text-xs: 12px;
+  --ms-text-sm: 13px;
+  --ms-text-base: 15px;
+  --ms-text-lg: 17px;
+  --ms-text-xl: 22px;
+  --ms-text-2xl: 28px;
+  --ms-text-3xl: 36px;
+  --ms-text-4xl: 48px;
+
+  /* ── Motion ── */
+  --ms-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ms-transition-fast: 150ms var(--ms-ease);
+  --ms-transition: 200ms var(--ms-ease);
+  --ms-transition-slow: 300ms var(--ms-ease);
+
+  /* ── Legacy compatibility ──
+     Older components still reference the previous variable names. We rebind
+     them onto the new palette so we can migrate file by file without a big
+     bang change. */
+  --color-orange: var(--ms-orange);
+  --color-green: var(--ms-mint);
+  --color-amber: var(--ms-peach);
+  --color-red: var(--ms-rose);
+  --color-white: var(--ms-bg-elevated);
+  --color-black: var(--ms-text);
+  --color-gray: var(--ms-bg-muted);
+
+  --background: var(--ms-bg);
+  --foreground: var(--ms-text);
+
+  --space-xs: var(--ms-space-1);
+  --space-sm: var(--ms-space-2);
+  --space-md: var(--ms-space-4);
+  --space-lg: var(--ms-space-6);
+  --space-xl: var(--ms-space-8);
+  --space-2xl: var(--ms-space-12);
+
+  --border-light: 1px solid var(--ms-border);
+  --border-medium: 1px solid var(--ms-border-strong);
+  --border-orange: 2px solid var(--ms-orange);
+  --border-green: 2px solid var(--ms-mint);
+
+  --transition-fast: var(--ms-transition-fast);
+  --transition-medium: var(--ms-transition);
+
+  --font-display: var(--ms-font-display);
+  --font-mono: var(--ms-font-mono);
+}
+
+/* ── Reduced motion: keep transitions short or no-op ── */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ms-transition-fast: 0ms linear;
+    --ms-transition: 0ms linear;
+    --ms-transition-slow: 0ms linear;
+    --transition-fast: 0ms linear;
+    --transition-medium: 0ms linear;
+  }
+}
