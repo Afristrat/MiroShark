@@ -975,196 +975,199 @@
     "nav": {
       "backTitle": "Retour à l’accueil"
     },
-    "eyebrow": "Nos packages",
+    "eyebrow": "Prédisez avant que ça arrive",
     "hero": {
-      "title": "Trois packages pour stress-tester votre prochaine décision",
-      "subtitle": "Bassira simule des centaines d’agents pour vous montrer comment votre marché, votre opinion publique ou votre cible va réagir — heure par heure."
+      "title": "Trois façons de mettre une nuée d’agents synthétiques au service de votre décision",
+      "subtitle": "Une question, un livrable engageant, un prix fixe."
     },
-    "featuredBadge": "Le plus demandé",
-    "labels": {
-      "deliverable": "Livrable",
-      "delay": "Délai",
-      "price": "Prix",
-      "useCases": "Pour qui ?"
-    },
+    "featuredBadge": "Le plus choisi",
     "packages": {
       "crisisDrill": {
-        "name": "Crisis Drill 24h",
-        "tagline": "Stress-testez votre prochaine crise réputationnelle avant qu’elle ne vous tombe dessus.",
-        "description": "Simulation de 24 heures d’un scénario de crise (rumeur médias, sortie produit ratée, leak data, incident social). 50 agents grounded persona réagissent sur Twitter, Reddit et un marché de prédiction. Trois contrefactuels : « et si on répond dans l’heure ? », « et si on garde le silence 6h ? », « et si le PDG s’excuse en vidéo ? ».",
-        "deliverable": "Rapport narratif Substack-style + courbe Brier des prédictions + 3 trajectoires contrefactuelles + recommandations playbook.",
-        "delay": "5 jours ouvrés",
-        "useCases": "Marques B2C grand public, banques, telcos, startups en levée."
+        "sector": "Communication / Crise",
+        "name": "Crisis Drill",
+        "delay": "Livré sous 24 h",
+        "cta": "Lancer un Crisis Drill",
+        "bullets": {
+          "b1": "Simulation de scénario",
+          "b2": "50 citoyens synthétiques",
+          "b3": "5 personas",
+          "b4": "Heat-map et dérive des croyances",
+          "b5": "Synthèse PDF en 6 h",
+          "b6": "Une session de suivi"
+        }
       },
       "policyBrief": {
+        "sector": "Politique / Secteur public",
         "name": "Policy Brief Stress Test",
-        "tagline": "Avant de soumettre votre policy brief, voyez comment l’opinion publique va se positionner.",
-        "description": "Test sur une semaine de simulation, 80 agents segmentés (citoyens, parties prenantes, opposition, presse). Inclut l’analyse des coalitions émergentes et des points de bascule de l’opinion.",
-        "deliverable": "Rapport stratégique + cartographie des stakeholders + 5 contrefactuels (timing d’annonce, framing alternatif, partenariats) + 2 sessions d’interview avec les agents-clés.",
-        "delay": "2 semaines",
-        "useCases": "Ministères, ONG, think-tanks, organisations internationales."
+        "delay": "5 jours ouvrés",
+        "cta": "Stress-tester ma note",
+        "bullets": {
+          "b1": "Test d’une note de politique publique",
+          "b2": "8 archétypes de parties prenantes",
+          "b3": "Branches contrefactuelles",
+          "b4": "Cohorte adverse",
+          "b5": "Certificat de calibration",
+          "b6": "Débrief de 30 minutes"
+        }
       },
       "preLaunch": {
+        "sector": "Marketing / GTM",
         "name": "Pre-Launch Adcheck",
-        "tagline": "Validez votre campagne marketing avant de brûler le budget media.",
-        "description": "Simulation 72h de la réception d’une campagne (visuels, slogan, ciblage). 60 agents segmentés par persona-cible. Détection des angles morts, sentiment par segment, viralité prédite.",
-        "deliverable": "Heatmap sentiment par persona + 3 contrefactuels créatifs + verdict GO / NO-GO / ITERATE avec recommandations chiffrées.",
-        "delay": "5 jours ouvrés",
-        "useCases": "Agences pub, brand managers, startups en lancement produit."
+        "delay": "3 jours ouvrés",
+        "cta": "Tester ma campagne",
+        "bullets": {
+          "b1": "Notation de 3 concepts publicitaires",
+          "b2": "Audience synthétique",
+          "b3": "Classement A/B/C",
+          "b4": "Trajectoire de dérive des croyances",
+          "b5": "Questions clivantes",
+          "b6": "Recommandations en une page"
+        }
       }
     },
-    "fineprint": {
-      "crisisDrill": "Hors consulting follow-up. Le pack couvre la simulation et le livrable ; les sessions d’accompagnement post-rapport sont facturées séparément."
-    },
-    "cta": {
-      "requestQuote": "Demander un devis",
-      "mailSubject": "Devis Bassira — {package}"
-    },
-    "help": {
-      "title": "Vous ne savez pas quel package choisir ?",
-      "body": "Décrivez-nous votre cas en deux lignes, on vous oriente vers le pack le plus adapté — ou on construit un format sur-mesure si rien ne colle.",
-      "cta": "Discuter avec nous",
-      "mailSubject": "Bassira — orientation package"
+    "trust": {
+      "title": "Pourquoi nos prédictions tombent juste",
+      "items": {
+        "brier": {
+          "title": "Score de Brier 0,18",
+          "body": "Précision prédictive validée empiriquement face aux résultats observés."
+        },
+        "multiLocale": {
+          "title": "Multilingue FR / AR / EN",
+          "body": "Compréhension fine des nuances en français, arabe et anglais."
+        },
+        "africaData": {
+          "title": "Données ancrées en Afrique",
+          "body": "Agents entraînés sur des jeux de données régionalement contextualisés."
+        }
+      }
     },
     "faq": {
       "title": "Questions fréquentes",
       "items": {
-        "firstResults": {
-          "question": "Combien de temps pour les premiers résultats ?",
-          "answer": "Sur Crisis Drill et Pre-Launch Adcheck, vous recevez le rapport sous 5 jours ouvrés à compter du brief signé. Pour Policy Brief Stress Test, comptez 2 semaines (la simulation tourne sur 1 semaine, plus la phase d’analyse et d’entretiens avec les agents-clés)."
+        "syntheticVsSurvey": {
+          "question": "En quoi une audience synthétique diffère-t-elle d’un sondage classique ?",
+          "answer": "Nos agents synthétiques ne se contentent pas de cocher des QCM : ils portent des croyances persistantes, interagissent entre eux et simulent une dérive d’opinion dans le temps en réaction à des stimuli précis. Vous obtenez ainsi des signaux comportementaux, et non des déclarations figées."
         },
-        "sampleReport": {
-          "question": "Puis-je voir un exemple de rapport ?",
-          "answer": "Oui. Nos rapports publics sont consultables sur la page /calibration : chaque simulation vérifiée y est listée avec son score de Brier et son verdict observé. Pour un exemple anonymisé d’un Crisis Drill complet, écrivez-nous depuis le bouton ci-dessus — on l’envoie en 1 clic."
+        "bindingDeliverable": {
+          "question": "Qu’est-ce qu’un « livrable engageant » ?",
+          "answer": "Cela signifie que nous garantissons par contrat la production exacte des éléments listés dans votre pack (synthèse PDF en 6 h, heat-map, etc.) dans le délai annoncé. Pas de scope creep, pas de frais cachés."
         },
-        "regulatedSectors": {
-          "question": "Travaillez-vous avec des secteurs régulés ?",
-          "answer": "Oui — banques, télécoms, santé, secteur public marocain et africain. Les briefs et données sources restent confidentiels (NDA standard) et ne sont jamais utilisés pour entraîner nos modèles. Sur demande, le rapport peut être livré sans exposition publique sur /verified."
+        "customizePersonas": {
+          "question": "Peut-on personnaliser les personas ?",
+          "answer": "Oui. Lors de l’onboarding, nous calibrons les archétypes standards du pack pour qu’ils collent à votre cible précise ou à votre matrice de parties prenantes."
         },
-        "customScope": {
-          "question": "Et si mon besoin ne rentre dans aucun pack ?",
-          "answer": "Cliquez sur « Discuter avec nous » : on cadre ensemble en 30 minutes. Les packs ci-dessus couvrent 80 % des demandes, mais on construit régulièrement des formats hybrides (ex. 2 semaines de simulation + 3 contrefactuels + workshop de restitution sur place)."
+        "accuracy": {
+          "question": "Concrètement, à quel point la simulation est-elle fiable ?",
+          "answer": "Nos simulations atteignent une précision élevée grâce à des systèmes multi-agents qui modélisent la complexité du réel. Les indicateurs de performance et les méthodes de validation sont publiés sur la page /calibration."
+        },
+        "africaGroundedData": {
+          "question": "Que signifie réellement « données ancrées en Afrique » ?",
+          "answer": "La plupart des modèles fondationnels prennent par défaut un contexte culturel occidental. Nous calibrons spécifiquement nos agents avec des données socio-économiques régionales, des nuances dialectales et des habitudes de consommation médiatique locales."
+        },
+        "enterpriseRetainers": {
+          "question": "Proposez-vous des contrats de retainer pour grandes entreprises ?",
+          "answer": "Oui. Pour des besoins à haute fréquence, nous proposons un accès plateforme dédié et des packages de monitoring continu. Contactez l’équipe commerciale pour cadrer un déploiement à l’échelle."
         }
       }
+    },
+    "help": {
+      "title": "Vous ne savez pas lequel choisir ?",
+      "body": "Décrivez-nous votre situation, on vous oriente vers le bon pack.",
+      "cta": "Parlez-nous de votre cas"
     }
   },
   "quote": {
     "nav": {
       "backTitle": "Retour aux offres"
     },
-    "eyebrow": "Demande de devis",
-    "hero": {
-      "title": "Parlons de votre besoin",
-      "subtitle": "Décrivez votre cas en 2 minutes. Nous revenons vers vous sous 24 h ouvrées avec une proposition cadrée."
-    },
+    "trustBanner": "Votre message arrive directement aux fondateurs. Pas de CRM. Pas de newsletter.",
     "stepper": {
       "step": "Étape {current} sur {total}",
       "stepNames": {
-        "contact": "Vos coordonnées",
-        "need": "Votre besoin",
-        "message": "Votre message",
-        "done": "Confirmation"
+        "situation": "Votre situation",
+        "context": "Votre contexte",
+        "matched": "Mise en relation"
       }
     },
     "step1": {
-      "title": "Vos coordonnées",
+      "title": "Comment pouvons-nous vous aider ?",
+      "options": {
+        "crisis": {
+          "title": "Je suis en crise ou sur le point de l’être",
+          "sub": "Simulation de réponse rapide pour des menaces émergentes."
+        },
+        "policy": {
+          "title": "Je dois tester une politique ou une réglementation",
+          "sub": "Stress-tester les impacts socio-économiques avant le déploiement."
+        },
+        "campaign": {
+          "title": "Je m’apprête à lancer une campagne ou un produit",
+          "sub": "Anticiper la réaction du marché et l’adoption par les agents."
+        }
+      },
+      "other": {
+        "label": "Autre situation ?",
+        "placeholder": "Décrivez votre besoin spécifique…"
+      }
+    },
+    "step2": {
+      "title": "Parlons de vous",
       "fullName": {
         "label": "Nom complet",
-        "placeholder": "Karim Bensaid",
-        "required": "Obligatoire"
+        "placeholder": "Karim Bensaid"
       },
       "email": {
         "label": "Email professionnel",
         "placeholder": "vous{'@'}entreprise.com",
-        "required": "Obligatoire",
-        "invalid": "Format email invalide"
+        "invalid": "Format d’email invalide"
       },
       "company": {
-        "label": "Entreprise / organisation",
-        "placeholder": "Banque Populaire MA",
-        "required": "Obligatoire"
+        "label": "Organisation",
+        "placeholder": "Banque Populaire MA"
       },
       "role": {
         "label": "Fonction (optionnel)",
-        "placeholder": "Head of Communications"
-      },
-      "phone": {
-        "label": "Téléphone (optionnel)",
-        "placeholder": "+212 6 00 12 34 56"
-      }
-    },
-    "step2": {
-      "title": "Votre besoin",
-      "package": {
-        "label": "Pack souhaité",
-        "options": {
-          "crisis_drill_24h": "Crisis Drill 24h — entraînement crise",
-          "policy_brief_stress": "Policy Brief Stress Test — opinion publique",
-          "pre_launch_adcheck": "Pre-Launch Adcheck — campagne marketing",
-          "custom": "Sur-mesure / je ne sais pas encore"
-        }
-      },
-      "volume": {
-        "label": "Volume de simulations attendu / an (optionnel)",
-        "placeholder": "Ex. 4"
+        "placeholder": "Directeur de la communication"
       },
       "deadline": {
         "label": "Échéance (optionnel)",
         "options": {
           "not_urgent": "Pas urgent",
-          "1_month": "D'ici 1 mois",
-          "2_weeks": "D'ici 2 semaines",
+          "1_month": "Sous 1 mois",
+          "2_weeks": "Sous 2 semaines",
           "this_week": "Cette semaine"
         }
       },
-      "industry": {
-        "label": "Secteur (optionnel)",
-        "options": {
-          "banking": "Banque",
-          "telecom": "Télécom",
-          "government": "Public / Gouvernement",
-          "ngo": "ONG",
-          "marketing": "Marketing / Marque",
-          "media": "Média",
-          "other": "Autre"
-        }
-      },
-      "geoFocus": {
-        "label": "Focus géographique (optionnel)",
-        "help": "Plusieurs choix possibles.",
-        "options": {
-          "MA": "Maroc",
-          "DZ": "Algérie",
-          "TN": "Tunisie",
-          "SN": "Sénégal",
-          "CI": "Côte d'Ivoire",
-          "Other": "Autre"
-        }
+      "consent": {
+        "label": "J’accepte que Bassira (AI MPOWER SAS) traite mes coordonnées pour répondre à ma demande, conformément au RGPD et à la loi 09-08 (Maroc)."
       }
     },
     "step3": {
-      "title": "Votre message",
-      "message": {
-        "label": "Décrivez votre cas (optionnel)",
-        "placeholder": "Contexte, objectif, contraintes, échéance…",
-        "counter": "{count} / 800 caractères"
-      },
-      "consent": {
-        "label": "J'accepte que Bassira (AI MPOWER SAS) traite mes coordonnées pour répondre à ma demande, conformément au RGPD et à la loi 09-08 (Maroc).",
-        "required": "Obligatoire pour soumettre la demande."
-      }
-    },
-    "step4": {
-      "successTitle": "Demande envoyée",
-      "successSubtitle": "Nous revenons vers vous sous 24 h ouvrées.",
+      "successTitle": "Merci, nous avons reçu votre demande.",
+      "successSubtitle": "Nous revenons vers vous sous 48 h ouvrées avec une proposition cadrée.",
       "quoteIdLabel": "Référence",
       "errorTitle": "Envoi impossible",
       "errorFallback": "Une erreur réseau est survenue. Réessayez dans un instant.",
       "backToOffers": "Retour aux offres",
       "tryAgain": "Réessayer"
     },
+    "trustSignals": {
+      "multiAgent": {
+        "title": "Intelligence multi-agents",
+        "body": "Animée par plus de 5 000 profils cognitifs distincts."
+      },
+      "airGapped": {
+        "title": "Confidentialité air-gapped",
+        "body": "Vos scénarios n’alimentent jamais les corpus d’entraînement publics."
+      },
+      "fastSetup": {
+        "title": "Mise en route en 48 h",
+        "body": "De la demande à la première simulation en deux jours."
+      }
+    },
     "actions": {
-      "next": "Suivant",
+      "next": "Étape suivante",
       "back": "Retour",
       "submit": "Envoyer la demande",
       "submitting": "Envoi en cours…"

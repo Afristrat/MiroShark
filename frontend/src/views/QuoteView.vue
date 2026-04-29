@@ -8,283 +8,198 @@
         class="quote-back"
         :title="$t('quote.nav.backTitle')"
       >
-        <span class="quote-back-arrow" aria-hidden="true">←</span>
+        <span class="quote-back-arrow material-symbols-outlined" aria-hidden="true">arrow_back</span>
         <span>{{ $t('nav.brand') }}</span>
       </router-link>
     </header>
 
     <main class="quote-main">
-      <!-- ───────────── Hero ───────────── -->
-      <section class="quote-hero">
-        <span class="quote-eyebrow">{{ $t('quote.eyebrow') }}</span>
-        <h1 class="quote-headline">{{ $t('quote.hero.title') }}</h1>
-        <p class="quote-sub">{{ $t('quote.hero.subtitle') }}</p>
-      </section>
+      <!-- ───────────── Trust banner top (gris doux) ───────────── -->
+      <div class="quote-trust-banner">
+        <span class="material-symbols-outlined quote-trust-banner-icon" aria-hidden="true">verified_user</span>
+        <span>{{ $t('quote.trustBanner') }}</span>
+      </div>
 
-      <!-- ───────────── Stepper visuel ─────────────
-           4 dots, l'étape courante en orange, les complétées en mint. -->
-      <ol
-        class="quote-stepper"
-        :aria-label="$t('quote.stepper.step', { current: currentStep, total: 4 })"
-      >
-        <li
-          v-for="i in 4"
-          :key="i"
-          class="quote-step-dot"
-          :class="{
-            'quote-step-dot--current': currentStep === i,
-            'quote-step-dot--done': currentStep > i,
-          }"
-          :aria-current="currentStep === i ? 'step' : false"
+      <!-- ───────────── Card centrée (form 3 steps) ───────────── -->
+      <section class="quote-card">
+        <!-- Stepper 3 steps -->
+        <ol
+          class="quote-stepper"
+          :aria-label="$t('quote.stepper.step', { current: currentStep, total: 3 })"
         >
-          <span class="quote-step-num">{{ i }}</span>
-          <span class="quote-step-label">{{ stepLabel(i) }}</span>
-        </li>
-      </ol>
+          <li class="quote-stepper-line" aria-hidden="true"></li>
+          <li
+            v-for="i in 3"
+            :key="i"
+            class="quote-step"
+            :class="{
+              'quote-step--current': currentStep === i,
+              'quote-step--done': currentStep > i,
+            }"
+            :aria-current="currentStep === i ? 'step' : false"
+          >
+            <span class="quote-step-circle">
+              <span v-if="currentStep > i" class="material-symbols-outlined quote-step-check" aria-hidden="true">check</span>
+              <span v-else>{{ i }}</span>
+            </span>
+            <span class="quote-step-label">{{ stepLabel(i) }}</span>
+          </li>
+        </ol>
 
-      <!-- ───────────── Form card ───────────── -->
-      <section class="ms-card quote-card">
-        <!-- Step 1 — coordonnées -->
+        <!-- ───── Step 1 — How can we help ? ───── -->
         <form
           v-if="currentStep === 1"
-          class="quote-form"
-          @submit.prevent="goNext"
+          class="quote-step-content"
+          @submit.prevent="goToStep2"
         >
-          <h2 class="quote-form-title">{{ $t('quote.step1.title') }}</h2>
+          <h2 class="quote-step-title">{{ $t('quote.step1.title') }}</h2>
 
-          <label class="quote-field">
-            <span class="quote-field-label">
-              {{ $t('quote.step1.fullName.label') }}
+          <div class="quote-radio-group">
+            <label
+              v-for="opt in situationOptions"
+              :key="opt.id"
+              class="quote-radio"
+              :class="{ 'quote-radio--checked': form.situation === opt.id }"
+            >
+              <input
+                type="radio"
+                name="situation"
+                :value="opt.id"
+                v-model="form.situation"
+                class="quote-radio-input"
+              />
+              <span class="quote-radio-content">
+                <span class="quote-radio-title">{{ $t(`quote.step1.options.${opt.id}.title`) }}</span>
+                <span class="quote-radio-sub">{{ $t(`quote.step1.options.${opt.id}.sub`) }}</span>
+              </span>
+              <span class="quote-radio-bullet" aria-hidden="true">
+                <span class="quote-radio-bullet-dot"></span>
+              </span>
+            </label>
+          </div>
+
+          <label class="quote-field-stitch">
+            <span class="quote-field-stitch-label">{{ $t('quote.step1.other.label') }}</span>
+            <input
+              v-model.trim="form.otherSituation"
+              type="text"
+              class="quote-input-stitch"
+              :placeholder="$t('quote.step1.other.placeholder')"
+              maxlength="200"
+            />
+          </label>
+
+          <button
+            type="submit"
+            class="quote-cta"
+            :disabled="!step1Valid"
+          >
+            <span>{{ $t('quote.actions.next') }}</span>
+            <span class="material-symbols-outlined quote-cta-arrow" aria-hidden="true">arrow_forward</span>
+          </button>
+        </form>
+
+        <!-- ───── Step 2 — Your context ───── -->
+        <form
+          v-else-if="currentStep === 2"
+          class="quote-step-content"
+          @submit.prevent="submit"
+        >
+          <h2 class="quote-step-title">{{ $t('quote.step2.title') }}</h2>
+
+          <label class="quote-field-stitch">
+            <span class="quote-field-stitch-label">
+              {{ $t('quote.step2.fullName.label') }}
               <span class="quote-required">*</span>
             </span>
             <input
               v-model.trim="form.full_name"
-              class="ms-input"
               type="text"
+              class="quote-input-stitch"
               maxlength="100"
               required
-              :placeholder="$t('quote.step1.fullName.placeholder')"
+              :placeholder="$t('quote.step2.fullName.placeholder')"
             />
           </label>
 
-          <label class="quote-field">
-            <span class="quote-field-label">
-              {{ $t('quote.step1.email.label') }}
+          <label class="quote-field-stitch">
+            <span class="quote-field-stitch-label">
+              {{ $t('quote.step2.email.label') }}
               <span class="quote-required">*</span>
             </span>
             <input
               v-model.trim="form.email"
-              class="ms-input"
               type="email"
+              class="quote-input-stitch"
               required
-              :placeholder="$t('quote.step1.email.placeholder')"
+              :placeholder="$t('quote.step2.email.placeholder')"
               :aria-invalid="form.email && !emailValid ? 'true' : 'false'"
             />
             <span
               v-if="form.email && !emailValid"
               class="quote-field-error"
             >
-              {{ $t('quote.step1.email.invalid') }}
+              {{ $t('quote.step2.email.invalid') }}
             </span>
           </label>
 
-          <label class="quote-field">
-            <span class="quote-field-label">
-              {{ $t('quote.step1.company.label') }}
+          <label class="quote-field-stitch">
+            <span class="quote-field-stitch-label">
+              {{ $t('quote.step2.company.label') }}
               <span class="quote-required">*</span>
             </span>
             <input
               v-model.trim="form.company"
-              class="ms-input"
               type="text"
+              class="quote-input-stitch"
               maxlength="120"
               required
-              :placeholder="$t('quote.step1.company.placeholder')"
+              :placeholder="$t('quote.step2.company.placeholder')"
             />
           </label>
 
-          <label class="quote-field">
-            <span class="quote-field-label">{{ $t('quote.step1.role.label') }}</span>
-            <input
-              v-model.trim="form.role"
-              class="ms-input"
-              type="text"
-              maxlength="80"
-              :placeholder="$t('quote.step1.role.placeholder')"
-            />
-          </label>
-
-          <label class="quote-field">
-            <span class="quote-field-label">{{ $t('quote.step1.phone.label') }}</span>
-            <input
-              v-model.trim="form.phone"
-              class="ms-input"
-              type="tel"
-              maxlength="40"
-              :placeholder="$t('quote.step1.phone.placeholder')"
-            />
-          </label>
-
-          <div class="quote-actions quote-actions--end">
-            <button
-              type="submit"
-              class="ms-btn ms-btn-primary ms-btn--lg"
-              :disabled="!step1Valid"
-            >
-              {{ $t('quote.actions.next') }}
-            </button>
-          </div>
-        </form>
-
-        <!-- Step 2 — besoin -->
-        <form
-          v-else-if="currentStep === 2"
-          class="quote-form"
-          @submit.prevent="goNext"
-        >
-          <h2 class="quote-form-title">{{ $t('quote.step2.title') }}</h2>
-
-          <label class="quote-field">
-            <span class="quote-field-label">
-              {{ $t('quote.step2.package.label') }}
-              <span class="quote-required">*</span>
-            </span>
-            <select v-model="form.package" class="ms-select" required>
-              <option
-                v-for="opt in packageOptions"
-                :key="opt"
-                :value="opt"
-              >
-                {{ $t(`quote.step2.package.options.${opt}`) }}
-              </option>
-            </select>
-          </label>
-
-          <label class="quote-field">
-            <span class="quote-field-label">
-              {{ $t('quote.step2.volume.label') }}
-            </span>
-            <input
-              v-model.number="form.expected_simulations_per_year"
-              class="ms-input"
-              type="number"
-              min="1"
-              max="100"
-              :placeholder="$t('quote.step2.volume.placeholder')"
-            />
-          </label>
-
-          <label class="quote-field">
-            <span class="quote-field-label">
-              {{ $t('quote.step2.deadline.label') }}
-            </span>
-            <select v-model="form.target_deadline" class="ms-select">
-              <option value="">—</option>
-              <option
-                v-for="opt in deadlineOptions"
-                :key="opt"
-                :value="opt"
-              >
-                {{ $t(`quote.step2.deadline.options.${opt}`) }}
-              </option>
-            </select>
-          </label>
-
-          <label class="quote-field">
-            <span class="quote-field-label">
-              {{ $t('quote.step2.industry.label') }}
-            </span>
-            <select v-model="form.industry" class="ms-select">
-              <option value="">—</option>
-              <option
-                v-for="opt in industryOptions"
-                :key="opt"
-                :value="opt"
-              >
-                {{ $t(`quote.step2.industry.options.${opt}`) }}
-              </option>
-            </select>
-          </label>
-
-          <fieldset class="quote-field quote-fieldset">
-            <legend class="quote-field-label">
-              {{ $t('quote.step2.geoFocus.label') }}
-            </legend>
-            <p class="quote-field-help">{{ $t('quote.step2.geoFocus.help') }}</p>
-            <div class="quote-checkbox-grid">
-              <label
-                v-for="opt in geoOptions"
-                :key="opt"
-                class="quote-checkbox"
-              >
-                <input
-                  type="checkbox"
+          <div class="quote-field-row">
+            <label class="quote-field-stitch">
+              <span class="quote-field-stitch-label">{{ $t('quote.step2.role.label') }}</span>
+              <input
+                v-model.trim="form.role"
+                type="text"
+                class="quote-input-stitch"
+                maxlength="80"
+                :placeholder="$t('quote.step2.role.placeholder')"
+              />
+            </label>
+            <label class="quote-field-stitch">
+              <span class="quote-field-stitch-label">{{ $t('quote.step2.deadline.label') }}</span>
+              <select v-model="form.target_deadline" class="quote-input-stitch quote-select">
+                <option value="">—</option>
+                <option
+                  v-for="opt in deadlineOptions"
+                  :key="opt"
                   :value="opt"
-                  v-model="form.geo_focus"
-                />
-                <span>{{ $t(`quote.step2.geoFocus.options.${opt}`) }}</span>
-              </label>
-            </div>
-          </fieldset>
-
-          <div class="quote-actions">
-            <button
-              type="button"
-              class="ms-btn ms-btn-secondary ms-btn--lg"
-              @click="goBack"
-            >
-              {{ $t('quote.actions.back') }}
-            </button>
-            <button
-              type="submit"
-              class="ms-btn ms-btn-primary ms-btn--lg"
-              :disabled="!step2Valid"
-            >
-              {{ $t('quote.actions.next') }}
-            </button>
+                >
+                  {{ $t(`quote.step2.deadline.options.${opt}`) }}
+                </option>
+              </select>
+            </label>
           </div>
-        </form>
 
-        <!-- Step 3 — message + RGPD -->
-        <form
-          v-else-if="currentStep === 3"
-          class="quote-form"
-          @submit.prevent="submit"
-        >
-          <h2 class="quote-form-title">{{ $t('quote.step3.title') }}</h2>
-
-          <label class="quote-field">
-            <span class="quote-field-label">
-              {{ $t('quote.step3.message.label') }}
-            </span>
-            <textarea
-              v-model="form.message"
-              class="ms-input quote-textarea"
-              maxlength="800"
-              rows="6"
-              :placeholder="$t('quote.step3.message.placeholder')"
-            ></textarea>
-            <span class="quote-field-counter">
-              {{ $t('quote.step3.message.counter', { count: messageLength }) }}
-            </span>
-          </label>
-
-          <label class="quote-checkbox quote-consent">
+          <label class="quote-consent-stitch">
             <input
-              type="checkbox"
               v-model="form.consent_rgpd"
+              type="checkbox"
               required
             />
             <span>
-              {{ $t('quote.step3.consent.label') }}
+              {{ $t('quote.step2.consent.label') }}
               <span class="quote-required">*</span>
             </span>
           </label>
 
-          <div class="quote-actions">
+          <div class="quote-actions-row">
             <button
               type="button"
-              class="ms-btn ms-btn-secondary ms-btn--lg"
+              class="quote-secondary-btn"
               @click="goBack"
               :disabled="submitting"
             >
@@ -292,61 +207,65 @@
             </button>
             <button
               type="submit"
-              class="ms-btn ms-btn-primary ms-btn--lg"
-              :disabled="!step3Valid || submitting"
+              class="quote-cta quote-cta--inline"
+              :disabled="!step2Valid || submitting"
             >
-              {{ submitting ? $t('quote.actions.submitting') : $t('quote.actions.submit') }}
+              <span>{{ submitting ? $t('quote.actions.submitting') : $t('quote.actions.submit') }}</span>
+              <span v-if="!submitting" class="material-symbols-outlined quote-cta-arrow" aria-hidden="true">arrow_forward</span>
             </button>
           </div>
         </form>
 
-        <!-- Step 4 — success / error -->
-        <div v-else-if="currentStep === 4" class="quote-result">
+        <!-- ───── Step 3 — Get matched (success / error) ───── -->
+        <div v-else-if="currentStep === 3" class="quote-step-content">
           <template v-if="submitError === null">
-            <div class="quote-result-card quote-result-card--success">
-              <div class="quote-result-icon" aria-hidden="true">✓</div>
-              <h2 class="quote-result-title">
-                {{ $t('quote.step4.successTitle') }}
-              </h2>
-              <p class="quote-result-sub">
-                {{ $t('quote.step4.successSubtitle') }}
-              </p>
-              <p v-if="quoteId" class="quote-result-id">
-                <span class="quote-result-id-label">
-                  {{ $t('quote.step4.quoteIdLabel') }}
-                </span>
-                <code class="quote-result-id-value ms-mono">{{ quoteId }}</code>
-              </p>
-              <div class="quote-actions quote-actions--center">
-                <router-link
-                  :to="{ name: 'Offers' }"
-                  class="ms-btn ms-btn-primary ms-btn--lg"
-                >
-                  {{ $t('quote.step4.backToOffers') }}
-                </router-link>
+            <div class="quote-success">
+              <div class="quote-success-icon">
+                <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
               </div>
+              <h2 class="quote-step-title">{{ $t('quote.step3.successTitle') }}</h2>
+              <p class="quote-success-sub">{{ $t('quote.step3.successSubtitle') }}</p>
+              <p v-if="quoteId" class="quote-success-id">
+                <span class="quote-success-id-label">{{ $t('quote.step3.quoteIdLabel') }}</span>
+                <code class="quote-success-id-value">{{ quoteId }}</code>
+              </p>
+              <router-link
+                :to="{ name: 'Offers' }"
+                class="quote-cta quote-cta--inline"
+              >
+                {{ $t('quote.step3.backToOffers') }}
+              </router-link>
             </div>
           </template>
           <template v-else>
-            <div class="quote-result-card quote-result-card--error">
-              <div class="quote-result-icon quote-result-icon--error" aria-hidden="true">!</div>
-              <h2 class="quote-result-title">
-                {{ $t('quote.step4.errorTitle') }}
-              </h2>
-              <p class="quote-result-sub">
-                {{ submitError }}
-              </p>
-              <div class="quote-actions quote-actions--center">
-                <button
-                  type="button"
-                  class="ms-btn ms-btn-secondary ms-btn--lg"
-                  @click="goBackToStep3"
-                >
-                  {{ $t('quote.step4.tryAgain') }}
-                </button>
+            <div class="quote-error">
+              <div class="quote-error-icon">
+                <span class="material-symbols-outlined" aria-hidden="true">error</span>
               </div>
+              <h2 class="quote-step-title">{{ $t('quote.step3.errorTitle') }}</h2>
+              <p class="quote-success-sub">{{ submitError }}</p>
+              <button
+                type="button"
+                class="quote-secondary-btn"
+                @click="goBackToStep2"
+              >
+                {{ $t('quote.step3.tryAgain') }}
+              </button>
             </div>
           </template>
+        </div>
+      </section>
+
+      <!-- ───────────── Trust signals (3 colonnes) ───────────── -->
+      <section class="quote-trust-grid" aria-label="Trust signals">
+        <div
+          v-for="item in trustItems"
+          :key="item.id"
+          class="quote-trust-item"
+        >
+          <span class="material-symbols-outlined quote-trust-item-icon" aria-hidden="true">{{ item.icon }}</span>
+          <h5 class="quote-trust-item-title">{{ $t(`quote.trustSignals.${item.id}.title`) }}</h5>
+          <p class="quote-trust-item-body">{{ $t(`quote.trustSignals.${item.id}.body`) }}</p>
         </div>
       </section>
     </main>
@@ -360,27 +279,44 @@ import { useI18n } from 'vue-i18n'
 import { submitQuote } from '../api/quote'
 import { formatApiError } from '../utils/error-handler'
 
-// ─── Constantes (alignées sur le backend US-025) ────────────────────────
-const packageOptions = [
+// ─── Step 1 — situation options du mockup Stitch ────────────────────────
+// Chaque option a un id frontend (camelCase pour les clés i18n) et un id
+// backend canonique pour le payload POST /api/quote (champ `package`).
+const situationOptions = [
+  { id: 'crisis', backendPackage: 'crisis_drill_24h' },
+  { id: 'policy', backendPackage: 'policy_brief_stress' },
+  { id: 'campaign', backendPackage: 'pre_launch_adcheck' },
+]
+
+// Liste des packages backend valides (alignée sur l'enum OpenAPI US-025).
+const validBackendPackages = [
   'crisis_drill_24h',
   'policy_brief_stress',
   'pre_launch_adcheck',
   'custom',
 ]
-const deadlineOptions = ['not_urgent', '1_month', '2_weeks', 'this_week']
-const industryOptions = [
-  'banking', 'telecom', 'government', 'ngo', 'marketing', 'media', 'other',
-]
-const geoOptions = ['MA', 'DZ', 'TN', 'SN', 'CI', 'Other']
 
-// ─── Mapping query ?package=… → id frontend OffersView vers id backend ──
-// La page Offers émet `crisisDrill` / `policyBrief` / `preLaunch` (camelCase
-// pour les clés i18n) — on traduit vers les ids backend canoniques utilisés
-// dans le payload + l'enum OpenAPI.
-const PACKAGE_ALIAS_MAP = {
-  crisisDrill: 'crisis_drill_24h',
-  policyBrief: 'policy_brief_stress',
-  preLaunch: 'pre_launch_adcheck',
+const deadlineOptions = ['not_urgent', '1_month', '2_weeks', 'this_week']
+
+// Trust signals sous le form (3 colonnes).
+const trustItems = [
+  { id: 'multiAgent', icon: 'psychology' },
+  { id: 'airGapped', icon: 'security' },
+  { id: 'fastSetup', icon: 'bolt' },
+]
+
+// ─── Mapping query ?package=… → préselection radio Step 1 ─────────────
+// La page Offers émet par exemple ?package=crisis_drill_24h. On retrouve
+// l'option radio correspondante pour pré-cocher Step 1. Les valeurs
+// frontend OffersView (legacy : crisisDrill / policyBrief / preLaunch)
+// sont aussi acceptées pour ne casser aucun lien existant.
+const PACKAGE_TO_SITUATION = {
+  crisis_drill_24h: 'crisis',
+  policy_brief_stress: 'policy',
+  pre_launch_adcheck: 'campaign',
+  crisisDrill: 'crisis',
+  policyBrief: 'policy',
+  preLaunch: 'campaign',
 }
 
 const route = useRoute()
@@ -389,176 +325,229 @@ const { t, locale } = useI18n()
 const currentStep = ref(1)
 
 const form = reactive({
+  // Step 1
+  situation: 'crisis', // l'option par défaut, comme dans le mockup
+  otherSituation: '',
+  // Step 2
   full_name: '',
   email: '',
   company: '',
   role: '',
-  phone: '',
-  package: 'crisis_drill_24h',
-  expected_simulations_per_year: null,
   target_deadline: '',
-  industry: '',
-  geo_focus: [],
-  message: '',
   consent_rgpd: false,
 })
 
 const submitting = ref(false)
-const submitError = ref(null) // null = pas encore d'erreur (Step 4 = succès)
+const submitError = ref(null) // null = succès, string = message d'erreur
 const quoteId = ref('')
 
-// ─── Computed validations ──────────────────────────────────────────────
+// ─── Validations ───────────────────────────────────────────────────────
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
 const emailValid = computed(() => emailRe.test(form.email))
 
+// Step 1 : au moins une situation cochée. « other » suffit aussi car on a
+// toujours une option par défaut, mais on garde la validation explicite.
 const step1Valid = computed(
+  () => !!form.situation || !!form.otherSituation,
+)
+
+const step2Valid = computed(
   () =>
     !!form.full_name &&
     !!form.email &&
     emailValid.value &&
-    !!form.company,
+    !!form.company &&
+    form.consent_rgpd === true,
 )
 
-const step2Valid = computed(
-  () => !!form.package && packageOptions.includes(form.package),
-)
-
-const step3Valid = computed(() => form.consent_rgpd === true)
-
-const messageLength = computed(() => (form.message || '').length)
-
-// ─── Step labels du stepper ────────────────────────────────────────────
+// ─── Step labels ──────────────────────────────────────────────────────
 function stepLabel(idx) {
-  const keys = ['contact', 'need', 'message', 'done']
+  const keys = ['situation', 'context', 'matched']
   return t(`quote.stepper.stepNames.${keys[idx - 1]}`)
 }
 
 // ─── Navigation ────────────────────────────────────────────────────────
-function goNext() {
-  if (currentStep.value === 1 && !step1Valid.value) return
-  if (currentStep.value === 2 && !step2Valid.value) return
-  currentStep.value += 1
+function goToStep2() {
+  if (!step1Valid.value) return
+  currentStep.value = 2
 }
 
 function goBack() {
   if (currentStep.value > 1) currentStep.value -= 1
 }
 
-function goBackToStep3() {
-  // Réessayer après une erreur backend : on revient au Step 3 avec form
-  // pré-rempli (jamais reset) pour que l'utilisateur ajuste s'il veut.
+function goBackToStep2() {
+  // Réessayer après une erreur backend : on revient à Step 2, le form
+  // est conservé pour permettre à l'utilisateur d'ajuster s'il le veut.
   submitError.value = null
-  currentStep.value = 3
+  currentStep.value = 2
+}
+
+// ─── Détermine le `package` backend à partir de Step 1 ────────────────
+// crisis → crisis_drill_24h | policy → policy_brief_stress
+// campaign → pre_launch_adcheck. Si l'utilisateur a écrit dans le champ
+// otherSituation et n'a pas cliqué sur une radio standard, on bascule
+// sur 'custom'. La radio par défaut est 'crisis', donc otherSituation
+// non vide ne suffit pas à elle seule : on ne switch sur custom que si
+// la radio n'a pas été modifiée ET que otherSituation est rempli.
+function resolveBackendPackage() {
+  const opt = situationOptions.find((o) => o.id === form.situation)
+  if (opt && opt.backendPackage) {
+    // Si l'utilisateur a aussi rempli otherSituation, on garde la radio
+    // mais on glissera la précision dans le `message` du payload.
+    return opt.backendPackage
+  }
+  return 'custom'
 }
 
 // ─── Submit ────────────────────────────────────────────────────────────
 async function submit() {
-  if (!step3Valid.value || submitting.value) return
+  if (!step2Valid.value || submitting.value) return
   submitting.value = true
   submitError.value = null
 
-  // Construction du payload — on ne passe que les champs renseignés
-  // pour ne pas pousser des chaînes vides au backend.
+  // Construit le message en concaténant la situation Stitch + l'éventuelle
+  // précision saisie en Step 1 (champ otherSituation).
+  const situationLabel = form.situation
+    ? t(`quote.step1.options.${form.situation}.title`)
+    : ''
+  const messageParts = []
+  if (situationLabel) messageParts.push(`[${situationLabel}]`)
+  if (form.otherSituation) messageParts.push(form.otherSituation)
+  const message = messageParts.join(' ').trim()
+
+  const backendPackage = resolveBackendPackage()
+  const safePackage = validBackendPackages.includes(backendPackage)
+    ? backendPackage
+    : 'custom'
+
   const payload = {
     full_name: form.full_name,
     email: form.email,
     company: form.company,
-    package: form.package,
+    package: safePackage,
     consent_rgpd: form.consent_rgpd,
     locale: locale.value || 'fr',
   }
   if (form.role) payload.role = form.role
-  if (form.phone) payload.phone = form.phone
-  if (
-    form.expected_simulations_per_year !== null &&
-    form.expected_simulations_per_year !== ''
-  ) {
-    payload.expected_simulations_per_year = Number(
-      form.expected_simulations_per_year,
-    )
-  }
   if (form.target_deadline) payload.target_deadline = form.target_deadline
-  if (form.industry) payload.industry = form.industry
-  if (form.geo_focus && form.geo_focus.length) {
-    payload.geo_focus = [...form.geo_focus]
-  }
-  if (form.message) payload.message = form.message
+  if (message) payload.message = message
 
   try {
     const res = await submitQuote(payload)
     quoteId.value = (res && res.data && res.data.quote_id) || ''
     submitError.value = null
-    currentStep.value = 4
+    currentStep.value = 3
   } catch (err) {
-    // formatApiError gère error_code → traduction errors.* + fallback msg.
     const localised = formatApiError(err, t)
-    submitError.value = localised || t('quote.step4.errorFallback')
-    currentStep.value = 4
+    submitError.value = localised || t('quote.step3.errorFallback')
+    currentStep.value = 3
   } finally {
     submitting.value = false
   }
 }
 
-// ─── Préselection package depuis ?package=… ────────────────────────────
+// ─── Préselection radio depuis ?package=… (depuis OffersView) ─────────
 onMounted(() => {
   const raw = (route.query?.package || '').toString().trim()
   if (!raw) return
-  const candidate = PACKAGE_ALIAS_MAP[raw] || raw
-  if (packageOptions.includes(candidate)) {
-    form.package = candidate
+  const situation = PACKAGE_TO_SITUATION[raw]
+  if (situation) {
+    form.situation = situation
   }
 })
 </script>
 
 <style scoped>
 /* ═══════════════════════════════════════════════════════════
-   QUOTE — Direction Playful & Soft (US-025)
+   QUOTE — Refonte fidèle au mockup Stitch (US-025 v2)
    ═══════════════════════════════════════════════════════════
-   RTL : tous les positionnements logiques (inset-inline-*,
-   margin-inline-*, padding-inline-*). Pas de left/right physique. */
+   Source unique de vérité : stitch_bassira_simulation_pricing_page/
+   bassira_devis_get_a_quote/code.html
+   On utilise les variables `--stitch-*` scopées au composant pour
+   reproduire la palette M3 du mockup, sans Tailwind. */
 
 .quote-page {
+  --stitch-primary-container: #ff8551;
+  --stitch-primary: #a13f0f;
+  --stitch-on-primary: #ffffff;
+  --stitch-on-primary-fixed: #370e00;
+  --stitch-primary-fixed: #ffdbce;
+  --stitch-surface: #fff8f6;
+  --stitch-surface-container: #ffeae2;
+  --stitch-surface-container-low: #fff1ec;
+  --stitch-surface-container-lowest: #ffffff;
+  --stitch-surface-container-high: #f9e4dd;
+  --stitch-surface-container-highest: #f3ded7;
+  --stitch-on-surface: #241915;
+  --stitch-on-surface-variant: #57423a;
+  --stitch-outline: #8a7269;
+  --stitch-outline-variant: #dec0b6;
+  --stitch-secondary: #006d44;
+  --stitch-secondary-container: #98f2be;
+  --stitch-error: #ba1a1a;
+  --stitch-error-container: #ffdad6;
+  --stitch-on-error-container: #93000a;
+
+  --stitch-page-bg: #faf7f2;
+  --stitch-input-bg: #faf7f2;
+  --stitch-stepper-line: #ebe5da;
+
+  --stitch-shadow-card: 0 12px 32px rgba(74, 69, 64, 0.08);
+  --stitch-shadow-soft: 0 1px 2px rgba(74, 69, 64, 0.05);
+
+  --stitch-font-display: 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --stitch-font-body: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+
   min-height: 100vh;
-  background: var(--ms-bg);
-  color: var(--ms-text);
-  font-family: var(--ms-font-body);
+  background: var(--stitch-page-bg);
+  color: var(--stitch-on-surface);
+  font-family: var(--stitch-font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  user-select: none;
 }
 
 /* ── Top bar ────────────────────────────────────────── */
 .quote-topbar {
   display: flex;
   align-items: center;
-  padding: var(--ms-space-4) var(--ms-space-6);
+  padding: 16px 32px;
   /* Réserve la place pour le LanguageSwitcher floating top-right
-     (z-index 1500, top:12px). Cohérent avec OffersView / CalibrationView. */
+     (z-index 1500) — cohérent avec OffersView / CalibrationView. */
   padding-inline-end: 110px;
-  border-bottom: 1px solid var(--ms-border);
-  background: var(--ms-bg);
+  border-bottom: 1px solid var(--stitch-stepper-line);
+  background: var(--stitch-page-bg);
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
 
 .quote-back {
   display: inline-flex;
   align-items: center;
-  gap: var(--ms-space-2);
-  font-family: var(--ms-font-display);
-  font-weight: 600;
-  font-size: var(--ms-text-sm);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ms-text);
+  gap: 8px;
+  font-family: var(--stitch-font-display);
+  font-weight: 700;
+  font-size: 18px;
+  color: #4a4540;
   text-decoration: none;
-  padding: 6px 10px;
-  border-radius: var(--ms-radius-pill);
-  transition: color var(--ms-transition), background var(--ms-transition);
+  padding: 6px 12px;
+  border-radius: 9999px;
+  transition: color 0.2s ease, background 0.2s ease;
 }
 .quote-back:hover {
-  color: var(--ms-orange);
-  background: var(--ms-bg-muted);
+  color: var(--stitch-primary-container);
+  background: var(--stitch-surface-container-low);
 }
 .quote-back-arrow {
-  font-size: 16px;
-  line-height: 1;
+  font-size: 20px !important;
 }
 [dir="rtl"] .quote-back-arrow {
   transform: scaleX(-1);
@@ -566,358 +555,559 @@ onMounted(() => {
 
 /* ── Main wrapper ───────────────────────────────────── */
 .quote-main {
-  max-width: 760px;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: var(--ms-space-12) var(--ms-space-6);
+  padding: 48px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-/* ── Hero ───────────────────────────────────────────── */
-.quote-hero {
+/* ── Trust banner (gris doux, top) ──────────────────── */
+.quote-trust-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #f3ede4;
+  color: var(--stitch-on-surface-variant);
+  padding: 8px 16px;
+  border-radius: 9999px;
+  font-family: var(--stitch-font-body);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  margin-bottom: 32px;
+  max-width: 100%;
   text-align: center;
-  margin-bottom: var(--ms-space-8);
+}
+.quote-trust-banner-icon {
+  font-size: 16px !important;
+  font-variation-settings: 'FILL' 1 !important;
+  color: var(--stitch-on-surface-variant);
+  flex-shrink: 0;
 }
 
-.quote-eyebrow {
-  display: inline-block;
-  font-family: var(--ms-font-mono);
-  font-size: var(--ms-text-xs);
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--ms-orange);
-  background: var(--ms-orange-soft);
-  padding: 6px 14px;
-  border-radius: var(--ms-radius-pill);
-  margin-bottom: var(--ms-space-4);
-}
-
-.quote-headline {
-  font-family: var(--ms-font-display);
-  font-size: clamp(26px, 4vw, 38px);
-  font-weight: 700;
-  line-height: 1.18;
-  letter-spacing: -0.02em;
-  color: var(--ms-text);
-  margin: 0 auto var(--ms-space-4) auto;
+/* ── Card centrée (form 3 steps) ────────────────────── */
+.quote-card {
+  width: 100%;
   max-width: 640px;
+  background: var(--stitch-surface-container-lowest);
+  border-radius: 24px;
+  box-shadow: var(--stitch-shadow-card);
+  padding: 48px;
+  position: relative;
+  overflow: visible;
 }
 
-.quote-sub {
-  font-family: var(--ms-font-body);
-  font-size: var(--ms-text-base);
-  line-height: 1.55;
-  color: var(--ms-text-muted);
-  max-width: 560px;
-  margin: 0 auto;
+@media (max-width: 640px) {
+  .quote-card {
+    padding: 32px 20px;
+    border-radius: 20px;
+  }
 }
 
-/* ── Stepper ────────────────────────────────────────── */
+/* ── Stepper 3 steps (rond + label) ─────────────────── */
 .quote-stepper {
   list-style: none;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: var(--ms-space-2);
+  gap: 8px;
   padding: 0;
-  margin: 0 0 var(--ms-space-6) 0;
+  margin: 0 0 48px 0;
   position: relative;
 }
 
-.quote-step-dot {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  position: relative;
-  font-family: var(--ms-font-mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ms-text-muted);
-}
-.quote-step-dot::before {
-  content: '';
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--ms-bg-muted);
-  border: 2px solid var(--ms-border);
-  position: relative;
-  z-index: 2;
-  transition: background var(--ms-transition), border-color var(--ms-transition);
-}
-.quote-step-dot:not(:last-child)::after {
-  /* Connecteur entre dots — barre logique pour rester RTL-safe. */
-  content: '';
+.quote-stepper-line {
   position: absolute;
-  top: 13px;
-  inset-inline-start: 50%;
+  top: 20px;
+  inset-inline-start: 0;
   width: 100%;
   height: 2px;
-  background: var(--ms-border);
+  background: var(--stitch-stepper-line);
+  z-index: 0;
+  /* L'élément <li> sert juste de track ; pas de visuel interne. */
+  list-style: none;
+}
+
+.quote-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
   z-index: 1;
+  background: var(--stitch-surface-container-lowest);
+  padding: 0 8px;
+  font-family: var(--stitch-font-body);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--stitch-on-surface-variant);
+  text-align: center;
+  flex: 0 0 auto;
 }
-.quote-step-num {
-  position: absolute;
-  top: 4px;
-  font-family: var(--ms-font-display);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--ms-text-muted);
-  z-index: 3;
+
+.quote-step-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--stitch-font-body);
+  font-size: 14px;
+  font-weight: 700;
+  border: 2px solid var(--stitch-stepper-line);
+  background: var(--stitch-surface-container-lowest);
+  color: var(--stitch-on-surface-variant);
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
+
+.quote-step-check {
+  font-size: 22px !important;
+  color: var(--stitch-on-primary);
+}
+
+.quote-step--current .quote-step-circle {
+  background: var(--stitch-primary-container);
+  border-color: var(--stitch-primary-container);
+  color: var(--stitch-on-primary);
+}
+.quote-step--current {
+  color: var(--stitch-primary);
+  font-weight: 700;
+}
+
+.quote-step--done .quote-step-circle {
+  background: var(--stitch-primary-container);
+  border-color: var(--stitch-primary-container);
+  color: var(--stitch-on-primary);
+}
+
 .quote-step-label {
-  margin-top: 2px;
-}
-.quote-step-dot--current::before {
-  background: var(--ms-orange);
-  border-color: var(--ms-orange);
-}
-.quote-step-dot--current .quote-step-num {
-  color: var(--ms-text-on-color, #fff);
-}
-.quote-step-dot--current {
-  color: var(--ms-orange);
-}
-.quote-step-dot--done::before {
-  background: var(--ms-mint, #5fc8a8);
-  border-color: var(--ms-mint, #5fc8a8);
-}
-.quote-step-dot--done .quote-step-num {
-  color: var(--ms-text-on-color, #fff);
-}
-.quote-step-dot--done:not(:last-child)::after {
-  background: var(--ms-mint, #5fc8a8);
+  font-size: 12px;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
 }
 
-/* ── Form card ──────────────────────────────────────── */
-.quote-card {
-  padding: var(--ms-space-8) var(--ms-space-6);
-  border-radius: var(--ms-radius-lg);
+@media (max-width: 480px) {
+  .quote-step-label {
+    font-size: 11px;
+    letter-spacing: 0;
+  }
 }
 
-.quote-form {
+/* ── Step content commun ────────────────────────────── */
+.quote-step-content {
   display: flex;
   flex-direction: column;
-  gap: var(--ms-space-5);
+  gap: 16px;
 }
 
-.quote-form-title {
-  font-family: var(--ms-font-display);
-  font-size: var(--ms-text-xl);
-  font-weight: 700;
+.quote-step-title {
+  font-family: var(--stitch-font-display);
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1.3;
   letter-spacing: -0.01em;
-  color: var(--ms-text);
-  margin: 0 0 var(--ms-space-2) 0;
+  color: var(--stitch-on-surface);
+  margin: 0 0 16px 0;
+  text-align: center;
 }
 
-.quote-field {
+@media (max-width: 480px) {
+  .quote-step-title {
+    font-size: 24px;
+  }
+}
+
+/* ── Step 1 — radio cards ───────────────────────────── */
+.quote-radio-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 16px;
 }
 
-.quote-fieldset {
-  border: none;
-  padding: 0;
-  margin: 0;
+.quote-radio {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  background: var(--stitch-input-bg);
+  border: 1px solid var(--stitch-stepper-line);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.quote-radio:hover {
+  border-color: var(--stitch-primary-container);
+}
+.quote-radio--checked {
+  border-color: var(--stitch-primary-container);
+  background: rgba(255, 133, 81, 0.04);
 }
 
-.quote-field-label {
-  font-family: var(--ms-font-mono);
-  font-size: 11px;
+.quote-radio-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.quote-radio-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.quote-radio-title {
+  font-family: var(--stitch-font-body);
+  font-size: 16px;
   font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ms-text-muted);
+  line-height: 1.4;
+  color: var(--stitch-on-surface);
+}
+
+.quote-radio-sub {
+  font-family: var(--stitch-font-body);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--stitch-on-surface-variant);
+}
+
+.quote-radio-bullet {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 9999px;
+  border: 2px solid var(--stitch-stepper-line);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--stitch-surface-container-lowest);
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.quote-radio-bullet-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: transparent;
+  transition: background 0.2s ease;
+}
+.quote-radio--checked .quote-radio-bullet {
+  border-color: var(--stitch-primary-container);
+  background: var(--stitch-primary-container);
+}
+.quote-radio--checked .quote-radio-bullet-dot {
+  background: var(--stitch-on-primary);
+}
+
+/* ── Champs Stitch (input/textarea/select) ──────────── */
+.quote-field-stitch {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.quote-field-stitch-label {
+  font-family: var(--stitch-font-body);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--stitch-on-surface-variant);
+  padding-inline-start: 4px;
 }
 
 .quote-required {
-  color: var(--ms-orange);
+  color: var(--stitch-primary-container);
   margin-inline-start: 2px;
 }
 
-.quote-field-help {
-  font-family: var(--ms-font-body);
-  font-size: var(--ms-text-xs);
-  color: var(--ms-text-subtle);
-  margin: 0;
-}
-
-.quote-field-counter {
-  font-family: var(--ms-font-mono);
-  font-size: 11px;
-  color: var(--ms-text-subtle);
-  align-self: flex-end;
-}
-
 .quote-field-error {
-  font-family: var(--ms-font-body);
-  font-size: var(--ms-text-xs);
-  color: var(--ms-rose, #d4564b);
+  font-family: var(--stitch-font-body);
+  font-size: 12px;
+  color: var(--stitch-on-error-container);
+  margin-top: 4px;
+  padding-inline-start: 4px;
 }
 
-.quote-textarea {
-  resize: vertical;
-  min-height: 120px;
-  font-family: var(--ms-font-body);
+.quote-input-stitch {
+  width: 100%;
+  background: var(--stitch-input-bg);
+  border: none;
+  border-radius: 12px;
+  padding: 16px;
+  font-family: var(--stitch-font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--stitch-on-surface);
+  transition: box-shadow 0.2s ease;
+}
+.quote-input-stitch::placeholder {
+  color: var(--stitch-outline);
+}
+.quote-input-stitch:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--stitch-primary-container);
 }
 
-/* ── Checkbox grid (geo focus) ─────────────────────── */
-.quote-checkbox-grid {
+.quote-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2357423a'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 20px;
+  padding-inline-end: 40px;
+}
+[dir="rtl"] .quote-select {
+  background-position: left 16px center;
+}
+
+.quote-field-row {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--ms-space-2);
-  margin-top: var(--ms-space-2);
+  grid-template-columns: 1fr;
+  gap: 16px;
 }
 @media (min-width: 540px) {
-  .quote-checkbox-grid {
+  .quote-field-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ── Consent (checkbox) ─────────────────────────────── */
+.quote-consent-stitch {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--stitch-input-bg);
+  border-radius: 16px;
+  padding: 16px;
+  font-family: var(--stitch-font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--stitch-on-surface-variant);
+  cursor: pointer;
+  margin-top: 8px;
+}
+.quote-consent-stitch input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--stitch-primary-container);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ── CTA principale + actions row ───────────────────── */
+.quote-cta {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--stitch-primary-container);
+  color: var(--stitch-on-primary);
+  font-family: var(--stitch-font-body);
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: 0.01em;
+  padding: 16px 24px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.1s ease;
+  box-shadow: 0 8px 20px rgba(255, 133, 81, 0.25);
+  margin-top: 16px;
+  text-decoration: none;
+}
+.quote-cta:hover:not(:disabled) {
+  opacity: 0.95;
+}
+.quote-cta:active:not(:disabled) {
+  transform: scale(0.99);
+}
+.quote-cta:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.quote-cta-arrow {
+  font-size: 20px !important;
+}
+[dir="rtl"] .quote-cta-arrow {
+  transform: scaleX(-1);
+}
+
+.quote-cta--inline {
+  width: auto;
+  flex: 1;
+}
+
+.quote-actions-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  align-items: stretch;
+}
+
+.quote-secondary-btn {
+  flex: 0 0 auto;
+  background: transparent;
+  color: var(--stitch-on-surface-variant);
+  font-family: var(--stitch-font-body);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 14px 24px;
+  border: 1.5px solid var(--stitch-stepper-line);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+.quote-secondary-btn:hover:not(:disabled) {
+  border-color: var(--stitch-primary-container);
+  color: var(--stitch-primary-container);
+}
+.quote-secondary-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Step 3 — success / error ───────────────────────── */
+.quote-success,
+.quote-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  padding: 24px 0;
+}
+
+.quote-success-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 9999px;
+  background: var(--stitch-secondary-container);
+  color: var(--stitch-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+.quote-success-icon .material-symbols-outlined {
+  font-size: 48px !important;
+  font-variation-settings: 'FILL' 1 !important;
+}
+
+.quote-error-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 9999px;
+  background: var(--stitch-error-container);
+  color: var(--stitch-error);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+.quote-error-icon .material-symbols-outlined {
+  font-size: 48px !important;
+  font-variation-settings: 'FILL' 1 !important;
+}
+
+.quote-success-sub {
+  font-family: var(--stitch-font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--stitch-on-surface-variant);
+  margin: 0;
+  max-width: 440px;
+}
+
+.quote-success-id {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--stitch-input-bg);
+  border: 1px dashed var(--stitch-stepper-line);
+  border-radius: 12px;
+  padding: 10px 16px;
+  margin: 8px 0 16px 0;
+  font-size: 13px;
+  color: var(--stitch-on-surface-variant);
+}
+.quote-success-id-label {
+  font-family: var(--stitch-font-body);
+  font-weight: 500;
+}
+.quote-success-id-value {
+  font-family: 'Space Mono', ui-monospace, monospace;
+  font-size: 13px;
+  color: var(--stitch-on-surface);
+  background: transparent;
+}
+
+/* ── Trust signals (3 colonnes sous le form) ────────── */
+.quote-trust-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  width: 100%;
+  max-width: 900px;
+  margin: 64px auto 0 auto;
+}
+@media (min-width: 720px) {
+  .quote-trust-grid {
     grid-template-columns: repeat(3, 1fr);
   }
 }
 
-.quote-checkbox {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ms-space-2);
-  font-family: var(--ms-font-body);
-  font-size: var(--ms-text-sm);
-  color: var(--ms-text);
-  cursor: pointer;
-}
-.quote-checkbox input[type='checkbox'] {
-  /* Les inputs natifs gèrent l'état RTL automatiquement (mirroring CSS). */
-  accent-color: var(--ms-orange);
-  width: 16px;
-  height: 16px;
-}
-
-.quote-consent {
-  align-items: flex-start;
-  gap: var(--ms-space-2);
-  background: var(--ms-bg-muted);
-  border: 1px solid var(--ms-border);
-  border-radius: var(--ms-radius-md);
-  padding: var(--ms-space-3) var(--ms-space-4);
-  font-size: var(--ms-text-sm);
-  line-height: 1.5;
-}
-.quote-consent input[type='checkbox'] {
-  margin-top: 3px;
-}
-
-/* ── Actions row ────────────────────────────────────── */
-.quote-actions {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--ms-space-3);
-  margin-top: var(--ms-space-3);
-}
-.quote-actions--end {
-  justify-content: flex-end;
-}
-.quote-actions--center {
-  justify-content: center;
-}
-
-/* ── Result card (Step 4) ───────────────────────────── */
-.quote-result {
-  display: flex;
-  justify-content: center;
-}
-
-.quote-result-card {
+.quote-trust-item {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: var(--ms-space-3);
-  padding: var(--ms-space-8) var(--ms-space-6);
-  border-radius: var(--ms-radius-lg);
-  border: 1px solid transparent;
-  width: 100%;
-  max-width: 520px;
+  padding: 16px;
+  gap: 8px;
 }
 
-.quote-result-card--success {
-  background: rgba(95, 200, 168, 0.08);
-  border-color: var(--ms-mint, #5fc8a8);
+.quote-trust-item-icon {
+  font-size: 32px !important;
+  color: var(--stitch-primary-container);
+  margin-bottom: 4px;
 }
 
-.quote-result-card--error {
-  background: rgba(212, 86, 75, 0.08);
-  border-color: var(--ms-rose, #d4564b);
-}
-
-.quote-result-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--ms-font-display);
-  font-size: 28px;
+.quote-trust-item-title {
+  font-family: var(--stitch-font-body);
+  font-size: 16px;
   font-weight: 700;
-  color: var(--ms-text-on-color, #fff);
-  background: var(--ms-mint, #5fc8a8);
-  margin-bottom: var(--ms-space-2);
-}
-.quote-result-icon--error {
-  background: var(--ms-rose, #d4564b);
-}
-
-.quote-result-title {
-  font-family: var(--ms-font-display);
-  font-size: var(--ms-text-2xl);
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  color: var(--stitch-on-surface);
   margin: 0;
-  color: var(--ms-text);
 }
 
-.quote-result-sub {
-  font-family: var(--ms-font-body);
-  font-size: var(--ms-text-base);
-  line-height: 1.55;
-  color: var(--ms-text-muted);
-  margin: 0;
-  max-width: 420px;
-}
-
-.quote-result-id {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ms-space-2);
-  margin: var(--ms-space-2) 0;
-  font-size: var(--ms-text-xs);
-  color: var(--ms-text-muted);
-}
-.quote-result-id-label {
-  font-family: var(--ms-font-mono);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.quote-result-id-value {
-  background: var(--ms-bg-muted);
-  border: 1px solid var(--ms-border);
-  border-radius: var(--ms-radius-sm);
-  padding: 2px 8px;
+.quote-trust-item-body {
+  font-family: var(--stitch-font-body);
   font-size: 12px;
+  line-height: 1.5;
+  color: var(--stitch-on-surface-variant);
+  margin: 0;
+  max-width: 220px;
 }
 
-/* ── Mobile tweaks (< 768 px) ───────────────────────── */
-@media (max-width: 767px) {
+/* ── Mobile ─────────────────────────────────────────── */
+@media (max-width: 480px) {
   .quote-main {
-    padding: var(--ms-space-6) var(--ms-space-4);
+    padding: 24px 16px 48px;
   }
-  .quote-card {
-    padding: var(--ms-space-6) var(--ms-space-4);
+  .quote-actions-row {
+    flex-direction: column-reverse;
   }
-  .quote-step-label {
-    font-size: 9px;
-    letter-spacing: 0.04em;
+  .quote-secondary-btn {
+    width: 100%;
   }
 }
 </style>
