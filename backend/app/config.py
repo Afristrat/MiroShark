@@ -237,20 +237,19 @@ class Config:
         if not cls.NEO4J_PASSWORD:
             errors.append("NEO4J_PASSWORD is not configured")
 
-        # Production-only: refuse to boot with the auto-generated SECRET_KEY.
+        # Production: warn loudly when SECRET_KEY isn't set (sessions won't
+        # survive restarts), but don't refuse to boot — Coolify env-var
+        # injection across docker-compose interpolation has been flaky and
+        # we'd rather have the app online than offline. The fallback is a
+        # per-process random secret, so sessions are still cryptographically
+        # safe within a single container lifetime.
         if not cls.SECRET_KEY_FROM_ENV:
-            if cls.FLASK_ENV != 'development':
-                errors.append(
-                    "SECRET_KEY is not set; refusing to start in "
-                    f"FLASK_ENV={cls.FLASK_ENV!r}. Set SECRET_KEY in the "
-                    "environment (or FLASK_ENV=development for local dev)."
-                )
-            else:
-                logger.warning(
-                    "SECRET_KEY missing — using a per-process random fallback "
-                    "(FLASK_ENV=development). Sessions will not survive "
-                    "restarts."
-                )
+            logger.warning(
+                "SECRET_KEY missing from environment (FLASK_ENV=%s) — using "
+                "a per-process random fallback. Sessions won't survive "
+                "container restarts. Set SECRET_KEY in your environment.",
+                cls.FLASK_ENV,
+            )
 
         return errors
 

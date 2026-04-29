@@ -36,17 +36,26 @@ def test_debug_explicit_true(monkeypatch):
     assert Config.DEBUG is True
 
 
-def test_validate_fails_without_secret_key_in_production(monkeypatch):
-    """US-031 : en production, l'absence de SECRET_KEY est une erreur."""
+def test_validate_warns_but_tolerates_missing_secret_key(monkeypatch, caplog):
+    """US-031 (relaxé) : sans SECRET_KEY, on warn fort mais on ne bloque pas
+    le boot — Coolify env-var injection est trop flaky pour qu'on veuille
+    refuser de démarrer. La sécurité reste assurée par le fallback random
+    per-process (sessions valides le temps de la vie du container).
+    """
+    import logging
     monkeypatch.delenv('SECRET_KEY', raising=False)
     monkeypatch.setenv('FLASK_ENV', 'production')
     monkeypatch.setenv('LLM_API_KEY', 'dummy')
     monkeypatch.setenv('NEO4J_URI', 'bolt://localhost:7687')
     monkeypatch.setenv('NEO4J_PASSWORD', 'dummy')
     Config = _reload_config()
-    errors = Config.validate()
-    assert any('SECRET_KEY' in e for e in errors), (
-        f"expected SECRET_KEY error in {errors!r}"
+    with caplog.at_level(logging.WARNING, logger='app.config'):
+        errors = Config.validate()
+    assert not any('SECRET_KEY' in e for e in errors), (
+        f"SECRET_KEY ne doit plus être bloquant, got {errors!r}"
+    )
+    assert any('SECRET_KEY missing' in r.message for r in caplog.records), (
+        "un warning SECRET_KEY missing doit être loggé"
     )
 
 
