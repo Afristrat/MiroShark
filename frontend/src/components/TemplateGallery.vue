@@ -285,12 +285,12 @@ const launchTemplate = async (template, variantLetter = null) => {
   gap: 8px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.8rem;
-  color: #999;
+  color: var(--ms-legacy-muted-4);
 }
 
 .header-icon {
   font-size: 1.2rem;
-  color: #FF4500;
+  color: var(--lo);
 }
 
 .header-meta {
@@ -305,7 +305,7 @@ const launchTemplate = async (template, variantLetter = null) => {
   padding: 40px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.85rem;
-  color: #999;
+  color: var(--ms-legacy-muted-4);
 }
 
 .template-grid {
@@ -325,12 +325,12 @@ const launchTemplate = async (template, variantLetter = null) => {
 }
 
 .template-card:hover {
-  border-color: #999;
+  border-color: var(--ms-legacy-muted-4);
 }
 
 .template-card.selected {
-  border-color: #FF4500;
-  box-shadow: 0 0 0 1px #FF4500;
+  border-color: var(--lo);
+  box-shadow: 0 0 0 1px var(--lo);
 }
 
 .card-top {
@@ -347,7 +347,7 @@ const launchTemplate = async (template, variantLetter = null) => {
 .card-category {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.65rem;
-  color: #999;
+  color: var(--ms-legacy-muted-4);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -361,7 +361,7 @@ const launchTemplate = async (template, variantLetter = null) => {
 
 .card-desc {
   font-size: 0.85rem;
-  color: #666;
+  color: var(--ms-legacy-muted-2);
   line-height: 1.6;
   margin: 0 0 16px 0;
   flex: 1;
@@ -374,16 +374,16 @@ const launchTemplate = async (template, variantLetter = null) => {
   margin-bottom: 12px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.7rem;
-  color: #999;
+  color: var(--ms-legacy-muted-4);
 }
 
 .meta-dot {
   color: #DDD;
 }
 
-.difficulty.easy { color: #22c55e; }
-.difficulty.medium { color: #f59e0b; }
-.difficulty.hard { color: #ef4444; }
+.difficulty.easy { color: var(--ms-status-success); }
+.difficulty.medium { color: var(--ms-status-warning); }
+.difficulty.hard { color: var(--ms-status-danger); }
 
 .card-platforms {
   display: flex;
@@ -396,7 +396,7 @@ const launchTemplate = async (template, variantLetter = null) => {
   font-size: 0.65rem;
   padding: 2px 8px;
   border: 1px solid #E5E5E5;
-  color: #666;
+  color: var(--ms-legacy-muted-2);
   text-transform: lowercase;
   white-space: nowrap;
 }
@@ -408,7 +408,7 @@ const launchTemplate = async (template, variantLetter = null) => {
 
 .platform-badge--cf {
   border-color: rgba(255, 107, 26, 0.3);
-  color: #FF6B1A;
+  color: var(--lo);
 }
 
 .platform-badge--oracle {
@@ -434,7 +434,7 @@ const launchTemplate = async (template, variantLetter = null) => {
 }
 
 .oracle-toggle.disabled {
-  color: #aaa;
+  color: var(--ms-legacy-muted-5);
   cursor: not-allowed;
 }
 
@@ -445,8 +445,8 @@ const launchTemplate = async (template, variantLetter = null) => {
 .launch-btn {
   width: 100%;
   padding: 10px;
-  background: #000;
-  color: #fff;
+  background: var(--li);
+  color: var(--ms-text-on-color);
   border: none;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.8rem;
@@ -457,11 +457,11 @@ const launchTemplate = async (template, variantLetter = null) => {
 }
 
 .launch-btn:hover:not(:disabled) {
-  background: #FF4500;
+  background: var(--lo);
 }
 
 .launch-btn:disabled {
-  background: #CCC;
+  background: var(--ms-legacy-muted-6);
   cursor: not-allowed;
 }
 
@@ -481,9 +481,9 @@ const launchTemplate = async (template, variantLetter = null) => {
   justify-content: center;
   gap: 2px;
   padding: 10px 6px;
-  background: var(--ms-bg-elevated, #fff);
-  color: var(--ms-text, #2A2A35);
-  border: 1px solid var(--ms-orange, #FF8551);
+  background: var(--ms-bg-elevated, var(--ms-text-on-color));
+  color: var(--ms-text, var(--ms-text));
+  border: 1px solid var(--ms-orange, var(--ms-orange));
   border-radius: var(--ms-radius-sm, 8px);
   cursor: pointer;
   font-family: var(--ms-font-body, 'Manrope'), sans-serif;
@@ -496,21 +496,23 @@ const launchTemplate = async (template, variantLetter = null) => {
 }
 
 .variant-btn:hover:not(:disabled) {
-  background: var(--ms-orange, #FF8551);
-  color: var(--ms-text-on-color, #FFFFFF);
+  background: var(--ms-orange, var(--ms-orange));
+  color: var(--ms-text-on-color, var(--ms-text-on-color));
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(255, 133, 81, 0.28);
 }
 
-.variant-btn:disabled {
+/* Spécificité 0,2,0 bat .variant-btn:hover/:focus (0,2,0) par ordre source. */
+.variant-btn.variant-btn:disabled,
+.variant-btn[disabled] {
   opacity: 0.55;
   cursor: not-allowed;
-  transform: none !important;
+  transform: none;
 }
 
 .variant-btn.loading {
   background: var(--ms-orange-soft, rgba(255, 133, 81, 0.12));
-  color: var(--ms-orange-strong, #F26B36);
+  color: var(--ms-orange-strong, var(--ms-orange-strong));
 }
 
 .variant-letter {

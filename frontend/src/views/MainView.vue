@@ -602,7 +602,7 @@ onUnmounted(() => {
 .status-indicator.idle .dot { background: var(--ms-peach); }
 .status-indicator.error .dot { background: var(--ms-rose); }
 
-@keyframes pulse { 50% { opacity: 0.5; } }
+/* @keyframes pulse factorisé dans styles/components.css */
 
 /* Content */
 .content-area {
@@ -630,8 +630,8 @@ onUnmounted(() => {
   justify-content: space-between;
   gap: 12px;
   padding: 10px 16px;
-  background: var(--ms-orange-soft, #ffe7d2);
-  border-bottom: 1px solid var(--ms-orange, #e96a2a);
+  background: var(--ms-orange-soft, var(--ms-legacy-orange-soft));
+  border-bottom: 1px solid var(--ms-orange, var(--ms-legacy-orange-strong));
   color: var(--ms-text-primary);
   flex-wrap: wrap;
 }
@@ -648,8 +648,8 @@ onUnmounted(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--ms-orange, #e96a2a);
-  color: #fff;
+  background: var(--ms-orange, var(--ms-legacy-orange-strong));
+  color: var(--ms-text-on-color);
   font-family: var(--ms-font-mono);
   font-weight: 700;
   font-size: 12px;

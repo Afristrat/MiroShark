@@ -935,7 +935,7 @@ const saveSettings = async () => {
 }
 
 .settings-modal {
-  background: #FAFAFA;
+  background: var(--lp);
   width: 580px;
   max-width: calc(100vw - 48px);
   max-height: calc(100vh - 80px);
@@ -957,8 +957,8 @@ const saveSettings = async () => {
   align-items: center;
   justify-content: space-between;
   padding: 18px 22px;
-  background: #0A0A0A;
-  color: #FAFAFA;
+  background: var(--li);
+  color: var(--lp);
 }
 
 .title-label {
@@ -978,17 +978,17 @@ const saveSettings = async () => {
   padding: 4px 8px;
   transition: color 0.1s;
 }
-.close-btn:hover { color: #FAFAFA; }
+.close-btn:hover { color: var(--lp); }
 
 /* ── Warning Stripe ── */
 .warning-stripe {
   height: 6px;
   background: repeating-linear-gradient(
     -45deg,
-    #FF6B1A,
-    #FF6B1A 10px,
-    #FAFAFA 10px,
-    #FAFAFA 20px
+    var(--lo),
+    var(--lo) 10px,
+    var(--lp) 10px,
+    var(--lp) 20px
   );
 }
 
@@ -1020,7 +1020,7 @@ const saveSettings = async () => {
   gap: 8px;
   border: 2px dashed rgba(10,10,10,0.1);
   padding: 12px 14px;
-  background: #F5F5F5;
+  background: var(--lp2);
 }
 .setup-row {
   display: flex;
@@ -1035,7 +1035,7 @@ const saveSettings = async () => {
   flex-shrink: 0;
 }
 .setup-val {
-  color: #0A0A0A;
+  color: var(--li);
   font-weight: 700;
   text-align: end;
   overflow-wrap: anywhere;
@@ -1046,7 +1046,7 @@ const saveSettings = async () => {
   margin-inline-start: 4px;
 }
 .setup-missing {
-  color: #FF4444;
+  color: var(--ld);
   font-weight: 400;
 }
 
@@ -1066,10 +1066,10 @@ const saveSettings = async () => {
   background: rgba(10,10,10,0.2);
   border-radius: 0;
 }
-.status-badge.ok .badge-dot { background: #43C165; }
-.status-badge.fail .badge-dot { background: #FF4444; }
-.status-badge.ok { color: #43C165; }
-.status-badge.fail { color: #FF4444; }
+.status-badge.ok .badge-dot { background: var(--ls); }
+.status-badge.fail .badge-dot { background: var(--ld); }
+.status-badge.ok { color: var(--ls); }
+.status-badge.fail { color: var(--ld); }
 .status-badge.idle { color: rgba(10,10,10,0.3); }
 
 /* ── Form Fields ── */
@@ -1089,34 +1089,34 @@ const saveSettings = async () => {
 .field-input {
   width: 100%;
   border: 2px solid rgba(10,10,10,0.1);
-  background: #F5F5F5;
+  background: var(--lp2);
   padding: 8px 11px;
   font-family: 'Space Mono', monospace;
   font-size: 13px;
-  color: #0A0A0A;
+  color: var(--li);
   outline: none;
   transition: border-color 0.1s;
   box-sizing: border-box;
 }
-.field-input:focus { border-color: #FF6B1A; background: #FAFAFA; }
+.field-input:focus { border-color: var(--lo); background: var(--lp); }
 .field-input::placeholder { color: rgba(10,10,10,0.3); }
 
 .select-wrapper { position: relative; }
 .field-select {
   width: 100%;
   border: 2px solid rgba(10,10,10,0.1);
-  background: #F5F5F5;
+  background: var(--lp2);
   padding: 8px 11px;
   font-family: 'Space Mono', monospace;
   font-size: 13px;
-  color: #0A0A0A;
+  color: var(--li);
   outline: none;
   cursor: pointer;
   appearance: auto;
   transition: border-color 0.1s;
   box-sizing: border-box;
 }
-.field-select:focus { border-color: #FF6B1A; }
+.field-select:focus { border-color: var(--lo); }
 
 /* ── Model input group ── */
 .model-input-group {
@@ -1127,7 +1127,7 @@ const saveSettings = async () => {
 
 .load-models-btn {
   border: 2px solid rgba(10,10,10,0.1);
-  background: #F5F5F5;
+  background: var(--lp2);
   padding: 8px 12px;
   font-family: 'Space Mono', monospace;
   font-size: 14px;
@@ -1135,7 +1135,7 @@ const saveSettings = async () => {
   transition: all 0.1s;
   flex-shrink: 0;
 }
-.load-models-btn:hover:not(:disabled) { border-color: #FF6B1A; color: #FF6B1A; }
+.load-models-btn:hover:not(:disabled) { border-color: var(--lo); color: var(--lo); }
 .load-models-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
 /* ── Key input group ── */
@@ -1147,14 +1147,14 @@ const saveSettings = async () => {
 
 .toggle-key-btn {
   border: 2px solid rgba(10,10,10,0.1);
-  background: #F5F5F5;
+  background: var(--lp2);
   padding: 8px 12px;
   font-size: 14px;
   cursor: pointer;
   flex-shrink: 0;
   transition: border-color 0.1s;
 }
-.toggle-key-btn:hover { border-color: #FF6B1A; }
+.toggle-key-btn:hover { border-color: var(--lo); }
 
 .field-hint {
   margin-top: 5px;
@@ -1162,12 +1162,12 @@ const saveSettings = async () => {
   color: rgba(10,10,10,0.4);
   letter-spacing: 0.5px;
 }
-.field-hint a { color: #FF6B1A; text-decoration: underline; }
+.field-hint a { color: var(--lo); text-decoration: underline; }
 
 .field-error {
   margin-top: 5px;
   font-size: 11px;
-  color: #FF4444;
+  color: var(--ld);
 }
 
 /* ── Test row ── */
@@ -1190,15 +1190,15 @@ const saveSettings = async () => {
   cursor: pointer;
   transition: all 0.1s;
 }
-.test-btn:hover:not(:disabled) { border-color: #FF6B1A; color: #FF6B1A; }
+.test-btn:hover:not(:disabled) { border-color: var(--lo); color: var(--lo); }
 .test-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
 .test-result {
   font-size: 12px;
   letter-spacing: 1px;
 }
-.test-result.ok { color: #43C165; }
-.test-result.fail { color: #FF4444; }
+.test-result.ok { color: var(--ls); }
+.test-result.fail { color: var(--ld); }
 
 /* ── Advanced ── */
 .advanced-toggle {
@@ -1236,7 +1236,7 @@ const saveSettings = async () => {
   font-weight: 700;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: #0A0A0A;
+  color: var(--li);
   margin-bottom: 10px;
 }
 
@@ -1256,13 +1256,13 @@ const saveSettings = async () => {
 
 .save-error {
   font-size: 12px;
-  color: #FF4444;
+  color: var(--ld);
   letter-spacing: 0.5px;
 }
 
 .save-success {
   font-size: 12px;
-  color: #43C165;
+  color: var(--ls);
   letter-spacing: 1px;
 }
 
@@ -1279,12 +1279,12 @@ const saveSettings = async () => {
   color: rgba(10,10,10,0.5);
   transition: all 0.1s;
 }
-.cancel-btn:hover { border-color: rgba(10,10,10,0.3); color: #0A0A0A; }
+.cancel-btn:hover { border-color: rgba(10,10,10,0.3); color: var(--li); }
 
 .save-btn {
-  border: 2px solid #0A0A0A;
-  background: #0A0A0A;
-  color: #FAFAFA;
+  border: 2px solid var(--li);
+  background: var(--li);
+  color: var(--lp);
   padding: 10px 20px;
   font-family: 'Space Mono', monospace;
   font-size: 12px;
@@ -1294,7 +1294,7 @@ const saveSettings = async () => {
   cursor: pointer;
   transition: all 0.15s;
 }
-.save-btn:hover:not(:disabled) { background: #FF6B1A; border-color: #FF6B1A; }
+.save-btn:hover:not(:disabled) { background: var(--lo); border-color: var(--lo); }
 .save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* ── Webhook integration row ── */
@@ -1312,7 +1312,7 @@ const saveSettings = async () => {
 }
 
 .webhook-test-result.ok { color: #15803D; }
-.webhook-test-result.fail { color: #FF4444; }
+.webhook-test-result.fail { color: var(--ld); }
 
 .field-label-optional {
   color: rgba(10,10,10,0.4);
@@ -1324,7 +1324,7 @@ const saveSettings = async () => {
 
 /* ── AI Integration (MCP) ── */
 .ai-section {
-  background: #F5F5F5;
+  background: var(--lp2);
 }
 
 .ai-intro {
@@ -1339,11 +1339,11 @@ const saveSettings = async () => {
   font-size: 12px;
   padding: 12px 14px;
   border: 2px dashed rgba(10,10,10,0.1);
-  background: #FAFAFA;
+  background: var(--lp);
 }
 
 .ai-error {
-  color: #FF4444;
+  color: var(--ld);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1351,8 +1351,8 @@ const saveSettings = async () => {
 }
 
 .ai-retry {
-  background: #0A0A0A;
-  color: #FAFAFA;
+  background: var(--li);
+  color: var(--lp);
   border: none;
   padding: 6px 12px;
   font-family: 'Space Mono', monospace;
@@ -1368,7 +1368,7 @@ const saveSettings = async () => {
   gap: 6px;
   border: 2px dashed rgba(10,10,10,0.1);
   padding: 12px 14px;
-  background: #FAFAFA;
+  background: var(--lp);
   margin-bottom: 14px;
 }
 
@@ -1386,14 +1386,14 @@ const saveSettings = async () => {
 }
 
 .ai-summary-val {
-  color: #0A0A0A;
+  color: var(--li);
   font-weight: 700;
   text-align: end;
   overflow-wrap: anywhere;
 }
 
 .ai-error-text {
-  color: #FF4444;
+  color: var(--ld);
   font-weight: 400;
   font-size: 11px;
 }
@@ -1421,11 +1421,11 @@ const saveSettings = async () => {
   transition: color 0.1s, border-color 0.1s;
 }
 
-.ai-tab:hover { color: #0A0A0A; }
+.ai-tab:hover { color: var(--li); }
 
 .ai-tab.active {
-  color: #0A0A0A;
-  border-bottom-color: #FF6B1A;
+  color: var(--li);
+  border-bottom-color: var(--lo);
 }
 
 .ai-client {
@@ -1447,8 +1447,8 @@ const saveSettings = async () => {
 
 .ai-client-file-path {
   font-family: 'Space Mono', monospace;
-  color: #0A0A0A;
-  background: #FAFAFA;
+  color: var(--li);
+  background: var(--lp);
   padding: 1px 5px;
   border: 1px solid rgba(10,10,10,0.08);
 }
@@ -1458,8 +1458,8 @@ const saveSettings = async () => {
 }
 
 .ai-snippet {
-  background: #0A0A0A;
-  color: #FAFAFA;
+  background: var(--li);
+  color: var(--lp);
   padding: 14px 16px;
   margin: 0;
   font-family: 'Space Mono', 'Courier New', monospace;
@@ -1467,7 +1467,7 @@ const saveSettings = async () => {
   line-height: 1.45;
   overflow-x: auto;
   white-space: pre;
-  border: 2px solid #0A0A0A;
+  border: 2px solid var(--li);
 }
 
 .ai-snippet code {
@@ -1479,8 +1479,8 @@ const saveSettings = async () => {
   position: absolute;
   top: 8px;
   inset-inline-end: 8px;
-  background: #FAFAFA;
-  color: #0A0A0A;
+  background: var(--lp);
+  color: var(--li);
   border: 1px solid rgba(250,250,250,0.2);
   padding: 4px 10px;
   font-family: 'Space Mono', monospace;
@@ -1491,9 +1491,9 @@ const saveSettings = async () => {
   transition: background 0.1s, color 0.1s;
 }
 
-.ai-copy-btn:hover { background: #FF6B1A; color: #FAFAFA; }
-.ai-copy-btn.ok { background: #43C165; color: #FAFAFA; }
-.ai-copy-btn.fail { background: #FF4444; color: #FAFAFA; }
+.ai-copy-btn:hover { background: var(--lo); color: var(--lp); }
+.ai-copy-btn.ok { background: var(--ls); color: var(--lp); }
+.ai-copy-btn.fail { background: var(--ld); color: var(--lp); }
 
 .ai-client-notes {
   font-size: 11px;
@@ -1521,14 +1521,14 @@ const saveSettings = async () => {
 
 .ai-tools-toggle:hover {
   border-color: rgba(10,10,10,0.3);
-  color: #0A0A0A;
+  color: var(--li);
 }
 
 .ai-tools-list {
   list-style: none;
   padding: 12px 14px;
   margin: 6px 0 0 0;
-  background: #FAFAFA;
+  background: var(--lp);
   border: 2px dashed rgba(10,10,10,0.1);
   display: flex;
   flex-direction: column;
@@ -1544,7 +1544,7 @@ const saveSettings = async () => {
 }
 
 .ai-tool-name {
-  color: #FF6B1A;
+  color: var(--lo);
   font-weight: 700;
   font-family: 'Space Mono', monospace;
 }
@@ -1562,13 +1562,13 @@ const saveSettings = async () => {
 }
 
 .ai-docs-link a {
-  color: #0A0A0A;
+  color: var(--li);
   font-weight: 700;
   text-decoration: none;
-  border-bottom: 1px solid #FF6B1A;
+  border-bottom: 1px solid var(--lo);
 }
 
-.ai-docs-link a:hover { color: #FF6B1A; }
+.ai-docs-link a:hover { color: var(--lo); }
 
 @media (max-width: 480px) {
   .ai-tool {

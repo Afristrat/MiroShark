@@ -289,7 +289,7 @@ onMounted(() => { if (props.visible) load() })
 }
 
 .demo-icon {
-  color: #ec4899;
+  color: var(--ms-status-pink);
   font-size: 14px;
 }
 
@@ -325,8 +325,8 @@ onMounted(() => { if (props.visible) load() })
 }
 
 .demo-export-btn:hover:not(:disabled) {
-  border-color: #ec4899;
-  color: #ec4899;
+  border-color: var(--ms-status-pink);
+  color: var(--ms-status-pink);
 }
 
 .demo-export-btn:disabled {
@@ -366,8 +366,8 @@ onMounted(() => { if (props.visible) load() })
 }
 
 .demo-tab.active {
-  color: #ec4899;
-  border-bottom-color: #ec4899;
+  color: var(--ms-status-pink);
+  border-bottom-color: var(--ms-status-pink);
 }
 
 .demo-tab-count {
@@ -381,7 +381,7 @@ onMounted(() => { if (props.visible) load() })
 
 .demo-tab.active .demo-tab-count {
   background: rgba(236,72,153,0.15);
-  color: #ec4899;
+  color: var(--ms-status-pink);
   opacity: 1;
 }
 
@@ -415,9 +415,7 @@ onMounted(() => { if (props.visible) load() })
   animation: spin 0.8s linear infinite;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+/* @keyframes spin factorisé dans styles/components.css */
 
 .demo-content {
   display: flex;
@@ -430,7 +428,7 @@ onMounted(() => { if (props.visible) load() })
 
 .demo-highlight {
   background: rgba(236,72,153,0.06);
-  border-left: 3px solid #ec4899;
+  border-left: 3px solid var(--ms-status-pink);
   padding: 8px 12px;
   display: flex;
   flex-direction: column;
@@ -445,7 +443,7 @@ onMounted(() => { if (props.visible) load() })
 .demo-highlight-label {
   font-size: 9px;
   letter-spacing: 2px;
-  color: #ec4899;
+  color: var(--ms-status-pink);
   text-transform: uppercase;
 }
 

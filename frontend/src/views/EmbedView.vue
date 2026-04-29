@@ -287,17 +287,17 @@ onMounted(() => {
 
 <style scoped>
 .embed-widget {
-  --bg: #ffffff;
-  --fg: #0a0a0a;
-  --muted: #6b6b6b;
+  --bg: var(--ms-text-on-color);
+  --fg: var(--li);
+  --muted: var(--ms-text-muted);
   --border: rgba(10, 10, 10, 0.08);
   --pill-bg: rgba(10, 10, 10, 0.05);
-  --pill-fg: #0a0a0a;
+  --pill-fg: var(--li);
   --bullish: #0ea5a0;
   --neutral: #9aa0a6;
   --bearish: #f07867;
   --consensus-line: rgba(10, 10, 10, 0.45);
-  --link-color: #ea580c;
+  --link-color: var(--ms-status-orange-amber);
 
   box-sizing: border-box;
   width: 100%;

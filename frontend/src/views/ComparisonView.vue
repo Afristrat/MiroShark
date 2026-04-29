@@ -181,7 +181,7 @@
                 v-if="chartPoints1.length > 1"
                 :points="chartPoints1.map(p => `${p.x},${p.y}`).join(' ')"
                 fill="none"
-                stroke="#FF6B1A"
+                stroke="var(--lo)"
                 stroke-width="2"
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -191,7 +191,7 @@
                 v-if="chartPoints2.length > 1"
                 :points="chartPoints2.map(p => `${p.x},${p.y}`).join(' ')"
                 fill="none"
-                stroke="#43C165"
+                stroke="var(--ls)"
                 stroke-width="2"
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -201,14 +201,14 @@
                 v-for="p in chartPoints1"
                 :key="'a'+p.round"
                 :cx="p.x" :cy="p.y" r="3"
-                fill="#FF6B1A"
+                fill="var(--lo)"
               />
               <!-- Dots Sim B -->
               <circle
                 v-for="p in chartPoints2"
                 :key="'b'+p.round"
                 :cx="p.x" :cy="p.y" r="3"
-                fill="#43C165"
+                fill="var(--ls)"
               />
             </svg>
             <div class="chart-legend">
@@ -232,7 +232,7 @@
               <div v-for="m in data.sim1.markets" :key="m.market_id" class="market-row">
                 <span class="market-id">Market {{ m.market_id }}</span>
                 <div class="market-bar-wrap">
-                  <div class="market-bar" :style="{ width: (m.price_yes * 100) + '%', background: '#FF6B1A' }"></div>
+                  <div class="market-bar" :style="{ width: (m.price_yes * 100) + '%', background: 'var(--lo)' }"></div>
                 </div>
                 <span class="market-price">{{ (m.price_yes * 100).toFixed(1) }}% YES</span>
               </div>
@@ -242,7 +242,7 @@
               <div v-for="m in data.sim2.markets" :key="m.market_id" class="market-row">
                 <span class="market-id">Market {{ m.market_id }}</span>
                 <div class="market-bar-wrap">
-                  <div class="market-bar" :style="{ width: (m.price_yes * 100) + '%', background: '#43C165' }"></div>
+                  <div class="market-bar" :style="{ width: (m.price_yes * 100) + '%', background: 'var(--ls)' }"></div>
                 </div>
                 <span class="market-price">{{ (m.price_yes * 100).toFixed(1) }}% YES</span>
               </div>
@@ -439,8 +439,8 @@ const downloadComparison = () => {
 <style scoped>
 .comparison-page {
   min-height: 100vh;
-  background: #0A0A0A;
-  color: #FAFAFA;
+  background: var(--li);
+  color: var(--lp);
   font-family: 'Space Mono', monospace;
 }
 
@@ -454,12 +454,12 @@ const downloadComparison = () => {
 .brand {
   font-family: 'Young Serif', serif;
   font-size: 18px;
-  color: #FF6B1A;
+  color: var(--lo);
   cursor: pointer;
 }
 .page-tag {
   font-size: 12px;
-  color: #666;
+  color: var(--ms-legacy-muted-2);
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
@@ -467,7 +467,7 @@ const downloadComparison = () => {
   padding: 7px 16px;
   border: 1px solid #3A3A3A;
   background: transparent;
-  color: #ccc;
+  color: var(--ms-legacy-muted-6);
   border-radius: 4px;
   cursor: pointer;
   font-size: 12px;
@@ -475,8 +475,8 @@ const downloadComparison = () => {
   transition: all 0.15s;
 }
 .download-btn:hover {
-  border-color: #FF6B1A;
-  color: #FF6B1A;
+  border-color: var(--lo);
+  color: var(--lo);
 }
 
 /* Selector Bar */
@@ -485,7 +485,7 @@ const downloadComparison = () => {
   align-items: flex-end;
   gap: 16px;
   padding: 20px 32px;
-  border-bottom: 1px solid #1A1A1A;
+  border-bottom: 1px solid var(--li2);
   background: #0D0D0D;
 }
 .selector-group {
@@ -496,15 +496,15 @@ const downloadComparison = () => {
 }
 .selector-label {
   font-size: 11px;
-  color: #666;
+  color: var(--ms-legacy-muted-2);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 .sim-select {
   padding: 8px 12px;
-  background: #151515;
-  border: 1px solid #2A2A2A;
-  color: #ccc;
+  background: var(--li2);
+  border: 1px solid var(--ms-legacy-ink-mid);
+  color: var(--ms-legacy-muted-6);
   border-radius: 4px;
   font-family: 'Space Mono', monospace;
   font-size: 12px;
@@ -513,13 +513,13 @@ const downloadComparison = () => {
 }
 .sim-select:focus {
   outline: none;
-  border-color: #FF6B1A;
+  border-color: var(--lo);
 }
 .vs-badge {
   padding: 8px 14px;
   border: 1px solid #3A3A3A;
   border-radius: 4px;
-  color: #555;
+  color: var(--ms-legacy-muted);
   font-size: 11px;
   font-weight: bold;
   letter-spacing: 0.1em;
@@ -527,8 +527,8 @@ const downloadComparison = () => {
 }
 .compare-btn {
   padding: 9px 24px;
-  background: #FF6B1A;
-  color: #fff;
+  background: var(--lo);
+  color: var(--ms-text-on-color);
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -547,9 +547,9 @@ const downloadComparison = () => {
   margin: 32px;
   padding: 14px;
   background: rgba(255, 68, 68, 0.1);
-  border: 1px solid #FF4444;
+  border: 1px solid var(--ld);
   border-radius: 6px;
-  color: #FF4444;
+  color: var(--ld);
   font-size: 13px;
 }
 .cmp-loading {
@@ -558,18 +558,18 @@ const downloadComparison = () => {
   align-items: center;
   gap: 14px;
   padding: 60px;
-  color: #555;
+  color: var(--ms-legacy-muted);
   font-size: 13px;
 }
+/* @keyframes spin factorisé dans styles/components.css */
 .loading-ring {
   width: 36px;
   height: 36px;
-  border: 3px solid #2A2A2A;
-  border-top-color: #FF6B1A;
+  border: 3px solid var(--ms-legacy-ink-mid);
+  border-top-color: var(--lo);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
 .cmp-empty {
   padding: 60px 32px;
   text-align: center;
@@ -591,19 +591,19 @@ const downloadComparison = () => {
   align-items: center;
   gap: 20px;
   padding: 16px 24px;
-  background: #111;
-  border: 1px solid #2A2A2A;
+  background: var(--li2);
+  border: 1px solid var(--ms-legacy-ink-mid);
   border-radius: 8px;
 }
-.divergence-label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 0.08em; }
+.divergence-label { font-size: 11px; color: var(--ms-legacy-muted); text-transform: uppercase; letter-spacing: 0.08em; }
 .divergence-score {
   font-size: 28px;
   font-weight: bold;
 }
-.divergence-score.low { color: #43C165; }
-.divergence-score.medium { color: #FFB347; }
-.divergence-score.high { color: #FF6B1A; }
-.divergence-desc { font-size: 12px; color: #888; max-width: 400px; line-height: 1.5; }
+.divergence-score.low { color: var(--ls); }
+.divergence-score.medium { color: var(--ms-peach); }
+.divergence-score.high { color: var(--lo); }
+.divergence-desc { font-size: 12px; color: var(--ms-legacy-muted-3); max-width: 400px; line-height: 1.5; }
 
 /* Metrics Row */
 .metrics-row {
@@ -613,25 +613,25 @@ const downloadComparison = () => {
 }
 .metric-card {
   padding: 16px 20px;
-  background: #111;
-  border: 1px solid #2A2A2A;
+  background: var(--li2);
+  border: 1px solid var(--ms-legacy-ink-mid);
   border-radius: 8px;
 }
-.metric-card.sim-a { border-top: 3px solid #FF6B1A; }
-.metric-card.sim-b { border-top: 3px solid #43C165; }
-.metric-sim-id { font-size: 11px; color: #555; margin-bottom: 12px; font-family: 'Space Mono', monospace; }
+.metric-card.sim-a { border-top: 3px solid var(--lo); }
+.metric-card.sim-b { border-top: 3px solid var(--ls); }
+.metric-sim-id { font-size: 11px; color: var(--ms-legacy-muted); margin-bottom: 12px; font-family: 'Space Mono', monospace; }
 .metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 .metric-item { display: flex; flex-direction: column; gap: 4px; }
-.metric-val { font-size: 20px; color: #FAFAFA; font-weight: bold; }
-.metric-lbl { font-size: 10px; color: #555; text-transform: uppercase; letter-spacing: 0.08em; }
+.metric-val { font-size: 20px; color: var(--lp); font-weight: bold; }
+.metric-lbl { font-size: 10px; color: var(--ms-legacy-muted); text-transform: uppercase; letter-spacing: 0.08em; }
 
 /* Two-column layout */
 .two-col-layout { display: flex; flex-direction: column; gap: 20px; }
 
 /* Section */
 .cmp-section {
-  background: #111;
-  border: 1px solid #2A2A2A;
+  background: var(--li2);
+  border: 1px solid var(--ms-legacy-ink-mid);
   border-radius: 8px;
   padding: 20px;
   /* Initial state for the scroll-triggered fade-in. The composable adds
@@ -644,7 +644,7 @@ const downloadComparison = () => {
 @media (prefers-reduced-motion: reduce) {
   .cmp-section { opacity: 1; }
 }
-.section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #666; margin-bottom: 16px; }
+.section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ms-legacy-muted-2); margin-bottom: 16px; }
 
 /* Leaderboard */
 .leaderboard-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -654,7 +654,7 @@ const downloadComparison = () => {
   font-family: 'Space Mono', monospace;
   margin-bottom: 8px;
   padding-bottom: 6px;
-  border-bottom: 1px solid #2A2A2A;
+  border-bottom: 1px solid var(--ms-legacy-ink-mid);
 }
 .lb-row {
   display: grid;
@@ -665,13 +665,13 @@ const downloadComparison = () => {
   border-bottom: 1px solid #161616;
   font-size: 12px;
 }
-.lb-rank { color: #555; font-size: 11px; }
-.lb-name { color: #ccc; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.lb-score { color: #888; text-align: end; font-size: 11px; }
+.lb-rank { color: var(--ms-legacy-muted); font-size: 11px; }
+.lb-name { color: var(--ms-legacy-muted-6); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb-score { color: var(--ms-legacy-muted-3); text-align: end; font-size: 11px; }
 .lb-delta { font-size: 10px; text-align: center; font-weight: bold; }
-.delta-up { color: #43C165; }
-.delta-down { color: #FF6B1A; }
-.delta-equal { color: #555; }
+.delta-up { color: var(--ls); }
+.delta-down { color: var(--lo); }
+.delta-equal { color: var(--ms-legacy-muted); }
 .lb-empty { color: #444; font-size: 12px; padding: 12px 0; }
 
 /* Chart */
@@ -683,30 +683,27 @@ const downloadComparison = () => {
   border-radius: 4px;
   border: 1px solid #1E1E1E;
 }
-.chart-legend { display: flex; gap: 20px; font-size: 11px; color: #666; }
+.chart-legend { display: flex; gap: 20px; font-size: 11px; color: var(--ms-legacy-muted-2); }
 .legend-item { }
 .legend-label { color: #444; margin-inline-start: auto; }
-.sim-a-color { color: #FF6B1A; }
-.sim-b-color { color: #43C165; }
+.sim-a-color { color: var(--lo); }
+.sim-b-color { color: var(--ls); }
 
 /* Markets */
 .markets-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 .market-col { }
 .market-col-header { font-size: 11px; font-family: 'Space Mono', monospace; margin-bottom: 8px; }
 .market-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 11px; }
-.market-id { color: #555; width: 60px; flex-shrink: 0; }
-.market-bar-wrap { flex: 1; height: 8px; background: #1A1A1A; border-radius: 4px; overflow: hidden; }
+.market-id { color: var(--ms-legacy-muted); width: 60px; flex-shrink: 0; }
+.market-bar-wrap { flex: 1; height: 8px; background: var(--li2); border-radius: 4px; overflow: hidden; }
 .market-bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
-.market-price { width: 70px; text-align: end; color: #ccc; }
+.market-price { width: 70px; text-align: end; color: var(--ms-legacy-muted-6); }
 
-/* Loading spinner */
-.loading-spinner-small {
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  border: 2px solid rgba(255,255,255,0.3);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
+/* .loading-spinner-small + @keyframes spin factorisés dans styles/components.css.
+   Override local : couleur sur fond foncé bouton primary. */
+.cmp-actions .loading-spinner-small {
+  border-color: rgba(255,255,255,0.3);
+  border-top-color: var(--ms-text-on-color);
+  animation-duration: 0.6s;
 }
 </style>

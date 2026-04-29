@@ -98,9 +98,9 @@ onBeforeUnmount(() => {
   padding: 9px 16px;
   /* Tinted orange background pour pop visuellement du fond cream/dark */
   background: var(--ms-orange-soft, rgba(255, 133, 81, 0.12));
-  color: var(--ms-text, #2A2A35);
+  color: var(--ms-text, var(--ms-text));
   /* Border orange marqué (au lieu d'un grey timide) */
-  border: 1.5px solid var(--ms-orange, #FF8551);
+  border: 1.5px solid var(--ms-orange, var(--ms-orange));
   border-radius: var(--ms-radius-pill, 999px);
   cursor: pointer;
   /* Légèrement plus grand pour la lisibilité */
@@ -117,9 +117,9 @@ onBeforeUnmount(() => {
 }
 
 .lang-switcher__toggle:hover {
-  background: var(--ms-orange, #FF8551);
-  color: var(--ms-text-on-color, #FFFFFF);
-  border-color: var(--ms-orange-strong, #F26B36);
+  background: var(--ms-orange, var(--ms-orange));
+  color: var(--ms-text-on-color, var(--ms-text-on-color));
+  border-color: var(--ms-orange-strong, var(--ms-orange-strong));
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(255, 133, 81, 0.4);
 }
@@ -130,8 +130,8 @@ onBeforeUnmount(() => {
 }
 
 .is-open .lang-switcher__toggle {
-  background: var(--ms-bg-muted, #F2EEE6);
-  border-color: var(--ms-text-muted, #6B6B7D);
+  background: var(--ms-bg-muted, var(--ms-bg-muted));
+  border-color: var(--ms-text-muted, var(--ms-text-muted));
 }
 
 .lang-switcher__flag { font-size: 14px; line-height: 1; }
@@ -146,7 +146,7 @@ onBeforeUnmount(() => {
   margin: 0;
   padding: 4px;
   list-style: none;
-  background: var(--ms-bg-elevated, #fff);
+  background: var(--ms-bg-elevated, var(--ms-text-on-color));
   border: 1px solid var(--ms-border, rgba(42, 42, 53, 0.08));
   border-radius: var(--ms-radius-md, 12px);
   box-shadow: var(--ms-shadow-lg, 0 12px 32px rgba(42, 42, 53, 0.08));
@@ -161,13 +161,13 @@ onBeforeUnmount(() => {
   border-radius: var(--ms-radius-sm, 8px);
   cursor: pointer;
   font-size: var(--ms-text-sm, 13px);
-  color: var(--ms-text, #2A2A35);
+  color: var(--ms-text, var(--ms-text));
   transition: background var(--ms-transition, 200ms);
 }
 
 .lang-switcher__option:hover,
 .lang-switcher__option:focus-visible {
-  background: var(--ms-bg-muted, #F2EEE6);
+  background: var(--ms-bg-muted, var(--ms-bg-muted));
   outline: none;
 }
 

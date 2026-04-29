@@ -585,8 +585,8 @@ onMounted(refresh)
 /* ── Nav (refonte Playful & Soft, miroir de Home.vue US-044b) ── */
 .navbar {
   height: 56px;
-  background: var(--ms-bg, #FAF7F2);
-  color: var(--ms-text, #2A2A35);
+  background: var(--ms-bg, var(--ms-bg));
+  color: var(--ms-text, var(--ms-text));
   border-bottom: 1px solid var(--ms-border, rgba(42, 42, 53, 0.08));
   display: flex;
   justify-content: space-between;
@@ -602,11 +602,11 @@ onMounted(refresh)
   letter-spacing: 0.06em;
   font-size: 16px;
   text-transform: uppercase;
-  color: var(--ms-text, #2A2A35);
+  color: var(--ms-text, var(--ms-text));
   text-decoration: none;
   transition: color 200ms;
 }
-.nav-brand:hover { color: var(--ms-orange, #FF8551); }
+.nav-brand:hover { color: var(--ms-orange, var(--ms-orange)); }
 
 .nav-links {
   display: flex;
@@ -615,7 +615,7 @@ onMounted(refresh)
 }
 
 .nav-link {
-  color: var(--ms-text-muted, #6B6B7D);
+  color: var(--ms-text-muted, var(--ms-text-muted));
   text-decoration: none;
   font-family: var(--ms-font-body, 'Manrope'), sans-serif;
   font-size: 14px;
@@ -630,11 +630,11 @@ onMounted(refresh)
   gap: 6px;
 }
 .nav-link:hover {
-  color: var(--ms-text, #2A2A35);
-  background: var(--ms-bg-muted, #F2EEE6);
+  color: var(--ms-text, var(--ms-text));
+  background: var(--ms-bg-muted, var(--ms-bg-muted));
 }
 .nav-link.router-link-active {
-  color: var(--ms-orange, #FF8551);
+  color: var(--ms-orange, var(--ms-orange));
 }
 
 .arrow { font-family: sans-serif; }
@@ -983,7 +983,7 @@ onMounted(refresh)
 
 .pill-bearish {
   background: rgba(255, 68, 68, 0.14);
-  color: #c52d2d;
+  color: var(--ms-legacy-danger-dark);
 }
 
 .pill-neutral {
@@ -1008,7 +1008,7 @@ onMounted(refresh)
 
 .pill-quality-poor {
   background: rgba(255, 68, 68, 0.14);
-  color: #c52d2d;
+  color: var(--ms-legacy-danger-dark);
 }
 
 .pill-quality-unknown {
@@ -1049,7 +1049,7 @@ a.pill-verified:hover {
 
 .pill-verified-incorrect {
   background: rgba(255, 68, 68, 0.18);
-  color: #c52d2d;
+  color: var(--ms-legacy-danger-dark);
   outline: 1px solid rgba(255, 68, 68, 0.35);
   outline-offset: -1px;
 }
@@ -1073,7 +1073,7 @@ a.pill-verified:hover {
 }
 
 .card-verified-partial {
-  border-inline-start: 3px solid #f59e0b;
+  border-inline-start: 3px solid var(--ms-status-warning);
 }
 
 /* Filter chip in the stats row — toggles `?verified=1`. Active state
@@ -1225,7 +1225,7 @@ a.pill-verified:hover {
   margin-top: 6px;
   font-family: var(--font-mono);
   font-size: 11px;
-  color: #c52d2d;
+  color: var(--ms-legacy-danger-dark);
   line-height: 1.4;
 }
 

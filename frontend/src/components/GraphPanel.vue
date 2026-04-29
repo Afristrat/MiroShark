@@ -36,7 +36,7 @@
         <div v-if="selectedItem" class="detail-panel">
           <div class="detail-panel-header">
             <span class="detail-title">{{ selectedItem.type === 'node' ? 'Agent Details' : 'Relationship' }}</span>
-            <span v-if="selectedItem.type === 'node'" class="detail-type-badge" :style="{ background: selectedItem.color, color: '#fff' }">
+            <span v-if="selectedItem.type === 'node'" class="detail-type-badge" :style="{ background: selectedItem.color, color: 'var(--ms-text-on-color)' }">
               {{ selectedItem.entityType }}
             </span>
             <button class="detail-close" @click="closeDetailPanel">×</button>
@@ -298,7 +298,7 @@
           :key="type.name"
           @click="toggleEntityType(type.name)"
         >
-          <span class="legend-dot" :style="{ background: hiddenTypes.has(type.name) ? '#CCC' : type.color }"></span>
+          <span class="legend-dot" :style="{ background: hiddenTypes.has(type.name) ? 'var(--ms-legacy-muted-6)' : type.color }"></span>
           <span class="legend-label">{{ type.name }}</span>
         </div>
       </div>
@@ -1038,7 +1038,7 @@ onUnmounted(() => {
   position: relative;
   width: 100%;
   height: 100%;
-  background-color: #0A0A0A;
+  background-color: var(--li);
   background-image:
     linear-gradient(rgba(67,193,101,0.06) 1px, transparent 1px),
     linear-gradient(90deg, rgba(67,193,101,0.06) 1px, transparent 1px);
@@ -1054,7 +1054,7 @@ onUnmounted(() => {
   inset-inline-start: 0;
   inset-inline-end: 0;
   height: 3px;
-  background: linear-gradient(90deg, #FF6B1A 40px, transparent 40px, transparent calc(100% - 40px), #FF6B1A calc(100% - 40px));
+  background: linear-gradient(90deg, var(--lo) 40px, transparent 40px, transparent calc(100% - 40px), var(--lo) calc(100% - 40px));
   z-index: 30;
   pointer-events: none;
 }
@@ -1066,7 +1066,7 @@ onUnmounted(() => {
   inset-inline-start: 0;
   inset-inline-end: 0;
   height: 3px;
-  background: linear-gradient(90deg, #43C165 40px, transparent 40px, transparent calc(100% - 40px), #43C165 calc(100% - 40px));
+  background: linear-gradient(90deg, var(--ls) 40px, transparent 40px, transparent calc(100% - 40px), var(--ls) calc(100% - 40px));
   z-index: 30;
   pointer-events: none;
 }
@@ -1122,8 +1122,8 @@ onUnmounted(() => {
 
 .tool-btn:hover {
   background: rgba(250,250,250,0.1);
-  color: #FAFAFA;
-  border-color: #FF6B1A;
+  color: var(--lp);
+  border-color: var(--lo);
 }
 
 .tool-btn .btn-text {
@@ -1137,7 +1137,7 @@ onUnmounted(() => {
   animation: spin 1s linear infinite;
 }
 
-@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+/* @keyframes spin factorisé dans styles/components.css */
 
 .graph-container {
   width: 100%;
@@ -1183,7 +1183,7 @@ onUnmounted(() => {
   font-family: var(--font-mono);
   font-size: 10px;
   font-weight: 600;
-  color: #FF6B1A;
+  color: var(--lo);
   margin-bottom: 10px;
   text-transform: uppercase;
   letter-spacing: 3px;
@@ -1287,7 +1287,7 @@ onUnmounted(() => {
 }
 
 input:checked + .slider {
-  background-color: #FF6B1A;
+  background-color: var(--lo);
 }
 
 input:checked + .slider:before {
@@ -1309,7 +1309,7 @@ input:checked + .slider:before {
   inset-inline-end: 20px;
   width: 320px;
   max-height: calc(100% - 100px);
-  background: #FAFAFA;
+  background: var(--lp);
   border: 2px solid rgba(10,10,10,0.08);
   overflow: hidden;
   font-family: var(--font-mono);
@@ -1404,12 +1404,12 @@ input:checked + .slider:before {
 }
 
 .detail-value.uuid-text.copyable:hover {
-  color: #0A0A0A;
+  color: var(--li);
   text-decoration: underline;
 }
 
 .detail-value.uuid-text.copyable:active {
-  color: #43C165;
+  color: var(--ls);
 }
 
 .detail-value.fact-text {
@@ -1496,19 +1496,16 @@ input:checked + .slider:before {
 
 .actions-loading {
   font-size: 10px;
-  color: #FF6B1A;
+  color: var(--lo);
   animation: shimmer 1.5s ease-in-out infinite;
 }
 
-@keyframes shimmer {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 1; }
-}
+/* @keyframes shimmer (opacity 0.5↔1) déclaré dans App.vue (global). */
 
 .actions-count {
   font-size: 10px;
-  background: #FF6B1A;
-  color: #FAFAFA;
+  background: var(--lo);
+  color: var(--lp);
   padding: 1px 6px;
   font-family: var(--font-mono);
 }
@@ -1528,7 +1525,7 @@ input:checked + .slider:before {
 .action-item {
   padding: 10px;
   border: 2px solid rgba(10,10,10,0.06);
-  background: #FAFAFA;
+  background: var(--lp);
   transition: border-color 0.15s;
   cursor: pointer;
 }
@@ -1538,7 +1535,7 @@ input:checked + .slider:before {
 }
 
 .action-item.expanded {
-  border-color: #FF6B1A;
+  border-color: var(--lo);
 }
 
 .action-header {
@@ -1554,13 +1551,13 @@ input:checked + .slider:before {
   padding: 2px 6px;
   text-transform: uppercase;
   letter-spacing: 2px;
-  color: #FAFAFA;
-  background: #0A0A0A;
+  color: var(--lp);
+  background: var(--li);
 }
 
-.action-platform.twitter { background: #0A0A0A; }
-.action-platform.reddit { background: #FF6B1A; }
-.action-platform.polymarket { background: #43C165; }
+.action-platform.twitter { background: var(--li); }
+.action-platform.reddit { background: var(--lo); }
+.action-platform.polymarket { background: var(--ls); }
 
 .action-type {
   font-family: var(--font-mono);
@@ -1573,7 +1570,7 @@ input:checked + .slider:before {
 .action-round {
   font-family: var(--font-mono);
   font-size: 10px;
-  color: #FF6B1A;
+  color: var(--lo);
   font-weight: 700;
 }
 
@@ -1639,8 +1636,8 @@ input:checked + .slider:before {
   font-size: 10px;
 }
 
-.action-detail-value.text-green { color: #43C165; font-weight: 700; }
-.action-detail-value.text-orange { color: #FF6B1A; font-weight: 700; }
+.action-detail-value.text-green { color: var(--ls); font-weight: 700; }
+.action-detail-value.text-orange { color: var(--lo); font-weight: 700; }
 
 .reasoning-text {
   font-size: 11px;
@@ -1695,9 +1692,9 @@ input:checked + .slider:before {
   bottom: 160px;
   inset-inline-start: 50%;
   transform: translateX(-50%);
-  background: #0A0A0A;
+  background: var(--li);
   backdrop-filter: blur(8px);
-  color: #FAFAFA;
+  color: var(--lp);
   padding: 10px 20px;
   font-family: var(--font-mono);
   font-size: 12px;
@@ -1733,7 +1730,7 @@ input:checked + .slider:before {
 .memory-icon {
   width: 18px;
   height: 18px;
-  color: #43C165;
+  color: var(--ls);
 }
 
 @keyframes breathe {
@@ -1743,7 +1740,7 @@ input:checked + .slider:before {
 
 /* Post-simulation hint styles */
 .graph-building-hint.finished-hint {
-  background: #0A0A0A;
+  background: var(--li);
   border: 2px solid rgba(250,250,250,0.1);
 }
 
@@ -1756,7 +1753,7 @@ input:checked + .slider:before {
 .finished-hint .hint-icon {
   width: 18px;
   height: 18px;
-  color: #FF6B1A;
+  color: var(--lo);
 }
 
 .finished-hint .hint-text {
@@ -1773,7 +1770,7 @@ input:checked + .slider:before {
   background: rgba(250, 250, 250, 0.2);
   border: none;
   cursor: pointer;
-  color: #FAFAFA;
+  color: var(--lp);
   transition: all 0.2s;
   margin-inline-start: 8px;
   flex-shrink: 0;
@@ -1783,15 +1780,15 @@ input:checked + .slider:before {
   background: rgba(250, 250, 250, 0.35);
 }
 
-/* Loading spinner */
-.loading-spinner {
+/* @keyframes spin et taille de base factorisés dans styles/components.css.
+   Override local : version 40px sur fond sombre du panneau graph. */
+.graph-panel .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(250,250,250,0.12);
-  border-top-color: #FF6B1A;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+  border-width: 3px;
+  border-color: rgba(250,250,250,0.12);
   margin: 0 auto 16px;
+  animation-duration: 1s;
 }
 
 /* Self-loop styles */
@@ -1821,7 +1818,7 @@ input:checked + .slider:before {
 }
 
 .self-loop-item {
-  background: #FAFAFA;
+  background: var(--lp);
   border: 2px solid rgba(10,10,10,0.08);
 }
 

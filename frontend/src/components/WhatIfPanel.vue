@@ -135,7 +135,7 @@
             <path
               :d="counterfactualPath"
               fill="none"
-              stroke="#FF6B1A"
+              stroke="var(--lo)"
               stroke-width="2.2"
             />
 
@@ -150,8 +150,8 @@
               v-if="cfEnd"
               :cx="cfEnd.x" :cy="cfEnd.y"
               r="4"
-              fill="#FF6B1A"
-              stroke="#FAFAFA" stroke-width="1.5"
+              fill="var(--lo)"
+              stroke="var(--lp)" stroke-width="1.5"
             />
 
             <!-- Consensus markers — orig in gray, cf in green (design bicolor) -->
@@ -172,12 +172,12 @@
               <line
                 :x1="xS(cfData.consensus_round)" :y1="MT"
                 :x2="xS(cfData.consensus_round)" :y2="H - MB"
-                stroke="#43C165" stroke-width="1.2"
+                stroke="var(--ls)" stroke-width="1.2"
                 stroke-dasharray="3,3"
               />
               <text
                 :x="xS(cfData.consensus_round) + 4" :y="MT + 22"
-                fill="#43C165" font-size="9"
+                fill="var(--ls)" font-size="9"
                 font-family="'Space Mono', monospace"
               >cf r{{ cfData.consensus_round }}</text>
             </g>

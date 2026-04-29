@@ -81,6 +81,94 @@
   --ms-transition: 200ms var(--ms-ease);
   --ms-transition-slow: 300ms var(--ms-ease);
 
+  /* ── Z-index scale (overlay stacking) ──
+     Source de vérité unique pour empiler modales / dropdowns / toasts.
+     Avant : valeurs disséminées (1000, 1050, 1200, 1500…) avec collisions. */
+  --ms-z-dropdown: 900;
+  --ms-z-sticky: 950;
+  --ms-z-modal-backdrop: 1000;
+  --ms-z-modal: 1050;
+  --ms-z-popover: 1200;
+  --ms-z-toast: 1400;
+  --ms-z-floating-lang: 1500;
+
+  /* ── Palette « legacy newspaper / terminal » ──
+     Avant US-016, ces hex étaient hardcodés dans ~30 fichiers .vue
+     (Home, Step1-5, SettingsPanel, HistoryDatabase, DebugPanel…).
+     Les conserver comme tokens permet :
+       1) zéro régression visuelle (rendu identique),
+       2) un seul endroit pour faire évoluer la teinte si besoin,
+       3) éviter qu'on les confonde avec la palette « Playful » (--ms-orange…)
+          qui sert aux nouvelles vues (Calibration, Review, Comparison).
+     Direction pour le futur : fondre progressivement vers --ms-orange / --ms-rose.
+
+     Note d'optimisation (US-016) : les 7 tokens les plus utilisés disposent
+     d'un alias court (--lo, --lp, --li, --ls, --ld, --lp2, --li2) afin de
+     réduire la taille du bundle CSS produit. Les noms longs restent l'API
+     publique recommandée pour la lisibilité (cf. DESIGN.md). */
+  --lo: #FF6B1A;     /* legacy orange */
+  --lp: #FAFAFA;     /* legacy paper */
+  --li: #0A0A0A;     /* legacy ink */
+  --ls: #43C165;     /* legacy success */
+  --ld: #FF4444;     /* legacy danger */
+  --lp2: #F5F5F5;    /* legacy paper alt */
+  --li2: #1A1A1A;    /* legacy ink soft */
+
+  --ms-legacy-orange: var(--lo);
+  --ms-legacy-orange-soft: #FFE7D2;
+  --ms-legacy-orange-strong: #E96A2A;
+  --ms-legacy-orange-dark: #D45B1A;
+  --ms-legacy-paper: var(--lp);     /* surface claire (modales, panneaux) */
+  --ms-legacy-paper-alt: var(--lp2); /* surface secondaire */
+  --ms-legacy-ink: var(--li);       /* texte / fonds foncés terminal */
+  --ms-legacy-ink-soft: var(--li2);
+  --ms-legacy-ink-mid: #2A2A2A;
+  --ms-legacy-success: var(--ls);   /* vert "available" / OK */
+  --ms-legacy-success-dark: #2D9B5E;
+  --ms-legacy-danger: var(--ld);    /* rouge "error" / KO */
+  --ms-legacy-danger-dark: #C52D2D;
+  --ms-legacy-warning: #FFB347;     /* peach (= --ms-peach) */
+  --ms-legacy-muted: #555;
+  --ms-legacy-muted-2: #666;
+  --ms-legacy-muted-3: #888;
+  --ms-legacy-muted-4: #999;
+  --ms-legacy-muted-5: #AAA;
+  --ms-legacy-muted-6: #CCC;
+
+  /* ── Palette catégorielle pour charts D3 / GraphPanel ──
+     Documentée pour qu'un dataviz se serve toujours du même ordre d'attribution. */
+  --ms-chart-1: #FF6B1A;
+  --ms-chart-2: #43C165;
+  --ms-chart-3: #0A0A0A;
+  --ms-chart-4: #FFB347;
+  --ms-chart-5: #FF4444;
+  --ms-chart-6: #FF8C42;
+  --ms-chart-7: #2D9B5E;
+  --ms-chart-8: #D45B1A;
+  --ms-chart-9: #7A7A7A;
+  --ms-chart-10: #B8522E;
+
+  /* ── Palette Tailwind « status » utilisée dans HistoryDatabase, EmbedDialog,
+     DemographicBreakdown, BeliefDriftChart pour les badges de qualité, accuracy,
+     démographie, erreurs. Centralisée pour permettre un futur remap vers --ms-*. */
+  --ms-status-success: #22c55e;
+  --ms-status-success-strong: #16a34a;
+  --ms-status-success-text: #2F7A52;
+  --ms-status-warning: #f59e0b;
+  --ms-status-warning-strong: #eab308;
+  --ms-status-warning-text: #8A5610;
+  --ms-status-danger: #ef4444;
+  --ms-status-danger-strong: #dc2626;
+  --ms-status-danger-text: #A1403A;
+  --ms-status-danger-soft: #fde8ec;
+  --ms-status-info: #3b82f6;
+  --ms-status-info-text: #2C4FA1;
+  --ms-status-orange-amber: #ea580c;     /* embed dialog accent */
+  --ms-status-orange-amber-strong: #EA580C;
+  --ms-status-pink: #ec4899;             /* DemographicBreakdown accent */
+  --ms-status-violet: #7C3AED;
+  --ms-status-violet-soft: #8b5cf6;
+
   /* ── Legacy compatibility ──
      Older components still reference the previous variable names. We rebind
      them onto the new palette so we can migrate file by file without a big

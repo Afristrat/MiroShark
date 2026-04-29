@@ -489,12 +489,12 @@ onUnmounted(() => {
   inset-inline-end: 0;
   width: 560px;
   max-height: 70vh;
-  background: #0A0A0A;
+  background: var(--li);
   color: #E0E0E0;
   font-family: 'Space Mono', 'Courier New', monospace;
   font-size: 11px;
-  border-top: 3px solid var(--color-orange, #FF6B1A);
-  border-inline-start: 3px solid var(--color-orange, #FF6B1A);
+  border-top: 3px solid var(--color-orange, var(--lo));
+  border-inline-start: 3px solid var(--color-orange, var(--lo));
   z-index: 9999;
   display: flex;
   flex-direction: column;
@@ -511,10 +511,10 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 6px 10px;
-  background: #141414;
+  background: var(--li2);
   cursor: pointer;
   user-select: none;
-  border-bottom: 1px solid #222;
+  border-bottom: 1px solid var(--ms-legacy-ink-mid);
   flex-shrink: 0;
 }
 
@@ -531,14 +531,14 @@ onUnmounted(() => {
 
 .debug-header__icon {
   font-size: 13px;
-  color: var(--color-orange, #FF6B1A);
+  color: var(--color-orange, var(--lo));
 }
 
 .debug-header__title {
   font-size: 10px;
   font-weight: bold;
   letter-spacing: 2px;
-  color: var(--color-orange, #FF6B1A);
+  color: var(--color-orange, var(--lo));
 }
 
 .debug-header__status {
@@ -551,37 +551,40 @@ onUnmounted(() => {
 
 .debug-header__status--live {
   background: rgba(67, 193, 101, 0.2);
-  color: #43C165;
+  color: var(--ls);
   border: 1px solid rgba(67, 193, 101, 0.4);
 }
 
 .debug-header__status--off {
   background: rgba(255, 68, 68, 0.15);
-  color: #FF4444;
+  color: var(--ld);
   border: 1px solid rgba(255, 68, 68, 0.3);
 }
 
 .debug-header__stat {
   font-size: 9px;
-  color: #888;
+  color: var(--ms-legacy-muted-3);
 }
 
 /* ── Buttons ── */
 .debug-btn--icon {
   background: none;
   border: none;
-  color: #666;
+  color: var(--ms-legacy-muted-2);
   font-size: 12px;
   padding: 2px 5px;
   cursor: pointer;
   line-height: 1;
 }
 .debug-btn--icon:hover {
-  color: #fff;
+  color: var(--ms-text-on-color);
 }
 
-.debug-btn--copied {
-  color: #43C165 !important;
+/* Spécificité 0,2,0 (.debug-btn.debug-btn--copied) bat .debug-btn:hover (0,2,0)
+   par ordre source — placé après dans le bloc, sans !important. */
+.debug-btn.debug-btn--copied,
+.debug-btn--icon.debug-btn--copied {
+  color: var(--ls);
 }
 
 /* ── Body ── */
@@ -596,7 +599,7 @@ onUnmounted(() => {
 /* ── Tabs ── */
 .debug-tabs {
   display: flex;
-  border-bottom: 1px solid #222;
+  border-bottom: 1px solid var(--ms-legacy-ink-mid);
   flex-shrink: 0;
 }
 
@@ -605,7 +608,7 @@ onUnmounted(() => {
   padding: 5px 8px;
   background: none;
   border: none;
-  color: #666;
+  color: var(--ms-legacy-muted-2);
   font-family: inherit;
   font-size: 10px;
   cursor: pointer;
@@ -614,20 +617,20 @@ onUnmounted(() => {
 }
 
 .debug-tab:hover {
-  color: #aaa;
+  color: var(--ms-legacy-muted-5);
 }
 
 .debug-tab--active {
-  color: var(--color-orange, #FF6B1A);
-  border-bottom-color: var(--color-orange, #FF6B1A);
+  color: var(--color-orange, var(--lo));
+  border-bottom-color: var(--color-orange, var(--lo));
 }
 
 .debug-tab__badge {
   position: absolute;
   top: 2px;
   inset-inline-end: 4px;
-  background: #FF4444;
-  color: #fff;
+  background: var(--ld);
+  color: var(--ms-text-on-color);
   font-size: 8px;
   padding: 0 4px;
   border-radius: 6px;
@@ -640,14 +643,14 @@ onUnmounted(() => {
   display: flex;
   gap: 6px;
   padding: 5px 8px;
-  border-bottom: 1px solid #1a1a1a;
+  border-bottom: 1px solid var(--li2);
   flex-shrink: 0;
 }
 
 .debug-select, .debug-input {
-  background: #1a1a1a;
+  background: var(--li2);
   border: 1px solid #333;
-  color: #ccc;
+  color: var(--ms-legacy-muted-6);
   font-family: inherit;
   font-size: 10px;
   padding: 3px 6px;
@@ -662,13 +665,13 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 3px;
-  color: #888;
+  color: var(--ms-legacy-muted-3);
   font-size: 10px;
   white-space: nowrap;
 }
 
 .debug-checkbox input {
-  accent-color: var(--color-orange, #FF6B1A);
+  accent-color: var(--color-orange, var(--lo));
 }
 
 /* ── Content area ── */
@@ -680,25 +683,25 @@ onUnmounted(() => {
 }
 
 .debug-content::-webkit-scrollbar { width: 6px; }
-.debug-content::-webkit-scrollbar-track { background: #0A0A0A; }
+.debug-content::-webkit-scrollbar-track { background: var(--li); }
 .debug-content::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
 
 .debug-empty {
   padding: 24px;
   text-align: center;
-  color: #555;
+  color: var(--ms-legacy-muted);
   font-style: italic;
 }
 
 /* ── Event cards (Live Feed) ── */
 .debug-event {
   padding: 4px 8px;
-  border-bottom: 1px solid #151515;
+  border-bottom: 1px solid var(--li2);
   cursor: pointer;
 }
 
 .debug-event:hover {
-  background: #141414;
+  background: var(--li2);
 }
 
 .debug-event__row {
@@ -708,7 +711,7 @@ onUnmounted(() => {
 }
 
 .debug-event__time {
-  color: #555;
+  color: var(--ms-legacy-muted);
   flex-shrink: 0;
   font-size: 10px;
 }
@@ -724,20 +727,20 @@ onUnmounted(() => {
 }
 
 .debug-badge--llm_call { background: rgba(99,102,241,0.2); color: #818cf8; }
-.debug-badge--agent_decision { background: rgba(67,193,101,0.2); color: #43C165; }
-.debug-badge--round_boundary { background: rgba(255,179,71,0.2); color: #FFB347; }
+.debug-badge--agent_decision { background: rgba(67,193,101,0.2); color: var(--ls); }
+.debug-badge--round_boundary { background: rgba(255,179,71,0.2); color: var(--ms-peach); }
 .debug-badge--graph_build { background: rgba(59,130,246,0.2); color: #60a5fa; }
 .debug-badge--graph_ner { background: rgba(59,130,246,0.15); color: #93c5fd; }
-.debug-badge--error { background: rgba(255,68,68,0.2); color: #FF4444; }
-.debug-badge--system { background: rgba(255,255,255,0.1); color: #888; }
+.debug-badge--error { background: rgba(255,68,68,0.2); color: var(--ld); }
+.debug-badge--system { background: rgba(255,255,255,0.1); color: var(--ms-legacy-muted-3); }
 
 .debug-event__platform {
-  color: #FFB347;
+  color: var(--ms-peach);
   font-size: 9px;
 }
 
 .debug-event__agent {
-  color: #43C165;
+  color: var(--ls);
   font-size: 10px;
   max-width: 120px;
   overflow: hidden;
@@ -746,7 +749,7 @@ onUnmounted(() => {
 }
 
 .debug-event__preview {
-  color: #888;
+  color: var(--ms-legacy-muted-3);
   font-size: 10px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -757,7 +760,7 @@ onUnmounted(() => {
 .debug-event__detail {
   margin-top: 4px;
   padding: 6px;
-  background: #111;
+  background: var(--li2);
   border-radius: 2px;
   overflow-x: auto;
 }
@@ -765,7 +768,7 @@ onUnmounted(() => {
 .debug-event__detail pre {
   margin: 0;
   font-size: 10px;
-  color: #aaa;
+  color: var(--ms-legacy-muted-5);
   white-space: pre-wrap;
   word-break: break-all;
   max-height: 300px;
@@ -778,34 +781,34 @@ onUnmounted(() => {
   grid-template-columns: repeat(4, 1fr);
   gap: 6px;
   padding: 8px;
-  border-bottom: 1px solid #1a1a1a;
+  border-bottom: 1px solid var(--li2);
 }
 
 .debug-stat-card {
-  background: #141414;
+  background: var(--li2);
   padding: 6px 8px;
   border-radius: 3px;
   text-align: center;
-  border: 1px solid #222;
+  border: 1px solid var(--ms-legacy-ink-mid);
 }
 
 .debug-stat-card__value {
   font-size: 16px;
   font-weight: bold;
-  color: var(--color-orange, #FF6B1A);
+  color: var(--color-orange, var(--lo));
 }
 
 .debug-stat-card__label {
   font-size: 9px;
-  color: #666;
+  color: var(--ms-legacy-muted-2);
   margin-top: 2px;
 }
 
 .debug-table-header {
   display: flex;
   padding: 4px 8px;
-  border-bottom: 1px solid #222;
-  color: #555;
+  border-bottom: 1px solid var(--ms-legacy-ink-mid);
+  color: var(--ms-legacy-muted);
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -815,23 +818,23 @@ onUnmounted(() => {
   display: flex;
   flex-wrap: wrap;
   padding: 3px 8px;
-  border-bottom: 1px solid #111;
+  border-bottom: 1px solid var(--li2);
   cursor: pointer;
 }
 
 .debug-table-row:hover {
-  background: #141414;
+  background: var(--li2);
 }
 
-.debug-col--time { width: 65px; flex-shrink: 0; color: #555; }
+.debug-col--time { width: 65px; flex-shrink: 0; color: var(--ms-legacy-muted); }
 .debug-col--caller { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #93c5fd; }
 .debug-col--model { width: 100px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; color: #ddd; }
-.debug-col--tokens { width: 70px; flex-shrink: 0; text-align: end; color: #aaa; }
+.debug-col--tokens { width: 70px; flex-shrink: 0; text-align: end; color: var(--ms-legacy-muted-5); }
 .debug-col--latency { width: 65px; flex-shrink: 0; text-align: end; }
 
-.debug-latency--fast { color: #43C165; }
-.debug-latency--medium { color: #FFB347; }
-.debug-latency--slow { color: #FF4444; }
+.debug-latency--fast { color: var(--ls); }
+.debug-latency--medium { color: var(--ms-peach); }
+.debug-latency--slow { color: var(--ld); }
 
 .debug-table-row__detail {
   width: 100%;
@@ -845,7 +848,7 @@ onUnmounted(() => {
 
 .debug-detail-section strong {
   display: block;
-  color: #888;
+  color: var(--ms-legacy-muted-3);
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -855,29 +858,29 @@ onUnmounted(() => {
 .debug-detail-section pre {
   margin: 0;
   font-size: 10px;
-  color: #aaa;
+  color: var(--ms-legacy-muted-5);
   white-space: pre-wrap;
   word-break: break-all;
   max-height: 200px;
   overflow-y: auto;
-  background: #111;
+  background: var(--li2);
   padding: 4px 6px;
   border-radius: 2px;
 }
 
 .debug-detail-section--error {
-  color: #FF4444;
+  color: var(--ld);
 }
 
 /* ── Agent trace cards ── */
 .debug-agent-card {
   padding: 5px 8px;
-  border-bottom: 1px solid #151515;
+  border-bottom: 1px solid var(--li2);
   cursor: pointer;
 }
 
 .debug-agent-card:hover {
-  background: #141414;
+  background: var(--li2);
 }
 
 .debug-agent-card__header {
@@ -888,14 +891,14 @@ onUnmounted(() => {
 
 .debug-agent-card__round {
   background: rgba(255,179,71,0.2);
-  color: #FFB347;
+  color: var(--ms-peach);
   font-size: 9px;
   padding: 1px 4px;
   border-radius: 2px;
 }
 
 .debug-agent-card__name {
-  color: #43C165;
+  color: var(--ls);
   font-size: 10px;
   max-width: 150px;
   overflow: hidden;
@@ -911,12 +914,12 @@ onUnmounted(() => {
 
 .debug-agent-card__action--ok {
   background: rgba(67,193,101,0.15);
-  color: #43C165;
+  color: var(--ls);
 }
 
 .debug-agent-card__action--fail {
   background: rgba(255,68,68,0.15);
-  color: #FF4444;
+  color: var(--ld);
 }
 
 .debug-agent-card__detail {
@@ -926,13 +929,13 @@ onUnmounted(() => {
 /* ── Error cards ── */
 .debug-error-card {
   padding: 5px 8px;
-  border-bottom: 1px solid #151515;
-  border-inline-start: 3px solid #FF4444;
+  border-bottom: 1px solid var(--li2);
+  border-inline-start: 3px solid var(--ld);
   cursor: pointer;
 }
 
 .debug-error-card:hover {
-  background: #141414;
+  background: var(--li2);
 }
 
 .debug-error-card__header {
@@ -942,12 +945,12 @@ onUnmounted(() => {
 }
 
 .debug-error-card__class {
-  color: #FF4444;
+  color: var(--ld);
   font-weight: bold;
 }
 
 .debug-error-card__msg {
-  color: #ccc;
+  color: var(--ms-legacy-muted-6);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

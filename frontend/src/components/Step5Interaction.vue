@@ -1282,9 +1282,7 @@ watch(() => props.simulationId, (newId) => {
   color: rgba(10,10,10,0.5);
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+/* @keyframes spin factorisé dans styles/components.css */
 
 /* Content Styles Override */
 .generated-content :deep(.md-h2) {
@@ -1637,7 +1635,7 @@ watch(() => props.simulationId, (newId) => {
 
 .tool-purple .tool-icon-wrapper {
   background: rgba(139, 92, 246, 0.1);
-  color: #8B5CF6;
+  color: var(--ms-status-violet-soft);
 }
 
 .tool-blue .tool-icon-wrapper {
@@ -2460,9 +2458,7 @@ watch(() => props.simulationId, (newId) => {
   animation: spin 0.8s linear infinite;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+/* @keyframes spin factorisé dans styles/components.css */
 
 /* Results */
 .survey-results {

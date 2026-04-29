@@ -650,8 +650,8 @@ const startSimulation = () => {
 /* ── Top Navigation ── */
 .navbar {
   height: 56px;
-  background: var(--ms-bg, #FAF7F2);
-  color: var(--ms-text, #2A2A35);
+  background: var(--ms-bg, var(--ms-bg));
+  color: var(--ms-text, var(--ms-text));
   border-bottom: 1px solid var(--ms-border, rgba(42, 42, 53, 0.08));
   display: flex;
   justify-content: space-between;
@@ -669,11 +669,11 @@ const startSimulation = () => {
   letter-spacing: 0.06em;
   font-size: 16px;
   text-transform: uppercase;
-  color: var(--ms-text, #2A2A35);
+  color: var(--ms-text, var(--ms-text));
   text-decoration: none;
   transition: color 200ms;
 }
-.nav-brand:hover { color: var(--ms-orange, #FF8551); }
+.nav-brand:hover { color: var(--ms-orange, var(--ms-orange)); }
 
 .nav-links {
   display: flex;
@@ -682,7 +682,7 @@ const startSimulation = () => {
 }
 
 .nav-link {
-  color: var(--ms-text-muted, #6B6B7D);
+  color: var(--ms-text-muted, var(--ms-text-muted));
   text-decoration: none;
   font-family: var(--ms-font-body, 'Manrope'), sans-serif;
   font-size: 14px;
@@ -697,11 +697,11 @@ const startSimulation = () => {
   line-height: 1.4;
 }
 .nav-link:hover {
-  color: var(--ms-text, #2A2A35);
-  background: var(--ms-bg-muted, #F2EEE6);
+  color: var(--ms-text, var(--ms-text));
+  background: var(--ms-bg-muted, var(--ms-bg-muted));
 }
 .nav-link.router-link-active {
-  color: var(--ms-orange, #FF8551);
+  color: var(--ms-orange, var(--ms-orange));
 }
 
 .nav-link-action {
@@ -731,9 +731,9 @@ const startSimulation = () => {
 .arrow { font-family: sans-serif; }
 
 .settings-btn {
-  background: var(--ms-bg-muted, #F2EEE6);
+  background: var(--ms-bg-muted, var(--ms-bg-muted));
   border: 1px solid var(--ms-border, rgba(42, 42, 53, 0.08));
-  color: var(--ms-text-muted, #6B6B7D);
+  color: var(--ms-text-muted, var(--ms-text-muted));
   font-size: 16px;
   width: 34px;
   height: 34px;
@@ -746,9 +746,9 @@ const startSimulation = () => {
   transition: color 200ms, background 200ms, border-color 200ms, transform 200ms;
 }
 .settings-btn:hover {
-  color: var(--ms-orange, #FF8551);
+  color: var(--ms-orange, var(--ms-orange));
   background: var(--ms-orange-soft, rgba(255, 133, 81, 0.12));
-  border-color: var(--ms-orange, #FF8551);
+  border-color: var(--ms-orange, var(--ms-orange));
   transform: rotate(40deg);
 }
 
@@ -1449,7 +1449,7 @@ const startSimulation = () => {
   to   { opacity: 1; }
 }
 .doc-preview-modal {
-  background: #FAFAFA;
+  background: var(--lp);
   width: 760px;
   max-width: 100%;
   max-height: 100%;
@@ -1464,8 +1464,8 @@ const startSimulation = () => {
   justify-content: space-between;
   gap: 12px;
   padding: 16px 20px;
-  background: #0A0A0A;
-  color: #FAFAFA;
+  background: var(--li);
+  color: var(--lp);
 }
 .doc-preview-title {
   display: flex;
@@ -1479,7 +1479,7 @@ const startSimulation = () => {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.doc-preview-icon { color: #43C165; flex-shrink: 0; }
+.doc-preview-icon { color: var(--ls); flex-shrink: 0; }
 .doc-preview-close {
   background: none;
   border: none;
@@ -1489,15 +1489,15 @@ const startSimulation = () => {
   padding: 4px 8px;
   flex-shrink: 0;
 }
-.doc-preview-close:hover { color: #FAFAFA; }
+.doc-preview-close:hover { color: var(--lp); }
 .doc-preview-warning {
   height: 6px;
   background: repeating-linear-gradient(
     -45deg,
-    #FF6B1A,
-    #FF6B1A 10px,
-    #FAFAFA 10px,
-    #FAFAFA 20px
+    var(--lo),
+    var(--lo) 10px,
+    var(--lp) 10px,
+    var(--lp) 20px
   );
 }
 .doc-preview-meta {
@@ -1509,7 +1509,7 @@ const startSimulation = () => {
   overflow-wrap: anywhere;
 }
 .doc-preview-meta-sep { margin: 0 6px; }
-.doc-preview-url { color: #FF6B1A; }
+.doc-preview-url { color: var(--lo); }
 .doc-preview-body {
   margin: 0;
   padding: 18px 20px;
@@ -1518,10 +1518,10 @@ const startSimulation = () => {
   font-family: 'Space Mono', 'Courier New', monospace;
   font-size: 12.5px;
   line-height: 1.6;
-  color: #0A0A0A;
+  color: var(--li);
   white-space: pre-wrap;
   word-break: break-word;
-  background: #FAFAFA;
+  background: var(--lp);
 }
 
 /* ── Responsive ── */

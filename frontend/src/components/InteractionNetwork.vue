@@ -630,7 +630,7 @@ onBeforeUnmount(() => {
 }
 
 .net-icon {
-  color: #8b5cf6;
+  color: var(--ms-status-violet-soft);
   font-size: 14px;
 }
 
@@ -734,7 +734,7 @@ onBeforeUnmount(() => {
 }
 
 .filter-check input {
-  accent-color: #8b5cf6;
+  accent-color: var(--ms-status-violet-soft);
 }
 
 /* States */
@@ -752,7 +752,7 @@ onBeforeUnmount(() => {
   text-align: center;
 }
 
-.net-error-state { color: #dc2626; }
+.net-error-state { color: var(--ms-status-danger-strong); }
 
 .net-hint {
   font-size: 11px;
@@ -762,7 +762,7 @@ onBeforeUnmount(() => {
 .pulse-ring {
   width: 20px;
   height: 20px;
-  border: 2px solid #8b5cf6;
+  border: 2px solid var(--ms-status-violet-soft);
   border-radius: 50%;
   animation: pulse 1.2s ease-in-out infinite;
 }

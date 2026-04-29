@@ -1064,11 +1064,11 @@ onMounted(() => {
 }
 .cal-delta-chip--better {
   background: var(--ms-mint-soft);
-  color: #2F7A52;
+  color: var(--ms-status-success-text);
 }
 .cal-delta-chip--worse {
   background: var(--ms-peach-soft);
-  color: #8A5610;
+  color: var(--ms-status-warning-text);
 }
 .cal-delta-chip--neutral {
   background: var(--ms-bg-muted);
@@ -1122,14 +1122,14 @@ onMounted(() => {
 }
 .cal-error-icon {
   font-size: 24px;
-  color: #A1403A;
+  color: var(--ms-status-danger-text);
 }
 .cal-error-body { flex: 1; }
 .cal-error-title {
   font-family: var(--ms-font-display);
   font-weight: 600;
   font-size: var(--ms-text-base);
-  color: #A1403A;
+  color: var(--ms-status-danger-text);
 }
 .cal-error-msg {
   font-size: var(--ms-text-sm);
@@ -1507,12 +1507,12 @@ onMounted(() => {
 }
 .calib-eval-toast--success {
   background: var(--ms-mint-soft);
-  color: #2F7A52;
+  color: var(--ms-status-success-text);
   border: 1px solid rgba(127, 216, 166, 0.35);
 }
 .calib-eval-toast--error {
   background: var(--ms-rose-soft);
-  color: #A1403A;
+  color: var(--ms-status-danger-text);
   border: 1px solid rgba(244, 132, 122, 0.35);
 }
 @keyframes calibEvalToastIn {
@@ -1528,7 +1528,7 @@ onMounted(() => {
   padding: var(--ms-space-3) var(--ms-space-4);
   border-radius: var(--ms-radius-md);
   background: var(--ms-rose-soft);
-  color: #A1403A;
+  color: var(--ms-status-danger-text);
   font-size: 14px;
 }
 .calib-eval-error-icon {
@@ -1649,15 +1649,15 @@ onMounted(() => {
 }
 .calib-eval-current--success {
   background: var(--ms-mint-soft);
-  color: #2F7A52;
+  color: var(--ms-status-success-text);
 }
 .calib-eval-current--partial {
   background: var(--ms-peach-soft);
-  color: #8A5610;
+  color: var(--ms-status-warning-text);
 }
 .calib-eval-current--wrong {
   background: var(--ms-rose-soft);
-  color: #A1403A;
+  color: var(--ms-status-danger-text);
 }
 
 .calib-eval-card-snippet {

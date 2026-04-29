@@ -1339,34 +1339,14 @@ onUnmounted(() => {
   letter-spacing: 0.5px;
 }
 
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  padding: 4px 8px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 3px;
-}
-
-.badge-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: currentColor;
-  flex-shrink: 0;
-}
-
+/* .badge + .badge-dot + @keyframes badge-pulse factorisés dans styles/components.css.
+   Variants locaux de Step2 ci-dessous (palette --ms-* nouvelle direction). */
 .badge.success { background: var(--ms-mint); color: var(--ms-bg-elevated); }
 .badge.processing { background: var(--ms-orange); color: var(--ms-bg-elevated); }
 .badge.processing .badge-dot { animation: badge-pulse 1s infinite; }
 .badge.pending { background: var(--color-gray); color: rgba(10,10,10,0.4); }
 .badge.accent { background: rgba(255,107,26,0.1); color: var(--ms-orange); }
 .badge.error { background: var(--ms-rose); color: var(--ms-bg-elevated); }
-
-@keyframes badge-pulse { 50% { opacity: 0.4; } }
 
 .step-card.error { border-color: rgba(255,68,68,0.3); }
 
@@ -1428,13 +1408,11 @@ onUnmounted(() => {
 .retry-config-btn:hover:not(:disabled) { background: #E03C3C; }
 .retry-config-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.loading-spinner-small {
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  border: 2px solid rgba(255,255,255,0.3);
+/* .loading-spinner-small factorisé dans styles/components.css.
+   On ne garde ici qu'un override de couleur pour le bouton retry sur fond rouge. */
+.retry-config-btn .loading-spinner-small {
+  border-color: rgba(255, 255, 255, 0.3);
   border-top-color: var(--ms-bg-elevated);
-  animation: spin 0.8s linear infinite;
 }
 
 
@@ -1571,27 +1549,7 @@ onUnmounted(() => {
   padding: 16px;
 }
 
-.stat-card {
-  text-align: center;
-}
-
-.stat-value {
-  display: block;
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--ms-text);
-  font-family: var(--font-mono);
-}
-
-.stat-label {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  color: rgba(10,10,10,0.4);
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  margin-top: 4px;
-  display: block;
-}
+/* .stat-card / .stat-value / .stat-label factorisés dans styles/components.css */
 
 /* Profiles Preview */
 .profiles-preview {
@@ -2453,19 +2411,16 @@ onUnmounted(() => {
   word-break: break-all;
 }
 
-/* Spinner */
-.spinner-sm {
+/* .spinner-sm + @keyframes spin factorisés dans styles/components.css.
+   Override local : version 16px (vs 12px par défaut) sur cet écran. */
+.orchestration .spinner-sm,
+.env-setup .spinner-sm {
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(10,10,10,0.08);
+  border-color: rgba(10, 10, 10, 0.08);
   border-top-color: var(--ms-orange);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
 /* Orchestration Content */
 .orchestration-content {
   display: flex;
@@ -2888,22 +2843,21 @@ onUnmounted(() => {
   line-height: 1.5;
 }
 
-.highlight-tip {
-  margin-top: 4px !important;
-  font-size: 12px !important;
-  color: var(--ms-text) !important;
+/* Spécificité 0,2,1 (.auto-desc p.highlight-tip) > 0,1,1 (.auto-desc p),
+   évite l'usage de !important (US-016). */
+.auto-desc p.highlight-tip {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--ms-text);
   font-weight: 500;
   cursor: pointer;
 }
 
-.highlight-tip:hover {
+.auto-desc p.highlight-tip:hover {
   text-decoration: underline;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+/* @keyframes fadeIn factorisé dans styles/components.css */
 
 .fade-enter-active,
 .fade-leave-active {

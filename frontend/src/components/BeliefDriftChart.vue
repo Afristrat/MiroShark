@@ -454,7 +454,7 @@ onBeforeUnmount(() => {
   text-align: center;
 }
 
-.bd-error-state { color: #dc2626; }
+.bd-error-state { color: var(--ms-status-danger-strong); }
 
 .bd-hint {
   font-size: 11px;

@@ -73,12 +73,14 @@
   outline-offset: 2px;
 }
 
-.ms-btn:disabled,
-.ms-btn[aria-disabled="true"] {
+/* Spécificité 0,2,0 (sélecteur composé) bat .ms-btn-primary:hover (0,2,0)
+   par ordre source — règle placée plus tard dans la cascade. */
+.ms-btn.ms-btn:disabled,
+.ms-btn.ms-btn[aria-disabled="true"] {
   cursor: not-allowed;
   opacity: 0.55;
-  transform: none !important;
-  box-shadow: none !important;
+  transform: none;
+  box-shadow: none;
 }
 
 .ms-btn-primary {
@@ -255,3 +257,171 @@
 @media (prefers-reduced-motion: reduce) {
   .ms-anim-fade-in { animation: none; }
 }
+
+/* ── Stat card (factorisée — auparavant dupliquée dans Step1, Step2, Calibration, ReviewEntities) ──
+   Convention BEM : .ms-stat-card / .ms-stat-card__value / .ms-stat-card__label.
+   Aliases legacy .stat-card / .stat-value / .stat-label garantissent la rétro-compat. */
+.ms-stat-card,
+.stat-card {
+  text-align: center;
+}
+.ms-stat-card__value,
+.stat-value {
+  display: block;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ms-text);
+  font-family: var(--ms-font-mono);
+  line-height: 1.2;
+}
+.ms-stat-card__label,
+.stat-label {
+  display: block;
+  font-family: var(--ms-font-mono);
+  font-size: 9px;
+  color: rgba(10, 10, 10, 0.4);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+/* ── Loading spinner (factorisé — auparavant dupliqué dans 7+ fichiers
+       sous les noms .spinner, .spinner-sm, .loading-spinner, .loading-spinner-small).
+       Convention : .ms-spinner (default 18px) + modificateurs --sm / --lg.
+       Couleur héritée de currentColor pour s'adapter au contexte du bouton. */
+@keyframes ms-spin { to { transform: rotate(360deg); } }
+
+.ms-spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid color-mix(in srgb, currentColor 25%, transparent);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: ms-spin 0.9s linear infinite;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.ms-spinner--sm { width: 12px; height: 12px; border-width: 2px; }
+.ms-spinner--lg { width: 28px; height: 28px; border-width: 3px; }
+.ms-spinner--orange { color: var(--ms-orange); }
+.ms-spinner--legacy-orange { color: var(--ms-legacy-orange); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ms-spinner { animation: none; }
+}
+
+/* ── Compat aliases : composants existants utilisent ces noms.
+   Source unique pour éviter la duplication des @keyframes spin et des styles
+   dans Step1, Step2, Step3, History, GraphPanel, Comparison. */
+/* Animations communes — factorisées pour éviter la duplication. */
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulse { 50% { opacity: 0.5; } }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.loading-spinner-small,
+.spinner-sm {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(10, 10, 10, 0.15);
+  border-top-color: var(--ms-legacy-orange);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.loading-spinner {
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(255, 107, 26, 0.2);
+  border-top-color: var(--ms-legacy-orange);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .loading-spinner-small,
+  .spinner-sm,
+  .loading-spinner { animation: none; }
+}
+
+/* ── Empty state (factorisé — auparavant dupliqué dans History, Calibration, Replay…) ── */
+.ms-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--ms-space-8) var(--ms-space-4);
+  color: var(--ms-text-muted);
+  gap: var(--ms-space-2);
+}
+.ms-empty-state__icon {
+  font-size: 28px;
+  opacity: 0.5;
+  margin-bottom: var(--ms-space-2);
+}
+.ms-empty-state__title {
+  font-family: var(--ms-font-display);
+  font-size: var(--ms-text-lg);
+  color: var(--ms-text);
+  margin: 0;
+}
+.ms-empty-state__hint {
+  font-size: var(--ms-text-sm);
+  color: var(--ms-text-subtle);
+  margin: 0;
+}
+
+/* ── Toast (notification — réutilisable globalement) ── */
+.ms-toast {
+  position: fixed;
+  bottom: var(--ms-space-6);
+  inset-inline-end: var(--ms-space-6);
+  background: var(--ms-bg-elevated);
+  color: var(--ms-text);
+  border: 1px solid var(--ms-border);
+  border-radius: var(--ms-radius-md);
+  padding: var(--ms-space-3) var(--ms-space-5);
+  box-shadow: var(--ms-shadow-lg);
+  z-index: var(--ms-z-toast);
+  font-size: var(--ms-text-sm);
+  animation: ms-fade-in 200ms var(--ms-ease);
+}
+.ms-toast--success { border-color: var(--ms-mint); }
+.ms-toast--warning { border-color: var(--ms-peach); }
+.ms-toast--danger  { border-color: var(--ms-rose); }
+
+/* ── Helper: icône d'état coloré (success/warning/danger) ── */
+.ms-status-success { color: var(--ms-mint); }
+.ms-status-warning { color: var(--ms-peach); }
+.ms-status-danger  { color: var(--ms-rose); }
+.ms-status-legacy-success { color: var(--ms-legacy-success); }
+.ms-status-legacy-danger  { color: var(--ms-legacy-danger); }
+
+/* ── Badge legacy (auparavant dupliquée dans Step1, Step2, Calibration, ReviewEntities)
+       Base partagée. Variants couleur (.success, .processing, .pending, .accent, .error)
+       restent locaux car les palettes diffèrent (legacy vs --ms-*). */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--ms-font-mono);
+  font-size: 11px;
+  padding: 4px 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+}
+.badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+@keyframes badge-pulse { 50% { opacity: 0.4; } }

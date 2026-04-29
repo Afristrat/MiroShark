@@ -750,7 +750,7 @@ watch(() => props.systemLogs.length, () => {
 <style scoped>
 .workbench-panel {
   height: 100%;
-  background-color: #FAFAFA;
+  background-color: var(--lp);
   background-image:
     linear-gradient(rgba(10,10,10,0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(10,10,10,0.03) 1px, transparent 1px);
@@ -771,7 +771,7 @@ watch(() => props.systemLogs.length, () => {
 }
 
 .step-card {
-  background: #FAFAFA;
+  background: var(--lp);
   padding: 22px;
   border: 2px solid rgba(10,10,10,0.08);
   transition: all 0.3s ease;
@@ -786,8 +786,8 @@ watch(() => props.systemLogs.length, () => {
   inset-inline-start: 0;
   width: 16px;
   height: 16px;
-  border-top: 3px solid #FF6B1A;
-  border-inline-start: 3px solid #FF6B1A;
+  border-top: 3px solid var(--lo);
+  border-inline-start: 3px solid var(--lo);
 }
 
 .step-card::after {
@@ -797,12 +797,12 @@ watch(() => props.systemLogs.length, () => {
   inset-inline-end: 0;
   width: 16px;
   height: 16px;
-  border-bottom: 3px solid #43C165;
-  border-inline-end: 3px solid #43C165;
+  border-bottom: 3px solid var(--ls);
+  border-inline-end: 3px solid var(--ls);
 }
 
 .step-card.active {
-  border-color: #FF6B1A;
+  border-color: var(--lo);
 }
 
 .card-header {
@@ -827,7 +827,7 @@ watch(() => props.systemLogs.length, () => {
 
 .step-card.active .step-num,
 .step-card.completed .step-num {
-  color: #0A0A0A;
+  color: var(--li);
 }
 
 .step-title {
@@ -837,19 +837,11 @@ watch(() => props.systemLogs.length, () => {
   letter-spacing: 0.5px;
 }
 
-.badge {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  padding: 4px 8px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 3px;
-}
-
-.badge.success { background: #43C165; color: #FAFAFA; }
-.badge.processing { background: #FF6B1A; color: #FAFAFA; }
-.badge.accent { background: #FF6B1A; color: #FAFAFA; }
-.badge.pending { background: #F5F5F5; color: rgba(10,10,10,0.4); }
+/* .badge base factorisée dans styles/components.css. Variants locaux ci-dessous. */
+.badge.success { background: var(--ls); color: var(--lp); }
+.badge.processing { background: var(--lo); color: var(--lp); }
+.badge.accent { background: var(--lo); color: var(--lp); }
+.badge.pending { background: var(--lp2); color: rgba(10,10,10,0.4); }
 
 .api-note {
   font-family: var(--font-mono);
@@ -894,7 +886,7 @@ watch(() => props.systemLogs.length, () => {
 }
 
 .entity-tag {
-  background: #F5F5F5;
+  background: var(--lp2);
   border: 1px solid rgba(10,10,10,0.08);
   padding: 4px 10px;
   font-size: 11px;
@@ -929,7 +921,7 @@ watch(() => props.systemLogs.length, () => {
     animation: fadeIn 0.2s ease-out;
 }
 
-@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+/* @keyframes fadeIn factorisé dans styles/components.css (translateY(4px), proche). */
 
 .detail-header {
     display: flex;
@@ -937,7 +929,7 @@ watch(() => props.systemLogs.length, () => {
     align-items: center;
     padding: 11px 22px;
     border-bottom: 2px solid rgba(10,10,10,0.08);
-    background: #FAFAFA;
+    background: var(--lp);
 }
 
 .detail-title-group {
@@ -950,8 +942,8 @@ watch(() => props.systemLogs.length, () => {
     font-family: var(--font-mono);
     font-size: 9px;
     font-weight: 700;
-    color: #FAFAFA;
-    background: #0A0A0A;
+    color: var(--lp);
+    background: var(--li);
     padding: 2px 6px;
     text-transform: uppercase;
     letter-spacing: 3px;
@@ -1019,13 +1011,13 @@ watch(() => props.systemLogs.length, () => {
     gap: 6px;
     align-items: baseline;
     padding: 4px;
-    background: #F5F5F5;
+    background: var(--lp2);
 }
 
 .attr-name {
     font-family: var(--font-mono);
     font-weight: 600;
-    color: #0A0A0A;
+    color: var(--li);
 }
 
 .attr-type {
@@ -1047,7 +1039,7 @@ watch(() => props.systemLogs.length, () => {
 
 .example-tag {
     font-size: 11px;
-    background: #FAFAFA;
+    background: var(--lp);
     border: 1px solid rgba(10,10,10,0.12);
     padding: 3px 8px;
     color: rgba(10,10,10,0.5);
@@ -1059,7 +1051,7 @@ watch(() => props.systemLogs.length, () => {
     gap: 8px;
     font-size: 11px;
     padding: 6px;
-    background: #F5F5F5;
+    background: var(--lp2);
     font-family: var(--font-mono);
 }
 
@@ -1077,31 +1069,11 @@ watch(() => props.systemLogs.length, () => {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 11px;
-  background: #F5F5F5;
+  background: var(--lp2);
   padding: 22px;
 }
 
-.stat-card {
-  text-align: center;
-}
-
-.stat-value {
-  display: block;
-  font-size: 20px;
-  font-weight: 700;
-  color: #0A0A0A;
-  font-family: var(--font-mono);
-}
-
-.stat-label {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  color: rgba(10,10,10,0.4);
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  margin-top: 4px;
-  display: block;
-}
+/* .stat-card / .stat-value / .stat-label factorisés dans styles/components.css */
 
 /* Pre-launch simulation settings row (number of prediction markets, etc.) */
 .sim-settings {
@@ -1151,8 +1123,8 @@ watch(() => props.systemLogs.length, () => {
 /* Step 03 Button */
 .action-btn {
   width: 100%;
-  background: #0A0A0A;
-  color: #FAFAFA;
+  background: var(--li);
+  color: var(--lp);
   border: none;
   padding: 14px;
   font-family: var(--font-mono);
@@ -1177,9 +1149,9 @@ watch(() => props.systemLogs.length, () => {
   margin-block-start: 8px;
   margin-block-end: 0;
   padding: 8px 10px;
-  background: var(--ms-rose, #fde8ec);
-  color: var(--ms-text-primary, #1a1a1a);
-  border-inline-start: 3px solid var(--ms-orange, #ff6f3c);
+  background: var(--ms-rose, var(--ms-status-danger-soft));
+  color: var(--ms-text-primary, var(--li2));
+  border-inline-start: 3px solid var(--ms-orange, var(--lo));
   font-size: 12px;
   line-height: 1.45;
   border-radius: 4px;
@@ -1204,7 +1176,7 @@ watch(() => props.systemLogs.length, () => {
 }
 
 .sim-entry:hover {
-  background: #F5F5F5;
+  background: var(--lp2);
   border-color: rgba(10,10,10,0.7);
 }
 
@@ -1221,14 +1193,14 @@ watch(() => props.systemLogs.length, () => {
   text-transform: uppercase;
   letter-spacing: 3px;
   padding: 2px 6px;
-  background: #F5F5F5;
+  background: var(--lp2);
   color: rgba(10,10,10,0.5);
 }
 
-.sim-status.ready, .sim-status.completed { color: #FAFAFA; background: #43C165; }
-.sim-status.running { color: #FAFAFA; background: #FF6B1A; }
-.sim-status.failed { color: #FAFAFA; background: #FF4444; }
-.sim-status.paused, .sim-status.stopped { color: #0A0A0A; background: #FFB347; }
+.sim-status.ready, .sim-status.completed { color: var(--lp); background: var(--ls); }
+.sim-status.running { color: var(--lp); background: var(--lo); }
+.sim-status.failed { color: var(--lp); background: var(--ld); }
+.sim-status.paused, .sim-status.stopped { color: var(--li); background: var(--ms-peach); }
 
 .sim-arrow {
   color: rgba(10,10,10,0.4);
@@ -1240,24 +1212,15 @@ watch(() => props.systemLogs.length, () => {
   align-items: center;
   gap: 11px;
   font-size: 12px;
-  color: #FF6B1A;
+  color: var(--lo);
   margin-bottom: 11px;
 }
 
-.spinner-sm {
-  width: 14px;
-  height: 14px;
-  border: 2px solid rgba(255,107,26,0.3);
-  border-top-color: #FF6B1A;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
+/* .spinner-sm + @keyframes spin factorisés dans frontend/src/styles/components.css */
 
 /* System Logs */
 .system-logs {
-  background: #0A0A0A;
+  background: var(--li);
   color: rgba(250,250,250,0.8);
   padding: 22px;
   font-family: var(--font-mono);
@@ -1317,7 +1280,7 @@ watch(() => props.systemLogs.length, () => {
 }
 
 .log-time {
-  color: #FF6B1A;
+  color: var(--lo);
   min-width: 75px;
 }
 
@@ -1327,7 +1290,7 @@ watch(() => props.systemLogs.length, () => {
 }
 
 .log-id {
-  color: #43C165;
+  color: var(--ls);
 }
 
 /* ── US-039 — Refine context panel ── */
@@ -1394,12 +1357,12 @@ watch(() => props.systemLogs.length, () => {
 .refine-input,
 .refine-select,
 .refine-textarea {
-  background: var(--ms-bg, #FAFAFA);
+  background: var(--ms-bg, var(--lp));
   border: 1px solid rgba(10,10,10,0.15);
   padding: 8px 10px;
   font-family: var(--font-mono);
   font-size: 12px;
-  color: var(--ms-text, #0A0A0A);
+  color: var(--ms-text, var(--li));
   outline: none;
   border-radius: 0;
   width: 100%;
@@ -1409,7 +1372,7 @@ watch(() => props.systemLogs.length, () => {
 .refine-input:focus,
 .refine-select:focus,
 .refine-textarea:focus {
-  border-color: var(--ms-orange, #FF6B1A);
+  border-color: var(--ms-orange, var(--lo));
 }
 
 .refine-input:disabled {
@@ -1438,8 +1401,8 @@ watch(() => props.systemLogs.length, () => {
 .refine-add-btn,
 .refine-save-btn,
 .refine-reset-btn {
-  background: var(--ms-text, #0A0A0A);
-  color: var(--ms-text-on-color, #FAFAFA);
+  background: var(--ms-text, var(--li));
+  color: var(--ms-text-on-color, var(--lp));
   border: none;
   padding: 8px 14px;
   font-family: var(--font-mono);
@@ -1473,7 +1436,7 @@ watch(() => props.systemLogs.length, () => {
 }
 
 .refine-reset-btn:hover:not(:disabled) {
-  color: var(--ms-text, #0A0A0A);
+  color: var(--ms-text, var(--li));
   border-color: rgba(10,10,10,0.4);
   opacity: 1;
 }
@@ -1490,19 +1453,19 @@ watch(() => props.systemLogs.length, () => {
   align-items: center;
   gap: 4px;
   background: var(--ms-orange-soft, #FFE3D1);
-  border: 1px solid var(--ms-orange, #FF6B1A);
+  border: 1px solid var(--ms-orange, var(--lo));
   padding: 4px 10px;
   font-size: 11px;
   font-family: var(--font-mono);
-  color: var(--ms-text, #0A0A0A);
+  color: var(--ms-text, var(--li));
   cursor: pointer;
   transition: all 0.15s;
   border-radius: 0;
 }
 
 .chip:hover {
-  background: var(--ms-orange, #FF6B1A);
-  color: var(--ms-text-on-color, #FAFAFA);
+  background: var(--ms-orange, var(--lo));
+  color: var(--ms-text-on-color, var(--lp));
 }
 
 .chip-x {
@@ -1524,7 +1487,7 @@ watch(() => props.systemLogs.length, () => {
 .refine-error {
   font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--ms-rose, #FF4444);
+  color: var(--ms-rose, var(--ld));
   flex: 1;
   min-width: 180px;
 }

@@ -2543,9 +2543,7 @@ watch(() => props.reportId, (newId) => {
   50% { opacity: 0; }
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+/* @keyframes spin factorisé dans styles/components.css */
 
 /* Content Styles Override for this view */
 .generated-content :deep(.md-h2) {
@@ -3116,7 +3114,7 @@ watch(() => props.reportId, (newId) => {
   color: #6D28D9;
 }
 .tool-badge.tool-purple .tool-icon {
-  stroke: #7C3AED;
+  stroke: var(--ms-status-violet);
 }
 
 /* Tool Colors - Blue (Panorama Search) → Orange */
@@ -4240,11 +4238,11 @@ watch(() => props.reportId, (newId) => {
 :deep(.insight-header .stat-value) {
   font-family: var(--font-mono);
   font-weight: 700;
-  color: #7C3AED;
+  color: var(--ms-status-violet);
 }
 
 :deep(.insight-header .stat-label) {
-  color: #8B5CF6;
+  color: var(--ms-status-violet-soft);
   font-size: 10px;
   font-family: var(--font-mono);
 }
@@ -4269,7 +4267,7 @@ watch(() => props.reportId, (newId) => {
 :deep(.insight-header .header-scenario) {
   margin-top: 6px;
   font-size: 11px;
-  color: #7C3AED;
+  color: var(--ms-status-violet);
 }
 
 :deep(.insight-header .scenario-label) {
@@ -4307,7 +4305,7 @@ watch(() => props.reportId, (newId) => {
 
 :deep(.insight-tab.active) {
   background: var(--ms-bg-elevated);
-  color: #7C3AED;
+  color: var(--ms-status-violet);
   border-color: #C4B5FD;
 }
 
@@ -4411,7 +4409,7 @@ watch(() => props.reportId, (newId) => {
 :deep(.insight-display .entity-tag .entity-type) {
   font-size: 9px;
   font-family: var(--font-mono);
-  color: #7C3AED;
+  color: var(--ms-status-violet);
   background: rgba(139, 92, 246, 0.1);
   padding: 1px 4px;
 }
@@ -4449,7 +4447,7 @@ watch(() => props.reportId, (newId) => {
 :deep(.insight-display .entity-card .entity-type) {
   font-size: 10px;
   font-family: var(--font-mono);
-  color: #7C3AED;
+  color: var(--ms-status-violet);
   background: rgba(139, 92, 246, 0.1);
   padding: 2px 6px;
   display: inline-block;
@@ -4512,7 +4510,7 @@ watch(() => props.reportId, (newId) => {
   font-size: 10px;
   font-family: var(--font-mono);
   font-weight: 500;
-  color: #7C3AED;
+  color: var(--ms-status-violet);
   white-space: nowrap;
 }
 
@@ -4528,7 +4526,7 @@ watch(() => props.reportId, (newId) => {
 :deep(.insight-display .subquery-number) {
   flex-shrink: 0;
   padding: 2px 6px;
-  background: #7C3AED;
+  background: var(--ms-status-violet);
   font-family: var(--font-mono);
   font-size: 10px;
   font-weight: 700;

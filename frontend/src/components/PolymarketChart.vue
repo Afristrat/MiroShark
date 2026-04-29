@@ -158,7 +158,7 @@
                     :cy="yScale(selected.points[hoverPoint].price_yes)"
                     r="4"
                     :fill="lineColor"
-                    stroke="#FAFAFA" stroke-width="2"
+                    stroke="var(--lp)" stroke-width="2"
                   />
                 </g>
               </svg>

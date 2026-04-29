@@ -17,17 +17,17 @@ import LanguageSwitcher from './components/LanguageSwitcher.vue'
 
 :root {
   /* ── Primary Colors ── */
-  --color-orange: #FF6B1A;
-  --color-green: #43C165;
-  --color-white: #FAFAFA;
-  --color-black: #0A0A0A;
-  --color-gray: #F5F5F5;
-  --color-amber: #FFB347;
-  --color-red: #FF4444;
+  --color-orange: var(--lo);
+  --color-green: var(--ls);
+  --color-white: var(--lp);
+  --color-black: var(--li);
+  --color-gray: var(--lp2);
+  --color-amber: var(--ms-peach);
+  --color-red: var(--ld);
 
   /* ── Semantic ── */
-  --background: #FAFAFA;
-  --foreground: #0A0A0A;
+  --background: var(--lp);
+  --foreground: var(--li);
 
   /* ── 1.4x Modular Spacing Scale ── */
   --space-xs: 6px;
@@ -157,21 +157,21 @@ button {
 .animate-pulse-border { animation: pulse-border 2s ease-in-out infinite; }
 
 /* Floating LanguageSwitcher — visible on every route, RTL-flipped.
-   `!important` requis : le composant LanguageSwitcher pose
-   `.lang-switcher { position: relative }` en <style scoped> pour ancrer
-   son dropdown absolute. Vue scoped style ajoute un `[data-v-*]` qui
-   bumpe la spécificité au-delà de cette règle non-scopée. !important
-   est ici l'override intentionnel le plus lisible.
+   Le composant LanguageSwitcher pose `.lang-switcher { position: relative }`
+   en <style scoped> avec un attribut `[data-v-*]` (spécificité 0,1,1).
+   Pour battre cette spécificité SANS `!important` (US-016), on compose ici
+   avec `body` → 0,1,1 + ordre dans le head ; les blocs non-scoped sont
+   injectés après les blocs scoped au runtime, donc le nôtre l'emporte.
 
    Top: 12px (plus proche du bord pour visibilité maximale top-of-page).
-   z-index: 1500 pour passer au-dessus de tous les overlays Bassira
-   (modals, panels, dropdowns à ~1000-1200) — le switcher doit rester
-   accessible même quand un modal est ouvert. */
-.lang-switcher--floating {
-  position: fixed !important;
-  top: 12px !important;
-  inset-inline-end: 12px !important;
-  z-index: 1500 !important;
+   z-index utilise --ms-z-floating-lang (1500) pour passer au-dessus de tous
+   les overlays Bassira (modals, panels, dropdowns à ~1000-1200) — le
+   switcher doit rester accessible même quand un modal est ouvert. */
+body .lang-switcher--floating {
+  position: fixed;
+  top: 12px;
+  inset-inline-end: 12px;
+  z-index: var(--ms-z-floating-lang);
   /* Animation d'apparition discrète à l'arrivée sur la page */
   animation: lang-switcher-fadein 600ms var(--ms-ease, cubic-bezier(0.4, 0, 0.2, 1)) both;
 }

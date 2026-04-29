@@ -420,7 +420,7 @@ onMounted(() => { if (props.visible) load() })
 
 .legend-dot.engage { background: var(--color-orange); }
 .legend-dot.follow { background: var(--color-green); }
-.legend-dot.platform { background: #8b5cf6; }
+.legend-dot.platform { background: var(--ms-status-violet-soft); }
 .legend-dot.post { background: rgba(10,10,10,0.3); }
 
 /* ── States ── */
@@ -439,7 +439,7 @@ onMounted(() => { if (props.visible) load() })
   letter-spacing: 1px;
 }
 
-.lb-error { color: var(--color-red, #e53e3e); }
+.lb-error { color: var(--color-red, var(--ld)); }
 
 .pulse-ring {
   width: 20px;
@@ -488,7 +488,7 @@ onMounted(() => { if (props.visible) load() })
   text-align: end;
 }
 
-.lb-rank.rank-1 { color: #f59e0b; }
+.lb-rank.rank-1 { color: var(--ms-status-warning); }
 .lb-rank.rank-2 { color: rgba(10,10,10,0.5); }
 .lb-rank.rank-3 { color: #b45309; }
 
@@ -630,8 +630,8 @@ onMounted(() => { if (props.visible) load() })
 }
 
 .iv-btn:hover {
-  border-color: var(--color-green, #43C165);
-  color: var(--color-green, #43C165);
+  border-color: var(--color-green, var(--ls));
+  color: var(--color-green, var(--ls));
 }
 
 /* ── Interview Overlay ── */
@@ -647,7 +647,7 @@ onMounted(() => { if (props.visible) load() })
 }
 
 .iv-modal {
-  background: #FAFAFA;
+  background: var(--lp);
   border: 1px solid rgba(10,10,10,0.12);
   width: 100%;
   max-width: 580px;
@@ -690,7 +690,7 @@ onMounted(() => { if (props.visible) load() })
 .iv-name {
   font-size: 14px;
   font-weight: 700;
-  color: var(--foreground, #0A0A0A);
+  color: var(--foreground, var(--li));
 }
 
 .iv-meta {
@@ -758,7 +758,7 @@ onMounted(() => { if (props.visible) load() })
 }
 
 .iv-role.agent {
-  color: var(--color-green, #43C165);
+  color: var(--color-green, var(--ls));
 }
 
 .iv-text {
@@ -771,7 +771,7 @@ onMounted(() => { if (props.visible) load() })
 
 .iv-answer {
   background: rgba(10,10,10,0.02);
-  border-inline-start: 2px solid var(--color-green, #43C165);
+  border-inline-start: 2px solid var(--color-green, var(--ls));
   padding: 8px 10px;
 }
 
@@ -790,7 +790,7 @@ onMounted(() => { if (props.visible) load() })
 }
 
 .iv-share-btn:hover {
-  color: var(--color-orange, #FF6B1A);
+  color: var(--color-orange, var(--lo));
 }
 
 /* ── Loading dots ── */
@@ -813,7 +813,7 @@ onMounted(() => { if (props.visible) load() })
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: var(--color-orange, #FF6B1A);
+  background: var(--color-orange, var(--lo));
   animation: iv-bounce 1.2s ease-in-out infinite;
 }
 
@@ -841,13 +841,13 @@ onMounted(() => { if (props.visible) load() })
   padding: 8px 12px;
   font-family: var(--font-mono);
   font-size: 12px;
-  color: var(--foreground, #0A0A0A);
+  color: var(--foreground, var(--li));
   outline: none;
   transition: border-color 0.15s;
 }
 
 .iv-input:focus {
-  border-color: var(--color-green, #43C165);
+  border-color: var(--color-green, var(--ls));
 }
 
 .iv-input:disabled {
@@ -856,14 +856,14 @@ onMounted(() => { if (props.visible) load() })
 }
 
 .iv-send {
-  background: var(--color-green, #43C165);
+  background: var(--color-green, var(--ls));
   border: none;
   padding: 8px 16px;
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 1px;
-  color: #fff;
+  color: var(--ms-text-on-color);
   cursor: pointer;
   transition: opacity 0.15s;
 }
@@ -881,7 +881,7 @@ onMounted(() => { if (props.visible) load() })
 .iv-error {
   padding: 8px 16px;
   font-size: 11px;
-  color: var(--color-red, #e53e3e);
+  color: var(--color-red, var(--ld));
   letter-spacing: 0.5px;
   border-top: 1px solid rgba(229,62,62,0.15);
   flex-shrink: 0;

@@ -470,7 +470,7 @@ onUnmounted(() => {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #FAFAFA;
+  background: var(--lp);
   overflow: hidden;
   font-family: var(--font-display);
 }
@@ -483,7 +483,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 0 22px;
-  background: #0A0A0A;
+  background: var(--li);
   z-index: 100;
 }
 
@@ -498,7 +498,7 @@ onUnmounted(() => {
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 4px;
-  color: #FF6B1A;
+  color: var(--lo);
   background: rgba(255,107,26,0.1);
   padding: 4px 16px;
   border: 1px solid rgba(255,107,26,0.3);
@@ -511,7 +511,7 @@ onUnmounted(() => {
   letter-spacing: 3px;
   text-transform: uppercase;
   cursor: pointer;
-  color: #FAFAFA;
+  color: var(--lp);
 }
 
 .back-btn {
@@ -529,7 +529,7 @@ onUnmounted(() => {
 }
 
 .back-btn:hover {
-  color: #FAFAFA;
+  color: var(--lp);
   border-color: rgba(250,250,250,0.4);
 }
 
@@ -551,7 +551,7 @@ onUnmounted(() => {
 .pulse-ring {
   width: 32px;
   height: 32px;
-  border: 2px solid #FF6B1A;
+  border: 2px solid var(--lo);
   animation: ripple 2s infinite;
 }
 
@@ -562,7 +562,7 @@ onUnmounted(() => {
 
 /* Playback Bar */
 .playback-bar {
-  background: #0A0A0A;
+  background: var(--li);
   padding: 12px 20px;
   display: flex;
   flex-direction: column;
@@ -580,8 +580,8 @@ onUnmounted(() => {
 .control-btn.play {
   width: 36px;
   height: 36px;
-  background: #FF6B1A;
-  color: #FAFAFA;
+  background: var(--lo);
+  color: var(--lp);
   border: none;
   display: flex;
   align-items: center;
@@ -615,7 +615,7 @@ onUnmounted(() => {
 
 .speed-btn.active {
   background: rgba(255,107,26,0.15);
-  color: #FF6B1A;
+  color: var(--lo);
   border-color: rgba(255,107,26,0.4);
 }
 
@@ -644,7 +644,7 @@ onUnmounted(() => {
 .round-current {
   font-size: 20px;
   font-weight: 700;
-  color: #FF6B1A;
+  color: var(--lo);
 }
 
 .round-separator {
@@ -678,7 +678,7 @@ onUnmounted(() => {
   -webkit-appearance: none;
   width: 14px;
   height: 14px;
-  background: #FF6B1A;
+  background: var(--lo);
   border: none;
   cursor: pointer;
   margin-top: -4px;
@@ -687,7 +687,7 @@ onUnmounted(() => {
 .scrubber::-moz-range-thumb {
   width: 14px;
   height: 14px;
-  background: #FF6B1A;
+  background: var(--lo);
   border: none;
   cursor: pointer;
 }
@@ -707,7 +707,7 @@ onUnmounted(() => {
   top: 0;
   inset-inline-start: 0;
   height: 100%;
-  background: #FF6B1A;
+  background: var(--lo);
   pointer-events: none;
   z-index: 1;
   transition: width 0.1s linear;
@@ -758,7 +758,7 @@ onUnmounted(() => {
 .main-content-area {
   flex: 1;
   overflow-y: auto;
-  background: #FAFAFA;
+  background: var(--lp);
 }
 
 /* Timeline (reused from Step3) */
@@ -801,7 +801,7 @@ onUnmounted(() => {
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 3px;
-  color: #FF6B1A;
+  color: var(--lo);
   background: rgba(255,107,26,0.08);
   border: 1px solid rgba(255,107,26,0.2);
   padding: 2px 10px;
@@ -814,7 +814,7 @@ onUnmounted(() => {
   top: 24px;
   width: 10px;
   height: 10px;
-  background: #FAFAFA;
+  background: var(--lp);
   border: 1px solid rgba(10,10,10,0.2);
   transform: translateX(-50%);
   z-index: 2;
@@ -829,27 +829,27 @@ onUnmounted(() => {
   background: rgba(10,10,10,0.2);
 }
 
-.timeline-item.twitter .marker-dot { background: #0A0A0A; }
-.timeline-item.reddit .marker-dot { background: #FF6B1A; }
-.timeline-item.polymarket .marker-dot { background: #FF6B1A; }
-.timeline-item.twitter .timeline-marker { border-color: #0A0A0A; }
-.timeline-item.reddit .timeline-marker { border-color: #FF6B1A; }
-.timeline-item.polymarket .timeline-marker { border-color: #FF6B1A; }
+.timeline-item.twitter .marker-dot { background: var(--li); }
+.timeline-item.reddit .marker-dot { background: var(--lo); }
+.timeline-item.polymarket .marker-dot { background: var(--lo); }
+.timeline-item.twitter .timeline-marker { border-color: var(--li); }
+.timeline-item.reddit .timeline-marker { border-color: var(--lo); }
+.timeline-item.polymarket .timeline-marker { border-color: var(--lo); }
 
 .timeline-card {
   width: calc(100% - 48px);
   margin-inline-start: 32px;
-  background: #FAFAFA;
+  background: var(--lp);
   padding: 16px 20px;
   border: 2px solid rgba(10,10,10,0.08);
   position: relative;
   transition: all 0.2s;
 }
 
-.timeline-card:hover { border-color: #FF6B1A; }
-.timeline-item.twitter .timeline-card { border-inline-start: 2px solid #0A0A0A; }
-.timeline-item.reddit .timeline-card { border-inline-start: 2px solid #FF6B1A; }
-.timeline-item.polymarket .timeline-card { border-inline-start: 2px solid #FF6B1A; }
+.timeline-card:hover { border-color: var(--lo); }
+.timeline-item.twitter .timeline-card { border-inline-start: 2px solid var(--li); }
+.timeline-item.reddit .timeline-card { border-inline-start: 2px solid var(--lo); }
+.timeline-item.polymarket .timeline-card { border-inline-start: 2px solid var(--lo); }
 
 .card-header {
   display: flex;
@@ -870,8 +870,8 @@ onUnmounted(() => {
   width: 24px;
   height: 24px;
   min-width: 24px;
-  background: #0A0A0A;
-  color: #FAFAFA;
+  background: var(--li);
+  color: var(--lp);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -885,7 +885,7 @@ onUnmounted(() => {
   font-family: var(--font-mono);
   font-size: 13px;
   font-weight: 600;
-  color: #0A0A0A;
+  color: var(--li);
 }
 
 .header-meta {
@@ -902,7 +902,7 @@ onUnmounted(() => {
   height: 22px;
 }
 
-.platform-indicator.twitter { background: #0A0A0A; color: #FAFAFA; }
+.platform-indicator.twitter { background: var(--li); color: var(--lp); }
 .platform-logo { width: 20px; height: 20px; object-fit: contain; }
 
 .action-badge {
@@ -917,11 +917,11 @@ onUnmounted(() => {
 
 .badge-post { background: rgba(10,10,10,0.06); color: rgba(10,10,10,0.7); border-color: rgba(10,10,10,0.12); }
 .badge-comment { background: rgba(10,10,10,0.06); color: rgba(10,10,10,0.5); border-color: rgba(10,10,10,0.12); }
-.badge-action { background: #FAFAFA; color: rgba(10,10,10,0.5); border: 1px solid rgba(10,10,10,0.12); }
-.badge-meta { background: #FAFAFA; color: rgba(10,10,10,0.4); border: 1px dashed rgba(10,10,10,0.2); }
+.badge-action { background: var(--lp); color: rgba(10,10,10,0.5); border: 1px solid rgba(10,10,10,0.12); }
+.badge-meta { background: var(--lp); color: rgba(10,10,10,0.4); border: 1px dashed rgba(10,10,10,0.2); }
 .badge-idle { opacity: 0.5; }
-.badge-trade-buy { background: rgba(67,193,101,0.1); color: #43C165; border-color: rgba(67,193,101,0.2); }
-.badge-trade-sell { background: rgba(255,68,68,0.1); color: #FF4444; border-color: rgba(255,68,68,0.2); }
+.badge-trade-buy { background: rgba(67,193,101,0.1); color: var(--ls); border-color: rgba(67,193,101,0.2); }
+.badge-trade-sell { background: rgba(255,68,68,0.1); color: var(--ld); border-color: rgba(255,68,68,0.2); }
 
 .content-text {
   font-size: 13px;
@@ -930,10 +930,10 @@ onUnmounted(() => {
   margin-bottom: 11px;
 }
 
-.content-text.main-text { font-size: 14px; color: #0A0A0A; }
+.content-text.main-text { font-size: 14px; color: var(--li); }
 
 .quoted-block, .repost-content {
-  background: var(--color-gray, #F5F5F5);
+  background: var(--color-gray, var(--lp2));
   border: 2px solid rgba(10,10,10,0.08);
   padding: 11px 12px;
   margin-top: 8px;
@@ -977,8 +977,8 @@ onUnmounted(() => {
   padding: 1px 6px;
   letter-spacing: 3px;
 }
-.trade-direction.buy { background: rgba(67,193,101,0.1); color: #43C165; }
-.trade-direction.sell { background: rgba(255,68,68,0.1); color: #FF4444; }
+.trade-direction.buy { background: rgba(67,193,101,0.1); color: var(--ls); }
+.trade-direction.sell { background: rgba(255,68,68,0.1); color: var(--ld); }
 
 .market-question {
   font-size: 12px;
@@ -1021,7 +1021,7 @@ onUnmounted(() => {
   letter-spacing: 3px;
   padding: 5px 12px;
   border: 2px solid rgba(10,10,10,0.12);
-  background: #FAFAFA;
+  background: var(--lp);
   color: rgba(10,10,10,0.7);
   cursor: pointer;
 }

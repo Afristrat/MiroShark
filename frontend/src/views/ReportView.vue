@@ -350,7 +350,7 @@ onMounted(() => {
 .status-indicator.idle .dot { background: var(--ms-peach); }
 .status-indicator.error .dot { background: var(--ms-rose); }
 
-@keyframes pulse { 50% { opacity: 0.5; } }
+/* @keyframes pulse factorisé dans styles/components.css */
 
 /* Content */
 .content-area {

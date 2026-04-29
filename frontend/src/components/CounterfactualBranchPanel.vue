@@ -273,7 +273,7 @@ onMounted(() => {
   font-size: 12px;
   padding: 6px 10px;
   border: 1px solid rgba(10, 10, 10, 0.12);
-  background: #fff;
+  background: var(--ms-text-on-color);
   color: var(--foreground);
   outline: none;
   flex: 1;
