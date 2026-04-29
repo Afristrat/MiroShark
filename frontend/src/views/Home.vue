@@ -1,17 +1,22 @@
 <template>
   <div class="home-container">
-    <!-- Top Navigation Bar -->
+    <!-- Top Navigation Bar — refonte Playful & Soft (US-044b) -->
     <nav class="navbar">
-      <div class="nav-brand">{{ $t('nav.brand') }}</div>
+      <router-link to="/" class="nav-brand">{{ $t('nav.brand') }}</router-link>
       <div class="nav-links">
-        <router-link to="/explore" class="explore-link" :title="$t('home.nav.exploreTitle')">
-          <span class="compass">◎</span> {{ $t('nav.explore') }}
+        <router-link to="/calibration" class="nav-link" :title="$t('nav.calibrationTitle')">
+          {{ $t('nav.calibration') }}
         </router-link>
-        <a href="https://github.com/aaronjmars/MiroShark" target="_blank" class="github-link">
-          {{ $t('nav.github') }} <span class="arrow">↗</span>
-        </a>
-        <button class="settings-btn" @click="settingsOpen = true" :title="$t('home.nav.settingsTitle')">
-          ⚙
+        <button
+          class="nav-link nav-link-action"
+          type="button"
+          @click="scrollToTemplates"
+          :title="$t('nav.scenariosTitle')"
+        >
+          {{ $t('nav.scenarios') }}
+        </button>
+        <button class="settings-btn" @click="settingsOpen = true" :title="$t('home.nav.settingsTitle')" aria-label="Paramètres">
+          <span aria-hidden="true">⚙</span>
         </button>
       </div>
     </nav>
@@ -306,7 +311,9 @@
       </section>
 
       <!-- Quick Start Templates -->
-      <TemplateGallery />
+      <div id="templates-gallery">
+        <TemplateGallery />
+      </div>
 
       <!-- History Project Database -->
       <HistoryDatabase />
@@ -342,6 +349,15 @@ const settingsOpen = ref(false)
 const previewDoc = ref(null)
 
 const router = useRouter()
+
+// US-044b — bouton « Scénarios » dans la navbar : scroll smooth vers
+// la galerie de templates plus bas dans la page (pas de route séparée).
+function scrollToTemplates() {
+  const el = document.getElementById('templates-gallery')
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+}
 
 // Form data
 const formData = ref({
@@ -630,75 +646,108 @@ const startSimulation = () => {
 
 /* ── Top Navigation ── */
 .navbar {
-  height: var(--space-xl);
-  background: var(--color-black);
-  color: var(--color-white);
+  height: 56px;
+  background: var(--ms-bg, #FAF7F2);
+  color: var(--ms-text, #2A2A35);
+  border-bottom: 1px solid var(--ms-border, rgba(42, 42, 53, 0.08));
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 var(--space-lg);
+  padding: 0 var(--ms-space-6, 24px);
+  /* Réserve la place pour le LanguageSwitcher floating top-right
+     (z-index 1500, top:12px right:12px). On laisse 96px en bout
+     de navbar pour ne pas l'écraser visuellement. */
+  padding-inline-end: 110px;
 }
 
 .nav-brand {
-  font-family: var(--font-mono);
-  font-weight: 700;
-  letter-spacing: 3px;
-  font-size: 14px;
+  font-family: var(--ms-font-display, 'Outfit'), sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  font-size: 16px;
   text-transform: uppercase;
+  color: var(--ms-text, #2A2A35);
+  text-decoration: none;
+  transition: color 200ms;
 }
+.nav-brand:hover { color: var(--ms-orange, #FF8551); }
 
 .nav-links {
   display: flex;
   align-items: center;
-  gap: var(--space-md);
+  gap: var(--ms-space-3, 12px);
 }
 
-.explore-link {
-  color: var(--color-white);
+.nav-link {
+  color: var(--ms-text-muted, #6B6B7D);
   text-decoration: none;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  letter-spacing: 1px;
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
+  font-family: var(--ms-font-body, 'Manrope'), sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  padding: 6px 12px;
+  border-radius: var(--ms-radius-pill, 999px);
+  transition: color 200ms, background 200ms;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  line-height: 1.4;
+}
+.nav-link:hover {
+  color: var(--ms-text, #2A2A35);
+  background: var(--ms-bg-muted, #F2EEE6);
+}
+.nav-link.router-link-active {
+  color: var(--ms-orange, #FF8551);
+}
+
+.nav-link-action {
+  /* Bouton (Scénarios) — typo identique aux router-link pour cohérence */
+  font: inherit;
+}
+
+/* Anciennes classes du fork upstream conservées pour les rares
+   réutilisations dans le template (qu'on a remplacées plus haut),
+   mais on supprime explicitement les styles obsolètes. */
+.legacy-explore-link-removed {
+  /* (kept as anchor for grep — class supprimée du template) */
+  display: none;
   transition: var(--transition-fast);
   opacity: 0.6;
 }
 
-.explore-link:hover { opacity: 1; color: var(--color-orange); }
-
+/* (legacy explore-link styles removed — replaced by .nav-link) */
 .compass { font-size: 15px; line-height: 1; }
 
-.github-link {
-  color: var(--color-white);
-  text-decoration: none;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  letter-spacing: 1px;
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
+.legacy-github-link-removed {
+  display: none;
   transition: var(--transition-fast);
   opacity: 0.6;
 }
-
-.github-link:hover { opacity: 1; }
 
 .arrow { font-family: sans-serif; }
 
 .settings-btn {
-  background: none;
-  border: none;
-  color: rgba(250,250,250,0.5);
-  font-size: 18px;
+  background: var(--ms-bg-muted, #F2EEE6);
+  border: 1px solid var(--ms-border, rgba(42, 42, 53, 0.08));
+  color: var(--ms-text-muted, #6B6B7D);
+  font-size: 16px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  padding: 0 0 0 var(--space-md);
-  line-height: 1;
-  transition: var(--transition-fast);
+  margin-inline-start: var(--ms-space-2, 8px);
+  transition: color 200ms, background 200ms, border-color 200ms, transform 200ms;
 }
-
-.settings-btn:hover { color: var(--color-orange); }
+.settings-btn:hover {
+  color: var(--ms-orange, #FF8551);
+  background: var(--ms-orange-soft, rgba(255, 133, 81, 0.12));
+  border-color: var(--ms-orange, #FF8551);
+  transform: rotate(40deg);
+}
 
 /* ── Main Content ── */
 .main-content {

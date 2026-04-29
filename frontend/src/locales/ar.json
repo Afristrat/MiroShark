@@ -6,7 +6,10 @@
     "settings": "الإعدادات",
     "verified": "تنبؤات مؤكدة",
     "calibration": "المعايرة",
-    "offers": "العروض"
+    "offers": "العروض",
+    "scenarios": "السيناريوهات",
+    "scenariosTitle": "استعرض معرض السيناريوهات الجاهزة للإطلاق",
+    "calibrationTitle": "استعرض سجل دقّتنا التنبّؤية (درجة براير)"
   },
   "common": {
     "loading": "جارٍ التحميل…",

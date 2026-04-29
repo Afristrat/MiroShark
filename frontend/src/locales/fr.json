@@ -6,7 +6,10 @@
     "settings": "Paramètres",
     "verified": "Prédictions vérifiées",
     "calibration": "Calibration",
-    "offers": "Offres"
+    "offers": "Offres",
+    "scenarios": "Scénarios",
+    "scenariosTitle": "Voir la galerie de scénarios prêts à lancer",
+    "calibrationTitle": "Voir notre track-record prédictif (Brier score)"
   },
   "common": {
     "loading": "Chargement…",

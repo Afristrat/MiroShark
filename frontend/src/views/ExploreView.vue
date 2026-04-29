@@ -582,52 +582,60 @@ onMounted(refresh)
   color: var(--foreground);
 }
 
-/* ── Nav (matches Home.vue) ── */
+/* ── Nav (refonte Playful & Soft, miroir de Home.vue US-044b) ── */
 .navbar {
-  height: var(--space-xl);
-  background: var(--color-black);
-  color: var(--color-white);
+  height: 56px;
+  background: var(--ms-bg, #FAF7F2);
+  color: var(--ms-text, #2A2A35);
+  border-bottom: 1px solid var(--ms-border, rgba(42, 42, 53, 0.08));
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 var(--space-lg);
+  padding: 0 var(--ms-space-6, 24px);
+  /* Réserve la place du LanguageSwitcher floating top-right */
+  padding-inline-end: 110px;
 }
 
 .nav-brand {
-  font-family: var(--font-mono);
-  font-weight: 700;
-  letter-spacing: 3px;
-  font-size: 14px;
+  font-family: var(--ms-font-display, 'Outfit'), sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  font-size: 16px;
   text-transform: uppercase;
-  color: var(--color-white);
+  color: var(--ms-text, #2A2A35);
   text-decoration: none;
-  transition: var(--transition-fast);
+  transition: color 200ms;
 }
-
-.nav-brand:hover { color: var(--color-orange); }
+.nav-brand:hover { color: var(--ms-orange, #FF8551); }
 
 .nav-links {
   display: flex;
   align-items: center;
-  gap: var(--space-md);
+  gap: var(--ms-space-3, 12px);
 }
 
-.nav-link,
-.github-link {
-  color: var(--color-white);
+.nav-link {
+  color: var(--ms-text-muted, #6B6B7D);
   text-decoration: none;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  letter-spacing: 1px;
-  display: flex;
+  font-family: var(--ms-font-body, 'Manrope'), sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  padding: 6px 12px;
+  border-radius: var(--ms-radius-pill, 999px);
+  transition: color 200ms, background 200ms;
+  background: transparent;
+  display: inline-flex;
   align-items: center;
-  gap: var(--space-xs);
-  transition: var(--transition-fast);
-  opacity: 0.6;
+  gap: 6px;
 }
-
-.nav-link:hover,
-.github-link:hover { opacity: 1; }
+.nav-link:hover {
+  color: var(--ms-text, #2A2A35);
+  background: var(--ms-bg-muted, #F2EEE6);
+}
+.nav-link.router-link-active {
+  color: var(--ms-orange, #FF8551);
+}
 
 .arrow { font-family: sans-serif; }
 
