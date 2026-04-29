@@ -1,0 +1,716 @@
+# MiroShark — Backlog Ralph Loop
+# Format compatible ralph-loop.sh (skill ralph-loop)
+# Total: 35 user stories réparties sur 7 chantiers
+# Stratégie: --target-branch main, séquentiel (dépendances multiples)
+# Modèle recommandé: sonnet pour US simples, opus pour US complexes (007, 009, 020, 024)
+#
+# Quality gates (appliquées à chaque story par le runner) :
+#   1. cd frontend && npm run build         → exit 0
+#   2. cd backend && uv run pytest tests/ --tb=short -x  → exit 0
+#   3. (UI stories) npx playwright test --reporter=list  → exit 0
+#
+# Signal de complétion (à émettre après la dernière story marquée passes=true) :
+#   <promise>COMPLETE</promise>
+
+project: miroshark
+module: full
+total_iterations: 35
+target_branch: main
+exit_signal: "<promise>COMPLETE</promise>"
+
+# Politique de pause humaine (cf. CLAUDE.md global d'Amine)
+# - Max 25 itérations sans intervention humaine
+# - Circuit breaker: même erreur 3 fois → stopper + alerter
+# - Recommandation: lancer en 2 batches
+#     Batch 1 (US-000 → US-022, 23 itérations) — fondations + i18n + design + She Start + calibration
+#     Batch 2 (US-023 → US-034, 12 itérations) — packaging + quick wins + hardening
+
+user_stories:
+  # ============================================================
+  # Chantier 0 — Préparation (1 story, P0)
+  # ============================================================
+  - id: US-000
+    title: "Sécuriser pytest pour quality gates Ralph"
+    description: |
+      Garantir que `cd backend && uv run pytest tests/` passe sans dépendance externe (Neo4j,
+      LLM, Ollama). Si tests/test_integration_endpoints.py fait des appels réels, le marquer
+      @pytest.mark.integration et ajouter une config pytest qui ignore integration par défaut.
+    acceptance_criteria:
+      - "cd backend && uv run pytest tests/ --tb=short -x retourne exit 0 sans Neo4j/LLM/Ollama"
+      - "Au moins 1 smoke test unitaire qui vérifie create_app() ne crashe pas"
+      - "pytest.ini ou pyproject.toml [tool.pytest.ini_options] markers déclare 'integration'"
+      - "1 ligne dans backend/README.md ou tests/README.md sur comment lancer integration tests"
+    files_scope:
+      - "backend/tests/**"
+      - "backend/pyproject.toml"
+      - "backend/pytest.ini"
+      - "backend/README.md"
+    depends_on: []
+    priority: 1
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  # ============================================================
+  # Chantier 1 — i18n FR + AR avec RTL (10 stories, P0/P1)
+  # ============================================================
+  - id: US-001
+    title: "Setup vue-i18n + structure locales"
+    description: |
+      Installer vue-i18n@9 + @intlify/unplugin-vue-i18n. Créer src/i18n.js avec détection
+      (URL ?lang= → localStorage → fr default). Créer src/locales/{fr,ar,en}.json. Brancher
+      dans main.js. Plugin VueI18n dans vite.config.js.
+    acceptance_criteria:
+      - "vue-i18n@^9 et @intlify/unplugin-vue-i18n dans package.json"
+      - "frontend/src/i18n.js exporte une instance i18n configurée"
+      - "frontend/src/locales/{fr,ar,en}.json présents (peuvent être minimaux)"
+      - "main.js utilise app.use(i18n)"
+      - "vite.config.js a le plugin VueI18nPlugin"
+      - "App.vue applique document.documentElement.dir = 'rtl' si locale === 'ar'"
+      - "fr.json contient au moins {nav: {brand: 'MIROSHARK', explore: 'Explorer'}}"
+    files_scope:
+      - "frontend/package.json"
+      - "frontend/src/i18n.js"
+      - "frontend/src/locales/**"
+      - "frontend/src/main.js"
+      - "frontend/src/App.vue"
+      - "frontend/vite.config.js"
+    depends_on: ["US-000"]
+    priority: 1
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  - id: US-002
+    title: "Externaliser textes Home + ScenarioSuggestions + TrendingTopics + TemplateGallery"
+    description: |
+      Remplacer toutes les chaînes EN hardcodées par $t() dans les 4 fichiers. Enrichir fr.json
+      (et copier les keys vides dans ar.json + en.json).
+    acceptance_criteria:
+      - "Aucune chaîne d'UI hardcodée en EN dans les 4 fichiers"
+      - "fr.json contient toutes les clés correspondantes (nav.*, home.*, scenarios.*, trending.*, templates.*)"
+      - "ar.json + en.json ont les mêmes clés (placeholders OK)"
+      - "?lang=en sur localhost montre les textes en EN dans ces 4 vues"
+    files_scope:
+      - "frontend/src/views/Home.vue"
+      - "frontend/src/components/ScenarioSuggestions.vue"
+      - "frontend/src/components/TrendingTopics.vue"
+      - "frontend/src/components/TemplateGallery.vue"
+      - "frontend/src/locales/**"
+    depends_on: ["US-001"]
+    priority: 1
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  - id: US-003
+    title: "Externaliser textes Step1-5 (process workflow)"
+    description: |
+      Step1GraphBuild, Step2EnvSetup, Step3Simulation, Step4Report, Step5Interaction.
+    acceptance_criteria:
+      - "Aucune chaîne EN hardcodée dans les 5 Step*.vue"
+      - "fr.json/ar.json/en.json mis à jour avec process.step1.* … step5.*"
+      - "Vérification visuelle Playwright: flow process complet en FR puis en EN"
+    files_scope:
+      - "frontend/src/components/Step1GraphBuild.vue"
+      - "frontend/src/components/Step2EnvSetup.vue"
+      - "frontend/src/components/Step3Simulation.vue"
+      - "frontend/src/components/Step4Report.vue"
+      - "frontend/src/components/Step5Interaction.vue"
+      - "frontend/src/locales/**"
+    depends_on: ["US-002"]
+    priority: 1
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  - id: US-004
+    title: "Externaliser textes vues simulation (View, Run, Replay, Comparison, Interaction)"
+    description: |
+      SimulationView, SimulationRunView, ReplayView, ComparisonView, InteractionView.
+      Toasts/messages d'erreur dynamiques aussi traduits.
+    acceptance_criteria:
+      - "Aucune chaîne EN hardcodée dans les 5 vues"
+      - "Toasts utilisent $t()"
+      - "fr.json mis à jour"
+    files_scope:
+      - "frontend/src/views/SimulationView.vue"
+      - "frontend/src/views/SimulationRunView.vue"
+      - "frontend/src/views/ReplayView.vue"
+      - "frontend/src/views/ComparisonView.vue"
+      - "frontend/src/views/InteractionView.vue"
+      - "frontend/src/locales/**"
+    depends_on: ["US-002"]
+    priority: 1
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  - id: US-005
+    title: "Externaliser textes Explore + Embed + Verified"
+    description: |
+      ExploreView (mode explore + verified), EmbedView, EmbedDialog.
+    acceptance_criteria:
+      - "Aucune chaîne EN hardcodée"
+      - "Toggle 'Verified Predictions' utilise $t('explore.verifiedFilter')"
+      - "fr.json mis à jour"
+    files_scope:
+      - "frontend/src/views/ExploreView.vue"
+      - "frontend/src/views/EmbedView.vue"
+      - "frontend/src/components/EmbedDialog.vue"
+      - "frontend/src/locales/**"
+    depends_on: ["US-002"]
+    priority: 1
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  - id: US-006
+    title: "Externaliser textes panneaux annexes + composants partagés"
+    description: |
+      SettingsPanel, DebugPanel, WhatIfPanel, CounterfactualBranchPanel, HistoryDatabase,
+      BeliefDriftChart, InfluenceLeaderboard, InteractionNetwork, NetworkPanel, GraphPanel,
+      PolymarketChart, DemographicBreakdown.
+    acceptance_criteria:
+      - "Aucune chaîne EN hardcodée dans ces 12 composants"
+      - "fr.json organisé par sections (panels.*, charts.*)"
+    files_scope:
+      - "frontend/src/components/SettingsPanel.vue"
+      - "frontend/src/components/DebugPanel.vue"
+      - "frontend/src/components/WhatIfPanel.vue"
+      - "frontend/src/components/CounterfactualBranchPanel.vue"
+      - "frontend/src/components/HistoryDatabase.vue"
+      - "frontend/src/components/BeliefDriftChart.vue"
+      - "frontend/src/components/InfluenceLeaderboard.vue"
+      - "frontend/src/components/InteractionNetwork.vue"
+      - "frontend/src/components/NetworkPanel.vue"
+      - "frontend/src/components/GraphPanel.vue"
+      - "frontend/src/components/PolymarketChart.vue"
+      - "frontend/src/components/DemographicBreakdown.vue"
+      - "frontend/src/locales/**"
+    depends_on: ["US-002"]
+    priority: 2
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  - id: US-007
+    title: "Backend renvoie error_code, frontend traduit"
+    description: |
+      Refactor des messages d'erreur dans backend/app/api/*.py pour renvoyer
+      {success: false, error_code: 'snake_case', error_detail: '<en fallback>'}.
+      Frontend mappe error_code → $t('errors.<code>').
+    acceptance_criteria:
+      - "≥ 30 messages d'erreur convertis dans simulation.py + report.py + graph.py + share.py + settings.py"
+      - "fr.json/ar.json/en.json contiennent une section errors.* couvrant ces codes"
+      - "frontend/src/utils/error-handler.js helper qui mappe error_code → $t()"
+      - "Tests pytest existants ne cassent pas"
+      - "Test Playwright: erreur déclenchée et message traduit"
+    files_scope:
+      - "backend/app/api/**"
+      - "backend/tests/**"
+      - "frontend/src/utils/error-handler.js"
+      - "frontend/src/locales/**"
+    depends_on: ["US-002"]
+    priority: 2
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  - id: US-008
+    title: "Composant LanguageSwitcher dans navbar"
+    description: |
+      Dropdown FR/AR/EN dans la navbar, persiste localStorage, met à jour dir + i18n.locale.
+    acceptance_criteria:
+      - "frontend/src/components/LanguageSwitcher.vue créé"
+      - "Présent dans la navbar de Home et toutes les vues"
+      - "localStorage.setItem('locale', newLang) au changement"
+      - "dir='rtl' appliqué quand ar"
+      - "Test Playwright: changement persiste après reload"
+    files_scope:
+      - "frontend/src/components/LanguageSwitcher.vue"
+      - "frontend/src/views/Home.vue"
+      - "frontend/src/App.vue"
+    depends_on: ["US-001"]
+    priority: 1
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  - id: US-009
+    title: "Support RTL complet (CSS logical properties + ar.json complet)"
+    description: |
+      Migrer les CSS scoped vers les propriétés logiques (margin-inline-start, padding-inline-end,
+      inset-inline-start). Compléter ar.json avec vraies traductions. Polices arabes via Google Fonts.
+    acceptance_criteria:
+      - "Au moins 15 composants migrés vers CSS logical properties"
+      - "ar.json complet (toutes les keys de fr.json traduites)"
+      - "Tajawal ou Almarai chargées via Google Fonts pour ar"
+      - "Screenshot Playwright comparatif fr vs ar montre layout symétrique"
+      - "Aucune régression visuelle en LTR (FR/EN)"
+    files_scope:
+      - "frontend/src/views/**"
+      - "frontend/src/components/**"
+      - "frontend/src/locales/ar.json"
+      - "frontend/index.html"
+    depends_on: ["US-001", "US-002", "US-003", "US-008"]
+    priority: 1
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  - id: US-010
+    title: "Tests Playwright multi-locale"
+    description: |
+      Suite Playwright qui parcourt les vues principales en FR, EN, AR et vérifie
+      pas de clé brute affichée + dir correct.
+    acceptance_criteria:
+      - "tests/e2e/i18n.spec.ts couvre ≥ 5 vues × 3 locales"
+      - "Aucune chaîne du type 'simulation.start.button' affichée à l'écran"
+      - "document.documentElement.dir === 'rtl' quand ar"
+      - "npx playwright test --reporter=list passe vert"
+    files_scope:
+      - "tests/e2e/**"
+      - "playwright.config.ts"
+    depends_on: ["US-002", "US-003", "US-005", "US-008", "US-009"]
+    priority: 2
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  # ============================================================
+  # Chantier 2 — Finition design Playful & Soft (6 stories, P1)
+  # ============================================================
+  - id: US-011
+    title: "Migrer Step2EnvSetup + Step4Report + Step5Interaction au design Playful & Soft"
+    description: |
+      Appliquer .ms-* (cards, buttons, badges), radius 12px, ombres soft, fonts Outfit+Manrope.
+      Supprimer les hex hardcodés au profit de --ms-*.
+    acceptance_criteria:
+      - "Aucun hex hardcodé (#FF6B1A, #43C165) dans ces 3 fichiers"
+      - "Boutons utilisent .ms-btn-primary/-secondary/-ghost"
+      - "Cards utilisent .ms-card"
+      - "Badges utilisent .ms-badge-*"
+      - "npm run build passe"
+    files_scope:
+      - "frontend/src/components/Step2EnvSetup.vue"
+      - "frontend/src/components/Step4Report.vue"
+      - "frontend/src/components/Step5Interaction.vue"
+    depends_on: []
+    priority: 2
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  - id: US-012
+    title: "Migrer ExploreView + EmbedView + ReplayView + ComparisonView + InteractionView"
+    description: "Idem mais pour les 5 vues principales restantes."
+    acceptance_criteria:
+      - "Aucun hex hardcodé legacy"
+      - "Cards de la galerie utilisent .ms-card avec hover lift"
+      - "Loaders utilisent .ms-skeleton"
+      - "npm run build passe"
+    files_scope:
+      - "frontend/src/views/ExploreView.vue"
+      - "frontend/src/views/EmbedView.vue"
+      - "frontend/src/views/ReplayView.vue"
+      - "frontend/src/views/ComparisonView.vue"
+      - "frontend/src/views/InteractionView.vue"
+    depends_on: []
+    priority: 2
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  - id: US-013
+    title: "Migrer charts (BeliefDriftChart, PolymarketChart, InteractionNetwork, DemographicBreakdown)"
+    description: |
+      Charts D3 : harmoniser couleurs avec --ms-orange/--ms-blue/--ms-mint/--ms-peach.
+      Stroke widths plus doux. Tooltip arrondi.
+    acceptance_criteria:
+      - "Couleurs des charts viennent de getComputedStyle(...).getPropertyValue('--ms-*')"
+      - "Tooltips utilisent border-radius var(--ms-radius-md)"
+      - "npm run build passe"
+    files_scope:
+      - "frontend/src/components/BeliefDriftChart.vue"
+      - "frontend/src/components/PolymarketChart.vue"
+      - "frontend/src/components/InteractionNetwork.vue"
+      - "frontend/src/components/DemographicBreakdown.vue"
+    depends_on: []
+    priority: 2
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  - id: US-014
+    title: "Migrer panels (Settings, Debug, WhatIf, CounterfactualBranch, HistoryDatabase)"
+    description: "Panneaux annexes."
+    acceptance_criteria:
+      - "Aucun hex hardcodé legacy"
+      - "Inputs utilisent .ms-input"
+      - "Tableaux utilisent radius 12px et ombres soft"
+      - "npm run build passe"
+    files_scope:
+      - "frontend/src/components/SettingsPanel.vue"
+      - "frontend/src/components/DebugPanel.vue"
+      - "frontend/src/components/WhatIfPanel.vue"
+      - "frontend/src/components/CounterfactualBranchPanel.vue"
+      - "frontend/src/components/HistoryDatabase.vue"
+    depends_on: []
+    priority: 2
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  - id: US-015
+    title: "Migrer pages restantes (MainView, ProcessView, SimulationRunView, ReportView)"
+    description: "Vues pleine page restantes."
+    acceptance_criteria:
+      - "Aucun hex hardcodé legacy"
+      - "Layout utilise .ms-stack et .ms-row"
+      - "npm run build passe"
+    files_scope:
+      - "frontend/src/views/MainView.vue"
+      - "frontend/src/views/ProcessView.vue"
+      - "frontend/src/views/SimulationRunView.vue"
+      - "frontend/src/views/ReportView.vue"
+    depends_on: []
+    priority: 2
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  - id: US-016
+    title: "Audit final design tokens + cleanup CSS dupliqué"
+    description: |
+      Grep pour hex restants, !important, inline styles. Supprimer la duplication CSS
+      (mêmes classes redéfinies dans plusieurs composants → factoriser dans components.css).
+    acceptance_criteria:
+      - "grep -rE '#[0-9A-Fa-f]{3,6}' frontend/src/ ne renvoie aucun hex sauf design-tokens.css et components.css"
+      - "grep -c '!important' frontend/src/ < 5"
+      - "Bundle CSS principal réduit de ≥ 10% mesuré post-build"
+      - "frontend/DESIGN.md mis à jour"
+    files_scope:
+      - "frontend/src/**"
+      - "frontend/DESIGN.md"
+    depends_on: ["US-011", "US-012", "US-013", "US-014", "US-015"]
+    priority: 2
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  # ============================================================
+  # Chantier 3 — Templates She Start (3 stories, P1)
+  # ============================================================
+  - id: US-017
+    title: "Backend template she_start_cohort_replay (3 variants A/B/C)"
+    description: |
+      Créer le template dans backend/app/templates/. Définir les 3 modes (Ground Truth Replay,
+      Cohort Twin, Blind Spot Hunt) avec rounds=10, agents par défaut, market framing
+      'X% PMF validé S10', injection events.
+    acceptance_criteria:
+      - "GET /api/templates/list retourne she_start_cohort_replay"
+      - "GET /api/templates/she_start_cohort_replay renvoie le contenu structuré avec 3 variants"
+      - "Tests pytest unitaires pour parsing du template"
+      - "Documentation backend/app/templates/she_start.md"
+    files_scope:
+      - "backend/app/templates/**"
+      - "backend/app/api/templates.py"
+      - "backend/tests/**"
+    depends_on: ["US-000"]
+    priority: 2
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  - id: US-018
+    title: "Seed document Markdown + persona archetypes She Start"
+    description: |
+      Template Markdown pour 35 candidates + 5 mentors + 3 jurés + 2 banquiers + 5 observateurs.
+      8 archétypes mentors par défaut (branding, growth, juridique, fundraising, tech, ops,
+      leadership féminin, marché africain). Critère PMF observable formalisé.
+    acceptance_criteria:
+      - "backend/app/templates/she_start_cohort_replay/seed_template.md prêt à remplir"
+      - "8 archetypes mentors documentés avec voice/posture/expertise"
+      - "Critère PMF observable formalisé (≥3 clients OR ≥50 utilisateurs OR ≥7/10 jury)"
+    files_scope:
+      - "backend/app/templates/she_start_cohort_replay/**"
+    depends_on: ["US-017"]
+    priority: 2
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  - id: US-019
+    title: "Frontend Template Gallery card She Start avec UI custom A/B/C"
+    description: |
+      Card dédiée dans TemplateGallery.vue pour She Start avec 3 boutons (Replay/Twin/Blind Spot)
+      qui pré-remplissent les paramètres correspondants.
+    acceptance_criteria:
+      - "Card She Start visible avec 3 sub-actions"
+      - "Click sur Replay/Twin/Blind Spot pré-remplit le form de simulation"
+      - "Texte traduit via $t() (clé templates.sheStart.*)"
+      - "Test Playwright: flux complet sélection → form pré-rempli"
+    files_scope:
+      - "frontend/src/components/TemplateGallery.vue"
+      - "frontend/src/views/Home.vue"
+      - "frontend/src/locales/**"
+    depends_on: ["US-017", "US-002"]
+    priority: 2
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  # ============================================================
+  # Chantier 4 — Calibration /verified (3 stories, P1/P2)
+  # ============================================================
+  - id: US-020
+    title: "Backend endpoint /api/calibration/brier-score"
+    description: |
+      Calculer le Brier score sur les sims marquées verified. Agréger par template, par mois,
+      par seuil de confiance. Renvoyer aussi calibration plot data (10 buckets).
+    acceptance_criteria:
+      - "GET /api/calibration/brier-score retourne {brier, n, calibration_plot: [...]}"
+      - "Filtres ?template=...&from=...&to=... fonctionnels"
+      - "Tests pytest pour calcul Brier"
+      - "Endpoint accessible sans auth (argument commercial)"
+    files_scope:
+      - "backend/app/api/**"
+      - "backend/tests/**"
+    depends_on: ["US-000"]
+    priority: 2
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  - id: US-021
+    title: "Frontend page /calibration avec calibration plot D3"
+    description: |
+      Page publique : calibration plot, Brier score actuel, n_total, breakdown par template.
+      Argument commercial.
+    acceptance_criteria:
+      - "Route /calibration ajoutée au router"
+      - "Calibration plot D3 (predicted vs observed avec diagonale)"
+      - "Stats: Brier score, n_total, n_called_it, % accuracy"
+      - "Page traduite (calibration.*)"
+      - "Design Playful & Soft appliqué"
+      - "Test Playwright: page charge, plot rendu"
+    files_scope:
+      - "frontend/src/views/CalibrationView.vue"
+      - "frontend/src/router/**"
+      - "frontend/src/locales/**"
+    depends_on: ["US-020", "US-002"]
+    priority: 2
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  - id: US-022
+    title: "3 case studies retro publiables dans /verified"
+    description: |
+      Lancer 3 simulations sur événements 2024-2025 vérifiables (CAN 2025, fusion banque,
+      lancement DeepSeek, etc.). Marquer outcome avec sources. Page /case-studies/<id>.
+      [REQUIERT INTERVENTION HUMAINE: Amine choisit les 3 sujets]
+    acceptance_criteria:
+      - "3 simulations live tournées sur événements vérifiables"
+      - "Pour chacune: outcome marqué + URL preuve dans outcome.json"
+      - "Pour chacune: annotation 200 mots minimum"
+      - "Visible dans /verified avec design Playful & Soft"
+      - "Une page /case-studies/<id> par sim avec narration"
+    files_scope:
+      - "backend/app/api/share.py"
+      - "frontend/src/views/**"
+      - "data/case_studies/**"
+    depends_on: ["US-020"]
+    priority: 3
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  # ============================================================
+  # Chantier 5 — Packaging commercial (3 stories, P2)
+  # ============================================================
+  - id: US-023
+    title: "Page publique /offres avec 3 packages"
+    description: |
+      Crisis Drill 24h, Policy Brief Stress Test, Pre-Launch Adcheck. Pour chaque:
+      description, livrable, prix MAD/EUR, CTA 'Demander un devis'. Traduit FR/EN/AR.
+    acceptance_criteria:
+      - "Route /offres ajoutée au router"
+      - "3 cards packages avec contenus exacts"
+      - "Contenu traduit FR + EN + AR"
+      - "Design Playful & Soft"
+      - "Form devis fonctionnel (US-025)"
+      - "Test Playwright"
+    files_scope:
+      - "frontend/src/views/OffersView.vue"
+      - "frontend/src/router/**"
+      - "frontend/src/locales/**"
+    depends_on: ["US-002"]
+    priority: 3
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  - id: US-024
+    title: "Génération PDF brandé AIMPOWER pour rapports clients"
+    description: |
+      Endpoint POST /api/simulation/<id>/export-pdf. Page de garde AIMPOWER, palette
+      Playful & Soft, logo, sections (résumé, méthodo, résultats, recommandations, sources).
+    acceptance_criteria:
+      - "POST /api/simulation/<id>/export-pdf retourne PDF binaire"
+      - "Page de garde avec logo AIMPOWER (placeholder fourni)"
+      - "Mise en page conforme palette --ms-*"
+      - "Tests pytest avec snapshot PDF"
+      - "Bouton 'Export PDF' dans EmbedDialog"
+    files_scope:
+      - "backend/app/api/**"
+      - "backend/app/services/**"
+      - "frontend/src/components/EmbedDialog.vue"
+      - "backend/tests/**"
+    depends_on: ["US-016"]
+    priority: 3
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  - id: US-025
+    title: "Form de demande de devis + webhook email"
+    description: |
+      Form sur /offres → POST /api/leads/quote → email Amine via SMTP env vars.
+    acceptance_criteria:
+      - "Form valide email + nom + entreprise + package + message"
+      - "POST /api/leads/quote stocke en JSON dans backend/data/leads/ + envoie email SMTP"
+      - "Confirmation visuelle au submit"
+      - "Tests pytest pour validation"
+      - "Test Playwright pour submit + confirmation"
+    files_scope:
+      - "backend/app/api/**"
+      - "backend/data/leads/**"
+      - "frontend/src/views/OffersView.vue"
+      - "frontend/src/components/QuoteForm.vue"
+      - "backend/tests/**"
+    depends_on: ["US-023"]
+    priority: 3
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  # ============================================================
+  # Chantier 6 — Quick wins UI (5 stories, P2)
+  # ============================================================
+  - id: US-026
+    title: "Favicon HQ multi-formats + manifest PWA + apple-touch-icon"
+    description: "Favicons multi-tailles (16/32/64/128/192/512) + apple-touch-icon-180 + manifest.json."
+    acceptance_criteria:
+      - "frontend/public/favicon.ico, favicon-32.png, favicon-192.png, apple-touch-icon.png présents"
+      - "frontend/public/manifest.json valide"
+      - "<link> tags dans index.html"
+      - "Lighthouse PWA installability > 70"
+    files_scope:
+      - "frontend/public/**"
+      - "frontend/index.html"
+    depends_on: []
+    priority: 3
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  - id: US-027
+    title: "Dark mode toggle (prefers-color-scheme + override manuel)"
+    description: |
+      Définir dark tokens dans design-tokens.css ([data-theme='dark']). Toggle dans navbar.
+      Persistance localStorage. Fallback prefers-color-scheme.
+    acceptance_criteria:
+      - "design-tokens.css contient une section [data-theme='dark']"
+      - "Composant ThemeSwitcher.vue (toggle)"
+      - "Persiste localStorage"
+      - "prefers-color-scheme respecté au premier load"
+      - "Audit visuel des 5 vues principales OK en dark via Playwright screenshots"
+    files_scope:
+      - "frontend/src/design-tokens.css"
+      - "frontend/src/components/ThemeSwitcher.vue"
+      - "frontend/src/App.vue"
+      - "frontend/src/views/Home.vue"
+    depends_on: ["US-016"]
+    priority: 3
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  - id: US-028
+    title: "Audit contraste WCAG AA + corrections"
+    description: "Vérifier ratio contraste vs background, corriger violations."
+    acceptance_criteria:
+      - "Tous les couples (color, background) sur du texte ont ratio ≥ 4.5:1 (normal) ou ≥ 3:1 (large)"
+      - "axe-core dans Playwright montre 0 violation contrast-related"
+      - "design-tokens.css ajusté si nécessaire"
+    files_scope:
+      - "frontend/src/design-tokens.css"
+      - "frontend/src/styles/**"
+      - "tests/e2e/**"
+    depends_on: ["US-016"]
+    priority: 3
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  - id: US-029
+    title: "Animations IntersectionObserver scroll"
+    description: |
+      Cards Home + Explore + Calibration en fade-up sur scroll, respect prefers-reduced-motion.
+    acceptance_criteria:
+      - "frontend/src/composables/useScrollFadeIn.js centralise IntersectionObserver"
+      - "≥ 3 vues utilisent ce composable"
+      - "@media (prefers-reduced-motion: reduce) désactive l'animation"
+      - "Pas d'ajout > 1kb au bundle"
+    files_scope:
+      - "frontend/src/composables/**"
+      - "frontend/src/views/**"
+    depends_on: []
+    priority: 3
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  - id: US-030
+    title: "Skeleton loaders sur /explore, /verified et SimulationView"
+    description: "Remplacer les 'Loading...' par skeletons .ms-skeleton."
+    acceptance_criteria:
+      - "ExploreView, /verified et SimulationView affichent skeletons pendant fetch"
+      - "Aucun texte 'Loading...' dans ces 3 vues"
+      - "@media (prefers-reduced-motion) → fade simple sans shimmer"
+    files_scope:
+      - "frontend/src/views/ExploreView.vue"
+      - "frontend/src/views/SimulationView.vue"
+    depends_on: []
+    priority: 3
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  # ============================================================
+  # Chantier 7 — Hardening prod minimal (4 stories, P0)
+  # ============================================================
+  - id: US-031
+    title: "SECRET_KEY env var requise (fail closed si absent en prod)"
+    description: |
+      backend/app/config.py: lever erreur au démarrage si SECRET_KEY absent + FLASK_ENV != 'development'.
+      En dev, garder default + warning fort.
+    acceptance_criteria:
+      - "Config.validate() retourne erreur si SECRET_KEY absent + FLASK_ENV != 'development'"
+      - "Log warning rouge quand fallback dev utilisé"
+      - "Tests pytest pour les 2 modes"
+      - "Documentation backend/README.md"
+    files_scope:
+      - "backend/app/config.py"
+      - "backend/tests/**"
+      - "backend/README.md"
+    depends_on: ["US-000"]
+    priority: 1
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  - id: US-032
+    title: "CORS whitelist (origins explicites au lieu de *)"
+    description: |
+      Remplacer CORS({'origins': '*'}) par whitelist depuis env CORS_ORIGINS (comma-separated).
+    acceptance_criteria:
+      - "Backend lit CORS_ORIGINS depuis env, defaults sensibles"
+      - "Origines non autorisées renvoient le bon header (pas wildcard)"
+      - "Tests pytest pour origin allowed/denied"
+      - "Mise à jour Coolify env vars (CORS_ORIGINS)"
+    files_scope:
+      - "backend/app/__init__.py"
+      - "backend/app/config.py"
+      - "backend/tests/**"
+    depends_on: ["US-000"]
+    priority: 1
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  - id: US-033
+    title: "FLASK_DEBUG=false par défaut dans Config"
+    description: |
+      Inverser le default: Config.DEBUG = ... 'False' .lower() == 'true'. Mode dev requiert
+      FLASK_DEBUG=true explicite.
+    acceptance_criteria:
+      - "config.py inverse le default à False"
+      - "Test pytest: create_app().config['DEBUG'] == False sans env var"
+      - "Documentation backend/README.md explicite"
+    files_scope:
+      - "backend/app/config.py"
+      - "backend/tests/**"
+      - "backend/README.md"
+    depends_on: ["US-000"]
+    priority: 1
+    allowed_tools: "Read,Write,Edit,Bash"
+
+  - id: US-034
+    title: "Headers de sécurité (HSTS, X-Frame-Options, CSP minimal)"
+    description: |
+      Middleware Flask: X-Frame-Options: SAMEORIGIN (sauf /share et /embed),
+      X-Content-Type-Options: nosniff, HSTS en prod, Referrer-Policy: strict-origin-when-cross-origin,
+      CSP minimal.
+    acceptance_criteria:
+      - "Middleware backend/app/security_headers.py créé"
+      - "/share/* et /embed/* sans X-Frame-Options ou ALLOWALL (pour social unfurl)"
+      - "Tests pytest pour chaque header sur /api et /share"
+      - "Lighthouse Best Practices > 90"
+    files_scope:
+      - "backend/app/security_headers.py"
+      - "backend/app/__init__.py"
+      - "backend/tests/**"
+    depends_on: ["US-000"]
+    priority: 1
+    allowed_tools: "Read,Write,Edit,Bash"
+
+# ============================================================
+# Fin du backlog — 35 user stories
+# ============================================================
+# Quand toutes les stories ont passes=true, l'agent émet :
+#
+#     <promise>COMPLETE</promise>
+#
+# Avant l'émission, vérifier :
+#   - cd frontend && npm run build → exit 0
+#   - cd backend && uv run pytest tests/ --tb=short -x → exit 0
+#   - npx playwright test --reporter=list → exit 0
+#   - prospectives.ai-mpower.com répond HTTP 200 sur /, /verified, /offres, /calibration
+#   - .ralph/prd.json a 35/35 stories en passes=true
