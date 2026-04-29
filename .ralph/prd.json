@@ -1280,6 +1280,42 @@
         "build_time": "5.77 s",
         "implementation_notes": "Optimistic UI on outcome POST + revert on network error; toast banner CSS-only (200ms slide-in, auto-dismiss after 3s). After successful mark in 'pending' filter, the card is filtered out locally + brier-score is re-fetched so the headline number moves live. N/A button is a no-op (documented choice) to avoid silent overwrite of an existing outcome — there is no DELETE endpoint on outcome.json yet. Logical properties used (margin-inline-end, text-align: start) for RTL safety. Outcome buttons use scoped CSS overrides on .outcome-btn--called-it/-partial/-wrong/-na with background var(--ms-mint/-peach/-rose) + ghost variant."
       }
+    },
+    {
+      "id": "US-047",
+      "chantier": "9-simulation-quality",
+      "title": "Validation graph non-vide à /api/simulation/create + UI préventive",
+      "description": "Aujourd'hui un user peut créer une simulation avec un graph_id qui pointe vers un graphe Neo4j sans entités définies (cas observé sur sim_cc793c9c99b5). Le flux échoue silencieusement à la phase /prepare avec « No matching entities found, please check if the graph is built correctly ». Implémenter un fail-fast côté backend : POST /api/simulation/create vérifie via EntityReader.filter_defined_entities(graph_id) que filtered_count > 0, sinon retourne 400 avec error_code=GRAPH_EMPTY. Côté frontend, désactiver le bouton « Lancer la simulation » tant que /api/graph/<id>/status renvoie entities_count == 0, avec tooltip explicatif.",
+      "acceptanceCriteria": [
+        "Backend POST /api/simulation/create lit le graph_id et vérifie filtered_count > 0 via EntityReader",
+        "Si graphe vide → retourne 400 {success:false, error_code:'GRAPH_EMPTY', error:'The selected graph contains no defined entities. Rebuild the graph from a document before launching a simulation.'}",
+        "Frontend (Step1 / MainView) bouton « Lancer la simulation » désactivé tant que entities_count == 0",
+        "Tooltip i18n explicatif quand bouton désactivé (FR/AR/EN)",
+        "Pytest backend : test_create_rejects_empty_graph → 400 GRAPH_EMPTY",
+        "Pytest backend : test_create_accepts_populated_graph → 200 success",
+        "Réutilise le helper error-handler.js de US-007 pour afficher le message localisé",
+        "Pas de régression sur les sims existantes (création reste OK quand graphe peuplé)"
+      ],
+      "passes": false,
+      "completedAt": null,
+      "dependencies": [
+        "US-007"
+      ],
+      "metadata": {
+        "priority": "P0",
+        "chantier_priority_rank": 3,
+        "blocks_demo": "Sans validation, un user peut tomber dans un état d'échec silencieux qui ruine la démo. Détecté en prod sur sim_cc793c9c99b5.",
+        "estimated_iterations_ralph": 1,
+        "files_to_touch": [
+          "backend/app/api/simulation.py",
+          "backend/tests/test_simulation_api.py",
+          "frontend/src/views/MainView.vue",
+          "frontend/src/locales/fr.json",
+          "frontend/src/locales/en.json",
+          "frontend/src/locales/ar.json"
+        ],
+        "follow_up_to": "Step03-Fix commit 2399f99 (hints UX) — US-047 attaque la cause racine, pas juste le message."
+      }
     }
   ]
 }

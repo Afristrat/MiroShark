@@ -1382,9 +1382,37 @@ def create_simulation():
         if not graph_id:
             return jsonify({
                 "success": False,
+                "error_code": "GRAPH_NOT_BUILT",
                 "error": "Graph not yet built for this project, please call /api/graph/build first"
             }), 400
-        
+
+        # US-047: fail-fast si le graphe ne contient aucune entité définie
+        # Évite l'échec silencieux à la phase /prepare (« No matching entities found »)
+        # qui mène à l'UX dégradée du Step 03 (cf commit 2399f99 + sim_cc793c9c99b5).
+        try:
+            storage = current_app.extensions.get('neo4j_storage')
+            if storage is not None:
+                preview = EntityReader(storage).filter_defined_entities(
+                    graph_id=graph_id,
+                    enrich_with_edges=False,
+                )
+                if preview.filtered_count == 0:
+                    logger.warning(
+                        f"Refus création simulation: graph_id={graph_id} ne contient aucune entité définie"
+                    )
+                    return jsonify({
+                        "success": False,
+                        "error_code": "GRAPH_EMPTY",
+                        "error": (
+                            "The selected graph contains no defined entities. "
+                            "Rebuild the graph from a document before launching a simulation."
+                        )
+                    }), 400
+        except Exception as exc:
+            # On ne bloque pas la création si la pré-vérification échoue (Neo4j down,
+            # graph_id mal formé, etc.). Le manager renverra une erreur explicite ensuite.
+            logger.warning(f"US-047 pré-check graph entities échec non bloquant: {exc}")
+
         manager = SimulationManager()
         state = manager.create_simulation(
             project_id=project_id,
