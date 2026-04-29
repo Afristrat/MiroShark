@@ -1,15 +1,35 @@
-== PASSATION MiroShark/Bassira 2026-04-29T20:30:00+01:00 ==
+== PASSATION MiroShark/Bassira 2026-04-29T22:00:00+01:00 ==
 
 [ETAT]
-- branche `main` `ab2d985` à jour avec `origin/main`
+- branche `main` `102ae67` à jour avec `origin/main`
 - prod **ONLINE** sur https://prospectives.ai-mpower.com (HTTP 200)
-- 40/48 stories Ralph passes:true (83 %)
-- 338 tests backend passing (vs 167 baseline début projet, vs 296 fin session 1) · zéro régression
-- npm run build : OK (~340 kB main / ~110 kB gzip)
-- 12 commits poussés cette session post-passation précédente
-- 5 sub-agents pilotés cette session : tous done & pushed
+- **44/51 stories Ralph passes:true (86 %)**
+- 344 tests backend passing (+6 cette extension de session) · zéro régression
+- **32 tests Playwright E2E** sur 5 vues × 3 langues + tunnel commercial · 32/32 PASS contre prod en 23s
+- npm run build : OK
+- **18 commits poussés** cette session étendue
+- 7 sub-agents pilotés cette session : tous done & pushed
+- **Plan dettes 4/4 phases complété** (Phase 1 cleanup + 2 robustesse + 3 Playwright + 4 chart D3)
 
-[FAIT cette session — 8 stories Ralph + 1 fix UX critique + nouvelle US-049]
+[FAIT cette session — 12 stories Ralph + 1 fix UX critique + 4 nouvelles stories (US-049/050/051/052)]
+
+**Extension session post-2030 (chantier dettes 4 phases)** :
+
+✓ **Phase 1 cleanup** (commit `c31dace`) : suppression 3 backups Office résiduels + ajout `~$*` au .gitignore + création `docs/COOLIFY_ENV.md` (doc complète SMTP avec procédure Gmail step-by-step) + ajout US-050/051/052 au PRD.
+
+✓ **Phase 2 robustesse backend US-050 + US-051** (commit `f0dace4`) :
+  - **US-050** : pre-check graph_id durci contre exceptions storage typées. ValueError → 503 GRAPH_CHECK_FAILED message rebuild. Exception module `neo4j.*` → 503 retry 30s. Exception générique → fail-open volontaire. Heuristique `type(exc).__module__.startswith("neo4j")` évite la dépendance dure. 3 nouveaux tests + i18n GRAPH_CHECK_FAILED 3 langues.
+  - **US-051** : refactor `_get_simulation_dir(simulation_id, create=False)` par défaut. Audit des 10 callers : créer = `create=True`, lire = `create=False`. Plus de dossiers fantômes silencieux. `delete_simulation` simplifié sans contournement. 3 nouveaux tests US-051.
+
+✓ **Phase 3 Playwright US-010** (commit `4d738be`) : 32 tests E2E runnables contre prod en 23s. 5 vues × 3 langues smoke (Home, /calibration, /offres, /devis, /explore) + 15 tests transverse i18n no-raw-keys + 2 tests tunnel commercial /offres → /devis read-only + RTL `dir=rtl` sur 5 pages AR. Aucune action destructive. Scripts npm `test:e2e`, `test:e2e:ui`, `test:e2e:list`. Couvre la dette de validation des 12+ commits récents.
+
+✓ **Phase 4 chart D3 US-052** (commit `102ae67`) : helper `frontend/src/utils/css-vars.js` avec `readChartPalette()` lit `--ms-chart-1..10` + `--ms-status-*` via `getComputedStyle` au mount, mémoise + Object.freeze + fallback hex. PolymarketChart 11 hex JS éliminés, GraphPanel array catégoriel + 6 highlights migrés. `clearChartPaletteCache()` exposée pour US-027 dark mode futur. **Débloque US-027**.
+
+---
+
+[Pré-extension — passation initiale 20:30]
+
+[FAIT cette session première moitié — 8 stories Ralph + 1 fix UX critique + nouvelle US-049]
 
 ✓ **Step03-Fix** (commit `2399f99`) : hints contextuels Step 03 (entities/profiles/timeout/llm) + extraction err.response.data.error dans handleConfigRetry + locales fr/en/ar débrandées d'OpenRouter + admin US-038 passes:true. Cas signalé par Amine sur sim_cc793c9c99b5 où il voyait "Request failed with status code 400" au lieu d'un message localisé.
 
@@ -69,19 +89,22 @@
 - ✅ Frontend ReviewEntitiesView complet
 - ✅ Fix `186c4bb` : empty state ne bloque plus l'Add (régression sub-agent corrigée)
 
-[NEXT prio P1 — chantiers commerciaux restants]
-- **US-024** Génération PDF brandé AIMPOWER pour rapports clients (deps US-016 ✓ débloquée). Effort estimé 4-6h. Stack Python : weasyprint ou reportlab côté backend. Frontend bouton "Télécharger PDF" sur ReportView.
-- **US-022** 3 case studies retro `/verified` : `requires_human_codesign:true` — Amine doit choisir 3 sujets avant de coder.
+[NEXT — 7 stories restantes après extension dettes]
 
-[NEXT prio P2 — qualité]
-- **US-010** Suite Playwright multi-locale (5 vues × 3 locales, vérifier pas de clé brute affichée, dir=rtl). Couvre la dette de validation des batches récents (Step03-Fix, US-007/039/040/047/049/023/025).
-- **US-027** Dark mode toggle (prefers-color-scheme + override manuel). Deps US-016 ✓ débloquée. **Attention** : OffersView/QuoteView palette Stitch isolée — décider si dark mode couvre ces vues ou pas.
-- **US-028** Audit contraste WCAG AA + corrections. Deps US-016 ✓ débloquée.
+### Prio P1 — commercial
+- **US-024** Génération PDF brandé AIMPOWER pour rapports clients. Deps US-016 ✓. Effort 4-6h. Stack Python : weasyprint ou reportlab. Frontend bouton "Télécharger PDF" sur ReportView.
 
-[NEXT prio P2 — design migration restant]
-- **US-012** Migrer ExploreView + EmbedView + ReplayView + ComparisonView + InteractionView vers .ms-* (déjà partiellement fait via US-016 hex migration, mais pas la structure HTML).
-- **US-013** Migrer charts (BeliefDriftChart, PolymarketChart, InteractionNetwork, DemographicBreakdown). Note : strings JS chart D3 hardcodent encore des hex (laissés volontairement par US-016). À traiter avec une var `--ms-chart-*` consommée via JS.
-- **US-014** Migrer panels (SettingsPanel, DebugPanel, WhatIfPanel, CounterfactualBranchPanel, HistoryDatabase). Idem partiellement débloqué par US-016.
+### Prio P2 — UI debloquée
+- **US-027** Dark mode toggle. **TOUTES deps levées par US-016 + US-052**. Implémenter `[data-theme="dark"]` qui réécrit les `--ms-*` globales + appeler `clearChartPaletteCache()` puis re-render charts D3. **Attention** OffersView/QuoteView palette Stitch isolée — décider explicitement si dark mode couvre ces 2 vues.
+- **US-028** Audit contraste WCAG AA. Deps US-016 ✓.
+
+### Prio P2 — design migration restante (couches HTML/structure)
+- **US-012** Migrer ExploreView + EmbedView + ReplayView + ComparisonView + InteractionView vers `.ms-*` (couleurs déjà migrées par US-016, reste structure).
+- **US-013** Migrer charts (BeliefDriftChart/PolymarketChart/InteractionNetwork/DemographicBreakdown). Note : palette JS migrée par US-052, reste structure CSS.
+- **US-014** Migrer panels (SettingsPanel/DebugPanel/WhatIfPanel/CounterfactualBranchPanel/HistoryDatabase). Idem.
+
+### Bloqué humain
+- **US-022** 3 case studies retro `/verified` : `requires_human_codesign:true` — **Amine doit choisir 3 sujets**.
 
 [CTX session]
 - ~700+ tool calls cumulés (toutes interactions Claude + 5 sub-agents)
