@@ -3,8 +3,17 @@ Configuration management
 Loads configuration uniformly from the .env file in the project root directory
 """
 
+import logging
 import os
+import secrets
 from dotenv import load_dotenv
+
+logger = logging.getLogger(__name__)
+
+# Auto-generated dev fallback for SECRET_KEY (process-scoped, never persisted).
+# In production (FLASK_ENV != 'development'), Config.validate() flags this as
+# an error so the app refuses to start with an insecure key.
+_DEV_SECRET_KEY_FALLBACK = secrets.token_hex(32)
 
 # Load the .env file from the project root directory
 # Path: MiroShark/.env (relative to backend/app/config.py)
@@ -21,8 +30,22 @@ class Config:
     """Flask configuration class"""
 
     # Flask configuration
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'miroshark-secret-key')
-    DEBUG = os.environ.get('FLASK_DEBUG', 'True').lower() == 'true'
+    # SECRET_KEY: required in production. In dev (FLASK_ENV=development) we
+    # fall back to a per-process random value (so sessions break across
+    # restarts but no static secret is ever shipped). Config.validate()
+    # raises in non-dev when SECRET_KEY is missing.
+    SECRET_KEY = os.environ.get('SECRET_KEY') or _DEV_SECRET_KEY_FALLBACK
+    SECRET_KEY_FROM_ENV = bool(os.environ.get('SECRET_KEY'))
+
+    # DEBUG defaults to False (safe by default). Set FLASK_DEBUG=true explicitly
+    # for local dev. The Werkzeug auto-reloader in debug mode propagates exits
+    # through `concurrently` and triggers Docker restart loops in production
+    # (cf. progress.md) — never enable it on a server.
+    DEBUG = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+
+    # Environment marker used by Config.validate() to fail closed on missing
+    # SECRET_KEY in production. Values: 'development' | 'production' (default).
+    FLASK_ENV = os.environ.get('FLASK_ENV', 'production').lower()
     
     # JSON configuration - disable ASCII escaping, display non-ASCII characters directly (instead of \uXXXX format)
     JSON_AS_ASCII = False
@@ -200,7 +223,12 @@ class Config:
     
     @classmethod
     def validate(cls):
-        """Validate required configuration"""
+        """Validate required configuration.
+
+        Returns a list of human-readable errors (empty when the config is
+        considered safe to boot). Callers should refuse to start the
+        application when this list is non-empty.
+        """
         errors = []
         if cls.LLM_PROVIDER != 'claude-code' and not cls.LLM_API_KEY:
             errors.append("LLM_API_KEY is not configured")
@@ -208,5 +236,21 @@ class Config:
             errors.append("NEO4J_URI is not configured")
         if not cls.NEO4J_PASSWORD:
             errors.append("NEO4J_PASSWORD is not configured")
+
+        # Production-only: refuse to boot with the auto-generated SECRET_KEY.
+        if not cls.SECRET_KEY_FROM_ENV:
+            if cls.FLASK_ENV != 'development':
+                errors.append(
+                    "SECRET_KEY is not set; refusing to start in "
+                    f"FLASK_ENV={cls.FLASK_ENV!r}. Set SECRET_KEY in the "
+                    "environment (or FLASK_ENV=development for local dev)."
+                )
+            else:
+                logger.warning(
+                    "SECRET_KEY missing — using a per-process random fallback "
+                    "(FLASK_ENV=development). Sessions will not survive "
+                    "restarts."
+                )
+
         return errors
 

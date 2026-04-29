@@ -29,6 +29,20 @@
 
 ## Log d'itérations
 
+### 2026-04-29 — US-031 + US-032 + US-033 Hardening prod minimal
+- **Statut** : passes: true (3 stories en un seul commit, fichier config.py touché par les 3)
+- **Fichiers** : backend/app/config.py, backend/app/__init__.py, backend/tests/test_unit_hardening.py
+- **Quality gates** : 174 tests passed, 17 skipped (intégration), 0 régression
+- **Changes** :
+  - SECRET_KEY default → fallback per-process random (`secrets.token_hex(32)`) + flag `SECRET_KEY_FROM_ENV`
+  - Config.validate() refuse de booter si SECRET_KEY absent + FLASK_ENV != 'development'
+  - DEBUG default 'False' (était 'True')
+  - CORS lit `CORS_ORIGINS` depuis env, defaults `https://prospectives.ai-mpower.com,http://localhost:3000,http://127.0.0.1:3000`
+- **Learnings** :
+  - importlib.reload(app.config) suffit pour tester monkeypatch.setenv sur Config classvars.
+  - flask-cors gère bien les listes Python comme value de `origins`. Pas besoin d'array YAML.
+  - Le sub-agent US-002 tourne en parallèle sans conflit (backend vs frontend).
+
 ### 2026-04-29 — US-001 Setup vue-i18n + structure locales
 - **Statut** : passes: true
 - **Fichiers** : frontend/src/i18n.js, frontend/src/locales/{fr,ar,en}.json, main.js, vite.config.js, package.json

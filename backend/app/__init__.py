@@ -40,8 +40,20 @@ def create_app(config_class=Config):
         logger.info("MiroShark Backend starting...")
         logger.info("=" * 50)
     
-    # Enable CORS
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    # Enable CORS — whitelist from CORS_ORIGINS env (comma-separated).
+    # Defaults to the production tunnel + local dev server.
+    cors_origins_env = os.environ.get(
+        'CORS_ORIGINS',
+        'https://prospectives.ai-mpower.com,http://localhost:3000,http://127.0.0.1:3000',
+    )
+    cors_origins = [o.strip() for o in cors_origins_env.split(',') if o.strip()]
+    # The literal '*' is still honoured (no whitelist) but emits a warning.
+    if '*' in cors_origins:
+        logger.warning(
+            "CORS_ORIGINS contains '*' — every origin is allowed. "
+            "Set CORS_ORIGINS to an explicit comma-separated list in production."
+        )
+    CORS(app, resources={r"/api/*": {"origins": cors_origins}})
 
     # Enable gzip/brotli response compression
     Compress(app)

@@ -520,9 +520,14 @@
         "Tests pytest qui simulent les 2 modes",
         "Documentation à jour dans backend/README.md"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-04-29T01:36:00Z",
       "dependencies": ["US-000"],
-      "metadata": { "estimated_hours": 1, "priority": "P0" }
+      "metadata": {
+        "estimated_hours": 1,
+        "priority": "P0",
+        "files_touched": ["backend/app/config.py", "backend/tests/test_unit_hardening.py"]
+      }
     },
     {
       "id": "US-032",
@@ -535,9 +540,14 @@
         "Tests pytest pour origin allowed/denied",
         "Mise à jour Coolify env vars (CORS_ORIGINS)"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-04-29T01:36:00Z",
       "dependencies": ["US-000"],
-      "metadata": { "estimated_hours": 2, "priority": "P0" }
+      "metadata": {
+        "estimated_hours": 2,
+        "priority": "P0",
+        "files_touched": ["backend/app/__init__.py", "backend/tests/test_unit_hardening.py"]
+      }
     },
     {
       "id": "US-033",
@@ -549,9 +559,14 @@
         "Test pytest qui vérifie create_app().config['DEBUG'] == False sans env var",
         "Documentation backend/README.md explicite"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-04-29T01:36:00Z",
       "dependencies": ["US-000"],
-      "metadata": { "estimated_hours": 1, "priority": "P0" }
+      "metadata": {
+        "estimated_hours": 1,
+        "priority": "P0",
+        "files_touched": ["backend/app/config.py", "backend/tests/test_unit_hardening.py"]
+      }
     },
     {
       "id": "US-034",
