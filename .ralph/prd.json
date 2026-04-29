@@ -53,9 +53,23 @@
         "frontend/src/App.vue affiche au démarrage `dir=ltr` (ou `rtl` si ar) sur document.documentElement",
         "frontend/src/locales/fr.json contient au minimum {nav: {brand: 'MIROSHARK', explore: 'Explorer'}}"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-04-29T00:10:00Z",
       "dependencies": ["US-000"],
-      "metadata": { "estimated_hours": 3, "priority": "P0" }
+      "metadata": {
+        "estimated_hours": 3,
+        "priority": "P0",
+        "files_touched": [
+          "frontend/package.json",
+          "frontend/src/i18n.js",
+          "frontend/src/locales/fr.json",
+          "frontend/src/locales/ar.json",
+          "frontend/src/locales/en.json",
+          "frontend/src/main.js",
+          "frontend/vite.config.js"
+        ],
+        "versions": "vue-i18n@^11.4.0 + @intlify/unplugin-vue-i18n@^11.1.2"
+      }
     },
     {
       "id": "US-002",

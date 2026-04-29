@@ -1,0 +1,29 @@
+{
+  "nav": {
+    "brand": "MIROSHARK",
+    "explore": "Explorer",
+    "github": "GitHub",
+    "settings": "Paramètres",
+    "verified": "Prédictions vérifiées",
+    "calibration": "Calibration",
+    "offers": "Offres"
+  },
+  "common": {
+    "loading": "Chargement…",
+    "error": "Erreur",
+    "retry": "Réessayer",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "close": "Fermer",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent"
+  },
+  "language": {
+    "fr": "Français",
+    "ar": "العربية",
+    "en": "English",
+    "switch": "Changer de langue"
+  }
+}

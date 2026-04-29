@@ -1,0 +1,29 @@
+{
+  "nav": {
+    "brand": "ميروشارك",
+    "explore": "استكشاف",
+    "github": "GitHub",
+    "settings": "الإعدادات",
+    "verified": "تنبؤات مؤكدة",
+    "calibration": "المعايرة",
+    "offers": "العروض"
+  },
+  "common": {
+    "loading": "جارٍ التحميل…",
+    "error": "خطأ",
+    "retry": "إعادة المحاولة",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد",
+    "close": "إغلاق",
+    "back": "رجوع",
+    "next": "التالي",
+    "previous": "السابق"
+  },
+  "language": {
+    "fr": "Français",
+    "ar": "العربية",
+    "en": "English",
+    "switch": "تغيير اللغة"
+  }
+}

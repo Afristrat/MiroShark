@@ -29,6 +29,17 @@
 
 ## Log d'itérations
 
+### 2026-04-29 — US-001 Setup vue-i18n + structure locales
+- **Statut** : passes: true
+- **Fichiers** : frontend/src/i18n.js, frontend/src/locales/{fr,ar,en}.json, main.js, vite.config.js, package.json
+- **Versions** : vue-i18n@^11.4.0 (et non v9 — v11 est maintenue actif)
+- **Quality gates** : npm run build ✓ (199.89 kB main bundle / 66.10 kB gzip)
+- **Learnings** :
+  - vue-i18n 11 est la version maintenue (anciennement v9). API similaire (`createI18n`, `legacy: false`).
+  - Le `@intlify/unplugin-vue-i18n` plugin Vite est obligatoire pour pré-compiler les JSON et activer `runtimeOnly: true` (bundle plus léger).
+  - Détection 4 niveaux : URL `?lang=` → `localStorage` → `navigator.language` → fallback `fr`.
+  - `applyDirection()` est appelé au chargement de l'instance i18n → pas besoin de toucher App.vue.
+
 ### 2026-04-29 — US-000 Sécuriser pytest pour quality gates Ralph
 - **Statut** : passes: true
 - **Fichiers touchés** : backend/pyproject.toml, backend/tests/test_unit_smoke.py, backend/tests/README.md
