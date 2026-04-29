@@ -1427,19 +1427,65 @@ def create_simulation():
                 "error": "Graph not yet built for this project, please call /api/graph/build first"
             }), 400
 
-        # US-047: fail-fast si le graphe ne contient aucune entité définie
-        # Évite l'échec silencieux à la phase /prepare (« No matching entities found »)
-        # qui mène à l'UX dégradée du Step 03 (cf commit 2399f99 + sim_cc793c9c99b5).
-        try:
-            storage = current_app.extensions.get('neo4j_storage')
-            if storage is not None:
+        # US-047: fail-fast si le graphe ne contient aucune entité définie.
+        # US-050: durcissement — si la vérification elle-même échoue à cause
+        # d'un problème storage typé (Neo4j down, query Cypher invalide,
+        # graph_id mal formé), on renvoie 503 GRAPH_CHECK_FAILED au lieu
+        # de laisser passer silencieusement. Pour les exceptions vraiment
+        # inattendues (bug code interne), on garde la politique fail-open
+        # afin de ne pas masquer un crash applicatif sous une erreur
+        # storage trompeuse.
+        storage = current_app.extensions.get('neo4j_storage')
+        if storage is not None:
+            try:
                 preview = EntityReader(storage).filter_defined_entities(
                     graph_id=graph_id,
                     enrich_with_edges=False,
                 )
+            except ValueError as exc:
+                # graph_id mal formé / validation côté reader
+                logger.warning(
+                    f"US-050: graph_id invalide pour pré-check: {graph_id!r} ({exc})"
+                )
+                return jsonify({
+                    "success": False,
+                    "error_code": "GRAPH_CHECK_FAILED",
+                    "error": (
+                        "Could not verify the graph state — invalid graph_id. "
+                        "Please rebuild the graph from Step 1 before launching a simulation."
+                    )
+                }), 503
+            except Exception as exc:
+                # Détecter les exceptions du driver Neo4j par leur module
+                # racine pour ne pas créer de dépendance dure à
+                # ``neo4j.exceptions`` au niveau de la couche API.
+                exc_module = type(exc).__module__ or ""
+                if exc_module.startswith("neo4j"):
+                    logger.error(
+                        f"US-050: Neo4j storage erreur lors du pré-check graph "
+                        f"{graph_id}: {type(exc).__name__}: {exc}"
+                    )
+                    return jsonify({
+                        "success": False,
+                        "error_code": "GRAPH_CHECK_FAILED",
+                        "error": (
+                            "Could not verify the graph state — the storage "
+                            "service is temporarily unavailable. Try again "
+                            "in 30 seconds."
+                        )
+                    }), 503
+                # Bug applicatif inattendu — fail-open volontaire pour ne
+                # pas masquer le vrai problème en aval. Le manager
+                # renverra une erreur typée si le graph est vraiment vide.
+                logger.warning(
+                    f"US-047/050 pré-check inattendu (fail-open): "
+                    f"{type(exc).__name__}: {exc}"
+                )
+            else:
                 if preview.filtered_count == 0:
                     logger.warning(
-                        f"Refus création simulation: graph_id={graph_id} ne contient aucune entité définie"
+                        f"Refus création simulation: graph_id={graph_id} "
+                        f"ne contient aucune entité définie"
                     )
                     return jsonify({
                         "success": False,
@@ -1449,10 +1495,6 @@ def create_simulation():
                             "Rebuild the graph from a document before launching a simulation."
                         )
                     }), 400
-        except Exception as exc:
-            # On ne bloque pas la création si la pré-vérification échoue (Neo4j down,
-            # graph_id mal formé, etc.). Le manager renverra une erreur explicite ensuite.
-            logger.warning(f"US-047 pré-check graph entities échec non bloquant: {exc}")
 
         manager = SimulationManager()
         state = manager.create_simulation(
@@ -3008,7 +3050,9 @@ def download_simulation_config(simulation_id: str):
     """Download simulation configuration file"""
     try:
         manager = SimulationManager()
-        sim_dir = manager._get_simulation_dir(simulation_id)
+        # US-051: read-only (we don't want to create a phantom dir on
+        # download attempts for non-existent sims).
+        sim_dir = manager._get_simulation_dir(simulation_id, create=False)
         config_path = os.path.join(sim_dir, "simulation_config.json")
         
         if not os.path.exists(config_path):

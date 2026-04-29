@@ -935,6 +935,7 @@
     "GRAPH_BUILD_IN_PROGRESS": "Graph build is in progress. Wait or use force=true to restart.",
     "GRAPH_BUILD_FAILED": "Graph build failed.",
     "GRAPH_EMPTY": "The selected graph contains no defined entities. Rebuild the graph from a document before launching a simulation.",
+    "GRAPH_CHECK_FAILED": "Could not verify the graph state right now. The Neo4j service is temporarily unavailable. Try again in 30 seconds.",
     "MISSING_GRAPH_ID": "Graph ID is required.",
     "INVALID_GRAPH_ID": "Invalid graph ID.",
     "INVALID_DIFF": "The refinement diff is invalid or inconsistent.",

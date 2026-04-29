@@ -164,16 +164,32 @@ class SimulationManager:
         # In-memory simulation state cache
         self._simulations: Dict[str, SimulationState] = {}
     
-    def _get_simulation_dir(self, simulation_id: str) -> str:
-        """Get simulation data directory"""
+    def _get_simulation_dir(self, simulation_id: str, create: bool = False) -> str:
+        """Get the path to a simulation's data directory.
+
+        US-051: previous behaviour was to ALWAYS run ``os.makedirs(exist_ok=True)``,
+        which silently created an empty directory whenever a caller merely
+        wanted to read state. That broke idempotent operations (cf US-049
+        DELETE) and polluted ``list_simulations()`` with phantom entries.
+
+        Args:
+            simulation_id: target simulation id (validated).
+            create: if True, ensure the directory exists on disk (legacy
+                behaviour). If False (default), only build the path string —
+                the caller must check ``os.path.isdir`` itself if needed.
+
+        Returns:
+            Absolute path to the (potentially non-existent) directory.
+        """
         validate_simulation_id(simulation_id)
         sim_dir = os.path.join(self.SIMULATION_DATA_DIR, simulation_id)
-        os.makedirs(sim_dir, exist_ok=True)
+        if create:
+            os.makedirs(sim_dir, exist_ok=True)
         return sim_dir
-    
+
     def _save_simulation_state(self, state: SimulationState):
         """Save simulation state to file"""
-        sim_dir = self._get_simulation_dir(state.simulation_id)
+        sim_dir = self._get_simulation_dir(state.simulation_id, create=True)
         state_file = os.path.join(sim_dir, "state.json")
         
         state.updated_at = datetime.now().isoformat()
@@ -187,10 +203,11 @@ class SimulationManager:
         """Load simulation state from file"""
         if simulation_id in self._simulations:
             return self._simulations[simulation_id]
-        
-        sim_dir = self._get_simulation_dir(simulation_id)
+
+        # US-051: read-only — never auto-create the directory.
+        sim_dir = self._get_simulation_dir(simulation_id, create=False)
         state_file = os.path.join(sim_dir, "state.json")
-        
+
         if not os.path.exists(state_file):
             return None
         
@@ -324,7 +341,8 @@ class SimulationManager:
             # downstream LLM call lands under the same Langfuse session.
             TraceContext.set(simulation_id=simulation_id)
 
-            sim_dir = self._get_simulation_dir(simulation_id)
+            # state was already saved → directory exists
+            sim_dir = self._get_simulation_dir(simulation_id, create=False)
 
             # ========== Phase 1: Read and filter entities ==========
             if progress_callback:
@@ -578,30 +596,26 @@ class SimulationManager:
         """
         import shutil
 
-        # NB: ``_get_simulation_dir`` and ``_load_simulation_state`` would
-        # auto-create the folder via ``os.makedirs(exist_ok=True)`` (legacy
-        # upstream contract), which would make idempotent deletion return
-        # ``True`` for sims that never existed. Read state.json directly.
-        validate_simulation_id(simulation_id)
-        sim_dir = os.path.join(self.SIMULATION_DATA_DIR, simulation_id)
+        # US-051: _get_simulation_dir(create=False) is now safe to call
+        # without side effects — it only builds the path string.
+        sim_dir = self._get_simulation_dir(simulation_id, create=False)
         if not os.path.isdir(sim_dir):
             return False
 
-        # Only block on RUNNING — read state.json without going through
-        # the auto-creating helper.
-        state_file = os.path.join(sim_dir, "state.json")
-        if os.path.exists(state_file):
-            try:
-                with open(state_file, 'r', encoding='utf-8') as fh:
-                    raw_status = json.load(fh).get("status")
-                if raw_status == SimulationStatus.RUNNING.value:
-                    raise ValueError(
-                        f"Simulation {simulation_id} is currently running — stop it first"
-                    )
-            except json.JSONDecodeError:
-                # Corrupted state.json — proceed with deletion (the user
-                # explicitly asked to wipe the simulation, fail-open here).
-                pass
+        # Block only on RUNNING. Use _load_simulation_state which is also
+        # read-only since US-051; corrupted state.json is treated as
+        # non-running so the user can still wipe the artefacts.
+        try:
+            state = self._load_simulation_state(simulation_id)
+            if state is not None and state.status == SimulationStatus.RUNNING:
+                raise ValueError(
+                    f"Simulation {simulation_id} is currently running — stop it first"
+                )
+        except (json.JSONDecodeError, KeyError, ValueError) as exc:
+            # Re-raise our own ValueError (RUNNING guard); swallow JSON
+            # corruption so the user can still recover.
+            if isinstance(exc, ValueError) and "running" in str(exc):
+                raise
 
         shutil.rmtree(sim_dir)
         self._simulations.pop(simulation_id, None)
@@ -613,7 +627,7 @@ class SimulationManager:
         if not state:
             raise ValueError(f"Simulation does not exist: {simulation_id}")
         
-        sim_dir = self._get_simulation_dir(simulation_id)
+        sim_dir = self._get_simulation_dir(simulation_id, create=False)
         profile_path = os.path.join(sim_dir, f"{platform}_profiles.json")
         
         if not os.path.exists(profile_path):
@@ -624,7 +638,7 @@ class SimulationManager:
     
     def get_simulation_config(self, simulation_id: str) -> Optional[Dict[str, Any]]:
         """Get simulation config"""
-        sim_dir = self._get_simulation_dir(simulation_id)
+        sim_dir = self._get_simulation_dir(simulation_id, create=False)
         config_path = os.path.join(sim_dir, "simulation_config.json")
         
         if not os.path.exists(config_path):
@@ -681,7 +695,7 @@ class SimulationManager:
             "created_at": datetime.now().isoformat(),
         }
 
-        sim_dir = self._get_simulation_dir(child.simulation_id)
+        sim_dir = self._get_simulation_dir(child.simulation_id, create=True)
         injection_path = os.path.join(sim_dir, "counterfactual_injection.json")
         with open(injection_path, "w", encoding="utf-8") as fh:
             json.dump(injection_payload, fh, ensure_ascii=False, indent=2)
@@ -732,12 +746,11 @@ class SimulationManager:
         if not parent:
             raise ValueError(f"Parent simulation not found: {parent_simulation_id}")
 
-        parent_dir = self._get_simulation_dir(parent_simulation_id)
+        parent_dir = self._get_simulation_dir(parent_simulation_id, create=False)
 
         # Create new simulation ID and directory
         new_id = f"sim_{uuid.uuid4().hex[:12]}"
-        new_dir = self._get_simulation_dir(new_id)
-        os.makedirs(new_dir, exist_ok=True)
+        new_dir = self._get_simulation_dir(new_id, create=True)
 
         # Copy preparation files
         files_to_copy = [

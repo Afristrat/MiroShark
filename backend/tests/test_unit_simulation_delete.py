@@ -166,3 +166,49 @@ def test_delete_does_not_affect_other_simulations(sim_client):
     assert resp.status_code == 200
     assert (tmp_path / "sim_keep").exists()
     assert not (tmp_path / "sim_drop").exists()
+
+
+# ─── US-051 — _get_simulation_dir(create=False) read-only contract ────
+
+
+def test_get_simulation_dir_read_only_does_not_create(sim_client):
+    """US-051: ``_get_simulation_dir(sim_id, create=False)`` builds the
+    path string without any filesystem side effect. Calling it on a
+    non-existent sim must not leave a phantom directory behind."""
+    tmp_path, _ = sim_client
+    from app.services.simulation_manager import SimulationManager
+
+    mgr = SimulationManager()
+    path = mgr._get_simulation_dir("sim_phantom", create=False)
+    assert isinstance(path, str)
+    # Crucially: the directory MUST NOT exist after this call.
+    assert not (tmp_path / "sim_phantom").exists(), \
+        "_get_simulation_dir(create=False) must not create the directory"
+
+
+def test_load_simulation_state_does_not_create_directory(sim_client):
+    """US-051: ``_load_simulation_state(non_existent)`` returns None and
+    must NOT pollute the data dir with an empty directory (the bug that
+    inflated ``list_simulations()`` with phantom entries)."""
+    tmp_path, _ = sim_client
+    from app.services.simulation_manager import SimulationManager
+
+    mgr = SimulationManager()
+    state = mgr._load_simulation_state("sim_nope")
+    assert state is None
+    assert not (tmp_path / "sim_nope").exists(), \
+        "Loading a non-existent sim must not create the directory"
+    # And list_simulations sees nothing — proves no leak through the cache
+    assert mgr.list_simulations() == []
+
+
+def test_get_simulation_dir_create_true_does_create(sim_client):
+    """US-051: explicit opt-in still works — ``create=True`` produces
+    the directory like the legacy contract."""
+    tmp_path, _ = sim_client
+    from app.services.simulation_manager import SimulationManager
+
+    mgr = SimulationManager()
+    path = mgr._get_simulation_dir("sim_explicit", create=True)
+    assert (tmp_path / "sim_explicit").is_dir()
+    assert path.endswith("sim_explicit")

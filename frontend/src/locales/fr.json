@@ -935,6 +935,7 @@
     "GRAPH_BUILD_IN_PROGRESS": "La construction du graphe est en cours. Patientez ou utilisez force=true pour relancer.",
     "GRAPH_BUILD_FAILED": "La construction du graphe a échoué.",
     "GRAPH_EMPTY": "Le graphe sélectionné ne contient aucune entité. Reconstruisez le graphe avant de lancer une simulation.",
+    "GRAPH_CHECK_FAILED": "Impossible de vérifier l'état du graphe pour le moment. Le service Neo4j est temporairement indisponible. Réessayez dans 30 secondes.",
     "MISSING_GRAPH_ID": "Identifiant de graphe requis.",
     "INVALID_GRAPH_ID": "Identifiant de graphe invalide.",
     "INVALID_DIFF": "Le diff de raffinement est invalide ou incohérent.",

@@ -1458,8 +1458,8 @@
         "Pytest 3 tests : test_create_returns_503_on_neo4j_down, test_create_returns_503_on_invalid_graph_id_format, test_create_still_passes_on_unexpected_exception",
         "Frontend Step1GraphBuild.vue formate l'erreur via formatApiError (US-007), libelle errors.GRAPH_CHECK_FAILED i18n FR/AR/EN avec suggestion : Le service Neo4j est temporairement indisponible. Reessayez dans 30s."
       ],
-      "passes": false,
-      "completedAt": null,
+      "passes": true,
+      "completedAt": "2026-04-29",
       "dependencies": [
         "US-007",
         "US-047"
@@ -1472,7 +1472,14 @@
           "backend/app/api/simulation.py",
           "backend/tests/test_unit_simulation_create_validation.py",
           "frontend/src/locales/{fr,en,ar}.json"
-        ]
+        ],
+        "commit_pending": true,
+        "files_touched": [
+          "backend/app/api/simulation.py",
+          "backend/tests/test_unit_simulation_create_validation.py",
+          "frontend/src/locales/{fr,en,ar}.json"
+        ],
+        "implementation_notes": "Pre-check US-047 differencie 3 cas dexceptions storage : ValueError (graph_id mal forme) -> 503 GRAPH_CHECK_FAILED avec message rebuild, exception du module neo4j.* -> 503 GRAPH_CHECK_FAILED avec message retry 30s, exception generique inattendue -> fail-open volontaire (politique pour ne pas masquer un crash applicatif). 3 nouveaux tests pytest + i18n GRAPH_CHECK_FAILED FR/EN/AR. Heuristique type(exc).__module__.startswith(\"neo4j\") evite la dependance dure a neo4j.exceptions au niveau de la couche API."
       }
     },
     {
@@ -1489,8 +1496,8 @@
         "Pytest non-regression : 6 tests existants test_unit_simulation_delete passent + 5 tests US-047 passent.",
         "Verification side-effect : aucun nouveau dossier vide cree quand on appelle list_simulations / get_simulation sur sim inexistante."
       ],
-      "passes": false,
-      "completedAt": null,
+      "passes": true,
+      "completedAt": "2026-04-29",
       "dependencies": [
         "US-049"
       ],
@@ -1502,7 +1509,13 @@
           "backend/app/services/simulation_manager.py",
           "backend/tests/test_unit_simulation_delete.py"
         ],
-        "implementation_notes": "Audit grep des callers: _get_simulation_dir apparait dans simulation_manager.py (~7 callers internes), simulation.py (~3 callers route handlers). Verifier chaque cas."
+        "implementation_notes": "_get_simulation_dir(simulation_id, create=False) par defaut. Tous les ~10 callers audites : _save_simulation_state passe create=True, _load_simulation_state create=False, prepare_simulation/get_profiles/get_simulation_config create=False, branch_counterfactual/fork_simulation new_dir create=True, simulation.py download_simulation_config create=False. delete_simulation simplifie sans contournement. 3 nouveaux tests US-051 + 6 tests US-049 existants passent.",
+        "commit_pending": true,
+        "files_touched": [
+          "backend/app/services/simulation_manager.py",
+          "backend/app/api/simulation.py",
+          "backend/tests/test_unit_simulation_delete.py"
+        ]
       }
     },
     {

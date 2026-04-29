@@ -202,3 +202,104 @@ def test_create_rejects_missing_graph_id(simulation_client, monkeypatch):
     body = resp.get_json()
     assert body["success"] is False
     assert body["error_code"] == "GRAPH_NOT_BUILT"
+
+
+# ─── US-050 — Pre-check storage robustness ─────────────────────────────
+
+
+def test_create_returns_503_on_neo4j_error(simulation_client, monkeypatch):
+    """US-050: if the pre-check raises a Neo4j-typed exception (driver
+    down, query invalid), surface 503 GRAPH_CHECK_FAILED instead of
+    silently passing through to the manager."""
+    _, client = simulation_client
+    import app.api.simulation as sim_api
+
+    monkeypatch.setattr(sim_api.ProjectManager, "get_project",
+                        staticmethod(lambda pid: _FakeProject(pid)))
+
+    # Build a fake exception class whose __module__ starts with 'neo4j'
+    # so the heuristic in the API picks it up without us depending on
+    # the real neo4j package in the test env.
+    class _FakeNeo4jError(Exception):
+        pass
+    _FakeNeo4jError.__module__ = "neo4j.exceptions"
+
+    class _BoomReader:
+        def __init__(self, *a, **kw):
+            pass
+        def filter_defined_entities(self, **kwargs):
+            raise _FakeNeo4jError("ServiceUnavailable: connection refused")
+
+    monkeypatch.setattr(sim_api, "EntityReader", _BoomReader)
+
+    resp = client.post(
+        "/api/simulation/create",
+        json={"project_id": "proj_test", "graph_id": "graph_xyz"},
+    )
+    assert resp.status_code == 503
+    body = resp.get_json()
+    assert body["success"] is False
+    assert body["error_code"] == "GRAPH_CHECK_FAILED"
+    assert "30 seconds" in body["error"].lower() or "temporarily" in body["error"].lower()
+
+
+def test_create_returns_503_on_invalid_graph_id_value_error(simulation_client, monkeypatch):
+    """US-050: ValueError from the reader (typically graph_id format)
+    surfaces a distinct 503 message inviting the user to rebuild."""
+    _, client = simulation_client
+    import app.api.simulation as sim_api
+
+    monkeypatch.setattr(sim_api.ProjectManager, "get_project",
+                        staticmethod(lambda pid: _FakeProject(pid)))
+
+    class _BoomReader:
+        def __init__(self, *a, **kw):
+            pass
+        def filter_defined_entities(self, **kwargs):
+            raise ValueError("graph_id format is invalid")
+
+    monkeypatch.setattr(sim_api, "EntityReader", _BoomReader)
+
+    resp = client.post(
+        "/api/simulation/create",
+        json={"project_id": "proj_test", "graph_id": "not-a-real-id"},
+    )
+    assert resp.status_code == 503
+    body = resp.get_json()
+    assert body["error_code"] == "GRAPH_CHECK_FAILED"
+    assert "rebuild" in body["error"].lower() or "invalid" in body["error"].lower()
+
+
+def test_create_fail_open_on_unexpected_exception(simulation_client, monkeypatch):
+    """US-050: a truly unexpected exception (not Neo4j-typed, not
+    ValueError) preserves the fail-open policy so we don't mask an
+    application bug behind a misleading storage error."""
+    _, client = simulation_client
+    import app.api.simulation as sim_api
+
+    monkeypatch.setattr(sim_api.ProjectManager, "get_project",
+                        staticmethod(lambda pid: _FakeProject(pid)))
+
+    class _BoomReader:
+        def __init__(self, *a, **kw):
+            pass
+        def filter_defined_entities(self, **kwargs):
+            # Generic Exception, not from neo4j module
+            raise RuntimeError("totally unexpected internal bug")
+
+    class _FakeManager:
+        def create_simulation(self, **kwargs):
+            return _FakeSimState()
+
+    monkeypatch.setattr(sim_api, "EntityReader", _BoomReader)
+    monkeypatch.setattr(sim_api, "SimulationManager", lambda: _FakeManager())
+
+    resp = client.post(
+        "/api/simulation/create",
+        json={"project_id": "proj_test", "graph_id": "graph_xyz"},
+    )
+    # Fail-open: manager runs, sim is created.
+    assert resp.status_code == 200
+    body = resp.get_json()
+    assert body["success"] is True
+    assert body.get("error_code") != "GRAPH_CHECK_FAILED"
