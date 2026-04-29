@@ -33,6 +33,69 @@ def allowed_file(filename: str) -> bool:
     return ext in Config.ALLOWED_EXTENSIONS
 
 
+# US-039 — Context refinement constants & sanitiser
+_REFINEMENT_GEO_VALUES = {"MA", "DZ", "TN", "SN", "CI", "multi"}
+_REFINEMENT_TIME_VALUES = {"24h", "72h", "1w", "2w", "30d", "60d"}
+_REFINEMENT_LIST_MAX = 8
+_REFINEMENT_LIST_ITEM_MAX_CHARS = 60
+_REFINEMENT_TENSIONS_MAX_CHARS = 200
+
+
+def _sanitise_context_refinement(raw):
+    """
+    Validate / clip the context_refinement payload coming from the frontend.
+
+    Returns a normalised dict with the canonical 5 keys, or None if no usable
+    payload was supplied. Callers are free to write the result straight to the
+    project record — defensive trimming keeps the stored shape stable.
+    """
+    if not isinstance(raw, dict):
+        return None
+
+    def _clean_chip_list(value):
+        if not isinstance(value, list):
+            return []
+        cleaned = []
+        seen = set()
+        for item in value:
+            if not isinstance(item, str):
+                continue
+            stripped = item.strip()
+            if not stripped:
+                continue
+            if len(stripped) > _REFINEMENT_LIST_ITEM_MAX_CHARS:
+                stripped = stripped[:_REFINEMENT_LIST_ITEM_MAX_CHARS]
+            if stripped in seen:
+                continue
+            seen.add(stripped)
+            cleaned.append(stripped)
+            if len(cleaned) >= _REFINEMENT_LIST_MAX:
+                break
+        return cleaned
+
+    geo = raw.get("geo_locale")
+    if not isinstance(geo, str) or geo not in _REFINEMENT_GEO_VALUES:
+        geo = ""
+
+    horizon = raw.get("time_horizon")
+    if not isinstance(horizon, str) or horizon not in _REFINEMENT_TIME_VALUES:
+        horizon = ""
+
+    tensions = raw.get("key_tensions")
+    if isinstance(tensions, str):
+        tensions = tensions.strip()[:_REFINEMENT_TENSIONS_MAX_CHARS]
+    else:
+        tensions = ""
+
+    return {
+        "key_actors": _clean_chip_list(raw.get("key_actors")),
+        "geo_locale": geo,
+        "time_horizon": horizon,
+        "key_tensions": tensions,
+        "expected_stakeholders": _clean_chip_list(raw.get("expected_stakeholders")),
+    }
+
+
 # ============== Project Management APIs ==============
 
 @graph_bp.route('/project/<project_id>', methods=['GET'])
@@ -306,13 +369,13 @@ def build_graph():
         data = request.get_json() or {}
         project_id = data.get('project_id')
         logger.debug(f"Request parameters: project_id={project_id}")
-        
+
         if not project_id:
             return jsonify({
                 "success": False,
                 "error": "Please provide project_id"
             }), 400
-        
+
         # Get project
         project = ProjectManager.get_project(project_id)
         if not project:
@@ -320,7 +383,37 @@ def build_graph():
                 "success": False,
                 "error": f"Project not found: {project_id}"
             }), 404
-        
+
+        # US-039 — Optional context refinement payload (key actors, geo locale,
+        # time horizon, tensions, expected stakeholders). Sanitised and stored
+        # verbatim on the project ; never blocks the rebuild path.
+        context_refinement_raw = data.get('context_refinement')
+        sanitised_refinement = _sanitise_context_refinement(context_refinement_raw)
+        if sanitised_refinement is not None:
+            project.context_refinement = sanitised_refinement
+            logger.info(
+                f"[{project_id}] context_refinement updated: "
+                f"actors={len(sanitised_refinement.get('key_actors', []))}, "
+                f"geo={sanitised_refinement.get('geo_locale') or '-'}, "
+                f"horizon={sanitised_refinement.get('time_horizon') or '-'}, "
+                f"tensions_chars={len(sanitised_refinement.get('key_tensions') or '')}, "
+                f"stakeholders={len(sanitised_refinement.get('expected_stakeholders', []))}"
+            )
+
+        # US-039 — refinement_only=true short-circuits the rebuild and merely
+        # persists the refined context. Lets the frontend save the « Refine
+        # context » form without forcing a costly graph reconstruction.
+        if data.get('refinement_only'):
+            ProjectManager.save_project(project)
+            return jsonify({
+                "success": True,
+                "data": {
+                    "project_id": project_id,
+                    "context_refinement": project.context_refinement,
+                    "message": "Context refinement saved (no rebuild triggered)"
+                }
+            })
+
         # Check project status
         force = data.get('force', False)  # Force rebuild
         

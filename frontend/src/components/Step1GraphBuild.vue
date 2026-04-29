@@ -143,11 +143,189 @@
         </div>
       </div>
 
-      <!-- Step 03: Complete -->
+      <!-- Step 03: Refine context (US-039) -->
+      <div class="step-card" :class="{ 'active': refineExpanded }">
+        <div class="card-header refine-header" @click="toggleRefine" role="button" :aria-expanded="refineExpanded">
+          <div class="step-info">
+            <span class="step-num">03</span>
+            <span class="step-title">{{ $t('process.step1.refineContext.title') }}</span>
+            <span class="refine-optional">{{ $t('process.step1.refineContext.optional') }}</span>
+          </div>
+          <div class="step-status">
+            <span v-if="refineSaving" class="badge processing">{{ $t('process.step1.refineContext.saving') }}</span>
+            <span v-else-if="refineSavedAt" class="badge success">{{ $t('process.step1.refineContext.saved') }}</span>
+            <span class="refine-toggle" aria-hidden="true">{{ refineExpanded ? '▼' : '▶' }}</span>
+          </div>
+        </div>
+
+        <div v-show="refineExpanded" class="card-content refine-content">
+          <p class="description">{{ $t('process.step1.refineContext.description') }}</p>
+
+          <!-- key_actors -->
+          <div class="refine-field">
+            <label class="refine-label" :for="'rc-actors-' + uid">
+              {{ $t('process.step1.refineContext.keyActors.label') }}
+              <span class="refine-counter">{{ contextRefinement.key_actors.length }}/8</span>
+            </label>
+            <p class="refine-help">{{ $t('process.step1.refineContext.keyActors.help') }}</p>
+            <div class="chip-row">
+              <input
+                :id="'rc-actors-' + uid"
+                v-model="actorDraft"
+                type="text"
+                class="refine-input ms-input"
+                :placeholder="$t('process.step1.refineContext.keyActors.placeholder')"
+                maxlength="60"
+                :disabled="contextRefinement.key_actors.length >= 8"
+                @keydown.enter.prevent="addActor"
+              />
+              <button
+                type="button"
+                class="refine-add-btn ms-btn"
+                :disabled="!canAddActor"
+                @click="addActor"
+              >{{ $t('process.step1.refineContext.add') }}</button>
+            </div>
+            <div v-if="contextRefinement.key_actors.length" class="chip-list">
+              <span
+                v-for="(actor, idx) in contextRefinement.key_actors"
+                :key="actor + idx"
+                class="chip"
+                role="button"
+                :title="$t('process.step1.refineContext.removeChip')"
+                @click="removeActor(idx)"
+              >
+                {{ actor }}<span class="chip-x" aria-hidden="true">×</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- geo_locale -->
+          <div class="refine-field">
+            <label class="refine-label" :for="'rc-geo-' + uid">
+              {{ $t('process.step1.refineContext.geoLocale.label') }}
+            </label>
+            <p class="refine-help">{{ $t('process.step1.refineContext.geoLocale.help') }}</p>
+            <select
+              :id="'rc-geo-' + uid"
+              v-model="contextRefinement.geo_locale"
+              class="refine-select ms-select"
+            >
+              <option value="">{{ $t('process.step1.refineContext.geoLocale.empty') }}</option>
+              <option value="MA">{{ $t('process.step1.refineContext.geoLocale.options.MA') }}</option>
+              <option value="DZ">{{ $t('process.step1.refineContext.geoLocale.options.DZ') }}</option>
+              <option value="TN">{{ $t('process.step1.refineContext.geoLocale.options.TN') }}</option>
+              <option value="SN">{{ $t('process.step1.refineContext.geoLocale.options.SN') }}</option>
+              <option value="CI">{{ $t('process.step1.refineContext.geoLocale.options.CI') }}</option>
+              <option value="multi">{{ $t('process.step1.refineContext.geoLocale.options.multi') }}</option>
+            </select>
+          </div>
+
+          <!-- time_horizon -->
+          <div class="refine-field">
+            <label class="refine-label" :for="'rc-time-' + uid">
+              {{ $t('process.step1.refineContext.timeHorizon.label') }}
+            </label>
+            <p class="refine-help">{{ $t('process.step1.refineContext.timeHorizon.help') }}</p>
+            <select
+              :id="'rc-time-' + uid"
+              v-model="contextRefinement.time_horizon"
+              class="refine-select ms-select"
+            >
+              <option value="">{{ $t('process.step1.refineContext.timeHorizon.empty') }}</option>
+              <option value="24h">{{ $t('process.step1.refineContext.timeHorizon.options.24h') }}</option>
+              <option value="72h">{{ $t('process.step1.refineContext.timeHorizon.options.72h') }}</option>
+              <option value="1w">{{ $t('process.step1.refineContext.timeHorizon.options.1w') }}</option>
+              <option value="2w">{{ $t('process.step1.refineContext.timeHorizon.options.2w') }}</option>
+              <option value="30d">{{ $t('process.step1.refineContext.timeHorizon.options.30d') }}</option>
+              <option value="60d">{{ $t('process.step1.refineContext.timeHorizon.options.60d') }}</option>
+            </select>
+          </div>
+
+          <!-- key_tensions -->
+          <div class="refine-field">
+            <label class="refine-label" :for="'rc-tensions-' + uid">
+              {{ $t('process.step1.refineContext.keyTensions.label') }}
+              <span class="refine-counter">{{ contextRefinement.key_tensions.length }}/200</span>
+            </label>
+            <p class="refine-help">{{ $t('process.step1.refineContext.keyTensions.help') }}</p>
+            <textarea
+              :id="'rc-tensions-' + uid"
+              v-model="contextRefinement.key_tensions"
+              class="refine-textarea ms-input"
+              rows="3"
+              maxlength="200"
+              :placeholder="$t('process.step1.refineContext.keyTensions.placeholder')"
+            ></textarea>
+          </div>
+
+          <!-- expected_stakeholders -->
+          <div class="refine-field">
+            <label class="refine-label" :for="'rc-stakeholders-' + uid">
+              {{ $t('process.step1.refineContext.expectedStakeholders.label') }}
+              <span class="refine-counter">{{ contextRefinement.expected_stakeholders.length }}/8</span>
+            </label>
+            <p class="refine-help">{{ $t('process.step1.refineContext.expectedStakeholders.help') }}</p>
+            <div class="chip-row">
+              <input
+                :id="'rc-stakeholders-' + uid"
+                v-model="stakeholderDraft"
+                type="text"
+                class="refine-input ms-input"
+                :placeholder="$t('process.step1.refineContext.expectedStakeholders.placeholder')"
+                maxlength="60"
+                :disabled="contextRefinement.expected_stakeholders.length >= 8"
+                @keydown.enter.prevent="addStakeholder"
+              />
+              <button
+                type="button"
+                class="refine-add-btn ms-btn"
+                :disabled="!canAddStakeholder"
+                @click="addStakeholder"
+              >{{ $t('process.step1.refineContext.add') }}</button>
+            </div>
+            <div v-if="contextRefinement.expected_stakeholders.length" class="chip-list">
+              <span
+                v-for="(stk, idx) in contextRefinement.expected_stakeholders"
+                :key="stk + idx"
+                class="chip"
+                role="button"
+                :title="$t('process.step1.refineContext.removeChip')"
+                @click="removeStakeholder(idx)"
+              >
+                {{ stk }}<span class="chip-x" aria-hidden="true">×</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Save row -->
+          <div class="refine-actions">
+            <button
+              type="button"
+              class="refine-save-btn ms-btn"
+              :disabled="refineSaving || !canSaveRefinement"
+              @click="saveContextRefinement"
+            >
+              <span v-if="refineSaving" class="spinner-sm"></span>
+              {{ refineSaving ? $t('process.step1.refineContext.saving') : $t('process.step1.refineContext.save') }}
+            </button>
+            <button
+              v-if="hasRefinementContent"
+              type="button"
+              class="refine-reset-btn ms-btn"
+              :disabled="refineSaving"
+              @click="resetRefinement"
+            >{{ $t('process.step1.refineContext.reset') }}</button>
+            <span v-if="refineError" class="refine-error">{{ refineError }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 04: Complete -->
       <div class="step-card" :class="{ 'active': currentPhase === 2, 'completed': currentPhase >= 2 }">
         <div class="card-header">
           <div class="step-info">
-            <span class="step-num">03</span>
+            <span class="step-num">04</span>
             <span class="step-title">{{ $t('process.step1.complete.title') }}</span>
           </div>
           <div class="step-status">
@@ -218,10 +396,11 @@
 </template>
 
 <script setup>
-import { computed, ref, watch, nextTick, onMounted } from 'vue'
+import { computed, reactive, ref, watch, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { createSimulation, listSimulations } from '../api/simulation'
+import service from '../api'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -244,6 +423,205 @@ const creatingSimulation = ref(false)
 const existingSimulations = ref([])
 const marketCount = ref(3)
 
+// US-039 — Refine context panel state
+const uid = Math.random().toString(36).slice(2, 8)
+const refineExpanded = ref(false)
+const refineSaving = ref(false)
+const refineSavedAt = ref(null)
+const refineError = ref('')
+const actorDraft = ref('')
+const stakeholderDraft = ref('')
+
+// Default empty payload — keeps type stable for backend (object, never null)
+const emptyRefinement = () => ({
+  key_actors: [],
+  geo_locale: '',
+  time_horizon: '',
+  key_tensions: '',
+  expected_stakeholders: []
+})
+
+const contextRefinement = reactive(emptyRefinement())
+
+// Detect which preset template was used for the current project, based on the
+// project name (TemplateGallery passes `full.name`, e.g. "Crisis Drill — 24h …",
+// then MainView serializes it as the upload filename and project_name). We use
+// keyword matching since the backend doesn't expose template_id explicitly.
+const detectedTemplateId = computed(() => {
+  const haystack = `${props.projectData?.name || ''} ${props.projectData?.simulation_requirement || ''}`.toLowerCase()
+  if (!haystack.trim()) return null
+  if (haystack.includes('crisis') && (haystack.includes('24h') || haystack.includes('24 heures'))) return 'crisis_24h_brand'
+  if (haystack.includes('pmf') || haystack.includes('product-market fit') || haystack.includes('product market fit')) return 'pmf_startup_tech'
+  if (haystack.includes('policy brief') || haystack.includes('note politique')) return 'policy_brief_stress'
+  if (haystack.includes('adcheck') || haystack.includes('ad check') || haystack.includes('pre-launch') || haystack.includes('pre launch')) return 'adcheck_pre_launch'
+  if (haystack.includes('product launch') || haystack.includes('lancement produit')) return 'product_launch_v2'
+  return null
+})
+
+// Suggested defaults per template (per US-039 mapping table)
+const TEMPLATE_DEFAULTS = {
+  crisis_24h_brand:   { time_horizon: '24h', geo_locale: 'MA' },
+  pmf_startup_tech:   { time_horizon: '30d', geo_locale: 'multi' },
+  policy_brief_stress: { time_horizon: '1w',  geo_locale: 'multi' },
+  adcheck_pre_launch: { time_horizon: '72h', geo_locale: 'multi' },
+  product_launch_v2:  { time_horizon: '2w',  geo_locale: 'multi' }
+}
+
+// Apply template defaults — only when the field is still empty so we never
+// overwrite a user choice. Triggered when projectData lands or template id changes.
+const applyTemplateDefaults = () => {
+  const tplId = detectedTemplateId.value
+  if (!tplId) return
+  const defaults = TEMPLATE_DEFAULTS[tplId]
+  if (!defaults) return
+  if (!contextRefinement.time_horizon && defaults.time_horizon) {
+    contextRefinement.time_horizon = defaults.time_horizon
+  }
+  if (!contextRefinement.geo_locale && defaults.geo_locale) {
+    contextRefinement.geo_locale = defaults.geo_locale
+  }
+}
+
+// Storage key derived from project_id so refinements persist on reload but
+// don't leak across projects.
+const storageKey = computed(() => {
+  const pid = props.projectData?.project_id
+  return pid ? `bassira:context_refinement:${pid}` : null
+})
+
+const loadRefinementFromStorage = () => {
+  if (!storageKey.value) return
+  try {
+    const raw = localStorage.getItem(storageKey.value)
+    if (!raw) return
+    const parsed = JSON.parse(raw)
+    if (parsed && typeof parsed === 'object') {
+      if (Array.isArray(parsed.key_actors)) contextRefinement.key_actors = parsed.key_actors.slice(0, 8)
+      if (typeof parsed.geo_locale === 'string') contextRefinement.geo_locale = parsed.geo_locale
+      if (typeof parsed.time_horizon === 'string') contextRefinement.time_horizon = parsed.time_horizon
+      if (typeof parsed.key_tensions === 'string') contextRefinement.key_tensions = parsed.key_tensions.slice(0, 200)
+      if (Array.isArray(parsed.expected_stakeholders)) contextRefinement.expected_stakeholders = parsed.expected_stakeholders.slice(0, 8)
+      if (parsed._savedAt) refineSavedAt.value = parsed._savedAt
+    }
+  } catch (_) {
+    // silently ignore corrupt storage
+  }
+}
+
+const persistRefinementToStorage = () => {
+  if (!storageKey.value) return
+  try {
+    localStorage.setItem(storageKey.value, JSON.stringify({
+      ...contextRefinement,
+      _savedAt: refineSavedAt.value
+    }))
+  } catch (_) {
+    // quota or sandbox — keep in-memory state, don't surface
+  }
+}
+
+const toggleRefine = () => {
+  refineExpanded.value = !refineExpanded.value
+}
+
+// Chip handling — key_actors
+const canAddActor = computed(() => {
+  const v = actorDraft.value.trim()
+  return v.length > 0 && v.length <= 60 && contextRefinement.key_actors.length < 8 && !contextRefinement.key_actors.includes(v)
+})
+const addActor = () => {
+  if (!canAddActor.value) return
+  contextRefinement.key_actors.push(actorDraft.value.trim())
+  actorDraft.value = ''
+}
+const removeActor = (idx) => {
+  contextRefinement.key_actors.splice(idx, 1)
+}
+
+// Chip handling — expected_stakeholders
+const canAddStakeholder = computed(() => {
+  const v = stakeholderDraft.value.trim()
+  return v.length > 0 && v.length <= 60 && contextRefinement.expected_stakeholders.length < 8 && !contextRefinement.expected_stakeholders.includes(v)
+})
+const addStakeholder = () => {
+  if (!canAddStakeholder.value) return
+  contextRefinement.expected_stakeholders.push(stakeholderDraft.value.trim())
+  stakeholderDraft.value = ''
+}
+const removeStakeholder = (idx) => {
+  contextRefinement.expected_stakeholders.splice(idx, 1)
+}
+
+const hasRefinementContent = computed(() => (
+  contextRefinement.key_actors.length > 0 ||
+  contextRefinement.expected_stakeholders.length > 0 ||
+  !!contextRefinement.geo_locale ||
+  !!contextRefinement.time_horizon ||
+  !!contextRefinement.key_tensions.trim()
+))
+
+const canSaveRefinement = computed(() => (
+  !!props.projectData?.project_id && hasRefinementContent.value
+))
+
+const resetRefinement = () => {
+  contextRefinement.key_actors = []
+  contextRefinement.geo_locale = ''
+  contextRefinement.time_horizon = ''
+  contextRefinement.key_tensions = ''
+  contextRefinement.expected_stakeholders = []
+  actorDraft.value = ''
+  stakeholderDraft.value = ''
+  refineSavedAt.value = null
+  refineError.value = ''
+  if (storageKey.value) {
+    try { localStorage.removeItem(storageKey.value) } catch (_) {}
+  }
+}
+
+// Build the JSON payload sent to the backend. Empty fields are kept so the
+// backend always receives the same shape (object, partials allowed).
+const buildRefinementPayload = () => ({
+  key_actors: [...contextRefinement.key_actors],
+  geo_locale: contextRefinement.geo_locale || '',
+  time_horizon: contextRefinement.time_horizon || '',
+  key_tensions: (contextRefinement.key_tensions || '').trim(),
+  expected_stakeholders: [...contextRefinement.expected_stakeholders]
+})
+
+const saveContextRefinement = async () => {
+  if (!props.projectData?.project_id) return
+  refineSaving.value = true
+  refineError.value = ''
+  const payload = {
+    project_id: props.projectData.project_id,
+    context_refinement: buildRefinementPayload(),
+    refinement_only: true
+  }
+  try {
+    const res = await service({
+      url: '/api/graph/build',
+      method: 'post',
+      data: payload
+    })
+    const data = res?.data ?? res
+    if (data && data.success === false) {
+      // Backend may not yet support refinement_only — keep local state intact
+      // but flag the error so the user knows it didn't reach the server.
+      refineError.value = data.error || t('process.step1.refineContext.saveFailedFallback')
+    } else {
+      refineSavedAt.value = new Date().toISOString()
+    }
+  } catch (err) {
+    // Same defensive behaviour : we still persist locally so the form state
+    // isn't lost even if the optional backend hook is missing.
+    refineError.value = err?.response?.data?.error || err?.message || t('process.step1.refineContext.saveFailedFallback')
+  } finally {
+    persistRefinementToStorage()
+    refineSaving.value = false
+  }
+}
+
 // Check for existing simulations for this project
 const loadExistingSimulations = async () => {
   if (!props.projectData?.project_id) return
@@ -257,8 +635,34 @@ const loadExistingSimulations = async () => {
   }
 }
 
-onMounted(loadExistingSimulations)
-watch(() => props.projectData?.project_id, loadExistingSimulations)
+onMounted(() => {
+  loadExistingSimulations()
+  loadRefinementFromStorage()
+  applyTemplateDefaults()
+})
+watch(() => props.projectData?.project_id, () => {
+  loadExistingSimulations()
+  // New project landed → reset stale state then hydrate from storage + template
+  refineSavedAt.value = null
+  refineError.value = ''
+  loadRefinementFromStorage()
+  applyTemplateDefaults()
+})
+
+// Persist on every meaningful change (debounced via watch's flush:'post')
+watch(
+  () => [
+    contextRefinement.key_actors.length,
+    contextRefinement.expected_stakeholders.length,
+    contextRefinement.geo_locale,
+    contextRefinement.time_horizon,
+    contextRefinement.key_tensions
+  ],
+  () => {
+    persistRefinementToStorage()
+  },
+  { flush: 'post' }
+)
 
 const resumeSimulation = (simId) => {
   router.push({ name: 'Simulation', params: { simulationId: simId } })
@@ -274,14 +678,22 @@ const handleEnterEnvSetup = async () => {
   creatingSimulation.value = true
 
   try {
-    const res = await createSimulation({
+    const simPayload = {
       project_id: props.projectData.project_id,
       graph_id: props.projectData.graph_id,
       enable_twitter: true,
       enable_reddit: true,
       enable_polymarket: true,
       polymarket_market_count: marketCount.value,
-    })
+    }
+    // US-039 — forward the refined context to downstream agent setup so a
+    // template-only run still benefits from the user's locale / time horizon.
+    // We send only when at least one field is set to keep the payload tidy.
+    if (hasRefinementContent.value) {
+      simPayload.context_refinement = buildRefinementPayload()
+    }
+
+    const res = await createSimulation(simPayload)
 
     if (res.success && res.data?.simulation_id) {
       // Navigate to simulation page
@@ -897,5 +1309,223 @@ watch(() => props.systemLogs.length, () => {
 
 .log-id {
   color: #43C165;
+}
+
+/* ── US-039 — Refine context panel ── */
+.refine-header {
+  cursor: pointer;
+  user-select: none;
+}
+
+.refine-optional {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: rgba(10,10,10,0.4);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-inline-start: 6px;
+}
+
+.refine-toggle {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: rgba(10,10,10,0.4);
+  margin-inline-start: 8px;
+}
+
+.refine-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.refine-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.refine-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(10,10,10,0.7);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.refine-counter {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: rgba(10,10,10,0.4);
+  font-weight: 500;
+  letter-spacing: 1px;
+}
+
+.refine-help {
+  font-size: 11px;
+  color: rgba(10,10,10,0.5);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.refine-input,
+.refine-select,
+.refine-textarea {
+  background: var(--ms-bg, #FAFAFA);
+  border: 1px solid rgba(10,10,10,0.15);
+  padding: 8px 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ms-text, #0A0A0A);
+  outline: none;
+  border-radius: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.refine-input:focus,
+.refine-select:focus,
+.refine-textarea:focus {
+  border-color: var(--ms-orange, #FF6B1A);
+}
+
+.refine-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.refine-textarea {
+  resize: vertical;
+  min-height: 60px;
+  line-height: 1.4;
+}
+
+.chip-row {
+  display: flex;
+  gap: 6px;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+
+.chip-row .refine-input {
+  flex: 1;
+  min-width: 180px;
+}
+
+.refine-add-btn,
+.refine-save-btn,
+.refine-reset-btn {
+  background: var(--ms-text, #0A0A0A);
+  color: var(--ms-text-on-color, #FAFAFA);
+  border: none;
+  padding: 8px 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  border-radius: 0;
+  white-space: nowrap;
+}
+
+.refine-add-btn:hover:not(:disabled),
+.refine-save-btn:hover:not(:disabled),
+.refine-reset-btn:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.refine-add-btn:disabled,
+.refine-save-btn:disabled,
+.refine-reset-btn:disabled {
+  background: rgba(10,10,10,0.2);
+  cursor: not-allowed;
+}
+
+.refine-reset-btn {
+  background: transparent;
+  color: rgba(10,10,10,0.6);
+  border: 1px solid rgba(10,10,10,0.15);
+}
+
+.refine-reset-btn:hover:not(:disabled) {
+  color: var(--ms-text, #0A0A0A);
+  border-color: rgba(10,10,10,0.4);
+  opacity: 1;
+}
+
+.chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--ms-orange-soft, #FFE3D1);
+  border: 1px solid var(--ms-orange, #FF6B1A);
+  padding: 4px 10px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--ms-text, #0A0A0A);
+  cursor: pointer;
+  transition: all 0.15s;
+  border-radius: 0;
+}
+
+.chip:hover {
+  background: var(--ms-orange, #FF6B1A);
+  color: var(--ms-text-on-color, #FAFAFA);
+}
+
+.chip-x {
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1;
+  margin-inline-start: 2px;
+}
+
+.refine-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(10,10,10,0.08);
+}
+
+.refine-error {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ms-rose, #FF4444);
+  flex: 1;
+  min-width: 180px;
+}
+
+/* Mobile responsive */
+@media (max-width: 600px) {
+  .chip-row {
+    flex-direction: column;
+  }
+  .chip-row .refine-input {
+    min-width: 0;
+  }
+  .refine-add-btn,
+  .refine-save-btn,
+  .refine-reset-btn {
+    width: 100%;
+  }
+  .refine-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 </style>

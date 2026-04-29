@@ -213,6 +213,59 @@
         "createFailed": "Failed to create simulation: {error}",
         "createError": "Simulation creation error: {error}",
         "unknownError": "Unknown error"
+      },
+      "refineContext": {
+        "title": "Refine context",
+        "optional": "Optional",
+        "description": "Refine the initial context to enrich the simulation: key actors, geography, time horizon, tensions, and expected stakeholders. All fields are optional.",
+        "add": "Add",
+        "save": "Save context",
+        "saving": "Saving...",
+        "saved": "Saved",
+        "reset": "Reset",
+        "removeChip": "Click to remove",
+        "saveFailedFallback": "Saved locally, but the server did not confirm receipt.",
+        "keyActors": {
+          "label": "Key actors",
+          "help": "Central people, brands, or organizations (max 8, 60 chars each).",
+          "placeholder": "e.g. Comms director, CEO, activists…"
+        },
+        "geoLocale": {
+          "label": "Geographic scope",
+          "help": "Target market or country for the simulation.",
+          "empty": "— Not specified —",
+          "options": {
+            "MA": "Morocco",
+            "DZ": "Algeria",
+            "TN": "Tunisia",
+            "SN": "Senegal",
+            "CI": "Ivory Coast",
+            "multi": "Multi-country"
+          }
+        },
+        "timeHorizon": {
+          "label": "Time horizon",
+          "help": "Total duration covered by the simulation.",
+          "empty": "— Not specified —",
+          "options": {
+            "24h": "24 hours",
+            "72h": "72 hours",
+            "1w": "1 week",
+            "2w": "2 weeks",
+            "30d": "30 days",
+            "60d": "60 days"
+          }
+        },
+        "keyTensions": {
+          "label": "Key tensions",
+          "help": "Conflicts, controversies, or friction points to anticipate (max 200 chars).",
+          "placeholder": "e.g. mistrust towards the brand, regional political polarisation…"
+        },
+        "expectedStakeholders": {
+          "label": "Expected stakeholders",
+          "help": "Groups or roles the LLM should represent in the simulation (max 8).",
+          "placeholder": "e.g. journalists, diaspora, employees, activists…"
+        }
       }
     },
     "step2": {

@@ -213,6 +213,59 @@
         "createFailed": "Échec de la création de la simulation : {error}",
         "createError": "Erreur lors de la création : {error}",
         "unknownError": "Erreur inconnue"
+      },
+      "refineContext": {
+        "title": "Affiner le contexte",
+        "optional": "Optionnel",
+        "description": "Précisez le contexte initial pour enrichir la simulation : acteurs clés, zone géographique, horizon temporel, tensions et parties prenantes attendues. Tous les champs sont facultatifs.",
+        "add": "Ajouter",
+        "save": "Enregistrer le contexte",
+        "saving": "Enregistrement…",
+        "saved": "Enregistré",
+        "reset": "Réinitialiser",
+        "removeChip": "Cliquez pour retirer",
+        "saveFailedFallback": "Enregistrement local effectué, mais le serveur n’a pas confirmé la prise en compte.",
+        "keyActors": {
+          "label": "Acteurs clés",
+          "help": "Personnes, marques ou organisations centrales (8 maximum, 60 caractères chacun).",
+          "placeholder": "Ex. Direction de la communication, CEO, militants…"
+        },
+        "geoLocale": {
+          "label": "Zone géographique",
+          "help": "Marché ou pays cible de la simulation.",
+          "empty": "— Non spécifié —",
+          "options": {
+            "MA": "Maroc",
+            "DZ": "Algérie",
+            "TN": "Tunisie",
+            "SN": "Sénégal",
+            "CI": "Côte d’Ivoire",
+            "multi": "Multi-pays"
+          }
+        },
+        "timeHorizon": {
+          "label": "Horizon temporel",
+          "help": "Durée totale couverte par la simulation.",
+          "empty": "— Non spécifié —",
+          "options": {
+            "24h": "24 heures",
+            "72h": "72 heures",
+            "1w": "1 semaine",
+            "2w": "2 semaines",
+            "30d": "30 jours",
+            "60d": "60 jours"
+          }
+        },
+        "keyTensions": {
+          "label": "Tensions clés",
+          "help": "Conflits, controverses ou points de friction à anticiper (200 caractères max).",
+          "placeholder": "Ex. méfiance vis-à-vis de la marque, polarisation politique régionale…"
+        },
+        "expectedStakeholders": {
+          "label": "Parties prenantes attendues",
+          "help": "Groupes ou rôles que le LLM devrait représenter dans la simulation (8 maximum).",
+          "placeholder": "Ex. journalistes, diaspora, employés, militants…"
+        }
       }
     },
     "step2": {

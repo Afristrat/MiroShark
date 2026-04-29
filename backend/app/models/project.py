@@ -49,6 +49,12 @@ class Project:
     chunk_size: int = 1000
     chunk_overlap: int = 50
 
+    # US-039 — User-supplied refinement of the simulation context
+    # (key actors, geo locale, time horizon, tensions, expected stakeholders).
+    # All fields are optional ; backend stores the dict verbatim and downstream
+    # services consume it opportunistically.
+    context_refinement: Optional[Dict[str, Any]] = None
+
     # Error information
     error: Optional[str] = None
 
@@ -69,6 +75,7 @@ class Project:
             "simulation_requirement": self.simulation_requirement,
             "chunk_size": self.chunk_size,
             "chunk_overlap": self.chunk_overlap,
+            "context_refinement": self.context_refinement,
             "error": self.error
         }
 
@@ -94,6 +101,7 @@ class Project:
             simulation_requirement=data.get('simulation_requirement'),
             chunk_size=data.get('chunk_size', 500),
             chunk_overlap=data.get('chunk_overlap', 50),
+            context_refinement=data.get('context_refinement'),
             error=data.get('error')
         )
 
