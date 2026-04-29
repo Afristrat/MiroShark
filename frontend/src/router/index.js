@@ -86,6 +86,14 @@ const routes = [
     path: '/calibration',
     name: 'Calibration',
     component: () => import('../views/CalibrationView.vue')
+  },
+  {
+    // Public commercial landing — 3 service packages (US-023). Pas de
+    // backend pour cette route ; les CTA pointent vers /devis (US-025)
+    // ou retombent sur un mailto si la route n'est pas encore montée.
+    path: '/offres',
+    name: 'Offers',
+    component: () => import('../views/OffersView.vue')
   }
 ]
 

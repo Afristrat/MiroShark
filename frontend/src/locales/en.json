@@ -7,6 +7,7 @@
     "verified": "Verified predictions",
     "calibration": "Calibration",
     "offers": "Offers",
+    "offersTitle": "See our stress-test packages (3 formats)",
     "scenarios": "Scenarios",
     "scenariosTitle": "See the gallery of ready-to-run scenarios",
     "calibrationTitle": "See our predictive track record (Brier score)"
@@ -969,5 +970,82 @@
     "MISSING_WEBHOOK_URL": "No webhook URL configured.",
     "WEBHOOK_TEST_FAILED": "Webhook test failed.",
     "NO_DATA": "No data available."
+  },
+  "offers": {
+    "nav": {
+      "backTitle": "Back to home"
+    },
+    "eyebrow": "Our packages",
+    "hero": {
+      "title": "Three packages to stress-test your next decision",
+      "subtitle": "Bassira simulates hundreds of agents to show you how your market, your public opinion or your target audience will react — hour by hour."
+    },
+    "featuredBadge": "Most requested",
+    "labels": {
+      "deliverable": "Deliverable",
+      "delay": "Lead time",
+      "price": "Price",
+      "useCases": "Who is it for?"
+    },
+    "packages": {
+      "crisisDrill": {
+        "name": "Crisis Drill 24h",
+        "tagline": "Stress-test your next reputation crisis before it hits.",
+        "description": "A 24-hour simulation of a crisis scenario (media rumour, botched product launch, data leak, social incident). 50 grounded-persona agents react on Twitter, Reddit and a prediction market. Three counterfactuals: \"what if we respond within the hour?\", \"what if we stay silent for 6 hours?\", \"what if the CEO apologises on video?\".",
+        "deliverable": "Substack-style narrative report + Brier curve of predictions + 3 counterfactual trajectories + playbook recommendations.",
+        "delay": "5 working days",
+        "useCases": "Mass-market B2C brands, banks, telcos, startups raising funds."
+      },
+      "policyBrief": {
+        "name": "Policy Brief Stress Test",
+        "tagline": "Before submitting your policy brief, see how public opinion will line up.",
+        "description": "One week of simulation, 80 segmented agents (citizens, stakeholders, opposition, press). Includes analysis of emerging coalitions and opinion tipping points.",
+        "deliverable": "Strategic report + stakeholder map + 5 counterfactuals (announcement timing, alternate framing, partnerships) + 2 interview sessions with key agents.",
+        "delay": "2 weeks",
+        "useCases": "Ministries, NGOs, think tanks, international organisations."
+      },
+      "preLaunch": {
+        "name": "Pre-Launch Adcheck",
+        "tagline": "Validate your marketing campaign before burning the media budget.",
+        "description": "72-hour simulation of how a campaign (visuals, slogan, targeting) is received. 60 agents segmented by target persona. Detection of blind spots, sentiment per segment, predicted virality.",
+        "deliverable": "Sentiment heatmap by persona + 3 creative counterfactuals + GO / NO-GO / ITERATE verdict with quantified recommendations.",
+        "delay": "5 working days",
+        "useCases": "Ad agencies, brand managers, startups in product launch."
+      }
+    },
+    "fineprint": {
+      "crisisDrill": "Excludes consulting follow-up. The pack covers the simulation and the deliverable; post-report support sessions are billed separately."
+    },
+    "cta": {
+      "requestQuote": "Request a quote",
+      "mailSubject": "Bassira quote — {package}"
+    },
+    "help": {
+      "title": "Not sure which package fits?",
+      "body": "Tell us your case in two lines and we'll point you to the most relevant pack — or build a custom format if none of them fit.",
+      "cta": "Talk to us",
+      "mailSubject": "Bassira — package guidance"
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "items": {
+        "firstResults": {
+          "question": "How long until the first results?",
+          "answer": "For Crisis Drill and Pre-Launch Adcheck, you get the report within 5 working days from the signed brief. For Policy Brief Stress Test, expect 2 weeks (the simulation itself runs over 1 week, plus the analysis phase and interviews with the key agents)."
+        },
+        "sampleReport": {
+          "question": "Can I see a sample report?",
+          "answer": "Yes. Our public reports are listed on the /calibration page: each verified simulation is shown there with its Brier score and observed verdict. For an anonymised example of a full Crisis Drill, write to us using the button above — we send it in one click."
+        },
+        "regulatedSectors": {
+          "question": "Do you work with regulated sectors?",
+          "answer": "Yes — banks, telcos, healthcare, Moroccan and African public sector. Briefs and source data stay confidential (standard NDA) and are never used to train our models. On request, the report can be delivered without any public exposure on /verified."
+        },
+        "customScope": {
+          "question": "What if my need fits none of the packs?",
+          "answer": "Click \"Talk to us\": we scope it together in 30 minutes. The packs above cover 80% of requests, but we regularly build hybrid formats (e.g. 2 weeks of simulation + 3 counterfactuals + an on-site readout workshop)."
+        }
+      }
+    }
   }
 }

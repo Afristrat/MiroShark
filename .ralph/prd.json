@@ -666,14 +666,23 @@
         "Form devis fonctionnel (en US-025)",
         "Test Playwright"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-002"
       ],
       "metadata": {
         "estimated_hours": 3,
-        "priority": "P2"
-      }
+        "priority": "P2",
+        "commit_pending": true,
+        "files_touched": [
+          "frontend/src/views/OffersView.vue",
+          "frontend/src/router/index.js",
+          "frontend/src/views/Home.vue",
+          "frontend/src/locales/{fr,en,ar}.json"
+        ],
+        "implementation_notes": "OffersView avec hero (eyebrow pill orange + h1 Outfit clamp 28-44px + sous-titre), grid 3 cards (crisisDrill featured center scale 1.04 + bordure orange), bandeau aide mailto, FAQ accordeon 4 questions. CTA Demander un devis : router.resolve(Quote) + fallback mailto contact@ai-mpower.com si route absente. 43 cles offers.* x 3 langues parite validee. Pricing en dur dans <script setup> (12k/25k/8k MAD - 1200/2500/800 USD) a valider commercialement avant prod. Bundle OffersView lazy 4.44 kB JS + 7.89 kB CSS."
+      },
+      "completedAt": "2026-04-29"
     },
     {
       "id": "US-024",

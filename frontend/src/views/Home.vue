@@ -7,6 +7,9 @@
         <router-link to="/calibration" class="nav-link" :title="$t('nav.calibrationTitle')">
           {{ $t('nav.calibration') }}
         </router-link>
+        <router-link to="/offres" class="nav-link" :title="$t('nav.offersTitle')">
+          {{ $t('nav.offers') }}
+        </router-link>
         <button
           class="nav-link nav-link-action"
           type="button"
