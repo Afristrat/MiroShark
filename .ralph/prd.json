@@ -320,9 +320,20 @@
         "Tests pytest unitaires pour parsing du template",
         "Documentation backend/app/templates/she_start.md décrivant le format"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-04-29T02:10:00Z",
       "dependencies": ["US-000"],
-      "metadata": { "estimated_hours": 3, "priority": "P1" }
+      "metadata": {
+        "estimated_hours": 3,
+        "priority": "P1",
+        "files_touched": [
+          "backend/app/preset_templates/she_start_cohort_replay.json",
+          "backend/app/api/templates.py",
+          "backend/tests/test_unit_she_start_template.py"
+        ],
+        "test_result": "5/5 she_start tests pass, 202 total passed",
+        "delegated_to_subagent": true
+      }
     },
     {
       "id": "US-018",
@@ -334,9 +345,19 @@
         "8 archetypes mentors documentés avec voice/posture/expertise",
         "Critère PMF observable formalisé (≥3 clients payants OR ≥50 utilisateurs OR ≥7/10 jury) dans le doc"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-04-29T02:10:00Z",
       "dependencies": ["US-017"],
-      "metadata": { "estimated_hours": 2, "priority": "P1" }
+      "metadata": {
+        "estimated_hours": 2,
+        "priority": "P1",
+        "files_touched": [
+          "backend/app/preset_templates/she_start_cohort_replay/seed_template.md",
+          "backend/app/preset_templates/she_start_cohort_replay/personas.md",
+          "backend/app/preset_templates/she_start_cohort_replay/README.md"
+        ],
+        "delegated_to_subagent": true
+      }
     },
     {
       "id": "US-019",

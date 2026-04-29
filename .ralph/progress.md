@@ -53,6 +53,17 @@
   - flask-cors gère bien les listes Python comme value de `origins`. Pas besoin d'array YAML.
   - Le sub-agent US-002 tourne en parallèle sans conflit (backend vs frontend).
 
+### 2026-04-29 — US-017 + US-018 She Start template + seed (sub-agent B)
+- **Statut** : passes: true (2 stories ensemble, même PR backend)
+- **Fichiers** : preset_templates/she_start_cohort_replay.json (162 l) + sous-dossier (seed_template 603 l, personas 127 l, README 90 l) + templates.py (+3 l) + test_unit_she_start_template.py (193 l, 5 tests)
+- **Quality gates** : 5/5 she_start, 202 total passed, 17 skipped — test_unit_templates_schema valide automatiquement le nouveau JSON
+- **Architecture** : 1 fichier JSON par template (convention existante) + sous-dossier sibling pour artefacts seed/personas/README
+- **Variants A/B/C** : Ground Truth Replay, Cohort Twin (5 runs), Blind Spot Hunt (5 leaders retirées)
+- **Persona archetypes** : 8 mentors (M-BRA, M-GRO, M-JUR, M-FUN, M-TEC, M-OPS, M-LEA, M-AFR)
+- **Director event slots** : S3 (Pitch Fire), S5 (intervention), S7 (sélection GITEX) — paramétrables par utilisateur
+- **PMF criteria formalisé** : ≥3 clients OU ≥50 utilisateurs OU ≥7/10 jury, 2 sur 3 → validé
+- **API additions** : `has_variants` + `variants_count` dans GET /api/templates/list (rétrocompatible)
+
 ### 2026-04-29 — US-020 Backend endpoint /api/calibration/brier-score (sub-agent C)
 - **Statut** : passes: true
 - **Fichiers** : backend/app/api/calibration.py (nouveau, 462 l), test_unit_calibration.py (490 l), __init__.py x2

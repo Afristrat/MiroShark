@@ -67,6 +67,7 @@ def list_templates():
         for t in templates:
             branches = t.get("counterfactual_branches", []) or []
             oracle_tools = t.get("oracle_tools", []) or []
+            variants = t.get("variants", []) or []
             summaries.append({
                 "id": t["id"],
                 "name": t["name"],
@@ -82,6 +83,8 @@ def list_templates():
                 "counterfactual_count": len(branches),
                 "has_oracle_tools": len(oracle_tools) > 0,
                 "oracle_tool_count": len(oracle_tools),
+                "has_variants": len(variants) > 0,
+                "variants_count": len(variants),
             })
 
         return jsonify({

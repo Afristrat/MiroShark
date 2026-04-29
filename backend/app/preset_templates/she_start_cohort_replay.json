@@ -1,0 +1,162 @@
+{
+  "id": "she_start_cohort_replay",
+  "name": "She Start — Cohort Replay (validation scientifique)",
+  "category": "Incubation & Entrepreneuriat",
+  "description": "Réplique scientifique de la cohorte She Start (incubateur féminin AFEM, Maroc) sur 10 semaines. Trois variants A/B/C — Ground Truth Replay, Cohort Twin (5x parallèle), Blind Spot Hunt — pour mesurer la fidélité prédictive de MiroShark sur le PMF des candidates.",
+  "icon": "users",
+  "difficulty": "hard",
+  "estimated_agents": 50,
+  "estimated_rounds": 10,
+  "platforms": ["twitter", "reddit", "polymarket"],
+  "tags": [
+    "incubation",
+    "she-start",
+    "afem",
+    "maroc",
+    "validation-scientifique",
+    "cohort-twin",
+    "ground-truth",
+    "leadership-feminin",
+    "pmf"
+  ],
+  "simulation_requirement": "Simuler la dynamique de la cohorte She Start (incubateur féminin AFEM Maroc) sur 10 semaines, 1 round = 1 semaine. Observer comment 35 candidates entrepreneures interagissent avec 5 mentors, 3 jurés, 2 banquiers PME et 5 observateurs presse marocaine. Suivre l'émergence des leaders, la convergence ou divergence du marché de prédiction (« quelle part de la cohorte aura validé son PMF en S10, cible 30 % »), et la sensibilité aux événements injectés en Director Mode aux semaines 3, 5 et 7. L'objectif scientifique est de comparer les sorties MiroShark à la cohorte réelle (Ground Truth) puis de mesurer la stabilité (Cohort Twin) et de détecter les angles morts (Blind Spot Hunt).",
+  "seed_document": "# She Start Cohort Replay — Seed Document (squelette)\n\n## Programme\nSimulation scientifique de la cohorte She Start (incubateur féminin AFEM, Maroc), 10 semaines, 50 agents (35 candidates + 5 mentors + 3 jurés + 2 banquiers + 5 observateurs presse).\n\n## Critère PMF observable\nUne candidate valide son PMF si elle satisfait au moins 2 des 3 critères suivants à la semaine S10 :\n- ≥ 3 clients payants confirmés\n- ≥ 50 utilisateurs actifs\n- ≥ 7/10 de score moyen jury\n\n## Cible marché de prédiction\nX % de la cohorte aura validé son PMF en S10 — cible 30 %.\n\n## Voir le template détaillé\nLe seed complet (35 candidates, 5 mentors, 3 jurés, 2 banquiers, 5 observateurs, chronologie S1→S10 et slots événements S3/S5/S7) est fourni dans `seed_template.md` du dossier template, prêt à être rempli par Amine + Asma avant lancement.",
+  "seed_template_path": "she_start_cohort_replay/seed_template.md",
+  "personas_path": "she_start_cohort_replay/personas.md",
+  "readme_path": "she_start_cohort_replay/README.md",
+  "default_market_question": "Quel pourcentage de la cohorte She Start aura validé son PMF à la semaine S10 (cible 30 %) ?",
+  "agents": {
+    "total": 50,
+    "breakdown": {
+      "candidates": 35,
+      "mentors": 5,
+      "jurors": 3,
+      "bankers": 2,
+      "observers": 5
+    }
+  },
+  "rounds": {
+    "count": 10,
+    "unit": "week",
+    "label_template": "Semaine S{round}"
+  },
+  "director_event_slots": [
+    {
+      "round": 3,
+      "label": "Événement S3 (slot vide)",
+      "description": "Slot Director Mode à remplir par l'utilisateur — perturbation milieu d'amorçage (ex. crise de financement, départ d'une mentore, opportunité partenariat).",
+      "injection": ""
+    },
+    {
+      "round": 5,
+      "label": "Événement S5 (slot vide)",
+      "description": "Slot Director Mode mi-parcours — choc externe ou interne (ex. concours national, demande client massive, conflit cofondatrice).",
+      "injection": ""
+    },
+    {
+      "round": 7,
+      "label": "Événement S7 (slot vide)",
+      "description": "Slot Director Mode pré-finale — événement à fort effet de levier (ex. visite délégation banque, article presse négatif, levée de fonds annoncée).",
+      "injection": ""
+    }
+  ],
+  "has_counterfactuals": true,
+  "has_oracle_tools": false,
+  "recommended_settings": {
+    "enable_twitter": true,
+    "enable_reddit": true,
+    "enable_polymarket": true,
+    "rounds": 10,
+    "minutes_per_round": 10080
+  },
+  "variants": [
+    {
+      "id": "ground_truth_replay",
+      "name": "Variant A — Ground Truth Replay",
+      "letter": "A",
+      "description": "1 simulation unique sur 10 semaines avec la cohorte complète (35 candidates + 5 mentors + 3 jurés + 2 banquiers + 5 observateurs). On compare le résultat MiroShark à la vérité-terrain de la cohorte réelle She Start.",
+      "objective": "Mesurer la fidélité prédictive de MiroShark face à la cohorte réelle (Ground Truth).",
+      "runs": 1,
+      "rounds": 10,
+      "agents": {
+        "candidates": 35,
+        "mentors": 5,
+        "jurors": 3,
+        "bankers": 2,
+        "observers": 5,
+        "total": 50
+      },
+      "market_question": "Quel pourcentage de la cohorte aura validé son PMF à S10 (cible 30 %) ?",
+      "director_event_slots": [3, 5, 7],
+      "leaders_removed": [],
+      "expected_outcome": "Cartographie des leaders émergents + courbe de convergence du marché de prédiction sur 10 rounds."
+    },
+    {
+      "id": "cohort_twin",
+      "name": "Variant B — Cohort Twin",
+      "letter": "B",
+      "description": "Identique au Variant A, exécuté 5 fois en parallèle avec graines aléatoires différentes. On mesure la variance inter-runs pour qualifier la stabilité statistique des prédictions MiroShark.",
+      "objective": "Quantifier la stabilité (variance inter-runs) des trajectoires de cohorte.",
+      "runs": 5,
+      "rounds": 10,
+      "agents": {
+        "candidates": 35,
+        "mentors": 5,
+        "jurors": 3,
+        "bankers": 2,
+        "observers": 5,
+        "total": 50
+      },
+      "market_question": "Quel pourcentage de la cohorte aura validé son PMF à S10 (cible 30 %) ?",
+      "director_event_slots": [3, 5, 7],
+      "leaders_removed": [],
+      "expected_outcome": "Distribution sur 5 runs du % PMF S10, écart-type inter-runs, ranking des leaders robustes vs sensibles à l'aléa."
+    },
+    {
+      "id": "blind_spot_hunt",
+      "name": "Variant C — Blind Spot Hunt",
+      "letter": "C",
+      "description": "Identique au Variant A mais on retire 5 candidates « leaders réelles » du seed avant lancement. On observe quels leaders émergents MiroShark désigne en l'absence des têtes connues, pour détecter les angles morts du modèle (faux positifs / faux négatifs sur le leadership).",
+      "objective": "Détecter les angles morts du modèle et qualifier sa capacité à découvrir des leaders non-évidents.",
+      "runs": 1,
+      "rounds": 10,
+      "agents": {
+        "candidates": 30,
+        "mentors": 5,
+        "jurors": 3,
+        "bankers": 2,
+        "observers": 5,
+        "total": 45
+      },
+      "market_question": "Quel pourcentage de la cohorte (30 candidates restantes) aura validé son PMF à S10 (cible 30 %) ?",
+      "director_event_slots": [3, 5, 7],
+      "leaders_removed": [
+        "À spécifier par Amine + Asma : 5 candidates identifiées comme leaders réels de la cohorte (ex. top 5 du classement final She Start)."
+      ],
+      "expected_outcome": "Liste des leaders émergents désignés par MiroShark + comparaison avec les leaders réels masqués (taux de découverte indirecte)."
+    }
+  ],
+  "counterfactual_branches": [
+    {
+      "id": "director_s3",
+      "label": "Director Mode — Événement S3",
+      "description": "Slot Director Mode injectable à la semaine S3 (à remplir par l'utilisateur).",
+      "trigger_round": 3,
+      "injection": "[Événement S3 à définir par l'utilisateur via Director Mode]"
+    },
+    {
+      "id": "director_s5",
+      "label": "Director Mode — Événement S5",
+      "description": "Slot Director Mode injectable à la semaine S5 (à remplir par l'utilisateur).",
+      "trigger_round": 5,
+      "injection": "[Événement S5 à définir par l'utilisateur via Director Mode]"
+    },
+    {
+      "id": "director_s7",
+      "label": "Director Mode — Événement S7",
+      "description": "Slot Director Mode injectable à la semaine S7 (à remplir par l'utilisateur).",
+      "trigger_round": 7,
+      "injection": "[Événement S7 à définir par l'utilisateur via Director Mode]"
+    }
+  ]
+}
