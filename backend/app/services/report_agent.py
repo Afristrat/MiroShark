@@ -708,8 +708,126 @@ cluster titles.
 
 # ── Outline Planning Prompt ──
 
-PLAN_SYSTEM_PROMPT = """\
+# US-041 — Narrative report mandatory sections.
+#
+# Le rapport actuel se lisait comme un résumé de logs (top influencers,
+# démographie, trending topics) — pas comme une analyse d'insight. Pour passer
+# d'un « rapport-log » à un « rapport-récit », on force 4 sections narratives
+# obligatoires en plus des sections analytiques planifiées par le LLM. Ces
+# sections sont toujours présentes dans cet ordre, après les sections
+# analytiques auto-planifiées.
+#
+# Titres en français (la locale par défaut du produit Bassira est `fr`). Le
+# helper `localize_system_prompt` US-043 force la locale finale du rendu LLM
+# côté chacun des appels — les titres restent canoniques en FR pour l'invariant
+# de test et la traçabilité de la TOC.
+_NARRATIVE_SECTIONS_REQUIRED = [
+    {
+        "title": "Le pari a-t-il été tenu ?",
+        "title_en": "Did the prediction land?",
+        "description": (
+            "Compare la trajectoire prédite par la simulation à la résolution "
+            "réelle attendue (ou la cible définie dans le simulation_requirement). "
+            "Verdict explicite : pari tenu / partiellement tenu / non tenu, "
+            "avec écart chiffré quand mesurable."
+        ),
+    },
+    {
+        "title": "Qui a basculé ?",
+        "title_en": "Who flipped?",
+        "description": (
+            "Liste des personas synthétiques dont la position a changé au fil "
+            "des rounds, avec round précis et raison probable. S'appuyer sur "
+            "analyze_trajectory (turning_points + agents_with_most_belief_change) "
+            "pour identifier les bascules réelles, pas les inférer."
+        ),
+    },
+    {
+        "title": "Qu'est-ce qui nous a surpris ?",
+        "title_en": "What surprised us?",
+        "description": (
+            "Compare les distributions observées (sentiment, engagement, "
+            "share-of-voice, bullish_share du dernier snapshot trajectory) aux "
+            "distributions attendues (cible définie dans le simulation_requirement, "
+            "ou prior 50/50 pour neutre). Si l'écart est > 15 points, "
+            "formuler explicitement « Surprise marquée : nous avions anticipé X%, "
+            "l'observé est à Y% — voici pourquoi probablement... » et expliquer "
+            "le mécanisme. Sinon, signaler les surprises qualitatives "
+            "(alliances inattendues, retournements de minorités vocales)."
+        ),
+    },
+    {
+        "title": "Qu'aurait-il fallu pour basculer le résultat ?",
+        "title_en": "What would have changed the outcome?",
+        "description": (
+            "Counterfactual léger : injection hypothétique d'un événement ou "
+            "d'un changement de paramètre qui aurait flippé le verdict. "
+            "Si la simulation a déjà testé des counterfactual_branches, "
+            "réutiliser leurs résultats. Sinon, proposer 1-2 hypothèses "
+            "argumentées (ex : « Si le prospect VIP avait reçu une démo "
+            "personnalisée S5, le funnel aurait probablement... »). "
+            "Pas d'appel LLM additionnel — c'est juste une analyse rédigée."
+        ),
+    },
+]
+
+# Bloc d'instructions injecté dans le PLAN_SYSTEM_PROMPT lorsqu'un
+# `simulation_requirement` est fourni. Force les 4 sections narratives en plus
+# des sections analytiques librement planifiées par le LLM. Les titres FR sont
+# canoniques (testés). En backward-compat (requirement vide / legacy), ce bloc
+# n'est PAS injecté et le LLM retombe sur le comportement historique de
+# planification libre.
+_NARRATIVE_SECTIONS_PLAN_BLOCK = """\
+
+═══════════════════════════════════════════════════════════════
+[US-041 — Narrative Mandatory Sections]
+═══════════════════════════════════════════════════════════════
+
+In addition to the analytical sections you freely plan above (top
+influencers, demographics, trending topics, structural insights, etc.),
+the report MUST end with the following 4 narrative sections, in this
+exact order, with these EXACT French titles (do not translate, do not
+rephrase):
+
+1. "Le pari a-t-il été tenu ?"
+   → Compare the simulation's predicted trajectory to the resolution
+     target defined in the simulation_requirement below. Verdict:
+     pari tenu / partiellement tenu / non tenu, with quantified gap.
+
+2. "Qui a basculé ?"
+   → Synthetic personas whose stance flipped during the simulation,
+     with precise round + probable cause. Use analyze_trajectory
+     (turning_points + agents_with_most_belief_change). Do NOT infer —
+     ground every flip on tool data.
+
+3. "Qu'est-ce qui nous a surpris ?"
+   → Compare observed vs expected distributions (sentiment,
+     engagement, share-of-voice, bullish_share). If the gap exceeds
+     15 points vs the target stated in simulation_requirement, write
+     explicitly: « Surprise marquée : nous avions anticipé X%,
+     l'observé est à Y% — voici pourquoi probablement... » and
+     explain the mechanism. Otherwise surface qualitative surprises
+     (unexpected alliances, vocal-minority pivots).
+
+4. "Qu'aurait-il fallu pour basculer le résultat ?"
+   → Counterfactual: a hypothetical event injection or parameter
+     change that would have flipped the verdict. If the simulation
+     already ran counterfactual_branches, reuse them. Otherwise
+     propose 1-2 argued hypotheses. NO additional LLM call — just
+     analytical writing.
+
+These 4 sections come AFTER your freely-planned analytical sections.
+They are NOT optional. The total section count therefore exceeds
+the 5-section ceiling stated above; for narrative reports the cap
+becomes 9 sections (5 analytical max + 4 narrative mandatory).
+The previous "Synthesis & Implications" guidance still applies
+for the LAST analytical section, BEFORE the 4 narrative ones."""
+
+PLAN_SYSTEM_PROMPT_BASE = """\
 You are an expert analyst writing a "Scenario Exploration Report" with a "God's eye view" of a multi-agent simulation. You can observe every Agent's behavior, speech, belief changes, and interactions.
+
+[Scenario under exploration — simulation_requirement]
+{simulation_requirement}
 
 [Core Concept]
 We built a simulation world, injected a specific scenario, and let hundreds of AI agents with unique personas react and interact. The result is NOT a prediction — it is a structured exploration of how diverse actors MIGHT respond under the given assumptions.
@@ -741,18 +859,193 @@ Design a report that answers these questions through ANALYSIS, not mere descript
 - Section structure should be designed by you based on what's analytically interesting
 
 Please output the report outline in JSON format as follows:
-{
+{{
     "title": "Report title",
     "summary": "Report summary (one sentence — the single most important non-obvious finding)",
     "sections": [
-        {
+        {{
             "title": "Section title",
             "description": "Section content description — what analytical question does this section answer?"
-        }
+        }}
     ]
-}
+}}
 
 Note: The sections array must have at least 3 and at most 5 elements! The last section MUST be a synthesis section."""
+
+# Backward-compat alias — anciens callsites ou tests qui importaient
+# `PLAN_SYSTEM_PROMPT` directement. La constante reste la version « legacy »
+# (sans `simulation_requirement`, sans bloc narratif). La nouvelle injection
+# passe par `_render_plan_system_prompt()` (cf. plan_outline()).
+PLAN_SYSTEM_PROMPT = PLAN_SYSTEM_PROMPT_BASE
+
+
+def _render_plan_system_prompt(simulation_requirement: Optional[str]) -> str:
+    """Render the planning system prompt, injecting the simulation
+    requirement and (when available) the US-041 mandatory narrative
+    sections block.
+
+    Backward-compat: if `simulation_requirement` is empty or None
+    (legacy projects without a requirement), returns a degraded prompt
+    that drops the narrative block — historical free-planning behavior.
+    """
+    requirement = (simulation_requirement or "").strip()
+    if not requirement:
+        # Legacy / fallback: no requirement available → drop the {placeholder}
+        # gracefully and skip the narrative block. The LLM keeps its
+        # historical free-planning mode.
+        return PLAN_SYSTEM_PROMPT_BASE.format(
+            simulation_requirement="(not provided — fall back to free planning)"
+        ) + "\n\n[Note] No simulation_requirement provided — narrative " \
+            "sections US-041 are skipped for this run."
+
+    return (
+        PLAN_SYSTEM_PROMPT_BASE.format(simulation_requirement=requirement)
+        + _NARRATIVE_SECTIONS_PLAN_BLOCK
+    )
+
+
+# US-041 — Directives spécifiques par section narrative obligatoire.
+# Injectées dans le SECTION_SYSTEM_PROMPT au moment de la rédaction. Le LLM
+# reçoit donc le prompt section générique + ces instructions ciblées —
+# zéro appel LLM additionnel, juste un prompt enrichi.
+_NARRATIVE_SECTION_DIRECTIVES = {
+    "Le pari a-t-il été tenu ?": """\
+
+═══════════════════════════════════════════════════════════════
+[US-041 — Section narrative : « Le pari a-t-il été tenu ? »]
+═══════════════════════════════════════════════════════════════
+
+This section answers ONE question: did the simulation's predicted
+trajectory match the resolution target stated in the
+simulation_requirement?
+
+Required structure:
+- Open with a single-sentence verdict: « Pari tenu », « Partiellement
+  tenu », or « Non tenu », followed by the quantified gap.
+- Then a 2-3 paragraph narrative tracing the trajectory: what was
+  predicted at the start, what happened mid-simulation, what landed
+  at the end.
+- Quote 1-2 specific agent moments (use simulation_feed or
+  interview_agents) that exemplify the prediction landing or missing.
+- End with the SO-WHAT for the decision-maker (founder / DG / cabinet):
+  what does this verdict imply for the next move?
+
+Tools to prioritize: analyze_trajectory (final-state distributions),
+market_state (Polymarket resolution if used), simulation_feed
+(specific quotes).""",
+    "Qui a basculé ?": """\
+
+═══════════════════════════════════════════════════════════════
+[US-041 — Section narrative : « Qui a basculé ? »]
+═══════════════════════════════════════════════════════════════
+
+This section identifies synthetic personas whose stance flipped
+during the simulation, with precise round + probable cause.
+
+Required structure:
+- A short intro paragraph (2-3 sentences) on the overall flip
+  pattern: how many flipped, which direction dominated.
+- A bulleted list of 3-6 specific agents who flipped, each line:
+  - **Agent name (role/persona)** — round R: from stance A to stance B,
+    triggered by [specific event or interaction]. Quote one
+    sentence the agent wrote at the flip moment.
+- Close with what the flip pattern reveals about the scenario's
+  pressure points (e.g. « les CTO Maghreb basculent en S5 quand
+  l'objection prix est levée — signal que le pricing est le levier »).
+
+Tools to prioritize: analyze_trajectory (focus='turning_points'
+returns the agents with most belief change + round numbers),
+simulation_feed (round_num filter to retrieve the agent's post at
+the flip moment), interview_agents (follow-up question to flipped
+agents).
+
+DO NOT INFER flips — every flip in this section must be grounded
+on tool data (turning_points or trajectory delta).""",
+    "Qu'est-ce qui nous a surpris ?": """\
+
+═══════════════════════════════════════════════════════════════
+[US-041 — Section narrative : « Qu'est-ce qui nous a surpris ? »]
+═══════════════════════════════════════════════════════════════
+
+This section compares observed distributions to expected
+distributions and surfaces the surprises.
+
+Required structure:
+- Step 1 — Quantitative surprise check:
+  Use analyze_trajectory to retrieve the final-snapshot
+  bullish_share (or sentiment distribution). Compare to the target
+  stated in the simulation_requirement (extract it: e.g. « cible 30% »
+  → expected = 30; or fall back to a 50/50 prior for neutral).
+  Compute the delta.
+  - If |delta| > 15 percentage points: write explicitly
+    « **Surprise marquée** : nous avions anticipé X%, l'observé est
+    à Y% (écart de Z points). Voici pourquoi probablement... »
+    and then explain the mechanism in 1-2 paragraphs grounded on
+    simulation_feed quotes.
+  - If |delta| ≤ 15 points: state « Pas de surprise quantitative
+    majeure (X% attendu, Y% observé) » and pivot to qualitative
+    surprises.
+- Step 2 — Qualitative surprises:
+  Look for unexpected alliances (use detect_contradictions,
+  analyze_graph_structure for bridges), vocal-minority pivots
+  (turning_points among low-degree nodes), persona contradictions
+  (an agent acting against their stated persona — flag with the
+  quote).
+- Close with the single most non-obvious finding.
+
+Tools to prioritize: analyze_trajectory, detect_contradictions,
+simulation_feed.""",
+    "Qu'aurait-il fallu pour basculer le résultat ?": """\
+
+═══════════════════════════════════════════════════════════════
+[US-041 — Section narrative : « Qu'aurait-il fallu pour basculer le résultat ? »]
+═══════════════════════════════════════════════════════════════
+
+This is the final, counterfactual section. It explores what
+hypothetical change would have flipped the verdict from the first
+section (« Le pari a-t-il été tenu ? »).
+
+Required structure:
+- Two cases — branch on whether the simulation already ran
+  counterfactual_branches:
+  Case A — counterfactual_branches were tested:
+    Use simulation_feed / market_state / analyze_trajectory to
+    surface what those branches produced. Compare main-run vs
+    counterfactual outcomes side-by-side. State: « la branche X
+    aurait flippé le verdict parce que... ».
+  Case B — no counterfactual_branches available:
+    Propose 1-2 argued hypotheses, each in this template:
+    « **Hypothèse N** : Si [specific event injection / parameter
+    change], alors [expected impact on the trajectory], parce que
+    [mechanism grounded on a specific observation from the main
+    run, with one quoted agent line]. »
+    Examples:
+    - « Si le prospect VIP avait reçu une démo personnalisée à S5,
+      le funnel d'intention d'achat serait probablement passé de
+      24% à 31%, parce que [agent X] a explicitement dit en S6
+      qu'il manquait une « démo dédiée pour décider ». »
+    - « Si la communication de crise était sortie en H+1 au lieu
+      de H+4, le pic de visibilité négatif aurait été divisé par
+      [un facteur estimé], parce que [agent Y] a tweeté en H+3
+      « le silence est plus violent que la faute ». »
+- Close with a single recommendation for the decision-maker.
+
+NO additional LLM call beyond the standard ReACT loop — this
+section uses the same tool budget as any other section.""",
+}
+
+
+def _build_narrative_section_directive(section_title: str) -> str:
+    """Return the US-041 directive block matching the given section title.
+
+    Returns an empty string when the section is not one of the 4
+    mandatory narrative sections (i.e. it's a regular analytical
+    section freely planned by the LLM, or the run is in legacy mode
+    without a simulation_requirement).
+    """
+    if not section_title:
+        return ""
+    return _NARRATIVE_SECTION_DIRECTIVES.get(section_title.strip(), "")
 
 PLAN_USER_PROMPT_TEMPLATE = """\
 [Scenario Setup]
@@ -2005,8 +2298,13 @@ class ReportAgent:
         
         if progress_callback:
             progress_callback("planning", 30, "Generating report outline...")
-        
-        system_prompt = PLAN_SYSTEM_PROMPT
+
+        # US-041 — system prompt customisé par simulation_requirement.
+        # Si un requirement est présent, on injecte le bloc narratif
+        # obligatoire (4 sections forcées). Sinon, comportement legacy :
+        # planification libre sans sections narratives.
+        system_prompt = _render_plan_system_prompt(self.simulation_requirement)
+
         user_prompt = PLAN_USER_PROMPT_TEMPLATE.format(
             simulation_requirement=self.simulation_requirement,
             total_nodes=context.get('graph_statistics', {}).get('total_nodes', 0),
@@ -2024,7 +2322,7 @@ class ReportAgent:
                 ],
                 temperature=0.3
             )
-            
+
             if progress_callback:
                 progress_callback("planning", 80, "Parsing outline structure...")
 
@@ -2035,30 +2333,49 @@ class ReportAgent:
                     title=section_data.get("title", ""),
                     content=""
                 ))
-            
+
+            # US-041 — Garde-fou : si le LLM a oublié les 4 sections narratives
+            # obligatoires (ou en a manqué une), on les ré-injecte
+            # déterministiquement à la fin de l'outline. C'est un filet de
+            # sécurité — le system prompt les demande déjà explicitement.
+            if (self.simulation_requirement or "").strip():
+                existing_titles = {s.title.strip() for s in sections}
+                for narr in _NARRATIVE_SECTIONS_REQUIRED:
+                    if narr["title"] not in existing_titles:
+                        sections.append(ReportSection(title=narr["title"]))
+                        logger.info(
+                            f"US-041 auto-appended narrative section: {narr['title']}"
+                        )
+
             outline = ReportOutline(
                 title=response.get("title", "Simulation Analysis Report"),
                 summary=response.get("summary", ""),
                 sections=sections
             )
-            
+
             if progress_callback:
                 progress_callback("planning", 100, "Outline planning complete")
 
             logger.info(f"Outline planning complete: {len(sections)} sections")
             return outline
-            
+
         except Exception as e:
             logger.error(f"Outline planning failed: {str(e)}")
             # Return default outline (3 sections, as fallback)
+            fallback_sections = [
+                ReportSection(title="Prediction Scenario and Core Findings"),
+                ReportSection(title="Population Behavior Prediction Analysis"),
+                ReportSection(title="Trend Outlook and Risk Alerts"),
+            ]
+            # US-041 — même en fallback LLM, on garde les 4 sections narratives
+            # quand le requirement existe (backward-compat preservée si absent).
+            if (self.simulation_requirement or "").strip():
+                for narr in _NARRATIVE_SECTIONS_REQUIRED:
+                    fallback_sections.append(ReportSection(title=narr["title"]))
             return ReportOutline(
                 title="Scenario Exploration Report",
                 summary="Future trend and risk analysis based on simulation predictions",
-                sections=[
-                    ReportSection(title="Prediction Scenario and Core Findings"),
-                    ReportSection(title="Population Behavior Prediction Analysis"),
-                    ReportSection(title="Trend Outlook and Risk Alerts")
-                ]
+                sections=fallback_sections,
             )
     
     def _generate_section_react(
@@ -2109,6 +2426,13 @@ class ReportAgent:
             section_title=section.title,
             tools_description=self._get_tools_description(),
         )
+
+        # US-041 — si la section courante est l'une des 4 sections narratives
+        # obligatoires, on appende ses consignes spécifiques au system prompt
+        # (sans appel LLM additionnel — juste un prompt enrichi).
+        narrative_directive = _build_narrative_section_directive(section.title)
+        if narrative_directive:
+            system_prompt = system_prompt + narrative_directive
 
         # Build user prompt - pass previous sections as brief summaries to avoid
         # blowing up context (was 112K tokens across 14 calls)
