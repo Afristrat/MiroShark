@@ -885,9 +885,35 @@
         "Frontend TemplateGallery affiche les 5 cards avec preview",
         "Documentation racine backend/app/preset_templates/README.md"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-04-29T15:30:00Z",
       "dependencies": [],
-      "metadata": { "priority": "P0", "chantier_priority_rank": 1, "requires_human_codesign": true }
+      "metadata": {
+        "priority": "P0",
+        "chantier_priority_rank": 1,
+        "requires_human_codesign": true,
+        "files_touched": [
+          "backend/app/preset_templates/README.md (top-level overview)",
+          "backend/app/preset_templates/pmf_startup_tech.json + pmf_startup_tech/{README,01_attachment,02_engine}.md",
+          "backend/app/preset_templates/crisis_24h_brand.json + crisis_24h_brand/{README,01_attachment,02_engine}.md",
+          "backend/app/preset_templates/adcheck_pre_launch.json + adcheck_pre_launch/{README,01_attachment,02_engine}.md",
+          "backend/app/preset_templates/policy_brief_stress.json + policy_brief_stress/{README,01_attachment,02_engine}.md",
+          "backend/app/preset_templates/product_launch_v2.json + product_launch_v2/{README,01_attachment,02_engine}.md",
+          "scripts/build_attachment_pdfs.py (helper Python reportlab pour conversion MD → PDF démo, optionnel)"
+        ],
+        "two_file_pattern": "Adopté à la place du pattern she_start (3 fichiers seed/personas/README) : 01_attachment.md = perspective customer prête à PDF démo, 02_engine.md = sim_requirement + 6 agent system_prompts + 5 director events injection text + verdict shape. README per-scenario explique le lien.",
+        "scenarios_codesigned_2026_04_29": [
+          "pmf_startup_tech (founder pré-Série A, 10 semaines, 50 prospects pan-Afrique)",
+          "crisis_24h_brand (vidéo CEO leak, 24h, dérive Twitter/Reddit/médias)",
+          "adcheck_pre_launch (3 concepts pub Ramadan, 3 jours, audience MA 25-45)",
+          "policy_brief_stress (loi fintech mobile P2P, 5 jours ouvrés, opposition + BCEAO + banques)",
+          "product_launch_v2 (lancement B2C panafricain, 7 jours, churn peak J5)"
+        ],
+        "personas_anchoring": "Nominaux pan-Afrique tous scénarios (Karim Casa, Aïcha Dakar, Ousmane Abidjan, Fatou Dakar, Amadou Lagos, Layla Tunis, Salim Casa, Rachid Tunis, Aminata Dakar, Hassan Casa, Mariam Rabat, Olawale Lagos, Yassine Casa, Khadija Marrakech, Sara Dakar, Réda Paris-MA, Chouaib Fès, Leila Tunis, Hassan Bouqasmi Rabat, Wael Slimani Rabat, Nicole Bamba Abidjan, Mohamed Diallo Dakar, Ahlam Tazi Casa, Tariq Casa, Karim Berrada Casa, Sandrine Yaoundé, Ali Tunis, Fatou Diabaté Lagos, Hicham Marrakech, Aminata Kane Dakar). Cohérence inter-rounds critique (un agent qui défend J3 tient J7 sauf info nouvelle).",
+        "currency_used": "MAD + USD jamais EUR (règle durable Amine)",
+        "language_used": "Français pour la démo (toutes locales)",
+        "director_events_validated": "25 events pré-définis par Amine (5 par scénario), tous activables/désactivables via Director Mode UI au runtime"
+      }
     }
   ]
 }

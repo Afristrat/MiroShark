@@ -30,6 +30,31 @@
 
 ## Log d'itérations
 
+### 2026-04-29 — US-042 5 scénarios canoniques preset_templates (codesignés avec Amine)
+- **Statut** : passes: true (premier de la chaîne chantier 9-simulation-quality, débloque US-037, US-038, US-041)
+- **Volume** : 5 scénarios × (1 JSON template + 3 fichiers MD : README/01_attachment/02_engine) = **20 fichiers** + 1 README top-level + 1 script Python helper. Total ~15 000 mots de contenu.
+- **Pattern adopté** : **2 fichiers par scénario** (à la place du pattern `she_start` à 3 fichiers seed/personas/README). Validé par Amine (memory `bassira_template_two_file_pattern.md`) :
+  - `01_attachment.md` = perspective customer (prêt-à-PDF, mail-style, 600-800 mots) → ce que le prospect Bassira nous enverrait. Convertible en PDF via `scripts/build_attachment_pdfs.py` (reportlab, optionnel — Amine a confirmé que les MD sont suffisants pour la démo).
+  - `02_engine.md` = config technique : `simulation_requirement` LLM-readable >1500 chars, **6 agent system_prompts complets** (200-400 mots chacun, ancrés sur scenario + persona role + valeurs + sources d'autorité), **5 director events** avec injection text intégral, `expected_outcome` verdict structuré, `time_config`.
+  - `README.md` lie les 2 fichiers + cohérence engine.
+- **Q&A codesign** (round avec Amine 2026-04-29) :
+  - Q1 : 5 scénarios validés (`pmf_startup_tech`, `crisis_24h_brand`, `adcheck_pre_launch`, `policy_brief_stress`, `product_launch_v2`)
+  - Q2 : Pan-Afrique (Maroc + Sénégal + Côte d'Ivoire + Nigeria + Cameroun + Tunisie)
+  - Q3 : Personas nominaux (« Karim Bennani CTO Casa », « Khadija El Idrissi mère Marrakech », etc.)
+  - Q4 : 5 verdict shapes structurés validés (`viable/borderline/nope` pour PMF, `worst_case_trajectory + peak_hour + 3 messages` pour Crisis, `ranking ABC + backfire risk` pour Adcheck, `survives + amendments + flippers` pour Policy, `adoption_curve + churn_peak + 5 influencers + 3 signals` pour Launch).
+  - Q5 : 25 director events (5 par scénario) tous validés par Amine.
+  - Q6 : Tous scénarios en français pour la démo.
+- **Apprentissages / patterns** :
+  - **Cohérence inter-rounds** est cruciale : chaque agent maintient sa position d'un round à l'autre sauf info nouvelle décisive. Documenté explicitement dans chaque system_prompt.
+  - **Sources d'autorité par persona** ancrent les arguments dans des sources crédibles pour le rôle (Stack Overflow + Hacker News pour CTO ; Le360 + TelQuel pour journaliste ; doctrine BCEAO + GAFI pour avocate compliance).
+  - **Time config par scénario** : 10080 min/round (1 semaine PMF), 60 min/round (Crisis 24h), 240 min/round (Adcheck 3j et Policy 5j ouvrés), 360 min/round (Launch 7j).
+  - **Devises** : MAD + USD jamais EUR (règle durable Amine, memory `currency_usd_never_eur.md`).
+  - **Director events injection text** doit être assez riche pour que le LLM puisse raisonner — ~150-300 mots par event, pas juste un label.
+- **Quality gates** :
+  - Aucun changement code (templates statiques) → npm build sans impact.
+  - `cd backend && uv run pytest tests/ --tb=short -x` → 202 passed, 17 skipped, zéro régression (les nouveaux templates seront validés par `test_unit_templates_schema` qui auto-découvre les fichiers preset_templates/*.json).
+- **Prochaine étape Ralph (chantier 9 ordre exécution)** : US-037 SimulationConfigGenerator parse simulation_requirement → time config adaptive (les 5 templates servent maintenant de référence pour le parsing).
+
 ### 2026-04-29 — US-021 Frontend page /calibration (D3 scatter + stats publiques)
 - **Statut** : passes: true
 - **Fichiers** : `frontend/src/views/CalibrationView.vue` (nouveau, ~700 l template+style+script), `frontend/src/router/index.js` (+6 l route /calibration), `frontend/src/locales/{fr,ar,en}.json` (+~70 keys section `calibration.*` chacun, MÊMES keys cross-locale)

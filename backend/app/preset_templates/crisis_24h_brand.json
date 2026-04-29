@@ -1,0 +1,55 @@
+{
+  "id": "crisis_24h_brand",
+  "name": "Crisis Drill — 24 heures (vidéo CEO)",
+  "category": "Communication & Crise",
+  "description": "Simulation 24 heures de la dérive d'une fuite vidéo gênante du CEO sur Twitter / Reddit / médias / WhatsApp. Verdict : worst-case trajectory, peak hour, vocal minorities radicalisées, top 3 messages de réponse à émettre H+1, H+4, H+12. Cible : DirCom, agences communication, cellules de crise.",
+  "icon": "alert-triangle",
+  "difficulty": "hard",
+  "estimated_agents": 60,
+  "estimated_rounds": 24,
+  "platforms": ["twitter", "reddit", "polymarket"],
+  "tags": ["crisis-comms", "communication", "dircom", "24h", "social-media", "afrique"],
+  "simulation_requirement": "Voir engine.md — fuite vidéo CEO à H+0, dérive Twitter/Reddit/médias/WhatsApp 24 heures, 1 round = 1 heure.",
+  "default_market_question": "À quelle heure (H+0 à H+24) le pic de visibilité négatif aura-t-il lieu, et quel sera son ampleur en réactions cumulées ?",
+  "attachment_path": "crisis_24h_brand/01_attachment.md",
+  "engine_path": "crisis_24h_brand/02_engine.md",
+  "readme_path": "crisis_24h_brand/README.md",
+  "agents": {
+    "total": 60,
+    "breakdown": {
+      "journalists_local": 8,
+      "activists": 6,
+      "influencers": 6,
+      "employees_loyalists": 6,
+      "general_public_confused": 22,
+      "international_relays": 6,
+      "competitors_observers": 3,
+      "regulators_observers": 3
+    }
+  },
+  "rounds": {
+    "count": 24,
+    "unit": "hour",
+    "label_template": "H+{round}"
+  },
+  "director_event_slots": [
+    { "round": 1, "label": "Capture d'écran virale", "key": "viral_screenshot", "description": "Une phrase incriminante extraite de la vidéo devient un screenshot partagé en boucle" },
+    { "round": 4, "label": "Journaliste tier-1 picks up", "key": "tier1_pickup", "description": "Le360 / Jeune Afrique / TelQuel publie un article avec contexte" },
+    { "round": 8, "label": "Régulateur émet un statement", "key": "regulator_statement", "description": "HACA / CNDP / équivalent national publie un statement public" },
+    { "round": 12, "label": "Concurrent direct lance un jab marketing", "key": "competitor_jab", "description": "Un concurrent direct profite de la situation pour positionner son alternative" },
+    { "round": 18, "label": "Vidéo de réponse CEO publiée", "key": "ceo_response_video", "description": "Le CEO publie une vidéo de réponse — tone et contenu fournis par l'utilisateur en input" }
+  ],
+  "expected_outcome": {
+    "worst_case_trajectory": "courbe de réactions cumulées heure par heure",
+    "peak_visibility_hour": "H+X (l'heure du pic de visibilité négatif)",
+    "vocal_minorities_radicalized": "liste des sous-groupes radicalisés (avec personas concernés)",
+    "top_3_messages_to_emit": "3 messages à émettre à H+1, H+4, H+12 (tone + contenu)"
+  },
+  "recommended_settings": {
+    "enable_twitter": true,
+    "enable_reddit": true,
+    "enable_polymarket": true,
+    "rounds": 24,
+    "minutes_per_round": 60
+  }
+}

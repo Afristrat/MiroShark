@@ -1,0 +1,53 @@
+{
+  "id": "product_launch_v2",
+  "name": "Product Launch B2C — 1 semaine (trajectoire adoption + churn)",
+  "category": "Lancement Produit & GTM",
+  "description": "Simule 1 semaine de lancement produit B2C en pan-Afrique avec trajectoire d'adoption + pic de churn early-adopters J5. Verdict : adoption_curve par jour, churn_peak_day, top 5 influenceurs à mobiliser early, top 3 signaux à monitor. Cible : PM, GTM lead, growth.",
+  "icon": "trending-up",
+  "difficulty": "medium",
+  "estimated_agents": 60,
+  "estimated_rounds": 28,
+  "platforms": ["twitter", "reddit", "polymarket"],
+  "tags": ["product-launch", "gtm", "b2c", "adoption-curve", "churn", "afrique"],
+  "simulation_requirement": "Voir engine.md — lancement produit B2C lundi, trajectoire adoption pan-Afrique sur 7 jours, focus pic churn early-adopters J5, 1 round = 6h.",
+  "default_market_question": "Le produit aura-t-il un taux d'adoption cumulé > 8% à J7 et survit-il au pic de churn de J5 (rétention > 70%) ?",
+  "attachment_path": "product_launch_v2/01_attachment.md",
+  "engine_path": "product_launch_v2/02_engine.md",
+  "readme_path": "product_launch_v2/README.md",
+  "agents": {
+    "total": 60,
+    "breakdown": {
+      "early_adopters": 8,
+      "pragmatic_majority": 30,
+      "skeptical_late": 10,
+      "influencers_creators": 6,
+      "support_users": 3,
+      "competitor_observers": 3
+    }
+  },
+  "rounds": {
+    "count": 28,
+    "unit": "6h",
+    "label_template": "J{day}-{period}"
+  },
+  "director_event_slots": [
+    { "round": 2, "label": "Bug de scaling visible", "key": "scaling_bug", "description": "30% des requêtes timeout J1-PM — signalement support" },
+    { "round": 5, "label": "Article positif TechAfrica", "key": "techafrica_article", "description": "TechAfrica publie un article positif J2-AM" },
+    { "round": 11, "label": "Power user crée tutoriel viral", "key": "viral_tutorial", "description": "Un power user crée un tutoriel J3-PM qui boost l'adoption" },
+    { "round": 17, "label": "Compétiteur sort une pub agressive", "key": "competitor_attack", "description": "Compétiteur lance une pub aggressive J5-AM (jour pic churn)" },
+    { "round": 22, "label": "Décision marque promo flash -30%", "key": "promo_flash", "description": "La marque décide une promo flash -30% J6-PM pour relancer adoption" }
+  ],
+  "expected_outcome": {
+    "adoption_curve_per_day": "courbe d'adoption cumulée jour par jour J1-J7",
+    "churn_peak_day": "J{X} avec ampleur",
+    "top_5_influencers_to_mobilize": "5 personas à mobiliser early pour booster adoption",
+    "top_3_signals_to_monitor": "3 signaux faibles à monitorer (sentiment, NPS-proxy, share-of-voice)"
+  },
+  "recommended_settings": {
+    "enable_twitter": true,
+    "enable_reddit": true,
+    "enable_polymarket": true,
+    "rounds": 28,
+    "minutes_per_round": 360
+  }
+}

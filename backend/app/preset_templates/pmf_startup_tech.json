@@ -1,0 +1,52 @@
+{
+  "id": "pmf_startup_tech",
+  "name": "PMF startup tech B2B (10 semaines)",
+  "category": "Founder & Levée de fonds",
+  "description": "Founder solo teste si son SaaS B2B a du PMF avec 50 prospects-cible synthétiques pan-Afrique, sur 10 semaines. Verdict viable/borderline/nope avec confidence + top segments + top frictions. Cible : founders avant 1ʳᵉ levée Série A.",
+  "icon": "rocket",
+  "difficulty": "medium",
+  "estimated_agents": 50,
+  "estimated_rounds": 10,
+  "platforms": ["twitter", "reddit", "polymarket"],
+  "tags": ["pmf", "startup", "founder", "saas-b2b", "afrique", "pre-serie-a", "validation-marche"],
+  "simulation_requirement": "Voir engine.md — ancrage : SaaS B2B testé contre 50 prospects-cible pan-Afrique sur 10 semaines, 1 round = 1 semaine. Cible verdict PMF = ≥ 30% des prospects expriment intention d'achat à la valeur tarifaire proposée.",
+  "default_market_question": "Quel pourcentage des 50 prospects synthétiques exprimera une intention d'achat ferme à S10 (cible 30%) ?",
+  "attachment_path": "pmf_startup_tech/01_attachment.md",
+  "engine_path": "pmf_startup_tech/02_engine.md",
+  "readme_path": "pmf_startup_tech/README.md",
+  "agents": {
+    "total": 50,
+    "breakdown": {
+      "ideal_customer_profile": 30,
+      "decision_makers": 10,
+      "influencers_techniques": 5,
+      "competitive_analysts": 3,
+      "skeptiques_initiaux": 2
+    }
+  },
+  "rounds": {
+    "count": 10,
+    "unit": "week",
+    "label_template": "Semaine S{round}"
+  },
+  "director_event_slots": [
+    { "round": 2, "label": "Interview client perdu", "key": "lost_customer_interview", "description": "Un prospect retient l'attention puis rejette : « trop cher pour ce que c'est »" },
+    { "round": 4, "label": "Concurrent annonce levée Série A", "key": "competitor_funding", "description": "Un concurrent direct annonce une levée de $2M — pression sur la fenêtre go-to-market" },
+    { "round": 5, "label": "Pivot demandé par advisor", "key": "advisor_pivot", "description": "Un advisor pousse à pivoter vers segment niche plus défendable" },
+    { "round": 7, "label": "Feature majeure non-roadmap demandée", "key": "vip_feature_request", "description": "Un prospect VIP exige une feature hors roadmap pour signer" },
+    { "round": 9, "label": "Deal $50k pre-paid menace de tomber", "key": "deal_at_risk", "description": "Un deal pre-paid de $50k risque de tomber selon la réponse founder" }
+  ],
+  "expected_outcome": {
+    "verdict": "viable | borderline | nope",
+    "confidence": "0.0 to 1.0",
+    "top_3_segments": "liste de 3 segments à cibler en priorité",
+    "top_3_frictions": "liste de 3 frictions principales d'achat"
+  },
+  "recommended_settings": {
+    "enable_twitter": true,
+    "enable_reddit": true,
+    "enable_polymarket": true,
+    "rounds": 10,
+    "minutes_per_round": 10080
+  }
+}

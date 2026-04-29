@@ -1,0 +1,53 @@
+{
+  "id": "adcheck_pre_launch",
+  "name": "Adcheck pre-launch — 3 concepts pub Ramadan (3 jours)",
+  "category": "Marketing & Lancement",
+  "description": "Évalue 3 concepts publicitaires Ramadan auprès d'une audience marocaine 25-45 ans synthétique sur 3 jours. Verdict : ranking A/B/C avec score, top arguments + objections par concept, lequel risque backfire et pourquoi. Cible : leads marketing, agences créa.",
+  "icon": "megaphone",
+  "difficulty": "medium",
+  "estimated_agents": 60,
+  "estimated_rounds": 18,
+  "platforms": ["twitter", "reddit", "polymarket"],
+  "tags": ["adcheck", "marketing", "ramadan", "creative-pre-test", "afrique", "cultural-fit"],
+  "simulation_requirement": "Voir engine.md — 3 concepts pub Ramadan testés sur 60 personas représentatifs de l'audience marocaine élargie au Maghreb-Afrique de l'Ouest, 18 rounds × 4h, A vs B vs C ranking + backfire risk.",
+  "default_market_question": "Lequel des 3 concepts (A, B, C) obtiendra le meilleur score combiné (engagement positif - risque backfire) à J+3 ?",
+  "attachment_path": "adcheck_pre_launch/01_attachment.md",
+  "engine_path": "adcheck_pre_launch/02_engine.md",
+  "readme_path": "adcheck_pre_launch/README.md",
+  "agents": {
+    "total": 60,
+    "breakdown": {
+      "ideal_audience_25_45": 35,
+      "religious_traditional": 8,
+      "secular_modern": 7,
+      "diaspora_critical": 4,
+      "trade_observers": 3,
+      "competitor_analysts": 3
+    }
+  },
+  "rounds": {
+    "count": 18,
+    "unit": "4h",
+    "label_template": "J{day}-H+{hour}"
+  },
+  "director_event_slots": [
+    { "round": 3, "label": "Amplification organique influenceur tier-2", "key": "organic_amp", "description": "Un influenceur tier-2 partage le concept qu'il préfère organiquement" },
+    { "round": 5, "label": "Concept C déclenche shit-storm religieux", "key": "religious_backfire", "description": "Le concept C est perçu comme manquant de respect — shit-storm sur le côté religieux" },
+    { "round": 8, "label": "Compétiteur sort sa pub Ramadan", "key": "competitor_launch", "description": "Le compétiteur direct lance sa propre pub Ramadan le même jour" },
+    { "round": 10, "label": "Audit budget — un concept retiré", "key": "budget_cut", "description": "Audit budget force le retrait d'un des 3 concepts — lequel ?" },
+    { "round": 13, "label": "Q&A imprévue de la marque", "key": "brand_qa", "description": "L'audience pose des questions publiques à la marque sur un concept" }
+  ],
+  "expected_outcome": {
+    "ranking": "A > B > C avec scores 0-100",
+    "per_concept_top_arguments": "top 3 arguments en faveur par concept",
+    "per_concept_top_objections": "top 3 objections par concept",
+    "backfire_risk": "concept à risque + pourquoi (analyse cause-racine)"
+  },
+  "recommended_settings": {
+    "enable_twitter": true,
+    "enable_reddit": true,
+    "enable_polymarket": true,
+    "rounds": 18,
+    "minutes_per_round": 240
+  }
+}
