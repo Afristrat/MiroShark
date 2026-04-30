@@ -39,11 +39,11 @@ test.describe('EN — smoke', () => {
     await expect(statCards.first()).toBeVisible({ timeout: 15_000 })
   })
 
-  test('/offres affiche les 3 packages + FAQ', async ({ page }) => {
+  test('/offres affiche le carousel 10 packages + FAQ', async ({ page }) => {
     await gotoLocalized(page, '/offres', 'en')
 
     const cards = page.locator('.offers-card')
-    await expect(cards).toHaveCount(3)
+    await expect(cards).toHaveCount(10)
 
     await expect(page.getByText(FX.offers.crisisDrillName, { exact: false }).first()).toBeVisible()
 

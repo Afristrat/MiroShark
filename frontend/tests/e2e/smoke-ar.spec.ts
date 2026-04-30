@@ -52,13 +52,13 @@ test.describe('AR — smoke + RTL', () => {
     await expect(statCards.first()).toBeVisible({ timeout: 15_000 })
   })
 
-  test('/offres RTL + 3 packages + FAQ', async ({ page }) => {
+  test('/offres RTL + carousel 10 packages + FAQ', async ({ page }) => {
     await gotoLocalized(page, '/offres', 'ar')
 
     await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
 
     const cards = page.locator('.offers-card')
-    await expect(cards).toHaveCount(3)
+    await expect(cards).toHaveCount(10)
 
     const faq = page.locator('.offers-faq')
     await expect(faq).toBeVisible()

@@ -288,13 +288,30 @@ const situationOptions = [
   { id: 'campaign', backendPackage: 'pre_launch_adcheck' },
 ]
 
-// Liste des packages backend valides (alignée sur l'enum OpenAPI US-025).
+// Liste des packages backend valides (alignée sur l'enum OpenAPI US-025
+// + quote_service.py _VALID_PACKAGES). Le backend reste à 4 slugs.
 const validBackendPackages = [
   'crisis_drill_24h',
   'policy_brief_stress',
   'pre_launch_adcheck',
   'custom',
 ]
+
+// Mapping slug carousel 10-packages → slug backend canonique (4 valeurs).
+// La précision (ex: "Cohort Replay") sera ajoutée en clair dans le
+// payload `message`, pour ne pas perdre l'info au passage.
+const CAROUSEL_TO_BACKEND = {
+  pmf_discovery: 'pre_launch_adcheck',
+  crisis_drill_24h: 'crisis_drill_24h',
+  adcheck_lite: 'pre_launch_adcheck',
+  adcheck_pro: 'pre_launch_adcheck',
+  product_launch: 'pre_launch_adcheck',
+  policy_stress: 'policy_brief_stress',
+  cohort_replay: 'custom',
+  crisis_watch: 'crisis_drill_24h',
+  brand_pulse: 'pre_launch_adcheck',
+  custom: 'custom',
+}
 
 const deadlineOptions = ['not_urgent', '1_month', '2_weeks', 'this_week']
 
@@ -311,7 +328,20 @@ const trustItems = [
 // frontend OffersView (legacy : crisisDrill / policyBrief / preLaunch)
 // sont aussi acceptées pour ne casser aucun lien existant.
 const PACKAGE_TO_SITUATION = {
+  // Carousel 10-packages (refonte L99) → mapping radio Step 1.
+  // Les packages "Marketing" tombent sur 'campaign', les "Crisis" sur
+  // 'crisis', les "Policy" sur 'policy'. PMF/Cohort/Custom → laissés sur
+  // la radio par défaut (situation crisis) avec la précision en Step 2.
   crisis_drill_24h: 'crisis',
+  crisis_watch: 'crisis',
+  adcheck_lite: 'campaign',
+  adcheck_pro: 'campaign',
+  brand_pulse: 'campaign',
+  product_launch: 'campaign',
+  pmf_discovery: 'campaign',
+  policy_stress: 'policy',
+  cohort_replay: 'policy',
+  // Legacy US-023
   policy_brief_stress: 'policy',
   pre_launch_adcheck: 'campaign',
   crisisDrill: 'crisis',
@@ -328,6 +358,9 @@ const form = reactive({
   // Step 1
   situation: 'crisis', // l'option par défaut, comme dans le mockup
   otherSituation: '',
+  // Slug carousel d'origine (?package=…) — préservé pour préciser le pack
+  // demandé dans `message`, indépendamment du mapping backend.
+  carouselPackage: '',
   // Step 2
   full_name: '',
   email: '',
@@ -391,10 +424,14 @@ function goBackToStep2() {
 // non vide ne suffit pas à elle seule : on ne switch sur custom que si
 // la radio n'a pas été modifiée ET que otherSituation est rempli.
 function resolveBackendPackage() {
+  // 1) Si on est arrivé via /offres avec un slug carousel, on le mappe
+  //    vers les 4 slugs backend autorisés (CAROUSEL_TO_BACKEND).
+  if (form.carouselPackage && CAROUSEL_TO_BACKEND[form.carouselPackage]) {
+    return CAROUSEL_TO_BACKEND[form.carouselPackage]
+  }
+  // 2) Sinon on dérive de la radio Step 1.
   const opt = situationOptions.find((o) => o.id === form.situation)
   if (opt && opt.backendPackage) {
-    // Si l'utilisateur a aussi rempli otherSituation, on garde la radio
-    // mais on glissera la précision dans le `message` du payload.
     return opt.backendPackage
   }
   return 'custom'
@@ -408,10 +445,20 @@ async function submit() {
 
   // Construit le message en concaténant la situation Stitch + l'éventuelle
   // précision saisie en Step 1 (champ otherSituation).
+  // Si l'utilisateur est arrivé via le carousel /offres, on préfixe par le
+  // nom du pack précis demandé pour que l'équipe sales le retrouve même
+  // quand le slug carousel est mappé vers un slug backend canonique.
   const situationLabel = form.situation
     ? t(`quote.step1.options.${form.situation}.title`)
     : ''
   const messageParts = []
+  if (form.carouselPackage) {
+    // Tente d'utiliser le nom localisé i18n si dispo, fallback sur le slug.
+    const pkgI18nKey = `offers.packages.${form.carouselPackage}.name`
+    const pkgName = t(pkgI18nKey)
+    const display = pkgName && pkgName !== pkgI18nKey ? pkgName : form.carouselPackage
+    messageParts.push(`[Pack: ${display}]`)
+  }
   if (situationLabel) messageParts.push(`[${situationLabel}]`)
   if (form.otherSituation) messageParts.push(form.otherSituation)
   const message = messageParts.join(' ').trim()
@@ -451,6 +498,11 @@ async function submit() {
 onMounted(() => {
   const raw = (route.query?.package || '').toString().trim()
   if (!raw) return
+  // On retient le slug carousel d'origine seulement s'il est connu, soit
+  // côté carousel 10-packages, soit comme slug backend valide.
+  if (CAROUSEL_TO_BACKEND[raw] || validBackendPackages.includes(raw)) {
+    form.carouselPackage = raw
+  }
   const situation = PACKAGE_TO_SITUATION[raw]
   if (situation) {
     form.situation = situation

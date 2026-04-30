@@ -19,14 +19,17 @@ test.describe('Tunnel commercial /offres → /devis', () => {
   test('CTA Crisis Drill amène sur /devis avec ?package=crisis_drill_24h', async ({ page }) => {
     await gotoLocalized(page, '/offres', 'fr')
 
-    // 3 cards visibles
+    // 10 cards rendues dans le carousel (1 par package, dont 9 packs + custom).
+    // Le carousel rend tout en DOM, le scroll/translate se fait en CSS.
     const cards = page.locator('.offers-card')
-    await expect(cards).toHaveCount(3)
+    await expect(cards).toHaveCount(10)
 
-    // Le CTA de la première card (Crisis Drill — `crisis_drill_24h`).
-    const firstCta = cards.first().locator('.offers-card-cta')
-    await expect(firstCta).toBeVisible()
-    await firstCta.click()
+    // Cible explicite via data-attribute pour Crisis Drill 24h.
+    const crisisCard = page.locator('.offers-card[data-package="crisis_drill_24h"]')
+    await expect(crisisCard).toHaveCount(1)
+    const crisisCta = crisisCard.locator('.offers-card-cta')
+    await crisisCta.scrollIntoViewIfNeeded()
+    await crisisCta.click()
 
     // Navigation vers /devis avec le package en query.
     await expect(page).toHaveURL(/\/devis(\?|$)/)
@@ -52,6 +55,7 @@ test.describe('Tunnel commercial /offres → /devis', () => {
 
     // Le CTA pré-footer pointe vers /devis sans package query.
     const preFooterCta = page.locator('.offers-cta-strip-btn')
+    await preFooterCta.scrollIntoViewIfNeeded()
     await expect(preFooterCta).toBeVisible()
     await preFooterCta.click()
 

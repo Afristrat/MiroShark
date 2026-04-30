@@ -44,19 +44,21 @@ test.describe('FR — smoke', () => {
     await expect(statCards.first()).toBeVisible({ timeout: 15_000 })
   })
 
-  test('/offres affiche les 3 packages + prix MAD + FAQ', async ({ page }) => {
+  test('/offres affiche le carousel 10 packages + prix MAD + FAQ', async ({ page }) => {
     await gotoLocalized(page, '/offres', 'fr')
 
-    // 3 cards packages.
+    // 10 cards packages dans le carousel (refonte L99).
     const cards = page.locator('.offers-card')
-    await expect(cards).toHaveCount(3)
+    await expect(cards).toHaveCount(10)
 
     // Crisis Drill visible (nom EN inchangé d'une locale à l'autre).
     await expect(page.getByText(FX.offers.crisisDrillName, { exact: false }).first()).toBeVisible()
 
-    // Prix 12 000 MAD (espace insécable possible — on teste sur "12" + "MAD").
-    const cardText = await cards.first().textContent()
-    expect(cardText, 'Premier package contient un prix MAD').toMatch(/MAD/)
+    // Au moins une card affiche un prix MAD.
+    const crisisCard = page.locator('.offers-card[data-package="crisis_drill_24h"]')
+    await expect(crisisCard).toHaveCount(1)
+    const crisisText = await crisisCard.textContent()
+    expect(crisisText, 'Crisis Drill contient un prix MAD').toMatch(/MAD/)
 
     // FAQ section visible.
     const faq = page.locator('.offers-faq')

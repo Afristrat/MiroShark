@@ -1,8 +1,6 @@
 <template>
   <div class="offers-page">
-    <!-- ───────────── Top bar (retour vers /) ─────────────
-         LanguageSwitcher est mounté globalement par App.vue en widget
-         flottant top-right. On expose juste un retour vers la home. -->
+    <!-- ───────────── Top bar ───────────── -->
     <header class="offers-topbar">
       <router-link to="/" class="offers-back" :title="$t('offers.nav.backTitle')">
         <span class="offers-back-arrow material-symbols-outlined" aria-hidden="true">arrow_back</span>
@@ -22,92 +20,235 @@
         <p class="offers-sub">{{ $t('offers.hero.subtitle') }}</p>
       </section>
 
-      <!-- ───────────── 3 cards (pricing) ─────────────
-           Card du milieu (policyBrief) en featured : bord supérieur orange
-           épais, badge « Le plus demandé » qui flotte au-dessus, légère
-           translation verticale en desktop. -->
-      <section class="offers-grid" aria-label="Packages Bassira">
-        <article
-          v-for="pkg in packages"
-          :key="pkg.id"
-          class="offers-card"
-          :class="{ 'offers-card--featured': pkg.featured }"
+      <!-- ───────────── Filter chips ───────────── -->
+      <nav
+        class="offers-chips"
+        :aria-label="$t('offers.filters.ariaLabel')"
+        role="tablist"
+      >
+        <button
+          v-for="chip in chips"
+          :key="chip.id"
+          type="button"
+          role="tab"
+          :aria-selected="activeChip === chip.id"
+          class="offers-chip"
+          :class="{ 'offers-chip--active': activeChip === chip.id }"
+          @click="setActiveChip(chip.id)"
         >
-          <span
-            v-if="pkg.featured"
-            class="offers-most-chosen"
+          <span v-if="chip.emoji" class="offers-chip-emoji" aria-hidden="true">{{ chip.emoji }}</span>
+          <span>{{ $t(`offers.filters.${chip.id}`) }}</span>
+        </button>
+      </nav>
+
+      <!-- ───────────── Carousel ─────────────
+           Une seule liste DOM avec toutes les cards, le « track » se déplace
+           via translateX. Sélecteur `.offers-card` conservé pour les tests
+           Playwright existants. -->
+      <section
+        class="offers-carousel"
+        :aria-label="$t('offers.carousel.ariaLabel')"
+        @keydown.left.prevent="prev"
+        @keydown.right.prevent="next"
+        tabindex="0"
+        ref="carouselEl"
+      >
+        <button
+          type="button"
+          class="offers-nav offers-nav--prev"
+          :aria-label="$t('offers.carousel.prev')"
+          :disabled="displayedPackages.length <= 1"
+          @click="prev"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">chevron_left</span>
+        </button>
+
+        <div
+          class="offers-track-viewport"
+          @touchstart.passive="onTouchStart"
+          @touchend="onTouchEnd"
+        >
+          <ul
+            class="offers-track"
+            :style="trackStyle"
           >
-            {{ $t('offers.featuredBadge') }}
-          </span>
-
-          <span
-            class="offers-sector"
-            :class="`offers-sector--${pkg.sectorTone}`"
-          >
-            <span class="offers-sector-dot" aria-hidden="true"></span>
-            {{ $t(`offers.packages.${pkg.id}.sector`) }}
-          </span>
-
-          <h3 class="offers-card-title">{{ $t(`offers.packages.${pkg.id}.name`) }}</h3>
-
-          <p class="offers-card-delay">
-            <span class="material-symbols-outlined offers-card-delay-icon" aria-hidden="true">schedule</span>
-            {{ $t(`offers.packages.${pkg.id}.delay`) }}
-          </p>
-
-          <div class="offers-card-price">
-            <span class="offers-card-price-mad">
-              {{ pkg.priceMad.toLocaleString('fr-FR') }}
-              <span class="offers-card-price-currency">MAD</span>
-            </span>
-            <span class="offers-card-price-usd">${{ pkg.priceUsd.toLocaleString('en-US') }}</span>
-          </div>
-
-          <hr class="offers-card-divider" />
-
-          <ul class="offers-card-bullets">
             <li
-              v-for="i in 6"
-              :key="i"
-              class="offers-card-bullet"
+              v-for="(pkg, idx) in displayedPackages"
+              :key="pkg.id"
+              class="offers-slide"
+              :class="{ 'offers-slide--active': idx === activeIndex }"
+              :aria-hidden="idx === activeIndex ? 'false' : 'true'"
             >
-              <span class="material-symbols-outlined offers-card-bullet-icon" aria-hidden="true">check_circle</span>
-              <span>{{ $t(`offers.packages.${pkg.id}.bullets.b${i}`) }}</span>
+              <article
+                class="offers-card"
+                :class="{
+                  'offers-card--featured': pkg.featured,
+                  'offers-card--active': idx === activeIndex,
+                }"
+                :data-package="pkg.id"
+                :data-tier="pkg.tier"
+              >
+                <span v-if="pkg.featured" class="offers-most-chosen">
+                  {{ $t('offers.featuredBadge') }}
+                </span>
+
+                <span class="offers-sector" :class="`offers-sector--${tierToTone(pkg.tier)}`">
+                  <span class="offers-sector-dot" aria-hidden="true"></span>
+                  {{ $t(`offers.packages.${pkg.id}.sectorBadge`) }}
+                </span>
+
+                <h3 class="offers-card-title">{{ $t(`offers.packages.${pkg.id}.name`) }}</h3>
+
+                <p class="offers-card-delay">
+                  <span class="material-symbols-outlined offers-card-delay-icon" aria-hidden="true">{{ pkg.delayIcon || 'schedule' }}</span>
+                  {{ $t(`offers.packages.${pkg.id}.delay`) }}
+                </p>
+
+                <p class="offers-card-description">
+                  {{ $t(`offers.packages.${pkg.id}.description`) }}
+                </p>
+
+                <!-- Toggle annuel / mensuel uniquement pour packages billing=monthly -->
+                <div v-if="pkg.billing === 'monthly'" class="offers-billing-toggle">
+                  <button
+                    type="button"
+                    class="offers-billing-btn"
+                    :class="{ 'offers-billing-btn--active': billingMode[pkg.id] !== 'annual' }"
+                    @click="setBillingMode(pkg.id, 'monthly')"
+                  >
+                    {{ $t('offers.billing.monthly') }}
+                  </button>
+                  <button
+                    type="button"
+                    class="offers-billing-btn"
+                    :class="{ 'offers-billing-btn--active': billingMode[pkg.id] === 'annual' }"
+                    @click="setBillingMode(pkg.id, 'annual')"
+                  >
+                    {{ $t('offers.billing.annual') }}
+                    <span class="offers-billing-badge">
+                      {{ $t('offers.billing.annualBadge', { months: pkg.annualDiscount || 2 }) }}
+                    </span>
+                  </button>
+                </div>
+
+                <!-- Selector variants si présent -->
+                <label v-if="pkg.variants" class="offers-variant">
+                  <span class="offers-variant-label">{{ $t(`offers.packages.${pkg.id}.variantsLabel`) }}</span>
+                  <select
+                    class="offers-variant-select"
+                    :value="selectedVariant[pkg.id] || pkg.variants.options[0].value"
+                    @change="setVariant(pkg.id, $event.target.value)"
+                  >
+                    <option
+                      v-for="opt in pkg.variants.options"
+                      :key="opt.value"
+                      :value="opt.value"
+                    >
+                      {{ $t(`offers.packages.${pkg.id}.variantsOptions.${opt.value}`) }}
+                    </option>
+                  </select>
+                </label>
+
+                <div class="offers-card-price">
+                  <template v-if="resolvedPrice(pkg).priceMAD !== null">
+                    <span class="offers-card-price-mad">
+                      {{ formatMad(resolvedPrice(pkg).priceMAD) }}
+                      <span class="offers-card-price-currency">MAD</span>
+                    </span>
+                    <span class="offers-card-price-usd">
+                      ${{ formatUsd(resolvedPrice(pkg).priceUSD) }}{{ pkg.billing === 'monthly' ? ` ${$t('offers.billing.suffix.' + (billingMode[pkg.id] === 'annual' ? 'annual' : 'monthly'))}` : '' }}
+                    </span>
+                  </template>
+                  <template v-else>
+                    <span class="offers-card-price-mad offers-card-price-mad--label">
+                      {{ $t(`offers.packages.${pkg.id}.priceLabel`) }}
+                    </span>
+                  </template>
+                </div>
+
+                <hr class="offers-card-divider" />
+
+                <ul class="offers-card-bullets">
+                  <li
+                    v-for="(_, i) in pkg.bulletsCount"
+                    :key="i"
+                    class="offers-card-bullet"
+                  >
+                    <span class="material-symbols-outlined offers-card-bullet-icon" aria-hidden="true">check_circle</span>
+                    <span>{{ $t(`offers.packages.${pkg.id}.bullets.b${i + 1}`) }}</span>
+                  </li>
+                </ul>
+
+                <p
+                  v-if="pkg.fineprint"
+                  class="offers-card-fineprint"
+                >
+                  {{ $t(`offers.packages.${pkg.id}.fineprint`) }}
+                </p>
+
+                <button
+                  type="button"
+                  class="offers-card-cta"
+                  @click="onCtaClick(pkg)"
+                >
+                  {{ $t(`offers.packages.${pkg.id}.cta`) }}
+                </button>
+              </article>
             </li>
           </ul>
-
-          <button
-            type="button"
-            class="offers-card-cta"
-            @click="requestQuote(pkg)"
-          >
-            {{ $t(`offers.packages.${pkg.id}.cta`) }}
-          </button>
-        </article>
-      </section>
-
-      <!-- ───────────── Trust strip (« Why our predictions land ») ───────────── -->
-      <section class="offers-trust">
-        <h2 class="offers-section-title">{{ $t('offers.trust.title') }}</h2>
-        <div class="offers-trust-grid">
-          <component
-            v-for="item in trustItems"
-            :key="item.id"
-            :is="item.id === 'brier' ? 'router-link' : 'div'"
-            :to="item.id === 'brier' ? '/calibration' : undefined"
-            class="offers-trust-card"
-            :class="{ 'offers-trust-card--link': item.id === 'brier' }"
-          >
-            <div class="offers-trust-icon">
-              <span class="material-symbols-outlined" aria-hidden="true">{{ item.icon }}</span>
-            </div>
-            <h4 class="offers-trust-card-title">{{ $t(`offers.trust.items.${item.id}.title`) }}</h4>
-            <p class="offers-trust-card-body">{{ $t(`offers.trust.items.${item.id}.body`) }}</p>
-          </component>
         </div>
+
+        <button
+          type="button"
+          class="offers-nav offers-nav--next"
+          :aria-label="$t('offers.carousel.next')"
+          :disabled="displayedPackages.length <= 1"
+          @click="next"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+        </button>
       </section>
 
-      <!-- ───────────── FAQ (6 questions) ───────────── -->
+      <!-- Dots indicators -->
+      <div
+        v-if="displayedPackages.length > 1"
+        class="offers-dots"
+        role="tablist"
+        :aria-label="$t('offers.carousel.dotsAriaLabel')"
+      >
+        <button
+          v-for="(pkg, idx) in displayedPackages"
+          :key="pkg.id"
+          type="button"
+          role="tab"
+          :aria-selected="idx === activeIndex"
+          :aria-label="$t('offers.carousel.dotLabel', { index: idx + 1, name: $t(`offers.packages.${pkg.id}.name`) })"
+          class="offers-dot"
+          :class="{ 'offers-dot--active': idx === activeIndex }"
+          @click="goTo(idx)"
+        ></button>
+      </div>
+
+      <!-- ───────────── Banner Programme MENA ───────────── -->
+      <aside class="offers-mena" role="complementary">
+        <div class="offers-mena-content">
+          <span class="offers-mena-eyebrow">
+            <span class="material-symbols-outlined offers-mena-icon" aria-hidden="true">rocket_launch</span>
+            {{ $t('offers.mena.eyebrow') }}
+          </span>
+          <h2 class="offers-mena-title">{{ $t('offers.mena.title') }}</h2>
+          <p class="offers-mena-body">{{ $t('offers.mena.body') }}</p>
+          <a
+            class="offers-mena-cta"
+            :href="menaMailto"
+          >
+            {{ $t('offers.mena.cta') }}
+            <span class="material-symbols-outlined offers-mena-cta-arrow" aria-hidden="true">arrow_forward</span>
+          </a>
+        </div>
+      </aside>
+
+      <!-- ───────────── FAQ ───────────── -->
       <section class="offers-faq" aria-label="FAQ">
         <h2 class="offers-section-title">{{ $t('offers.faq.title') }}</h2>
         <div class="offers-faq-list">
@@ -126,7 +267,9 @@
       </section>
     </main>
 
-    <!-- ───────────── Pre-Footer CTA (rose pâle) ───────────── -->
+    <!-- ───────────── Pre-Footer CTA strip (rose pâle) ─────────────
+         Conservé pour cohérence pricing-page : « Vous hésitez ? Parlons ».
+         Préserve aussi la garantie tunnel-commercial.spec /offres → /devis. -->
     <section class="offers-cta-strip">
       <h3 class="offers-cta-strip-title">{{ $t('offers.help.title') }}</h3>
       <p class="offers-cta-strip-body">{{ $t('offers.help.body') }}</p>
@@ -141,48 +284,162 @@
 </template>
 
 <script setup>
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 
-// ─── Catalogue des 3 packages — design Stitch fidèle.
-// `id` correspond aux clés i18n offers.packages.<id>.*
-// `priceMad` / `priceUsd` restent en JS (jamais traduits).
-// `sectorTone` : 'orange' | 'teal' | 'mint' — palette du badge sector.
-// `quotePackage` : id backend canonique pour POST /api/quote.
+// ════════════════════════════════════════════════════════════════════
+// Catalogue 10 packages (data-driven)
+// ════════════════════════════════════════════════════════════════════
+// Le `id` correspond à la clé i18n offers.packages.<id>.* et au backend
+// `package` slug (POST /api/quote). Les prix sont en JS — jamais traduits.
+//
+// Tiers :
+//   discovery → mint
+//   drill     → orange
+//   stress    → warning (jaune-orangé)
+//   twin      → violet
+//   retainer  → teal
+//   custom    → outline (gris neutre)
+//
+// `bulletsCount` permet de gérer un nombre de bullets variable par package
+// tout en gardant des clés i18n stables b1..bN.
 const packages = [
+  // 🔍 Discovery
   {
-    id: 'crisisDrill',
-    featured: false,
-    priceMad: 12000,
-    priceUsd: 1200,
-    sectorTone: 'orange',
-    quotePackage: 'crisis_drill_24h',
+    id: 'pmf_discovery',
+    tier: 'discovery',
+    delayIcon: 'schedule',
+    priceMAD: 10000,
+    priceUSD: 1000,
+    bulletsCount: 6,
+    fineprint: true,
   },
+  // ⚡ Drill
   {
-    id: 'policyBrief',
+    id: 'crisis_drill_24h',
+    tier: 'drill',
     featured: true,
-    priceMad: 35000,
-    priceUsd: 3500,
-    sectorTone: 'teal',
-    quotePackage: 'policy_brief_stress',
+    delayIcon: 'schedule',
+    priceMAD: 20000,
+    priceUSD: 2000,
+    bulletsCount: 6,
+    fineprint: true,
   },
   {
-    id: 'preLaunch',
-    featured: false,
-    priceMad: 20000,
-    priceUsd: 2000,
-    sectorTone: 'mint',
-    quotePackage: 'pre_launch_adcheck',
+    id: 'adcheck_lite',
+    tier: 'drill',
+    delayIcon: 'schedule',
+    priceMAD: 15000,
+    priceUSD: 1500,
+    bulletsCount: 6,
+  },
+  // 🎯 Stress
+  {
+    id: 'adcheck_pro',
+    tier: 'stress',
+    delayIcon: 'schedule',
+    priceMAD: 28000,
+    priceUSD: 2800,
+    bulletsCount: 6,
+    variants: {
+      options: [
+        { value: '3', priceMAD: 28000, priceUSD: 2800 },
+        { value: '5', priceMAD: 42000, priceUSD: 4200 },
+        { value: '8', priceMAD: 65000, priceUSD: 6500 },
+      ],
+    },
+  },
+  {
+    id: 'product_launch',
+    tier: 'stress',
+    delayIcon: 'schedule',
+    priceMAD: 42000,
+    priceUSD: 4200,
+    bulletsCount: 6,
+  },
+  {
+    id: 'policy_stress',
+    tier: 'stress',
+    delayIcon: 'schedule',
+    priceMAD: 75000,
+    priceUSD: 7500,
+    bulletsCount: 6,
+  },
+  // 🧬 Twin
+  {
+    id: 'cohort_replay',
+    tier: 'twin',
+    delayIcon: 'schedule',
+    priceMAD: 110000,
+    priceUSD: 11000,
+    bulletsCount: 6,
+    fineprint: true,
+    variants: {
+      options: [
+        { value: '50', priceMAD: 110000, priceUSD: 11000 },
+        { value: '80', priceMAD: 165000, priceUSD: 16500 },
+        { value: '120', priceMAD: 240000, priceUSD: 24000 },
+      ],
+    },
+  },
+  // ♾️ Retainer
+  {
+    id: 'crisis_watch',
+    tier: 'retainer',
+    delayIcon: 'shield',
+    priceMAD: 60000,
+    priceUSD: 6000,
+    billing: 'monthly',
+    annualDiscount: 2,
+    bulletsCount: 6,
+    fineprint: true,
+  },
+  {
+    id: 'brand_pulse',
+    tier: 'retainer',
+    delayIcon: 'monitoring',
+    priceMAD: 45000,
+    priceUSD: 4500,
+    billing: 'monthly',
+    annualDiscount: 2,
+    bulletsCount: 6,
+    fineprint: true,
+  },
+  // 🤝 Custom
+  {
+    id: 'custom',
+    tier: 'custom',
+    delayIcon: 'tune',
+    priceMAD: null,
+    priceUSD: null,
+    bulletsCount: 6,
   },
 ]
 
-// Trust strip — 3 cartes alignées sur le mockup Stitch.
-const trustItems = [
-  { id: 'brier', icon: 'analytics' },
-  { id: 'multiLocale', icon: 'translate' },
-  { id: 'africaData', icon: 'public' },
+// Filter chips — l'ordre est stable (les emojis sont stockés dans le composant
+// pour rester proches du rendu, le label vient des locales).
+const chips = [
+  { id: 'all', emoji: null },
+  { id: 'discovery', emoji: '🔍' },
+  { id: 'drill', emoji: '⚡' },
+  { id: 'stress', emoji: '🎯' },
+  { id: 'twin', emoji: '🧬' },
+  { id: 'retainer', emoji: '♾️' },
 ]
 
-// FAQ — 6 questions dans l'ordre exact du mockup Stitch.
+const tierToTone = (tier) => {
+  switch (tier) {
+    case 'discovery': return 'mint'
+    case 'drill': return 'orange'
+    case 'stress': return 'warning'
+    case 'twin': return 'violet'
+    case 'retainer': return 'teal'
+    default: return 'outline'
+  }
+}
+
+// FAQ — clés héritées de la version Stitch (US-023), alignées sur les locales.
 const faqKeys = [
   'syntheticVsSurvey',
   'bindingDeliverable',
@@ -192,25 +449,177 @@ const faqKeys = [
   'enterpriseRetainers',
 ]
 
+// ════════════════════════════════════════════════════════════════════
+// State
+// ════════════════════════════════════════════════════════════════════
 const router = useRouter()
+const { locale: i18nLocale } = useI18n()
 
-// CTA principal de chaque card — push vers /devis avec le package préselectionné.
-function requestQuote(pkg) {
-  router.push({ name: 'Quote', query: { package: pkg.quotePackage } })
+const activeChip = ref('all')
+const activeIndex = ref(0)
+const carouselEl = ref(null)
+
+// Toggle billing par package (Crisis Watch / Brand Pulse).
+const billingMode = reactive({})
+// Variants sélectionnées par package (Adcheck Pro / Cohort Replay).
+const selectedVariant = reactive({})
+
+const displayedPackages = computed(() => {
+  if (activeChip.value === 'all') return packages
+  return packages.filter((p) => p.tier === activeChip.value)
+})
+
+const trackStyle = computed(() => {
+  // Chaque slide fait 100% / nbSlideVisible — desktop=3, tablet=1.5, mobile=1.
+  // On translate par index courant. Le centrage vient du CSS (offset start).
+  const offset = activeIndex.value * -100 // % par slide visible (1 sur mobile)
+  return {
+    transform: `translateX(${offset}%)`,
+  }
+})
+
+function setActiveChip(id) {
+  activeChip.value = id
+  activeIndex.value = 0
 }
+
+function setBillingMode(packageId, mode) {
+  billingMode[packageId] = mode
+}
+
+function setVariant(packageId, value) {
+  selectedVariant[packageId] = value
+}
+
+function resolvedPrice(pkg) {
+  // Variant override
+  if (pkg.variants) {
+    const value = selectedVariant[pkg.id] || pkg.variants.options[0].value
+    const opt = pkg.variants.options.find((o) => o.value === value) || pkg.variants.options[0]
+    return computeBilling(pkg, opt.priceMAD, opt.priceUSD)
+  }
+  return computeBilling(pkg, pkg.priceMAD, pkg.priceUSD)
+}
+
+function computeBilling(pkg, priceMAD, priceUSD) {
+  if (priceMAD === null || priceMAD === undefined) {
+    return { priceMAD: null, priceUSD: null }
+  }
+  // Annual mode : on facture (12 - annualDiscount) mois × prix mensuel,
+  // ramené au mois équivalent affiché (priceMAD reste l'affichage mensuel
+  // « lissé » : annual_total / 12). On affiche le prix mensuel équivalent.
+  if (pkg.billing === 'monthly' && billingMode[pkg.id] === 'annual') {
+    const months = 12 - (pkg.annualDiscount || 0)
+    const annualTotal = priceMAD * months
+    const annualTotalUsd = priceUSD * months
+    return {
+      priceMAD: Math.round(annualTotal / 12),
+      priceUSD: Math.round(annualTotalUsd / 12),
+    }
+  }
+  return { priceMAD, priceUSD }
+}
+
+function formatMad(value) {
+  return value.toLocaleString(i18nLocale.value === 'ar' ? 'ar-MA' : 'fr-FR')
+}
+
+function formatUsd(value) {
+  return value.toLocaleString('en-US')
+}
+
+// ════════════════════════════════════════════════════════════════════
+// Carousel navigation
+// ════════════════════════════════════════════════════════════════════
+function goTo(idx) {
+  if (idx < 0) idx = 0
+  if (idx > displayedPackages.value.length - 1) idx = displayedPackages.value.length - 1
+  activeIndex.value = idx
+}
+
+function next() {
+  if (activeIndex.value < displayedPackages.value.length - 1) {
+    activeIndex.value += 1
+  }
+}
+
+function prev() {
+  if (activeIndex.value > 0) {
+    activeIndex.value -= 1
+  }
+}
+
+// Touch swipe avec threshold 50 px.
+let touchStartX = 0
+function onTouchStart(e) {
+  if (e.touches && e.touches[0]) {
+    touchStartX = e.touches[0].clientX
+  }
+}
+function onTouchEnd(e) {
+  if (!e.changedTouches || !e.changedTouches[0]) return
+  const dx = e.changedTouches[0].clientX - touchStartX
+  if (Math.abs(dx) < 50) return
+  // RTL inversion
+  const isRtl = document.documentElement.getAttribute('dir') === 'rtl'
+  if ((!isRtl && dx < 0) || (isRtl && dx > 0)) next()
+  else prev()
+}
+
+// ════════════════════════════════════════════════════════════════════
+// CTA → /devis (sauf custom → mailto)
+// ════════════════════════════════════════════════════════════════════
+function onCtaClick(pkg) {
+  if (pkg.id === 'custom') {
+    window.location.href = 'mailto:contact@ai-mpower.com?subject=' + encodeURIComponent('Demande sur-mesure Bassira')
+    return
+  }
+  router.push({ name: 'Quote', query: { package: pkg.id } })
+}
+
+const menaMailto = computed(
+  () => 'mailto:contact@ai-mpower.com?subject=' + encodeURIComponent('Eligibilité Programme MENA Startups'),
+)
+
+// Reset l'index si le filtre rétrécit la liste.
+watch(displayedPackages, (list) => {
+  if (activeIndex.value > list.length - 1) {
+    activeIndex.value = Math.max(0, list.length - 1)
+  }
+})
+
+// Clavier global pour la navigation pendant que la section est focus.
+function onKeydown(e) {
+  if (!carouselEl.value) return
+  if (!carouselEl.value.contains(document.activeElement)) return
+  if (e.key === 'ArrowLeft') {
+    e.preventDefault()
+    prev()
+  } else if (e.key === 'ArrowRight') {
+    e.preventDefault()
+    next()
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('keydown', onKeydown)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('keydown', onKeydown)
+})
 </script>
 
 <style scoped>
 /* ═══════════════════════════════════════════════════════════
-   OFFERS — Refonte fidèle au mockup Stitch (US-023 v2)
+   OFFERS — Carousel 10 packages (refonte L99)
    ═══════════════════════════════════════════════════════════
-   Source unique de vérité : stitch_bassira_simulation_pricing_page/
+   Source unique de vérité Stitch :
+   stitch_bassira_simulation_pricing_page/
    bassira_pricing_packages_simulation_solutions_2/code.html
-   On n'utilise PAS Tailwind ; on reproduit la palette M3 Stitch
-   via des variables locales `--stitch-*` scopées au composant. */
+   Palette M3 Stitch via variables locales --stitch-* scopées au composant. */
 
 .offers-page {
-  /* Variables Stitch locales — palette exacte du mockup. */
   --stitch-primary-container: #ff8551;
   --stitch-primary: #a13f0f;
   --stitch-on-primary: #ffffff;
@@ -233,8 +642,17 @@ function requestQuote(pkg) {
   --stitch-secondary-fixed-dim: #7fd8a6;
   --stitch-on-secondary-fixed: #002111;
 
+  /* Tiers tones additionnels */
+  --stitch-warning-container: #ffd66b;
+  --stitch-on-warning-container: #5c3d00;
+  --stitch-violet-container: #c9b6ff;
+  --stitch-on-violet-container: #2b1762;
+  --stitch-outline-container: #d8d1cb;
+  --stitch-on-outline-container: #3d3530;
+
   --stitch-shadow-ambient: 0 12px 32px rgba(74, 69, 64, 0.08);
   --stitch-shadow-soft: 0 1px 2px rgba(74, 69, 64, 0.05);
+  --stitch-shadow-strong: 0 24px 48px rgba(74, 69, 64, 0.18);
 
   --stitch-font-display: 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   --stitch-font-body: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
@@ -259,8 +677,6 @@ function requestQuote(pkg) {
   display: flex;
   align-items: center;
   padding: 16px 32px;
-  /* Réserve la place pour le LanguageSwitcher floating top-right
-     (z-index 1500) — cohérent avec Home.vue / CalibrationView.vue. */
   padding-inline-end: 110px;
   border-bottom: 1px solid #ebe5da;
   background: #fdfcfb;
@@ -295,7 +711,7 @@ function requestQuote(pkg) {
 
 /* ── Main wrapper ───────────────────────────────────── */
 .offers-main {
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: 0 32px;
 }
@@ -304,7 +720,7 @@ function requestQuote(pkg) {
 .offers-hero {
   position: relative;
   text-align: center;
-  padding: 96px 16px 64px;
+  padding: 80px 16px 48px;
   max-width: 880px;
   margin: 0 auto;
   overflow: hidden;
@@ -365,58 +781,196 @@ function requestQuote(pkg) {
   margin: 0 auto;
 }
 
-/* ── Cards grid ─────────────────────────────────────── */
-.offers-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 32px;
-  align-items: stretch;
-  margin: 0 auto 96px;
+/* ── Filter chips ───────────────────────────────────── */
+.offers-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 auto 32px;
+  max-width: 960px;
+  padding: 0 8px;
+}
+
+.offers-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--stitch-surface-container);
+  color: var(--stitch-on-surface);
+  padding: 8px 16px;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  font-family: var(--stitch-font-body);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.1s ease;
+  white-space: nowrap;
+}
+.offers-chip:hover {
+  background: var(--stitch-surface-container-high);
+}
+.offers-chip:active {
+  transform: scale(0.98);
+}
+.offers-chip--active {
+  background: var(--stitch-primary-container);
+  color: #ffffff;
+  border-color: var(--stitch-primary-container);
+}
+.offers-chip-emoji {
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* ── Carousel ───────────────────────────────────────── */
+.offers-carousel {
+  position: relative;
+  margin: 0 auto;
   max-width: 1200px;
+  padding: 32px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  outline: none;
+}
+.offers-carousel:focus-visible {
+  outline: 2px solid var(--stitch-primary-container);
+  outline-offset: 4px;
+  border-radius: 24px;
+}
+
+.offers-track-viewport {
+  flex: 1;
+  overflow: hidden;
+  padding: 24px 0;
+}
+
+.offers-track {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: stretch;
+  transition: transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+  will-change: transform;
+}
+
+.offers-slide {
+  flex: 0 0 100%;
+  padding: 0 12px;
+  display: flex;
+  align-items: stretch;
+  transition: opacity 0.3s ease, transform 0.4s ease;
+  opacity: 0.6;
+}
+.offers-slide--active {
+  opacity: 1;
 }
 
 @media (min-width: 768px) {
-  .offers-grid {
-    grid-template-columns: repeat(3, 1fr);
-    align-items: stretch;
+  .offers-slide {
+    flex-basis: 55%;
+    transform: scale(0.92);
+  }
+  .offers-slide--active {
+    transform: scale(1);
   }
 }
 
+@media (min-width: 1024px) {
+  .offers-slide {
+    flex-basis: 33.3333%;
+  }
+}
+
+/* Nav prev/next ronds */
+.offers-nav {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 9999px;
+  border: 1px solid var(--stitch-outline-variant);
+  background: var(--stitch-surface-container-lowest);
+  color: var(--stitch-on-surface);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--stitch-shadow-soft);
+  transition: background 0.2s ease, color 0.2s ease, opacity 0.2s ease, transform 0.1s ease;
+  z-index: 2;
+}
+.offers-nav:hover:not(:disabled) {
+  background: var(--stitch-primary-container);
+  color: #ffffff;
+  border-color: var(--stitch-primary-container);
+}
+.offers-nav:active:not(:disabled) {
+  transform: scale(0.96);
+}
+.offers-nav:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.offers-nav .material-symbols-outlined {
+  font-size: 24px !important;
+}
+[dir="rtl"] .offers-nav--prev .material-symbols-outlined,
+[dir="rtl"] .offers-nav--next .material-symbols-outlined {
+  transform: scaleX(-1);
+}
+
+/* ── Dots indicator ─────────────────────────────────── */
+.offers-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 8px 0 32px;
+}
+
+.offers-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--stitch-outline-variant);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: background 0.2s ease, width 0.2s ease;
+}
+.offers-dot:hover {
+  background: var(--stitch-primary-fixed);
+}
+.offers-dot--active {
+  background: var(--stitch-primary-container);
+  width: 20px;
+}
+
+/* ── Card ───────────────────────────────────────────── */
 .offers-card {
   position: relative;
   display: flex;
   flex-direction: column;
+  width: 100%;
   background: var(--stitch-surface-container-lowest);
   border: 1px solid rgba(222, 192, 182, 0.3);
   border-radius: 24px;
   padding: 32px;
   box-shadow: var(--stitch-shadow-ambient);
-  height: 100%;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-.offers-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 16px 40px rgba(74, 69, 64, 0.12);
-}
-
-@media (min-width: 768px) {
-  .offers-card--featured {
-    border-top: 8px solid var(--stitch-primary-container);
-    border-inline: 1px solid rgba(222, 192, 182, 0.3);
-    border-bottom: 1px solid rgba(222, 192, 182, 0.3);
-    transform: translateY(-16px);
-  }
-  .offers-card--featured:hover {
-    transform: translateY(-20px);
-  }
+.offers-card--active {
+  box-shadow: var(--stitch-shadow-strong);
 }
 .offers-card--featured {
-  /* Mobile : juste un liseré orange épais en haut. */
   border-top: 8px solid var(--stitch-primary-container);
   padding-top: 28px;
 }
 
-/* Badge « Most chosen » qui flotte au-dessus de la card featured. */
+/* Badge « Most chosen » floating au-dessus */
 .offers-most-chosen {
   position: absolute;
   top: -16px;
@@ -439,7 +993,7 @@ function requestQuote(pkg) {
   transform: translateX(50%);
 }
 
-/* Badge sector (pill avec dot coloré). */
+/* Sector badge pill (couleur dot par tier) */
 .offers-sector {
   display: inline-flex;
   align-items: center;
@@ -480,6 +1034,27 @@ function requestQuote(pkg) {
 .offers-sector--mint .offers-sector-dot {
   background: var(--stitch-secondary-fixed-dim);
 }
+.offers-sector--warning {
+  background: rgba(255, 214, 107, 0.25);
+  color: var(--stitch-on-warning-container);
+}
+.offers-sector--warning .offers-sector-dot {
+  background: var(--stitch-warning-container);
+}
+.offers-sector--violet {
+  background: rgba(201, 182, 255, 0.25);
+  color: var(--stitch-on-violet-container);
+}
+.offers-sector--violet .offers-sector-dot {
+  background: var(--stitch-violet-container);
+}
+.offers-sector--outline {
+  background: rgba(216, 209, 203, 0.4);
+  color: var(--stitch-on-outline-container);
+}
+.offers-sector--outline .offers-sector-dot {
+  background: var(--stitch-outline);
+}
 
 .offers-card-title {
   font-family: var(--stitch-font-display);
@@ -498,14 +1073,103 @@ function requestQuote(pkg) {
   font-size: 12px;
   font-weight: 500;
   color: var(--stitch-on-surface-variant);
-  margin: 0 0 24px 0;
+  margin: 0 0 12px 0;
 }
 .offers-card-delay-icon {
   font-size: 16px !important;
 }
 
+.offers-card-description {
+  font-family: var(--stitch-font-body);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--stitch-on-surface-variant);
+  margin: 0 0 20px 0;
+}
+
+/* ── Billing toggle (Crisis Watch / Brand Pulse) ────── */
+.offers-billing-toggle {
+  display: inline-flex;
+  background: var(--stitch-surface-container);
+  border-radius: 9999px;
+  padding: 4px;
+  margin-bottom: 16px;
+  align-self: flex-start;
+}
+.offers-billing-btn {
+  background: transparent;
+  border: none;
+  color: var(--stitch-on-surface-variant);
+  font-family: var(--stitch-font-body);
+  font-weight: 600;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.offers-billing-btn--active {
+  background: var(--stitch-surface-container-lowest);
+  color: var(--stitch-on-surface);
+  box-shadow: var(--stitch-shadow-soft);
+}
+.offers-billing-badge {
+  background: var(--stitch-primary-container);
+  color: #ffffff;
+  border-radius: 9999px;
+  padding: 1px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* ── Variant selector ───────────────────────────────── */
+.offers-variant {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.offers-variant-label {
+  font-family: var(--stitch-font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--stitch-on-surface-variant);
+}
+.offers-variant-select {
+  appearance: none;
+  width: 100%;
+  background: var(--stitch-surface-container-low);
+  border: 1px solid var(--stitch-outline-variant);
+  border-radius: 12px;
+  padding: 10px 36px 10px 14px;
+  font-family: var(--stitch-font-body);
+  font-size: 14px;
+  color: var(--stitch-on-surface);
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2357423a'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 18px;
+}
+[dir="rtl"] .offers-variant-select {
+  background-position: left 12px center;
+  padding: 10px 14px 10px 36px;
+}
+.offers-variant-select:focus {
+  outline: none;
+  border-color: var(--stitch-primary-container);
+  box-shadow: 0 0 0 2px rgba(255, 133, 81, 0.2);
+}
+
+/* ── Price block ────────────────────────────────────── */
 .offers-card-price {
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 .offers-card-price-mad {
   display: block;
@@ -515,6 +1179,10 @@ function requestQuote(pkg) {
   line-height: 1.3;
   letter-spacing: -0.01em;
   color: var(--stitch-on-surface);
+}
+.offers-card-price-mad--label {
+  font-size: 24px;
+  color: var(--stitch-primary);
 }
 .offers-card-price-currency {
   font-family: var(--stitch-font-body);
@@ -526,7 +1194,7 @@ function requestQuote(pkg) {
 .offers-card-price-usd {
   display: block;
   font-family: var(--stitch-font-body);
-  font-size: 16px;
+  font-size: 14px;
   color: var(--stitch-outline);
   margin-top: 4px;
 }
@@ -535,16 +1203,16 @@ function requestQuote(pkg) {
   border: none;
   height: 1px;
   background: rgba(222, 192, 182, 0.4);
-  margin: 0 0 32px 0;
+  margin: 0 0 24px 0;
 }
 
 .offers-card-bullets {
   list-style: none;
-  margin: 0 0 32px 0;
+  margin: 0 0 24px 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   flex-grow: 1;
 }
 .offers-card-bullet {
@@ -552,15 +1220,23 @@ function requestQuote(pkg) {
   align-items: flex-start;
   gap: 12px;
   font-family: var(--stitch-font-body);
-  font-size: 16px;
-  line-height: 1.6;
+  font-size: 14px;
+  line-height: 1.55;
   color: var(--stitch-on-surface-variant);
 }
 .offers-card-bullet-icon {
   flex-shrink: 0;
-  font-size: 20px !important;
+  font-size: 18px !important;
   color: var(--stitch-primary-container);
   margin-top: 2px;
+}
+
+.offers-card-fineprint {
+  font-family: var(--stitch-font-body);
+  font-size: 12px;
+  font-style: italic;
+  color: var(--stitch-outline);
+  margin: 0 0 16px 0;
 }
 
 .offers-card-cta {
@@ -571,7 +1247,7 @@ function requestQuote(pkg) {
   font-weight: 600;
   font-size: 14px;
   letter-spacing: 0.01em;
-  padding: 16px 24px;
+  padding: 14px 24px;
   border: none;
   border-radius: 12px;
   cursor: pointer;
@@ -585,7 +1261,89 @@ function requestQuote(pkg) {
   transform: scale(0.98);
 }
 
-/* ── Section title commun (trust + faq) ─────────────── */
+/* ── Banner Programme MENA Startups ─────────────────── */
+.offers-mena {
+  margin: 32px auto 80px;
+  max-width: 1100px;
+  background: linear-gradient(135deg, #ffeae2 0%, #ffd1c0 100%);
+  border-radius: 24px;
+  padding: 48px 32px;
+  border: 1px solid rgba(222, 192, 182, 0.4);
+  box-shadow: var(--stitch-shadow-ambient);
+}
+
+.offers-mena-content {
+  max-width: 720px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.offers-mena-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 6px 14px;
+  border-radius: 9999px;
+  color: var(--stitch-primary);
+  font-family: var(--stitch-font-body);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.offers-mena-icon {
+  font-size: 16px !important;
+}
+
+.offers-mena-title {
+  font-family: var(--stitch-font-display);
+  font-size: clamp(22px, 3.6vw, 28px);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--stitch-on-surface);
+  margin: 0 0 12px 0;
+}
+
+.offers-mena-body {
+  font-family: var(--stitch-font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--stitch-on-surface-variant);
+  margin: 0 auto 24px auto;
+  max-width: 600px;
+}
+
+.offers-mena-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--stitch-on-surface);
+  color: #ffffff;
+  font-family: var(--stitch-font-body);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 12px 24px;
+  border-radius: 9999px;
+  text-decoration: none;
+  transition: opacity 0.2s ease, transform 0.1s ease;
+}
+.offers-mena-cta:hover {
+  opacity: 0.92;
+}
+.offers-mena-cta:active {
+  transform: scale(0.98);
+}
+.offers-mena-cta-arrow {
+  font-size: 18px !important;
+}
+[dir="rtl"] .offers-mena-cta-arrow {
+  transform: scaleX(-1);
+}
+
+/* ── Section title (FAQ) ────────────────────────────── */
 .offers-section-title {
   font-family: var(--stitch-font-display);
   font-size: 32px;
@@ -597,89 +1355,11 @@ function requestQuote(pkg) {
   color: var(--stitch-on-surface);
 }
 
-/* ── Trust strip ────────────────────────────────────── */
-.offers-trust {
-  background: var(--stitch-surface-container-low);
-  margin: 0 -32px 0 -32px;
-  padding: 80px 32px;
-}
-.offers-trust > .offers-section-title,
-.offers-trust > .offers-trust-grid {
-  max-width: 1100px;
-  margin-inline: auto;
-}
-
-.offers-trust-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 24px;
-}
-@media (min-width: 768px) {
-  .offers-trust-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-.offers-trust-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  background: var(--stitch-surface-container-lowest);
-  border: 1px solid rgba(222, 192, 182, 0.2);
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: var(--stitch-shadow-soft);
-  text-decoration: none;
-  color: inherit;
-  transition: border-color 0.2s ease, transform 0.2s ease;
-}
-.offers-trust-card--link:hover {
-  border-color: var(--stitch-primary-container);
-  transform: translateY(-2px);
-}
-
-.offers-trust-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 9999px;
-  background: var(--stitch-surface-container-highest);
-  color: var(--stitch-primary);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 16px;
-  transition: background 0.2s ease, color 0.2s ease;
-}
-.offers-trust-icon .material-symbols-outlined {
-  font-size: 24px !important;
-}
-.offers-trust-card--link:hover .offers-trust-icon {
-  background: var(--stitch-primary-container);
-  color: #ffffff;
-}
-
-.offers-trust-card-title {
-  font-family: var(--stitch-font-body);
-  font-weight: 600;
-  font-size: 14px;
-  letter-spacing: 0.01em;
-  color: var(--stitch-on-surface);
-  margin: 0 0 8px 0;
-}
-.offers-trust-card-body {
-  font-family: var(--stitch-font-body);
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--stitch-on-surface-variant);
-  margin: 0;
-}
-
 /* ── FAQ ────────────────────────────────────────────── */
 .offers-faq {
   max-width: 720px;
   margin: 0 auto;
-  padding: 96px 0;
+  padding: 48px 0 96px;
 }
 
 .offers-faq-list {
@@ -733,7 +1413,7 @@ function requestQuote(pkg) {
   color: var(--stitch-on-surface-variant);
 }
 
-/* ── Pre-Footer CTA strip (rose pâle) ───────────────── */
+/* ── Pre-Footer CTA strip ───────────────────────────── */
 .offers-cta-strip {
   background: var(--stitch-surface-container);
   border-top: 1px solid rgba(222, 192, 182, 0.3);
@@ -778,33 +1458,41 @@ function requestQuote(pkg) {
   color: var(--stitch-primary-container);
 }
 
-/* ── Mobile tweaks (< 768 px) ───────────────────────── */
+/* ── Mobile tweaks ──────────────────────────────────── */
 @media (max-width: 767px) {
   .offers-hero {
-    padding: 64px 16px 32px;
+    padding: 48px 16px 24px;
   }
   .offers-main {
-    padding: 0 16px;
+    padding: 0 12px;
   }
-  .offers-grid {
-    margin-bottom: 64px;
+  .offers-carousel {
+    padding: 16px 0;
   }
-  .offers-trust {
-    margin: 0 -16px;
-    padding: 64px 16px;
+  .offers-card {
+    padding: 24px;
+  }
+  .offers-mena {
+    margin: 24px 4px 64px;
+    padding: 32px 24px;
   }
   .offers-section-title {
     font-size: 26px;
     margin-bottom: 32px;
   }
   .offers-faq {
-    padding: 64px 0;
+    padding: 32px 0 64px;
   }
   .offers-cta-strip {
     padding: 64px 16px;
   }
-  .offers-card {
-    padding: 24px;
+  /* Sur mobile, on cache les boutons prev/next pour laisser place au swipe */
+  .offers-nav {
+    width: 40px;
+    height: 40px;
+  }
+  .offers-nav .material-symbols-outlined {
+    font-size: 20px !important;
   }
 }
 </style>

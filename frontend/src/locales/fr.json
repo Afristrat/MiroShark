@@ -978,11 +978,210 @@
     },
     "eyebrow": "Prédisez avant que ça arrive",
     "hero": {
-      "title": "Trois façons de mettre une nuée d’agents synthétiques au service de votre décision",
-      "subtitle": "Une question, un livrable engageant, un prix fixe."
+      "title": "Dix façons de mettre une nuée d’agents synthétiques au service de votre décision",
+      "subtitle": "Du Discovery à 10 000 MAD au Twin scientifique à 240 000 MAD : un pack pour chaque enjeu."
     },
     "featuredBadge": "Le plus choisi",
+    "filters": {
+      "ariaLabel": "Filtrer les packages par catégorie",
+      "all": "Tous",
+      "discovery": "Discovery",
+      "drill": "Drill",
+      "stress": "Stress",
+      "twin": "Twin",
+      "retainer": "Retainer"
+    },
+    "carousel": {
+      "ariaLabel": "Carousel des packages Bassira",
+      "prev": "Package précédent",
+      "next": "Package suivant",
+      "dotsAriaLabel": "Sélecteur de package",
+      "dotLabel": "Aller au package {index} : {name}"
+    },
+    "billing": {
+      "monthly": "Mensuel",
+      "annual": "Annuel",
+      "annualBadge": "{months} mois offerts",
+      "suffix": {
+        "monthly": "/ mois",
+        "annual": "/ mois (facturé annuel)"
+      }
+    },
+    "mena": {
+      "eyebrow": "Programme MENA Startups",
+      "title": "Programme MENA Startups — accélérateurs et structures < 5 ETP",
+      "body": "−40 % sur les packages Discovery et Drill pour les startups financées par un accélérateur MENA. Justificatif requis : convention d’accélérateur ou attestation IFC, Africa50, ou Endeavor MENA.",
+      "cta": "Vérifier mon éligibilité"
+    },
     "packages": {
+      "pmf_discovery": {
+        "sectorBadge": "Founders",
+        "name": "PMF Discovery",
+        "delay": "1 à 2 semaines",
+        "description": "Validez votre product-market fit avant la 1ʳᵉ levée. 50 prospects-cible synthétiques pan-Afrique testent votre proposition de valeur sur 10 semaines.",
+        "cta": "Valider mon PMF",
+        "fineprint": "Pour founders solo avant Série A",
+        "bullets": {
+          "b1": "50 prospects synthétiques pan-Afrique",
+          "b2": "Verdict viable / borderline / nope",
+          "b3": "Top 3 segments + top 3 frictions",
+          "b4": "Intervalle de confiance sur le verdict",
+          "b5": "Recommandations de pivot si nope",
+          "b6": "1 session de débrief de 30 min"
+        }
+      },
+      "crisis_drill_24h": {
+        "sectorBadge": "Crisis",
+        "name": "Crisis Drill 24h",
+        "delay": "Livré sous 24 h",
+        "description": "Stress-testez votre prochaine crise réputationnelle 24 h avant qu’elle ne tombe. 50 citoyens synthétiques réagissent heure par heure sur Twitter, Reddit et WhatsApp.",
+        "cta": "Lancer un Crisis Drill",
+        "fineprint": "Hors consulting de suivi",
+        "bullets": {
+          "b1": "Trajectoire worst-case heure par heure",
+          "b2": "Heure de pic identifiée + intensity score",
+          "b3": "Minorités vocales radicalisées",
+          "b4": "Top 3 messages de réponse à H+1, H+4, H+12",
+          "b5": "3 contrefactuels (silence, excuses, pivot)",
+          "b6": "Rapport PDF 6 h après livraison"
+        }
+      },
+      "adcheck_lite": {
+        "sectorBadge": "Marketing",
+        "name": "Adcheck Lite",
+        "delay": "3 jours",
+        "description": "Test de 2 concepts publicitaires sur audience marocaine 25-45 ans synthétique. Verdict en 72 h, idéal pour itération rapide avant achat media.",
+        "cta": "Tester ma campagne",
+        "bullets": {
+          "b1": "2 concepts × 50 agents",
+          "b2": "Classement A/B avec confidence",
+          "b3": "Top 3 arguments + top 3 objections",
+          "b4": "Risque de backfire identifié",
+          "b5": "Heatmap de sentiment par persona",
+          "b6": "Verdict GO / NO-GO simple"
+        }
+      },
+      "adcheck_pro": {
+        "sectorBadge": "Marketing",
+        "name": "Adcheck Pro",
+        "delay": "3 à 5 jours",
+        "description": "3 concepts publicitaires testés en profondeur sur 80 agents segmentés. Pour campagnes Ramadan, lancement régional ou pivot stratégique.",
+        "cta": "Décider sur ma campagne",
+        "variantsLabel": "Concepts à tester",
+        "variantsOptions": {
+          "3": "3 concepts",
+          "5": "5 concepts",
+          "8": "8 concepts"
+        },
+        "bullets": {
+          "b1": "3 concepts × 80 agents segmentés",
+          "b2": "Persona breakdown (urbain/rural, jeune/sénior)",
+          "b3": "Verdict GO / NO-GO / ITERATE chiffré",
+          "b4": "Top 5 ajustements créatifs",
+          "b5": "Sentiment par segment géographique",
+          "b6": "2 sessions de débrief de 45 min"
+        }
+      },
+      "product_launch": {
+        "sectorBadge": "Marketing",
+        "name": "Product Launch B2C",
+        "delay": "1 semaine",
+        "description": "Simulez 1 semaine de lancement produit B2C en pan-Afrique avec trajectoire d’adoption + pic de churn early-adopters à J+5.",
+        "cta": "Préparer mon lancement",
+        "bullets": {
+          "b1": "60 agents segmentés persona-cible",
+          "b2": "Courbe d’adoption par jour (J+1 à J+7)",
+          "b3": "Jour de pic de churn identifié",
+          "b4": "Top 5 influenceurs à mobiliser tôt",
+          "b5": "Top 3 signaux à monitorer en réel",
+          "b6": "Heatmap d’adoption par segment géo"
+        }
+      },
+      "policy_stress": {
+        "sectorBadge": "Policy",
+        "name": "Policy Stress Test",
+        "delay": "5 jours ouvrés",
+        "description": "Stress test d’un projet de loi ou policy brief contre opposition politique, parties prenantes et autorités. Pour conseillers cabinet et think tanks.",
+        "cta": "Stress-tester mon brief",
+        "bullets": {
+          "b1": "80 agents segmentés (citoyens, opposition, presse, autorités)",
+          "b2": "Verdict survives_yes / no avec confidence",
+          "b3": "Top 3 amendements de compromis",
+          "b4": "Cartographie des coalitions émergentes",
+          "b5": "Top 3 arguments qui ne tiennent pas en réel",
+          "b6": "2 sessions d’interview avec agents-clés"
+        }
+      },
+      "cohort_replay": {
+        "sectorBadge": "Research",
+        "name": "Cohort Replay",
+        "delay": "10 semaines",
+        "description": "Réplique scientifique d’une cohorte réelle (incubateur, programme, accélérateur) sur 10 semaines avec 3 variants A/B/C pour mesurer la fidélité prédictive.",
+        "cta": "Réserver une cohorte",
+        "fineprint": "Vente B2B/B2G — incubateurs, bailleurs, fonds",
+        "variantsLabel": "Taille de cohorte",
+        "variantsOptions": {
+          "50": "50 agents",
+          "80": "80 agents",
+          "120": "120 agents"
+        },
+        "bullets": {
+          "b1": "50 agents grounded sur cohorte réelle",
+          "b2": "Variant A — Ground Truth Replay (1 run)",
+          "b3": "Variant B — Cohort Twin (5 runs parallèles)",
+          "b4": "Variant C — Blind Spot Hunt (5 leaders retirées)",
+          "b5": "Certificat de calibration scientifique",
+          "b6": "Rapport publishable (track-record /verified)"
+        }
+      },
+      "crisis_watch": {
+        "sectorBadge": "Crisis",
+        "name": "Crisis Watch",
+        "delay": "Engagement annuel",
+        "description": "Veille permanente DirCom et monitoring 24/7. Crisis Drill 1×/mois inclus + alerte prédictive sur signaux faibles.",
+        "cta": "Activer Crisis Watch",
+        "fineprint": "Engagement minimum 6 mois",
+        "bullets": {
+          "b1": "Crisis Drill 1×/mois inclus",
+          "b2": "Monitoring 24/7 des signaux faibles",
+          "b3": "Alertes prédictives 48 h avant impact",
+          "b4": "Brief mensuel sur l’état d’esprit du public",
+          "b5": "SLA de réponse < 4 h en cas d’incident",
+          "b6": "Hotline DirCom dédiée"
+        }
+      },
+      "brand_pulse": {
+        "sectorBadge": "Marketing",
+        "name": "Brand Pulse",
+        "delay": "Engagement annuel",
+        "description": "Adcheck illimité + tracking sentiment continu + benchmark compétiteurs. Pour brand managers et CMO en mode test-and-learn.",
+        "cta": "Activer Brand Pulse",
+        "fineprint": "Engagement minimum 6 mois",
+        "bullets": {
+          "b1": "Adcheck Lite illimités (jusqu’à 4/mois)",
+          "b2": "Sentiment tracking continu (top 5 KPIs)",
+          "b3": "Benchmark de 3 compétiteurs",
+          "b4": "Bulletin hebdo sur les persona-shifts",
+          "b5": "1 session de stratégie de 60 min/mois",
+          "b6": "Accès API pour pipelines internes"
+        }
+      },
+      "custom": {
+        "sectorBadge": "Enterprise",
+        "name": "Sur-mesure",
+        "delay": "Variable",
+        "priceLabel": "Sur devis",
+        "description": "Pour ministères, multinationales, fonds, programmes de recherche : configuration custom avec personas régionaux, scénarios composés, intégration API.",
+        "cta": "Discuter avec nous",
+        "bullets": {
+          "b1": "Persona engineering custom (jusqu’à 500 agents)",
+          "b2": "Scénarios composés multi-acteurs",
+          "b3": "Intégration API + serveur MCP",
+          "b4": "Hébergement air-gapped possible",
+          "b5": "Onboarding et formation des équipes",
+          "b6": "Support dédié 7j/7"
+        }
+      },
       "crisisDrill": {
         "sector": "Communication / Crise",
         "name": "Crisis Drill",
