@@ -91,6 +91,48 @@ paths:
   # Setup & Discovery
   # ────────────────────────────────────────────────────────────────────
 
+  /api/simulation/file-preview:
+    post:
+      tags: [Setup & Discovery]
+      summary: Extract text preview from an uploaded file (PDF, MD, TXT).
+      description: |
+        Lightweight server-side extraction so PDF seeds drive ScenarioSuggestions
+        without waiting for the full graph-build pipeline. Returns the first
+        4000 characters of extracted text. Rate-limited to 20 calls/60s/IP.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: PDF, Markdown, or TXT file — max 20 MB.
+              required: [file]
+      responses:
+        "200":
+          description: Extracted text preview.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: object
+                    properties:
+                      text: { type: string }
+                      char_count: { type: integer }
+                      filename: { type: string }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "422":
+          description: File could not be parsed.
+        "429":
+          description: Rate limited.
+
   /api/simulation/suggest-scenarios:
     post:
       tags: [Setup & Discovery]

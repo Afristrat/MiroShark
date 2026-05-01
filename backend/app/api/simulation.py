@@ -24,6 +24,7 @@ from ..services.simulation_manager import SimulationManager, SimulationStatus
 from ..services.simulation_config_generator import SimulationConfigGenerator
 from ..services.simulation_runner import SimulationRunner, RunnerStatus
 from ..utils.logger import get_logger
+from ..utils.file_parser import FileParser
 from ..models.project import ProjectManager
 
 logger = get_logger('miroshark.api.simulation')
@@ -578,6 +579,77 @@ def _clean_suggestions(payload, framework: str = "cerberus") -> list:
         if len(out) == 3:
             break
     return out
+
+
+_FILE_PREVIEW_RATE_HITS: "dict[str, list[float]]" = {}
+_FILE_PREVIEW_CHAR_LIMIT = 4000
+
+
+@simulation_bp.route('/file-preview', methods=['POST'])
+def file_preview():
+    """Extract a text preview from an uploaded file (PDF, MD, TXT).
+
+    Used client-side so PDF seeds can drive ScenarioSuggestions without
+    waiting for the full graph-build pipeline.
+
+    Request: multipart/form-data with a single 'file' field.
+    Accepts: .pdf, .md, .txt — max 20 MB.
+
+    Returns:
+        {
+            "success": true,
+            "data": { "text": str, "char_count": int, "filename": str }
+        }
+    """
+    import tempfile, os as _os
+
+    client_ip = _client_ip()
+    if _sliding_window_rate_limited(
+        _FILE_PREVIEW_RATE_HITS, client_ip, window_sec=60, max_calls=20
+    ):
+        return jsonify({"success": False, "error_code": "RATE_LIMITED",
+                        "error": "Too many preview requests"}), 429
+
+    if 'file' not in request.files:
+        return jsonify({"success": False, "error_code": "MISSING_FILE",
+                        "error": "No file field in request"}), 400
+
+    f = request.files['file']
+    filename = (f.filename or '').strip()
+    if not filename:
+        return jsonify({"success": False, "error_code": "MISSING_FILENAME",
+                        "error": "File has no filename"}), 400
+
+    ext = filename.rsplit('.', 1)[-1].lower() if '.' in filename else ''
+    if ext not in {'pdf', 'md', 'txt'}:
+        return jsonify({"success": False, "error_code": "UNSUPPORTED_FORMAT",
+                        "error": f"Unsupported format: .{ext}"}), 400
+
+    # Write to a named temp file so FileParser can open it by path.
+    try:
+        with tempfile.NamedTemporaryFile(suffix=f'.{ext}', delete=False) as tmp:
+            tmp_path = tmp.name
+            f.save(tmp_path)
+
+        text = FileParser.extract_text(tmp_path)
+        preview = text[:_FILE_PREVIEW_CHAR_LIMIT]
+        return jsonify({
+            "success": True,
+            "data": {
+                "text": preview,
+                "char_count": len(preview),
+                "filename": filename,
+            }
+        })
+    except Exception as exc:
+        logger.warning("file-preview: extraction failed for %s: %s", filename, exc)
+        return jsonify({"success": False, "error_code": "EXTRACTION_FAILED",
+                        "error": str(exc)}), 422
+    finally:
+        try:
+            _os.unlink(tmp_path)
+        except Exception:
+            pass
 
 
 @simulation_bp.route('/suggest-scenarios', methods=['POST'])

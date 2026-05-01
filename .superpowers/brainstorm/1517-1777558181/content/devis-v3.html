@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Devis — Bassira</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        primary: '#ff8551',
+        'primary-container': '#ffdbce',
+        'on-primary': '#ffffff',
+        surface: '#fff8f6',
+        'on-surface': '#241915',
+        'on-surface-variant': '#57423a',
+        'outline-variant': '#dec0b6',
+        'surface-container': '#f5ede9',
+        'success': '#1a7a5e',
+        'success-container': '#d6f5ec',
+      },
+      fontFamily: {
+        heading: ['Outfit', 'sans-serif'],
+        body: ['Manrope', 'sans-serif'],
+      },
+      borderRadius: {
+        '2xl': '24px',
+        'xl': '16px',
+      },
+      boxShadow: {
+        card: '0px 12px 32px rgba(74,69,64,0.08)',
+        'card-lg': '0px 24px 64px rgba(74,69,64,0.12)',
+      },
+    }
+  }
+}
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+<style>
+  body { font-family: 'Manrope', sans-serif; background: #fff8f6; color: #241915; }
+  h1,h2,h3,h4 { font-family: 'Outfit', sans-serif; }
+
+  .step-section { display: none; }
+  .step-section.active { display: block; }
+
+  .radio-card input[type="radio"] { display: none; }
+  .radio-card label {
+    display: block;
+    cursor: pointer;
+    border: 1.5px solid #dec0b6;
+    border-radius: 16px;
+    padding: 20px 24px;
+    transition: all 0.2s;
+    background: #fff;
+  }
+  .radio-card input[type="radio"]:checked + label {
+    border-color: #ff8551;
+    background: #fff8f6;
+    box-shadow: 0 0 0 3px rgba(255,133,81,0.12);
+  }
+
+  .floating-label-group { position: relative; margin-bottom: 20px; }
+  .floating-label-group input,
+  .floating-label-group select,
+  .floating-label-group textarea {
+    width: 100%;
+    padding: 20px 16px 8px;
+    border: 1.5px solid #dec0b6;
+    border-radius: 12px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 15px;
+    color: #241915;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+  .floating-label-group input:focus,
+  .floating-label-group select:focus,
+  .floating-label-group textarea:focus { border-color: #ff8551; }
+  .floating-label-group label {
+    position: absolute;
+    top: 14px;
+    left: 16px;
+    font-size: 13px;
+    font-family: 'Manrope', sans-serif;
+    color: #57423a;
+    pointer-events: none;
+    transition: 0.15s;
+  }
+  .floating-label-group input:focus + label,
+  .floating-label-group input:not(:placeholder-shown) + label,
+  .floating-label-group select:focus + label,
+  .floating-label-group textarea:focus + label,
+  .floating-label-group textarea:not(:placeholder-shown) + label {
+    top: 6px;
+    font-size: 11px;
+    color: #ff8551;
+    font-weight: 600;
+  }
+
+  .stepper-dot {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'Outfit', sans-serif;
+    transition: all 0.3s;
+    flex-shrink: 0;
+  }
+  .stepper-dot.done { background: #ff8551; color: #fff; }
+  .stepper-dot.active { background: #ffdbce; color: #ff8551; border: 2px solid #ff8551; }
+  .stepper-dot.pending { background: #f5ede9; color: #dec0b6; }
+  .stepper-line { flex: 1; height: 1.5px; background: #dec0b6; margin: 0 8px; transition: background 0.3s; }
+  .stepper-line.done { background: #ff8551; }
+
+  #success-section { display: none; }
+
+  .tag-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #ffdbce; color: #57423a;
+    font-size: 11px; font-weight: 700;
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 99px;
+  }
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- Nav -->
+<nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-[#f5ede9]">
+  <div class="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
+    <span class="font-heading font-bold text-xl text-[#241915] tracking-tight">Bassira<span class="text-primary">.</span></span>
+    <span class="text-xs text-[#57423a] font-medium bg-[#f5ede9] px-3 py-1.5 rounded-full">Consultation confidentielle</span>
+  </div>
+</nav>
+
+<!-- Trust bar -->
+<div class="bg-white border-b border-[#f5ede9]">
+  <div class="max-w-5xl mx-auto px-6 py-3 flex items-center gap-3 flex-wrap">
+    <span class="material-icons-round text-primary text-base">verified</span>
+    <p class="text-xs text-[#57423a] font-medium">
+      Traité directement par les fondateurs. Pas de CRM. Réponse sous 4h ouvrables.
+    </p>
+    <div class="flex-1"></div>
+    <div class="tag-badge"><span class="material-icons-round text-[10px]">lock</span> Données chiffrées · Air-gap garanti</div>
+  </div>
+</div>
+
+<!-- Main -->
+<main class="max-w-2xl mx-auto px-6 py-16">
+
+  <!-- Header -->
+  <div class="mb-12">
+    <div class="tag-badge mb-5">
+      <span class="material-icons-round text-[10px]">schedule</span>
+      Réponse en 4h ouvrables
+    </div>
+    <h1 class="font-heading text-4xl font-bold text-[#241915] leading-tight mb-4">
+      Soumettez<br>votre mandat.
+    </h1>
+    <p class="text-[#57423a] text-lg leading-relaxed max-w-md">
+      Trois questions. Deux minutes. Un protocole taillé pour vos contraintes décisionnelles.
+    </p>
+  </div>
+
+  <!-- Stepper header -->
+  <div id="stepper-header" class="mb-10">
+    <div class="flex items-center">
+      <div id="dot-1" class="stepper-dot active">1</div>
+      <div id="line-1" class="stepper-line"></div>
+      <div id="dot-2" class="stepper-dot pending">2</div>
+      <div id="line-2" class="stepper-line"></div>
+      <div id="dot-3" class="stepper-dot pending">3</div>
+    </div>
+    <div class="flex justify-between mt-2 px-1">
+      <span id="label-1" class="text-xs font-semibold text-primary font-body">Votre décision</span>
+      <span id="label-2" class="text-xs text-[#57423a] font-body">Votre organisation</span>
+      <span id="label-3" class="text-xs text-[#57423a] font-body">Le mandat</span>
+    </div>
+  </div>
+
+  <!-- Form card -->
+  <div class="bg-white rounded-2xl shadow-card p-8 mb-8">
+
+    <!-- STEP 1 -->
+    <div id="step-1" class="step-section active">
+      <h2 class="font-heading text-xl font-semibold text-[#241915] mb-2">Quelle décision exige une analyse ?</h2>
+      <p class="text-sm text-[#57423a] mb-6">Notre protocole est calibré selon la nature de votre contexte opérationnel.</p>
+
+      <div class="space-y-3">
+        <div class="radio-card">
+          <input type="radio" name="situation" id="s-crise" value="crise">
+          <label for="s-crise">
+            <div class="flex items-start gap-3">
+              <span class="material-icons-round text-primary mt-0.5 text-lg">crisis_alert</span>
+              <div>
+                <p class="font-heading font-semibold text-[#241915] text-sm">Gestion de crise</p>
+                <p class="text-xs text-[#57423a] mt-0.5 leading-relaxed">Pour les ministres, DGs et DComs qui cadrent une réponse en moins de 24h face à une rupture informationnelle.</p>
+              </div>
+            </div>
+          </label>
+        </div>
+        <div class="radio-card">
+          <input type="radio" name="situation" id="s-politique" value="politique">
+          <label for="s-politique">
+            <div class="flex items-start gap-3">
+              <span class="material-icons-round text-primary mt-0.5 text-lg">account_balance</span>
+              <div>
+                <p class="font-heading font-semibold text-[#241915] text-sm">Position politique ou réglementaire</p>
+                <p class="text-xs text-[#57423a] mt-0.5 leading-relaxed">Pour les think-tanks, cabinets et décideurs publics qui anticipent un changement de cadre normatif ou politique.</p>
+              </div>
+            </div>
+          </label>
+        </div>
+        <div class="radio-card">
+          <input type="radio" name="situation" id="s-lancement" value="lancement">
+          <label for="s-lancement">
+            <div class="flex items-start gap-3">
+              <span class="material-icons-round text-primary mt-0.5 text-lg">rocket_launch</span>
+              <div>
+                <p class="font-heading font-semibold text-[#241915] text-sm">Lancement ou expansion marché</p>
+                <p class="text-xs text-[#57423a] mt-0.5 leading-relaxed">Pour les fondateurs et directeurs stratégiques qui ouvrent un nouveau territoire ou segment face à une perception incertaine.</p>
+              </div>
+            </div>
+          </label>
+        </div>
+        <div class="radio-card">
+          <input type="radio" name="situation" id="s-autre" value="autre">
+          <label for="s-autre">
+            <div class="flex items-start gap-3">
+              <span class="material-icons-round text-[#57423a] mt-0.5 text-lg">more_horiz</span>
+              <div>
+                <p class="font-heading font-semibold text-[#241915] text-sm">Autre contexte décisionnel</p>
+                <p class="text-xs text-[#57423a] mt-0.5 leading-relaxed">Vous nous expliquerez votre situation à l'étape suivante.</p>
+              </div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <button onclick="goToStep(2)" class="mt-8 w-full bg-primary text-white font-heading font-semibold text-base py-4 rounded-xl hover:bg-orange-500 transition-colors flex items-center justify-center gap-2">
+        Continuer
+        <span class="material-icons-round text-lg">arrow_forward</span>
+      </button>
+    </div>
+
+    <!-- STEP 2 -->
+    <div id="step-2" class="step-section">
+      <h2 class="font-heading text-xl font-semibold text-[#241915] mb-2">Votre organisation</h2>
+      <p class="text-sm text-[#57423a] mb-6">Ces informations restent strictement confidentielles et ne transitent par aucun tiers.</p>
+
+      <div class="floating-label-group">
+        <input type="text" id="nom" placeholder=" ">
+        <label for="nom">Prénom et nom</label>
+      </div>
+      <div class="floating-label-group">
+        <input type="email" id="email" placeholder=" ">
+        <label for="email">Adresse e-mail professionnelle</label>
+      </div>
+      <div class="floating-label-group">
+        <input type="text" id="org" placeholder=" ">
+        <label for="org">Organisation ou institution</label>
+      </div>
+      <div class="floating-label-group">
+        <input type="text" id="pays" placeholder=" ">
+        <label for="pays">Pays ou zone géographique</label>
+      </div>
+
+      <p class="text-xs font-semibold text-[#57423a] uppercase tracking-wide mb-3">Votre audience cible principale</p>
+      <div class="flex gap-2 flex-wrap mb-6">
+        <button type="button" onclick="toggleAudience(this)" data-val="grand-public" class="audience-btn text-xs font-medium px-3 py-1.5 rounded-full border border-[#dec0b6] text-[#57423a] hover:border-primary hover:text-primary transition-colors">Grand public</button>
+        <button type="button" onclick="toggleAudience(this)" data-val="decideurs" class="audience-btn text-xs font-medium px-3 py-1.5 rounded-full border border-[#dec0b6] text-[#57423a] hover:border-primary hover:text-primary transition-colors">Décideurs</button>
+        <button type="button" onclick="toggleAudience(this)" data-val="medias" class="audience-btn text-xs font-medium px-3 py-1.5 rounded-full border border-[#dec0b6] text-[#57423a] hover:border-primary hover:text-primary transition-colors">Médias</button>
+        <button type="button" onclick="toggleAudience(this)" data-val="institutionnels" class="audience-btn text-xs font-medium px-3 py-1.5 rounded-full border border-[#dec0b6] text-[#57423a] hover:border-primary hover:text-primary transition-colors">Institutionnels</button>
+        <button type="button" onclick="toggleAudience(this)" data-val="investisseurs" class="audience-btn text-xs font-medium px-3 py-1.5 rounded-full border border-[#dec0b6] text-[#57423a] hover:border-primary hover:text-primary transition-colors">Investisseurs</button>
+      </div>
+
+      <div class="flex gap-3">
+        <button onclick="goToStep(1)" class="flex-1 border border-[#dec0b6] text-[#57423a] font-heading font-semibold py-4 rounded-xl hover:bg-[#f5ede9] transition-colors">
+          Retour
+        </button>
+        <button onclick="goToStep(3)" class="flex-[2] bg-primary text-white font-heading font-semibold py-4 rounded-xl hover:bg-orange-500 transition-colors flex items-center justify-center gap-2">
+          Continuer
+          <span class="material-icons-round text-lg">arrow_forward</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div id="step-3" class="step-section">
+      <h2 class="font-heading text-xl font-semibold text-[#241915] mb-2">Le mandat</h2>
+      <p class="text-sm text-[#57423a] mb-6">Sur la base de votre contexte, voici le protocole que nous recommandons.</p>
+
+      <!-- Package match card -->
+      <div class="bg-[#ffdbce] rounded-xl p-5 mb-6 flex items-start gap-4">
+        <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center flex-shrink-0">
+          <span class="material-icons-round text-white text-lg">auto_awesome</span>
+        </div>
+        <div class="flex-1">
+          <p class="text-xs font-semibold text-[#57423a] uppercase tracking-wide mb-0.5">Protocole recommandé</p>
+          <p class="font-heading font-bold text-[#241915] text-base">Policy Brief Intelligence</p>
+          <p class="text-xs text-[#57423a] mt-1">Cartographie des parties prenantes, scénarios probabilisés, recommandations actionnables. Livraison 72h.</p>
+          <p class="font-heading font-bold text-primary text-lg mt-2">14 500 MAD <span class="text-xs font-normal text-[#57423a]">/ mission</span></p>
+        </div>
+      </div>
+
+      <!-- Contexte -->
+      <div class="floating-label-group">
+        <textarea id="contexte" rows="5" placeholder=" " style="resize:none;"></textarea>
+        <label for="contexte">Décrivez votre situation en quelques lignes</label>
+      </div>
+      <p class="text-xs text-[#57423a] -mt-3 mb-5">Plus vous partagez de contexte, plus notre protocole sera précis. Tout reste confidentiel.</p>
+
+      <!-- RGPD -->
+      <label class="flex items-start gap-3 cursor-pointer mb-6">
+        <input type="checkbox" id="rgpd" class="mt-1 accent-primary w-4 h-4">
+        <span class="text-xs text-[#57423a] leading-relaxed">
+          Je confirme avoir lu la politique de confidentialité de Bassira et consens au traitement de mes données dans le cadre strict de cette demande.
+        </span>
+      </label>
+
+      <div class="flex gap-3">
+        <button onclick="goToStep(2)" class="flex-1 border border-[#dec0b6] text-[#57423a] font-heading font-semibold py-4 rounded-xl hover:bg-[#f5ede9] transition-colors">
+          Retour
+        </button>
+        <button onclick="submitForm()" class="flex-[2] bg-primary text-white font-heading font-semibold py-4 rounded-xl hover:bg-orange-500 transition-colors flex items-center justify-center gap-2">
+          Envoyer le mandat
+          <span class="material-icons-round text-lg">send</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+  <!-- /form card -->
+
+  <!-- SUCCESS -->
+  <div id="success-section" class="bg-white rounded-2xl shadow-card p-10 mb-8 text-center">
+    <div class="w-16 h-16 bg-[#d6f5ec] rounded-full flex items-center justify-center mx-auto mb-6">
+      <span class="material-icons-round text-[#1a7a5e] text-3xl">check_circle</span>
+    </div>
+    <div class="tag-badge mx-auto mb-4">Référence #BSR-1842</div>
+    <h2 class="font-heading text-2xl font-bold text-[#241915] mb-3">Mandat reçu.</h2>
+    <p class="text-[#57423a] text-base leading-relaxed max-w-sm mx-auto">
+      Un fondateur vous contactera directement dans les 4 heures ouvrables suivantes pour valider le cadrage de votre analyse.
+    </p>
+    <div class="mt-8 pt-6 border-t border-[#f5ede9]">
+      <p class="text-xs text-[#57423a] font-medium">Prochaine étape &nbsp;·&nbsp; Appel de qualification (20 min) &nbsp;·&nbsp; Aucune obligation</p>
+    </div>
+  </div>
+
+  <!-- Guarantees -->
+  <div id="guarantee-strip" class="grid grid-cols-3 gap-4 mb-8">
+    <div class="bg-white rounded-xl p-4 text-center shadow-sm">
+      <p class="font-heading font-bold text-primary text-xl mb-1">5 000+</p>
+      <p class="text-xs text-[#57423a] leading-snug">Profils cognitifs modélisés</p>
+    </div>
+    <div class="bg-white rounded-xl p-4 text-center shadow-sm">
+      <p class="font-heading font-bold text-primary text-xl mb-1">Air-gap</p>
+      <p class="text-xs text-[#57423a] leading-snug">Isolation totale garantie</p>
+    </div>
+    <div class="bg-white rounded-xl p-4 text-center shadow-sm">
+      <p class="font-heading font-bold text-primary text-xl mb-1">48h</p>
+      <p class="text-xs text-[#57423a] leading-snug">Activation du protocole</p>
+    </div>
+  </div>
+
+  <!-- Footer trust -->
+  <p class="text-center text-xs text-[#57423a]">
+    Bassira © 2026 &nbsp;·&nbsp; Confidentiel par défaut &nbsp;·&nbsp; Brier 0.18 &nbsp;·&nbsp; 47 prévisions vérifiées
+  </p>
+
+</main>
+
+<script>
+  var currentStep = 1;
+
+  function updateStepper(step) {
+    var labels = ['', 'Votre décision', 'Votre organisation', 'Le mandat'];
+    for (var i = 1; i <= 3; i++) {
+      var dot = document.getElementById('dot-' + i);
+      var lbl = document.getElementById('label-' + i);
+      dot.className = 'stepper-dot';
+      lbl.className = 'text-xs font-body';
+      if (i < step) {
+        dot.classList.add('done');
+        dot.textContent = String.fromCharCode(10003);
+        lbl.style.color = '#ff8551';
+        lbl.style.fontWeight = '600';
+      } else if (i === step) {
+        dot.classList.add('active');
+        dot.textContent = String(i);
+        lbl.style.color = '#ff8551';
+        lbl.style.fontWeight = '700';
+      } else {
+        dot.classList.add('pending');
+        dot.textContent = String(i);
+        lbl.style.color = '#57423a';
+        lbl.style.fontWeight = '400';
+      }
+      if (i < 3) {
+        var line = document.getElementById('line-' + i);
+        if (i < step) {
+          line.className = 'stepper-line done';
+        } else {
+          line.className = 'stepper-line';
+        }
+      }
+    }
+  }
+
+  function goToStep(n) {
+    var prev = document.getElementById('step-' + currentStep);
+    if (prev) prev.classList.remove('active');
+    currentStep = n;
+    var next = document.getElementById('step-' + currentStep);
+    if (next) next.classList.add('active');
+    updateStepper(n);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function submitForm() {
+    var formCard = document.querySelector('.bg-white.rounded-2xl.shadow-card.p-8');
+    var stepperHeader = document.getElementById('stepper-header');
+    var successSection = document.getElementById('success-section');
+    if (formCard) formCard.style.display = 'none';
+    if (stepperHeader) stepperHeader.style.display = 'none';
+    if (successSection) successSection.style.display = 'block';
+  }
+
+  function toggleAudience(btn) {
+    var isActive = btn.classList.contains('active-audience');
+    if (isActive) {
+      btn.classList.remove('active-audience');
+      btn.style.borderColor = '';
+      btn.style.color = '';
+      btn.style.background = '';
+    } else {
+      btn.classList.add('active-audience');
+      btn.style.borderColor = '#ff8551';
+      btn.style.color = '#ff8551';
+      btn.style.background = '#fff8f6';
+    }
+  }
+
+  updateStepper(1);
+</script>
+</body>
+</html>

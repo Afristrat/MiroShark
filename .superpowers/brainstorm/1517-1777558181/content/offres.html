@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Mockup /offres — Warm Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Manrope', sans-serif;
+  background: #FAF7F2;
+  color: #241915;
+  font-size: 16px;
+  line-height: 1.6;
+}
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* ── Nav ── */
+nav {
+  background: #FDFCFB;
+  border-bottom: 1px solid #EBE5DA;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.nav-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.nav-brand { font-family: 'Outfit'; font-size: 24px; font-weight: 700; color: #4A4540; }
+.nav-links { display: flex; gap: 32px; align-items: center; }
+.nav-links a { font-size: 14px; font-weight: 500; color: #4A4540; text-decoration: none; }
+.nav-links a.active { color: #FF8551; border-bottom: 2px solid #FF8551; padding-bottom: 4px; font-weight: 700; }
+.nav-actions { display: flex; gap: 16px; align-items: center; }
+.btn-login { font-size: 14px; font-weight: 500; color: #4A4540; background: none; border: none; cursor: pointer; padding: 8px 16px; }
+.btn-cta { background: #FF8551; color: white; border: none; border-radius: 12px; padding: 8px 24px; font-weight: 600; font-size: 14px; cursor: pointer; }
+
+/* ── Hero ── */
+.hero {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 96px 32px 64px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero-blob {
+  position: absolute;
+  top: -96px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 500px;
+  height: 500px;
+  background: #ffdbce;
+  opacity: 0.3;
+  border-radius: 50%;
+  filter: blur(80px);
+  z-index: 0;
+}
+.hero > * { position: relative; z-index: 1; }
+.hero-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #f9e4dd;
+  color: #241915;
+  border: 1px solid #dec0b6;
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+.hero-pill .material-symbols-outlined { font-size: 18px; }
+h1 {
+  font-family: 'Outfit';
+  font-size: 48px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: #241915;
+  margin-bottom: 24px;
+}
+.hero-sub {
+  font-size: 18px;
+  color: #57423a;
+  line-height: 1.6;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ── Filter chips ── */
+.chips {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 0 32px 32px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 20px;
+  border-radius: 999px;
+  border: 1px solid #dec0b6;
+  background: #FFFFFF;
+  font-size: 14px;
+  font-weight: 500;
+  color: #57423a;
+  cursor: pointer;
+}
+.chip.active {
+  background: #ffeae2;
+  color: #241915;
+  font-weight: 600;
+  border-color: #FF8551;
+}
+
+/* ── Carousel wrapper ── */
+.carousel-section {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 32px 64px;
+}
+.carousel-nav-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.carousel-arrows { display: flex; gap: 8px; }
+.carousel-arrow {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: 1px solid #dec0b6;
+  background: white;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: #57423a;
+}
+.carousel-dots { display: flex; gap: 6px; align-items: center; }
+.carousel-dot { width: 8px; height: 8px; border-radius: 50%; background: #dec0b6; }
+.carousel-dot.active { background: #FF8551; width: 24px; border-radius: 4px; }
+
+/* ── Cards grid ── */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.pkg-card {
+  background: #FFFFFF;
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow: 0px 12px 32px rgba(74, 69, 64, 0.08);
+  border: 1px solid rgba(222, 192, 182, 0.3);
+  display: flex;
+  flex-direction: column;
+}
+.pkg-card.featured {
+  border-top: 8px solid #FF8551;
+  margin-top: -16px;
+  position: relative;
+}
+.featured-badge {
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #FF8551;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 16px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.cat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+.cat-orange { background: rgba(255, 181, 152, 0.2); color: #6d2400; }
+.cat-teal   { background: rgba(0, 185, 199, 0.2);   color: #00444a; }
+.cat-green  { background: rgba(127, 216, 166, 0.2);  color: #005232; }
+.cat-dot { width: 8px; height: 8px; border-radius: 50%; }
+.dot-orange { background: #ffb598; }
+.dot-teal   { background: #00b9c7; }
+.dot-green  { background: #7fd8a6; }
+
+h3 {
+  font-family: 'Outfit';
+  font-size: 24px;
+  font-weight: 500;
+  color: #241915;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+.card-timing {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #57423a;
+  margin-bottom: 24px;
+}
+.card-timing .material-symbols-outlined { font-size: 16px; }
+.price-main {
+  font-family: 'Outfit';
+  font-size: 32px;
+  font-weight: 600;
+  color: #241915;
+  letter-spacing: -0.01em;
+}
+.price-main span { font-family: 'Manrope'; font-size: 16px; font-weight: 400; color: #57423a; }
+.price-sub { font-size: 16px; color: #8a7269; margin-bottom: 24px; }
+.divider { height: 1px; background: rgba(222, 192, 182, 0.4); margin-bottom: 24px; }
+.features { display: flex; flex-direction: column; gap: 12px; flex: 1; }
+.feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 16px;
+  color: #57423a;
+}
+.feature .material-symbols-outlined { font-size: 20px; color: #FF8551; margin-top: 2px; flex-shrink: 0; }
+.card-cta {
+  width: 100%;
+  margin-top: 32px;
+  padding: 16px;
+  background: #FF8551;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.card-cta:hover { opacity: 0.9; }
+
+/* ── Trust strip ── */
+.trust-strip {
+  background: #fff1ec;
+  padding: 80px 32px;
+}
+.trust-inner {
+  max-width: 1152px;
+  margin: 0 auto;
+}
+.trust-inner h2 {
+  font-family: 'Outfit';
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-align: center;
+  margin-bottom: 48px;
+  color: #241915;
+}
+.trust-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.trust-card {
+  background: #FFFFFF;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(74,69,64,0.06);
+  border: 1px solid rgba(222,192,182,0.2);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.trust-icon {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: #f3ded7;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 16px;
+  color: #a13f0f;
+}
+.trust-icon .material-symbols-outlined { font-size: 24px; }
+.trust-card h4 { font-size: 14px; font-weight: 600; color: #241915; margin-bottom: 8px; }
+.trust-card p { font-size: 12px; color: #57423a; }
+
+/* ── FAQ ── */
+.faq-section {
+  max-width: 768px;
+  margin: 0 auto;
+  padding: 96px 32px;
+}
+.faq-section h2 {
+  font-family: 'Outfit';
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-align: center;
+  margin-bottom: 48px;
+  color: #241915;
+}
+.faq-item {
+  background: #FFFFFF;
+  border-radius: 12px;
+  border: 1px solid rgba(222,192,182,0.3);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.faq-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  font-size: 16px;
+  color: #241915;
+  cursor: pointer;
+}
+.faq-body {
+  padding: 0 24px 24px;
+  padding-top: 8px;
+  font-size: 16px;
+  color: #57423a;
+  border-top: 1px solid rgba(222,192,182,0.2);
+  display: none;
+}
+.faq-item.open .faq-body { display: block; }
+
+/* ── Pre-footer CTA ── */
+.prefooter {
+  background: #ffeae2;
+  padding: 96px 32px;
+  border-top: 1px solid rgba(222,192,182,0.3);
+  text-align: center;
+}
+.prefooter h3 {
+  font-family: 'Outfit';
+  font-size: 24px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  color: #241915;
+}
+.prefooter p {
+  font-size: 18px;
+  color: #57423a;
+  margin-bottom: 32px;
+}
+.btn-outline {
+  background: transparent;
+  border: 2px solid #8a7269;
+  color: #241915;
+  padding: 12px 32px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-outline:hover { border-color: #FF8551; color: #FF8551; }
+
+/* ── Language pill ── */
+.lang-pill {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #FFFFFF;
+  box-shadow: 0px 12px 32px rgba(74, 69, 64, 0.08);
+  border-radius: 999px;
+  padding: 8px 16px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  border: 1px solid #dec0b6;
+  z-index: 100;
+  font-size: 14px;
+}
+.lang-pill span { color: #57423a; cursor: pointer; }
+.lang-pill span.active { color: #FF8551; font-weight: 700; }
+.lang-sep { color: #dec0b6; }
+
+/* ── Mockup label ── */
+.mockup-label {
+  background: #3a2e29;
+  color: #ffede7;
+  text-align: center;
+  padding: 10px 32px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+</style>
+</head>
+<body>
+
+<div class="mockup-label">MOCKUP — /offres (Warm Intelligence) — Carousel conservé, 3 packages visibles</div>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-inner">
+    <div class="nav-brand">Bassira</div>
+    <div class="nav-links">
+      <a href="#">Platform</a>
+      <a href="#">Simulations</a>
+      <a href="#" class="active">Offres</a>
+      <a href="#">Calibration</a>
+    </div>
+    <div class="nav-actions">
+      <button class="btn-login">Connexion</button>
+      <button class="btn-cta">Commencer</button>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-blob"></div>
+  <div class="hero-pill">
+    <span class="material-symbols-outlined">bolt</span>
+    Predict before it happens
+  </div>
+  <h1>Trois façons de mettre un essaim d'agents synthétiques au travail</h1>
+  <p class="hero-sub">Une question, un livrable engageant, un prix fixe.</p>
+</section>
+
+<!-- Filter chips -->
+<div class="chips">
+  <div class="chip active">🔥 Tous les packages</div>
+  <div class="chip">⚡ Crise & Comms</div>
+  <div class="chip">🏛️ Politique publique</div>
+  <div class="chip">📣 Marketing & GTM</div>
+  <div class="chip">🌍 Programme MENA</div>
+</div>
+
+<!-- Carousel -->
+<div class="carousel-section">
+  <div class="carousel-nav-row">
+    <div class="carousel-arrows">
+      <button class="carousel-arrow"><span class="material-symbols-outlined">chevron_left</span></button>
+      <button class="carousel-arrow"><span class="material-symbols-outlined">chevron_right</span></button>
+    </div>
+    <div class="carousel-dots">
+      <div class="carousel-dot active"></div>
+      <div class="carousel-dot"></div>
+      <div class="carousel-dot"></div>
+      <div class="carousel-dot"></div>
+    </div>
+  </div>
+
+  <div class="cards-grid">
+    <!-- Card 1: Crisis Drill -->
+    <div class="pkg-card">
+      <div class="cat-badge cat-orange">
+        <span class="cat-dot dot-orange"></span>
+        Comms / Crise
+      </div>
+      <h3>Crisis Drill</h3>
+      <div class="card-timing">
+        <span class="material-symbols-outlined">schedule</span>
+        Livraison 24h
+      </div>
+      <div class="price-main">12 000 <span>MAD</span></div>
+      <div class="price-sub">1 200 USD</div>
+      <div class="divider"></div>
+      <ul class="features">
+        <li class="feature"><span class="material-symbols-outlined">check_circle</span> Simulation de scénario</li>
+        <li class="feature"><span class="material-symbols-outlined">check_circle</span> 50 citoyens synthétiques</li>
+        <li class="feature"><span class="material-symbols-outlined">check_circle</span> 5 personas</li>
+        <li class="feature"><span class="material-symbols-outlined">check_circle</span> Carte thermique & belief drift</li>
+        <li class="feature"><span class="material-symbols-outlined">check_circle</span> Résumé PDF 6h</li>
+        <li class="feature"><span class="material-symbols-outlined">check_circle</span> Un suivi</li>
+      </ul>
+      <button class="card-cta">Obtenir un Crisis Drill</button>
+    </div>
+
+    <!-- Card 2: Policy Brief (Featured) -->
+    <div class="pkg-card featured">
+      <div class="featured-badge">Le plus choisi</div>
+      <div class="cat-badge cat-teal" style="margin-top: 8px;">
+        <span class="cat-dot dot-teal"></span>
+        Politique / Secteur public
+      </div>
+      <h3>Policy Brief Stress Test</h3>
+      <div class="card-timing">
+        <span class="material-symbols-outlined">schedule</span>
+        5 jours ouvrables
+      </div>
+      <div class="price-main">35 000 <span>MAD</span></div>
+      <div class="price-sub">3 500 USD</div>
+      <div class="divider"></div>
+      <ul class="features">
+        <li class="feature"><span class="material-symbols-outlined">check_circle</span> Test d'un projet de loi</li>
+        <li class="feature"><span class="material-symbols-outlined">check_circle</span> 8 archétypes parties prenantes</li>
+        <li class="feature"><span class="material-symbols-outlined">check_circle</span> Branches contrefactuelles</li>
+        <li class="feature"><span class="material-symbols-outlined">check_circle</span> Cohorte adversariale</li>
+        <li class="feature"><span class="material-symbols-outlined">check_circle</span> Certificat de calibration</li>
+        <li class="feature"><span class="material-symbols-outlined">check_circle</span> Debriefing 30 min</li>
+      </ul>
+      <button class="card-cta">Stress-tester mon brief</button>
+    </div>
+
+    <!-- Card 3: Pre-Launch Adcheck -->
+    <div class="pkg-card">
+      <div class="cat-badge cat-green">
+        <span class="cat-dot dot-green"></span>
+        Marketing / GTM
+      </div>
+      <h3>Pre-Launch Adcheck</h3>
+      <div class="card-timing">
+        <span class="material-symbols-outlined">schedule</span>
+        3 jours ouvrables
+      </div>
+      <div class="price-main">20 000 <span>MAD</span></div>
+      <div class="price-sub">2 000 USD</div>
+      <div class="divider"></div>
+      <ul class="features">
+        <li class="feature"><span class="material-symbols-outlined">check_circle</span> Scoring 3 concepts pub</li>
+        <li class="feature"><span class="material-symbols-outlined">check_circle</span> Audience synthétique</li>
+        <li class="feature"><span class="material-symbols-outlined">check_circle</span> Classement A/B/C</li>
+        <li class="feature"><span class="material-symbols-outlined">check_circle</span> Trajectoire belief drift</li>
+        <li class="feature"><span class="material-symbols-outlined">check_circle</span> Questions fatales</li>
+        <li class="feature"><span class="material-symbols-outlined">check_circle</span> Recommandations 1 page</li>
+      </ul>
+      <button class="card-cta">Vérifier ma campagne</button>
+    </div>
+  </div>
+</div>
+
+<!-- Trust strip -->
+<div class="trust-strip">
+  <div class="trust-inner">
+    <h2>Pourquoi nos prédictions tiennent</h2>
+    <div class="trust-grid">
+      <div class="trust-card">
+        <div class="trust-icon"><span class="material-symbols-outlined">analytics</span></div>
+        <h4>Brier 0.18</h4>
+        <p>Précision prédictive exceptionnelle validée sur des résultats réels.</p>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon"><span class="material-symbols-outlined">translate</span></div>
+        <h4>Multi-locale FR/AR/EN</h4>
+        <p>Compréhension native des nuances en français, arabe et anglais.</p>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon"><span class="material-symbols-outlined">public</span></div>
+        <h4>Données ancrées Afrique</h4>
+        <p>Agents entraînés sur des données localisées et fortement contextualisées.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="faq-section">
+  <h2>Questions fréquentes</h2>
+  <div class="faq-item open">
+    <div class="faq-summary">
+      En quoi une audience synthétique diffère d'un sondage traditionnel ?
+      <span class="material-symbols-outlined">expand_more</span>
+    </div>
+    <div class="faq-body">
+      Nos agents synthétiques ne répondent pas à des QCM ; ils maintiennent des croyances persistantes, interagissent entre eux et simulent la dérive des croyances dans le temps en réponse à des stimuli spécifiques.
+    </div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-summary">
+      Qu'est-ce qu'un "livrable engageant" ?
+      <span class="material-symbols-outlined">expand_more</span>
+    </div>
+    <div class="faq-body">
+      Livrable engageant signifie que nous garantissons les outputs exacts listés dans votre package dans le délai imparti. Zéro dérive de périmètre, zéro frais cachés.
+    </div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-summary">
+      Peut-on personnaliser les personas ?
+      <span class="material-symbols-outlined">expand_more</span>
+    </div>
+    <div class="faq-body" style="display: none;">
+      Oui. À l'onboarding, nous calibrons les archétypes standard pour les aligner sur votre audience cible ou votre matrice de parties prenantes spécifique.
+    </div>
+  </div>
+</div>
+
+<!-- Pre-footer CTA -->
+<div class="prefooter">
+  <h3>Pas sûr du bon package ?</h3>
+  <p>Décrivez-nous votre situation, nous vous orientons vers le bon package.</p>
+  <button class="btn-outline">Parlez-nous de votre cas</button>
+</div>
+
+<!-- Language pill -->
+<div class="lang-pill">
+  <span>FR</span>
+  <span class="lang-sep">|</span>
+  <span class="active">EN</span>
+  <span class="lang-sep">|</span>
+  <span>AR</span>
+</div>
+
+</body>
+</html>

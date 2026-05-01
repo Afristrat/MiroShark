@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bassira — Intelligence décisionnelle</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        primary: '#ff8551',
+        'primary-container': '#ffdbce',
+        'on-primary': '#ffffff',
+        surface: '#fff8f6',
+        'on-surface': '#241915',
+        'on-surface-variant': '#57423a',
+        'outline-variant': '#dec0b6',
+        'surface-container': '#f5ede9',
+      },
+      fontFamily: {
+        heading: ['Outfit', 'sans-serif'],
+        body: ['Manrope', 'sans-serif'],
+      },
+      borderRadius: { '2xl': '24px', 'xl': '16px' },
+      boxShadow: {
+        card: '0px 12px 32px rgba(74,69,64,0.08)',
+        'card-lg': '0px 24px 64px rgba(74,69,64,0.12)',
+      },
+    }
+  }
+}
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+<style>
+  body { font-family: 'Manrope', sans-serif; background: #fff8f6; color: #241915; overflow-x: hidden; }
+  h1,h2,h3,h4 { font-family: 'Outfit', sans-serif; }
+
+  .tag-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #ffdbce; color: #57423a;
+    font-size: 11px; font-weight: 700;
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 5px 12px; border-radius: 99px;
+  }
+
+  .nav-link { color: #57423a; font-size: 14px; font-weight: 500; text-decoration: none; transition: color 0.2s; }
+  .nav-link:hover { color: #241915; }
+  .nav-link.active { color: #241915; font-weight: 600; }
+
+  .protocol-card {
+    background: #fff;
+    border-radius: 24px;
+    padding: 32px;
+    box-shadow: 0px 12px 32px rgba(74,69,64,0.08);
+    border: 1.5px solid transparent;
+    transition: all 0.25s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .protocol-card:hover {
+    border-color: #ff8551;
+    transform: translateY(-4px);
+    box-shadow: 0px 24px 56px rgba(74,69,64,0.14);
+  }
+  .protocol-card.featured {
+    background: #241915;
+    border-color: #ff8551;
+  }
+  .protocol-card.featured h3,
+  .protocol-card.featured p,
+  .protocol-card.featured .card-meta { color: #fff8f6; }
+  .protocol-card.featured .card-meta { color: #dec0b6; }
+  .protocol-card.featured .card-icon { background: #ff8551; }
+
+  .card-icon {
+    width: 48px; height: 48px;
+    border-radius: 14px;
+    background: #ffdbce;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .stat-number {
+    font-family: 'Outfit', sans-serif;
+    font-size: 52px;
+    font-weight: 800;
+    color: #241915;
+    line-height: 1;
+  }
+
+  .client-logo {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 20px;
+    background: #fff;
+    border-radius: 12px;
+    border: 1.5px solid #f5ede9;
+    font-size: 13px;
+    font-weight: 600;
+    color: #57423a;
+    white-space: nowrap;
+  }
+
+  .process-step {
+    display: flex; gap: 20px; align-items: flex-start;
+  }
+  .step-num-circle {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: #ffdbce;
+    color: #ff8551;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .insight-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0px 8px 24px rgba(74,69,64,0.06);
+    border: 1.5px solid #f5ede9;
+    transition: all 0.2s;
+  }
+  .insight-card:hover {
+    border-color: #dec0b6;
+    transform: translateY(-2px);
+  }
+
+  .hero-bg-circle {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,133,81,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-[#f5ede9]">
+  <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between gap-8">
+    <span class="font-heading font-bold text-xl text-[#241915] tracking-tight flex-shrink-0">Bassira<span class="text-primary">.</span></span>
+    <div class="hidden md:flex items-center gap-8">
+      <a href="#" class="nav-link active">Platform</a>
+      <a href="#" class="nav-link">Offres</a>
+      <a href="#" class="nav-link">Calibration</a>
+      <a href="#" class="nav-link">Insights</a>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="flex gap-1 text-xs font-semibold text-[#57423a]">
+        <span class="px-2 py-1 rounded">FR</span>
+        <span class="text-[#dec0b6]">|</span>
+        <span class="px-2 py-1 rounded">EN</span>
+        <span class="text-[#dec0b6]">|</span>
+        <span class="px-2 py-1 rounded">AR</span>
+      </div>
+      <a href="#" class="bg-primary text-white font-heading font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-orange-500 transition-colors">Demander un devis</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="relative min-h-screen flex flex-col justify-center overflow-hidden">
+  <div class="hero-bg-circle w-[800px] h-[800px] -top-64 -right-64 opacity-60"></div>
+  <div class="hero-bg-circle w-[600px] h-[600px] bottom-0 -left-48 opacity-40"></div>
+
+  <div class="max-w-6xl mx-auto px-6 py-24 relative z-10">
+    <div class="max-w-3xl">
+      <div class="tag-badge mb-8">
+        <span class="material-icons-round text-[10px]">verified</span>
+        Brier 0.18 · Intelligence vérifiée · Afrique &amp; MENA
+      </div>
+
+      <h1 class="font-heading text-6xl md:text-7xl font-black text-[#241915] leading-[1.05] mb-8">
+        Décidez mieux.<br>
+        <span class="text-primary">Prouvé.</span>
+      </h1>
+
+      <p class="text-xl text-[#57423a] leading-relaxed mb-4 max-w-2xl">
+        Bassira est le premier cabinet d'intelligence prédictive certifiée pour les décideurs qui ne peuvent pas se permettre de se tromper.
+      </p>
+      <p class="text-base text-[#57423a] leading-relaxed mb-12 max-w-xl">
+        Cabinets ministériels, think-tanks stratégiques, directions générales. En Afrique et dans la zone MENA.
+      </p>
+
+      <div class="flex flex-wrap gap-4">
+        <a href="#" class="bg-primary text-white font-heading font-bold text-base px-8 py-4 rounded-xl hover:bg-orange-500 transition-colors flex items-center gap-2">
+          Voir les protocoles
+          <span class="material-icons-round text-lg">arrow_forward</span>
+        </a>
+        <a href="#" class="border-2 border-[#dec0b6] text-[#241915] font-heading font-semibold text-base px-8 py-4 rounded-xl hover:bg-[#f5ede9] transition-colors flex items-center gap-2">
+          <span class="material-icons-round text-lg">bar_chart</span>
+          Score Brier public
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Trust strip at bottom of hero -->
+  <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-[#f5ede9]">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex flex-wrap items-center gap-6 justify-between">
+      <p class="text-xs text-[#57423a] font-medium uppercase tracking-widest">Utilisé par</p>
+      <div class="flex flex-wrap gap-3">
+        <div class="client-logo"><span class="material-icons-round text-primary text-sm">account_balance</span> Cabinets ministériels</div>
+        <div class="client-logo"><span class="material-icons-round text-primary text-sm">school</span> Think-tanks</div>
+        <div class="client-logo"><span class="material-icons-round text-primary text-sm">business</span> Directions stratégiques</div>
+        <div class="client-logo"><span class="material-icons-round text-primary text-sm">rocket_launch</span> Scale-ups MENA</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROOF STATS -->
+<section class="bg-[#241915] py-20">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+      <div class="text-center">
+        <div class="stat-number text-white mb-2">0.18</div>
+        <p class="text-[#dec0b6] text-sm font-medium">Score Brier moyen<br><span class="text-xs opacity-60">(0 = parfait · 0.25 = aléatoire)</span></p>
+      </div>
+      <div class="text-center">
+        <div class="stat-number text-primary mb-2">47</div>
+        <p class="text-[#dec0b6] text-sm font-medium">Prévisions vérifiées<br><span class="text-xs opacity-60">Historique public</span></p>
+      </div>
+      <div class="text-center">
+        <div class="stat-number text-white mb-2">66%</div>
+        <p class="text-[#dec0b6] text-sm font-medium">Taux de précision<br><span class="text-xs opacity-60">Prévisions exactes</span></p>
+      </div>
+      <div class="text-center">
+        <div class="stat-number text-white mb-2">48h</div>
+        <p class="text-[#dec0b6] text-sm font-medium">Activation protocole<br><span class="text-xs opacity-60">Après mandat signé</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROTOCOLES -->
+<section class="py-24 max-w-6xl mx-auto px-6">
+  <div class="mb-14">
+    <div class="tag-badge mb-5">Trois protocoles</div>
+    <h2 class="font-heading text-4xl font-bold text-[#241915] mb-4">Taillé pour votre<br>contexte opérationnel.</h2>
+    <p class="text-[#57423a] text-lg max-w-xl">Chaque protocole est un mandat unique, livré par les fondateurs, sans sous-traitance.</p>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-6">
+    <!-- Card 1 -->
+    <div class="protocol-card">
+      <div class="card-icon"><span class="material-icons-round text-primary text-xl">crisis_alert</span></div>
+      <div class="tag-badge mb-3" style="background:#f5ede9;color:#57423a;">Crise &amp; Communication</div>
+      <h3 class="font-heading font-bold text-xl text-[#241915] mb-3">Crisis Drill</h3>
+      <p class="text-[#57423a] text-sm leading-relaxed mb-6">Analyse de perception en 24h pour les crises informationnelles à fort enjeu. Cartographie des narratifs, prévision d'escalade, recommandations actionnables.</p>
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs text-[#57423a] mb-0.5">À partir de</p>
+          <p class="font-heading font-bold text-[#241915] text-lg">8 500 MAD</p>
+        </div>
+        <span class="material-icons-round text-primary">arrow_forward</span>
+      </div>
+    </div>
+
+    <!-- Card 2 FEATURED -->
+    <div class="protocol-card featured">
+      <div class="absolute top-4 right-4 tag-badge" style="background:rgba(255,133,81,0.2);color:#ff8551;">Recommandé</div>
+      <div class="card-icon" style="background:#ff8551;"><span class="material-icons-round text-white text-xl">account_balance</span></div>
+      <div class="tag-badge mb-3" style="background:rgba(255,255,255,0.1);color:#dec0b6;">Politique publique</div>
+      <h3 class="font-heading font-bold text-xl mb-3">Policy Brief Intelligence</h3>
+      <p class="text-sm leading-relaxed mb-6" style="color:#dec0b6;">Scénarios probabilisés et cartographie des parties prenantes pour les décisions réglementaires, législatives ou diplomatiques.</p>
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs mb-0.5" style="color:#dec0b6;">À partir de</p>
+          <p class="font-heading font-bold text-lg" style="color:#ff8551;">14 500 MAD</p>
+        </div>
+        <span class="material-icons-round text-primary">arrow_forward</span>
+      </div>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="protocol-card">
+      <div class="card-icon"><span class="material-icons-round text-primary text-xl">rocket_launch</span></div>
+      <div class="tag-badge mb-3" style="background:#f5ede9;color:#57423a;">Marketing &amp; GTM</div>
+      <h3 class="font-heading font-bold text-xl text-[#241915] mb-3">Pre-Launch Adcheck</h3>
+      <p class="text-[#57423a] text-sm leading-relaxed mb-6">Audit de réception de campagne avant déploiement. 5 000+ profils cognitifs simulés pour prédire l'impact et les risques de backlash.</p>
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs text-[#57423a] mb-0.5">À partir de</p>
+          <p class="font-heading font-bold text-[#241915] text-lg">11 000 MAD</p>
+        </div>
+        <span class="material-icons-round text-primary">arrow_forward</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-8 text-center">
+    <a href="#" class="inline-flex items-center gap-2 text-primary font-heading font-semibold text-sm hover:underline">
+      Voir tous les protocoles et tarifs
+      <span class="material-icons-round text-base">arrow_forward</span>
+    </a>
+  </div>
+</section>
+
+<!-- COMMENT ÇA MARCHE -->
+<section class="bg-[#f5ede9] py-24">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="grid md:grid-cols-2 gap-16 items-center">
+      <div>
+        <div class="tag-badge mb-5">Le processus</div>
+        <h2 class="font-heading text-4xl font-bold text-[#241915] mb-4">De la question au livrable en 72h.</h2>
+        <p class="text-[#57423a] mb-10 leading-relaxed">Aucune bureaucratie. Vous parlez directement aux fondateurs. Nous travaillons.</p>
+
+        <div class="space-y-8">
+          <div class="process-step">
+            <div class="step-num-circle">01</div>
+            <div>
+              <h4 class="font-heading font-semibold text-[#241915] mb-1">Soumettez votre mandat</h4>
+              <p class="text-sm text-[#57423a] leading-relaxed">Trois questions. Deux minutes. Nous qualifions votre contexte et proposons le protocole adapté sous 4h.</p>
+            </div>
+          </div>
+          <div class="process-step">
+            <div class="step-num-circle">02</div>
+            <div>
+              <h4 class="font-heading font-semibold text-[#241915] mb-1">Appel de cadrage (20 min)</h4>
+              <p class="text-sm text-[#57423a] leading-relaxed">Un fondateur valide les hypothèses, délimite le périmètre et confirme le prix ferme. Pas de surprises.</p>
+            </div>
+          </div>
+          <div class="process-step">
+            <div class="step-num-circle">03</div>
+            <div>
+              <h4 class="font-heading font-semibold text-[#241915] mb-1">Livraison certifiée</h4>
+              <p class="text-sm text-[#57423a] leading-relaxed">Rapport structuré avec score Brier associé, scénarios probabilisés et recommandations directement actionnables par votre équipe.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Guarantee card -->
+      <div class="space-y-4">
+        <div class="bg-white rounded-2xl p-6 shadow-card">
+          <div class="flex items-start gap-4">
+            <div class="w-10 h-10 bg-[#ffdbce] rounded-xl flex items-center justify-center flex-shrink-0">
+              <span class="material-icons-round text-primary">verified</span>
+            </div>
+            <div>
+              <h4 class="font-heading font-semibold text-[#241915] mb-1">Historique 100% public</h4>
+              <p class="text-sm text-[#57423a]">Chaque prévision est horodatée, publiée et jamais supprimée. Le score Brier est calculé indépendamment.</p>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl p-6 shadow-card">
+          <div class="flex items-start gap-4">
+            <div class="w-10 h-10 bg-[#ffdbce] rounded-xl flex items-center justify-center flex-shrink-0">
+              <span class="material-icons-round text-primary">lock</span>
+            </div>
+            <div>
+              <h4 class="font-heading font-semibold text-[#241915] mb-1">Air-gap garanti</h4>
+              <p class="text-sm text-[#57423a]">Vos données et vos questions ne transitent par aucun cloud tiers. Isolation totale, contractuellement garantie.</p>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl p-6 shadow-card">
+          <div class="flex items-start gap-4">
+            <div class="w-10 h-10 bg-[#ffdbce] rounded-xl flex items-center justify-center flex-shrink-0">
+              <span class="material-icons-round text-primary">groups</span>
+            </div>
+            <div>
+              <h4 class="font-heading font-semibold text-[#241915] mb-1">Traité par les fondateurs</h4>
+              <p class="text-sm text-[#57423a]">Pas de CRM, pas d'account manager, pas de sous-traitance. Vous interagissez uniquement avec les analystes qui signent le rapport.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DERNIERS INSIGHTS -->
+<section class="py-24 max-w-6xl mx-auto px-6">
+  <div class="flex items-end justify-between mb-12">
+    <div>
+      <div class="tag-badge mb-4">Derniers briefs</div>
+      <h2 class="font-heading text-3xl font-bold text-[#241915]">Intelligence publique</h2>
+    </div>
+    <a href="#" class="text-primary font-heading font-semibold text-sm flex items-center gap-1 hover:underline">
+      Tous les briefs <span class="material-icons-round text-base">arrow_forward</span>
+    </a>
+  </div>
+  <div class="grid md:grid-cols-3 gap-6">
+    <div class="insight-card">
+      <div class="tag-badge mb-3" style="background:#f5ede9;color:#57423a;">Politique publique</div>
+      <h3 class="font-heading font-semibold text-[#241915] mb-2 leading-snug">Réforme fiscale au Maroc : scénarios de réception d'opinion à 90 jours</h3>
+      <p class="text-xs text-[#57423a] mb-4 leading-relaxed">Analyse probabilisée des 4 scénarios de réaction de l'opinion publique suite à l'annonce budgétaire...</p>
+      <div class="flex items-center justify-between">
+        <span class="text-xs text-[#57423a]">12 avril 2026</span>
+        <span class="tag-badge" style="background:#d6f5ec;color:#1a7a5e;">Brier 0.16</span>
+      </div>
+    </div>
+    <div class="insight-card">
+      <div class="tag-badge mb-3" style="background:#f5ede9;color:#57423a;">Crise &amp; Communication</div>
+      <h3 class="font-heading font-semibold text-[#241915] mb-2 leading-snug">Escalade narrative dans les crises institutionnelles : indicateurs précoces</h3>
+      <p class="text-xs text-[#57423a] mb-4 leading-relaxed">Les 7 signaux détectables dans les 6 premières heures qui prédisent une crise de 2e rang...</p>
+      <div class="flex items-center justify-between">
+        <span class="text-xs text-[#57423a]">3 mars 2026</span>
+        <span class="tag-badge" style="background:#d6f5ec;color:#1a7a5e;">Brier 0.19</span>
+      </div>
+    </div>
+    <div class="insight-card">
+      <div class="tag-badge mb-3" style="background:#f5ede9;color:#57423a;">Marketing &amp; GTM</div>
+      <h3 class="font-heading font-semibold text-[#241915] mb-2 leading-snug">Lancement produit en contexte MENA : les biais cognitifs sous-estimés</h3>
+      <p class="text-xs text-[#57423a] mb-4 leading-relaxed">Étude sur 5 campagnes de lancement 2024–2025, les écarts entre perception testée et réception réelle...</p>
+      <div class="flex items-center justify-between">
+        <span class="text-xs text-[#57423a]">18 fév. 2026</span>
+        <span class="tag-badge" style="background:#d6f5ec;color:#1a7a5e;">Brier 0.21</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="bg-[#241915] py-24">
+  <div class="max-w-3xl mx-auto px-6 text-center">
+    <div class="tag-badge mx-auto mb-8" style="background:rgba(255,133,81,0.2);color:#ff8551;">Réponse en 4h ouvrables</div>
+    <h2 class="font-heading text-5xl font-black text-white mb-6 leading-tight">Votre prochain briefing<br>mérite une prévision.</h2>
+    <p class="text-[#dec0b6] text-lg mb-10 leading-relaxed max-w-xl mx-auto">Soumettez votre mandat. Un fondateur vous rappelle sous 4 heures. Aucune obligation avant l'appel de cadrage.</p>
+    <div class="flex flex-wrap gap-4 justify-center">
+      <a href="#" class="bg-primary text-white font-heading font-bold text-base px-8 py-4 rounded-xl hover:bg-orange-500 transition-colors flex items-center gap-2">
+        Soumettre votre cas
+        <span class="material-icons-round">arrow_forward</span>
+      </a>
+      <a href="#" class="border border-[#57423a] text-[#dec0b6] font-heading font-semibold text-base px-8 py-4 rounded-xl hover:border-[#dec0b6] transition-colors">
+        Score Brier public
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="bg-[#1a100c] py-10">
+  <div class="max-w-6xl mx-auto px-6 flex flex-wrap items-center justify-between gap-4">
+    <span class="font-heading font-bold text-white text-lg">Bassira<span class="text-primary">.</span></span>
+    <p class="text-xs text-[#57423a]">Intelligence prédictive certifiée · Afrique &amp; MENA · Confidentiel par défaut</p>
+    <p class="text-xs text-[#57423a]">© 2026 Bassira — Brier 0.18 · 47 prévisions vérifiées</p>
+  </div>
+</footer>
+
+</body>
+</html>

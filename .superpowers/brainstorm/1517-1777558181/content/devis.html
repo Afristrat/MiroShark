@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Mockup /devis — Warm Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Manrope', sans-serif; background: #FAF7F2; color: #241915; font-size: 16px; line-height: 1.6; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+.material-symbols-outlined { font-family: 'Material Symbols Outlined'; font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; display: inline-block; vertical-align: middle; }
+
+header { width: 100%; background: #FAF7F2; border-bottom: 1px solid #EBE5DA; position: sticky; top: 0; z-index: 50; }
+.nav-inner { max-width: 1280px; margin: 0 auto; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+.nav-brand { font-family: 'Outfit'; font-size: 24px; font-weight: 700; color: #3d3530; }
+.nav-links { display: flex; gap: 32px; }
+.nav-links a { font-size: 14px; font-weight: 500; color: #6b5a54; text-decoration: none; }
+.btn-cta { background: #FF8551; color: white; border: none; border-radius: 12px; padding: 8px 24px; font-weight: 600; font-size: 14px; cursor: pointer; }
+
+main { flex: 1; width: 100%; max-width: 1280px; padding: 48px 24px; display: flex; flex-direction: column; align-items: center; }
+
+/* Trust line */
+.trust-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #f3ded7;
+  border-radius: 999px;
+  font-size: 12px;
+  color: #57423a;
+  margin-bottom: 32px;
+}
+.trust-line .material-symbols-outlined { font-size: 16px; color: #FF8551; }
+
+/* Main card */
+.devis-card {
+  width: 100%;
+  max-width: 640px;
+  background: #FFFFFF;
+  border-radius: 24px;
+  box-shadow: 0px 12px 32px rgba(74,69,64,0.08);
+  padding: 48px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Stepper */
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 48px;
+  position: relative;
+}
+.stepper-line {
+  position: absolute;
+  top: 20px;
+  left: 0; right: 0;
+  height: 2px;
+  background: #EBE5DA;
+  z-index: 0;
+}
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  padding: 0 8px;
+  z-index: 1;
+}
+.step-circle {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700;
+  border: 2px solid #EBE5DA;
+  color: #57423a;
+}
+.step-circle.active { background: #FF8551; border-color: #FF8551; color: white; }
+.step-circle.done { background: #7fd8a6; border-color: #7fd8a6; color: white; }
+.step-label { font-size: 12px; color: #57423a; white-space: nowrap; }
+.step-label.active { color: #a13f0f; font-weight: 700; }
+
+/* Step content */
+.step-content h2 {
+  font-family: 'Outfit';
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #241915;
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+/* Radio options */
+.radio-options { display: flex; flex-direction: column; gap: 12px; }
+.radio-option {
+  display: flex;
+  align-items: center;
+  padding: 20px 24px;
+  background: #FAF7F2;
+  border: 1px solid #EBE5DA;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  gap: 16px;
+}
+.radio-option.selected { border-color: #FF8551; }
+.radio-text { flex: 1; }
+.radio-title { font-size: 16px; font-weight: 600; color: #241915; margin-bottom: 2px; }
+.radio-sub { font-size: 12px; color: #57423a; }
+.radio-indicator {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  border: 2px solid #EBE5DA;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.radio-option.selected .radio-indicator { background: #FF8551; border-color: #FF8551; }
+.radio-dot { width: 8px; height: 8px; background: white; border-radius: 50%; }
+
+.other-input-wrap { padding-top: 16px; }
+.input-label { font-size: 12px; color: #57423a; margin-bottom: 8px; display: block; }
+.text-input {
+  width: 100%;
+  background: #FAF7F2;
+  border: none;
+  border-radius: 12px;
+  padding: 16px;
+  font-family: 'Manrope';
+  font-size: 16px;
+  color: #241915;
+  outline: none;
+  transition: box-shadow 0.15s;
+}
+.text-input:focus { box-shadow: 0 0 0 2px #FF8551; }
+.text-input::placeholder { color: #8a7269; }
+
+/* Step 2 – form fields */
+.form-fields { display: flex; flex-direction: column; gap: 20px; }
+.field-group { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.field-wrap { position: relative; }
+.floating-input {
+  width: 100%;
+  background: #FAF7F2;
+  border: none;
+  border-radius: 12px;
+  padding: 20px 20px 10px;
+  font-family: 'Manrope';
+  font-size: 16px;
+  color: #241915;
+  outline: none;
+  transition: box-shadow 0.15s;
+}
+.floating-input:focus { box-shadow: 0 0 0 2px #FF8551; }
+.floating-label {
+  position: absolute;
+  left: 20px; top: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #8a7269;
+  pointer-events: none;
+}
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  background: #FAF7F2;
+  border-radius: 16px;
+}
+.toggle-label { font-size: 16px; font-weight: 600; color: #241915; }
+.toggle-track {
+  width: 56px; height: 32px;
+  border-radius: 999px;
+  background: #FF8551;
+  position: relative;
+}
+.toggle-thumb {
+  position: absolute;
+  top: 4px; right: 4px;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: white;
+}
+
+/* Step 3 */
+.match-card {
+  padding: 24px;
+  background: #ffdbce;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.match-icon { padding: 16px; background: white; border-radius: 12px; color: #a13f0f; }
+.match-icon .material-symbols-outlined { font-size: 32px; }
+.match-title { font-size: 18px; font-weight: 700; color: #241915; }
+.match-sub { font-size: 12px; color: #57423a; opacity: 0.8; }
+textarea {
+  width: 100%;
+  background: #FAF7F2;
+  border: none;
+  border-radius: 12px;
+  padding: 16px;
+  font-family: 'Manrope';
+  font-size: 16px;
+  color: #241915;
+  resize: none;
+  outline: none;
+  margin-bottom: 16px;
+}
+textarea:focus { box-shadow: 0 0 0 2px #FF8551; }
+.checkbox-row { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 8px; }
+.checkbox-input { width: 18px; height: 18px; margin-top: 2px; accent-color: #FF8551; flex-shrink: 0; }
+.checkbox-text { font-size: 12px; color: #57423a; }
+
+/* CTA button */
+.btn-main {
+  width: 100%;
+  margin-top: 48px;
+  padding: 18px;
+  background: #FF8551;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Outfit';
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(255,133,81,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: opacity 0.2s;
+}
+.btn-main:hover { opacity: 0.92; }
+
+/* Success state */
+.success-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 32px 0;
+}
+.success-icon {
+  width: 80px; height: 80px;
+  background: rgba(127,216,166,0.2);
+  color: #006d44;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 24px;
+}
+.success-icon .material-symbols-outlined { font-size: 48px; }
+.success-title { font-family: 'Outfit'; font-size: 28px; font-weight: 600; color: #241915; margin-bottom: 8px; }
+.success-sub { font-size: 16px; color: #57423a; margin-bottom: 32px; }
+.success-sub span { font-weight: 700; }
+.success-next {
+  background: #FAF7F2;
+  border: 1px dashed #dec0b6;
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%;
+  text-align: left;
+}
+.success-next h4 { font-size: 16px; font-weight: 700; color: #241915; margin-bottom: 8px; }
+.success-next p { font-size: 12px; color: #57423a; }
+
+/* Bottom 3 icons */
+.bottom-icons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+  max-width: 640px;
+  width: 100%;
+  margin-top: 64px;
+  text-align: center;
+}
+.icon-block .material-symbols-outlined { font-size: 36px; color: #FF8551; margin-bottom: 12px; }
+.icon-block h5 { font-size: 14px; font-weight: 700; color: #241915; margin-bottom: 4px; }
+.icon-block p { font-size: 12px; color: #57423a; }
+
+/* Tabs to switch steps */
+.step-tabs { display: flex; gap: 8px; margin-bottom: 24px; justify-content: center; }
+.step-tab { padding: 6px 16px; border-radius: 999px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid #dec0b6; background: white; color: #57423a; }
+.step-tab.active { background: #FF8551; color: white; border-color: #FF8551; }
+
+.mockup-label { background: #3a2e29; color: #ffede7; text-align: center; padding: 10px 32px; font-size: 13px; font-weight: 600; letter-spacing: 0.05em; width: 100%; }
+
+/* Lang pill */
+.lang-pill { position: fixed; top: 80px; right: 24px; background: #FFFFFF; box-shadow: 0px 12px 32px rgba(74,69,64,0.08); border-radius: 999px; padding: 8px 16px; display: flex; gap: 12px; align-items: center; border: 1px solid #dec0b6; z-index: 100; font-size: 13px; }
+.lang-pill span { color: #57423a; cursor: pointer; }
+.lang-pill span.active { color: #a13f0f; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<div class="mockup-label">MOCKUP — /devis (Warm Intelligence) — Cliquer les onglets Étape 1/2/3/Succès pour naviguer</div>
+
+<header>
+  <div class="nav-inner">
+    <div class="nav-brand">Bassira</div>
+    <div class="nav-links">
+      <a href="#">Platform</a>
+      <a href="#">Simulations</a>
+      <a href="#">Offres</a>
+      <a href="#">Calibration</a>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px">
+      <span class="material-symbols-outlined" style="color:#6b5a54;cursor:pointer">language</span>
+      <button class="btn-cta">S'inscrire</button>
+    </div>
+  </div>
+</header>
+
+<div class="lang-pill">
+  <span>EN</span> <span style="color:#dec0b6">|</span>
+  <span>FR</span> <span style="color:#dec0b6">|</span>
+  <span class="active">AR</span>
+</div>
+
+<main>
+  <!-- Trust line -->
+  <div class="trust-line">
+    <span class="material-symbols-outlined">verified_user</span>
+    Votre message va directement aux fondateurs. Pas de CRM, pas de newsletter.
+  </div>
+
+  <!-- Step navigation (mockup only) -->
+  <div class="step-tabs">
+    <div class="step-tab active" onclick="showStep(1,this)">Étape 1</div>
+    <div class="step-tab" onclick="showStep(2,this)">Étape 2</div>
+    <div class="step-tab" onclick="showStep(3,this)">Étape 3</div>
+    <div class="step-tab" onclick="showStep(4,this)">Succès</div>
+  </div>
+
+  <div class="devis-card">
+    <!-- Stepper -->
+    <div class="stepper">
+      <div class="stepper-line"></div>
+      <div class="step" id="s1">
+        <div class="step-circle active" id="sc1">1</div>
+        <span class="step-label active" id="sl1">Votre situation</span>
+      </div>
+      <div class="step" id="s2">
+        <div class="step-circle" id="sc2">2</div>
+        <span class="step-label" id="sl2">Vos coordonnées</span>
+      </div>
+      <div class="step" id="s3">
+        <div class="step-circle" id="sc3">3</div>
+        <span class="step-label" id="sl3">Votre message</span>
+      </div>
+    </div>
+
+    <!-- Step 1: Situation (radio package) -->
+    <div id="step1" class="step-content">
+      <h2>Comment pouvons-nous vous aider ?</h2>
+      <div class="radio-options">
+        <div class="radio-option selected">
+          <div class="radio-text">
+            <div class="radio-title">Je suis en crise ou sur le point de l'être</div>
+            <div class="radio-sub">Simulation de réponse rapide pour les menaces émergentes.</div>
+          </div>
+          <div class="radio-indicator"><div class="radio-dot"></div></div>
+        </div>
+        <div class="radio-option">
+          <div class="radio-text">
+            <div class="radio-title">Je dois tester une politique ou réglementation</div>
+            <div class="radio-sub">Stress-tester les impacts socio-économiques avant le déploiement.</div>
+          </div>
+          <div class="radio-indicator"></div>
+        </div>
+        <div class="radio-option">
+          <div class="radio-text">
+            <div class="radio-title">Je m'apprête à lancer une campagne ou un produit</div>
+            <div class="radio-sub">Anticiper la réaction du marché et l'adoption par les agents.</div>
+          </div>
+          <div class="radio-indicator"></div>
+        </div>
+        <div class="other-input-wrap">
+          <label class="input-label">Autre situation ?</label>
+          <input type="text" class="text-input" placeholder="Décrivez votre besoin spécifique..."/>
+        </div>
+      </div>
+      <button class="btn-main">
+        Étape suivante
+        <span class="material-symbols-outlined">arrow_forward</span>
+      </button>
+    </div>
+
+    <!-- Step 2: Coordonnées -->
+    <div id="step2" class="step-content" style="display:none">
+      <h2>Parlez-nous de vous</h2>
+      <div class="form-fields">
+        <div class="field-wrap">
+          <input type="text" class="floating-input" value="Amine Mansouri" placeholder=" "/>
+          <label class="floating-label">Nom complet</label>
+        </div>
+        <div class="field-wrap">
+          <input type="email" class="floating-input" value="amine@bassira.ai" placeholder=" "/>
+          <label class="floating-label">Email professionnel</label>
+        </div>
+        <div class="field-group">
+          <div class="field-wrap">
+            <input type="text" class="floating-input" value="Bassira AI" placeholder=" "/>
+            <label class="floating-label">Organisation</label>
+          </div>
+          <div class="field-wrap">
+            <select class="floating-input">
+              <option selected>Maroc</option>
+              <option>France</option>
+              <option>Émirats arabes unis</option>
+              <option>États-Unis</option>
+            </select>
+            <label class="floating-label">Pays</label>
+          </div>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-label">J'ai déjà une population cible en tête</span>
+          <div class="toggle-track"><div class="toggle-thumb"></div></div>
+        </div>
+      </div>
+      <button class="btn-main">
+        Étape suivante
+        <span class="material-symbols-outlined">arrow_forward</span>
+      </button>
+    </div>
+
+    <!-- Step 3: Message + RGPD -->
+    <div id="step3" class="step-content" style="display:none">
+      <h2>Votre correspondance</h2>
+      <div class="match-card">
+        <div class="match-icon">
+          <span class="material-symbols-outlined">emergency_home</span>
+        </div>
+        <div>
+          <div class="match-title">Package Crisis Drill</div>
+          <div class="match-sub">Modélisation complète de la réponse écosystémique.</div>
+        </div>
+      </div>
+      <label class="input-label">Informations complémentaires ?</label>
+      <textarea rows="4" placeholder="Détails sur votre calendrier, parties prenantes spécifiques..."></textarea>
+      <div class="checkbox-row">
+        <input type="checkbox" class="checkbox-input" checked/>
+        <span class="checkbox-text">J'accepte le traitement de mes données de cas dans le seul but d'établir ce devis de simulation.</span>
+      </div>
+      <button class="btn-main">Envoyer la demande</button>
+    </div>
+
+    <!-- Step 4: Success -->
+    <div id="step4" class="step-content" style="display:none">
+      <div class="success-state">
+        <div class="success-icon">
+          <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24">check_circle</span>
+        </div>
+        <div class="success-title">Merci — nous avons bien reçu votre cas.</div>
+        <div class="success-sub">Référence <span>#BSR-1842</span>. Réponse sous 4h ouvrables maximum.</div>
+        <div class="success-next">
+          <h4>La suite ?</h4>
+          <p>Nos fondateurs vont examiner vos paramètres de cas. Vous recevrez une portée de simulation détaillée et un lien de planification par l'email fourni.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom 3 icons -->
+  <div class="bottom-icons">
+    <div class="icon-block">
+      <span class="material-symbols-outlined">psychology</span>
+      <h5>Intelligence Multi-Agents</h5>
+      <p>Propulsé par 5 000+ profils cognitifs d'agents distincts.</p>
+    </div>
+    <div class="icon-block">
+      <span class="material-symbols-outlined">security</span>
+      <h5>Confidentialité Air-Gap</h5>
+      <p>Vos scénarios ne touchent jamais les données d'entraînement LLM.</p>
+    </div>
+    <div class="icon-block">
+      <span class="material-symbols-outlined">bolt</span>
+      <h5>Setup 48h</h5>
+      <p>De la demande à la première simulation en deux jours.</p>
+    </div>
+  </div>
+</main>
+
+<script>
+function showStep(n, tab) {
+  ['step1','step2','step3','step4'].forEach((id,i) => {
+    document.getElementById(id).style.display = (i===n-1) ? 'block' : 'none';
+  });
+  document.querySelectorAll('.step-tab').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+
+  ['sc1','sc2','sc3'].forEach((id,i) => {
+    const el = document.getElementById(id);
+    el.className = 'step-circle' + (i < n-1 ? ' done' : (i === n-1 ? ' active' : ''));
+  });
+  ['sl1','sl2','sl3'].forEach((id,i) => {
+    const el = document.getElementById(id);
+    el.className = 'step-label' + (i === Math.min(n-1,2) ? ' active' : '');
+  });
+}
+</script>
+</body>
+</html>

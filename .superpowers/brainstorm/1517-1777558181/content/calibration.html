@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Mockup /calibration — Warm Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Manrope', sans-serif; background: #FAF7F2; color: #241915; font-size: 16px; line-height: 1.6; }
+.material-symbols-outlined { font-family: 'Material Symbols Outlined'; font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; display: inline-block; vertical-align: middle; }
+
+nav { background: #FAF7F2; border-bottom: 1px solid #EBE5DA; position: sticky; top: 0; z-index: 50; }
+.nav-inner { max-width: 1280px; margin: 0 auto; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+.nav-brand { font-family: 'Outfit'; font-size: 24px; font-weight: 700; color: #3d3530; }
+.nav-links { display: flex; gap: 32px; }
+.nav-links a { font-size: 14px; font-weight: 500; color: #6b5a54; text-decoration: none; }
+.nav-links a.active { color: #FF8551; border-bottom: 2px solid #FF8551; padding-bottom: 4px; }
+.nav-actions { display: flex; gap: 16px; align-items: center; }
+.btn-cta { background: #FF8551; color: white; border: none; border-radius: 12px; padding: 8px 24px; font-weight: 600; font-size: 14px; cursor: pointer; }
+
+main { max-width: 1280px; margin: 0 auto; padding: 64px 24px; display: flex; flex-direction: column; gap: 64px; }
+
+/* Hero */
+.hero { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 24px; }
+.hero-badge { background: rgba(255,133,81,0.1); color: #6d2400; border: 1px solid rgba(255,133,81,0.2); border-radius: 999px; padding: 4px 16px; font-size: 14px; font-weight: 600; }
+.hero-score-row { display: flex; align-items: baseline; gap: 16px; }
+.hero-score { font-family: 'Outfit'; font-size: 120px; line-height: 1; letter-spacing: -0.04em; color: #241915; font-weight: 600; }
+.hero-delta { display: flex; align-items: center; gap: 4px; color: #7fd8a6; font-family: 'Outfit'; font-size: 24px; font-weight: 500; }
+.hero-delta .material-symbols-outlined { font-size: 28px; }
+.hero-caption { font-family: 'Outfit'; font-size: 24px; font-weight: 500; color: #57423a; max-width: 480px; }
+.hero-caption .highlight { color: #a13f0f; }
+
+/* Stat cards */
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+.stat-card { background: #FFFFFF; border-radius: 24px; padding: 24px; box-shadow: 0px 12px 32px rgba(74,69,64,0.08); min-height: 140px; display: flex; flex-direction: column; justify-content: space-between; }
+.stat-label { font-size: 12px; color: #57423a; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 500; }
+.stat-bottom { display: flex; align-items: flex-end; justify-content: space-between; }
+.stat-num { font-family: 'Outfit'; font-size: 32px; font-weight: 600; letter-spacing: -0.01em; color: #241915; }
+.badge { font-size: 12px; padding: 4px 10px; border-radius: 8px; font-weight: 500; }
+.badge-mint  { background: rgba(127,216,166,0.2); color: #067148; }
+.badge-peach { background: rgba(255,219,206,0.5); color: #7f2b00; }
+.badge-rose  { background: rgba(186,26,26,0.1);   color: #93000a; }
+.badge-muted { background: #f3ded7; color: #57423a; }
+
+/* Chart section */
+.chart-section { display: grid; grid-template-columns: 3fr 1fr; gap: 24px; }
+.chart-card { background: #FFFFFF; border-radius: 24px; padding: 40px; box-shadow: 0px 12px 32px rgba(74,69,64,0.08); }
+.chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 64px; }
+.chart-title { font-family: 'Outfit'; font-size: 24px; font-weight: 500; color: #241915; }
+.chart-legend { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #57423a; }
+.legend-dot { width: 12px; height: 12px; border-radius: 50%; background: #FF8551; }
+
+.chart-area {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 21/9;
+  border-left: 2px solid #dec0b6;
+  border-bottom: 2px solid #dec0b6;
+  margin-bottom: 32px;
+}
+.chart-diagonal {
+  position: absolute; inset: 0;
+  opacity: 0.15;
+  background-image: linear-gradient(to top right, transparent calc(50% - 1px), #8a7269 50%, transparent calc(50% + 1px));
+}
+.y-labels {
+  position: absolute; left: -32px; height: 100%;
+  display: flex; flex-direction: column; justify-content: space-between;
+  font-size: 11px; color: #57423a;
+}
+.x-labels {
+  position: absolute; bottom: -28px; width: 100%;
+  display: flex; justify-content: space-between;
+  font-size: 11px; color: #57423a; padding: 0 4px;
+}
+.chart-node {
+  position: absolute;
+  background: #FF8551;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 2px 6px rgba(74,69,64,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; color: white; font-weight: 600;
+  opacity: 0.9;
+}
+.chart-xlabel { margin-top: 8px; text-align: center; font-size: 12px; color: #57423a; }
+
+.chart-sidebar { display: flex; flex-direction: column; gap: 16px; }
+.sidebar-card { background: #FFFFFF; border-radius: 24px; padding: 24px; box-shadow: 0px 12px 32px rgba(74,69,64,0.08); }
+.sidebar-label { font-size: 12px; color: #57423a; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; margin-bottom: 8px; }
+.sidebar-select {
+  width: 100%;
+  background: #FAF7F2;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-family: 'Manrope';
+  font-size: 16px;
+  color: #241915;
+  outline: none;
+}
+.sidebar-date-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 16px;
+  background: #FAF7F2;
+  border-radius: 12px;
+  font-size: 16px; color: #241915;
+}
+.sidebar-note { padding: 16px; color: #57423a; font-style: italic; font-size: 12px; }
+
+/* Methodology section */
+.method-section { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; }
+.method-text h3 { font-family: 'Outfit'; font-size: 24px; font-weight: 500; color: #241915; margin-bottom: 24px; }
+.method-text p { font-size: 16px; color: #57423a; margin-bottom: 16px; }
+.method-cta-card {
+  background: rgba(127,216,166,0.1);
+  border: 2px solid rgba(127,216,166,0.3);
+  border-radius: 24px;
+  padding: 40px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  gap: 16px;
+  position: relative; overflow: hidden;
+}
+.method-cta-card::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 160px; height: 160px;
+  background: rgba(127,216,166,0.2);
+  border-radius: 50%;
+  filter: blur(48px);
+}
+.method-cta-card h3 { font-family: 'Outfit'; font-size: 24px; font-weight: 500; color: #067148; }
+.method-cta-card p { font-size: 16px; color: rgba(6,113,72,0.8); max-width: 280px; }
+.btn-primary-dark {
+  background: #a13f0f;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 40px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(161,63,15,0.3);
+}
+
+footer { background: #FAF7F2; border-top: 1px solid #EBE5DA; margin-top: 64px; }
+.footer-inner { max-width: 1280px; margin: 0 auto; padding: 48px 24px; display: flex; justify-content: space-between; align-items: center; }
+.footer-brand { font-family: 'Outfit'; font-size: 18px; font-weight: 700; color: #3d3530; }
+.footer-copy { font-size: 12px; color: #8a7269; margin-top: 8px; }
+.footer-links { display: flex; gap: 32px; }
+.footer-links a { font-size: 12px; color: #8a7269; text-decoration: underline; }
+
+.lang-pill { position: fixed; top: 80px; right: 24px; background: #FFFFFF; box-shadow: 0px 12px 32px rgba(74,69,64,0.08); border-radius: 999px; padding: 8px 16px; display: flex; gap: 16px; align-items: center; border: 1px solid #dec0b6; z-index: 100; font-size: 14px; }
+.lang-pill span { color: #57423a; cursor: pointer; }
+.lang-pill span.active { color: #a13f0f; font-weight: 700; }
+.lang-sep { color: #dec0b6; }
+.mockup-label { background: #3a2e29; color: #ffede7; text-align: center; padding: 10px 32px; font-size: 13px; font-weight: 600; letter-spacing: 0.05em; }
+</style>
+</head>
+<body>
+
+<div class="mockup-label">MOCKUP — /calibration (Warm Intelligence) — D3 chart re-skinée, hero 120px</div>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-brand">Bassira</div>
+    <div class="nav-links">
+      <a href="#">Platform</a>
+      <a href="#">Simulations</a>
+      <a href="#">Offres</a>
+      <a href="#" class="active">Calibration</a>
+    </div>
+    <div class="nav-actions">
+      <span class="material-symbols-outlined" style="color:#6b5a54;cursor:pointer">language</span>
+      <button class="btn-cta">S'inscrire</button>
+    </div>
+  </div>
+</nav>
+
+<div class="lang-pill">
+  <span>FR</span>
+  <span class="lang-sep">|</span>
+  <span>AR</span>
+  <span class="lang-sep">|</span>
+  <span class="active">EN</span>
+</div>
+
+<main>
+  <!-- Hero -->
+  <section class="hero">
+    <span class="hero-badge">Historique vérifié</span>
+    <div class="hero-score-row">
+      <div class="hero-score">0.18</div>
+      <div class="hero-delta">
+        <span class="material-symbols-outlined">arrow_downward</span>
+        <span>-0.04</span>
+      </div>
+    </div>
+    <p class="hero-caption">
+      Nous notons chaque prédiction. <span class="highlight">Plus bas = meilleur.</span>
+    </p>
+  </section>
+
+  <!-- 4 stat cards -->
+  <section class="stat-grid">
+    <div class="stat-card">
+      <p class="stat-label">Total des prévisions</p>
+      <div class="stat-bottom">
+        <span class="stat-num">47</span>
+        <span class="badge badge-muted">Vérifiées</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <p class="stat-label">Juste</p>
+      <div class="stat-bottom">
+        <span class="stat-num">31</span>
+        <span class="badge badge-mint">66 % précision</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <p class="stat-label">Directionnel</p>
+      <div class="stat-bottom">
+        <span class="stat-num">11</span>
+        <span class="badge badge-peach">23 % partiel</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <p class="stat-label">Inexact</p>
+      <div class="stat-bottom">
+        <span class="stat-num">5</span>
+        <span class="badge badge-rose">11 % erreur</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Chart + sidebar -->
+  <section class="chart-section">
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3 class="chart-title">Prédit vs Observé</h3>
+        <div class="chart-legend">
+          <span class="legend-dot"></span>
+          Buckets de prévision
+        </div>
+      </div>
+      <div class="chart-area">
+        <div class="chart-diagonal"></div>
+        <div class="y-labels">
+          <span>1.0</span><span>0.8</span><span>0.6</span><span>0.4</span><span>0.2</span><span>0</span>
+        </div>
+        <div class="x-labels">
+          <span>0</span><span>0.2</span><span>0.4</span><span>0.6</span><span>0.8</span><span>1.0</span>
+        </div>
+        <!-- Scatter nodes (simulation données réelles via D3 en prod) -->
+        <div class="chart-node" style="width:32px;height:32px;bottom:5%;left:5%">4</div>
+        <div class="chart-node" style="width:40px;height:40px;bottom:15%;left:12%">12</div>
+        <div class="chart-node" style="width:48px;height:48px;bottom:28%;left:25%">18</div>
+        <div class="chart-node" style="width:36px;height:36px;bottom:42%;left:40%">7</div>
+        <div class="chart-node" style="width:44px;height:44px;bottom:58%;left:55%">14</div>
+        <div class="chart-node" style="width:40px;height:40px;bottom:65%;left:68%">9</div>
+        <div class="chart-node" style="width:56px;height:56px;bottom:82%;left:85%">25</div>
+      </div>
+      <div class="chart-xlabel">Probabilité prédite (0–1)</div>
+    </div>
+    <div class="chart-sidebar">
+      <div class="sidebar-card">
+        <div class="sidebar-label">Cluster de simulation</div>
+        <select class="sidebar-select">
+          <option>Marchés globaux</option>
+          <option>Risque géopolitique</option>
+          <option>Chaîne d'approvisionnement</option>
+        </select>
+      </div>
+      <div class="sidebar-card">
+        <div class="sidebar-label">Plage de dates</div>
+        <div class="sidebar-date-row">
+          <span class="material-symbols-outlined" style="font-size:18px;color:#57423a">calendar_today</span>
+          <span>Jan 2024 – Présent</span>
+        </div>
+      </div>
+      <div class="sidebar-note">
+        * Score Brier calculé sur tous les nœuds agents vérifiés avec un minimum de 500 signaux.
+      </div>
+    </div>
+  </section>
+
+  <!-- Methodology -->
+  <section class="method-section">
+    <div class="method-text">
+      <h3>Comment on le compte</h3>
+      <p>Nous employons une <strong>règle de score propre</strong>. Nos agents ne disent pas seulement "oui" ou "non" ; ils fournissent une distribution de probabilité.</p>
+      <p>Notre score Brier (0.18) reflète notre engagement envers la <strong>calibration</strong>. Un score de 0 est une prescience parfaite ; un score de 0.25 correspond à une devinette aléatoire.</p>
+      <p>Les données sont mises à jour en temps réel dès que les simulations atteignent leur horizon de résolution. Aucune prévision n'est jamais supprimée ou "révisée".</p>
+    </div>
+    <div class="method-cta-card">
+      <h3>Vous voulez parier contre nous ?</h3>
+      <p>Challengez notre réseau multi-agents avec vos propres événements ou données.</p>
+      <button class="btn-primary-dark">Soumettre un événement à prévoir</button>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand">Bassira</div>
+      <div class="footer-copy">© 2024 Bassira Multi-Agent Systems. Tous droits réservés.</div>
+    </div>
+    <div class="footer-links">
+      <a href="#">Politique de confidentialité</a>
+      <a href="#">CGU</a>
+      <a href="#">Contact</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

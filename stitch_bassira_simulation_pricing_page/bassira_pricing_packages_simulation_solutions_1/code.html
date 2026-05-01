@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+
+<html dir="ltr" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bassira - Pricing</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;family=Outfit:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary": "#006d44",
+                    "secondary-fixed-dim": "#7fd8a6",
+                    "primary-container": "#ff8551",
+                    "on-tertiary": "#ffffff",
+                    "primary": "#a13f0f",
+                    "on-primary-fixed-variant": "#7f2b00",
+                    "surface": "#fff8f6",
+                    "on-secondary-container": "#067148",
+                    "inverse-primary": "#ffb598",
+                    "on-tertiary-container": "#00444a",
+                    "surface-container-high": "#f9e4dd",
+                    "on-primary-fixed": "#370e00",
+                    "on-primary": "#ffffff",
+                    "tertiary-fixed-dim": "#48d9e7",
+                    "surface-variant": "#f3ded7",
+                    "inverse-on-surface": "#ffede7",
+                    "outline": "#8a7269",
+                    "on-surface-variant": "#57423a",
+                    "surface-container": "#ffeae2",
+                    "surface-container-low": "#fff1ec",
+                    "on-tertiary-fixed-variant": "#004f55",
+                    "secondary-fixed": "#9bf5c1",
+                    "on-surface": "#241915",
+                    "surface-container-highest": "#f3ded7",
+                    "surface-container-lowest": "#ffffff",
+                    "background": "#fff8f6",
+                    "tertiary-container": "#00b9c7",
+                    "on-secondary-fixed": "#002111",
+                    "surface-dim": "#ead6cf",
+                    "on-error-container": "#93000a",
+                    "on-primary-container": "#6d2400",
+                    "primary-fixed-dim": "#ffb598",
+                    "surface-tint": "#a13f0f",
+                    "tertiary": "#006971",
+                    "on-secondary-fixed-variant": "#005232",
+                    "error": "#ba1a1a",
+                    "on-tertiary-fixed": "#002023",
+                    "surface-bright": "#fff8f6",
+                    "secondary-container": "#98f2be",
+                    "tertiary-fixed": "#87f3ff",
+                    "on-error": "#ffffff",
+                    "primary-fixed": "#ffdbce",
+                    "on-secondary": "#ffffff",
+                    "outline-variant": "#dec0b6",
+                    "inverse-surface": "#3a2e29",
+                    "error-container": "#ffdad6",
+                    "on-background": "#241915"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "sm": "16px",
+                    "unit": "4px",
+                    "margin": "32px",
+                    "md": "24px",
+                    "xs": "8px",
+                    "lg": "40px",
+                    "gutter": "24px",
+                    "xl": "64px"
+            },
+            "fontFamily": {
+                    "h3": [
+                            "Outfit"
+                    ],
+                    "label-sm": [
+                            "Manrope"
+                    ],
+                    "body-lg": [
+                            "Manrope"
+                    ],
+                    "body-md": [
+                            "Manrope"
+                    ],
+                    "h2": [
+                            "Outfit"
+                    ],
+                    "h1": [
+                            "Outfit"
+                    ],
+                    "caption": [
+                            "Manrope"
+                    ]
+            },
+            "fontSize": {
+                    "h3": [
+                            "24px",
+                            {
+                                    "lineHeight": "1.4",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "label-sm": [
+                            "14px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "letterSpacing": "0.01em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "1.6",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "1.6",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "h2": [
+                            "32px",
+                            {
+                                    "lineHeight": "1.3",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "h1": [
+                            "48px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "caption": [
+                            "12px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "fontWeight": "500"
+                            }
+                    ]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom ambient shadow to match design intent */
+        .shadow-ambient {
+            box-shadow: 0px 12px 32px rgba(74, 69, 64, 0.08);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col antialiased">
+<!-- TopNavBar Shared Component -->
+<header class="bg-[#FDFCFB] dark:bg-stone-950 w-full top-0 sticky border-b border-[#EBE5DA] dark:border-stone-800 shadow-sm z-50">
+<div class="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto">
+<!-- Brand -->
+<div class="text-2xl font-bold text-[#4A4540] dark:text-stone-100 font-h3">
+                Bassira
+            </div>
+<!-- Navigation (Desktop) -->
+<nav class="hidden md:flex gap-8 items-center h-full">
+<a class="text-[#4A4540] dark:text-stone-400 font-medium hover:text-[#FF8551] transition-colors duration-200" href="#">Platform</a>
+<a class="text-[#4A4540] dark:text-stone-400 font-medium hover:text-[#FF8551] transition-colors duration-200" href="#">Simulations</a>
+<a aria-current="page" class="text-[#FF8551] font-bold border-b-2 border-[#FF8551] pb-1 hover:text-[#FF8551] transition-colors duration-200" href="#">Pricing</a>
+<a class="text-[#4A4540] dark:text-stone-400 font-medium hover:text-[#FF8551] transition-colors duration-200" href="#">Insights</a>
+</nav>
+<!-- Actions -->
+<div class="flex items-center gap-4">
+<button class="text-[#4A4540] dark:text-stone-400 font-medium hover:text-[#FF8551] transition-colors duration-200 px-4 py-2">
+                    Login
+                </button>
+<button class="bg-[#FF8551] text-white px-6 py-2 rounded-xl hover:opacity-90 transition-opacity font-medium">
+                    Get Started
+                </button>
+<button aria-label="language" class="text-[#4A4540] dark:text-stone-400 hover:text-[#FF8551] transition-colors flex items-center justify-center p-2 rounded-full">
+<span class="material-symbols-outlined">language</span>
+</button>
+</div>
+</div>
+</header>
+<main class="flex-grow flex flex-col relative">
+<!-- Floating Language Switcher -->
+<div class="fixed bottom-6 end-6 z-50 bg-surface-container-lowest shadow-ambient rounded-full px-4 py-2 flex items-center gap-2 border border-outline-variant">
+<span class="font-label-sm text-on-surface hover:text-primary-container cursor-pointer transition-colors text-label-sm">FR</span>
+<span class="text-outline-variant text-caption">|</span>
+<span class="font-label-sm text-primary-container cursor-pointer transition-colors text-label-sm font-bold">EN</span>
+<span class="text-outline-variant text-caption">|</span>
+<span class="font-label-sm text-on-surface hover:text-primary-container cursor-pointer transition-colors text-label-sm">AR</span>
+</div>
+<!-- Hero Section -->
+<section class="w-full px-8 py-24 flex flex-col items-center justify-center text-center max-w-4xl mx-auto relative overflow-hidden">
+<!-- Subtle background decorative blob -->
+<div aria-hidden="true" class="absolute -top-24 -z-10 w-[500px] h-[500px] bg-primary-fixed opacity-30 blur-3xl rounded-full mix-blend-multiply"></div>
+<div class="bg-surface-container-high text-on-surface px-4 py-1.5 rounded-full mb-6 font-label-sm text-label-sm inline-flex items-center gap-2 border border-outline-variant">
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+                Predict before it happens
+            </div>
+<h1 class="font-h1 text-h1 text-on-surface mb-6 leading-tight">
+                Three ways to put a swarm of synthetic agents to work on your decision
+            </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
+                One question, one binding deliverable, one fixed price.
+            </p>
+</section>
+<!-- Pricing Grid Section -->
+<section class="w-full max-w-7xl mx-auto px-8 pb-24 z-10">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+<!-- Card 1: Crisis Drill -->
+<div class="bg-surface-container-lowest rounded-[24px] p-8 shadow-ambient flex flex-col border border-outline-variant/30 h-full">
+<div class="mb-6 flex-grow">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-inverse-primary/20 text-on-primary-fixed font-label-sm text-caption mb-4">
+<span class="w-2 h-2 rounded-full bg-inverse-primary"></span>
+                            Comms/Crisis
+                        </div>
+<h3 class="font-h3 text-h3 text-on-surface mb-2">Crisis Drill</h3>
+<p class="font-body-sm text-caption text-on-surface-variant mb-6 flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">schedule</span> 24h turnaround
+                        </p>
+<div class="mb-8">
+<div class="font-h2 text-h2 text-on-surface">12,000 <span class="font-body-md text-body-md text-on-surface-variant font-normal">MAD</span></div>
+<div class="font-body-md text-body-md text-outline">1,200 €</div>
+</div>
+<div class="h-px w-full bg-outline-variant/40 mb-8"></div>
+<ul class="flex flex-col gap-4 font-body-md text-body-md text-on-surface-variant">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px] mt-0.5">check_circle</span>
+<span>Scenario simulation</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px] mt-0.5">check_circle</span>
+<span>50 synthetic citizens</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px] mt-0.5">check_circle</span>
+<span>5 personas</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px] mt-0.5">check_circle</span>
+<span>Heat-map &amp; belief drift</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px] mt-0.5">check_circle</span>
+<span>6h PDF summary</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px] mt-0.5">check_circle</span>
+<span>One follow-up</span>
+</li>
+</ul>
+</div>
+<button class="w-full bg-primary-container text-on-primary-container font-label-sm text-label-sm py-4 rounded-xl hover:opacity-90 transition-opacity mt-auto">
+                        Get a Crisis Drill
+                    </button>
+</div>
+<!-- Card 2: Policy Brief Stress Test (Highlighted) -->
+<div class="bg-surface-container-lowest rounded-[24px] p-8 shadow-ambient flex flex-col border-t-8 border-t-primary-container border-x border-b border-x-outline-variant/30 border-b-outline-variant/30 h-full relative transform md:-translate-y-4">
+<div class="absolute -top-4 start-1/2 -translate-x-1/2 bg-primary-container text-white px-4 py-1 rounded-full font-label-sm text-caption shadow-sm whitespace-nowrap z-10">
+                        Most chosen
+                    </div>
+<div class="mb-6 flex-grow pt-2">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-tertiary-container/20 text-on-tertiary-container font-label-sm text-caption mb-4">
+<span class="w-2 h-2 rounded-full bg-tertiary-container"></span>
+                            Policy/Public sector
+                        </div>
+<h3 class="font-h3 text-h3 text-on-surface mb-2">Policy Brief Stress Test</h3>
+<p class="font-body-sm text-caption text-on-surface-variant mb-6 flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">schedule</span> 5 business days
+                        </p>
+<div class="mb-8">
+<div class="font-h2 text-h2 text-on-surface">35,000 <span class="font-body-md text-body-md text-on-surface-variant font-normal">MAD</span></div>
+<div class="font-body-md text-body-md text-outline">3,500 €</div>
+</div>
+<div class="h-px w-full bg-outline-variant/40 mb-8"></div>
+<ul class="flex flex-col gap-4 font-body-md text-body-md text-on-surface-variant">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px] mt-0.5">check_circle</span>
+<span>Testing draft policy</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px] mt-0.5">check_circle</span>
+<span>8 stakeholder archetypes</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px] mt-0.5">check_circle</span>
+<span>Counterfactual branches</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px] mt-0.5">check_circle</span>
+<span>Adversarial cohort</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px] mt-0.5">check_circle</span>
+<span>Calibration certificate</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px] mt-0.5">check_circle</span>
+<span>30-min debrief</span>
+</li>
+</ul>
+</div>
+<button class="w-full bg-primary-container text-on-primary-container font-label-sm text-label-sm py-4 rounded-xl hover:opacity-90 transition-opacity mt-auto shadow-sm">
+                        Stress test my brief
+                    </button>
+</div>
+<!-- Card 3: Pre-Launch Adcheck -->
+<div class="bg-surface-container-lowest rounded-[24px] p-8 shadow-ambient flex flex-col border border-outline-variant/30 h-full">
+<div class="mb-6 flex-grow">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary-fixed-dim/20 text-on-secondary-fixed font-label-sm text-caption mb-4">
+<span class="w-2 h-2 rounded-full bg-secondary-fixed-dim"></span>
+                            Marketing/GTM
+                        </div>
+<h3 class="font-h3 text-h3 text-on-surface mb-2">Pre-Launch Adcheck</h3>
+<p class="font-body-sm text-caption text-on-surface-variant mb-6 flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">schedule</span> 3 business days
+                        </p>
+<div class="mb-8">
+<div class="font-h2 text-h2 text-on-surface">20,000 <span class="font-body-md text-body-md text-on-surface-variant font-normal">MAD</span></div>
+<div class="font-body-md text-body-md text-outline">2,000 €</div>
+</div>
+<div class="h-px w-full bg-outline-variant/40 mb-8"></div>
+<ul class="flex flex-col gap-4 font-body-md text-body-md text-on-surface-variant">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px] mt-0.5">check_circle</span>
+<span>Scoring 3 ad concepts</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px] mt-0.5">check_circle</span>
+<span>Synthetic audience</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px] mt-0.5">check_circle</span>
+<span>A/B/C ranking</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px] mt-0.5">check_circle</span>
+<span>Belief drift trajectory</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px] mt-0.5">check_circle</span>
+<span>Killer-questions</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px] mt-0.5">check_circle</span>
+<span>1-pager recommendations</span>
+</li>
+</ul>
+</div>
+<button class="w-full bg-primary-container text-on-primary-container font-label-sm text-label-sm py-4 rounded-xl hover:opacity-90 transition-opacity mt-auto">
+                        Adcheck my campaign
+                    </button>
+</div>
+</div>
+</section>
+<!-- Trust Strip Section -->
+<section class="bg-surface-container-low py-20 px-8">
+<div class="max-w-6xl mx-auto flex flex-col items-center">
+<h2 class="font-h2 text-h2 text-on-surface mb-12 text-center">Why our predictions land</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+<!-- Trust Card 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-outline-variant/20 flex flex-col items-center text-center">
+<div class="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center mb-4 text-primary">
+<span class="material-symbols-outlined text-[24px]">analytics</span>
+</div>
+<h4 class="font-label-sm text-label-sm text-on-surface mb-2">Brier 0.18</h4>
+<p class="font-body-sm text-caption text-on-surface-variant">Exceptional predictive accuracy validated against real-world outcomes.</p>
+</div>
+<!-- Trust Card 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-outline-variant/20 flex flex-col items-center text-center">
+<div class="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center mb-4 text-primary">
+<span class="material-symbols-outlined text-[24px]">translate</span>
+</div>
+<h4 class="font-label-sm text-label-sm text-on-surface mb-2">Multi-locale FR/AR/EN</h4>
+<p class="font-body-sm text-caption text-on-surface-variant">Native comprehension across French, Arabic, and English nuances.</p>
+</div>
+<!-- Trust Card 3 -->
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-outline-variant/20 flex flex-col items-center text-center">
+<div class="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center mb-4 text-primary">
+<span class="material-symbols-outlined text-[24px]">globe_asia</span>
+</div>
+<h4 class="font-label-sm text-label-sm text-on-surface mb-2">Africa-grounded data</h4>
+<p class="font-body-sm text-caption text-on-surface-variant">Agents trained on deeply contextualized, localized datasets.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- FAQ Section -->
+<section class="max-w-3xl mx-auto px-8 py-24 w-full">
+<h2 class="font-h2 text-h2 text-on-surface mb-12 text-center">Frequently asked questions</h2>
+<div class="flex flex-col gap-4">
+<!-- FAQ Item 1 -->
+<details class="group bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-sm overflow-hidden">
+<summary class="flex justify-between items-center font-label-sm text-body-md text-on-surface p-6 cursor-pointer list-none">
+                        How does a synthetic audience differ from a traditional survey?
+                        <span class="material-symbols-outlined transition-transform group-open:rotate-180 text-outline">expand_more</span>
+</summary>
+<div class="px-6 pb-6 pt-2 font-body-md text-body-md text-on-surface-variant border-t border-outline-variant/20">
+                        Our synthetic agents don't just answer multiple-choice questions; they hold persistent beliefs, interact with each other, and simulate belief drift over time based on specific stimuli, providing deeper behavioral insights than static surveys.
+                    </div>
+</details>
+<!-- FAQ Item 2 -->
+<details class="group bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-sm overflow-hidden">
+<summary class="flex justify-between items-center font-label-sm text-body-md text-on-surface p-6 cursor-pointer list-none">
+                        What is a "binding deliverable"?
+                        <span class="material-symbols-outlined transition-transform group-open:rotate-180 text-outline">expand_more</span>
+</summary>
+<div class="px-6 pb-6 pt-2 font-body-md text-body-md text-on-surface-variant border-t border-outline-variant/20">
+                        A binding deliverable means we guarantee the exact outputs listed in your package (e.g., 6h PDF summary, heat-map) within the specified timeframe. No scope creep, no hidden fees.
+                    </div>
+</details>
+<!-- FAQ Item 3 -->
+<details class="group bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-sm overflow-hidden">
+<summary class="flex justify-between items-center font-label-sm text-body-md text-on-surface p-6 cursor-pointer list-none">
+                        Can we customize the personas?
+                        <span class="material-symbols-outlined transition-transform group-open:rotate-180 text-outline">expand_more</span>
+</summary>
+<div class="px-6 pb-6 pt-2 font-body-md text-body-md text-on-surface-variant border-t border-outline-variant/20">
+                        Yes. During onboarding, we calibrate the standard archetypes provided in the package to align closely with your specific target audience or stakeholder matrix.
+                    </div>
+</details>
+<!-- FAQ Item 4 -->
+<details class="group bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-sm overflow-hidden">
+<summary class="flex justify-between items-center font-label-sm text-body-md text-on-surface p-6 cursor-pointer list-none">
+                        How is the data secured?
+                        <span class="material-symbols-outlined transition-transform group-open:rotate-180 text-outline">expand_more</span>
+</summary>
+<div class="px-6 pb-6 pt-2 font-body-md text-body-md text-on-surface-variant border-t border-outline-variant/20">
+                        All simulations run in isolated, localized containers. Your proprietary inputs (draft policies, unreleased ad concepts) are never used to train generalized models outside of your specific instance.
+                    </div>
+</details>
+<!-- FAQ Item 5 -->
+<details class="group bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-sm overflow-hidden">
+<summary class="flex justify-between items-center font-label-sm text-body-md text-on-surface p-6 cursor-pointer list-none">
+                        What does "Africa-grounded data" actually mean?
+                        <span class="material-symbols-outlined transition-transform group-open:rotate-180 text-outline">expand_more</span>
+</summary>
+<div class="px-6 pb-6 pt-2 font-body-md text-body-md text-on-surface-variant border-t border-outline-variant/20">
+                        Most foundational models default to Western cultural contexts. We specifically tune our agent parameters using regional socio-economic data, dialect nuances, and local media consumption patterns for accurate regional simulations.
+                    </div>
+</details>
+<!-- FAQ Item 6 -->
+<details class="group bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-sm overflow-hidden">
+<summary class="flex justify-between items-center font-label-sm text-body-md text-on-surface p-6 cursor-pointer list-none">
+                        Do you offer enterprise retainers?
+                        <span class="material-symbols-outlined transition-transform group-open:rotate-180 text-outline">expand_more</span>
+</summary>
+<div class="px-6 pb-6 pt-2 font-body-md text-body-md text-on-surface-variant border-t border-outline-variant/20">
+                        Yes, for high-frequency needs, we offer custom platform access and continuous monitoring packages. Please contact our sales team to discuss enterprise scaling.
+                    </div>
+</details>
+</div>
+</section>
+<!-- Pre-Footer CTA -->
+<section class="bg-surface-container py-24 px-8 mt-auto border-t border-outline-variant/30">
+<div class="max-w-2xl mx-auto text-center flex flex-col items-center">
+<h3 class="font-h3 text-h3 text-on-surface mb-4">Not sure which one fits?</h3>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-8">
+                    Tell us your situation, we route you to the right package.
+                </p>
+<button class="bg-transparent border-2 border-outline hover:border-primary-container hover:text-primary-container text-on-surface px-8 py-3 rounded-xl transition-colors font-label-sm text-label-sm">
+                    Tell us about your case
+                </button>
+</div>
+</section>
+</main>
+<!-- Footer Shared Component -->
+<footer class="bg-[#FDFCFB] dark:bg-stone-950 w-full bottom-0 border-t border-[#EBE5DA] dark:border-stone-800">
+<div class="flex flex-col md:flex-row justify-between items-center px-8 py-12 max-w-7xl mx-auto">
+<!-- Brand & Copyright -->
+<div class="flex flex-col items-center md:items-start mb-6 md:mb-0 gap-2">
+<div class="text-xl font-bold text-[#4A4540] font-h3">
+                    Bassira
+                </div>
+<div class="font-['Manrope'] text-sm text-stone-500">
+                    © 2024 Bassira. Humanizing Multi-Agent Simulation.
+                </div>
+</div>
+<!-- Links -->
+<div class="flex flex-wrap justify-center gap-6 font-['Manrope'] text-sm">
+<a class="text-stone-500 hover:underline hover:text-[#FF8551] transition-colors" href="#">Privacy Policy</a>
+<a class="text-stone-500 hover:underline hover:text-[#FF8551] transition-colors" href="#">Terms of Service</a>
+<a class="text-stone-500 hover:underline hover:text-[#FF8551] transition-colors" href="#">Contact Support</a>
+<a class="text-stone-500 hover:underline hover:text-[#FF8551] transition-colors" href="#">Documentation</a>
+</div>
+</div>
+</footer>
+</body></html>

@@ -427,36 +427,44 @@ const handleDrop = (e) => {
   addFiles(droppedFiles)
 }
 
-// Client-readable file previews (.md / .txt), keyed by File identity so we
-// don't re-read when the `files` array gets reordered. PDFs are skipped here
-// — their text is extracted server-side during graph build, so they simply
-// won't trigger scenario auto-suggest on their own. A .md/.txt sibling (or a
-// URL doc) will still drive suggestions.
+// File text previews — MD/TXT are read client-side; PDFs are sent to
+// /api/simulation/file-preview (PyMuPDF server-side) so their content
+// drives ScenarioSuggestions exactly like any other document type.
 const filePreviewText = ref('')
+
+const _extractPdfPreview = async (file) => {
+  try {
+    const fd = new FormData()
+    fd.append('file', file)
+    const res = await fetch('/api/simulation/file-preview', { method: 'POST', body: fd })
+    if (!res.ok) return ''
+    const json = await res.json()
+    return (json?.data?.text || '').slice(0, 3000)
+  } catch (_) {
+    return ''
+  }
+}
 
 const refreshFilePreviewText = async () => {
   const textish = files.value.filter(f => {
     const ext = (f.name.split('.').pop() || '').toLowerCase()
     return ext === 'md' || ext === 'txt'
   })
-  if (textish.length === 0) {
-    filePreviewText.value = ''
-    return
-  }
+  const pdfs = files.value.filter(f =>
+    (f.name.split('.').pop() || '').toLowerCase() === 'pdf'
+  )
 
   try {
-    const chunks = await Promise.all(textish.map(async (f) => {
+    const textChunks = await Promise.all(textish.map(async (f) => {
       try {
-        // Only read the first ~6KB per file to keep the combined preview
-        // bounded. The backend further clamps to 2000 chars.
         const slice = f.slice ? f.slice(0, 6000) : f
         const txt = await slice.text()
         return (txt || '').slice(0, 3000)
-      } catch (_) {
-        return ''
-      }
+      } catch (_) { return '' }
     }))
-    filePreviewText.value = chunks.filter(Boolean).join('\n\n').slice(0, 6000)
+    const pdfChunks = await Promise.all(pdfs.map(_extractPdfPreview))
+    const all = [...textChunks, ...pdfChunks].filter(Boolean)
+    filePreviewText.value = all.join('\n\n').slice(0, 6000)
   } catch (_) {
     filePreviewText.value = ''
   }

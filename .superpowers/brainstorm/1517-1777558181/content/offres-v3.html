@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Offres — Bassira</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+tailwind.config = {
+  theme: { extend: {
+    colors: {
+      "primary-container":"#ff8551","on-primary-container":"#ffffff",
+      "primary":"#a13f0f","on-primary":"#ffffff",
+      "surface-container-lowest":"#ffffff","surface-container-low":"#fff1ec",
+      "surface-container":"#ffeae2","surface-container-high":"#f9e4dd",
+      "surface-container-highest":"#f3ded7","background":"#fff8f6",
+      "on-surface":"#241915","on-surface-variant":"#57423a",
+      "outline":"#8a7269","outline-variant":"#dec0b6",
+      "secondary-fixed-dim":"#7fd8a6","on-secondary-fixed":"#002111",
+      "on-secondary-container":"#067148","tertiary-container":"#00b9c7",
+      "on-tertiary-container":"#00444a","primary-fixed":"#ffdbce",
+      "on-primary-fixed":"#370e00","on-primary-fixed-variant":"#7f2b00",
+      "inverse-primary":"#ffb598","surface-variant":"#f3ded7",
+      "error-container":"#ffdad6","on-error-container":"#93000a",
+      "secondary-container":"#98f2be","secondary":"#006d44"
+    },
+    borderRadius:{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},
+    spacing:{"xs":"8px","sm":"16px","md":"24px","lg":"40px","xl":"64px","gutter":"24px","margin":"32px"},
+    fontFamily:{"display":["Outfit"],"body":["Manrope"],"h1":["Outfit"],"h2":["Outfit"],"h3":["Outfit"],"body-lg":["Manrope"],"body-md":["Manrope"],"label-sm":["Manrope"],"caption":["Manrope"]},
+    fontSize:{
+      "h1":["48px",{"lineHeight":"1.15","letterSpacing":"-0.025em","fontWeight":"600"}],
+      "h2":["32px",{"lineHeight":"1.25","letterSpacing":"-0.015em","fontWeight":"600"}],
+      "h3":["22px",{"lineHeight":"1.35","letterSpacing":"-0.01em","fontWeight":"600"}],
+      "body-lg":["18px",{"lineHeight":"1.65","fontWeight":"400"}],
+      "body-md":["16px",{"lineHeight":"1.6","fontWeight":"400"}],
+      "label-sm":["13px",{"lineHeight":"1.2","letterSpacing":"0.02em","fontWeight":"700"}],
+      "caption":["12px",{"lineHeight":"1.3","fontWeight":"500"}]
+    }
+  }}
+}
+</script>
+<style>
+  * { box-sizing:border-box; }
+  .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24; }
+  .shadow-card { box-shadow:0 8px 32px rgba(74,69,64,0.07), 0 2px 8px rgba(74,69,64,0.04); }
+  .shadow-card-featured { box-shadow:0 16px 48px rgba(161,63,15,0.14), 0 4px 12px rgba(74,69,64,0.06); }
+  .carousel-track { display:flex; will-change:transform; transition:transform 0.45s cubic-bezier(0.4,0,0.2,1); }
+  .chip-active { background:#ffeae2; color:#241915; border-color:#ff8551; font-weight:700; }
+  .chip-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 18px; border-radius:999px; border:1.5px solid #dec0b6; background:#fff; font-size:13px; font-weight:600; color:#57423a; cursor:pointer; transition:all .15s; font-family:'Manrope',sans-serif; }
+  .chip-btn:hover { border-color:#ff8551; color:#241915; }
+  .mockup-banner { background:#1a1208; color:#ffede7; text-align:center; padding:9px; font-size:12px; font-weight:700; letter-spacing:0.08em; font-family:'Manrope',sans-serif; text-transform:uppercase; }
+</style>
+</head>
+<body style="background:#fff8f6;color:#241915;font-family:'Manrope',sans-serif;">
+
+<div class="mockup-banner">Mockup /offres — carousel + Warm Intelligence — C-Level targeting</div>
+
+<!-- Nav -->
+<header style="background:#FDFCFB;border-bottom:1px solid #EBE5DA;position:sticky;top:0;z-index:50;">
+  <div style="max-width:1280px;margin:0 auto;padding:14px 40px;display:flex;justify-content:space-between;align-items:center;">
+    <div style="font-family:'Outfit';font-size:22px;font-weight:700;color:#241915;letter-spacing:-0.02em;">Bassira</div>
+    <nav style="display:flex;gap:32px;">
+      <a style="font-size:14px;font-weight:500;color:#57423a;text-decoration:none;" href="#">Platform</a>
+      <a style="font-size:14px;font-weight:700;color:#ff8551;text-decoration:none;border-bottom:2px solid #ff8551;padding-bottom:2px;" href="#">Offres</a>
+      <a style="font-size:14px;font-weight:500;color:#57423a;text-decoration:none;" href="#">Calibration</a>
+      <a style="font-size:14px;font-weight:500;color:#57423a;text-decoration:none;" href="#">Insights</a>
+    </nav>
+    <div style="display:flex;gap:12px;align-items:center;">
+      <button style="font-size:14px;font-weight:500;color:#57423a;background:none;border:none;cursor:pointer;padding:8px 12px;">Connexion</button>
+      <button style="background:#ff8551;color:white;border:none;border-radius:10px;padding:9px 22px;font-weight:700;font-size:13px;cursor:pointer;letter-spacing:0.01em;">Demander un devis</button>
+    </div>
+  </div>
+</header>
+
+<!-- Language pill -->
+<div style="position:fixed;bottom:24px;right:24px;z-index:50;background:white;border:1px solid #dec0b6;border-radius:999px;padding:7px 16px;display:flex;gap:10px;align-items:center;font-size:13px;font-weight:600;box-shadow:0 8px 24px rgba(74,69,64,0.1);">
+  <span style="color:#57423a;cursor:pointer;">FR</span>
+  <span style="color:#dec0b6;">|</span>
+  <span style="color:#ff8551;font-weight:800;">EN</span>
+  <span style="color:#dec0b6;">|</span>
+  <span style="color:#57423a;cursor:pointer;">AR</span>
+</div>
+
+<main>
+  <!-- Hero -->
+  <section style="max-width:900px;margin:0 auto;padding:88px 40px 56px;text-align:center;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:-80px;left:50%;transform:translateX(-50%);width:600px;height:400px;background:#ffdbce;opacity:0.22;border-radius:50%;filter:blur(80px);z-index:0;"></div>
+    <div style="position:relative;z-index:1;">
+      <div style="display:inline-flex;align-items:center;gap:8px;background:#f9e4dd;border:1px solid rgba(222,192,182,0.8);border-radius:999px;padding:6px 18px;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#6d2400;margin-bottom:28px;">
+        <span class="material-symbols-outlined" style="font-size:16px;">query_stats</span>
+        Brier 0.18 · Historique public · 47 prévisions vérifiées
+      </div>
+      <h1 style="font-family:'Outfit';font-size:clamp(36px,5vw,56px);font-weight:600;letter-spacing:-0.025em;line-height:1.1;color:#241915;margin-bottom:22px;">
+        Vos décisions méritent<br>mieux que l'instinct.
+      </h1>
+      <p style="font-size:19px;color:#57423a;line-height:1.65;max-width:640px;margin:0 auto 12px;">
+        Trois protocoles d'analyse prédictive pour les décideurs qui opèrent sous pression informationnelle. Un mandat. Un livrable certifié. Un prix ferme.
+      </p>
+      <p style="font-size:13px;color:#8a7269;letter-spacing:0.01em;">Utilisé par des cabinets ministériels, think-tanks et directions stratégiques en Afrique &amp; MENA.</p>
+    </div>
+  </section>
+
+  <!-- Filter chips -->
+  <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:0 40px 36px;max-width:1280px;margin:0 auto;" id="chips">
+    <button class="chip-btn chip-active" onclick="filterChip(this,'all')">Tous les protocoles</button>
+    <button class="chip-btn" onclick="filterChip(this,'crisis')">Crise &amp; Communication</button>
+    <button class="chip-btn" onclick="filterChip(this,'policy')">Politique publique</button>
+    <button class="chip-btn" onclick="filterChip(this,'gtm')">Marketing &amp; GTM</button>
+    <button class="chip-btn" onclick="filterChip(this,'mena')">Programme MENA</button>
+  </div>
+
+  <!-- Carousel -->
+  <section style="max-width:1280px;margin:0 auto;padding:0 40px 80px;">
+    <!-- Controls -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div style="display:flex;gap:8px;">
+        <button onclick="prevSlide()" style="width:38px;height:38px;border-radius:50%;border:1.5px solid #dec0b6;background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#57423a;transition:all .15s;" onmouseover="this.style.borderColor='#ff8551'" onmouseout="this.style.borderColor='#dec0b6'">
+          <span class="material-symbols-outlined" style="font-size:18px;">chevron_left</span>
+        </button>
+        <button onclick="nextSlide()" style="width:38px;height:38px;border-radius:50%;border:1.5px solid #dec0b6;background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#57423a;transition:all .15s;" onmouseover="this.style.borderColor='#ff8551'" onmouseout="this.style.borderColor='#dec0b6'">
+          <span class="material-symbols-outlined" style="font-size:18px;">chevron_right</span>
+        </button>
+      </div>
+      <div id="dots" style="display:flex;gap:6px;align-items:center;"></div>
+    </div>
+
+    <!-- Track -->
+    <div style="overflow:hidden;border-radius:20px;">
+      <div class="carousel-track" id="track" style="display:flex;gap:20px;">
+
+        <!-- Card 1 — Crisis Drill -->
+        <div class="shadow-card" style="flex:0 0 calc(33.333% - 14px);background:white;border-radius:24px;padding:32px;border:1px solid rgba(222,192,182,0.25);display:flex;flex-direction:column;min-height:580px;">
+          <div style="margin-bottom:20px;flex:1;">
+            <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,181,152,0.18);border-radius:999px;padding:4px 12px;font-size:11px;font-weight:700;color:#6d2400;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:18px;">
+              <span style="width:7px;height:7px;border-radius:50%;background:#ffb598;flex-shrink:0;"></span>Crise &amp; Communication
+            </div>
+            <h3 style="font-family:'Outfit';font-size:22px;font-weight:600;color:#241915;margin-bottom:6px;letter-spacing:-0.01em;">Crisis Drill</h3>
+            <p style="font-size:12px;color:#8a7269;margin-bottom:4px;display:flex;align-items:center;gap:4px;">
+              <span class="material-symbols-outlined" style="font-size:14px;">schedule</span>Livrable en 24h
+            </p>
+            <p style="font-size:13px;color:#57423a;line-height:1.6;margin-bottom:20px;margin-top:12px;">
+              Pour les DGs, ministres et directeurs de communication qui ont moins d'une journée pour cadrer une réponse à une menace émergente.
+            </p>
+            <div style="margin-bottom:20px;">
+              <div style="font-family:'Outfit';font-size:30px;font-weight:600;color:#241915;letter-spacing:-0.02em;">12 000 <span style="font-family:'Manrope';font-size:16px;font-weight:400;color:#57423a;">MAD</span></div>
+              <div style="font-size:14px;color:#8a7269;">1 200 USD</div>
+            </div>
+            <div style="height:1px;background:rgba(222,192,182,0.4);margin-bottom:20px;"></div>
+            <ul style="display:flex;flex-direction:column;gap:10px;list-style:none;padding:0;margin:0;">
+              <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#57423a;"><span class="material-symbols-outlined" style="font-size:18px;color:#ff8551;flex-shrink:0;margin-top:1px;">check_circle</span>Simulation de scénario de crise</li>
+              <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#57423a;"><span class="material-symbols-outlined" style="font-size:18px;color:#ff8551;flex-shrink:0;margin-top:1px;">check_circle</span>50 citoyens synthétiques contextualisés</li>
+              <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#57423a;"><span class="material-symbols-outlined" style="font-size:18px;color:#ff8551;flex-shrink:0;margin-top:1px;">check_circle</span>5 personas décisionnels</li>
+              <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#57423a;"><span class="material-symbols-outlined" style="font-size:18px;color:#ff8551;flex-shrink:0;margin-top:1px;">check_circle</span>Carte de résonance &amp; dérive des croyances</li>
+              <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#57423a;"><span class="material-symbols-outlined" style="font-size:18px;color:#ff8551;flex-shrink:0;margin-top:1px;">check_circle</span>Note de synthèse exécutive (PDF)</li>
+              <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#57423a;"><span class="material-symbols-outlined" style="font-size:18px;color:#ff8551;flex-shrink:0;margin-top:1px;">check_circle</span>Un round de clarification inclus</li>
+            </ul>
+          </div>
+          <button style="width:100%;padding:14px;background:#ff8551;color:white;border:none;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.02em;transition:opacity .15s;" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
+            Demander ce protocole
+          </button>
+        </div>
+
+        <!-- Card 2 — Policy Brief (featured) -->
+        <div class="shadow-card-featured" style="flex:0 0 calc(33.333% - 14px);background:white;border-radius:24px;padding:32px;border-top:6px solid #ff8551;border-left:1px solid rgba(222,192,182,0.25);border-right:1px solid rgba(222,192,182,0.25);border-bottom:1px solid rgba(222,192,182,0.25);display:flex;flex-direction:column;min-height:580px;position:relative;margin-top:-12px;">
+          <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:#ff8551;color:white;padding:4px 16px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;white-space:nowrap;box-shadow:0 4px 12px rgba(255,133,81,0.3);">Protocole phare</div>
+          <div style="margin-bottom:20px;flex:1;padding-top:8px;">
+            <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(0,185,199,0.12);border-radius:999px;padding:4px 12px;font-size:11px;font-weight:700;color:#00444a;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:18px;">
+              <span style="width:7px;height:7px;border-radius:50%;background:#00b9c7;flex-shrink:0;"></span>Politique publique
+            </div>
+            <h3 style="font-family:'Outfit';font-size:22px;font-weight:600;color:#241915;margin-bottom:6px;letter-spacing:-0.01em;">Policy Brief Stress Test</h3>
+            <p style="font-size:12px;color:#8a7269;margin-bottom:4px;display:flex;align-items:center;gap:4px;">
+              <span class="material-symbols-outlined" style="font-size:14px;">schedule</span>5 jours ouvrables
+            </p>
+            <p style="font-size:13px;color:#57423a;line-height:1.6;margin-bottom:20px;margin-top:12px;">
+              Pour les think-tanks, cabinets ministériels et directions stratégiques. Teste la robustesse d'un projet de loi ou d'une position publique avant exposition.
+            </p>
+            <div style="margin-bottom:20px;">
+              <div style="font-family:'Outfit';font-size:30px;font-weight:600;color:#241915;letter-spacing:-0.02em;">35 000 <span style="font-family:'Manrope';font-size:16px;font-weight:400;color:#57423a;">MAD</span></div>
+              <div style="font-size:14px;color:#8a7269;">3 500 USD</div>
+            </div>
+            <div style="height:1px;background:rgba(222,192,182,0.4);margin-bottom:20px;"></div>
+            <ul style="display:flex;flex-direction:column;gap:10px;list-style:none;padding:0;margin:0;">
+              <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#57423a;"><span class="material-symbols-outlined" style="font-size:18px;color:#ff8551;flex-shrink:0;margin-top:1px;">check_circle</span>Test de résistance sur texte de loi ou note</li>
+              <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#57423a;"><span class="material-symbols-outlined" style="font-size:18px;color:#ff8551;flex-shrink:0;margin-top:1px;">check_circle</span>8 archétypes de parties prenantes</li>
+              <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#57423a;"><span class="material-symbols-outlined" style="font-size:18px;color:#ff8551;flex-shrink:0;margin-top:1px;">check_circle</span>Scénarios contrefactuels documentés</li>
+              <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#57423a;"><span class="material-symbols-outlined" style="font-size:18px;color:#ff8551;flex-shrink:0;margin-top:1px;">check_circle</span>Cohorte adversariale intégrée</li>
+              <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#57423a;"><span class="material-symbols-outlined" style="font-size:18px;color:#ff8551;flex-shrink:0;margin-top:1px;">check_circle</span>Certificat de calibration joint</li>
+              <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#57423a;"><span class="material-symbols-outlined" style="font-size:18px;color:#ff8551;flex-shrink:0;margin-top:1px;">check_circle</span>Séance de restitution 30 min incluse</li>
+            </ul>
+          </div>
+          <button style="width:100%;padding:14px;background:#ff8551;color:white;border:none;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.02em;box-shadow:0 6px 18px rgba(255,133,81,0.28);transition:opacity .15s;" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
+            Soumettre mon brief
+          </button>
+        </div>
+
+        <!-- Card 3 — Pre-Launch Adcheck -->
+        <div class="shadow-card" style="flex:0 0 calc(33.333% - 14px);background:white;border-radius:24px;padding:32px;border:1px solid rgba(222,192,182,0.25);display:flex;flex-direction:column;min-height:580px;">
+          <div style="margin-bottom:20px;flex:1;">
+            <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(127,216,166,0.18);border-radius:999px;padding:4px 12px;font-size:11px;font-weight:700;color:#005232;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:18px;">
+              <span style="width:7px;height:7px;border-radius:50%;background:#7fd8a6;flex-shrink:0;"></span>Marketing &amp; GTM
+            </div>
+            <h3 style="font-family:'Outfit';font-size:22px;font-weight:600;color:#241915;margin-bottom:6px;letter-spacing:-0.01em;">Pre-Launch Adcheck</h3>
+            <p style="font-size:12px;color:#8a7269;margin-bottom:4px;display:flex;align-items:center;gap:4px;">
+              <span class="material-symbols-outlined" style="font-size:14px;">schedule</span>3 jours ouvrables
+            </p>
+            <p style="font-size:13px;color:#57423a;line-height:1.6;margin-bottom:20px;margin-top:12px;">
+              Pour les CMOs et entrepreneurs qui veulent savoir ce que leur audience va vraiment ressentir — avant d'engager le budget de lancement.
+            </p>
+            <div style="margin-bottom:20px;">
+              <div style="font-family:'Outfit';font-size:30px;font-weight:600;color:#241915;letter-spacing:-0.02em;">20 000 <span style="font-family:'Manrope';font-size:16px;font-weight:400;color:#57423a;">MAD</span></div>
+              <div style="font-size:14px;color:#8a7269;">2 000 USD</div>
+            </div>
+            <div style="height:1px;background:rgba(222,192,182,0.4);margin-bottom:20px;"></div>
+            <ul style="display:flex;flex-direction:column;gap:10px;list-style:none;padding:0;margin:0;">
+              <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#57423a;"><span class="material-symbols-outlined" style="font-size:18px;color:#ff8551;flex-shrink:0;margin-top:1px;">check_circle</span>Scoring de 3 concepts publicitaires</li>
+              <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#57423a;"><span class="material-symbols-outlined" style="font-size:18px;color:#ff8551;flex-shrink:0;margin-top:1px;">check_circle</span>Audience synthétique localisée</li>
+              <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#57423a;"><span class="material-symbols-outlined" style="font-size:18px;color:#ff8551;flex-shrink:0;margin-top:1px;">check_circle</span>Classement A/B/C argumenté</li>
+              <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#57423a;"><span class="material-symbols-outlined" style="font-size:18px;color:#ff8551;flex-shrink:0;margin-top:1px;">check_circle</span>Trajectoire de dérive des croyances</li>
+              <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#57423a;"><span class="material-symbols-outlined" style="font-size:18px;color:#ff8551;flex-shrink:0;margin-top:1px;">check_circle</span>Questions-tueurs identifiées</li>
+              <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#57423a;"><span class="material-symbols-outlined" style="font-size:18px;color:#ff8551;flex-shrink:0;margin-top:1px;">check_circle</span>Note de recommandations 1 page</li>
+            </ul>
+          </div>
+          <button style="width:100%;padding:14px;background:#ff8551;color:white;border:none;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.02em;transition:opacity .15s;" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
+            Tester ma campagne
+          </button>
+        </div>
+
+        <!-- Card 4 — MENA Pulse -->
+        <div class="shadow-card" style="flex:0 0 calc(33.333% - 14px);background:white;border-radius:24px;padding:32px;border:1px solid rgba(222,192,182,0.25);display:flex;flex-direction:column;min-height:580px;">
+          <div style="margin-bottom:20px;flex:1;">
+            <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(72,217,231,0.12);border-radius:999px;padding:4px 12px;font-size:11px;font-weight:700;color:#004f55;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:18px;">
+              <span style="width:7px;height:7px;border-radius:50%;background:#48d9e7;flex-shrink:0;"></span>Programme MENA
+            </div>
+            <h3 style="font-family:'Outfit';font-size:22px;font-weight:600;color:#241915;margin-bottom:6px;letter-spacing:-0.01em;">MENA Pulse</h3>
+            <p style="font-size:12px;color:#8a7269;margin-bottom:4px;display:flex;align-items:center;gap:4px;">
+              <span class="material-symbols-outlined" style="font-size:14px;">schedule</span>7 jours ouvrables
+            </p>
+            <p style="font-size:13px;color:#57423a;line-height:1.6;margin-bottom:20px;margin-top:12px;">
+              Pour les organisations opérant à l'échelle régionale. Agents calibrés sur les nuances dialectales arabes et les dynamiques socio-économiques locales.
+            </p>
+            <div style="margin-bottom:20px;">
+              <div style="font-family:'Outfit';font-size:30px;font-weight:600;color:#241915;letter-spacing:-0.02em;">45 000 <span style="font-family:'Manrope';font-size:16px;font-weight:400;color:#57423a;">MAD</span></div>
+              <div style="font-size:14px;color:#8a7269;">4 500 USD</div>
+            </div>
+            <div style="height:1px;background:rgba(222,192,182,0.4);margin-bottom:20px;"></div>
+            <ul style="display:flex;flex-direction:column;gap:10px;list-style:none;padding:0;margin:0;">
+              <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#57423a;"><span class="material-symbols-outlined" style="font-size:18px;color:#ff8551;flex-shrink:0;margin-top:1px;">check_circle</span>Couverture 5 pays MENA simultanée</li>
+              <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#57423a;"><span class="material-symbols-outlined" style="font-size:18px;color:#ff8551;flex-shrink:0;margin-top:1px;">check_circle</span>Agents calibrés dialectes AR/FR/EN</li>
+              <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#57423a;"><span class="material-symbols-outlined" style="font-size:18px;color:#ff8551;flex-shrink:0;margin-top:1px;">check_circle</span>Analyse comparative inter-marchés</li>
+            </ul>
+          </div>
+          <button style="width:100%;padding:14px;background:#ff8551;color:white;border:none;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.02em;transition:opacity .15s;" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
+            Demander un devis
+          </button>
+        </div>
+
+      </div><!-- end track -->
+    </div>
+  </section>
+
+  <!-- Trust Strip -->
+  <section style="background:#fff1ec;padding:72px 40px;border-top:1px solid rgba(222,192,182,0.4);">
+    <div style="max-width:1100px;margin:0 auto;">
+      <h2 style="font-family:'Outfit';font-size:30px;font-weight:600;letter-spacing:-0.015em;text-align:center;margin-bottom:12px;color:#241915;">Pourquoi les décideurs font confiance à nos prévisions</h2>
+      <p style="text-align:center;font-size:15px;color:#57423a;margin-bottom:48px;">Pas de boîte noire. Chaque signal est traçable, chaque score est public.</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;">
+        <div style="background:white;border-radius:14px;padding:28px;border:1px solid rgba(222,192,182,0.2);text-align:center;">
+          <div style="width:48px;height:48px;border-radius:50%;background:#f3ded7;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:#a13f0f;">
+            <span class="material-symbols-outlined">analytics</span>
+          </div>
+          <div style="font-family:'Outfit';font-size:28px;font-weight:600;color:#241915;margin-bottom:4px;">Brier 0.18</div>
+          <p style="font-size:13px;color:#57423a;line-height:1.5;">Meilleur que le consensus institutionnel. Calculé sur 47 prévisions vérifiées et publiques.</p>
+        </div>
+        <div style="background:white;border-radius:14px;padding:28px;border:1px solid rgba(222,192,182,0.2);text-align:center;">
+          <div style="width:48px;height:48px;border-radius:50%;background:#f3ded7;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:#a13f0f;">
+            <span class="material-symbols-outlined">gavel</span>
+          </div>
+          <div style="font-family:'Outfit';font-size:28px;font-weight:600;color:#241915;margin-bottom:4px;">100 % traçable</div>
+          <p style="font-size:13px;color:#57423a;line-height:1.5;">Chaque prévision est horodatée, chaque outcome est documenté. Aucune revision a posteriori.</p>
+        </div>
+        <div style="background:white;border-radius:14px;padding:28px;border:1px solid rgba(222,192,182,0.2);text-align:center;">
+          <div style="width:48px;height:48px;border-radius:50%;background:#f3ded7;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:#a13f0f;">
+            <span class="material-symbols-outlined">public</span>
+          </div>
+          <div style="font-family:'Outfit';font-size:28px;font-weight:600;color:#241915;margin-bottom:4px;">Afrique &amp; MENA</div>
+          <p style="font-size:13px;color:#57423a;line-height:1.5;">Agents entraînés sur des corpus locaux. Pas de biais occidental. Compréhension native des dynamiques régionales.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section style="max-width:760px;margin:0 auto;padding:80px 40px;">
+    <h2 style="font-family:'Outfit';font-size:30px;font-weight:600;letter-spacing:-0.015em;text-align:center;margin-bottom:8px;color:#241915;">Questions des décideurs</h2>
+    <p style="text-align:center;font-size:15px;color:#57423a;margin-bottom:44px;">Les objections que nos clients posent avant de s'engager.</p>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <details style="background:white;border-radius:14px;border:1px solid rgba(222,192,182,0.35);overflow:hidden;" open>
+        <summary style="display:flex;justify-content:space-between;align-items:center;padding:22px 24px;font-size:15px;font-weight:600;color:#241915;cursor:pointer;list-style:none;">
+          En quoi cela diffère d'un cabinet de conseil classique ?
+          <span class="material-symbols-outlined" style="color:#8a7269;flex-shrink:0;">expand_more</span>
+        </summary>
+        <div style="padding:0 24px 22px;font-size:14px;color:#57423a;line-height:1.65;border-top:1px solid rgba(222,192,182,0.2);">
+          Un cabinet vous donne l'opinion de ses consultants. Bassira simule les réactions de milliers d'agents synthétiques qui reproduisent votre audience réelle — avec des croyances persistantes et des interactions sociales. Le résultat est prédictif, pas prescriptif.
+        </div>
+      </details>
+      <details style="background:white;border-radius:14px;border:1px solid rgba(222,192,182,0.35);overflow:hidden;">
+        <summary style="display:flex;justify-content:space-between;align-items:center;padding:22px 24px;font-size:15px;font-weight:600;color:#241915;cursor:pointer;list-style:none;">
+          Que signifie "livrable certifié" concrètement ?
+          <span class="material-symbols-outlined" style="color:#8a7269;flex-shrink:0;">expand_more</span>
+        </summary>
+      </details>
+      <details style="background:white;border-radius:14px;border:1px solid rgba(222,192,182,0.35);overflow:hidden;">
+        <summary style="display:flex;justify-content:space-between;align-items:center;padding:22px 24px;font-size:15px;font-weight:600;color:#241915;cursor:pointer;list-style:none;">
+          Mes données stratégiques restent-elles confidentielles ?
+          <span class="material-symbols-outlined" style="color:#8a7269;flex-shrink:0;">expand_more</span>
+        </summary>
+      </details>
+      <details style="background:white;border-radius:14px;border:1px solid rgba(222,192,182,0.35);overflow:hidden;">
+        <summary style="display:flex;justify-content:space-between;align-items:center;padding:22px 24px;font-size:15px;font-weight:600;color:#241915;cursor:pointer;list-style:none;">
+          Quel est votre track record sur des sujets politiques sensibles ?
+          <span class="material-symbols-outlined" style="color:#8a7269;flex-shrink:0;">expand_more</span>
+        </summary>
+      </details>
+    </div>
+  </section>
+
+  <!-- Pre-footer CTA -->
+  <section style="background:#ffeae2;padding:80px 40px;border-top:1px solid rgba(222,192,182,0.3);">
+    <div style="max-width:680px;margin:0 auto;text-align:center;">
+      <h3 style="font-family:'Outfit';font-size:26px;font-weight:600;letter-spacing:-0.01em;margin-bottom:14px;color:#241915;">Pas certain du bon protocole ?</h3>
+      <p style="font-size:17px;color:#57423a;line-height:1.65;margin-bottom:10px;">Décrivez la décision que vous devez prendre. Nous vous orientons vers le mandat adapté — sans engagement.</p>
+      <p style="font-size:13px;color:#8a7269;margin-bottom:32px;">Réponse directe des fondateurs sous 4h ouvrables.</p>
+      <button style="background:transparent;border:2px solid #8a7269;color:#241915;padding:13px 36px;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.02em;transition:all .15s;" onmouseover="this.style.borderColor='#ff8551';this.style.color='#a13f0f'" onmouseout="this.style.borderColor='#8a7269';this.style.color='#241915'">
+        Soumettre votre cas
+      </button>
+    </div>
+  </section>
+</main>
+
+<!-- Footer -->
+<footer style="background:#FDFCFB;border-top:1px solid #EBE5DA;">
+  <div style="max-width:1280px;margin:0 auto;padding:48px 40px;display:flex;justify-content:space-between;align-items:center;">
+    <div>
+      <div style="font-family:'Outfit';font-size:20px;font-weight:700;color:#241915;">Bassira</div>
+      <div style="font-size:12px;color:#8a7269;margin-top:6px;">2024 Bassira Multi-Agent Systems.</div>
+    </div>
+    <div style="display:flex;gap:24px;">
+      <a style="font-size:12px;color:#8a7269;text-decoration:none;" href="#">Confidentialité</a>
+      <a style="font-size:12px;color:#8a7269;text-decoration:none;" href="#">CGU</a>
+      <a style="font-size:12px;color:#8a7269;text-decoration:none;" href="#">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+var current = 0;
+var VISIBLE = 3;
+var track = document.getElementById('track');
+var slides = track.querySelectorAll('[style*="flex:0 0"]');
+var total = slides.length;
+var dotsEl = document.getElementById('dots');
+
+for (var i = 0; i < total; i++) {
+  var d = document.createElement('div');
+  d.style.cssText = 'width:8px;height:8px;border-radius:50%;background:#dec0b6;transition:all .25s;';
+  dotsEl.appendChild(d);
+}
+
+function renderDots() {
+  var ds = dotsEl.querySelectorAll('div');
+  ds.forEach(function(d, i) {
+    if (i === current) { d.style.cssText = 'width:24px;height:8px;border-radius:4px;background:#ff8551;transition:all .25s;'; }
+    else { d.style.cssText = 'width:8px;height:8px;border-radius:50%;background:#dec0b6;transition:all .25s;'; }
+  });
+}
+
+function render() {
+  var w = slides[0].offsetWidth + 20;
+  track.style.transform = 'translateX(-' + (current * w) + 'px)';
+  renderDots();
+}
+
+function nextSlide() { if (current < total - VISIBLE) { current++; render(); } }
+function prevSlide() { if (current > 0) { current--; render(); } }
+
+function filterChip(btn, cat) {
+  document.querySelectorAll('.chip-btn').forEach(function(b) { b.classList.remove('chip-active'); });
+  btn.classList.add('chip-active');
+}
+
+window.addEventListener('resize', render);
+render();
+</script>
+</body></html>

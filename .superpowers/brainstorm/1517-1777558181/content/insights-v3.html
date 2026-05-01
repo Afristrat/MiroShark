@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Insights — Bassira</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        primary: '#ff8551',
+        'primary-container': '#ffdbce',
+        'on-primary': '#ffffff',
+        surface: '#fff8f6',
+        'on-surface': '#241915',
+        'on-surface-variant': '#57423a',
+        'outline-variant': '#dec0b6',
+        'surface-container': '#f5ede9',
+      },
+      fontFamily: {
+        heading: ['Outfit', 'sans-serif'],
+        body: ['Manrope', 'sans-serif'],
+      },
+      borderRadius: { '2xl': '24px', 'xl': '16px' },
+      boxShadow: {
+        card: '0px 12px 32px rgba(74,69,64,0.08)',
+      },
+    }
+  }
+}
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+<style>
+  body { font-family: 'Manrope', sans-serif; background: #fff8f6; color: #241915; }
+  h1,h2,h3,h4 { font-family: 'Outfit', sans-serif; }
+
+  .tag-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #ffdbce; color: #57423a;
+    font-size: 11px; font-weight: 700;
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 5px 12px; border-radius: 99px;
+  }
+
+  .filter-chip {
+    padding: 8px 18px;
+    border-radius: 99px;
+    border: 1.5px solid #dec0b6;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Manrope', sans-serif;
+    color: #57423a;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .filter-chip.active {
+    background: #241915;
+    border-color: #241915;
+    color: #fff;
+  }
+  .filter-chip:hover:not(.active) {
+    border-color: #ff8551;
+    color: #ff8551;
+  }
+
+  .brief-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: 0px 8px 24px rgba(74,69,64,0.06);
+    border: 1.5px solid #f5ede9;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .brief-card:hover {
+    border-color: #dec0b6;
+    transform: translateY(-3px);
+    box-shadow: 0px 16px 40px rgba(74,69,64,0.1);
+  }
+
+  .brief-card-hero {
+    background: #241915;
+    border-radius: 24px;
+    padding: 36px;
+    border: 1.5px solid #ff8551;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .brief-card-hero:hover {
+    box-shadow: 0px 24px 56px rgba(74,69,64,0.2);
+    transform: translateY(-4px);
+  }
+
+  .brier-badge-good { background: #d6f5ec; color: #1a7a5e; }
+  .brier-badge-ok { background: #fff3e0; color: #e65100; }
+  .brier-badge-neutral { background: #f5ede9; color: #57423a; }
+
+  .nav-link { color: #57423a; font-size: 14px; font-weight: 500; text-decoration: none; transition: color 0.2s; }
+  .nav-link:hover { color: #241915; }
+  .nav-link.active { color: #241915; font-weight: 600; border-bottom: 2px solid #ff8551; padding-bottom: 2px; }
+
+  .reading-time {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; color: #57423a; font-weight: 500;
+  }
+
+  .prediction-inline {
+    display: flex; align-items: center; gap: 8px;
+    background: #f5ede9; border-radius: 8px; padding: 8px 12px;
+    margin-top: 12px;
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-[#f5ede9]">
+  <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between gap-8">
+    <span class="font-heading font-bold text-xl text-[#241915] tracking-tight">Bassira<span class="text-primary">.</span></span>
+    <div class="hidden md:flex items-center gap-8">
+      <a href="#" class="nav-link">Platform</a>
+      <a href="#" class="nav-link">Offres</a>
+      <a href="#" class="nav-link">Calibration</a>
+      <a href="#" class="nav-link active">Insights</a>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="flex gap-1 text-xs font-semibold text-[#57423a]">
+        <span class="px-2 py-1">FR</span>
+        <span class="text-[#dec0b6]">|</span>
+        <span class="px-2 py-1">EN</span>
+        <span class="text-[#dec0b6]">|</span>
+        <span class="px-2 py-1">AR</span>
+      </div>
+      <a href="#" class="bg-primary text-white font-heading font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-orange-500 transition-colors">Demander un devis</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO SECTION -->
+<section class="max-w-6xl mx-auto px-6 pt-16 pb-12">
+  <div class="max-w-2xl">
+    <div class="tag-badge mb-5">
+      <span class="material-icons-round text-[10px]">lightbulb</span>
+      Intelligence publique
+    </div>
+    <h1 class="font-heading text-5xl font-black text-[#241915] leading-tight mb-5">
+      Ce que nous<br>avons prévu.<br><span class="text-primary">Ce qui s'est passé.</span>
+    </h1>
+    <p class="text-[#57423a] text-lg leading-relaxed">
+      Nos briefs d'analyse sont publiés avant les événements. Les résultats sont vérifiés après. Rien n'est jamais supprimé.
+    </p>
+  </div>
+</section>
+
+<!-- STATS STRIP -->
+<div class="bg-white border-y border-[#f5ede9]">
+  <div class="max-w-6xl mx-auto px-6 py-5 grid grid-cols-4 gap-4 divide-x divide-[#f5ede9]">
+    <div class="pl-0 pr-4">
+      <p class="font-heading font-bold text-2xl text-[#241915]">47</p>
+      <p class="text-xs text-[#57423a] mt-0.5">Prévisions publiées</p>
+    </div>
+    <div class="px-4">
+      <p class="font-heading font-bold text-2xl text-primary">0.18</p>
+      <p class="text-xs text-[#57423a] mt-0.5">Brier score moyen</p>
+    </div>
+    <div class="px-4">
+      <p class="font-heading font-bold text-2xl text-[#241915]">66%</p>
+      <p class="text-xs text-[#57423a] mt-0.5">Précision exacte</p>
+    </div>
+    <div class="pl-4">
+      <p class="font-heading font-bold text-2xl text-[#241915]">3</p>
+      <p class="text-xs text-[#57423a] mt-0.5">Domaines couverts</p>
+    </div>
+  </div>
+</div>
+
+<!-- FILTER CHIPS -->
+<div class="max-w-6xl mx-auto px-6 py-8">
+  <div class="flex flex-wrap gap-2">
+    <button class="filter-chip active">Tous les briefs</button>
+    <button class="filter-chip">Politique publique</button>
+    <button class="filter-chip">Crise &amp; Communication</button>
+    <button class="filter-chip">Marketing &amp; GTM</button>
+    <button class="filter-chip">Prévisions ouvertes</button>
+    <button class="filter-chip">Vérifiées</button>
+  </div>
+</div>
+
+<!-- BRIEF À LA UNE -->
+<div class="max-w-6xl mx-auto px-6 mb-8">
+  <div class="brief-card-hero">
+    <div class="flex flex-wrap gap-3 mb-6">
+      <span class="tag-badge" style="background:rgba(255,133,81,0.2);color:#ff8551;">À la une</span>
+      <span class="tag-badge" style="background:rgba(255,255,255,0.1);color:#dec0b6;">Politique publique</span>
+      <span class="tag-badge brier-badge-good">Brier 0.14 · Vérifié</span>
+    </div>
+    <h2 class="font-heading text-3xl font-bold text-white mb-4 leading-snug max-w-2xl">
+      Réforme de la retraite au Maroc : probabilité de contestation sociale dans les 60 jours suivant l'annonce
+    </h2>
+    <p class="text-[#dec0b6] text-base leading-relaxed mb-6 max-w-xl">
+      Publié le 8 janvier 2026, ce brief modélisait 4 scénarios de réaction syndicale et citoyenne avec des probabilités associées. Le scénario S2 (contestation modérée, sans débordement) s'est réalisé à 91% de conformité.
+    </p>
+    <div class="flex flex-wrap items-center gap-6">
+      <div class="prediction-inline" style="background:rgba(255,255,255,0.06);">
+        <span class="material-icons-round text-primary text-sm">check_circle</span>
+        <span class="text-xs text-[#dec0b6] font-medium">Scénario S2 réalisé — Précision 91%</span>
+      </div>
+      <div class="reading-time" style="color:#57423a;">
+        <span class="material-icons-round text-xs">schedule</span>
+        <span>12 min de lecture</span>
+      </div>
+      <span class="text-xs text-[#57423a]">8 jan. 2026</span>
+      <a href="#" class="ml-auto flex items-center gap-2 bg-primary text-white font-heading font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-orange-500 transition-colors">
+        Lire le brief <span class="material-icons-round text-base">arrow_forward</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- GRILLE BRIEFS -->
+<div class="max-w-6xl mx-auto px-6 mb-24">
+  <div class="grid md:grid-cols-3 gap-5">
+
+    <!-- Brief 1 -->
+    <div class="brief-card">
+      <div class="flex gap-2 flex-wrap mb-4">
+        <span class="tag-badge" style="background:#f5ede9;color:#57423a;">Crise</span>
+        <span class="tag-badge brier-badge-good">Brier 0.16</span>
+      </div>
+      <h3 class="font-heading font-semibold text-[#241915] text-base leading-snug mb-3">Escalade narrative : 7 signaux précoces dans les crises institutionnelles</h3>
+      <p class="text-xs text-[#57423a] leading-relaxed mb-4">Les indicateurs détectables dans les 6 premières heures qui prédisent une amplification médiatique secondaire...</p>
+      <div class="prediction-inline">
+        <span class="material-icons-round text-[#1a7a5e] text-sm">check_circle</span>
+        <span class="text-xs text-[#57423a] font-medium">Vérifié · 3 cas documentés</span>
+      </div>
+      <div class="flex items-center justify-between mt-4">
+        <span class="text-xs text-[#57423a]">3 mars 2026</span>
+        <div class="reading-time"><span class="material-icons-round text-xs">schedule</span> 8 min</div>
+      </div>
+    </div>
+
+    <!-- Brief 2 -->
+    <div class="brief-card">
+      <div class="flex gap-2 flex-wrap mb-4">
+        <span class="tag-badge" style="background:#f5ede9;color:#57423a;">Marketing</span>
+        <span class="tag-badge brier-badge-good">Brier 0.19</span>
+      </div>
+      <h3 class="font-heading font-semibold text-[#241915] text-base leading-snug mb-3">Lancement produit MENA : biais cognitifs sous-estimés dans 5 campagnes 2024–25</h3>
+      <p class="text-xs text-[#57423a] leading-relaxed mb-4">Écarts entre perception testée en amont et réception réelle observée. Analyse post-mortem chiffrée sur 5 cas réels...</p>
+      <div class="prediction-inline">
+        <span class="material-icons-round text-[#1a7a5e] text-sm">check_circle</span>
+        <span class="text-xs text-[#57423a] font-medium">Vérifié · Données clients anonymisées</span>
+      </div>
+      <div class="flex items-center justify-between mt-4">
+        <span class="text-xs text-[#57423a]">18 fév. 2026</span>
+        <div class="reading-time"><span class="material-icons-round text-xs">schedule</span> 10 min</div>
+      </div>
+    </div>
+
+    <!-- Brief 3 — OUVERT -->
+    <div class="brief-card" style="border-color:#ffdbce;">
+      <div class="flex gap-2 flex-wrap mb-4">
+        <span class="tag-badge" style="background:#f5ede9;color:#57423a;">Politique</span>
+        <span class="tag-badge" style="background:#fff3e0;color:#e65100;">
+          <span class="material-icons-round text-[10px]">hourglass_empty</span>
+          Prévision ouverte
+        </span>
+      </div>
+      <h3 class="font-heading font-semibold text-[#241915] text-base leading-snug mb-3">Élections régionales Tunisie 2026 : probabilités d'alternance dans 3 gouvernorats-clés</h3>
+      <p class="text-xs text-[#57423a] leading-relaxed mb-4">Modélisation probabiliste des 4 scénarios de résultat dans les gouvernorats de Tunis, Sfax et Sousse. Vérification prévue sept. 2026...</p>
+      <div class="prediction-inline">
+        <span class="material-icons-round text-primary text-sm">pending</span>
+        <span class="text-xs text-[#57423a] font-medium">Vérification : sept. 2026</span>
+      </div>
+      <div class="flex items-center justify-between mt-4">
+        <span class="text-xs text-[#57423a]">22 avr. 2026</span>
+        <div class="reading-time"><span class="material-icons-round text-xs">schedule</span> 15 min</div>
+      </div>
+    </div>
+
+    <!-- Brief 4 -->
+    <div class="brief-card">
+      <div class="flex gap-2 flex-wrap mb-4">
+        <span class="tag-badge" style="background:#f5ede9;color:#57423a;">Crise</span>
+        <span class="tag-badge brier-badge-good">Brier 0.17</span>
+      </div>
+      <h3 class="font-heading font-semibold text-[#241915] text-base leading-snug mb-3">Gestion médiatique de la crise bancaire algérienne : analyse de réception à J+7</h3>
+      <p class="text-xs text-[#57423a] leading-relaxed mb-4">Comment le narratif officiel a-t-il été perçu ? Mesure de l'écart entre communication institutionnelle et opinion réelle...</p>
+      <div class="prediction-inline">
+        <span class="material-icons-round text-[#1a7a5e] text-sm">check_circle</span>
+        <span class="text-xs text-[#57423a] font-medium">Vérifié · Score calculé à J+30</span>
+      </div>
+      <div class="flex items-center justify-between mt-4">
+        <span class="text-xs text-[#57423a]">5 fév. 2026</span>
+        <div class="reading-time"><span class="material-icons-round text-xs">schedule</span> 9 min</div>
+      </div>
+    </div>
+
+    <!-- Brief 5 -->
+    <div class="brief-card">
+      <div class="flex gap-2 flex-wrap mb-4">
+        <span class="tag-badge" style="background:#f5ede9;color:#57423a;">Marketing</span>
+        <span class="tag-badge brier-badge-ok">Brier 0.22</span>
+      </div>
+      <h3 class="font-heading font-semibold text-[#241915] text-base leading-snug mb-3">Repositionnement de marque en contexte de crise réputationnelle : cas Casablanca 2025</h3>
+      <p class="text-xs text-[#57423a] leading-relaxed mb-4">Probabilité de récupération de la confiance consommateur à 90 jours. Notre prévision S3 partiellement validée...</p>
+      <div class="prediction-inline">
+        <span class="material-icons-round text-[#1a7a5e] text-sm">check_circle</span>
+        <span class="text-xs text-[#57423a] font-medium">Vérifié · Précision partielle 74%</span>
+      </div>
+      <div class="flex items-center justify-between mt-4">
+        <span class="text-xs text-[#57423a]">14 jan. 2026</span>
+        <div class="reading-time"><span class="material-icons-round text-xs">schedule</span> 11 min</div>
+      </div>
+    </div>
+
+    <!-- Brief 6 — OUVERT -->
+    <div class="brief-card" style="border-color:#ffdbce;">
+      <div class="flex gap-2 flex-wrap mb-4">
+        <span class="tag-badge" style="background:#f5ede9;color:#57423a;">Politique</span>
+        <span class="tag-badge" style="background:#fff3e0;color:#e65100;">
+          <span class="material-icons-round text-[10px]">hourglass_empty</span>
+          Prévision ouverte
+        </span>
+      </div>
+      <h3 class="font-heading font-semibold text-[#241915] text-base leading-snug mb-3">Adoption de la réforme numérique au Sénégal : friction institutionnelle à 6 mois</h3>
+      <p class="text-xs text-[#57423a] leading-relaxed mb-4">Modélisation des résistances internes au déploiement du cadre réglementaire digital. 3 scénarios probabilisés...</p>
+      <div class="prediction-inline">
+        <span class="material-icons-round text-primary text-sm">pending</span>
+        <span class="text-xs text-[#57423a] font-medium">Vérification : nov. 2026</span>
+      </div>
+      <div class="flex items-center justify-between mt-4">
+        <span class="text-xs text-[#57423a]">10 avr. 2026</span>
+        <div class="reading-time"><span class="material-icons-round text-xs">schedule</span> 13 min</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="mt-10 text-center">
+    <button class="border-2 border-[#dec0b6] text-[#241915] font-heading font-semibold px-8 py-3.5 rounded-xl hover:bg-[#f5ede9] transition-colors flex items-center gap-2 mx-auto">
+      <span class="material-icons-round">expand_more</span>
+      Charger plus de briefs
+    </button>
+  </div>
+</div>
+
+<!-- NEWSLETTER / ALERTE -->
+<section class="bg-[#f5ede9] py-20">
+  <div class="max-w-2xl mx-auto px-6 text-center">
+    <div class="tag-badge mx-auto mb-5">Restez informé</div>
+    <h2 class="font-heading text-3xl font-bold text-[#241915] mb-4">Recevez nos briefs<br>avant tout le monde.</h2>
+    <p class="text-[#57423a] mb-8 leading-relaxed">Un brief par mois. Publié avant l'événement. Vérifié après. Sans bruit, sans newsletter promotionnelle.</p>
+    <div class="flex gap-3 max-w-md mx-auto">
+      <input type="email" placeholder="votre@organisation.com" class="flex-1 px-4 py-3.5 border-2 border-[#dec0b6] rounded-xl font-body text-sm focus:border-primary outline-none bg-white transition-colors">
+      <button class="bg-primary text-white font-heading font-semibold px-6 py-3.5 rounded-xl hover:bg-orange-500 transition-colors whitespace-nowrap">
+        S'inscrire
+      </button>
+    </div>
+    <p class="text-xs text-[#57423a] mt-4 opacity-70">Aucun CRM. Aucune revente. Désabonnement en 1 clic.</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="bg-[#241915] py-10">
+  <div class="max-w-6xl mx-auto px-6 flex flex-wrap items-center justify-between gap-4">
+    <span class="font-heading font-bold text-white text-lg">Bassira<span class="text-primary">.</span></span>
+    <p class="text-xs text-[#57423a]">Intelligence prédictive certifiée · Afrique &amp; MENA</p>
+    <p class="text-xs text-[#57423a]">© 2026 Bassira — Brier 0.18 · 47 prévisions vérifiées</p>
+  </div>
+</footer>
+
+</body>
+</html>

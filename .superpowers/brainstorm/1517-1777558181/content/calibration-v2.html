@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mockup /calibration — Warm Intelligence</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Manrope:wght@400;500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode:"class",
+  theme:{extend:{
+    colors:{
+      "on-surface":"#241915","on-secondary":"#ffffff","surface-dim":"#ead6cf",
+      "secondary-fixed":"#9bf5c1","inverse-surface":"#3a2e29","tertiary-fixed-dim":"#48d9e7",
+      "on-tertiary-fixed-variant":"#004f55","on-background":"#241915","secondary":"#006d44",
+      "tertiary":"#006971","surface-variant":"#f3ded7","primary-fixed":"#ffdbce",
+      "on-primary-fixed-variant":"#7f2b00","secondary-container":"#98f2be","primary":"#a13f0f",
+      "outline-variant":"#dec0b6","on-tertiary-container":"#00444a","secondary-fixed-dim":"#7fd8a6",
+      "on-primary-fixed":"#370e00","on-primary":"#ffffff","surface-tint":"#a13f0f",
+      "tertiary-container":"#00b9c7","on-tertiary":"#ffffff","on-tertiary-fixed":"#002023",
+      "error":"#ba1a1a","background":"#fff8f6","primary-container":"#ff8551",
+      "on-surface-variant":"#57423a","on-primary-container":"#6d2400",
+      "surface-container-lowest":"#ffffff","inverse-on-surface":"#ffede7",
+      "surface-bright":"#fff8f6","surface":"#fff8f6","error-container":"#ffdad6",
+      "on-error-container":"#93000a","inverse-primary":"#ffb598","tertiary-fixed":"#87f3ff",
+      "primary-fixed-dim":"#ffb598","on-secondary-fixed":"#002111",
+      "surface-container-high":"#f9e4dd","surface-container":"#ffeae2",
+      "on-error":"#ffffff","surface-container-low":"#fff1ec","outline":"#8a7269",
+      "on-secondary-fixed-variant":"#005232","on-secondary-container":"#067148",
+      "surface-container-highest":"#f3ded7"
+    },
+    borderRadius:{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},
+    spacing:{"margin":"32px","lg":"40px","xs":"8px","sm":"16px","md":"24px","unit":"4px","xl":"64px","gutter":"24px"},
+    fontFamily:{"h3":["Outfit"],"body-lg":["Manrope"],"label-sm":["Manrope"],"body-md":["Manrope"],"h2":["Outfit"],"h1":["Outfit"],"caption":["Manrope"]},
+    fontSize:{
+      "h3":["24px",{"lineHeight":"1.4","fontWeight":"500"}],
+      "body-lg":["18px",{"lineHeight":"1.6","fontWeight":"400"}],
+      "label-sm":["14px",{"lineHeight":"1.2","letterSpacing":"0.01em","fontWeight":"600"}],
+      "body-md":["16px",{"lineHeight":"1.6","fontWeight":"400"}],
+      "h2":["32px",{"lineHeight":"1.3","letterSpacing":"-0.01em","fontWeight":"600"}],
+      "h1":["48px",{"lineHeight":"1.2","letterSpacing":"-0.02em","fontWeight":"600"}],
+      "caption":["12px",{"lineHeight":"1.2","fontWeight":"500"}]
+    }
+  }}
+}
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; }
+  body { background-color:#FAF7F2; }
+  .ambient-shadow { box-shadow:0px 12px 32px rgba(74,69,64,0.08); }
+  .mockup-banner { background:#3a2e29; color:#ffede7; text-align:center; padding:10px 32px; font-size:13px; font-weight:600; letter-spacing:0.05em; font-family:'Manrope',sans-serif; }
+</style>
+</head>
+<body class="font-body-md text-on-surface">
+
+<div class="mockup-banner">MOCKUP — /calibration — Hero 120px · 4 stat cards · D3 chart re-skinée · Warm Intelligence</div>
+
+<!-- TopNav -->
+<nav class="bg-[#FAF7F2] border-b border-[#EBE5DA] sticky top-0 z-50">
+  <div class="flex justify-between items-center w-full px-6 py-4 max-w-7xl mx-auto">
+    <div class="text-2xl font-bold text-stone-800 font-h2">Bassira</div>
+    <div class="hidden md:flex gap-8 items-center">
+      <a class="font-sans text-sm font-medium text-stone-600 hover:text-primary-container transition-colors" href="#">Platform</a>
+      <a class="font-sans text-sm font-medium text-stone-600 hover:text-primary-container transition-colors" href="#">Offres</a>
+      <a class="font-sans text-sm font-medium text-primary-container border-b-2 border-primary-container pb-1" href="#">Calibration</a>
+    </div>
+    <div class="flex items-center gap-4">
+      <span class="material-symbols-outlined text-stone-600 cursor-pointer">language</span>
+      <button class="bg-primary-container text-white px-4 py-2 rounded-[12px] font-label-sm">S'inscrire</button>
+    </div>
+  </div>
+</nav>
+
+<!-- Language Pill -->
+<div class="fixed top-24 right-6 z-40 bg-surface-container-lowest ambient-shadow rounded-full px-4 py-2 flex gap-4 text-caption border border-outline-variant">
+  <span class="text-on-surface-variant cursor-pointer hover:text-primary transition-colors">FR</span>
+  <span class="text-on-surface-variant cursor-pointer hover:text-primary transition-colors border-x border-outline-variant px-4">AR</span>
+  <span class="text-primary font-bold cursor-pointer">EN</span>
+</div>
+
+<main class="max-w-7xl mx-auto px-6 py-xl space-y-xl">
+
+  <!-- Hero -->
+  <section class="flex flex-col items-center text-center space-y-md">
+    <span class="bg-primary-container/10 text-on-primary-container px-4 py-1 rounded-full text-label-sm border border-primary-container/20">
+      Historique vérifié
+    </span>
+    <div class="flex items-baseline gap-4">
+      <h1 class="font-h1 text-[120px] leading-none tracking-tighter text-on-surface">0.18</h1>
+      <div class="flex items-center text-secondary-fixed-dim font-h3">
+        <span class="material-symbols-outlined">arrow_downward</span>
+        <span>-0.04</span>
+      </div>
+    </div>
+    <p class="font-h3 text-on-surface-variant max-w-xl mx-auto">
+      Nous notons chaque prédiction. <span class="text-primary">Plus bas = meilleur.</span>
+    </p>
+  </section>
+
+  <!-- 4 Stat Cards -->
+  <section class="grid grid-cols-1 md:grid-cols-4 gap-gutter">
+    <div class="bg-surface-container-lowest ambient-shadow rounded-[24px] p-md flex flex-col justify-between min-h-[140px]">
+      <p class="text-caption text-on-surface-variant uppercase tracking-widest">Total Prévisions</p>
+      <div class="flex items-end justify-between">
+        <span class="font-h2">47</span>
+        <span class="text-label-sm text-on-surface-variant">Vérifiées</span>
+      </div>
+    </div>
+    <div class="bg-surface-container-lowest ambient-shadow rounded-[24px] p-md flex flex-col justify-between min-h-[140px]">
+      <p class="text-caption text-on-surface-variant uppercase tracking-widest">Juste</p>
+      <div class="flex items-end justify-between">
+        <span class="font-h2">31</span>
+        <span class="bg-secondary-fixed-dim/20 text-on-secondary-container px-2 py-1 rounded-[8px] text-caption">66% précision</span>
+      </div>
+    </div>
+    <div class="bg-surface-container-lowest ambient-shadow rounded-[24px] p-md flex flex-col justify-between min-h-[140px]">
+      <p class="text-caption text-on-surface-variant uppercase tracking-widest">Directionnel</p>
+      <div class="flex items-end justify-between">
+        <span class="font-h2">11</span>
+        <span class="bg-primary-fixed/30 text-on-primary-fixed-variant px-2 py-1 rounded-[8px] text-caption">23% partiel</span>
+      </div>
+    </div>
+    <div class="bg-surface-container-lowest ambient-shadow rounded-[24px] p-md flex flex-col justify-between min-h-[140px]">
+      <p class="text-caption text-on-surface-variant uppercase tracking-widest">Inexact</p>
+      <div class="flex items-end justify-between">
+        <span class="font-h2">5</span>
+        <span class="bg-error-container/40 text-on-error-container px-2 py-1 rounded-[8px] text-caption">11% erreur</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- D3 Chart + Sidebar -->
+  <section class="grid grid-cols-1 lg:grid-cols-4 gap-gutter">
+    <div class="lg:col-span-3 bg-surface-container-lowest ambient-shadow rounded-[24px] p-lg">
+      <div class="flex justify-between items-center mb-xl">
+        <h2 class="font-h3">Prédit vs Observé</h2>
+        <div class="flex gap-xs">
+          <span class="flex items-center gap-2 text-caption text-on-surface-variant">
+            <span class="w-3 h-3 rounded-full bg-primary-container"></span> Buckets de prévision
+          </span>
+        </div>
+      </div>
+      <!-- Zone D3 — en prod c'est un SVG dynamique, ici simulation fidèle -->
+      <div class="relative w-full aspect-[21/9] border-l-2 border-b-2 border-outline-variant mt-8">
+        <div class="absolute inset-0 opacity-20" style="background-image:linear-gradient(to top right,transparent calc(50% - 1px),#8a7269 50%,transparent calc(50% + 1px));"></div>
+        <div class="absolute -left-10 h-full flex flex-col justify-between text-caption text-on-surface-variant">
+          <span>1.0</span><span>0.8</span><span>0.6</span><span>0.4</span><span>0.2</span><span>0</span>
+        </div>
+        <div class="absolute -bottom-10 w-full flex justify-between text-caption text-on-surface-variant px-2">
+          <span>0</span><span>0.2</span><span>0.4</span><span>0.6</span><span>0.8</span><span>1.0</span>
+        </div>
+        <!-- Scatter nodes couleur primary-container (#ff8551) — remplace l'ancien bleu -->
+        <div class="absolute bottom-[5%] left-[5%] w-8 h-8 bg-primary-container rounded-full opacity-90 border-2 border-white shadow-sm flex items-center justify-center text-[10px] text-white font-bold">4</div>
+        <div class="absolute bottom-[15%] left-[12%] w-10 h-10 bg-primary-container rounded-full opacity-90 border-2 border-white shadow-sm flex items-center justify-center text-[10px] text-white font-bold">12</div>
+        <div class="absolute bottom-[28%] left-[25%] w-12 h-12 bg-primary-container rounded-full opacity-90 border-2 border-white shadow-sm flex items-center justify-center text-[10px] text-white font-bold">18</div>
+        <div class="absolute bottom-[42%] left-[40%] w-9 h-9 bg-primary-container rounded-full opacity-90 border-2 border-white shadow-sm flex items-center justify-center text-[10px] text-white font-bold">7</div>
+        <div class="absolute bottom-[58%] left-[55%] w-11 h-11 bg-primary-container rounded-full opacity-90 border-2 border-white shadow-sm flex items-center justify-center text-[10px] text-white font-bold">14</div>
+        <div class="absolute bottom-[65%] left-[68%] w-10 h-10 bg-primary-container rounded-full opacity-90 border-2 border-white shadow-sm flex items-center justify-center text-[10px] text-white font-bold">9</div>
+        <div class="absolute bottom-[82%] left-[85%] w-14 h-14 bg-primary-container rounded-full opacity-90 border-2 border-white shadow-sm flex items-center justify-center text-[10px] text-white font-bold">25</div>
+      </div>
+      <div class="mt-16 text-center text-caption text-on-surface-variant font-medium">Probabilité prédite (0–1)</div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="lg:col-span-1 space-y-md">
+      <div class="bg-surface-container-lowest ambient-shadow rounded-[24px] p-md">
+        <label class="text-caption text-on-surface-variant uppercase tracking-wider mb-2 block">Cluster</label>
+        <select class="w-full bg-[#FAF7F2] border-none rounded-[12px] p-sm font-body-md focus:ring-2 focus:ring-primary-container">
+          <option>Marchés globaux</option>
+          <option>Risque géopolitique</option>
+          <option>Chaîne d'appro.</option>
+        </select>
+      </div>
+      <div class="bg-surface-container-lowest ambient-shadow rounded-[24px] p-md">
+        <label class="text-caption text-on-surface-variant uppercase tracking-wider mb-2 block">Plage de dates</label>
+        <div class="flex items-center gap-2 p-sm bg-[#FAF7F2] rounded-[12px]">
+          <span class="material-symbols-outlined text-sm text-on-surface-variant">calendar_today</span>
+          <span class="text-body-md">Jan 2024 – Présent</span>
+        </div>
+      </div>
+      <div class="p-md text-on-surface-variant italic text-caption">
+        * Score Brier calculé sur tous les nœuds agents vérifiés avec un minimum de 500 signaux.
+      </div>
+    </div>
+  </section>
+
+  <!-- Méthodologie + CTA -->
+  <section class="grid grid-cols-1 md:grid-cols-2 gap-xl">
+    <div class="space-y-md">
+      <h3 class="font-h3">Comment on le compte</h3>
+      <div class="space-y-sm text-on-surface-variant">
+        <p class="font-body-md">Nous employons une stricte <strong>règle de score propre</strong>. Nos agents fournissent une distribution de probabilité. Si un agent dit 70 % de chances, on vérifie à quelle fréquence ces appels à 70 % se réalisent.</p>
+        <p class="font-body-md">Notre score Brier (0.18) reflète notre engagement envers la <strong>calibration</strong>. Un score de 0 est une prescience parfaite ; 0.25 correspond à une devinette aléatoire.</p>
+        <p class="font-body-md">Les données sont mises à jour en temps réel dès que les simulations atteignent leur horizon de résolution. Aucune prévision n'est jamais supprimée.</p>
+      </div>
+    </div>
+    <div class="bg-secondary-fixed-dim/10 border-2 border-secondary-fixed-dim/30 rounded-[24px] p-lg flex flex-col justify-center items-center text-center space-y-md relative overflow-hidden">
+      <div class="absolute -top-10 -right-10 w-40 h-40 bg-secondary-fixed-dim/20 rounded-full blur-3xl"></div>
+      <h3 class="font-h3 text-on-secondary-container">Vous voulez parier contre nous ?</h3>
+      <p class="text-body-md text-on-secondary-container/80 max-w-xs">Challengez notre réseau multi-agents avec vos propres événements ou données.</p>
+      <button class="bg-primary text-white px-xl py-sm rounded-[12px] font-label-sm shadow-lg hover:shadow-xl transition-all">
+        Soumettre un événement à prévoir
+      </button>
+    </div>
+  </section>
+
+</main>
+
+<!-- Footer -->
+<footer class="bg-[#FAF7F2] border-t border-[#EBE5DA] mt-xl">
+  <div class="w-full py-12 px-6 flex flex-col md:flex-row justify-between items-center max-w-7xl mx-auto">
+    <div class="mb-6 md:mb-0">
+      <div class="text-lg font-bold text-stone-800 font-h3">Bassira</div>
+      <p class="text-xs text-stone-500 mt-2">© 2024 Bassira Multi-Agent Systems. Tous droits réservés.</p>
+    </div>
+    <div class="flex gap-8">
+      <a class="text-xs text-stone-500 hover:text-stone-800 underline" href="#">Confidentialité</a>
+      <a class="text-xs text-stone-500 hover:text-stone-800 underline" href="#">CGU</a>
+      <a class="text-xs text-stone-500 hover:text-stone-800 underline" href="#">Contact</a>
+    </div>
+  </div>
+</footer>
+</body></html>

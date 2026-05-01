@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Calibration — Bassira</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<style>
+  * { box-sizing:border-box; }
+  body { background:#FAF7F2; color:#241915; font-family:'Manrope',sans-serif; margin:0; }
+  .material-symbols-outlined { font-family:'Material Symbols Outlined'; font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24; display:inline-block; vertical-align:middle; }
+  .shadow-card { box-shadow:0 8px 32px rgba(74,69,64,0.07), 0 2px 8px rgba(74,69,64,0.04); }
+  .mockup-banner { background:#1a1208; color:#ffede7; text-align:center; padding:9px; font-size:12px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; }
+</style>
+</head>
+<body>
+
+<div class="mockup-banner">Mockup /calibration — D3 chart re-skinée · Hero 120px · Warm Intelligence · C-Level targeting</div>
+
+<!-- Nav -->
+<header style="background:#FDFCFB;border-bottom:1px solid #EBE5DA;position:sticky;top:0;z-index:50;">
+  <div style="max-width:1280px;margin:0 auto;padding:14px 40px;display:flex;justify-content:space-between;align-items:center;">
+    <div style="font-family:'Outfit';font-size:22px;font-weight:700;color:#241915;letter-spacing:-0.02em;">Bassira</div>
+    <nav style="display:flex;gap:32px;">
+      <a style="font-size:14px;font-weight:500;color:#57423a;text-decoration:none;" href="#">Platform</a>
+      <a style="font-size:14px;font-weight:500;color:#57423a;text-decoration:none;" href="#">Offres</a>
+      <a style="font-size:14px;font-weight:700;color:#ff8551;text-decoration:none;border-bottom:2px solid #ff8551;padding-bottom:2px;" href="#">Calibration</a>
+    </nav>
+    <div style="display:flex;gap:12px;align-items:center;">
+      <span class="material-symbols-outlined" style="color:#57423a;cursor:pointer;font-size:20px;">language</span>
+      <button style="background:#ff8551;color:white;border:none;border-radius:10px;padding:9px 22px;font-weight:700;font-size:13px;cursor:pointer;">Demander un devis</button>
+    </div>
+  </div>
+</header>
+
+<!-- Language pill -->
+<div style="position:fixed;top:76px;right:24px;z-index:50;background:white;border:1px solid #dec0b6;border-radius:999px;padding:7px 16px;display:flex;gap:12px;align-items:center;font-size:12px;font-weight:700;box-shadow:0 8px 24px rgba(74,69,64,0.08);">
+  <span style="color:#57423a;cursor:pointer;">FR</span>
+  <span style="color:#dec0b6;">|</span>
+  <span style="color:#57423a;cursor:pointer;padding:0 10px;border-left:1px solid #dec0b6;border-right:1px solid #dec0b6;">AR</span>
+  <span style="color:#ff8551;font-weight:800;cursor:pointer;">EN</span>
+</div>
+
+<main style="max-width:1280px;margin:0 auto;padding:64px 40px;display:flex;flex-direction:column;gap:56px;">
+
+  <!-- Hero — autorité brute -->
+  <section style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:20px;">
+    <span style="background:rgba(255,133,81,0.1);color:#6d2400;border:1px solid rgba(255,133,81,0.2);border-radius:999px;padding:5px 18px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">
+      Historique de prédiction · Public · Vérifié
+    </span>
+    <div style="display:flex;align-items:baseline;gap:20px;">
+      <h1 style="font-family:'Outfit';font-size:clamp(80px,12vw,120px);line-height:1;letter-spacing:-0.05em;color:#241915;font-weight:600;margin:0;">0.18</h1>
+      <div style="display:flex;align-items:center;gap:4px;color:#7fd8a6;font-family:'Outfit';font-size:22px;font-weight:600;">
+        <span class="material-symbols-outlined" style="font-size:26px;font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;">arrow_downward</span>
+        <span>−0.04</span>
+      </div>
+    </div>
+    <p style="font-family:'Outfit';font-size:20px;color:#57423a;max-width:520px;line-height:1.5;font-weight:500;margin:0;">
+      Chaque prédiction est notée. Chaque score est public.<br><span style="color:#a13f0f;">Plus bas, plus précis.</span>
+    </p>
+    <p style="font-size:13px;color:#8a7269;max-width:460px;line-height:1.6;">Score Brier calculé selon la règle de scoring propre (Proper Scoring Rule) sur 47 prévisions vérifiées. 0 = prescience parfaite. 0.25 = chance aléatoire.</p>
+  </section>
+
+  <!-- 4 stat cards -->
+  <section style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;">
+    <div class="shadow-card" style="background:white;border-radius:24px;padding:24px;min-height:140px;display:flex;flex-direction:column;justify-content:space-between;">
+      <p style="font-size:11px;color:#57423a;text-transform:uppercase;letter-spacing:0.1em;font-weight:600;margin:0;">Prévisions vérifiées</p>
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;">
+        <span style="font-family:'Outfit';font-size:36px;font-weight:600;letter-spacing:-0.02em;color:#241915;">47</span>
+        <span style="font-size:12px;color:#57423a;background:#f3ded7;padding:3px 10px;border-radius:8px;font-weight:600;">Total</span>
+      </div>
+    </div>
+    <div class="shadow-card" style="background:white;border-radius:24px;padding:24px;min-height:140px;display:flex;flex-direction:column;justify-content:space-between;">
+      <p style="font-size:11px;color:#57423a;text-transform:uppercase;letter-spacing:0.1em;font-weight:600;margin:0;">Juste</p>
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;">
+        <span style="font-family:'Outfit';font-size:36px;font-weight:600;letter-spacing:-0.02em;color:#241915;">31</span>
+        <span style="font-size:12px;background:rgba(127,216,166,0.2);color:#006d44;padding:3px 10px;border-radius:8px;font-weight:600;">66 %</span>
+      </div>
+    </div>
+    <div class="shadow-card" style="background:white;border-radius:24px;padding:24px;min-height:140px;display:flex;flex-direction:column;justify-content:space-between;">
+      <p style="font-size:11px;color:#57423a;text-transform:uppercase;letter-spacing:0.1em;font-weight:600;margin:0;">Directionnel</p>
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;">
+        <span style="font-family:'Outfit';font-size:36px;font-weight:600;letter-spacing:-0.02em;color:#241915;">11</span>
+        <span style="font-size:12px;background:rgba(255,219,206,0.5);color:#7f2b00;padding:3px 10px;border-radius:8px;font-weight:600;">23 %</span>
+      </div>
+    </div>
+    <div class="shadow-card" style="background:white;border-radius:24px;padding:24px;min-height:140px;display:flex;flex-direction:column;justify-content:space-between;">
+      <p style="font-size:11px;color:#57423a;text-transform:uppercase;letter-spacing:0.1em;font-weight:600;margin:0;">Inexact</p>
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;">
+        <span style="font-family:'Outfit';font-size:36px;font-weight:600;letter-spacing:-0.02em;color:#241915;">5</span>
+        <span style="font-size:12px;background:rgba(186,26,26,0.08);color:#93000a;padding:3px 10px;border-radius:8px;font-weight:600;">11 %</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- D3 chart + sidebar -->
+  <section style="display:grid;grid-template-columns:3fr 1fr;gap:20px;">
+    <div class="shadow-card" style="background:white;border-radius:24px;padding:40px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+        <div>
+          <h2 style="font-family:'Outfit';font-size:22px;font-weight:600;color:#241915;margin:0 0 6px;">Probabilité prédite vs fréquence observée</h2>
+          <p style="font-size:13px;color:#8a7269;margin:0;">La diagonale parfaite représente la calibration idéale. Nos points s'en rapprochent.</p>
+        </div>
+        <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:#57423a;white-space:nowrap;">
+          <span style="width:12px;height:12px;border-radius:50%;background:#ff8551;display:inline-block;"></span> Buckets de prévision
+        </span>
+      </div>
+      <!-- Chart D3 area (re-skinée Warm Intelligence) -->
+      <div style="position:relative;width:100%;aspect-ratio:21/9;border-left:2px solid #dec0b6;border-bottom:2px solid #dec0b6;margin-top:32px;">
+        <!-- Ligne diagonale idéale -->
+        <div style="position:absolute;inset:0;opacity:0.18;background-image:linear-gradient(to top right,transparent calc(50% - 1px),#8a7269 50%,transparent calc(50% + 1px));"></div>
+        <!-- Axe Y -->
+        <div style="position:absolute;left:-36px;height:100%;display:flex;flex-direction:column;justify-content:space-between;font-size:11px;color:#8a7269;font-weight:500;">
+          <span>1.0</span><span>0.8</span><span>0.6</span><span>0.4</span><span>0.2</span><span>0</span>
+        </div>
+        <!-- Axe X -->
+        <div style="position:absolute;bottom:-28px;width:100%;display:flex;justify-content:space-between;font-size:11px;color:#8a7269;font-weight:500;padding:0 4px;">
+          <span>0</span><span>0.2</span><span>0.4</span><span>0.6</span><span>0.8</span><span>1.0</span>
+        </div>
+        <!-- Scatter nodes orange Warm Intelligence -->
+        <div style="position:absolute;bottom:5%;left:5%;width:32px;height:32px;background:#ff8551;border-radius:50%;border:2.5px solid white;box-shadow:0 3px 8px rgba(74,69,64,0.15);display:flex;align-items:center;justify-content:center;font-size:10px;color:white;font-weight:700;">4</div>
+        <div style="position:absolute;bottom:15%;left:12%;width:40px;height:40px;background:#ff8551;border-radius:50%;border:2.5px solid white;box-shadow:0 3px 8px rgba(74,69,64,0.15);display:flex;align-items:center;justify-content:center;font-size:10px;color:white;font-weight:700;">12</div>
+        <div style="position:absolute;bottom:28%;left:25%;width:48px;height:48px;background:#ff8551;border-radius:50%;border:2.5px solid white;box-shadow:0 3px 8px rgba(74,69,64,0.15);display:flex;align-items:center;justify-content:center;font-size:10px;color:white;font-weight:700;">18</div>
+        <div style="position:absolute;bottom:42%;left:40%;width:36px;height:36px;background:#ff8551;border-radius:50%;border:2.5px solid white;box-shadow:0 3px 8px rgba(74,69,64,0.15);display:flex;align-items:center;justify-content:center;font-size:10px;color:white;font-weight:700;">7</div>
+        <div style="position:absolute;bottom:58%;left:55%;width:44px;height:44px;background:#ff8551;border-radius:50%;border:2.5px solid white;box-shadow:0 3px 8px rgba(74,69,64,0.15);display:flex;align-items:center;justify-content:center;font-size:10px;color:white;font-weight:700;">14</div>
+        <div style="position:absolute;bottom:65%;left:68%;width:40px;height:40px;background:#ff8551;border-radius:50%;border:2.5px solid white;box-shadow:0 3px 8px rgba(74,69,64,0.15);display:flex;align-items:center;justify-content:center;font-size:10px;color:white;font-weight:700;">9</div>
+        <div style="position:absolute;bottom:82%;left:85%;width:56px;height:56px;background:#ff8551;border-radius:50%;border:2.5px solid white;box-shadow:0 3px 8px rgba(74,69,64,0.15);display:flex;align-items:center;justify-content:center;font-size:10px;color:white;font-weight:700;">25</div>
+      </div>
+      <div style="margin-top:56px;text-align:center;font-size:12px;color:#8a7269;font-weight:500;">Probabilité prédite (0–1) · La taille des cercles reflète le volume de signaux par bucket</div>
+    </div>
+
+    <!-- Sidebar -->
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div class="shadow-card" style="background:white;border-radius:24px;padding:24px;">
+        <label style="font-size:11px;color:#57423a;text-transform:uppercase;letter-spacing:0.08em;font-weight:600;display:block;margin-bottom:10px;">Filtrer par domaine</label>
+        <select style="width:100%;background:#FAF7F2;border:none;border-radius:12px;padding:12px 16px;font-family:'Manrope';font-size:14px;color:#241915;outline:none;">
+          <option>Tous les domaines</option>
+          <option>Politique &amp; Gouvernance</option>
+          <option>Marchés &amp; Économie</option>
+          <option>Communication de crise</option>
+        </select>
+      </div>
+      <div class="shadow-card" style="background:white;border-radius:24px;padding:24px;">
+        <label style="font-size:11px;color:#57423a;text-transform:uppercase;letter-spacing:0.08em;font-weight:600;display:block;margin-bottom:10px;">Période</label>
+        <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;background:#FAF7F2;border-radius:12px;font-size:14px;color:#241915;">
+          <span class="material-symbols-outlined" style="font-size:17px;color:#57423a;">calendar_today</span>
+          Janv 2024 – Présent
+        </div>
+      </div>
+      <div style="padding:16px 20px;background:rgba(127,216,166,0.08);border:1px solid rgba(127,216,166,0.3);border-radius:16px;">
+        <p style="font-size:12px;color:#006d44;line-height:1.6;margin:0;font-style:italic;">Score calculé selon la règle de scoring propre de Brier sur un échantillon minimum de 500 signaux par bucket.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Méthodologie + CTA -->
+  <section style="display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:start;">
+    <div>
+      <h3 style="font-family:'Outfit';font-size:22px;font-weight:600;color:#241915;margin:0 0 20px;letter-spacing:-0.01em;">Comment nous comptons les points</h3>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <p style="font-size:14px;color:#57423a;line-height:1.7;margin:0;">Nos agents ne répondent pas "oui" ou "non". Ils assignent une <strong style="color:#241915;">distribution de probabilité</strong> à chaque outcome. Si un agent dit 70 % de chances, on trace combien de fois ces appels à 70 % se réalisent effectivement.</p>
+        <p style="font-size:14px;color:#57423a;line-height:1.7;margin:0;">Un Brier score de 0.18 signifie que nous battons systématiquement le consensus institutionnel. <strong style="color:#241915;">Aucune prévision n'est jamais supprimée ou révisée</strong> après coup.</p>
+        <p style="font-size:14px;color:#57423a;line-height:1.7;margin:0;">Les données sont actualisées en temps réel dès que les simulations atteignent leur horizon de résolution.</p>
+      </div>
+    </div>
+    <div style="background:rgba(127,216,166,0.08);border:2px solid rgba(127,216,166,0.28);border-radius:24px;padding:40px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:-40px;right:-40px;width:160px;height:160px;background:rgba(127,216,166,0.15);border-radius:50%;filter:blur(48px);"></div>
+      <h3 style="font-family:'Outfit';font-size:22px;font-weight:600;color:#006d44;margin:0;position:relative;">Vous voulez tester notre modèle ?</h3>
+      <p style="font-size:14px;color:rgba(0,109,68,0.8);max-width:300px;line-height:1.6;margin:0;position:relative;">Soumettez un événement futur à notre réseau. Nous publions notre prévision. Vous vérifiez.</p>
+      <button style="background:#a13f0f;color:white;border:none;border-radius:12px;padding:13px 32px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(161,63,15,0.25);position:relative;letter-spacing:0.02em;">
+        Soumettre un événement
+      </button>
+    </div>
+  </section>
+
+</main>
+
+<!-- Footer -->
+<footer style="background:#FDFCFB;border-top:1px solid #EBE5DA;margin-top:32px;">
+  <div style="max-width:1280px;margin:0 auto;padding:40px;display:flex;justify-content:space-between;align-items:center;">
+    <div>
+      <div style="font-family:'Outfit';font-size:20px;font-weight:700;color:#241915;">Bassira</div>
+      <div style="font-size:12px;color:#8a7269;margin-top:4px;">2024 Bassira Multi-Agent Systems.</div>
+    </div>
+    <div style="display:flex;gap:24px;">
+      <a style="font-size:12px;color:#8a7269;text-decoration:none;" href="#">Confidentialité</a>
+      <a style="font-size:12px;color:#8a7269;text-decoration:none;" href="#">CGU</a>
+      <a style="font-size:12px;color:#8a7269;text-decoration:none;" href="#">Contact</a>
+    </div>
+  </div>
+</footer>
+</body></html>

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mockup /devis — Warm Intelligence</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Manrope:wght@400;500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode:"class",
+  theme:{extend:{
+    colors:{
+      "on-surface":"#241915","on-secondary":"#ffffff","surface-dim":"#ead6cf",
+      "secondary-fixed":"#9bf5c1","inverse-surface":"#3a2e29","tertiary-fixed-dim":"#48d9e7",
+      "on-tertiary-fixed-variant":"#004f55","on-background":"#241915","secondary":"#006d44",
+      "tertiary":"#006971","surface-variant":"#f3ded7","primary-fixed":"#ffdbce",
+      "on-primary-fixed-variant":"#7f2b00","secondary-container":"#98f2be","primary":"#a13f0f",
+      "outline-variant":"#dec0b6","on-tertiary-container":"#00444a","secondary-fixed-dim":"#7fd8a6",
+      "on-primary-fixed":"#370e00","on-primary":"#ffffff","surface-tint":"#a13f0f",
+      "tertiary-container":"#00b9c7","on-tertiary":"#ffffff","on-tertiary-fixed":"#002023",
+      "error":"#ba1a1a","background":"#fff8f6","primary-container":"#ff8551",
+      "on-surface-variant":"#57423a","on-primary-container":"#6d2400",
+      "surface-container-lowest":"#ffffff","inverse-on-surface":"#ffede7",
+      "surface-bright":"#fff8f6","surface":"#fff8f6","error-container":"#ffdad6",
+      "on-error-container":"#93000a","inverse-primary":"#ffb598","tertiary-fixed":"#87f3ff",
+      "primary-fixed-dim":"#ffb598","on-secondary-fixed":"#002111",
+      "surface-container-high":"#f9e4dd","surface-container":"#ffeae2",
+      "on-error":"#ffffff","surface-container-low":"#fff1ec","outline":"#8a7269",
+      "on-secondary-fixed-variant":"#005232","on-secondary-container":"#067148",
+      "surface-container-highest":"#f3ded7"
+    },
+    borderRadius:{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},
+    spacing:{"margin":"32px","lg":"40px","xs":"8px","sm":"16px","md":"24px","unit":"4px","xl":"64px","gutter":"24px"},
+    fontFamily:{"h3":["Outfit"],"body-lg":["Manrope"],"label-sm":["Manrope"],"body-md":["Manrope"],"h2":["Outfit"],"h1":["Outfit"],"caption":["Manrope"]},
+    fontSize:{
+      "h3":["24px",{"lineHeight":"1.4","fontWeight":"500"}],
+      "body-lg":["18px",{"lineHeight":"1.6","fontWeight":"400"}],
+      "label-sm":["14px",{"lineHeight":"1.2","letterSpacing":"0.01em","fontWeight":"600"}],
+      "body-md":["16px",{"lineHeight":"1.6","fontWeight":"400"}],
+      "h2":["32px",{"lineHeight":"1.3","letterSpacing":"-0.01em","fontWeight":"600"}],
+      "h1":["48px",{"lineHeight":"1.2","letterSpacing":"-0.02em","fontWeight":"600"}],
+      "caption":["12px",{"lineHeight":"1.2","fontWeight":"500"}]
+    }
+  }}
+}
+</script>
+<style>
+  body { background-color:#FAF7F2; color:#241915; font-family:'Manrope',sans-serif; }
+  .card-shadow { box-shadow:0px 12px 32px rgba(74,69,64,0.08); }
+  .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; }
+  .step-transition { transition:all 0.3s ease; }
+  .mockup-banner { background:#3a2e29; color:#ffede7; text-align:center; padding:10px 32px; font-size:13px; font-weight:600; letter-spacing:0.05em; font-family:'Manrope',sans-serif; }
+  .stepper-line { position:absolute; top:20px; left:8px; right:8px; height:2px; background:#EBE5DA; z-index:0; }
+</style>
+</head>
+<body class="min-h-screen flex flex-col items-center">
+
+<div class="mockup-banner">MOCKUP — /devis — Stepper 3 étapes · Cliquer Étape 1/2/3/Succès pour naviguer · Warm Intelligence</div>
+
+<!-- Top Navigation -->
+<header class="w-full bg-[#FAF7F2] border-b border-[#EBE5DA] sticky top-0 z-50">
+  <div class="flex justify-between items-center w-full px-6 py-4 max-w-7xl mx-auto">
+    <div class="text-2xl font-bold text-stone-800 font-h1">Bassira</div>
+    <div class="flex items-center gap-6">
+      <nav class="hidden md:flex gap-8 font-sans text-sm font-medium text-stone-600">
+        <a class="hover:text-primary-container transition-colors" href="#">Offres</a>
+        <a class="hover:text-primary-container transition-colors" href="#">Calibration</a>
+      </nav>
+      <div class="flex items-center gap-4">
+        <button class="material-symbols-outlined text-stone-600 hover:text-primary-container">language</button>
+        <button class="px-5 py-2 bg-primary-container text-white rounded-[12px] font-label-sm hover:opacity-90">S'inscrire</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Language Pill -->
+<div class="fixed top-24 right-8 z-40 bg-white/80 backdrop-blur-md px-3 py-2 rounded-full border border-[#EBE5DA] card-shadow flex gap-3 text-xs font-bold text-on-surface-variant">
+  <button class="hover:text-primary">EN</button>
+  <span class="text-[#EBE5DA]">|</span>
+  <button class="hover:text-primary">FR</button>
+  <span class="text-[#EBE5DA]">|</span>
+  <button class="hover:text-primary">AR</button>
+</div>
+
+<main class="flex-grow w-full max-w-7xl px-6 py-12 flex flex-col items-center">
+
+  <!-- Trust Line -->
+  <div class="mb-8 text-center">
+    <div class="inline-flex items-center gap-2 px-4 py-2 bg-[#F3EDE4] rounded-full text-caption text-on-surface-variant mb-4">
+      <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24;">verified_user</span>
+      Votre message va directement aux fondateurs. Pas de CRM, pas de newsletter.
+    </div>
+  </div>
+
+  <!-- Step navigation tabs (mockup only) -->
+  <div class="flex gap-2 mb-6">
+    <button onclick="showStep(1)" class="px-4 py-1.5 rounded-full text-xs font-bold bg-primary-container text-white border border-primary-container" id="tab1">Étape 1</button>
+    <button onclick="showStep(2)" class="px-4 py-1.5 rounded-full text-xs font-bold bg-white text-on-surface-variant border border-outline-variant" id="tab2">Étape 2</button>
+    <button onclick="showStep(3)" class="px-4 py-1.5 rounded-full text-xs font-bold bg-white text-on-surface-variant border border-outline-variant" id="tab3">Étape 3</button>
+    <button onclick="showStep(4)" class="px-4 py-1.5 rounded-full text-xs font-bold bg-white text-on-surface-variant border border-outline-variant" id="tab4">Succes</button>
+  </div>
+
+  <!-- Devis Card -->
+  <div class="w-full max-w-[640px] bg-white rounded-[24px] card-shadow overflow-hidden p-8 md:p-12 relative">
+
+    <!-- Stepper (visible on steps 1-3) -->
+    <div class="flex items-center justify-between mb-12 relative" id="stepper">
+      <div class="stepper-line"></div>
+      <div class="relative z-10 flex flex-col items-center gap-2 bg-white px-2">
+        <div class="w-10 h-10 rounded-full bg-primary-container text-white flex items-center justify-center font-bold text-sm" id="sc1">1</div>
+        <span class="text-caption text-primary font-bold" id="sl1">Votre situation</span>
+      </div>
+      <div class="relative z-10 flex flex-col items-center gap-2 bg-white px-2">
+        <div class="w-10 h-10 rounded-full border-2 border-[#EBE5DA] text-on-surface-variant flex items-center justify-center font-bold text-sm" id="sc2">2</div>
+        <span class="text-caption text-on-surface-variant" id="sl2">Vos coordonnees</span>
+      </div>
+      <div class="relative z-10 flex flex-col items-center gap-2 bg-white px-2">
+        <div class="w-10 h-10 rounded-full border-2 border-[#EBE5DA] text-on-surface-variant flex items-center justify-center font-bold text-sm" id="sc3">3</div>
+        <span class="text-caption text-on-surface-variant" id="sl3">Votre message</span>
+      </div>
+    </div>
+
+    <!-- Step 1 -->
+    <div id="step1">
+      <h2 class="font-h2 text-on-surface mb-8 text-center">Comment pouvons-nous vous aider ?</h2>
+      <div class="space-y-4">
+        <label class="relative flex items-center p-6 bg-[#FAF7F2] border border-primary-container rounded-[16px] cursor-pointer gap-4">
+          <input checked class="hidden" name="situation" type="radio"/>
+          <div class="flex-grow">
+            <span class="block font-bold text-on-surface text-body-md">Je suis en crise ou sur le point de l'etre</span>
+            <span class="text-caption text-on-surface-variant">Simulation de reponse rapide pour les menaces emergentes.</span>
+          </div>
+          <div class="w-6 h-6 rounded-full bg-primary-container border-2 border-primary-container flex items-center justify-center flex-shrink-0">
+            <div class="w-2 h-2 bg-white rounded-full"></div>
+          </div>
+        </label>
+        <label class="relative flex items-center p-6 bg-[#FAF7F2] border border-[#EBE5DA] rounded-[16px] cursor-pointer hover:border-primary-container transition-all gap-4">
+          <input class="hidden" name="situation" type="radio"/>
+          <div class="flex-grow">
+            <span class="block font-bold text-on-surface text-body-md">Je dois tester une politique ou reglementation</span>
+            <span class="text-caption text-on-surface-variant">Stress-tester les impacts socio-economiques avant le deploiement.</span>
+          </div>
+          <div class="w-6 h-6 rounded-full border-2 border-[#EBE5DA] flex-shrink-0"></div>
+        </label>
+        <label class="relative flex items-center p-6 bg-[#FAF7F2] border border-[#EBE5DA] rounded-[16px] cursor-pointer hover:border-primary-container transition-all gap-4">
+          <input class="hidden" name="situation" type="radio"/>
+          <div class="flex-grow">
+            <span class="block font-bold text-on-surface text-body-md">Je m'apprete a lancer une campagne ou un produit</span>
+            <span class="text-caption text-on-surface-variant">Anticiper la reaction du marche et l'adoption.</span>
+          </div>
+          <div class="w-6 h-6 rounded-full border-2 border-[#EBE5DA] flex-shrink-0"></div>
+        </label>
+        <div class="pt-4">
+          <label class="block text-caption text-on-surface-variant mb-2 px-1">Autre situation ?</label>
+          <input class="w-full bg-[#FAF7F2] border-none rounded-[12px] p-4 text-body-md focus:ring-2 focus:ring-primary-container transition-all" placeholder="Decrivez votre besoin specifique..." type="text"/>
+        </div>
+      </div>
+      <div class="mt-12">
+        <button class="w-full py-4 bg-primary-container text-white rounded-[12px] font-h3 hover:opacity-95 shadow-lg transition-all flex items-center justify-center gap-2">
+          Etape suivante <span class="material-symbols-outlined">arrow_forward</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="hidden" id="step2">
+      <h2 class="font-h2 text-on-surface mb-8 text-center">Parlez-nous de vous</h2>
+      <div class="space-y-6">
+        <div class="relative">
+          <input class="w-full bg-[#FAF7F2] border-none rounded-[12px] p-5 pt-7 text-body-md focus:ring-2 focus:ring-primary-container" value="Amine Mansouri" type="text"/>
+          <label class="absolute left-5 top-2 text-caption text-on-surface-variant font-bold">Nom complet</label>
+        </div>
+        <div class="relative">
+          <input class="w-full bg-[#FAF7F2] border-none rounded-[12px] p-5 pt-7 text-body-md focus:ring-2 focus:ring-primary-container" value="amine@bassira.ai" type="email"/>
+          <label class="absolute left-5 top-2 text-caption text-on-surface-variant font-bold">Email professionnel</label>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="relative">
+            <input class="w-full bg-[#FAF7F2] border-none rounded-[12px] p-5 pt-7 text-body-md focus:ring-2 focus:ring-primary-container" value="Bassira AI" type="text"/>
+            <label class="absolute left-5 top-2 text-caption text-on-surface-variant font-bold">Organisation</label>
+          </div>
+          <div class="relative">
+            <select class="w-full bg-[#FAF7F2] border-none rounded-[12px] p-5 pt-7 text-body-md focus:ring-2 focus:ring-primary-container appearance-none">
+              <option selected>Maroc</option><option>France</option><option>EAU</option><option>USA</option>
+            </select>
+            <label class="absolute left-5 top-2 text-caption text-on-surface-variant font-bold">Pays</label>
+          </div>
+        </div>
+        <div class="flex items-center justify-between p-6 bg-[#FAF7F2] rounded-[16px]">
+          <span class="font-bold text-on-surface">J'ai deja une population cible en tete</span>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input class="sr-only peer" type="checkbox" checked/>
+            <div class="w-14 h-8 bg-primary-container rounded-full peer after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:after:translate-x-6"></div>
+          </label>
+        </div>
+      </div>
+      <button class="w-full mt-12 py-4 bg-primary-container text-white rounded-[12px] font-h3 hover:opacity-95 shadow-lg transition-all flex items-center justify-center gap-2">
+        Etape suivante <span class="material-symbols-outlined">arrow_forward</span>
+      </button>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="hidden" id="step3">
+      <h2 class="font-h2 text-on-surface mb-6 text-center">Votre message</h2>
+      <div class="p-6 bg-primary-fixed text-on-primary-fixed rounded-[20px] mb-8 flex items-center gap-4">
+        <div class="p-4 bg-white rounded-xl">
+          <span class="material-symbols-outlined text-primary text-3xl">emergency_home</span>
+        </div>
+        <div>
+          <h4 class="font-bold text-body-lg">Package Crisis Drill</h4>
+          <p class="text-caption opacity-80">Modelisation de reponse pour menaces emergentes.</p>
+        </div>
+      </div>
+      <div class="space-y-4">
+        <label class="block text-caption text-on-surface-variant px-1 font-bold">Informations complementaires ?</label>
+        <textarea class="w-full bg-[#FAF7F2] border-none rounded-[12px] p-4 text-body-md focus:ring-2 focus:ring-primary-container placeholder:text-stone-400" placeholder="Details sur votre calendrier, parties prenantes..." rows="4"></textarea>
+        <label class="flex gap-3 items-start cursor-pointer py-2">
+          <input checked class="mt-1 rounded-sm text-primary-container focus:ring-primary-container" type="checkbox"/>
+          <span class="text-caption text-on-surface-variant">J'accepte le traitement de mes donnees de cas dans le seul but d'etablir ce devis de simulation.</span>
+        </label>
+      </div>
+      <div class="mt-8">
+        <button class="w-full py-4 bg-primary-container text-white rounded-[12px] font-h3 hover:opacity-95 shadow-lg">
+          Envoyer la demande
+        </button>
+      </div>
+    </div>
+
+    <!-- Success -->
+    <div class="hidden flex-col items-center text-center py-8" id="step4">
+      <div class="w-20 h-20 bg-secondary-container text-secondary rounded-full flex items-center justify-center mb-6 mx-auto">
+        <span class="material-symbols-outlined text-5xl" style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24;">check_circle</span>
+      </div>
+      <h2 class="font-h2 text-on-surface mb-2">Merci, nous avons bien recu votre cas.</h2>
+      <p class="text-body-md text-on-surface-variant mb-8">Reference <span class="font-bold">#BSR-1842</span>. Reponse sous 4h ouvrables maximum.</p>
+      <div class="p-6 bg-[#FAF7F2] rounded-[16px] w-full border border-dashed border-[#EBE5DA]">
+        <h4 class="font-bold text-on-surface mb-2">La suite ?</h4>
+        <p class="text-caption text-on-surface-variant">Nos fondateurs vont examiner vos parametres. Vous recevrez une portee de simulation detaillee et un lien de planification.</p>
+      </div>
+      <button class="mt-8 font-label-sm text-primary hover:underline">Retour au tableau de bord</button>
+    </div>
+
+  </div>
+
+  <!-- 3 icones bas -->
+  <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-4xl">
+    <div class="flex flex-col items-center text-center p-4">
+      <span class="material-symbols-outlined text-primary-container mb-3 text-3xl">psychology</span>
+      <h5 class="font-bold text-on-surface">Intelligence Multi-Agents</h5>
+      <p class="text-caption text-on-surface-variant">Propulse par 5 000+ profils cognitifs d'agents distincts.</p>
+    </div>
+    <div class="flex flex-col items-center text-center p-4">
+      <span class="material-symbols-outlined text-primary-container mb-3 text-3xl">security</span>
+      <h5 class="font-bold text-on-surface">Confidentialite Air-Gap</h5>
+      <p class="text-caption text-on-surface-variant">Vos scenarios ne touchent jamais les donnees LLM.</p>
+    </div>
+    <div class="flex flex-col items-center text-center p-4">
+      <span class="material-symbols-outlined text-primary-container mb-3 text-3xl">bolt</span>
+      <h5 class="font-bold text-on-surface">Setup 48h</h5>
+      <p class="text-caption text-on-surface-variant">De la demande a la premiere simulation en deux jours.</p>
+    </div>
+  </div>
+</main>
+
+<footer class="w-full bg-[#FAF7F2] border-t border-[#EBE5DA] mt-12">
+  <div class="w-full py-12 px-6 flex flex-col md:flex-row justify-between items-center max-w-7xl mx-auto">
+    <div class="mb-6 md:mb-0">
+      <div class="text-lg font-bold text-stone-800 font-h1">Bassira</div>
+      <p class="text-xs text-stone-500 mt-2">2024 Bassira Multi-Agent Systems. Tous droits reserves.</p>
+    </div>
+    <div class="flex gap-8">
+      <a class="text-xs text-stone-500 hover:text-stone-800 underline" href="#">Confidentialite</a>
+      <a class="text-xs text-stone-500 hover:text-stone-800 underline" href="#">CGU</a>
+      <a class="text-xs text-stone-500 hover:text-stone-800 underline" href="#">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+function showStep(n) {
+  var ids = ['step1','step2','step3','step4'];
+  ids.forEach(function(id, i) {
+    var el = document.getElementById(id);
+    if (i === n-1) { el.classList.remove('hidden'); }
+    else { el.classList.add('hidden'); }
+  });
+  var tabs = ['tab1','tab2','tab3','tab4'];
+  tabs.forEach(function(id, i) {
+    var t = document.getElementById(id);
+    if (i === n-1) {
+      t.className = 'px-4 py-1.5 rounded-full text-xs font-bold bg-primary-container text-white border border-primary-container';
+    } else {
+      t.className = 'px-4 py-1.5 rounded-full text-xs font-bold bg-white text-on-surface-variant border border-outline-variant';
+    }
+  });
+  var stepper = document.getElementById('stepper');
+  if (n === 4) { stepper.style.display = 'none'; } else { stepper.style.display = 'flex'; }
+  for (var i = 1; i <= 3; i++) {
+    var circle = document.getElementById('sc'+i);
+    var label = document.getElementById('sl'+i);
+    if (i < n && n <= 3) {
+      circle.className = 'w-10 h-10 rounded-full bg-secondary-fixed-dim text-on-secondary-container flex items-center justify-center font-bold text-sm';
+      circle.textContent = String.fromCharCode(10003);
+    } else if (i === n || (n === 4 && i === 3)) {
+      circle.className = 'w-10 h-10 rounded-full bg-primary-container text-white flex items-center justify-center font-bold text-sm';
+      circle.textContent = String(i);
+    } else {
+      circle.className = 'w-10 h-10 rounded-full border-2 border-[#EBE5DA] text-on-surface-variant flex items-center justify-center font-bold text-sm';
+      circle.textContent = String(i);
+    }
+    if (i === Math.min(n, 3)) {
+      label.className = 'text-caption text-primary font-bold';
+    } else {
+      label.className = 'text-caption text-on-surface-variant';
+    }
+  }
+}
+</script>
+</body></html>
