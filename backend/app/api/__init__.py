@@ -15,6 +15,7 @@ docs_bp = Blueprint('docs', __name__)
 
 from . import graph  # noqa: E402, F401
 from . import simulation  # noqa: E402, F401
+from . import pdf_export  # noqa: E402, F401  — US-024 branded PDF export
 from . import report  # noqa: E402, F401
 from . import templates  # noqa: E402, F401
 from . import settings  # noqa: E402, F401

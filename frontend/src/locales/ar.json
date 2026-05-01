@@ -645,7 +645,10 @@
     "light": "فاتح",
     "dark": "داكن",
     "auto": "تلقائي",
-    "openInNewTab": "فتح في علامة تبويب جديدة"
+    "openInNewTab": "فتح في علامة تبويب جديدة",
+    "exportPdf": "تصدير PDF",
+    "exportPdfGenerating": "جارٍ إنشاء PDF…",
+    "exportPdfError": "فشل تصدير PDF"
   },
   "panels": {
     "settings": {

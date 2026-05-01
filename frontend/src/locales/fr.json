@@ -645,7 +645,10 @@
     "light": "Clair",
     "dark": "Sombre",
     "auto": "Auto",
-    "openInNewTab": "Ouvrir dans un nouvel onglet"
+    "openInNewTab": "Ouvrir dans un nouvel onglet",
+    "exportPdf": "Exporter en PDF",
+    "exportPdfGenerating": "Génération du PDF…",
+    "exportPdfError": "Échec de l’export PDF"
   },
   "panels": {
     "settings": {

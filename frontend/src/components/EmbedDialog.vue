@@ -100,6 +100,19 @@
             </div>
           </div>
 
+          <!-- Export PDF -->
+          <div class="pdf-export-section">
+            <button
+              class="pdf-export-btn"
+              :disabled="pdfExporting"
+              @click="exportPdf"
+            >
+              <span v-if="pdfExporting">{{ $t('embed.exportPdfGenerating') }}</span>
+              <span v-else>↓ {{ $t('embed.exportPdf') }}</span>
+            </button>
+            <span v-if="pdfExportError" class="pdf-export-error">{{ $t('embed.exportPdfError') }}</span>
+          </div>
+
           <!-- Social share card -->
           <div class="share-card-section">
             <div class="share-card-divider">
@@ -615,6 +628,38 @@ const submitOutcome = async () => {
     outcomeMessageClass.value = 'outcome-message-error'
   } finally {
     outcomeSubmitting.value = false
+  }
+}
+
+// ── PDF export ─────────────────────────────────────────────────────────────
+const pdfExporting = ref(false)
+const pdfExportError = ref(false)
+
+const exportPdf = async () => {
+  pdfExporting.value = true
+  pdfExportError.value = false
+  try {
+    const resp = await fetch(
+      `${origin.value}/api/simulation/${props.simulationId}/export-pdf`,
+      { method: 'POST' }
+    )
+    if (!resp.ok) {
+      pdfExportError.value = true
+      return
+    }
+    const blob = await resp.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `bassira-${props.simulationId}.pdf`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  } catch (_err) {
+    pdfExportError.value = true
+  } finally {
+    pdfExporting.value = false
   }
 }
 
@@ -1461,6 +1506,48 @@ watch(isPublic, () => {
 .snippet-copy-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+/* PDF export */
+.pdf-export-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.pdf-export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  background: var(--color-orange, #FF6B1A);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.pdf-export-btn:hover:not(:disabled) {
+  background: var(--li, #101010);
+}
+
+.pdf-export-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.pdf-export-error {
+  font-size: 12px;
+  color: #b22020;
+  background: rgba(255, 68, 68, 0.1);
+  padding: 4px 10px;
+  border-radius: 6px;
 }
 
 /* Transition */
