@@ -229,25 +229,6 @@
         ></button>
       </div>
 
-      <!-- ───────────── Banner Programme MENA ───────────── -->
-      <aside class="offers-mena" role="complementary">
-        <div class="offers-mena-content">
-          <span class="offers-mena-eyebrow">
-            <span class="material-symbols-outlined offers-mena-icon" aria-hidden="true">rocket_launch</span>
-            {{ $t('offers.mena.eyebrow') }}
-          </span>
-          <h2 class="offers-mena-title">{{ $t('offers.mena.title') }}</h2>
-          <p class="offers-mena-body">{{ $t('offers.mena.body') }}</p>
-          <a
-            class="offers-mena-cta"
-            :href="menaMailto"
-          >
-            {{ $t('offers.mena.cta') }}
-            <span class="material-symbols-outlined offers-mena-cta-arrow" aria-hidden="true">arrow_forward</span>
-          </a>
-        </div>
-      </aside>
-
       <!-- ───────────── FAQ ───────────── -->
       <section class="offers-faq" aria-label="FAQ">
         <h2 class="offers-section-title">{{ $t('offers.faq.title') }}</h2>
@@ -576,10 +557,6 @@ function onCtaClick(pkg) {
   }
   router.push({ name: 'Quote', query: { package: pkg.id } })
 }
-
-const menaMailto = computed(
-  () => 'mailto:contact@ai-mpower.com?subject=' + encodeURIComponent('Eligibilité Programme MENA Startups'),
-)
 
 // Reset l'index si le filtre rétrécit la liste.
 watch(displayedPackages, (list) => {
@@ -1261,88 +1238,6 @@ onBeforeUnmount(() => {
   transform: scale(0.98);
 }
 
-/* ── Banner Programme MENA Startups ─────────────────── */
-.offers-mena {
-  margin: 32px auto 80px;
-  max-width: 1100px;
-  background: linear-gradient(135deg, #ffeae2 0%, #ffd1c0 100%);
-  border-radius: 24px;
-  padding: 48px 32px;
-  border: 1px solid rgba(222, 192, 182, 0.4);
-  box-shadow: var(--stitch-shadow-ambient);
-}
-
-.offers-mena-content {
-  max-width: 720px;
-  margin: 0 auto;
-  text-align: center;
-}
-
-.offers-mena-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(255, 255, 255, 0.6);
-  padding: 6px 14px;
-  border-radius: 9999px;
-  color: var(--stitch-primary);
-  font-family: var(--stitch-font-body);
-  font-weight: 700;
-  font-size: 12px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  margin-bottom: 16px;
-}
-.offers-mena-icon {
-  font-size: 16px !important;
-}
-
-.offers-mena-title {
-  font-family: var(--stitch-font-display);
-  font-size: clamp(22px, 3.6vw, 28px);
-  font-weight: 600;
-  line-height: 1.3;
-  letter-spacing: -0.01em;
-  color: var(--stitch-on-surface);
-  margin: 0 0 12px 0;
-}
-
-.offers-mena-body {
-  font-family: var(--stitch-font-body);
-  font-size: 15px;
-  line-height: 1.6;
-  color: var(--stitch-on-surface-variant);
-  margin: 0 auto 24px auto;
-  max-width: 600px;
-}
-
-.offers-mena-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--stitch-on-surface);
-  color: #ffffff;
-  font-family: var(--stitch-font-body);
-  font-weight: 600;
-  font-size: 14px;
-  padding: 12px 24px;
-  border-radius: 9999px;
-  text-decoration: none;
-  transition: opacity 0.2s ease, transform 0.1s ease;
-}
-.offers-mena-cta:hover {
-  opacity: 0.92;
-}
-.offers-mena-cta:active {
-  transform: scale(0.98);
-}
-.offers-mena-cta-arrow {
-  font-size: 18px !important;
-}
-[dir="rtl"] .offers-mena-cta-arrow {
-  transform: scaleX(-1);
-}
-
 /* ── Section title (FAQ) ────────────────────────────── */
 .offers-section-title {
   font-family: var(--stitch-font-display);
@@ -1471,10 +1366,6 @@ onBeforeUnmount(() => {
   }
   .offers-card {
     padding: 24px;
-  }
-  .offers-mena {
-    margin: 24px 4px 64px;
-    padding: 32px 24px;
   }
   .offers-section-title {
     font-size: 26px;

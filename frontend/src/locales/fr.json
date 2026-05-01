@@ -1194,48 +1194,6 @@
           "b5": "Onboarding et formation des équipes",
           "b6": "Support dédié 7j/7"
         }
-      },
-      "crisisDrill": {
-        "sector": "Communication / Crise",
-        "name": "Crisis Drill",
-        "delay": "Livré sous 24 h",
-        "cta": "Lancer un Crisis Drill",
-        "bullets": {
-          "b1": "Simulation de scénario",
-          "b2": "50 citoyens synthétiques",
-          "b3": "5 personas",
-          "b4": "Heat-map et dérive des croyances",
-          "b5": "Synthèse PDF en 6 h",
-          "b6": "Une session de suivi"
-        }
-      },
-      "policyBrief": {
-        "sector": "Politique / Secteur public",
-        "name": "Policy Brief Stress Test",
-        "delay": "5 jours ouvrés",
-        "cta": "Stress-tester ma note",
-        "bullets": {
-          "b1": "Test d’une note de politique publique",
-          "b2": "8 archétypes de parties prenantes",
-          "b3": "Branches contrefactuelles",
-          "b4": "Cohorte adverse",
-          "b5": "Certificat de calibration",
-          "b6": "Débrief de 30 minutes"
-        }
-      },
-      "preLaunch": {
-        "sector": "Marketing / GTM",
-        "name": "Pre-Launch Adcheck",
-        "delay": "3 jours ouvrés",
-        "cta": "Tester ma campagne",
-        "bullets": {
-          "b1": "Notation de 3 concepts publicitaires",
-          "b2": "Audience synthétique",
-          "b3": "Classement A/B/C",
-          "b4": "Trajectoire de dérive des croyances",
-          "b5": "Questions clivantes",
-          "b6": "Recommandations en une page"
-        }
       }
     },
     "trust": {

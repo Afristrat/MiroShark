@@ -1194,48 +1194,6 @@
           "b5": "Onboarding and team training",
           "b6": "Dedicated 7-days-a-week support"
         }
-      },
-      "crisisDrill": {
-        "sector": "Comms / Crisis",
-        "name": "Crisis Drill",
-        "delay": "24h turnaround",
-        "cta": "Get a Crisis Drill",
-        "bullets": {
-          "b1": "Scenario simulation",
-          "b2": "50 synthetic citizens",
-          "b3": "5 personas",
-          "b4": "Heat-map & belief drift",
-          "b5": "6h PDF summary",
-          "b6": "One follow-up"
-        }
-      },
-      "policyBrief": {
-        "sector": "Policy / Public sector",
-        "name": "Policy Brief Stress Test",
-        "delay": "5 business days",
-        "cta": "Stress test my brief",
-        "bullets": {
-          "b1": "Testing draft policy",
-          "b2": "8 stakeholder archetypes",
-          "b3": "Counterfactual branches",
-          "b4": "Adversarial cohort",
-          "b5": "Calibration certificate",
-          "b6": "30-min debrief"
-        }
-      },
-      "preLaunch": {
-        "sector": "Marketing / GTM",
-        "name": "Pre-Launch Adcheck",
-        "delay": "3 business days",
-        "cta": "Adcheck my campaign",
-        "bullets": {
-          "b1": "Scoring 3 ad concepts",
-          "b2": "Synthetic audience",
-          "b3": "A/B/C ranking",
-          "b4": "Belief drift trajectory",
-          "b5": "Killer-questions",
-          "b6": "1-pager recommendations"
-        }
       }
     },
     "trust": {
