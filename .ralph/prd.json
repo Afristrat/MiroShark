@@ -396,12 +396,13 @@
         "Loaders utilisent .ms-skeleton",
         "npm run build passe"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [],
       "metadata": {
         "estimated_hours": 3,
         "priority": "P1"
-      }
+      },
+      "completedAt": "2026-05-01"
     },
     {
       "id": "US-013",
@@ -413,12 +414,13 @@
         "Tooltips utilisent border-radius var(--ms-radius-md)",
         "npm run build passe"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [],
       "metadata": {
         "estimated_hours": 3,
         "priority": "P1"
-      }
+      },
+      "completedAt": "2026-05-01"
     },
     {
       "id": "US-014",
@@ -431,12 +433,13 @@
         "Tableaux utilisent radius 12px et ombres soft",
         "npm run build passe"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [],
       "metadata": {
         "estimated_hours": 3,
         "priority": "P1"
-      }
+      },
+      "completedAt": "2026-05-01"
     },
     {
       "id": "US-015",
@@ -728,14 +731,15 @@
         "Tests pytest avec snapshot PDF (taille + presence sections)",
         "Bouton 'Export PDF' dans EmbedDialog"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-016"
       ],
       "metadata": {
         "estimated_hours": 5,
         "priority": "P2"
-      }
+      },
+      "completedAt": "2026-05-01"
     },
     {
       "id": "US-025",
