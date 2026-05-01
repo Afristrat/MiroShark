@@ -1011,13 +1011,13 @@
       "title": "How the Calibration page works",
       "step1": "1. Run a simulation from the home page and let it complete.",
       "step2": "2. Open the embed dialog (⌘ icon) and toggle 'Public' to make the simulation visible in the inbox below.",
-      "step3": "3. Activate admin mode (🔑) with your MIROSHARK_ADMIN_TOKEN to unlock the rating buttons.",
+      "step3": "3. Activate admin mode (🔑) with your BASSIRA_ADMIN_TOKEN to unlock the rating buttons.",
       "step4": "4. Rate each prediction: 'Called it' if the event occurred, 'Partial' if partially correct, 'Wrong' otherwise.",
       "note": "The Brier score updates in real time after each rating. A score < 0.25 indicates excellent calibration."
     },
     "adminToken": {
       "activate": "🔑 Admin mode",
-      "placeholder": "MIROSHARK_ADMIN_TOKEN",
+      "placeholder": "BASSIRA_ADMIN_TOKEN",
       "confirm": "Activate",
       "active": "Admin ✓",
       "deactivate": "Deactivate",

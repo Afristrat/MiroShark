@@ -1,6 +1,6 @@
 """Unit tests for the admin-auth gate on mutation endpoints.
 
-Issue #48 added a shared operator secret (``MIROSHARK_ADMIN_TOKEN``)
+Issue #48 added a shared operator secret (``BASSIRA_ADMIN_TOKEN``)
 guarding ``POST /publish``, ``POST /resolve``, and ``POST /outcome``.
 This file pins down the contract — if any of these properties drift,
 the deploy goes from "auth-gated mutations" back to "any caller can
@@ -108,7 +108,7 @@ def test_extract_bearer_token_rejects_bad_headers(header: str):
 def test_load_admin_token_reads_env(monkeypatch: pytest.MonkeyPatch):
     from app.api.simulation import _load_admin_token
 
-    monkeypatch.setenv("MIROSHARK_ADMIN_TOKEN", "  s3cret  ")
+    monkeypatch.setenv("BASSIRA_ADMIN_TOKEN", "  s3cret  ")
     # Whitespace stripped — operators sometimes paste with stray spaces
     # and we don't want a constant-time compare to fail on that.
     assert _load_admin_token() == "s3cret"
@@ -117,6 +117,8 @@ def test_load_admin_token_reads_env(monkeypatch: pytest.MonkeyPatch):
 def test_load_admin_token_unset_returns_empty(monkeypatch: pytest.MonkeyPatch):
     from app.api.simulation import _load_admin_token
 
+    # Clear both names so the legacy fallback doesn't interfere.
+    monkeypatch.delenv("BASSIRA_ADMIN_TOKEN", raising=False)
     monkeypatch.delenv("MIROSHARK_ADMIN_TOKEN", raising=False)
     assert _load_admin_token() == ""
 
@@ -126,8 +128,27 @@ def test_load_admin_token_blank_returns_empty(monkeypatch: pytest.MonkeyPatch):
     posture as a missing var."""
     from app.api.simulation import _load_admin_token
 
-    monkeypatch.setenv("MIROSHARK_ADMIN_TOKEN", "   ")
+    monkeypatch.setenv("BASSIRA_ADMIN_TOKEN", "   ")
+    monkeypatch.delenv("MIROSHARK_ADMIN_TOKEN", raising=False)
     assert _load_admin_token() == ""
+
+
+def test_load_admin_token_legacy_fallback(monkeypatch: pytest.MonkeyPatch):
+    """MIROSHARK_ADMIN_TOKEN still works for existing Coolify deployments."""
+    from app.api.simulation import _load_admin_token
+
+    monkeypatch.delenv("BASSIRA_ADMIN_TOKEN", raising=False)
+    monkeypatch.setenv("MIROSHARK_ADMIN_TOKEN", "legacy-secret")
+    assert _load_admin_token() == "legacy-secret"
+
+
+def test_load_admin_token_new_name_takes_priority(monkeypatch: pytest.MonkeyPatch):
+    """BASSIRA_ADMIN_TOKEN takes priority over the legacy name."""
+    from app.api.simulation import _load_admin_token
+
+    monkeypatch.setenv("BASSIRA_ADMIN_TOKEN", "new-secret")
+    monkeypatch.setenv("MIROSHARK_ADMIN_TOKEN", "old-secret")
+    assert _load_admin_token() == "new-secret"
 
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -136,12 +157,12 @@ def test_load_admin_token_blank_returns_empty(monkeypatch: pytest.MonkeyPatch):
 
 
 def test_decorator_fails_closed_when_env_unset(monkeypatch: pytest.MonkeyPatch):
-    """Issue #48's central invariant: with no ``MIROSHARK_ADMIN_TOKEN``
+    """Issue #48's central invariant: with no ``BASSIRA_ADMIN_TOKEN``
     in the environment the endpoint must return 503, **not** allow the
     request through. Even a caller presenting a token must be denied
     — the deploy is misconfigured and we refuse to play guess-the-secret.
     """
-    monkeypatch.delenv("MIROSHARK_ADMIN_TOKEN", raising=False)
+    monkeypatch.delenv("BASSIRA_ADMIN_TOKEN", raising=False)
 
     app = _make_app()
     client = app.test_client()
@@ -158,7 +179,7 @@ def test_decorator_fails_closed_when_env_unset(monkeypatch: pytest.MonkeyPatch):
 def test_decorator_fails_closed_with_no_header(monkeypatch: pytest.MonkeyPatch):
     """Same invariant when the caller didn't send a header either —
     503 takes precedence over 401 because the deploy itself is broken."""
-    monkeypatch.delenv("MIROSHARK_ADMIN_TOKEN", raising=False)
+    monkeypatch.delenv("BASSIRA_ADMIN_TOKEN", raising=False)
 
     app = _make_app()
     res = app.test_client().post("/_test/protected")
@@ -166,7 +187,7 @@ def test_decorator_fails_closed_with_no_header(monkeypatch: pytest.MonkeyPatch):
 
 
 def test_decorator_returns_401_for_missing_header(monkeypatch: pytest.MonkeyPatch):
-    monkeypatch.setenv("MIROSHARK_ADMIN_TOKEN", "right-token")
+    monkeypatch.setenv("BASSIRA_ADMIN_TOKEN", "right-token")
 
     app = _make_app()
     res = app.test_client().post("/_test/protected")
@@ -180,7 +201,7 @@ def test_decorator_returns_401_for_missing_header(monkeypatch: pytest.MonkeyPatc
 def test_decorator_returns_401_for_wrong_token(monkeypatch: pytest.MonkeyPatch):
     """Same response shape as missing-header so a probe can't
     distinguish 'no token sent' from 'wrong token'."""
-    monkeypatch.setenv("MIROSHARK_ADMIN_TOKEN", "right-token")
+    monkeypatch.setenv("BASSIRA_ADMIN_TOKEN", "right-token")
 
     app = _make_app()
     res = app.test_client().post(
@@ -193,7 +214,7 @@ def test_decorator_returns_401_for_wrong_token(monkeypatch: pytest.MonkeyPatch):
 
 
 def test_decorator_passes_through_with_matching_token(monkeypatch: pytest.MonkeyPatch):
-    monkeypatch.setenv("MIROSHARK_ADMIN_TOKEN", "right-token")
+    monkeypatch.setenv("BASSIRA_ADMIN_TOKEN", "right-token")
 
     app = _make_app()
     res = app.test_client().post(
@@ -216,7 +237,7 @@ def test_decorator_uses_constant_time_compare(monkeypatch: pytest.MonkeyPatch):
     """
     import app.api.simulation as sim_mod
 
-    monkeypatch.setenv("MIROSHARK_ADMIN_TOKEN", "tok")
+    monkeypatch.setenv("BASSIRA_ADMIN_TOKEN", "tok")
 
     calls: list[tuple[bytes, bytes]] = []
     real = sim_mod.hmac.compare_digest

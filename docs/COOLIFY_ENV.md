@@ -82,7 +82,7 @@ Ou copie directe vers la machine locale via `docker cp`.
 
 | Variable | Description |
 |---|---|
-| `MIROSHARK_ADMIN_TOKEN` | Token Bearer pour les endpoints admin (resolve outcome, force delete, etc.). Vide en dev pour bypass auth. |
+| `BASSIRA_ADMIN_TOKEN` | Token Bearer pour les endpoints admin (resolve outcome, force delete, etc.). Vide en dev pour bypass auth. |
 | `ORACLE_SEED_ENABLED` | `true`/`false` — active les oracle_tools dans les templates avec FeedOracle MCP. Default `false`. |
 
 ## Audit complet des env vars

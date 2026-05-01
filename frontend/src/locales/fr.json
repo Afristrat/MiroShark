@@ -1011,13 +1011,13 @@
       "title": "Comment fonctionne la page Calibration",
       "step1": "1. Lancez une simulation depuis la page d'accueil et laissez-la se terminer.",
       "step2": "2. Ouvrez le dialogue d'intégration (icône ⌘) et cochez « Public » pour rendre la simulation visible dans l'inbox ci-dessous.",
-      "step3": "3. Activez le mode admin (🔑) avec votre token MIROSHARK_ADMIN_TOKEN pour débloquer les boutons de notation.",
+      "step3": "3. Activez le mode admin (🔑) avec votre token BASSIRA_ADMIN_TOKEN pour débloquer les boutons de notation.",
       "step4": "4. Notez chaque prédiction : « Bien anticipé » si l'événement s'est produit, « Partiel » si partiellement correct, « Manqué » sinon.",
       "note": "Le score de Brier se met à jour en temps réel après chaque notation. Un score < 0,25 indique une calibration excellente."
     },
     "adminToken": {
       "activate": "🔑 Mode admin",
-      "placeholder": "Token MIROSHARK_ADMIN_TOKEN",
+      "placeholder": "Token BASSIRA_ADMIN_TOKEN",
       "confirm": "Activer",
       "active": "Admin ✓",
       "deactivate": "Déverrouiller",

@@ -50,15 +50,15 @@ def _validate_url_simulation_id():
 #
 # Mutation endpoints that write to a simulation's on-disk state
 # (/publish, /resolve, /outcome) require a shared admin secret —
-# ``MIROSHARK_ADMIN_TOKEN`` — supplied via the ``Authorization: Bearer
+# ``BASSIRA_ADMIN_TOKEN`` — supplied via the ``Authorization: Bearer
 # <token>`` header. This is the lightest-weight option from issue #48
 # (per-sim ownership tokens / full account auth were also discussed,
 # but a shared operator secret matches the deployment model: a single
-# operator runs MiroShark behind a reverse proxy or on localhost, and
+# operator runs Bassira behind a reverse proxy or on localhost, and
 # any mutation is theirs).
 #
-# Fail-closed semantics: if ``MIROSHARK_ADMIN_TOKEN`` is unset or empty
-# in the process environment, the dependency returns **503**, NOT 200.
+# Fail-closed semantics: if the token is unset or empty in the process
+# environment, the dependency returns **503**, NOT 200.
 # We deliberately do not silently fall back to "no auth required" — an
 # operator who forgot to configure the secret would otherwise ship an
 # open mutation surface and never know. The 503 message is generic on
@@ -67,20 +67,28 @@ def _validate_url_simulation_id():
 #
 # We use ``hmac.compare_digest`` for the actual comparison so a network
 # attacker can't time-trial the token byte by byte.
+#
+# Backward compat: ``MIROSHARK_ADMIN_TOKEN`` is still accepted for
+# deployments that have not yet migrated to the new name.
 
-
-_ADMIN_TOKEN_ENV_VAR = "MIROSHARK_ADMIN_TOKEN"
+_ADMIN_TOKEN_ENV_VAR = "BASSIRA_ADMIN_TOKEN"
+_ADMIN_TOKEN_ENV_VAR_LEGACY = "MIROSHARK_ADMIN_TOKEN"
 
 
 def _load_admin_token() -> str:
-    """Read ``MIROSHARK_ADMIN_TOKEN`` from the environment at *call* time.
+    """Read the admin token from env at call time.
 
-    Resolved per-request rather than module-import time so tests can
-    monkeypatch ``os.environ`` without re-importing the module, and so
-    operators rotating the token via a process restart don't need a
-    code reload.
+    Checks ``BASSIRA_ADMIN_TOKEN`` first; falls back to the legacy
+    ``MIROSHARK_ADMIN_TOKEN`` so existing Coolify deployments keep working
+    without a forced redeploy.
+    Resolved per-request so tests can monkeypatch ``os.environ`` without
+    re-importing the module.
     """
-    return (os.environ.get(_ADMIN_TOKEN_ENV_VAR) or "").strip()
+    return (
+        os.environ.get(_ADMIN_TOKEN_ENV_VAR)
+        or os.environ.get(_ADMIN_TOKEN_ENV_VAR_LEGACY)
+        or ""
+    ).strip()
 
 
 def _extract_bearer_token() -> str:
@@ -125,14 +133,18 @@ def require_admin_token(view_func):
         expected = _load_admin_token()
         if not expected:
             logger.error(
-                "Mutation endpoint %s reached but %s is unset — refusing "
-                "to serve (fail-closed). Set the env var to enable.",
-                request.path, _ADMIN_TOKEN_ENV_VAR,
+                "Mutation endpoint %s reached but %s (or legacy %s) is "
+                "unset — refusing to serve (fail-closed). Set the env var "
+                "on Coolify to enable.",
+                request.path, _ADMIN_TOKEN_ENV_VAR, _ADMIN_TOKEN_ENV_VAR_LEGACY,
             )
             return jsonify({
                 "success": False,
                 "error_code": "ADMIN_AUTH_NOT_CONFIGURED",
-                "error": "Admin authentication is not configured on this deployment.",
+                "error": (
+                    "Admin token not configured. "
+                    f"Set {_ADMIN_TOKEN_ENV_VAR} in Coolify environment variables."
+                ),
             }), 503
 
         provided = _extract_bearer_token()
