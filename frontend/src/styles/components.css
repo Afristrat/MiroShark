@@ -143,11 +143,13 @@
   text-transform: uppercase;
   line-height: 1.3;
 }
-.ms-badge-success { background: var(--ms-mint-soft);  color: #2F7A52; }
-.ms-badge-warning { background: var(--ms-peach-soft); color: #8A5610; }
-.ms-badge-info    { background: var(--ms-blue-soft);  color: #2C4FA1; }
-.ms-badge-danger  { background: var(--ms-rose-soft);  color: #A1403A; }
-.ms-badge-neutral { background: var(--ms-bg-muted);   color: var(--ms-text-muted); }
+/* US-028 WCAG AA : couleurs de texte badge vérifiées sur fond blendé.
+   badge-success : #2F7A52 donnait ratio 4.46 (FAIL sur 11px). Ajusté à #1a6641 (ratio 5.95). */
+.ms-badge-success { background: var(--ms-mint-soft);  color: #1a6641; }
+.ms-badge-warning { background: var(--ms-peach-soft); color: #8A5610; } /* ratio 5.20 PASS */
+.ms-badge-info    { background: var(--ms-blue-soft);  color: #2C4FA1; } /* ratio 6.26 PASS */
+.ms-badge-danger  { background: var(--ms-rose-soft);  color: #A1403A; } /* ratio 5.11 PASS */
+.ms-badge-neutral { background: var(--ms-bg-muted);   color: var(--ms-text-muted); } /* ratio 4.51 PASS */
 
 /* ── Input ────────────────────────────────────────── */
 .ms-input,

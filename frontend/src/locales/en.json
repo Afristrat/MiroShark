@@ -730,13 +730,17 @@
       "embeddings": "Embeddings",
       "webSearch": "Web search (URL import + enrichment)"
     },
-    "neo4j": { "title": "Graph Database (Neo4j)" },
+    "neo4j": {
+      "title": "Graph Database (Neo4j)"
+    },
     "webhook": {
       "title": "Integrations · Webhook",
       "testBtn": "Send test event",
       "testing": "Sending…"
     },
-    "mcp": { "title": "AI Integration · MCP" }
+    "mcp": {
+      "title": "AI Integration · MCP"
+    }
   },
   "panels": {
     "settings": {
@@ -1443,5 +1447,9 @@
       "submit": "Send request",
       "submitting": "Sending…"
     }
+  },
+  "theme": {
+    "switchToDark": "Switch to dark mode",
+    "switchToLight": "Switch to light mode"
   }
 }

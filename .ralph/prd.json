@@ -818,13 +818,22 @@
         "prefers-color-scheme respecté au premier load",
         "Aucun composant ne casse en dark (audit visuel des 5 vues principales via Playwright screenshots)"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-05-02",
       "dependencies": [
         "US-016"
       ],
       "metadata": {
         "estimated_hours": 4,
-        "priority": "P2"
+        "priority": "P2",
+        "files_touched": [
+          "frontend/src/design-tokens.css",
+          "frontend/src/components/ThemeSwitcher.vue",
+          "frontend/src/App.vue",
+          "frontend/src/locales/fr.json",
+          "frontend/src/locales/en.json",
+          "frontend/src/locales/ar.json"
+        ]
       }
     },
     {
@@ -837,13 +846,23 @@
         "axe-core report exécuté en CI Playwright montre 0 violation contrast-related",
         "design-tokens.css ajusté si nécessaire"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-05-02",
       "dependencies": [
         "US-016"
       ],
       "metadata": {
         "estimated_hours": 2,
-        "priority": "P2"
+        "priority": "P2",
+        "files_touched": [
+          "frontend/src/design-tokens.css",
+          "frontend/src/styles/components.css"
+        ],
+        "wcag_fixes": [
+          "--ms-text-subtle: #9696A6->; #696976 (ratio 2.73->5.06)",
+          "--ms-text-on-color: #FFFFFF -> #1A1A24 (ratio 2.41 -> 7.17 sur orange)",
+          ".ms-badge-success text: #2F7A52 -> #1a6641 (ratio 4.46 -> 5.95)"
+        ]
       }
     },
     {

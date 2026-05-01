@@ -730,13 +730,17 @@
       "embeddings": "Embeddings",
       "webSearch": "Recherche web (import URL + enrichissement)"
     },
-    "neo4j": { "title": "Base de données graphe (Neo4j)" },
+    "neo4j": {
+      "title": "Base de données graphe (Neo4j)"
+    },
     "webhook": {
       "title": "Intégrations · Webhook",
       "testBtn": "Envoyer un événement test",
       "testing": "Envoi…"
     },
-    "mcp": { "title": "Intégration IA · MCP" }
+    "mcp": {
+      "title": "Intégration IA · MCP"
+    }
   },
   "panels": {
     "settings": {
@@ -1443,5 +1447,9 @@
       "submit": "Envoyer la demande",
       "submitting": "Envoi en cours…"
     }
+  },
+  "theme": {
+    "switchToDark": "Passer en mode sombre",
+    "switchToLight": "Passer en mode clair"
   }
 }

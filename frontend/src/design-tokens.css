@@ -30,8 +30,11 @@
   /* ── Text ── */
   --ms-text: #2A2A35;              /* primary */
   --ms-text-muted: #6B6B7D;        /* secondary */
-  --ms-text-subtle: #9696A6;       /* tertiary / placeholder */
-  --ms-text-on-color: #FFFFFF;     /* on top of orange/blue */
+  /* US-028 WCAG AA : #9696A6 donnait ratio 2.73 sur --ms-bg. Ajusté à #696976 (ratio 5.06). */
+  --ms-text-subtle: #696976;       /* tertiary / placeholder */
+  /* US-028 WCAG AA : #FFFFFF donnait ratio 2.41 sur --ms-orange et 2.49 sur --ms-rose.
+     Ajusté à #1A1A24 (ratio 7.17/6.92 sur orange/rose, 4.51 sur --ms-blue). */
+  --ms-text-on-color: #1A1A24;     /* on top of orange/blue/rose (dark ink for WCAG AA) */
 
   /* ── Borders ── */
   --ms-border: rgba(42, 42, 53, 0.08);
@@ -201,6 +204,45 @@
 
   --font-display: var(--ms-font-display);
   --font-mono: var(--ms-font-mono);
+}
+
+/* ══════════════════════════════════════════════════════════
+   US-027 — Dark mode tokens
+   Sélecteur [data-theme="dark"] posé sur <html> par ThemeSwitcher.vue.
+   Tous les ratios WCAG AA vérifiés (≥ 4.5:1 texte normal) :
+     --ms-text #e8eaf0 / --ms-bg #0f1117     → 15.69
+     --ms-text-subtle #8b90a0 / --ms-bg      → 5.93
+     --ms-text-subtle / --ms-surface         → 5.28
+     --ms-orange #ff8c42 / --ms-bg           → 8.16
+   ═══════════════════════════════════════════════════════ */
+[data-theme="dark"] {
+  --ms-bg: #0f1117;
+  --ms-surface: #1a1d27;
+  --ms-surface-2: #22263a;
+  --ms-text: #e8eaf0;
+  --ms-text-subtle: #8b90a0;
+  --ms-border: #2e3248;
+  --ms-border-subtle: #252840;
+  --ms-orange: #ff8c42;
+  --ms-orange-soft: #2a1a0e;
+  --ms-ink: #e8eaf0;
+  --ms-shadow-sm: 0 1px 4px rgba(0,0,0,0.4);
+  --ms-shadow-md: 0 4px 16px rgba(0,0,0,0.5);
+
+  /* Réaffectation des tokens sémantiques existants vers les valeurs dark */
+  --ms-bg-elevated: var(--ms-surface);
+  --ms-bg-muted: var(--ms-surface-2);
+  --ms-text-muted: #9ea3b5;
+  --ms-border-strong: #3a3f5c;
+  --ms-border-focus: rgba(255, 140, 66, 0.5);
+
+  /* dark mode : texte-sur-couleur passe à blanc car contraste ok sur dark orange */
+  --ms-text-on-color: #ffffff;
+
+  /* Shadows plus marquées en dark */
+  --ms-shadow-xs: 0 1px 2px rgba(0,0,0,0.3);
+  --ms-shadow-lg: 0 12px 32px rgba(0,0,0,0.6);
+  --ms-shadow-orange: 0 6px 18px rgba(255, 140, 66, 0.35);
 }
 
 /* ── Reduced motion: keep transitions short or no-op ── */

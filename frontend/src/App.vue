@@ -1,5 +1,6 @@
 <template>
   <router-view />
+  <ThemeSwitcher />
   <LanguageSwitcher class="lang-switcher--floating" />
   <DebugPanel />
 </template>
@@ -7,6 +8,7 @@
 <script setup>
 import DebugPanel from './components/DebugPanel.vue'
 import LanguageSwitcher from './components/LanguageSwitcher.vue'
+import ThemeSwitcher from './components/ThemeSwitcher.vue'
 </script>
 
 <style>
