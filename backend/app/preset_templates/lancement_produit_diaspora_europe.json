@@ -1,0 +1,55 @@
+{
+  "id": "lancement_produit_diaspora_europe",
+  "name": "Sahara Gold — lancement GD Europe diaspora MENA (12 mois)",
+  "category": "Marketing & Lancement international",
+  "description": "Simulation 12 mois du lancement de 'Sahara Gold' (sucre roux bio Halal Cosumar) en Grande Distribution européenne (France, Belgique, Pays-Bas). Cible : diaspora MENA 6,8M en France + consommateurs santé. Budget 3,2M EUR. 40 agents : chefs de rayon GD, influenceurs food halal, imams, blogueurs nutrition, journalistes pro (LSA, Linéaires). Verdict : pénétration 8% atteinte, segments gagnants, barrières critiques. Cible : directeurs marketing, directeurs export, fonds MENA.",
+  "icon": "shopping-cart",
+  "difficulty": "medium",
+  "estimated_agents": 40,
+  "estimated_rounds": 12,
+  "platforms": ["twitter", "reddit", "polymarket"],
+  "tags": ["marketing", "lancement", "diaspora", "halal", "france", "GD", "MENA", "export", "food"],
+  "simulation_requirement": "Voir engine.md — Cosumar Sahara Gold, GD France/Belgique/Pays-Bas, 40 agents, 1 round = 1 mois.",
+  "seed_document": "Voir lancement_produit_diaspora_europe/01_attachment.md (brief directeur export Cosumar, perspective client) + lancement_produit_diaspora_europe/02_engine.md (sim_requirement + 6 agent system_prompts chefs_rayon/influenceurs/imams/nutritionnistes/journalistes/consommateurs + 3 director events + verdict shape).",
+  "default_market_question": "Sahara Gold atteint-il 8 % de pénétration dans la catégorie sucre spécialité en GD France à 12 mois ?",
+  "attachment_path": "lancement_produit_diaspora_europe/01_attachment.md",
+  "engine_path": "lancement_produit_diaspora_europe/02_engine.md",
+  "readme_path": "lancement_produit_diaspora_europe/README.md",
+  "agents": {
+    "total": 40,
+    "breakdown": {
+      "chefs_rayon_gd": 6,
+      "influenceurs_food_halal": 6,
+      "imams_associations_islamiques": 4,
+      "blogueurs_nutrition_sante": 5,
+      "equipe_commerciale_cosumar": 4,
+      "journalistes_presse_pro": 5,
+      "consommateurs_diaspora": 10
+    }
+  },
+  "rounds": {
+    "count": 12,
+    "unit": "month",
+    "label_template": "M+{round}",
+    "days_per_round": 30,
+    "total_simulation_months": 12
+  },
+  "director_event_slots": [
+    { "round": 2, "label": "Référencement Carrefour France", "key": "referencement_carrefour", "description": "Carrefour France accepte le référencement Sahara Gold dans 180 hypermarchés — mais impose une mise en rayon en zone 'spécialités du monde' et non en rayon sucre classique, limitant l'exposition au marché de masse" },
+    { "round": 5, "label": "Vidéo influenceur viral — 2,4M vues", "key": "video_virale", "description": "Un influenceur YouTube food halal (Khalid Bouaza, 1,2M abonnés) publie une vidéo de dégustation comparative — Sahara Gold gagne haut la main, la vidéo atteint 2,4M vues en 3 semaines, rupture de stock dans 40 magasins" },
+    { "round": 9, "label": "Contre-attaque Beghin Say promo -30%", "key": "contre_attaque_beghin", "description": "Beghin Say lance une promotion défensive -30% en GD sur sa gamme 'pure canne naturel' avec packaging renouvelé, directement dans les mêmes emplacements que Sahara Gold — tests de résistance à la pression promotionnelle" }
+  ],
+  "expected_outcome": {
+    "verdict_shape": "pénétration_atteinte / segments_gagnants / barrières_critiques",
+    "penetration_m12": "pourcentage de pénétration estimé + canaux contributeurs",
+    "segments_gagnants": "profil des segments convertis (diaspora 1ère gen / 2ème gen / convertis halal / consommateurs bio)",
+    "barrieres_critiques": "liste des frictions non résolues bloquant la croissance au-delà des early adopters"
+  },
+  "recommended_settings": {
+    "enable_twitter": true,
+    "enable_reddit": true,
+    "enable_polymarket": true,
+    "rounds": 12,
+    "minutes_per_round": 43200
+  }
+}

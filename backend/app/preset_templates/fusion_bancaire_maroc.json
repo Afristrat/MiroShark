@@ -1,0 +1,55 @@
+{
+  "id": "fusion_bancaire_maroc",
+  "name": "OPA CIH Bank — Barid Al-Maghrib Finance (20 semaines)",
+  "category": "Finance & M&A",
+  "description": "Simulation 20 semaines de l'OPA amicale de CIH Bank sur Barid Al-Maghrib Finance (4,2M clients). 35 agents : actionnaires CDG, syndicats Barid, analystes Fitch/S&P, Bank Al-Maghrib, journalistes éco. Verdict : fusion approuvée sans condition, avec cessions imposées, ou bloquée. Cible : banques, fonds PE, régulateurs financiers.",
+  "icon": "building-2",
+  "difficulty": "hard",
+  "estimated_agents": 35,
+  "estimated_rounds": 10,
+  "platforms": ["polymarket", "twitter"],
+  "tags": ["M&A", "banque", "maroc", "fusion", "OPA", "regulation", "casablanca", "finance"],
+  "simulation_requirement": "Voir engine.md — CIH Bank OPA amicale Barid Al-Maghrib Finance, 35 agents, 1 round = 2 semaines.",
+  "seed_document": "Voir fusion_bancaire_maroc/01_attachment.md (brief directeur M&A CDG, perspective client) + fusion_bancaire_maroc/02_engine.md (sim_requirement + 6 agent system_prompts actionnaires/syndicats/analystes/régulateur/journalistes/concurrents + 3 director events + verdict shape).",
+  "default_market_question": "La fusion est-elle approuvée par Bank Al-Maghrib dans les 12 mois sans conditions prohibitives ?",
+  "attachment_path": "fusion_bancaire_maroc/01_attachment.md",
+  "engine_path": "fusion_bancaire_maroc/02_engine.md",
+  "readme_path": "fusion_bancaire_maroc/README.md",
+  "agents": {
+    "total": 35,
+    "breakdown": {
+      "actionnaires_cih_cdg": 5,
+      "actionnaires_bam_finance": 4,
+      "syndicats_barid": 5,
+      "analystes_fitch_sp": 4,
+      "bank_al_maghrib": 4,
+      "journalistes_eco": 6,
+      "analystes_gpbm": 4,
+      "concurrent_credit_du_maroc": 3
+    }
+  },
+  "rounds": {
+    "count": 10,
+    "unit": "week",
+    "label_template": "S+{round}",
+    "days_per_round": 14,
+    "total_simulation_weeks": 20
+  },
+  "director_event_slots": [
+    { "round": 1, "label": "Annonce officielle OPA", "key": "annonce_opa", "description": "CIH Bank annonce officiellement l'OPA amicale via communiqué de presse — valorisation proposée, prime de 18% sur cours, calendrier soumission BAM" },
+    { "round": 4, "label": "Contre-offre Crédit du Maroc", "key": "contre_offre", "description": "Crédit du Maroc dépose une contre-offre non sollicitée avec prime de 23% — BAM doit maintenant arbitrer entre deux acquéreurs potentiels, les syndicats se divisent" },
+    { "round": 8, "label": "Note Fitch — dégradation outlook CIH", "key": "fitch_note", "description": "Fitch Ratings dégrade l'outlook de CIH Bank de stable à négatif — le financement de l'acquisition par émission obligataire devient plus coûteux et crée une pression sur le calendrier" }
+  ],
+  "expected_outcome": {
+    "verdict_shape": "approuvée_sans_condition / approuvée_avec_cessions / bloquée",
+    "conditions_probables": "liste des cessions ou engagements comportementaux probables",
+    "timeline_bam": "calendrier prévisible de la décision BAM selon les scénarios"
+  },
+  "recommended_settings": {
+    "enable_twitter": true,
+    "enable_reddit": false,
+    "enable_polymarket": true,
+    "rounds": 10,
+    "minutes_per_round": 20160
+  }
+}

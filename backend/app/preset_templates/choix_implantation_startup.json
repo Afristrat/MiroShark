@@ -1,0 +1,54 @@
+{
+  "id": "choix_implantation_startup",
+  "name": "Hub MENA startup deeptech — Casablanca vs Dubaï vs Nairobi (8 semaines)",
+  "category": "Stratégie d'implantation & Expansion",
+  "description": "Simulation 8 semaines du choix de hub régional MENA d'une startup deeptech médicale (BioSynth AI, Série A 18M USD) entre Casablanca (CFC), Dubaï (D33) et Nairobi. 35 agents : VC régionaux, régulateurs santé, directeurs d'hôpitaux, talents tech locaux. Verdict : ville choisie, facteurs déterminants, risques de migration. Cible : founders, DG, conseils d'administration.",
+  "icon": "map-pin",
+  "difficulty": "medium",
+  "estimated_agents": 35,
+  "estimated_rounds": 8,
+  "platforms": ["polymarket", "twitter"],
+  "tags": ["startup", "implantation", "MENA", "healthtech", "venture-capital", "casablanca", "dubai", "nairobi"],
+  "simulation_requirement": "Voir engine.md — BioSynth AI Série A, 3 hubs candidats, 35 agents, 1 round = 1 semaine.",
+  "seed_document": "Voir choix_implantation_startup/01_attachment.md (brief CEO startup, perspective fondatrice) + choix_implantation_startup/02_engine.md (sim_requirement + 6 agent system_prompts VC/régulateurs/hôpitaux/talents/consultants/concurrents + 3 director events + verdict shape).",
+  "default_market_question": "BioSynth AI choisit-elle Casablanca comme hub principal MENA ?",
+  "attachment_path": "choix_implantation_startup/01_attachment.md",
+  "engine_path": "choix_implantation_startup/02_engine.md",
+  "readme_path": "choix_implantation_startup/README.md",
+  "agents": {
+    "total": 35,
+    "breakdown": {
+      "vc_regionaux": 6,
+      "regulateurs_sante": 5,
+      "directeurs_hopitaux": 5,
+      "talents_tech_locaux": 6,
+      "consultants_implantation": 5,
+      "concurrents_etablis": 4,
+      "representants_ecosysteme": 4
+    }
+  },
+  "rounds": {
+    "count": 8,
+    "unit": "week",
+    "label_template": "S+{round}",
+    "days_per_round": 7,
+    "total_simulation_weeks": 8
+  },
+  "director_event_slots": [
+    { "round": 2, "label": "Dubai D33 package spécial HealthTech", "key": "dubai_d33_offer", "description": "Dubaï annonce un package d'incitation D33 spécifiquement ciblé HealthTech IA : visa founder accéléré, subvention loyer année 1, accès direct DHA pour essais cliniques" },
+    { "round": 4, "label": "Accord AMDL — essai clinique Maroc", "key": "amdl_accord", "description": "L'Agence Marocaine des Médicaments (AMDL) signe un protocole d'accord avec CFC pour faciliter les autorisations d'essais cliniques IA — renforce fortement l'attractivité Casablanca" },
+    { "round": 7, "label": "Tour Series B concurrent à Nairobi", "key": "concurrent_nairobi", "description": "Un concurrent direct (Diagno AI, Kenya) lève 24M USD Series B avec ancrage Nairobi — signal fort sur la liquidité VC East Africa et la vitesse de déploiement hospitalier" }
+  ],
+  "expected_outcome": {
+    "verdict_shape": "ville_choisie / facteurs_déterminants / risques_migration",
+    "ville_recommandee": "Casablanca | Dubai | Nairobi + score multicritère",
+    "facteurs_determinants": "liste pondérée des 5 critères déterminants selon les agents"
+  },
+  "recommended_settings": {
+    "enable_twitter": true,
+    "enable_reddit": false,
+    "enable_polymarket": true,
+    "rounds": 8,
+    "minutes_per_round": 10080
+  }
+}

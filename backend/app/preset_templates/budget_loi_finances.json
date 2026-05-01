@@ -1,0 +1,55 @@
+{
+  "id": "budget_loi_finances",
+  "name": "PLF Maroc — Stress test parlementaire (30 jours)",
+  "category": "Politique publique & Budgets",
+  "description": "Simulation 30 jours du parcours législatif d'un Projet de Loi de Finances marocain comportant 3 mesures controversées : hausse TVA services financiers, suppression progressive subventions carburant, taxe bénéfices exceptionnels banques. Verdict : le PLF est-il adopté intact, avec amendements majeurs, ou bloqué en commission ? Cible : ministères des finances, think-tanks économiques, parlementaires.",
+  "icon": "landmark",
+  "difficulty": "hard",
+  "estimated_agents": 50,
+  "estimated_rounds": 10,
+  "platforms": ["polymarket", "twitter", "reddit"],
+  "tags": ["politique-publique", "budget", "maroc", "parlement", "fiscalite", "think-tank", "MENA"],
+  "simulation_requirement": "Voir engine.md — PLF marocain 3 mesures controversées, parcours parlementaire 30 jours, 1 round = 3 jours.",
+  "seed_document": "Voir budget_loi_finances/01_attachment.md (brief think-tank économique, perspective client) + budget_loi_finances/02_engine.md (sim_requirement + 6 agent system_prompts élus/syndicats/patronat/journalistes/économistes/régulateurs + 3 director events + verdict shape).",
+  "default_market_question": "Le PLF est-il voté sans amendements substantiels avant le 15 décembre ?",
+  "attachment_path": "budget_loi_finances/01_attachment.md",
+  "engine_path": "budget_loi_finances/02_engine.md",
+  "readme_path": "budget_loi_finances/README.md",
+  "agents": {
+    "total": 50,
+    "breakdown": {
+      "parlementaires_majorite": 6,
+      "parlementaires_opposition": 6,
+      "syndicats_umt_cdt_ugtm": 6,
+      "patronat_cgem_gpbm": 6,
+      "journalistes_eco": 6,
+      "economistes_independants": 5,
+      "representants_sociaux_pme": 8,
+      "regulateurs_bam_ammc": 7
+    }
+  },
+  "rounds": {
+    "count": 10,
+    "unit": "day",
+    "label_template": "J+{round}",
+    "days_per_round": 3,
+    "total_simulation_days": 30
+  },
+  "director_event_slots": [
+    { "round": 1, "label": "Dépôt officiel du PLF", "key": "depot_plf", "description": "Dépôt officiel du PLF au Parlement — publication du texte intégral, conférence de presse ministère des Finances" },
+    { "round": 5, "label": "Publication rapport Bank Al-Maghrib", "key": "rapport_bam", "description": "Bank Al-Maghrib publie une note d'analyse sur l'impact macroéconomique des 3 mesures — conclusion nuancée mais alarmante sur la taxe banques" },
+    { "round": 8, "label": "Vote en commission des finances", "key": "vote_commission", "description": "La commission des finances vote sur les 3 articles controversés — premier signal fort sur la trajectoire du PLF" }
+  ],
+  "expected_outcome": {
+    "verdict_shape": "adopté_intact | adopté_avec_amendements_majeurs | bloqué_commission",
+    "facteurs_cles": "liste des coalitions parlementaires déterminantes et leurs calculs",
+    "risques_blocage": "conditions sous lesquelles l'opposition obtient le renvoi en commission"
+  },
+  "recommended_settings": {
+    "enable_twitter": true,
+    "enable_reddit": false,
+    "enable_polymarket": true,
+    "rounds": 10,
+    "minutes_per_round": 4320
+  }
+}

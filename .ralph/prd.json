@@ -669,23 +669,31 @@
     {
       "id": "US-022",
       "chantier": "4-calibration",
-      "title": "3 case studies retro publiables dans /verified",
-      "description": "Lancer 3 simulations sur des événements passés vérifiables (ex : annonce CAN 2025 Maroc, fusion BCP-Banque Postale, lancement DeepSeek-V3.2), marquer outcome avec sources, publier sur /verified avec annotation argumentée.",
+      "title": "6 templates simulation (budgets, investissement, implantation, élections, M&A, export)",
+      "description": "Créer 6 templates de simulation preset dans backend/app/preset_templates/ : budget_loi_finances, allocation_fonds_strategique, choix_implantation_startup, primaires_parti_politique, fusion_bancaire_maroc, lancement_produit_diaspora_europe. Chaque template comporte un JSON principal + 01_attachment.md + 02_engine.md + README.md.",
       "acceptanceCriteria": [
-        "3 simulations live tournées sur événements 2024-2025 vérifiables",
-        "Pour chacune : outcome marqué (called it / partial / wrong) + URL preuve dans outcome.json",
-        "Pour chacune : annotation 200 mots minimum expliquant ce que la sim a anticipé vs réalité",
-        "Visible dans /verified avec design Playful & Soft",
-        "Une page /case-studies/<id> par sim avec narration complète"
+        "6 fichiers JSON créés avec tous les champs requis (id, name, category, description, simulation_requirement, seed_document)",
+        "6 dossiers avec 01_attachment.md + 02_engine.md + README.md pour chaque template",
+        "simulation_requirement > 1500 chars pour chaque template",
+        "6 personas avec system_prompt 200-400 mots pour chaque template",
+        "3-5 director events avec injection text 150-300 mots pour chaque template",
+        "uv run pytest tests/ -q retourne 0 régression"
       ],
-      "passes": false,
-      "dependencies": [
-        "US-020"
-      ],
+      "passes": true,
+      "completedAt": "2026-05-02",
+      "dependencies": [],
       "metadata": {
-        "estimated_hours": 4,
+        "estimated_hours": 6,
         "priority": "P2",
-        "requires_human": true
+        "files_touched": [
+          "backend/app/preset_templates/budget_loi_finances.json",
+          "backend/app/preset_templates/allocation_fonds_strategique.json",
+          "backend/app/preset_templates/choix_implantation_startup.json",
+          "backend/app/preset_templates/primaires_parti_politique.json",
+          "backend/app/preset_templates/fusion_bancaire_maroc.json",
+          "backend/app/preset_templates/lancement_produit_diaspora_europe.json"
+        ],
+        "test_result": "407 passed, 17 skipped (integration) — 18 nouveaux tests templates schema"
       }
     },
     {

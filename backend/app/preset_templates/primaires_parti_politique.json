@@ -1,0 +1,54 @@
+{
+  "id": "primaires_parti_politique",
+  "name": "Primaires parti politique — désignation tête de liste (24 jours)",
+  "category": "Politique & Élections",
+  "description": "Simulation 24 jours d'une désignation interne au sein d'un grand parti politique marocain fictif (AND — Alliance Nationale Démocratique) entre 3 candidats : Nadia Chraibi (technocrate libérale), Hassan Benjelloun (populiste économique), Youssef Belmahi (réformateur digital). 50 agents : militants régionaux, élus locaux, presse politique, analystes. Verdict : candidat désigné, coalition de soutien, fractures internes. Cible : partis politiques, think-tanks politiques, cabinets conseil.",
+  "icon": "vote",
+  "difficulty": "hard",
+  "estimated_agents": 50,
+  "estimated_rounds": 8,
+  "platforms": ["polymarket", "twitter", "reddit"],
+  "tags": ["politique", "elections", "maroc", "primaires", "partis", "think-tank", "MENA"],
+  "simulation_requirement": "Voir engine.md — AND parti fictif, 3 candidats, 50 agents, 1 round = 3 jours.",
+  "seed_document": "Voir primaires_parti_politique/01_attachment.md (brief directeur de campagne, perspective client) + primaires_parti_politique/02_engine.md (sim_requirement + 6 agent system_prompts militants/élus/presse/analystes/jeunes/diplomates + 3 director events + verdict shape).",
+  "default_market_question": "Nadia Chraibi remporte-t-elle la désignation au premier tour ?",
+  "attachment_path": "primaires_parti_politique/01_attachment.md",
+  "engine_path": "primaires_parti_politique/02_engine.md",
+  "readme_path": "primaires_parti_politique/README.md",
+  "agents": {
+    "total": 50,
+    "breakdown": {
+      "militants_regionaux_9_regions": 18,
+      "elus_locaux_and": 8,
+      "presse_politique": 6,
+      "analystes_politiques": 5,
+      "jeunes_adherents": 6,
+      "observateurs_csmd": 4,
+      "diplomates": 3
+    }
+  },
+  "rounds": {
+    "count": 8,
+    "unit": "day",
+    "label_template": "J+{round}",
+    "days_per_round": 3,
+    "total_simulation_days": 24
+  },
+  "director_event_slots": [
+    { "round": 2, "label": "Débat interne retransmis en direct", "key": "debat_interne", "description": "Débat interne AND retransmis en direct sur YouTube — Hassan Benjelloun surprend positivement avec une attaque sur la politique d'austérité, Nadia Chraibi joue la prudence, Youssef Belmahi propose un programme 100% digital" },
+    { "round": 5, "label": "Sondage interne — résultats surprenants", "key": "sondage_interne", "description": "Publication d'un sondage interne (800 militants interrogés) : Benjelloun 38%, Chraibi 34%, Belmahi 28% — renverse la perception du favori et relance totalement le jeu" },
+    { "round": 7, "label": "Révélation d'un accord transactionnel", "key": "accord_transactionnel", "description": "Une source interne révèle à TelQuel qu'un accord est en négociation : Belmahi accepterait de se retirer en échange d'un poste de secrétaire général chargé de la transformation numérique, au profit de Chraibi" }
+  ],
+  "expected_outcome": {
+    "verdict_shape": "candidat_désigné / coalition_soutien / fractures_internes",
+    "candidat_gagnant": "Chraibi | Benjelloun | Belmahi + nombre de tours",
+    "fractures_internes": "lignes de fracture géographiques et idéologiques entre les 9 régions"
+  },
+  "recommended_settings": {
+    "enable_twitter": true,
+    "enable_reddit": true,
+    "enable_polymarket": true,
+    "rounds": 8,
+    "minutes_per_round": 4320
+  }
+}

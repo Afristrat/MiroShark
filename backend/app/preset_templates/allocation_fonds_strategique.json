@@ -1,0 +1,53 @@
+{
+  "id": "allocation_fonds_strategique",
+  "name": "Allocation fonds souverain — 400M USD (10 semaines)",
+  "category": "Stratégie financière & Investissement",
+  "description": "Simulation 10 semaines d'un comité d'investissement panafricain (2,4 Mds USD, Casablanca) devant allouer 400M USD entre 4 options mutuellement exclusives : acquisition producteur engrais brésilien, AgriTech IA Afrique subsaharienne, infrastructure portuaire Atlantique Maroc, Green Hydrogen. Verdict : quelle option, IRR projeté, risques bloquants. Cible : comités d'investissement, CFO, fonds souverains.",
+  "icon": "trending-up",
+  "difficulty": "hard",
+  "estimated_agents": 30,
+  "estimated_rounds": 10,
+  "platforms": ["polymarket", "twitter"],
+  "tags": ["investissement", "fonds-souverain", "MENA", "afrique", "M&A", "infrastructure", "green-hydrogen", "agritech"],
+  "simulation_requirement": "Voir engine.md — fonds institutionnel 2,4 Mds USD, 4 options exclusives, 30 agents, 1 round = 1 semaine.",
+  "seed_document": "Voir allocation_fonds_strategique/01_attachment.md (brief CFO fonds institutionnel, perspective client) + allocation_fonds_strategique/02_engine.md (sim_requirement + 6 agent system_prompts analystes/investisseurs/experts/régulateurs/journalistes + 3 director events + verdict shape).",
+  "default_market_question": "L'option A (acquisition producteur engrais brésilien) génère-t-elle un IRR > 15 % à 7 ans ?",
+  "attachment_path": "allocation_fonds_strategique/01_attachment.md",
+  "engine_path": "allocation_fonds_strategique/02_engine.md",
+  "readme_path": "allocation_fonds_strategique/README.md",
+  "agents": {
+    "total": 30,
+    "breakdown": {
+      "analystes_buy_side": 6,
+      "investisseurs_institutionnels": 6,
+      "experts_sectoriels": 6,
+      "regulateurs_ammc": 3,
+      "journalistes_financiers": 5,
+      "membres_comite_investissement": 4
+    }
+  },
+  "rounds": {
+    "count": 10,
+    "unit": "week",
+    "label_template": "S+{round}",
+    "days_per_round": 7,
+    "total_simulation_weeks": 10
+  },
+  "director_event_slots": [
+    { "round": 2, "label": "Due diligence rapport préliminaire", "key": "dd_rapport", "description": "Publication du rapport de due diligence préliminaire sur les 4 options — surprises négatives sur l'option A (passifs environnementaux Brésil), surprises positives sur l'option D (accord IRESEN avancé)" },
+    { "round": 5, "label": "Choc macro : phosphates -12%", "key": "choc_phosphates", "description": "OCP annonce une révision à la baisse de ses prévisions phosphates — l'option A (producteur engrais) perd immédiatement de son attrait stratégique aux yeux des analystes" },
+    { "round": 8, "label": "Offre concurrente sur option C", "key": "offre_concurrente", "description": "Un consortium asiatique soumet une offre sur le même actif portuaire Atlantique (option C), créant une urgence de décision inattendue pour le comité" }
+  ],
+  "expected_outcome": {
+    "verdict_shape": "option_gagnante / facteurs_critiques / risques_bloquants",
+    "option_recommandee": "lettre A/B/C/D + justification IRR projeté",
+    "risques_bloquants": "liste des conditions pouvant invalider l'option retenue"
+  },
+  "recommended_settings": {
+    "enable_twitter": true,
+    "enable_reddit": false,
+    "enable_polymarket": true,
+    "rounds": 10,
+    "minutes_per_round": 10080
+  }
+}
