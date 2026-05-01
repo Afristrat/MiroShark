@@ -123,12 +123,13 @@
 
         <!-- Tooltip -->
         <g v-if="hoveredNode && nodePos[hoveredNode]" :transform="`translate(${tooltipX},${tooltipY})`">
+          <!-- US-013: rx remplacé par style rx=var(--ms-radius-md), fond var(--ms-surface) -->
           <rect
             x="-4" y="-14"
             :width="tooltipWidth + 8"
             height="52"
-            rx="4"
-            fill="rgba(250,250,250,0.95)"
+            style="rx: var(--ms-radius-md);"
+            fill="var(--ms-surface, rgba(250,250,250,0.95))"
             stroke="rgba(10,10,10,0.15)"
             stroke-width="1"
           />
@@ -189,6 +190,12 @@ import {
   canCopyImageToClipboard,
   buildTitledHeader,
 } from '../utils/chartExport'
+import { readChartPalette } from '../utils/css-vars'
+
+// US-013 : palette sémantique lue depuis les design tokens CSS.
+// Nodes : bullish → success, bearish → danger, neutral → chart9.
+// Edges : twitter → info, reddit → chart1 (orange), cross-platform → violet.
+const palette = readChartPalette()
 
 const props = defineProps({
   simulationId: { type: String, required: true },
@@ -386,21 +393,31 @@ const nodeRadius = (n) => {
   return base + (n.total_degree / maxDegree.value) * scale
 }
 
+// US-013 : hex hardcodés remplacés par tokens CSS lus via readChartPalette().
+// Bullish → success (#22c55e), bearish → danger (#ef4444), neutral → chart9 (#7A7A7A).
+// Twitter → info (#3b82f6), reddit → chart1 (#FF6B1A, orange), cross → violet (#7C3AED).
+const _hexToRgba = (hex, alpha) => {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return `rgba(${r},${g},${b},${alpha})`
+}
+
 const nodeColor = (n) => {
   const colors = {
-    bullish: 'rgba(20,184,166,0.8)',
-    bearish: 'rgba(239,68,68,0.8)',
-    neutral: 'rgba(148,163,184,0.8)',
+    bullish: _hexToRgba(palette.success, 0.8),
+    bearish: _hexToRgba(palette.danger, 0.8),
+    neutral: _hexToRgba(palette.chart9, 0.8),
   }
   return colors[n.stance] || colors.neutral
 }
 
 const edgeColor = (e) => {
-  if (e.is_cross_platform) return 'rgba(139,92,246,0.6)'
+  if (e.is_cross_platform) return _hexToRgba(palette.violet, 0.6)
   const p = e.platforms?.[0]
-  if (p === 'twitter') return 'rgba(59,130,246,0.5)'
-  if (p === 'reddit') return 'rgba(249,115,22,0.5)'
-  return 'rgba(148,163,184,0.4)'
+  if (p === 'twitter') return _hexToRgba(palette.info, 0.5)
+  if (p === 'reddit') return _hexToRgba(palette.chart1, 0.5)
+  return _hexToRgba(palette.chart9, 0.4)
 }
 
 const edgeWidth = (e) => {
@@ -695,9 +712,10 @@ onBeforeUnmount(() => {
   border-radius: 50%;
 }
 
-.bullish-dot { background: rgba(20,184,166,0.8); }
-.neutral-dot { background: rgba(148,163,184,0.8); }
-.bearish-dot { background: rgba(239,68,68,0.8); }
+/* US-013: hex hardcodés remplacés par tokens --ms-status-* / --ms-chart-9 */
+.bullish-dot { background: var(--ms-status-success); opacity: 0.8; }
+.neutral-dot { background: var(--ms-chart-9); opacity: 0.8; }
+.bearish-dot { background: var(--ms-status-danger); opacity: 0.8; }
 
 .legend-sep {
   color: rgba(10,10,10,0.15);
@@ -710,9 +728,10 @@ onBeforeUnmount(() => {
   border-radius: 1px;
 }
 
-.twitter-line { background: rgba(59,130,246,0.7); }
-.reddit-line { background: rgba(249,115,22,0.7); }
-.cross-line { background: rgba(139,92,246,0.7); }
+/* US-013: hex hardcodés remplacés par tokens --ms-status-info / --ms-chart-1 / --ms-status-violet */
+.twitter-line { background: var(--ms-status-info); opacity: 0.7; }
+.reddit-line { background: var(--ms-chart-1); opacity: 0.7; }
+.cross-line { background: var(--ms-status-violet); opacity: 0.7; }
 
 /* Filters */
 .net-filters {

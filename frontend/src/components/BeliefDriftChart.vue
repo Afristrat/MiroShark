@@ -71,27 +71,27 @@
           >{{ pct }}%</text>
         </g>
 
-        <!-- Stacked area: bearish (bottom layer, coral) -->
+        <!-- Stacked area: bearish (bottom layer) — US-013: --ms-status-danger -->
         <path
           :d="bearishPath"
-          fill="rgba(239,68,68,0.55)"
-          stroke="rgba(239,68,68,0.8)"
+          :fill="bearishFill"
+          :stroke="bearishStroke"
           stroke-width="1"
         />
 
-        <!-- Stacked area: neutral (middle, slate) -->
+        <!-- Stacked area: neutral (middle) — US-013: --ms-chart-9 -->
         <path
           :d="neutralPath"
-          fill="rgba(148,163,184,0.55)"
-          stroke="rgba(148,163,184,0.8)"
+          :fill="neutralFill"
+          :stroke="neutralStroke"
           stroke-width="1"
         />
 
-        <!-- Stacked area: bullish (top, teal) -->
+        <!-- Stacked area: bullish (top) — US-013: --ms-status-success -->
         <path
           :d="bullishPath"
-          fill="rgba(20,184,166,0.55)"
-          stroke="rgba(20,184,166,0.8)"
+          :fill="bullishFill"
+          :stroke="bullishStroke"
           stroke-width="1"
         />
 
@@ -167,6 +167,13 @@ import {
   canCopyImageToClipboard,
   buildTitledHeader,
 } from '../utils/chartExport'
+import { readChartPalette } from '../utils/css-vars'
+
+// US-013 : palette sémantique lue depuis les design tokens CSS au mount.
+// bullish → --ms-status-success (#22c55e), bearish → --ms-status-danger (#ef4444)
+// neutral → --ms-chart-9 (#7A7A7A — gris neutre).
+// Les hex rgba hardcodés (teal/slate/coral) sont remplacés par ces tokens.
+const palette = readChartPalette()
 
 const props = defineProps({
   simulationId: { type: String, required: true },
@@ -253,6 +260,22 @@ const eventMarkers = computed(() => {
     .filter(e => e.injected_at_round != null)
     .map(e => ({ round: e.injected_at_round, text: e.event_text }))
 })
+
+// US-013 : couleurs sémantiques issues des design tokens.
+// Bullish = success (vert), bearish = danger (rouge), neutral = chart9 (gris).
+// Les fills utilisent une opacité de 55 % et les strokes 80 %.
+const _hexToRgba = (hex, alpha) => {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return `rgba(${r},${g},${b},${alpha})`
+}
+const bullishFill   = _hexToRgba(palette.success, 0.55)
+const bullishStroke = _hexToRgba(palette.success, 0.8)
+const bearishFill   = _hexToRgba(palette.danger, 0.55)
+const bearishStroke = _hexToRgba(palette.danger, 0.8)
+const neutralFill   = _hexToRgba(palette.chart9, 0.55)
+const neutralStroke = _hexToRgba(palette.chart9, 0.8)
 
 const load = async () => {
   if (!props.simulationId) return
@@ -373,7 +396,7 @@ onBeforeUnmount(() => {
 }
 
 .bd-icon {
-  color: #14b8a6;
+  color: var(--ms-status-success); /* US-013: was #14b8a6 (teal hardcodé) */
   font-size: 14px;
 }
 
@@ -435,9 +458,10 @@ onBeforeUnmount(() => {
   height: 8px;
 }
 
-.bullish-dot { background: rgba(20,184,166,0.7); }
-.neutral-dot  { background: rgba(148,163,184,0.7); }
-.bearish-dot  { background: rgba(239,68,68,0.7); }
+/* US-013: hex hardcodés remplacés par tokens --ms-status-* / --ms-chart-9 */
+.bullish-dot { background: var(--ms-status-success); opacity: 0.7; }
+.neutral-dot  { background: var(--ms-chart-9); opacity: 0.7; }
+.bearish-dot  { background: var(--ms-status-danger); opacity: 0.7; }
 
 /* States */
 .bd-state {
@@ -464,7 +488,7 @@ onBeforeUnmount(() => {
 .pulse-ring {
   width: 20px;
   height: 20px;
-  border: 2px solid #14b8a6;
+  border: 2px solid var(--ms-status-success); /* US-013: was #14b8a6 */
   border-radius: 50%;
   animation: pulse 1.2s ease-in-out infinite;
 }

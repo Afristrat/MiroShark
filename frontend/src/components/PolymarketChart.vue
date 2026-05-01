@@ -874,16 +874,17 @@ onBeforeUnmount(() => {
   border-radius: 0;
 }
 
+/* US-013: hex hardcodés remplacés par tokens --ms-chart-* */
 .pm-chart-delta.pm-up {
-  background: rgba(67, 193, 101, 0.12);
+  background: color-mix(in srgb, var(--ms-chart-2) 12%, transparent);
 }
 
 .pm-chart-delta.pm-down {
-  background: rgba(255, 68, 68, 0.12);
+  background: color-mix(in srgb, var(--ms-chart-5) 12%, transparent);
 }
 
 .pm-chart-delta.pm-neutral {
-  background: rgba(255, 107, 26, 0.12);
+  background: color-mix(in srgb, var(--ms-chart-1) 12%, transparent);
 }
 
 .pm-chart-stats {

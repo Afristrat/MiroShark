@@ -397,8 +397,9 @@ onMounted(() => { if (props.visible) load() })
   letter-spacing: 1px;
 }
 
+/* US-013: hex hardcodé remplacé par token --ms-status-danger */
 .demo-error-state {
-  color: rgba(239,68,68,0.8);
+  color: var(--ms-status-danger);
 }
 
 .demo-hint {
@@ -409,8 +410,9 @@ onMounted(() => { if (props.visible) load() })
 .pulse-ring {
   width: 24px;
   height: 24px;
-  border: 2px solid rgba(236,72,153,0.15);
-  border-top-color: rgba(236,72,153,0.7);
+  /* US-013: hex hardcodés remplacés par token --ms-status-pink */
+  border: 2px solid color-mix(in srgb, var(--ms-status-pink) 15%, transparent);
+  border-top-color: var(--ms-status-pink);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -479,9 +481,10 @@ onMounted(() => { if (props.visible) load() })
   border-radius: 50%;
 }
 
-.bullish-dot { background: rgba(20,184,166,0.8); }
-.neutral-dot { background: rgba(148,163,184,0.8); }
-.bearish-dot { background: rgba(239,68,68,0.8); }
+/* US-013: hex hardcodés remplacés par tokens --ms-status-* / --ms-chart-9 */
+.bullish-dot { background: var(--ms-status-success); opacity: 0.8; }
+.neutral-dot { background: var(--ms-chart-9); opacity: 0.8; }
+.bearish-dot { background: var(--ms-status-danger); opacity: 0.8; }
 
 .legend-sep {
   color: rgba(10,10,10,0.15);
@@ -537,9 +540,10 @@ onMounted(() => { if (props.visible) load() })
   transition: width 0.25s ease;
 }
 
-.stance-bullish { background: rgba(20,184,166,0.75); }
-.stance-neutral { background: rgba(148,163,184,0.55); }
-.stance-bearish { background: rgba(239,68,68,0.75); }
+/* US-013: hex hardcodés remplacés par tokens --ms-status-* / --ms-chart-9 */
+.stance-bullish { background: color-mix(in srgb, var(--ms-status-success) 75%, transparent); }
+.stance-neutral { background: color-mix(in srgb, var(--ms-chart-9) 55%, transparent); }
+.stance-bearish { background: color-mix(in srgb, var(--ms-status-danger) 75%, transparent); }
 
 .demo-metrics {
   display: flex;
@@ -568,9 +572,10 @@ onMounted(() => { if (props.visible) load() })
   letter-spacing: 0.5px;
 }
 
-.stance-val-bullish { color: rgba(13,148,136,0.95); }
-.stance-val-bearish { color: rgba(220,38,38,0.95); }
-.stance-val-neutral { color: rgba(100,116,139,0.9); }
+/* US-013: hex hardcodés remplacés par tokens --ms-status-* / --ms-chart-9 */
+.stance-val-bullish { color: var(--ms-status-success-strong); }
+.stance-val-bearish { color: var(--ms-status-danger-strong); }
+.stance-val-neutral { color: var(--ms-chart-9); }
 
 .demo-footer-hint {
   font-size: 10px;
