@@ -16,7 +16,7 @@
     <div v-if="presetBranches.length" class="cf-preset-row">
       <label class="cf-preset-label">Preset</label>
       <select
-        class="cf-preset-select"
+        class="cf-preset-select ms-input"
         :value="selectedPresetId"
         @change="applyPreset($event.target.value)"
       >
@@ -34,7 +34,7 @@
       <label class="cf-form-label">Trigger round</label>
       <input
         type="number"
-        class="cf-form-input cf-form-input--narrow"
+        class="cf-form-input cf-form-input--narrow ms-input"
         :min="0"
         :max="totalRounds || 999"
         v-model.number="triggerRound"
@@ -50,7 +50,7 @@
       <label class="cf-form-label">Label</label>
       <input
         type="text"
-        class="cf-form-input"
+        class="cf-form-input ms-input"
         v-model="label"
         maxlength="80"
         placeholder="e.g. CEO resigns"
@@ -62,7 +62,7 @@
     <div class="cf-form-row cf-form-row--stack">
       <label class="cf-form-label">Injection (breaking-news style)</label>
       <textarea
-        class="cf-form-textarea"
+        class="cf-form-textarea ms-input"
         v-model="injectionText"
         maxlength="2000"
         placeholder="The board has just announced the CEO's resignation, effective immediately. The CFO steps in as interim lead."

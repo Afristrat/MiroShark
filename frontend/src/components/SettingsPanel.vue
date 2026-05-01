@@ -70,7 +70,7 @@
           <div class="field-row">
             <label class="field-label">Config template</label>
             <div class="select-wrapper">
-              <select v-model="form.preset" class="field-select">
+              <select v-model="form.preset" class="field-select ms-input">
                 <option value="">Custom — leave fields as they are</option>
                 <option
                   v-for="p in presetOptions"
@@ -92,7 +92,7 @@
             <div class="key-input-group">
               <input
                 v-model="form.presetApiKey"
-                class="field-input"
+                class="field-input ms-input"
                 :type="showKey ? 'text' : 'password'"
                 placeholder="sk-or-v1-..."
               />
@@ -117,7 +117,7 @@
           <div class="field-row">
             <label class="field-label">Provider</label>
             <div class="select-wrapper">
-              <select v-model="form.llm.provider" class="field-select">
+              <select v-model="form.llm.provider" class="field-select ms-input">
                 <option value="openai">OpenAI-compatible (OpenRouter, Ollama, etc.)</option>
                 <option value="claude-code">Claude Code (local CLI)</option>
               </select>
@@ -129,7 +129,7 @@
             <label class="field-label">Base URL</label>
             <input
               v-model="form.llm.base_url"
-              class="field-input"
+              class="field-input ms-input"
               type="url"
               placeholder="https://openrouter.ai/api/v1"
             />
@@ -143,7 +143,7 @@
                 <select
                   v-if="modelList.length > 0"
                   v-model="form.llm.model_name"
-                  class="field-select"
+                  class="field-select ms-input"
                 >
                   <optgroup
                     v-for="tier in modelTiers"
@@ -160,7 +160,7 @@
                 <input
                   v-else
                   v-model="form.llm.model_name"
-                  class="field-input"
+                  class="field-input ms-input"
                   type="text"
                   placeholder="e.g. openai/gpt-4o-mini"
                 />
@@ -184,7 +184,7 @@
             <div class="key-input-group">
               <input
                 v-model="form.llm.api_key"
-                class="field-input"
+                class="field-input ms-input"
                 :type="showKey ? 'text' : 'password'"
                 :placeholder="currentSettings.llm?.api_key_masked || 'sk-...'"
               />
@@ -237,7 +237,7 @@
                 <label class="field-label">Model</label>
                 <input
                   v-model="form.smart.model_name"
-                  class="field-input"
+                  class="field-input ms-input"
                   type="text"
                   placeholder="e.g. anthropic/claude-sonnet-4.6"
                 />
@@ -251,7 +251,7 @@
                 <label class="field-label">Model</label>
                 <input
                   v-model="form.ner.model_name"
-                  class="field-input"
+                  class="field-input ms-input"
                   type="text"
                   placeholder="e.g. google/gemini-2.0-flash-001"
                 />
@@ -265,7 +265,7 @@
                 <label class="field-label">Model</label>
                 <input
                   v-model="form.wonderwall.model_name"
-                  class="field-input"
+                  class="field-input ms-input"
                   type="text"
                   placeholder="e.g. google/gemini-2.0-flash-lite-001"
                 />
@@ -278,7 +278,7 @@
               <div class="field-row">
                 <label class="field-label">Provider</label>
                 <div class="select-wrapper">
-                  <select v-model="form.embedding.provider" class="field-select">
+                  <select v-model="form.embedding.provider" class="field-select ms-input">
                     <option value="ollama">Ollama (local)</option>
                     <option value="openai">OpenAI-compatible</option>
                   </select>
@@ -288,7 +288,7 @@
                 <label class="field-label">Model</label>
                 <input
                   v-model="form.embedding.model_name"
-                  class="field-input"
+                  class="field-input ms-input"
                   type="text"
                   placeholder="e.g. openai/text-embedding-3-small"
                 />
@@ -302,7 +302,7 @@
                 <label class="field-label">Model</label>
                 <input
                   v-model="form.web_search_model"
-                  class="field-input"
+                  class="field-input ms-input"
                   type="text"
                   placeholder="e.g. google/gemini-2.0-flash-001:online"
                 />
@@ -321,7 +321,7 @@
             <label class="field-label">URI</label>
             <input
               v-model="form.neo4j.uri"
-              class="field-input"
+              class="field-input ms-input"
               type="text"
               placeholder="bolt://localhost:7687"
             />
@@ -331,7 +331,7 @@
             <label class="field-label">User</label>
             <input
               v-model="form.neo4j.user"
-              class="field-input"
+              class="field-input ms-input"
               type="text"
               placeholder="neo4j"
             />
@@ -341,7 +341,7 @@
             <label class="field-label">Password</label>
             <input
               v-model="form.neo4j.password"
-              class="field-input"
+              class="field-input ms-input"
               type="password"
               placeholder="Leave blank to keep unchanged"
             />
@@ -369,7 +369,7 @@
             <label class="field-label">Webhook URL</label>
             <input
               v-model="form.integrations.webhook.url"
-              class="field-input"
+              class="field-input ms-input"
               type="text"
               :placeholder="webhookPlaceholder"
               autocomplete="off"
@@ -389,7 +389,7 @@
             <label class="field-label">Public base URL <span class="field-label-optional">(optional)</span></label>
             <input
               v-model="form.integrations.webhook.public_base_url"
-              class="field-input"
+              class="field-input ms-input"
               type="text"
               placeholder="https://miroshark.app"
               autocomplete="off"
@@ -1311,7 +1311,7 @@ const saveSettings = async () => {
   letter-spacing: 0.5px;
 }
 
-.webhook-test-result.ok { color: #15803D; }
+.webhook-test-result.ok { color: var(--ms-legacy-success-dark); }
 .webhook-test-result.fail { color: var(--ld); }
 
 .field-label-optional {

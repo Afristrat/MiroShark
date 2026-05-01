@@ -38,26 +38,26 @@
       <div class="search-input-wrap">
         <input
           v-model="searchQuery"
-          class="search-input"
+          class="search-input ms-input"
           :placeholder="$t('panels.history.search')"
           type="text"
         />
         <span v-if="searchQuery" class="search-clear" @click="searchQuery = ''">×</span>
       </div>
       <div class="filter-controls">
-        <select v-model="statusFilter" class="filter-select">
+        <select v-model="statusFilter" class="filter-select ms-input">
           <option value="all">{{ $t('panels.history.filterAll') }}</option>
           <option value="completed">{{ $t('panels.history.filterCompleted') }}</option>
           <option value="in-progress">{{ $t('panels.history.filterRunning') }}</option>
           <option value="not-started">{{ $t('panels.history.filterFailed') }}</option>
         </select>
-        <select v-model="dateFilter" class="filter-select">
+        <select v-model="dateFilter" class="filter-select ms-input">
           <option value="all">All Time</option>
           <option value="today">Today</option>
           <option value="week">This Week</option>
           <option value="month">This Month</option>
         </select>
-        <select v-model="sortOrder" class="filter-select">
+        <select v-model="sortOrder" class="filter-select ms-input">
           <option value="newest">Newest First</option>
           <option value="oldest">Oldest First</option>
           <option value="most-agents">Most Agents</option>
@@ -461,7 +461,7 @@
                 <label class="fork-label">Scenario (edit to explore a variant)</label>
                 <textarea
                   v-model="forkRequirement"
-                  class="fork-textarea"
+                  class="fork-textarea ms-input"
                   placeholder="Describe the scenario you want to simulate..."
                   rows="3"
                 ></textarea>
@@ -2203,7 +2203,7 @@ onUnmounted(() => {
   padding: 8px 22px;
   border: 1px solid rgba(255, 179, 71, 0.5);
   background: rgba(255, 179, 71, 0.06);
-  color: #CC8800;
+  color: var(--ms-legacy-warning);
   font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 600;
@@ -2310,7 +2310,7 @@ onUnmounted(() => {
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 600;
-  color: #CC8800;
+  color: var(--ms-legacy-warning);
   cursor: pointer;
   letter-spacing: 2px;
   transition: all 0.2s;
@@ -2341,7 +2341,7 @@ onUnmounted(() => {
 }
 .resolution-badge.correct  { color: var(--ms-status-success); background: rgba(34,197,94,0.1); }
 .resolution-badge.wrong    { color: var(--ms-status-danger); background: rgba(239,68,68,0.1); }
-.resolution-badge.neutral  { color: #a78bfa; background: rgba(167,139,250,0.1); }
+.resolution-badge.neutral  { color: var(--ms-status-violet-soft); background: rgba(167,139,250,0.1); }
 .resolution-badge.pending  { font-size: 8px; color: rgba(10,10,10,0.4); border-color: rgba(10,10,10,0.2); background: transparent; }
 
 .quality-dot {
@@ -2517,7 +2517,7 @@ onUnmounted(() => {
 .accuracy-value { font-size: 12px; }
 .accuracy-value.correct { color: var(--ms-status-success-strong); }
 .accuracy-value.wrong   { color: var(--ms-status-danger-strong); }
-.accuracy-value.split   { color: #a78bfa; }
+.accuracy-value.split   { color: var(--ms-status-violet-soft); }
 .resolve-notes {
   font-size: 11px;
   color: rgba(10,10,10,0.5);
@@ -2713,6 +2713,8 @@ onUnmounted(() => {
   padding: 14px 16px;
   background: var(--ms-text-on-color);
   border: 1px solid rgba(10,10,10,0.06);
+  border-radius: var(--ms-radius-md);
+  box-shadow: var(--ms-shadow-sm);
 }
 
 .quality-health-badge {
@@ -2860,8 +2862,8 @@ onUnmounted(() => {
   width: 100%;
   padding: 24px;
   background: var(--ms-cream, var(--ms-legacy-orange-soft));
-  border-radius: 8px;
-  box-shadow: 0 8px 32px rgba(10,10,10,0.2);
+  border-radius: var(--ms-radius-md);
+  box-shadow: var(--ms-shadow-md);
 }
 .delete-modal-title {
   margin: 0 0 12px;
@@ -2878,7 +2880,7 @@ onUnmounted(() => {
 .delete-modal-warning {
   margin: 0 0 16px;
   padding: 10px 12px;
-  background: #fff4e0;
+  background: var(--ms-legacy-orange-soft);
   border-inline-start: 3px solid var(--ms-orange, var(--lo));
   font-size: 13px;
   line-height: 1.45;

@@ -35,7 +35,7 @@
 
       <!-- Filters -->
       <div class="debug-filters">
-        <select v-model="filterPlatform" class="debug-select">
+        <select v-model="filterPlatform" class="debug-select ms-input">
           <option value="">All platforms</option>
           <option value="twitter">Twitter</option>
           <option value="reddit">Reddit</option>
@@ -43,7 +43,7 @@
         </select>
         <input
           v-model="filterText"
-          class="debug-input"
+          class="debug-input ms-input"
           placeholder="Filter..."
         />
         <label class="debug-checkbox">
@@ -490,7 +490,7 @@ onUnmounted(() => {
   width: 560px;
   max-height: 70vh;
   background: var(--li);
-  color: #E0E0E0;
+  color: var(--ms-legacy-muted-6);
   font-family: 'Space Mono', 'Courier New', monospace;
   font-size: 11px;
   border-top: 3px solid var(--color-orange, var(--lo));
@@ -649,7 +649,7 @@ onUnmounted(() => {
 
 .debug-select, .debug-input {
   background: var(--li2);
-  border: 1px solid #333;
+  border: 1px solid var(--ms-legacy-ink-mid);
   color: var(--ms-legacy-muted-6);
   font-family: inherit;
   font-size: 10px;
@@ -684,7 +684,7 @@ onUnmounted(() => {
 
 .debug-content::-webkit-scrollbar { width: 6px; }
 .debug-content::-webkit-scrollbar-track { background: var(--li); }
-.debug-content::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+.debug-content::-webkit-scrollbar-thumb { background: var(--ms-legacy-ink-mid); border-radius: 3px; }
 
 .debug-empty {
   padding: 24px;
@@ -726,11 +726,11 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
-.debug-badge--llm_call { background: rgba(99,102,241,0.2); color: #818cf8; }
+.debug-badge--llm_call { background: var(--ms-blue-soft); color: var(--ms-blue); }
 .debug-badge--agent_decision { background: rgba(67,193,101,0.2); color: var(--ls); }
 .debug-badge--round_boundary { background: rgba(255,179,71,0.2); color: var(--ms-peach); }
-.debug-badge--graph_build { background: rgba(59,130,246,0.2); color: #60a5fa; }
-.debug-badge--graph_ner { background: rgba(59,130,246,0.15); color: #93c5fd; }
+.debug-badge--graph_build { background: var(--ms-blue-soft); color: var(--ms-blue); }
+.debug-badge--graph_ner { background: rgba(90,127,219,0.1); color: var(--ms-status-info); }
 .debug-badge--error { background: rgba(255,68,68,0.2); color: var(--ld); }
 .debug-badge--system { background: rgba(255,255,255,0.1); color: var(--ms-legacy-muted-3); }
 
@@ -782,14 +782,16 @@ onUnmounted(() => {
   gap: 6px;
   padding: 8px;
   border-bottom: 1px solid var(--li2);
+  border-radius: var(--ms-radius-md);
 }
 
 .debug-stat-card {
   background: var(--li2);
   padding: 6px 8px;
-  border-radius: 3px;
+  border-radius: var(--ms-radius-md);
   text-align: center;
   border: 1px solid var(--ms-legacy-ink-mid);
+  box-shadow: var(--ms-shadow-sm);
 }
 
 .debug-stat-card__value {
@@ -827,8 +829,8 @@ onUnmounted(() => {
 }
 
 .debug-col--time { width: 65px; flex-shrink: 0; color: var(--ms-legacy-muted); }
-.debug-col--caller { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #93c5fd; }
-.debug-col--model { width: 100px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; color: #ddd; }
+.debug-col--caller { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ms-status-info); }
+.debug-col--model { width: 100px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; color: var(--ms-legacy-muted-6); }
 .debug-col--tokens { width: 70px; flex-shrink: 0; text-align: end; color: var(--ms-legacy-muted-5); }
 .debug-col--latency { width: 65px; flex-shrink: 0; text-align: end; }
 
@@ -964,8 +966,8 @@ onUnmounted(() => {
 .debug-traceback {
   margin: 4px 0 0 0;
   font-size: 10px;
-  color: #FF8888;
-  background: #1a0000;
+  color: var(--ms-rose);
+  background: var(--ms-rose-soft);
   padding: 6px;
   border-radius: 2px;
   white-space: pre-wrap;
