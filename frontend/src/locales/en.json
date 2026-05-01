@@ -99,7 +99,9 @@
       "promptPlaceholder": "// Enter your simulation or prediction requirements in natural language (e.g., If a university announces the revocation of a disciplinary action against a student, what public opinion trends will emerge?)",
       "engine": "Engine: Bassira-V1.0",
       "launch": "Launch Simulation",
-      "initializing": "Initializing..."
+      "initializing": "Initializing...",
+      "pdfScanTitle": "Unreadable PDF",
+      "pdfScanHint": "This file appears to be a scanned image without text. The graph may be empty. Use 'Just Ask' to describe its content or import a version with a text layer."
     }
   },
   "scenarios": {
@@ -233,7 +235,16 @@
         "createFailed": "Failed to create simulation: {error}",
         "createError": "Simulation creation error: {error}",
         "unknownError": "Unknown error",
-        "disabledEmptyGraph": "The graph contains no entities. Use the Step 1.5 « Review entities » page to add entities, or rebuild the graph from a richer document before launching the simulation."
+        "disabledEmptyGraph": "No entities extracted — click 'Add entities manually' below or go back.",
+        "emptyGraph": {
+          "title": "Empty graph — no entities extracted",
+          "desc": "The knowledge graph contains no actors. The simulation cannot start without agents.",
+          "cause1": "Scanned or image-only PDF — no extractable text layer",
+          "cause2": "Document too short or too generic — the LLM found no entities",
+          "cause3": "LLM key not configured — ontology generation failed silently",
+          "ctaReview": "Add entities manually (Step 1.5)",
+          "ctaBack": "Go back and use another document"
+        }
       },
       "refineContext": {
         "title": "Refine context",

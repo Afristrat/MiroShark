@@ -99,7 +99,9 @@
       "promptPlaceholder": "// Décrivez vos exigences de simulation ou de prédiction en langage naturel (ex. : si une université annonce la levée d’une sanction disciplinaire contre un étudiant, quelles tendances d’opinion publique vont émerger ?)",
       "engine": "Moteur : Bassira-V1.0",
       "launch": "Lancer la simulation",
-      "initializing": "Initialisation…"
+      "initializing": "Initialisation…",
+      "pdfScanTitle": "PDF non lisible",
+      "pdfScanHint": "Ce fichier semble être un scan (image sans texte). Le graphe risque d'être vide. Utilisez « Posez simplement » pour décrire son contenu ou importez une version avec couche texte."
     }
   },
   "scenarios": {
@@ -233,7 +235,16 @@
         "createFailed": "Échec de la création de la simulation : {error}",
         "createError": "Erreur lors de la création : {error}",
         "unknownError": "Erreur inconnue",
-        "disabledEmptyGraph": "Le graphe ne contient aucune entité. Utilisez l’étape Step 1.5 « Review entities » pour ajouter des entités, ou reconstruisez le graphe à partir d’un document plus riche avant de lancer la simulation."
+        "disabledEmptyGraph": "Aucune entité extraite — cliquez sur « Ajouter des entités manuellement » ci-dessous ou revenez en arrière.",
+        "emptyGraph": {
+          "title": "Graphe vide — aucune entité extraite",
+          "desc": "Le graphe de connaissances ne contient aucun acteur. La simulation ne peut pas démarrer sans agents.",
+          "cause1": "PDF scanné ou image-only — aucune couche texte extractible",
+          "cause2": "Document trop court ou trop générique — le LLM n’a pas identifié d’entités",
+          "cause3": "Clé LLM non configurée — la génération d’ontologie a échoué silencieusement",
+          "ctaReview": "Ajouter des entités manuellement (Step 1.5)",
+          "ctaBack": "Revenir et utiliser un autre document"
+        }
       },
       "refineContext": {
         "title": "Affiner le contexte",

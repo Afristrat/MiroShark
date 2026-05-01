@@ -168,6 +168,17 @@
                     <button @click.stop="removeFile(index)" class="remove-btn">×</button>
                   </div>
                 </div>
+
+                <div v-if="pdfScanWarnings.length > 0" class="pdf-scan-warning">
+                  <span class="pdf-scan-icon" aria-hidden="true">⚠</span>
+                  <div class="pdf-scan-body">
+                    <strong>{{ $t('home.console.pdfScanTitle') }}</strong>
+                    <span>{{ $t('home.console.pdfScanHint') }}</span>
+                    <ul class="pdf-scan-files">
+                      <li v-for="name in pdfScanWarnings" :key="name">{{ name }}</li>
+                    </ul>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -431,6 +442,7 @@ const handleDrop = (e) => {
 // /api/simulation/file-preview (PyMuPDF server-side) so their content
 // drives ScenarioSuggestions exactly like any other document type.
 const filePreviewText = ref('')
+const pdfScanWarnings = ref([]) // noms de fichiers PDF sans texte extractible (probablement scannés)
 
 const _extractPdfPreview = async (file) => {
   try {
@@ -439,7 +451,12 @@ const _extractPdfPreview = async (file) => {
     const res = await fetch('/api/simulation/file-preview', { method: 'POST', body: fd })
     if (!res.ok) return ''
     const json = await res.json()
-    return (json?.data?.text || '').slice(0, 3000)
+    const text = (json?.data?.text || '').slice(0, 3000)
+    // Avertir si le PDF semble vide (< 80 chars = probablement un scan)
+    if (text.length < 80 && file.name.toLowerCase().endsWith('.pdf')) {
+      pdfScanWarnings.value.push(file.name)
+    }
+    return text
   } catch (_) {
     return ''
   }
@@ -477,12 +494,14 @@ const addFiles = (newFiles) => {
     return ['pdf', 'md', 'txt'].includes(ext)
   })
   files.value.push(...validFiles)
+  pdfScanWarnings.value = [] // reset à chaque ajout de fichiers
   refreshFilePreviewText()
 }
 
 // Remove file
 const removeFile = (index) => {
   files.value.splice(index, 1)
+  pdfScanWarnings.value = [] // reset après retrait d'un fichier
   refreshFilePreviewText()
 }
 
@@ -1537,4 +1556,19 @@ const startSimulation = () => {
   .dashboard-section { flex-direction: column; }
   .main-title { font-size: 34px; }
 }
+
+/* ── PDF scan warning ── */
+.pdf-scan-warning {
+  display: flex; gap: 0.5rem; align-items: flex-start;
+  background: var(--ms-peach-soft, #fff7ed);
+  border: 1px solid var(--ms-status-warning, #f59e0b);
+  border-radius: var(--ms-radius-sm, 8px);
+  padding: 0.6rem 0.8rem;
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--ms-text, #1C2B3A);
+}
+.pdf-scan-icon { font-size: 1rem; flex-shrink: 0; color: var(--ms-status-warning, #f59e0b); }
+.pdf-scan-body { display: flex; flex-direction: column; gap: 0.2rem; }
+.pdf-scan-files { margin: 0.2rem 0 0 1rem; padding: 0; list-style: disc; }
 </style>

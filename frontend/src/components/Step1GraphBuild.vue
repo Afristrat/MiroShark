@@ -376,9 +376,33 @@
             <span v-if="creatingSimulation" class="spinner-sm"></span>
             {{ creatingSimulation ? $t('process.step1.complete.creating') : (existingSimulations.length > 0 ? $t('process.step1.complete.newSimulation') : $t('process.step1.complete.enterSetup')) }}
           </button>
-          <p v-if="currentPhase >= 2 && graphStats.nodes === 0" class="empty-graph-hint">
-            {{ $t('process.step1.complete.disabledEmptyGraph') }}
-          </p>
+          <div v-if="currentPhase >= 2 && graphStats.nodes === 0" class="empty-graph-recovery">
+            <div class="egr-icon" aria-hidden="true">◇</div>
+            <div class="egr-body">
+              <strong class="egr-title">{{ $t('process.step1.complete.emptyGraph.title') }}</strong>
+              <p class="egr-desc">{{ $t('process.step1.complete.emptyGraph.desc') }}</p>
+              <ul class="egr-causes">
+                <li>{{ $t('process.step1.complete.emptyGraph.cause1') }}</li>
+                <li>{{ $t('process.step1.complete.emptyGraph.cause2') }}</li>
+                <li>{{ $t('process.step1.complete.emptyGraph.cause3') }}</li>
+              </ul>
+              <div class="egr-actions">
+                <button
+                  v-if="projectData?.project_id"
+                  class="egr-btn egr-btn--primary"
+                  @click="goToReviewEntities"
+                >
+                  {{ $t('process.step1.complete.emptyGraph.ctaReview') }} →
+                </button>
+                <button
+                  class="egr-btn egr-btn--ghost"
+                  @click="$emit('go-back')"
+                >
+                  ← {{ $t('process.step1.complete.emptyGraph.ctaBack') }}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -419,7 +443,7 @@ const props = defineProps({
   systemLogs: { type: Array, default: () => [] }
 })
 
-defineEmits(['next-step'])
+defineEmits(['next-step', 'go-back'])
 
 const selectedOntologyItem = ref(null)
 const logContent = ref(null)
@@ -671,6 +695,13 @@ watch(
 
 const resumeSimulation = (simId) => {
   router.push({ name: 'Simulation', params: { simulationId: simId } })
+}
+
+// Navigate to Review Entities (Step 1.5) to add entities manually on empty graph
+const goToReviewEntities = () => {
+  if (props.projectData?.project_id) {
+    router.push({ name: 'ReviewEntities', params: { projectId: props.projectData.project_id } })
+  }
 }
 
 // Enter agent setup - create simulation and navigate
@@ -1510,4 +1541,25 @@ watch(() => props.systemLogs.length, () => {
     align-items: stretch;
   }
 }
+
+/* ── Empty graph recovery panel ── */
+.empty-graph-recovery {
+  display: flex; gap: 0.75rem; align-items: flex-start;
+  background: rgba(255, 107, 26, 0.06);
+  border: 1.5px solid rgba(255, 107, 26, 0.3);
+  border-radius: var(--ms-radius-md, 12px);
+  padding: 1rem 1.2rem;
+  margin-top: 0.75rem;
+}
+.egr-icon { font-size: 1.4rem; flex-shrink: 0; opacity: 0.5; padding-top: 2px; }
+.egr-body { display: flex; flex-direction: column; gap: 0.4rem; flex: 1; }
+.egr-title { font-size: 0.9rem; font-weight: 600; color: var(--ms-orange, #FF6B1A); }
+.egr-desc { font-size: 0.8rem; color: var(--ms-text-subtle, #6B7280); margin: 0; }
+.egr-causes { font-size: 0.78rem; color: var(--ms-text-subtle, #6B7280); margin: 0.3rem 0 0 1rem; padding: 0; list-style: disc; display: flex; flex-direction: column; gap: 0.15rem; }
+.egr-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; }
+.egr-btn { padding: 6px 14px; border-radius: var(--ms-radius-sm, 8px); font-size: 0.8rem; font-weight: 600; cursor: pointer; border: none; }
+.egr-btn--primary { background: var(--ms-orange, #FF6B1A); color: #fff; }
+.egr-btn--primary:hover { background: var(--ms-orange-dark, #e05a0f); }
+.egr-btn--ghost { background: transparent; color: var(--ms-text-subtle, #6B7280); border: 1px solid var(--ms-border, #E5E0D8); }
+.egr-btn--ghost:hover { background: var(--ms-surface-2, #F7F3EE); }
 </style>
