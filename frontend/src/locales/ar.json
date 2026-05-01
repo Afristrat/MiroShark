@@ -746,7 +746,19 @@
       "filterAll": "الكل",
       "filterCompleted": "مكتملة",
       "filterRunning": "قيد التشغيل",
-      "filterFailed": "فاشلة"
+      "filterFailed": "فاشلة",
+      "filterTimeAll": "كل الأوقات",
+      "filterTimeToday": "اليوم",
+      "filterTimeWeek": "هذا الأسبوع",
+      "filterTimeMonth": "هذا الشهر",
+      "sortNewest": "الأحدث أولاً",
+      "sortOldest": "الأقدم أولاً",
+      "sortMostAgents": "الأكثر وكلاء",
+      "sortMostRounds": "أكثر جولات",
+      "forksOnly": "الفروع فقط",
+      "untitled": "محاكاة بلا عنوان",
+      "awaitingResolution": "بانتظار النتيجة",
+      "moreFiles": "ملفات"
     }
   },
   "charts": {

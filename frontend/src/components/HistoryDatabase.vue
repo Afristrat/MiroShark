@@ -52,20 +52,20 @@
           <option value="not-started">{{ $t('panels.history.filterFailed') }}</option>
         </select>
         <select v-model="dateFilter" class="filter-select ms-input">
-          <option value="all">All Time</option>
-          <option value="today">Today</option>
-          <option value="week">This Week</option>
-          <option value="month">This Month</option>
+          <option value="all">{{ $t('panels.history.filterTimeAll') }}</option>
+          <option value="today">{{ $t('panels.history.filterTimeToday') }}</option>
+          <option value="week">{{ $t('panels.history.filterTimeWeek') }}</option>
+          <option value="month">{{ $t('panels.history.filterTimeMonth') }}</option>
         </select>
         <select v-model="sortOrder" class="filter-select ms-input">
-          <option value="newest">Newest First</option>
-          <option value="oldest">Oldest First</option>
-          <option value="most-agents">Most Agents</option>
-          <option value="most-rounds">Most Rounds</option>
+          <option value="newest">{{ $t('panels.history.sortNewest') }}</option>
+          <option value="oldest">{{ $t('panels.history.sortOldest') }}</option>
+          <option value="most-agents">{{ $t('panels.history.sortMostAgents') }}</option>
+          <option value="most-rounds">{{ $t('panels.history.sortMostRounds') }}</option>
         </select>
         <label class="forks-only-label">
           <input type="checkbox" v-model="forksOnly" class="forks-only-check" />
-          Forks Only
+          {{ $t('panels.history.forksOnly') }}
         </label>
       </div>
       <span
@@ -86,9 +86,12 @@
         @mouseleave="hoveringCard = null"
         @click="navigateToProject(project)"
       >
-        <!-- Card header: simulation_id and feature availability -->
+        <!-- Card header: title + simulation_id and feature availability -->
         <div class="card-header">
-          <span class="card-id">{{ formatSimulationId(project.simulation_id) }}</span>
+          <div class="card-id-block">
+            <span class="card-title-main">{{ project.title || getSimulationTitle(project.simulation_requirement) }}</span>
+            <span class="card-id-sub">{{ formatSimulationId(project.simulation_id) }}</span>
+          </div>
           <div class="card-status-icons">
             <span
               v-if="project.parent_simulation_id"
@@ -104,7 +107,7 @@
             <span
               v-else-if="project.status === 'completed'"
               class="resolution-badge pending"
-              title="Awaiting outcome resolution"
+              :title="$t('panels.history.awaitingResolution')"
             >⏳</span>
             <span
               v-if="project.quality && project.quality.health"
@@ -155,7 +158,7 @@
             </div>
             <!-- Show hint if more files exist -->
             <div v-if="project.files.length > 3" class="files-more">
-              +{{ project.files.length - 3 }} files
+              +{{ project.files.length - 3 }} {{ $t('panels.history.moreFiles') }}
             </div>
           </div>
           <!-- Placeholder when no files -->
@@ -164,9 +167,6 @@
             <span class="empty-file-text">No files</span>
           </div>
         </div>
-
-        <!-- Card title (first 20 chars of simulation requirement) -->
-        <h3 class="card-title">{{ getSimulationTitle(project.simulation_requirement) }}</h3>
 
         <!-- Card description (full simulation requirement) -->
         <p class="card-desc">{{ truncateText(project.simulation_requirement, 55) }}</p>
@@ -813,11 +813,11 @@ const formatTime = (dateStr) => {
   }
 }
 
-// Generate title from simulation requirement (first 20 chars)
+// Generate title from simulation requirement (first 60 chars)
 const getSimulationTitle = (requirement) => {
-  if (!requirement) return 'Untitled Simulation'
-  const title = requirement.slice(0, 20)
-  return requirement.length > 20 ? title + '...' : title
+  if (!requirement) return t('panels.history.untitled')
+  const title = requirement.slice(0, 60)
+  return requirement.length > 60 ? title + '…' : title
 }
 
 // Format simulation_id display (first 6 chars)
@@ -1432,11 +1432,36 @@ onUnmounted(() => {
   font-size: 11px;
 }
 
-.card-id {
-  color: rgba(10, 10, 10, 0.5);
-  letter-spacing: 3px;
-  font-weight: 500;
+.card-id-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.card-title-main {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--ms-text, rgba(10, 10, 10, 0.85));
+  font-family: var(--font-display);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+  transition: color 0.3s ease;
+}
+
+.project-card:hover .card-title-main {
+  color: var(--lo);
+}
+
+.card-id-sub {
+  color: rgba(10, 10, 10, 0.4);
+  letter-spacing: 2px;
+  font-weight: 400;
+  font-size: 0.7rem;
   text-transform: uppercase;
+  font-family: var(--font-mono);
 }
 
 /* Feature status icon group */

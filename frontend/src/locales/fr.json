@@ -746,7 +746,19 @@
       "filterAll": "Toutes",
       "filterCompleted": "Terminées",
       "filterRunning": "En cours",
-      "filterFailed": "Échouées"
+      "filterFailed": "Échouées",
+      "filterTimeAll": "Toutes les dates",
+      "filterTimeToday": "Aujourd'hui",
+      "filterTimeWeek": "Cette semaine",
+      "filterTimeMonth": "Ce mois",
+      "sortNewest": "Plus récent d'abord",
+      "sortOldest": "Plus ancien d'abord",
+      "sortMostAgents": "Plus d'agents",
+      "sortMostRounds": "Plus de rounds",
+      "forksOnly": "Forks uniquement",
+      "untitled": "Simulation sans titre",
+      "awaitingResolution": "En attente de résultat",
+      "moreFiles": "fichiers"
     }
   },
   "charts": {
