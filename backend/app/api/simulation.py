@@ -324,30 +324,6 @@ _SCENARIO_RATE_HITS: "dict[str, list[float]]" = {}
 # 500K-token documents.
 _SCENARIO_PREVIEW_CHAR_LIMIT = 2000
 
-_SCENARIO_SUGGEST_SYSTEM_PROMPT = (
-    "You generate concise prediction-market-style scenario questions for an "
-    "agent-based social simulation.\n"
-    "Given a document excerpt, return exactly 3 scenarios that cover a "
-    "bullish, a bearish, and a neutral framing of an outcome the document "
-    "could drive. Scenarios must be:\n"
-    "- Concrete, answerable YES/NO questions with a specific outcome\n"
-    "- Grounded in the document (reference named actors, events, or "
-    "institutions where possible)\n"
-    "- Non-trivial (not 'will X happen this year' with no stake)\n"
-    "- Tied to a resolution window that makes sense for the dynamics "
-    "involved — a few weeks for fast news cycles, a few months for "
-    "product/market reactions, up to a year for policy or structural "
-    "outcomes. Pick whatever window fits the scenario best.\n"
-    "Each expected_yes_range must be two integers 0-100 reflecting a "
-    "plausible initial market probability band for that framing.\n"
-    "Return JSON exactly of this shape:\n"
-    '{ "suggestions": [ { "question": str, "label": "Bull"|"Bear"|"Neutral", '
-    '"expected_yes_range": [int, int], "rationale": str } ] }\n'
-    "The rationale field is a single sentence (<= 140 chars) explaining why "
-    "this framing follows from the document. Do not include any other fields."
-)
-
-
 def _today_context() -> str:
     """Current-date preamble so time-sensitive LLM output anchors on today
     rather than the model's training cutoff."""
@@ -384,11 +360,165 @@ def _scenario_cache_put(key: str, value: dict) -> None:
     )
 
 
+# ---------------------------------------------------------------------------
+# Cerberus adaptive framework — 5 frameworks + auto-detection
+# ---------------------------------------------------------------------------
+
+_FRAMEWORK_LABELS: "dict[str, tuple[str, str, str]]" = {
+    "cerberus":  ("Challenger", "Defender", "Arbiter"),
+    "market":    ("Bull", "Bear", "Neutral"),
+    "decision":  ("Optimist", "Skeptic", "Pragmatist"),
+    "crisis":    ("Amplifier", "Attenuator", "Moderator"),
+    "policy":    ("Progressive", "Conservative", "Technocrat"),
+}
+
+_FRAMEWORK_PROMPTS: "dict[str, str]" = {
+    "cerberus": (
+        "You are a strategic intelligence analyst generating adversarial scenario questions "
+        "for an agent-based simulation. Use the Cerberus framework: three distinct angles on "
+        "the same situation.\n"
+        "Given a document excerpt, return exactly 3 scenarios:\n"
+        "- Challenger: the adversarial hypothesis — what forces oppose the status quo, "
+        "who challenges the dominant narrative, what could go wrong for the main actors\n"
+        "- Defender: the status quo hypothesis — why things continue as expected, "
+        "what supports the current trajectory, who benefits from stability\n"
+        "- Arbiter: the balanced synthesis — the most likely realistic outcome, "
+        "weighing both Challenger and Defender forces\n"
+        "Each scenario must be a concrete, answerable YES/NO question about a specific "
+        "outcome with named actors. Include a resolution window (weeks/months/years) "
+        "appropriate to the dynamics.\n"
+        "Return JSON exactly:\n"
+        '{ "suggestions": [ { "question": str, "label": "Challenger"|"Defender"|"Arbiter", '
+        '"expected_yes_range": [int, int], "rationale": str, '
+        '"simulation_requirement": str } ] }\n'
+        "simulation_requirement: 3-4 sentences describing WHO should simulate this, "
+        "WHAT dynamics to observe, and WHICH agents/personas matter. "
+        "Mention specific named actors from the document. Make it immediately actionable "
+        "as a simulation brief. Length: 250-400 chars."
+    ),
+    "market": (
+        "You are a prediction market analyst generating scenario questions for an "
+        "agent-based social simulation.\n"
+        "Given a document excerpt, return exactly 3 scenarios covering a "
+        "bullish, bearish, and neutral framing:\n"
+        "- Bull: the optimistic outcome — what conditions drive upside, which actors benefit\n"
+        "- Bear: the pessimistic outcome — what forces drive decline, who loses\n"
+        "- Neutral: the base case — market equilibrium, sideways movement\n"
+        "Each scenario must be a concrete YES/NO question with a specific resolution date "
+        "and named actors/assets.\n"
+        "Return JSON exactly:\n"
+        '{ "suggestions": [ { "question": str, "label": "Bull"|"Bear"|"Neutral", '
+        '"expected_yes_range": [int, int], "rationale": str, '
+        '"simulation_requirement": str } ] }\n'
+        "simulation_requirement: 3-4 sentences describing the market simulation context, "
+        "key agents (investors, analysts, regulators), and dynamics to model."
+    ),
+    "decision": (
+        "You are a market research analyst generating scenario questions for "
+        "an agent-based simulation of a decision or launch.\n"
+        "Given a document excerpt, return exactly 3 scenarios:\n"
+        "- Optimist: the success scenario — strong adoption, positive reception, "
+        "what conditions drive it\n"
+        "- Skeptic: the failure/resistance scenario — rejection, friction, barriers, "
+        "who pushes back and why\n"
+        "- Pragmatist: the realistic middle ground — partial success, which segments "
+        "adopt vs resist, likely real-world outcome\n"
+        "Each scenario must be a concrete YES/NO question about adoption or reception.\n"
+        "Return JSON exactly:\n"
+        '{ "suggestions": [ { "question": str, "label": "Optimist"|"Skeptic"|"Pragmatist", '
+        '"expected_yes_range": [int, int], "rationale": str, '
+        '"simulation_requirement": str } ] }\n'
+        "simulation_requirement: 3-4 sentences describing target audience agents, "
+        "decision dynamics to model, and success criteria."
+    ),
+    "crisis": (
+        "You are a crisis communications analyst generating scenario questions "
+        "for an agent-based simulation of a reputational crisis.\n"
+        "Given a document excerpt, return exactly 3 scenarios:\n"
+        "- Amplifier: the worst-case escalation — how the crisis spreads, "
+        "who amplifies it, cascade effects across platforms\n"
+        "- Attenuator: the containment scenario — what dampens the crisis, "
+        "who defends the organization, what messages work\n"
+        "- Moderator: the realistic trajectory — the most likely outcome, "
+        "partial damage, recovery timeline\n"
+        "Each scenario must be a concrete YES/NO question with a 24-72h resolution window.\n"
+        "Return JSON exactly:\n"
+        '{ "suggestions": [ { "question": str, "label": "Amplifier"|"Attenuator"|"Moderator", '
+        '"expected_yes_range": [int, int], "rationale": str, '
+        '"simulation_requirement": str } ] }\n'
+        "simulation_requirement: 3-4 sentences describing the crisis context, "
+        "key stakeholder groups to simulate (media, customers, employees, regulators), "
+        "and the primary question the crisis team needs answered."
+    ),
+    "policy": (
+        "You are a policy analyst generating scenario questions for an "
+        "agent-based simulation of a governance or policy decision.\n"
+        "Given a document excerpt, return exactly 3 scenarios:\n"
+        "- Progressive: the reform scenario — policy passes in ambitious form, "
+        "which stakeholders drive it, what changes\n"
+        "- Conservative: the resistance scenario — policy blocked or watered down, "
+        "who opposes it, which provisions fail\n"
+        "- Technocrat: the technocratic compromise — pragmatic middle path, "
+        "what gets implemented vs deferred, likely timeline\n"
+        "Each scenario must be a concrete YES/NO question about policy outcome.\n"
+        "Return JSON exactly:\n"
+        '{ "suggestions": [ { "question": str, "label": "Progressive"|"Conservative"|"Technocrat", '
+        '"expected_yes_range": [int, int], "rationale": str, '
+        '"simulation_requirement": str } ] }\n'
+        "simulation_requirement: 3-4 sentences describing the policy context, "
+        "key stakeholder groups (ministers, civil society, industry, experts), "
+        "and the policy question to resolve."
+    ),
+}
+
+_VALID_FRAMEWORK_IDS: "set[str]" = set(_FRAMEWORK_LABELS.keys())
+
+# Backward-compat aliases — existing code referencing these names won't break.
 _VALID_SCENARIO_LABELS = ("Bull", "Bear", "Neutral")
+# Keep the old single-prompt constant as an alias so any import/test that
+# references it directly won't raise NameError.
+_SCENARIO_SUGGEST_SYSTEM_PROMPT = _FRAMEWORK_PROMPTS["market"]  # noqa: F811
 
 
-def _clean_suggestions(payload) -> list:
+def _detect_framework(text: str) -> str:
+    """Auto-detect the most relevant Cerberus framework from document content."""
+    t = text.lower()
+    # Crisis signals
+    if any(w in t for w in [
+        "crisis", "crise", "scandal", "scandale", "leak", "fuite",
+        "reputat", "réputa", "pr disaster", "backlash", "controversy",
+    ]):
+        return "crisis"
+    # Policy signals
+    if any(w in t for w in [
+        "policy", "politique", "regulation", "réglementation", "gouvernance",
+        "legislation", "loi ", "décret", "minister", "ministre", "parlement",
+        "senate", "sénat", "eu ai act", "directive",
+    ]):
+        return "policy"
+    # Market / finance signals
+    if any(w in t for w in [
+        "stock", "bourse", "crypto", "bitcoin", "forex", "trading", "invest",
+        "fund", "portfolio", "yield", "token", "blockchain", "defi", "nft",
+        "market cap",
+    ]):
+        return "market"
+    # Decision / product signals
+    if any(w in t for w in [
+        "launch", "lancement", "product", "produit", "startup", "pmf",
+        "product-market fit", "customer", "client", "adoption", "go-to-market",
+        "campaign", "campagne", "ad", "publicité",
+    ]):
+        return "decision"
+    # Default
+    return "cerberus"
+
+
+def _clean_suggestions(payload, framework: str = "cerberus") -> list:
     """Validate and normalize the LLM's suggestions array.
+
+    Accepts a *framework* parameter so labels are validated against the
+    correct vocabulary for the active Cerberus framework.
 
     Silently drops malformed entries and clamps the result to 3.
     Returns [] if nothing survives — the endpoint treats that as a graceful
@@ -400,13 +530,22 @@ def _clean_suggestions(payload) -> list:
     if not isinstance(raw, list):
         return []
 
+    valid_labels = _FRAMEWORK_LABELS.get(framework, _FRAMEWORK_LABELS["cerberus"])
+
     out = []
     for item in raw:
         if not isinstance(item, dict):
             continue
         question = (item.get("question") or "").strip()
-        label = (item.get("label") or "").strip().capitalize()
-        if label not in _VALID_SCENARIO_LABELS:
+        # Labels from the LLM are title-cased; preserve as-is for multi-word ones.
+        raw_label = (item.get("label") or "").strip()
+        # Normalize: try exact match first, then capitalize fallback for
+        # single-word labels (backward-compat with old "bull"/"bear" responses).
+        if raw_label in valid_labels:
+            label = raw_label
+        elif raw_label.capitalize() in valid_labels:
+            label = raw_label.capitalize()
+        else:
             continue
         yes_range = item.get("expected_yes_range")
         if (
@@ -422,15 +561,19 @@ def _clean_suggestions(payload) -> list:
         if lo > hi:
             lo, hi = hi, lo
         rationale = (item.get("rationale") or "").strip()
+        simulation_requirement = (item.get("simulation_requirement") or "").strip()
         if len(question) < 8 or len(question) > 240:
             continue
         if len(rationale) > 200:
             rationale = rationale[:197].rstrip() + "..."
+        if len(simulation_requirement) > 500:
+            simulation_requirement = simulation_requirement[:497].rstrip() + "..."
         out.append({
             "question": question,
             "label": label,
             "expected_yes_range": [lo, hi],
             "rationale": rationale,
+            "simulation_requirement": simulation_requirement,
         })
         if len(out) == 3:
             break
@@ -499,9 +642,18 @@ def suggest_scenarios():
                 "data": {"suggestions": [], "cached": False, "reason": "preview_too_short"}
             })
 
+        # Resolve the Cerberus framework for this request.
+        # Accepts an explicit "framework" field; falls back to auto-detection.
+        raw_framework = data.get('framework') or ''
+        if isinstance(raw_framework, str) and raw_framework in _VALID_FRAMEWORK_IDS:
+            framework = raw_framework
+        else:
+            # 'auto' or absent → detect from document content
+            framework = _detect_framework(normalized)
+
         import hashlib
         cache_key = hashlib.sha256(
-            (normalized + "||" + sim_prompt).encode('utf-8')
+            (normalized + "||" + sim_prompt + "||" + framework).encode('utf-8')
         ).hexdigest()
 
         if not data.get('no_cache'):
@@ -521,12 +673,13 @@ def suggest_scenarios():
                 "data": {"suggestions": [], "cached": False, "reason": "llm_unavailable"}
             })
 
+        system_prompt = _FRAMEWORK_PROMPTS[framework]
         sim_prompt_block = (
             f"User's simulation prompt:\n{sim_prompt}\n\n"
             if sim_prompt else ""
         )
         messages = [
-            {"role": "system", "content": localize_system_prompt(_SCENARIO_SUGGEST_SYSTEM_PROMPT, get_request_locale())},
+            {"role": "system", "content": localize_system_prompt(system_prompt, get_request_locale())},
             {
                 "role": "user",
                 "content": (
@@ -541,7 +694,7 @@ def suggest_scenarios():
         ]
 
         try:
-            parsed = llm.chat_json(messages, temperature=0.4, max_tokens=700)
+            parsed = llm.chat_json(messages, temperature=0.4, max_tokens=900)
         except Exception as exc:
             # Don't 500 — scenario auto-suggest is best-effort; the form still works.
             logger.warning(f"suggest-scenarios: LLM call failed: {exc}")
@@ -550,10 +703,11 @@ def suggest_scenarios():
                 "data": {"suggestions": [], "cached": False, "reason": "llm_error"}
             })
 
-        suggestions = _clean_suggestions(parsed)
+        suggestions = _clean_suggestions(parsed, framework=framework)
 
         result = {
             "suggestions": suggestions,
+            "framework": framework,
             "model": getattr(llm, 'model', None) or Config.LLM_MODEL_NAME,
         }
 

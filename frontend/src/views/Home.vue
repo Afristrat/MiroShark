@@ -498,9 +498,9 @@ const scenarioSuggestPreview = computed(() => {
 // User picked one of the 3 scenario cards — fill the textarea but don't
 // submit.  We overwrite whatever was there (including any earlier pick); if
 // the user had already typed a partial scenario they can undo with Ctrl+Z.
-const handleSuggestionUse = ({ question }) => {
+const handleSuggestionUse = ({ question, simulationRequirement }) => {
   if (!question) return
-  formData.value.simulationRequirement = question
+  formData.value.simulationRequirement = simulationRequirement || question
 }
 
 // Scroll to bottom

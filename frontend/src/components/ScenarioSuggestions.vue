@@ -15,6 +15,21 @@
         >×</button>
       </div>
 
+      <!-- Framework selector (collapsible, shown only when not loading) -->
+      <details class="ss-framework-picker" v-if="!loading">
+        <summary class="ss-framework-toggle">{{ $t('scenarios.frameworkLabel') }} : {{ frameworkLabel }}</summary>
+        <div class="ss-framework-options">
+          <button
+            v-for="fw in availableFrameworks"
+            :key="fw.id"
+            type="button"
+            class="ss-fw-btn"
+            :class="{ 'ss-fw-btn--active': selectedFramework === fw.id }"
+            @click="setFramework(fw.id)"
+          >{{ fw.label }}</button>
+        </div>
+      </details>
+
       <div v-if="loading" class="ss-loading">
         <span class="ss-spinner"></span>
         {{ $t('scenarios.loading') }}
@@ -88,6 +103,83 @@ const debounceTimer = ref(null)
 // can't overwrite suggestions for the current preview.
 const requestSeq = ref(0)
 
+// --- Cerberus framework selector ---
+const detectedFramework = ref('cerberus')
+const selectedFramework = ref('auto')
+
+const availableFrameworks = computed(() => [
+  { id: 'auto',     label: t('scenarios.frameworkAuto') },
+  { id: 'cerberus', label: t('scenarios.frameworkCerberus') },
+  { id: 'market',   label: t('scenarios.frameworkMarket') },
+  { id: 'decision', label: t('scenarios.frameworkDecision') },
+  { id: 'crisis',   label: t('scenarios.frameworkCrisis') },
+  { id: 'policy',   label: t('scenarios.frameworkPolicy') },
+])
+
+const frameworkLabel = computed(() => {
+  const fw = availableFrameworks.value.find(f => f.id === selectedFramework.value)
+  return fw ? fw.label : t('scenarios.frameworkAuto')
+})
+
+const setFramework = (id) => {
+  selectedFramework.value = id
+  dismissed.value = false
+  if (lastPreview.value) fetchSuggestions(lastPreview.value)
+}
+
+// --- Label mapping for all 5 Cerberus frameworks ---
+const _LABEL_KEY_MAP = {
+  'Bull':         'scenarios.bull',
+  'Bear':         'scenarios.bear',
+  'Neutral':      'scenarios.neutral',
+  'Challenger':   'scenarios.challenger',
+  'Defender':     'scenarios.defender',
+  'Arbiter':      'scenarios.arbiter',
+  'Optimist':     'scenarios.optimist',
+  'Skeptic':      'scenarios.skeptic',
+  'Pragmatist':   'scenarios.pragmatist',
+  'Amplifier':    'scenarios.amplifier',
+  'Attenuator':   'scenarios.attenuator',
+  'Moderator':    'scenarios.moderator',
+  'Progressive':  'scenarios.progressive',
+  'Conservative': 'scenarios.conservative',
+  'Technocrat':   'scenarios.technocrat',
+}
+
+// Visual style mapping: each label maps to bull/bear/neutral CSS theme
+const _LABEL_STYLE = {
+  'Bull':         'bull',
+  'Bear':         'bear',
+  'Neutral':      'neutral',
+  'Challenger':   'challenger',
+  'Defender':     'defender',
+  'Arbiter':      'neutral',
+  'Optimist':     'bull',
+  'Skeptic':      'bear',
+  'Pragmatist':   'neutral',
+  'Amplifier':    'bear',
+  'Attenuator':   'bull',
+  'Moderator':    'neutral',
+  'Progressive':  'bull',
+  'Conservative': 'bear',
+  'Technocrat':   'neutral',
+}
+
+// Localized label for the scenario badge — falls back to the raw label if
+// the API returns something we don't have a key for.
+const labelText = (label) => {
+  const key = _LABEL_KEY_MAP[label]
+  return key ? t(key) : label
+}
+
+const cardClass = (label) => ({
+  [`ss-card-${_LABEL_STYLE[label] || 'neutral'}`]: true,
+})
+
+const badgeClass = (label) => ({
+  [`ss-badge-${_LABEL_STYLE[label] || 'neutral'}`]: true,
+})
+
 const shouldShow = computed(() => {
   if (dismissed.value) return false
   if (loading.value) return true
@@ -101,30 +193,39 @@ const statusLine = computed(() => {
   return ''
 })
 
-// Localized label for the scenario badge — falls back to the raw label if
-// the API returns something we don't have a key for.
-const labelText = (label) => {
-  const key = label === 'Bull' ? 'scenarios.bull'
-    : label === 'Bear' ? 'scenarios.bear'
-    : label === 'Neutral' ? 'scenarios.neutral'
-    : null
-  return key ? t(key) : label
+// Build a rich simulation_requirement when the backend did not provide one.
+const _FRAMEWORK_CTX = {
+  'Challenger':   'Simuler les forces adversariales et les acteurs qui challengent le statu quo. ',
+  'Defender':     'Simuler les acteurs qui soutiennent le statu quo et leurs arguments. ',
+  'Arbiter':      "Simuler un ensemble équilibré d'acteurs pour atteindre une synthèse réaliste. ",
+  'Bull':         'Simuler les acteurs optimistes et les forces de marché haussières. ',
+  'Bear':         'Simuler les acteurs pessimistes et les pressions baissières. ',
+  'Neutral':      'Simuler un marché équilibré avec les bulls, bears et observateurs neutres. ',
+  'Optimist':     'Simuler les early adopters, champions internes et clients enthousiastes. ',
+  'Skeptic':      "Simuler les résistances, freins à l'adoption et critiques structurels. ",
+  'Pragmatist':   'Simuler un échantillon réaliste de parties prenantes avec des attitudes mixtes. ',
+  'Amplifier':    'Simuler les médias, réseaux sociaux et acteurs qui amplifient la crise. ',
+  'Attenuator':   'Simuler les communicants, alliés et voix modératrices qui cherchent à contenir la crise. ',
+  'Moderator':    "Simuler l'ensemble des parties prenantes pour projeter la trajectoire réelle de la crise. ",
+  'Progressive':  'Simuler les promoteurs de la réforme, société civile et experts favorables. ',
+  'Conservative': 'Simuler les opposants, lobbys et acteurs du statu quo institutionnel. ',
+  'Technocrat':   'Simuler les experts techniques, hauts fonctionnaires et négociateurs de compromis. ',
 }
 
-const cardClass = (label) => ({
-  'ss-card-bull': label === 'Bull',
-  'ss-card-bear': label === 'Bear',
-  'ss-card-neutral': label === 'Neutral'
-})
-
-const badgeClass = (label) => ({
-  'ss-badge-bull': label === 'Bull',
-  'ss-badge-bear': label === 'Bear',
-  'ss-badge-neutral': label === 'Neutral'
-})
+const buildSimRequirement = (question, rationale, label) => {
+  const ctx = _FRAMEWORK_CTX[label] || ''
+  return `${ctx}${question}${rationale ? ' ' + rationale : ''}`
+}
 
 const useSuggestion = (s, idx) => {
-  emit('use', { question: s.question, label: s.label, index: idx })
+  const enrichedRequirement = s.simulation_requirement
+    || buildSimRequirement(s.question, s.rationale, s.label)
+  emit('use', {
+    question: s.question,
+    label: s.label,
+    index: idx,
+    simulationRequirement: enrichedRequirement,
+  })
 }
 
 const dismiss = () => {
@@ -141,7 +242,8 @@ const fetchSuggestions = async (preview) => {
   try {
     const res = await suggestScenarios({
       text_preview: preview,
-      simulation_prompt: props.simulationPrompt || ''
+      simulation_prompt: props.simulationPrompt || '',
+      framework: selectedFramework.value,
     })
     // Only overwrite suggestions if this is still the latest call —
     // otherwise a stale slow response could wipe a fresh result.
@@ -152,6 +254,7 @@ const fetchSuggestions = async (preview) => {
     }
     const data = res.data || {}
     suggestions.value = Array.isArray(data.suggestions) ? data.suggestions : []
+    if (data.framework) detectedFramework.value = data.framework
   } catch (_) {
     if (mySeq !== requestSeq.value) return
     // Treat failures as "no suggestions" — the underlying form still works.
@@ -330,6 +433,14 @@ onBeforeUnmount(() => {
   color: var(--color-black);
 }
 
+/* Cerberus framework badge variants */
+.ss-badge-challenger { background: rgba(239, 68, 68, 0.15); color: #dc2626; }
+.ss-badge-defender   { background: rgba(59, 130, 246, 0.15); color: #2563eb; }
+
+/* Cerberus framework card left-border variants */
+.ss-card-challenger { border-left: 4px solid #dc2626; }
+.ss-card-defender   { border-left: 4px solid #2563eb; }
+
 .ss-range {
   font-size: 10px;
   color: rgba(10, 10, 10, 0.55);
@@ -386,5 +497,58 @@ onBeforeUnmount(() => {
 .ss-fade-leave-to {
   opacity: 0;
   transform: translateY(-4px);
+}
+
+/* Framework picker */
+.ss-framework-picker {
+  margin-bottom: var(--space-sm);
+}
+
+.ss-framework-toggle {
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(10, 10, 10, 0.5);
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ss-framework-toggle::-webkit-details-marker { display: none; }
+.ss-framework-toggle::marker { display: none; }
+
+.ss-framework-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.ss-fw-btn {
+  background: transparent;
+  border: 1px solid rgba(10, 10, 10, 0.15);
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(10, 10, 10, 0.55);
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.ss-fw-btn:hover {
+  border-color: var(--color-orange);
+  color: var(--color-orange);
+}
+
+.ss-fw-btn--active {
+  border-color: var(--color-orange);
+  color: var(--color-orange);
+  background: rgba(255, 107, 26, 0.06);
 }
 </style>
