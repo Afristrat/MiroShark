@@ -2831,6 +2831,87 @@ def get_simulation_profiles(simulation_id: str):
         }), 500
 
 
+@simulation_bp.route('/<simulation_id>/profiles', methods=['POST'])
+@require_admin_token
+def add_simulation_profile(simulation_id: str):
+    """Add a custom agent profile to an already-prepared simulation.
+
+    Body (JSON):
+        {
+            "name": str,          # username / handle
+            "username": str,      # display name (real name)
+            "profession": str,
+            "bio": str,
+            "stance": "bullish" | "bearish" | "neutral",  # optional
+            "interested_topics": [str]  # optional, list of topics
+        }
+
+    Returns the saved profile on success.
+    Auth: requires BASSIRA_ADMIN_TOKEN.
+    """
+    import uuid as _uuid
+    import json as _json
+
+    if not validate_simulation_id(simulation_id):
+        return jsonify({"success": False, "error_code": "INVALID_SIM_ID",
+                        "error": "Invalid simulation_id"}), 400
+
+    data = request.get_json(silent=True) or {}
+    name = (data.get("name") or "").strip()
+    username = (data.get("username") or name).strip()
+    profession = (data.get("profession") or "").strip()
+    bio = (data.get("bio") or "").strip()
+    stance = (data.get("stance") or "neutral").strip().lower()
+    topics = data.get("interested_topics") or []
+
+    if not name:
+        return jsonify({"success": False, "error_code": "MISSING_FIELD",
+                        "error": "name is required"}), 400
+    if stance not in ("bullish", "bearish", "neutral"):
+        stance = "neutral"
+    if not isinstance(topics, list):
+        topics = []
+    topics = [str(t).strip() for t in topics if str(t).strip()][:10]
+
+    manager = SimulationManager()
+    sim_dir = manager._get_simulation_dir(simulation_id, create=False)
+    if not os.path.isdir(sim_dir):
+        return jsonify({"success": False, "error_code": "SIM_NOT_FOUND",
+                        "error": "Simulation not found"}), 404
+
+    profiles_path = os.path.join(sim_dir, "agent_profiles.json")
+    profiles = []
+    if os.path.exists(profiles_path):
+        try:
+            with open(profiles_path, "r", encoding="utf-8") as fh:
+                profiles = _json.load(fh)
+            if not isinstance(profiles, list):
+                profiles = []
+        except Exception:
+            profiles = []
+
+    profile = {
+        "id": str(_uuid.uuid4()),
+        "name": name,
+        "username": username,
+        "profession": profession,
+        "bio": bio,
+        "stance": stance,
+        "interested_topics": topics,
+        "manually_added": True,
+    }
+    profiles.append(profile)
+
+    try:
+        with open(profiles_path, "w", encoding="utf-8") as fh:
+            _json.dump(profiles, fh, ensure_ascii=False, indent=2)
+    except Exception as exc:
+        return jsonify({"success": False, "error_code": "STORAGE_ERROR",
+                        "error": str(exc)}), 500
+
+    return jsonify({"success": True, "data": profile})
+
+
 @simulation_bp.route('/<simulation_id>/profiles/realtime', methods=['GET'])
 def get_simulation_profiles_realtime(simulation_id: str):
     """

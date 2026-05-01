@@ -892,6 +892,53 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/SuccessEnvelope" }
+    post:
+      tags: [Live State]
+      summary: Add a custom agent profile to an already-prepared simulation.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/SimulationIdPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  description: Username / handle of the agent
+                username:
+                  type: string
+                  description: Display name (real name); defaults to name if omitted
+                profession:
+                  type: string
+                bio:
+                  type: string
+                stance:
+                  type: string
+                  enum: [bullish, bearish, neutral]
+                  default: neutral
+                interested_topics:
+                  type: array
+                  items: { type: string }
+                  maxItems: 10
+      responses:
+        "200":
+          description: Profile saved — returns the created profile object.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SuccessEnvelope" }
+        "400":
+          description: Missing or invalid field.
+        "401":
+          description: Unauthorized — admin token missing or wrong.
+        "404":
+          description: Simulation not found.
+        "503":
+          description: Admin token not configured on this deploy.
 
   /api/simulation/{simulation_id}/profiles/realtime:
     get:

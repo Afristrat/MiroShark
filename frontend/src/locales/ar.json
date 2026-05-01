@@ -383,7 +383,20 @@
         "unknownProfession": "مهنة غير معروفة",
         "noBio": "لا توجد سيرة ذاتية",
         "showLess": "عرض أقل",
-        "showAll": "عرض جميع الوكلاء ({count})"
+        "showAll": "عرض جميع الوكلاء ({count})",
+        "addAgent": "إضافة وكيل",
+        "addAgentTitle": "إضافة وكيل مخصّص",
+        "addAgentName": "الاسم / المعرّف",
+        "addAgentNamePlaceholder": "مثال: مدير التسويق، كريم بنعلي...",
+        "addAgentProfession": "المهنة",
+        "addAgentProfessionPlaceholder": "مثال: صحفي، مدير عام، ناشط...",
+        "addAgentBio": "السيرة الذاتية",
+        "addAgentBioPlaceholder": "صِف وجهة نظر هذا الوكيل وقيمه ومصادر سلطته...",
+        "addAgentStance": "الموقف",
+        "addAgentSubmit": "إضافة إلى المحاكاة",
+        "stanceNeutral": "محايد",
+        "stanceBullish": "إيجابي",
+        "stanceBearish": "سلبي"
       },
       "step3": {
         "title": "توليد إعدادات المحاكاة",

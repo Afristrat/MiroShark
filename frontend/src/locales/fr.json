@@ -383,7 +383,20 @@
         "unknownProfession": "Profession inconnue",
         "noBio": "Aucune biographie disponible",
         "showLess": "Afficher moins",
-        "showAll": "Afficher les {count} agents"
+        "showAll": "Afficher les {count} agents",
+        "addAgent": "Ajouter un agent",
+        "addAgentTitle": "Ajouter un agent personnalisé",
+        "addAgentName": "Nom / pseudo",
+        "addAgentNamePlaceholder": "Ex : Directrice Marketing, Karim Benali...",
+        "addAgentProfession": "Profession",
+        "addAgentProfessionPlaceholder": "Ex : Journaliste, DG, Activiste...",
+        "addAgentBio": "Biographie",
+        "addAgentBioPlaceholder": "Décrivez le point de vue, les valeurs, les sources d'autorité de cet agent...",
+        "addAgentStance": "Position",
+        "addAgentSubmit": "Ajouter à la simulation",
+        "stanceNeutral": "Neutre",
+        "stanceBullish": "Favorable",
+        "stanceBearish": "Défavorable"
       },
       "step3": {
         "title": "Génération de la configuration de simulation",

@@ -383,7 +383,20 @@
         "unknownProfession": "Unknown Profession",
         "noBio": "No bio available",
         "showLess": "Show less",
-        "showAll": "Show all {count} agents"
+        "showAll": "Show all {count} agents",
+        "addAgent": "Add agent",
+        "addAgentTitle": "Add a custom agent",
+        "addAgentName": "Name / handle",
+        "addAgentNamePlaceholder": "e.g. Marketing Director, Karim Benali...",
+        "addAgentProfession": "Profession",
+        "addAgentProfessionPlaceholder": "e.g. Journalist, CEO, Activist...",
+        "addAgentBio": "Biography",
+        "addAgentBioPlaceholder": "Describe this agent's viewpoint, values, authority sources...",
+        "addAgentStance": "Stance",
+        "addAgentSubmit": "Add to simulation",
+        "stanceNeutral": "Neutral",
+        "stanceBullish": "Bullish",
+        "stanceBearish": "Bearish"
       },
       "step3": {
         "title": "Generate Simulation Config",

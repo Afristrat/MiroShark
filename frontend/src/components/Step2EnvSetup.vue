@@ -93,6 +93,7 @@
                 <div class="profile-header">
                   <span class="profile-realname">{{ profile.username || $t('process.step2.step2.unknown') }}</span>
                   <span class="profile-username">@{{ profile.name || `agent_${idx}` }}</span>
+                  <span v-if="profile.manually_added || profile._isManual" class="profile-manual-badge" title="Agent ajouté manuellement">✎</span>
                 </div>
                 <div class="profile-meta">
                   <span class="profile-profession">{{ profile.profession || $t('process.step2.step2.unknownProfession') }}</span>
@@ -116,6 +117,14 @@
               @click="profilesExpanded = !profilesExpanded"
             >
               {{ profilesExpanded ? $t('process.step2.step2.showLess') : $t('process.step2.step2.showAll', { count: profiles.length }) }}
+            </button>
+            <button
+              v-if="phase >= 1"
+              class="add-agent-btn ms-btn ms-btn-secondary ms-btn--sm"
+              type="button"
+              @click="showAddAgentModal = true"
+            >
+              + {{ $t('process.step2.step2.addAgent') }}
             </button>
           </div>
         </div>
@@ -679,6 +688,43 @@
       </div>
     </Transition>
 
+    <!-- Add Agent Modal -->
+    <Transition name="modal">
+      <div v-if="showAddAgentModal" class="add-agent-overlay" @click.self="showAddAgentModal = false">
+        <div class="add-agent-modal">
+          <div class="modal-header">
+            <span>{{ $t('process.step2.step2.addAgentTitle') }}</span>
+            <button class="close-btn" @click="showAddAgentModal = false">×</button>
+          </div>
+          <div class="modal-body">
+            <label>{{ $t('process.step2.step2.addAgentName') }} *
+              <input v-model="newAgent.name" class="ms-input" :placeholder="$t('process.step2.step2.addAgentNamePlaceholder')" />
+            </label>
+            <label>{{ $t('process.step2.step2.addAgentProfession') }}
+              <input v-model="newAgent.profession" class="ms-input" :placeholder="$t('process.step2.step2.addAgentProfessionPlaceholder')" />
+            </label>
+            <label>{{ $t('process.step2.step2.addAgentBio') }}
+              <textarea v-model="newAgent.bio" class="ms-input" rows="3" :placeholder="$t('process.step2.step2.addAgentBioPlaceholder')"></textarea>
+            </label>
+            <label>{{ $t('process.step2.step2.addAgentStance') }}
+              <select v-model="newAgent.stance" class="ms-input">
+                <option value="neutral">{{ $t('process.step2.step2.stanceNeutral') }}</option>
+                <option value="bullish">{{ $t('process.step2.step2.stanceBullish') }}</option>
+                <option value="bearish">{{ $t('process.step2.step2.stanceBearish') }}</option>
+              </select>
+            </label>
+            <div v-if="addAgentError" class="add-agent-error">{{ addAgentError }}</div>
+          </div>
+          <div class="modal-footer">
+            <button class="ms-btn ms-btn-ghost ms-btn--sm" @click="showAddAgentModal = false">{{ $t('common.cancel') }}</button>
+            <button class="ms-btn ms-btn-primary ms-btn--sm" :disabled="!newAgent.name.trim() || addAgentSaving" @click="submitAddAgent">
+              {{ addAgentSaving ? '...' : $t('process.step2.step2.addAgentSubmit') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
     <!-- Bottom Info / Logs -->
     <div class="system-logs" :class="{ collapsed: dashboardCollapsed }">
       <div class="log-header" @click="dashboardCollapsed = !dashboardCollapsed">
@@ -696,7 +742,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   prepareSimulation,
@@ -737,6 +783,12 @@ const agentCardsExpanded = ref(false)
 const configError = ref(null)       // Error message when config generation fails
 const isConfigRetrying = ref(false) // True while retry is in progress
 
+// ── Add-agent modal ──────────────────────────────────────────────────────
+const showAddAgentModal = ref(false)
+const addAgentError = ref('')
+const addAgentSaving = ref(false)
+const newAgent = reactive({ name: '', profession: '', bio: '', stance: 'neutral' })
+
 const contextualErrorHint = computed(() => {
   const msg = (configError.value || '').toLowerCase()
   if (!msg) return t('process.step2.step3.errorHint')
@@ -754,6 +806,38 @@ const contextualErrorHint = computed(() => {
   }
   return t('process.step2.step3.errorHint')
 })
+
+const submitAddAgent = async () => {
+  if (!newAgent.name.trim()) return
+  addAgentSaving.value = true
+  addAgentError.value = ''
+  try {
+    const token = sessionStorage.getItem('bassira_admin_token') || ''
+    const res = await fetch(`/api/simulation/${props.simulationId}/profiles`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify({
+        name: newAgent.name.trim(),
+        username: newAgent.name.trim(),
+        profession: newAgent.profession.trim(),
+        bio: newAgent.bio.trim(),
+        stance: newAgent.stance,
+      })
+    })
+    const d = await res.json()
+    if (!d.success) throw new Error(d.error || 'Erreur')
+    profiles.value.push({ ...d.data, _isManual: true })
+    Object.assign(newAgent, { name: '', profession: '', bio: '', stance: 'neutral' })
+    showAddAgentModal.value = false
+  } catch (err) {
+    addAgentError.value = err instanceof Error ? err.message : String(err)
+  } finally {
+    addAgentSaving.value = false
+  }
+}
 
 // Config polling timeout: stop after 90 seconds with no result
 const CONFIG_POLL_TIMEOUT_MS = 90000
@@ -2892,5 +2976,63 @@ onUnmounted(() => {
 .modal-leave-to .profile-modal {
   transform: scale(0.95) translateY(10px);
   opacity: 0;
+}
+
+/* ── Add-agent button & modal ─────────────────────────────────────────── */
+.add-agent-btn {
+  margin-top: 0.5rem;
+}
+
+.add-agent-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.add-agent-modal {
+  background: var(--ms-surface);
+  border-radius: var(--ms-radius-lg);
+  padding: 1.5rem;
+  width: min(480px, 90vw);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.add-agent-modal .modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.add-agent-modal .modal-body label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.add-agent-modal .modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.add-agent-error {
+  color: var(--ms-status-danger, #ef4444);
+  font-size: 0.8rem;
+}
+
+.profile-manual-badge {
+  font-size: 0.7rem;
+  color: var(--ms-text-muted, #9ca3af);
+  margin-left: 0.25rem;
+  cursor: default;
+  user-select: none;
 }
 </style>
