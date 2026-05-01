@@ -650,6 +650,64 @@
     "exportPdfGenerating": "Génération du PDF…",
     "exportPdfError": "Échec de l’export PDF"
   },
+  "settings": {
+    "byok": {
+      "title": "Votre clé API (BYOK)",
+      "intro": "Collez votre clé — Bassira détecte automatiquement le fournisseur et suggère les meilleurs modèles.",
+      "keyLabel": "Clé API",
+      "keyPlaceholder": "sk-or-v1-... ou tout autre format",
+      "detected": "détecté automatiquement",
+      "customProvider": "Fournisseur personnalisé",
+      "autoBaseUrl": "URL de base configurée automatiquement :",
+      "currentKey": "Clé actuelle",
+      "keepBlank": "laisser vide pour conserver",
+      "showKey": "Afficher la clé",
+      "hideKey": "Masquer la clé",
+      "modelLabel": "Modèle principal",
+      "modelPlaceholder": "ex: openai/gpt-4o-mini",
+      "customModel": "Autre modèle (saisir manuellement)",
+      "customModelLabel": "Identifiant du modèle personnalisé",
+      "customModelPlaceholder": "ex: openai/gpt-4o",
+      "loadModelsTitle": "Charger les modèles disponibles depuis OpenRouter",
+      "advancedUrl": "URL de base (avancé)",
+      "testBtn": "Tester la connexion",
+      "testing": "Test en cours…",
+      "propagationHint": "La clé principale se propage automatiquement à tous les modules (Smart, NER, Wonderwall). Configurez des surcharges dans la section Avancé si nécessaire."
+    },
+    "status": {
+      "title": "Configuration actuelle",
+      "defaultModel": "Modèle par défaut",
+      "smartModel": "Smart (rapports)",
+      "nerModel": "NER (extraction)",
+      "wonderwallModel": "Wonderwall (simulation)",
+      "embeddings": "Embeddings",
+      "webSearch": "Recherche web",
+      "apiKey": "Clé API",
+      "notSet": "non défini"
+    },
+    "preset": {
+      "title": "Preset",
+      "label": "Modèle de configuration",
+      "custom": "Personnalisé — garder les champs actuels",
+      "keyLabel": "Clé OpenRouter"
+    },
+    "advanced": {
+      "title": "Slots avancés (surcharges)",
+      "hint": "Chaque slot hérite de la config LLM principale par défaut.",
+      "smart": "Smart — génération de rapports",
+      "ner": "NER — extraction d'entités",
+      "wonderwall": "Wonderwall — boucle de simulation",
+      "embeddings": "Embeddings",
+      "webSearch": "Recherche web (import URL + enrichissement)"
+    },
+    "neo4j": { "title": "Base de données graphe (Neo4j)" },
+    "webhook": {
+      "title": "Intégrations · Webhook",
+      "testBtn": "Envoyer un événement test",
+      "testing": "Envoi…"
+    },
+    "mcp": { "title": "Intégration IA · MCP" }
+  },
   "panels": {
     "settings": {
       "title": "Paramètres",

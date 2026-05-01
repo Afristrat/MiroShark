@@ -650,6 +650,64 @@
     "exportPdfGenerating": "Generating PDF…",
     "exportPdfError": "PDF export failed"
   },
+  "settings": {
+    "byok": {
+      "title": "Your API Key (BYOK)",
+      "intro": "Paste your key — Bassira auto-detects the provider and suggests the best models.",
+      "keyLabel": "API Key",
+      "keyPlaceholder": "sk-or-v1-... or any format",
+      "detected": "auto-detected",
+      "customProvider": "Custom provider",
+      "autoBaseUrl": "Base URL configured automatically:",
+      "currentKey": "Current key",
+      "keepBlank": "leave blank to keep",
+      "showKey": "Show key",
+      "hideKey": "Hide key",
+      "modelLabel": "Main model",
+      "modelPlaceholder": "e.g. openai/gpt-4o-mini",
+      "customModel": "Other model (enter manually)",
+      "customModelLabel": "Custom model ID",
+      "customModelPlaceholder": "e.g. openai/gpt-4o",
+      "loadModelsTitle": "Load available models from OpenRouter",
+      "advancedUrl": "Base URL (advanced)",
+      "testBtn": "Test connection",
+      "testing": "Testing…",
+      "propagationHint": "The main key propagates automatically to all modules (Smart, NER, Wonderwall). Configure overrides in the Advanced section if needed."
+    },
+    "status": {
+      "title": "Current setup",
+      "defaultModel": "Default model",
+      "smartModel": "Smart (reports)",
+      "nerModel": "NER (extraction)",
+      "wonderwallModel": "Wonderwall (sim loop)",
+      "embeddings": "Embeddings",
+      "webSearch": "Web search",
+      "apiKey": "API key",
+      "notSet": "not set"
+    },
+    "preset": {
+      "title": "Preset",
+      "label": "Config template",
+      "custom": "Custom — leave fields as they are",
+      "keyLabel": "OpenRouter API key"
+    },
+    "advanced": {
+      "title": "Advanced slot overrides",
+      "hint": "Each slot falls back to the default LLM config when left empty.",
+      "smart": "Smart — report generation",
+      "ner": "NER — entity extraction",
+      "wonderwall": "Wonderwall — simulation loop",
+      "embeddings": "Embeddings",
+      "webSearch": "Web search (URL import + enrichment)"
+    },
+    "neo4j": { "title": "Graph Database (Neo4j)" },
+    "webhook": {
+      "title": "Integrations · Webhook",
+      "testBtn": "Send test event",
+      "testing": "Sending…"
+    },
+    "mcp": { "title": "AI Integration · MCP" }
+  },
   "panels": {
     "settings": {
       "title": "Settings",

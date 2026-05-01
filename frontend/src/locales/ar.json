@@ -650,6 +650,64 @@
     "exportPdfGenerating": "جارٍ إنشاء PDF…",
     "exportPdfError": "فشل تصدير PDF"
   },
+  "settings": {
+    "byok": {
+      "title": "مفتاح API الخاص بك (BYOK)",
+      "intro": "الصق مفتاحك — تكتشف بصيرة المزوّد تلقائيًا وتقترح أفضل النماذج.",
+      "keyLabel": "مفتاح API",
+      "keyPlaceholder": "sk-or-v1-... أو أي صيغة أخرى",
+      "detected": "تم الاكتشاف تلقائيًا",
+      "customProvider": "مزوّد مخصّص",
+      "autoBaseUrl": "تم تهيئة عنوان URL القاعدي تلقائيًا:",
+      "currentKey": "المفتاح الحالي",
+      "keepBlank": "اتركه فارغًا للإبقاء عليه",
+      "showKey": "إظهار المفتاح",
+      "hideKey": "إخفاء المفتاح",
+      "modelLabel": "النموذج الرئيسي",
+      "modelPlaceholder": "مثال: openai/gpt-4o-mini",
+      "customModel": "نموذج آخر (إدخال يدوي)",
+      "customModelLabel": "معرّف النموذج المخصّص",
+      "customModelPlaceholder": "مثال: openai/gpt-4o",
+      "loadModelsTitle": "تحميل النماذج المتاحة من OpenRouter",
+      "advancedUrl": "عنوان URL القاعدي (متقدّم)",
+      "testBtn": "اختبار الاتصال",
+      "testing": "جارٍ الاختبار…",
+      "propagationHint": "يُوزَّع المفتاح الرئيسي تلقائيًا على جميع الوحدات (Smart، NER، Wonderwall). هيّئ تجاوزات في قسم «متقدّم» إن لزم."
+    },
+    "status": {
+      "title": "الإعداد الحالي",
+      "defaultModel": "النموذج الافتراضي",
+      "smartModel": "Smart (التقارير)",
+      "nerModel": "NER (الاستخراج)",
+      "wonderwallModel": "Wonderwall (حلقة المحاكاة)",
+      "embeddings": "التضمينات",
+      "webSearch": "البحث على الويب",
+      "apiKey": "مفتاح API",
+      "notSet": "غير محدّد"
+    },
+    "preset": {
+      "title": "الإعداد المسبق",
+      "label": "قالب الإعداد",
+      "custom": "مخصّص — إبقاء الحقول كما هي",
+      "keyLabel": "مفتاح OpenRouter"
+    },
+    "advanced": {
+      "title": "تجاوزات الفتحات المتقدّمة",
+      "hint": "تعود كل فتحة إلى إعداد LLM الافتراضي عند الترك فارغًا.",
+      "smart": "Smart — توليد التقارير",
+      "ner": "NER — استخراج الكيانات",
+      "wonderwall": "Wonderwall — حلقة المحاكاة",
+      "embeddings": "التضمينات",
+      "webSearch": "البحث على الويب (استيراد URL + إثراء)"
+    },
+    "neo4j": { "title": "قاعدة البيانات الرسومية (Neo4j)" },
+    "webhook": {
+      "title": "التكاملات · Webhook",
+      "testBtn": "إرسال حدث اختباري",
+      "testing": "جارٍ الإرسال…"
+    },
+    "mcp": { "title": "تكامل الذكاء الاصطناعي · MCP" }
+  },
   "panels": {
     "settings": {
       "title": "الإعدادات",

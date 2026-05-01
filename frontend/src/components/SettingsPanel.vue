@@ -15,7 +15,7 @@
         <!-- Current Setup Summary -->
         <section class="settings-section">
           <div class="section-header">
-            <span class="section-label">Current Setup</span>
+            <span class="section-label">{{ $t('settings.status.title') }}</span>
             <div class="status-badge" :class="testStatus">
               <span class="badge-dot"></span>
               {{ testStatusText }}
@@ -24,38 +24,38 @@
 
           <div class="setup-grid">
             <div class="setup-row">
-              <span class="setup-key">Default model</span>
+              <span class="setup-key">{{ $t('settings.status.defaultModel') }}</span>
               <span class="setup-val">{{ currentSettings.llm?.model_name || '—' }}</span>
             </div>
             <div class="setup-row">
-              <span class="setup-key">Smart (reports)</span>
+              <span class="setup-key">{{ $t('settings.status.smartModel') }}</span>
               <span class="setup-val">{{ currentSettings.smart?.model_name || inheritMarker }}</span>
             </div>
             <div class="setup-row">
-              <span class="setup-key">NER (extraction)</span>
+              <span class="setup-key">{{ $t('settings.status.nerModel') }}</span>
               <span class="setup-val">{{ currentSettings.ner?.model_name || inheritMarker }}</span>
             </div>
             <div class="setup-row">
-              <span class="setup-key">Wonderwall (sim loop)</span>
+              <span class="setup-key">{{ $t('settings.status.wonderwallModel') }}</span>
               <span class="setup-val">{{ currentSettings.wonderwall?.model_name || inheritMarker }}</span>
             </div>
             <div class="setup-row">
-              <span class="setup-key">Embeddings</span>
+              <span class="setup-key">{{ $t('settings.status.embeddings') }}</span>
               <span class="setup-val">
                 {{ currentSettings.embedding?.model_name || '—' }}
               </span>
             </div>
             <div class="setup-row">
-              <span class="setup-key">Web search</span>
+              <span class="setup-key">{{ $t('settings.status.webSearch') }}</span>
               <span class="setup-val">{{ currentSettings.web_search_model || inheritMarker }}</span>
             </div>
             <div class="setup-row">
-              <span class="setup-key">API key</span>
+              <span class="setup-key">{{ $t('settings.status.apiKey') }}</span>
               <span class="setup-val">
                 <span v-if="currentSettings.llm?.has_api_key">
                   {{ currentSettings.llm.api_key_masked }}
                 </span>
-                <span v-else class="setup-missing">not set</span>
+                <span v-else class="setup-missing">{{ $t('settings.status.notSet') }}</span>
               </span>
             </div>
           </div>
@@ -64,14 +64,14 @@
         <!-- Preset Picker -->
         <section class="settings-section">
           <div class="section-header">
-            <span class="section-label">Preset</span>
+            <span class="section-label">{{ $t('settings.preset.title') }}</span>
           </div>
 
           <div class="field-row">
-            <label class="field-label">Config template</label>
+            <label class="field-label">{{ $t('settings.preset.label') }}</label>
             <div class="select-wrapper">
               <select v-model="form.preset" class="field-select ms-input">
-                <option value="">Custom — leave fields as they are</option>
+                <option value="">{{ $t('settings.preset.custom') }}</option>
                 <option
                   v-for="p in presetOptions"
                   :key="p.id"
@@ -88,7 +88,7 @@
           </div>
 
           <div v-if="presetNeedsKey" class="field-row">
-            <label class="field-label">OpenRouter API key</label>
+            <label class="field-label">{{ $t('settings.preset.keyLabel') }}</label>
             <div class="key-input-group">
               <input
                 v-model="form.presetApiKey"
@@ -107,69 +107,79 @@
           </div>
         </section>
 
-        <!-- LLM Configuration -->
-        <section class="settings-section">
+        <!-- LLM Configuration — BYOK wizard -->
+        <section class="settings-section byok-section">
           <div class="section-header">
-            <span class="section-label">LLM Configuration</span>
-          </div>
-
-          <!-- Provider -->
-          <div class="field-row">
-            <label class="field-label">Provider</label>
-            <div class="select-wrapper">
-              <select v-model="form.llm.provider" class="field-select ms-input">
-                <option value="openai">OpenAI-compatible (OpenRouter, Ollama, etc.)</option>
-                <option value="claude-code">Claude Code (local CLI)</option>
-              </select>
+            <span class="section-label">{{ $t('settings.byok.title') }}</span>
+            <div v-if="detectedProvider" class="provider-badge provider-badge--detected">
+              <span class="provider-badge-dot">✓</span>
+              {{ detectedProvider.name }} {{ $t('settings.byok.detected') }}
+            </div>
+            <div v-else-if="form.llm.api_key && form.llm.api_key.length > 4" class="provider-badge provider-badge--custom">
+              {{ $t('settings.byok.customProvider') }}
             </div>
           </div>
 
-          <!-- Base URL -->
-          <div v-if="form.llm.provider !== 'claude-code'" class="field-row">
-            <label class="field-label">Base URL</label>
-            <input
-              v-model="form.llm.base_url"
-              class="field-input ms-input"
-              type="url"
-              placeholder="https://openrouter.ai/api/v1"
-            />
+          <p class="byok-intro">{{ $t('settings.byok.intro') }}</p>
+
+          <!-- Clé API — champ principal -->
+          <div class="field-row byok-key-row">
+            <label class="field-label">{{ $t('settings.byok.keyLabel') }}</label>
+            <div class="key-input-group">
+              <input
+                v-model="form.llm.api_key"
+                class="field-input ms-input byok-key-input"
+                :type="showKey ? 'text' : 'password'"
+                :placeholder="currentSettings.llm?.api_key_masked || $t('settings.byok.keyPlaceholder')"
+                autocomplete="off"
+                spellcheck="false"
+              />
+              <button class="toggle-key-btn" @click="showKey = !showKey" :title="showKey ? $t('settings.byok.hideKey') : $t('settings.byok.showKey')">
+                {{ showKey ? '◉' : '◎' }}
+              </button>
+            </div>
+            <div v-if="detectedProvider" class="field-hint byok-hint-detected">
+              🔗 {{ $t('settings.byok.autoBaseUrl') }} <code>{{ detectedProvider.url }}</code>
+            </div>
+            <div v-if="currentSettings.llm?.has_api_key && !form.llm.api_key" class="field-hint">
+              {{ $t('settings.byok.currentKey') }}: {{ currentSettings.llm.api_key_masked }} — {{ $t('settings.byok.keepBlank') }}
+            </div>
           </div>
 
-          <!-- Model -->
-          <div v-if="form.llm.provider !== 'claude-code'" class="field-row">
-            <label class="field-label">Model</label>
+          <!-- Modèle — sélecteur intelligent -->
+          <div class="field-row">
+            <label class="field-label">{{ $t('settings.byok.modelLabel') }}</label>
             <div class="model-input-group">
               <div class="select-wrapper model-select-wrapper">
+                <!-- Modèles curatés si provider détecté -->
                 <select
-                  v-if="modelList.length > 0"
+                  v-if="curatedModelList.length > 0"
                   v-model="form.llm.model_name"
                   class="field-select ms-input"
                 >
-                  <optgroup
-                    v-for="tier in modelTiers"
-                    :key="tier.label"
-                    :label="tier.label"
-                  >
-                    <option
-                      v-for="m in tier.models"
-                      :key="m.id"
-                      :value="m.id"
-                    >{{ m.name }}</option>
-                  </optgroup>
+                  <option
+                    v-for="m in curatedModelList"
+                    :key="m.id"
+                    :value="m.id"
+                  >{{ m.name }} — {{ m.desc }}</option>
+                  <option value="__custom">{{ $t('settings.byok.customModel') }}…</option>
                 </select>
+                <!-- Champ libre si pas de liste curatée -->
                 <input
                   v-else
                   v-model="form.llm.model_name"
                   class="field-input ms-input"
                   type="text"
-                  placeholder="e.g. openai/gpt-4o-mini"
+                  :placeholder="$t('settings.byok.modelPlaceholder')"
                 />
               </div>
+              <!-- Bouton charge modèles OpenRouter uniquement -->
               <button
+                v-if="isOpenRouter"
                 class="load-models-btn"
-                :disabled="loadingModels || !isOpenRouter"
+                :disabled="loadingModels"
                 @click="loadOpenRouterModels"
-                :title="isOpenRouter ? 'Load available models from OpenRouter' : 'Only available for OpenRouter base URL'"
+                :title="$t('settings.byok.loadModelsTitle')"
               >
                 <span v-if="loadingModels">...</span>
                 <span v-else>↻</span>
@@ -178,41 +188,48 @@
             <div v-if="modelLoadError" class="field-error">{{ modelLoadError }}</div>
           </div>
 
-          <!-- API Key -->
-          <div v-if="form.llm.provider !== 'claude-code'" class="field-row">
-            <label class="field-label">API Key</label>
-            <div class="key-input-group">
+          <!-- Champ modèle custom si option __custom sélectionnée -->
+          <div v-if="form.llm.model_name === '__custom'" class="field-row">
+            <label class="field-label">{{ $t('settings.byok.customModelLabel') }}</label>
+            <input
+              v-model="customModelInput"
+              class="field-input ms-input"
+              type="text"
+              :placeholder="$t('settings.byok.customModelPlaceholder')"
+              @change="form.llm.model_name = customModelInput"
+            />
+          </div>
+
+          <!-- Base URL — collapsible (pré-remplie par détection) -->
+          <details class="byok-advanced" :open="!detectedProvider">
+            <summary class="byok-advanced-toggle">{{ $t('settings.byok.advancedUrl') }}</summary>
+            <div class="field-row byok-url-row">
+              <label class="field-label">Base URL</label>
               <input
-                v-model="form.llm.api_key"
+                v-model="form.llm.base_url"
                 class="field-input ms-input"
-                :type="showKey ? 'text' : 'password'"
-                :placeholder="currentSettings.llm?.api_key_masked || 'sk-...'"
+                type="url"
+                :placeholder="detectedProvider ? detectedProvider.url : 'https://openrouter.ai/api/v1'"
               />
-              <button class="toggle-key-btn" @click="showKey = !showKey">
-                {{ showKey ? '◉' : '◎' }}
-              </button>
             </div>
-            <div v-if="currentSettings.llm?.has_api_key && !form.llm.api_key" class="field-hint">
-              Current key: {{ currentSettings.llm.api_key_masked }} — leave blank to keep unchanged
+          </details>
+
+          <!-- Test de connexion -->
+          <div class="field-row test-row">
+            <button class="test-btn" :disabled="testing" @click="testConnection">
+              <span v-if="testing">{{ $t('settings.byok.testing') }}</span>
+              <span v-else>{{ $t('settings.byok.testBtn') }}</span>
+            </button>
+            <div v-if="testResult" class="test-result" :class="testResult.success ? 'ok' : 'fail'">
+              <span v-if="testResult.success">✓ {{ testResult.model }} — {{ testResult.latency_ms }}ms</span>
+              <span v-else>✗ {{ testResult.error }}</span>
             </div>
           </div>
 
-          <!-- Test Connection -->
-          <div v-if="form.llm.provider !== 'claude-code'" class="field-row test-row">
-            <button
-              class="test-btn"
-              :disabled="testing"
-              @click="testConnection"
-            >
-              <span v-if="testing">Testing...</span>
-              <span v-else>Test Connection</span>
-            </button>
-            <div v-if="testResult" class="test-result" :class="testResult.success ? 'ok' : 'fail'">
-              <span v-if="testResult.success">
-                ✓ {{ testResult.model }} — {{ testResult.latency_ms }}ms
-              </span>
-              <span v-else>✗ {{ testResult.error }}</span>
-            </div>
+          <!-- Propagation intelligente -->
+          <div class="byok-propagation-hint">
+            <span class="byok-prop-icon">💡</span>
+            {{ $t('settings.byok.propagationHint') }}
           </div>
         </section>
 
@@ -220,19 +237,19 @@
         <section class="settings-section">
           <button class="advanced-toggle" @click="advancedOpen = !advancedOpen">
             <span class="section-label">
-              Advanced slot overrides
+              {{ $t('settings.advanced.title') }}
             </span>
             <span class="chevron">{{ advancedOpen ? '−' : '+' }}</span>
           </button>
 
           <div v-if="advancedOpen" class="advanced-body">
             <div class="advanced-hint">
-              Each slot falls back to the default LLM config when left empty.
+              {{ $t('settings.advanced.hint') }}
             </div>
 
             <!-- Smart -->
             <div class="advanced-group">
-              <div class="advanced-group-title">Smart — report generation</div>
+              <div class="advanced-group-title">{{ $t('settings.advanced.smart') }}</div>
               <div class="field-row">
                 <label class="field-label">Model</label>
                 <input
@@ -246,7 +263,7 @@
 
             <!-- NER -->
             <div class="advanced-group">
-              <div class="advanced-group-title">NER — entity extraction</div>
+              <div class="advanced-group-title">{{ $t('settings.advanced.ner') }}</div>
               <div class="field-row">
                 <label class="field-label">Model</label>
                 <input
@@ -260,7 +277,7 @@
 
             <!-- Wonderwall -->
             <div class="advanced-group">
-              <div class="advanced-group-title">Wonderwall — simulation loop</div>
+              <div class="advanced-group-title">{{ $t('settings.advanced.wonderwall') }}</div>
               <div class="field-row">
                 <label class="field-label">Model</label>
                 <input
@@ -274,7 +291,7 @@
 
             <!-- Embedding -->
             <div class="advanced-group">
-              <div class="advanced-group-title">Embeddings</div>
+              <div class="advanced-group-title">{{ $t('settings.advanced.embeddings') }}</div>
               <div class="field-row">
                 <label class="field-label">Provider</label>
                 <div class="select-wrapper">
@@ -297,7 +314,7 @@
 
             <!-- Web Search -->
             <div class="advanced-group">
-              <div class="advanced-group-title">Web search (URL import + enrichment)</div>
+              <div class="advanced-group-title">{{ $t('settings.advanced.webSearch') }}</div>
               <div class="field-row">
                 <label class="field-label">Model</label>
                 <input
@@ -314,7 +331,7 @@
         <!-- Neo4j Configuration -->
         <section class="settings-section">
           <div class="section-header">
-            <span class="section-label">Graph Database (Neo4j)</span>
+            <span class="section-label">{{ $t('settings.neo4j.title') }}</span>
           </div>
 
           <div class="field-row">
@@ -351,7 +368,7 @@
         <!-- Outbound webhook · Slack / Discord / Zapier / n8n / custom -->
         <section class="settings-section ai-section">
           <div class="section-header">
-            <span class="section-label">Integrations · Webhook</span>
+            <span class="section-label">{{ $t('settings.webhook.title') }}</span>
             <div class="status-badge" :class="webhookSavedClass">
               <span class="badge-dot"></span>
               {{ webhookSavedText }}
@@ -408,7 +425,7 @@
               :disabled="webhookTesting || !webhookCanTest"
               @click="testWebhookFire"
             >
-              {{ webhookTesting ? 'Sending…' : 'Send test event' }}
+              {{ webhookTesting ? $t('settings.webhook.testing') : $t('settings.webhook.testBtn') }}
             </button>
             <span v-if="webhookTestResult" class="webhook-test-result" :class="webhookTestResult.success ? 'ok' : 'fail'">
               <template v-if="webhookTestResult.success">
@@ -424,7 +441,7 @@
         <!-- AI Integration (MCP) -->
         <section class="settings-section ai-section">
           <div class="section-header">
-            <span class="section-label">AI Integration · MCP</span>
+            <span class="section-label">{{ $t('settings.mcp.title') }}</span>
             <div class="status-badge" :class="mcpHealthClass">
               <span class="badge-dot"></span>
               {{ mcpHealthText }}
@@ -561,6 +578,52 @@ const props = defineProps({
 
 const emit = defineEmits(['close'])
 
+// ─── Provider catalog & curated model lists ───────────────────────────────────
+
+const PROVIDER_CATALOG = [
+  { id: 'openrouter', name: 'OpenRouter', url: 'https://openrouter.ai/api/v1', prefix: (k) => k.startsWith('sk-or-v1-') },
+  { id: 'moonshot',   name: 'Moonshot / Kimi', url: 'https://api.moonshot.ai/v1', prefix: (k) => /^eyJ[A-Za-z0-9+/=_-]{10,}/.test(k) },
+  { id: 'anthropic',  name: 'Anthropic', url: 'https://api.anthropic.com/v1', prefix: (k) => k.startsWith('sk-ant-api0') },
+  { id: 'groq',       name: 'Groq', url: 'https://api.groq.com/openai/v1', prefix: (k) => k.startsWith('gsk_') },
+  { id: 'google',     name: 'Google Gemini', url: 'https://generativelanguage.googleapis.com/v1beta/openai', prefix: (k) => k.startsWith('AIza') },
+  { id: 'openai',     name: 'OpenAI', url: 'https://api.openai.com/v1', prefix: (k) => k.startsWith('sk-') },
+]
+
+const CURATED_MODELS = {
+  openrouter: [
+    { id: 'moonshotai/kimi-k2', name: 'Kimi K2 Turbo (recommandé)', desc: 'Rapide · Bas coût' },
+    { id: 'anthropic/claude-sonnet-4-6', name: 'Claude Sonnet 4.6', desc: 'Intelligent · Rapports' },
+    { id: 'google/gemini-2.0-flash-001', name: 'Gemini 2.0 Flash', desc: 'Rapide · Multimodal' },
+    { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini', desc: 'Économique' },
+    { id: 'openai/gpt-4o', name: 'GPT-4o', desc: 'Puissant' },
+  ],
+  moonshot: [
+    { id: 'kimi-k2-turbo-preview', name: 'Kimi K2 Turbo (recommandé)', desc: 'Très rapide' },
+    { id: 'moonshot-v1-32k', name: 'Moonshot V1 32K', desc: 'Contexte long' },
+  ],
+  anthropic: [
+    { id: 'claude-sonnet-4-6-20251022', name: 'Claude Sonnet 4.6', desc: 'Recommandé' },
+    { id: 'claude-haiku-4-5-20251001', name: 'Claude Haiku 4.5', desc: 'Rapide' },
+  ],
+  groq: [
+    { id: 'llama-3.3-70b-versatile', name: 'LLaMA 3.3 70B', desc: 'Gratuit · Très rapide' },
+    { id: 'moonshotai/kimi-k2', name: 'Kimi K2', desc: 'Reasoning' },
+  ],
+  google: [
+    { id: 'gemini-2.0-flash-001', name: 'Gemini 2.0 Flash', desc: 'Rapide · Multimodal' },
+    { id: 'gemini-1.5-pro-002', name: 'Gemini 1.5 Pro', desc: 'Puissant' },
+  ],
+  openai: [
+    { id: 'gpt-4o', name: 'GPT-4o', desc: 'Meilleur OpenAI' },
+    { id: 'gpt-4o-mini', name: 'GPT-4o Mini', desc: 'Économique' },
+  ],
+}
+
+const detectProvider = (key) => {
+  if (!key || key.length < 8) return null
+  return PROVIDER_CATALOG.find(p => p.prefix(key)) || null
+}
+
 // Current settings loaded from backend
 const currentSettings = ref({})
 
@@ -604,6 +667,8 @@ const loadingModels = ref(false)
 const modelLoadError = ref('')
 const advancedOpen = ref(false)
 const inheritMarker = '— inherits default —'
+const customModelInput = ref('')
+const curatedModelList = ref([])
 
 // Webhook integration state
 const webhookTesting = ref(false)
@@ -618,7 +683,28 @@ const activeClient = ref('claude_desktop')
 const toolsOpen = ref(false)
 const copyState = ref('') // '' | 'ok' | 'fail'
 
-// Load current settings when panel opens
+// ─── Auto-détection provider ──────────────────────────────────────────────────
+
+const detectedProvider = computed(() => detectProvider(form.llm.api_key || ''))
+
+watch(() => form.llm.api_key, (newKey) => {
+  const p = detectProvider(newKey)
+  if (p && !form.llm.base_url) {
+    form.llm.base_url = p.url
+  }
+  if (p && CURATED_MODELS[p.id]) {
+    // auto-sélectionner le premier modèle recommandé si modèle vide
+    if (!form.llm.model_name) {
+      form.llm.model_name = CURATED_MODELS[p.id][0].id
+    }
+    curatedModelList.value = CURATED_MODELS[p.id]
+  } else {
+    curatedModelList.value = []
+  }
+})
+
+// ─── Load current settings when panel opens ───────────────────────────────────
+
 watch(() => props.open, async (isOpen) => {
   if (isOpen) {
     saveError.value = ''
@@ -1576,4 +1662,28 @@ const saveSettings = async () => {
     gap: 2px;
   }
 }
+
+/* ─── BYOK wizard ─── */
+.byok-section { border: 2px solid var(--ms-orange-soft); border-radius: var(--ms-radius-md); }
+.byok-intro { color: var(--ms-text-subtle); font-size: 0.85rem; margin: 0 0 1rem 0; }
+
+.provider-badge { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
+.provider-badge--detected { background: var(--ms-mint-soft, #e6f9f7); color: var(--ms-status-success, #16a34a); }
+.provider-badge--custom { background: var(--ms-orange-soft); color: var(--ms-orange); }
+.provider-badge-dot { font-size: 0.9em; }
+
+.byok-key-input { font-family: var(--ms-font-mono, monospace); letter-spacing: 0.05em; }
+.byok-hint-detected { font-family: monospace; font-size: 0.75rem; }
+
+.byok-advanced { margin-top: 0.75rem; }
+.byok-advanced summary.byok-advanced-toggle { cursor: pointer; font-size: 0.8rem; color: var(--ms-text-subtle); padding: 4px 0; }
+
+.byok-propagation-hint {
+  margin-top: 1rem; padding: 0.75rem 1rem;
+  background: var(--ms-surface-2, var(--ms-surface));
+  border-radius: var(--ms-radius-sm);
+  font-size: 0.8rem; color: var(--ms-text-subtle);
+  display: flex; gap: 0.5rem; align-items: flex-start;
+}
+.byok-prop-icon { flex-shrink: 0; }
 </style>
