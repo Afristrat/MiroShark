@@ -60,8 +60,8 @@ onMounted(() => {
 <style scoped>
 .theme-switcher {
   position: fixed;
-  bottom: 16px;
-  inset-inline-end: 60px;
+  top: 60px;
+  inset-inline-end: 12px;
   z-index: var(--ms-z-floating-lang, 1500);
 
   display: inline-flex;

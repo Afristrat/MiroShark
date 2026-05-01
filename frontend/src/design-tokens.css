@@ -206,43 +206,65 @@
   --font-mono: var(--ms-font-mono);
 }
 
-/* ══════════════════════════════════════════════════════════
+/* ═════════════════════════════════���════════════════════════
    US-027 — Dark mode tokens
    Sélecteur [data-theme="dark"] posé sur <html> par ThemeSwitcher.vue.
-   Tous les ratios WCAG AA vérifiés (≥ 4.5:1 texte normal) :
-     --ms-text #e8eaf0 / --ms-bg #0f1117     → 15.69
-     --ms-text-subtle #8b90a0 / --ms-bg      → 5.93
-     --ms-text-subtle / --ms-surface         → 5.28
-     --ms-orange #ff8c42 / --ms-bg           → 8.16
+   Couvre à la fois les tokens --ms-* (Playful & Soft) et les tokens
+   legacy --lo / --lp / --li utilisés par les anciens composants.
    ═══════════════════════════════════════════════════════ */
 [data-theme="dark"] {
+  color-scheme: dark;
+
+  /* ── Tokens Playful & Soft ── */
   --ms-bg: #0f1117;
   --ms-surface: #1a1d27;
   --ms-surface-2: #22263a;
   --ms-text: #e8eaf0;
   --ms-text-subtle: #8b90a0;
+  --ms-text-muted: #9ea3b5;
+  --ms-text-on-color: #ffffff;
   --ms-border: #2e3248;
   --ms-border-subtle: #252840;
-  --ms-orange: #ff8c42;
-  --ms-orange-soft: #2a1a0e;
-  --ms-ink: #e8eaf0;
-  --ms-shadow-sm: 0 1px 4px rgba(0,0,0,0.4);
-  --ms-shadow-md: 0 4px 16px rgba(0,0,0,0.5);
-
-  /* Réaffectation des tokens sémantiques existants vers les valeurs dark */
-  --ms-bg-elevated: var(--ms-surface);
-  --ms-bg-muted: var(--ms-surface-2);
-  --ms-text-muted: #9ea3b5;
   --ms-border-strong: #3a3f5c;
   --ms-border-focus: rgba(255, 140, 66, 0.5);
-
-  /* dark mode : texte-sur-couleur passe à blanc car contraste ok sur dark orange */
-  --ms-text-on-color: #ffffff;
-
-  /* Shadows plus marquées en dark */
+  --ms-orange: #ff8c42;
+  --ms-orange-soft: rgba(255, 140, 66, 0.12);
+  --ms-orange-strong: #e87232;
+  --ms-ink: #e8eaf0;
+  --ms-bg-elevated: #1a1d27;
+  --ms-bg-muted: #22263a;
+  --ms-bg-overlay: rgba(0, 0, 0, 0.65);
   --ms-shadow-xs: 0 1px 2px rgba(0,0,0,0.3);
+  --ms-shadow-sm: 0 1px 4px rgba(0,0,0,0.4);
+  --ms-shadow-md: 0 4px 16px rgba(0,0,0,0.5);
   --ms-shadow-lg: 0 12px 32px rgba(0,0,0,0.6);
   --ms-shadow-orange: 0 6px 18px rgba(255, 140, 66, 0.35);
+
+  /* ── Tokens legacy (utilisés par Home, Step1-5, SettingsPanel…) ──
+     Sans ces overrides, les composants qui n'ont pas encore migré
+     vers --ms-* gardaient leur fond clair en dark mode. */
+  --lp: #1a1d27;      /* legacy paper → dark surface */
+  --lp2: #22263a;     /* legacy paper alt → dark surface 2 */
+  --li: #e8eaf0;      /* legacy ink → texte clair */
+  --li2: #c8cad6;     /* legacy ink soft */
+  --lo: #ff8c42;      /* legacy orange → adapté dark */
+
+  --ms-legacy-paper: #1a1d27;
+  --ms-legacy-paper-alt: #22263a;
+  --ms-legacy-ink: #e8eaf0;
+  --ms-legacy-ink-soft: #c8cad6;
+  --ms-legacy-ink-mid: #9ea3b5;
+  --ms-legacy-orange: #ff8c42;
+  --ms-legacy-muted: #8b90a0;
+  --ms-legacy-muted-2: #9ea3b5;
+  --ms-legacy-muted-3: #b0b5c8;
+  --ms-legacy-muted-4: #c2c6d8;
+  --ms-legacy-muted-5: #d4d7e5;
+  --ms-legacy-muted-6: #e8eaf0;
+
+  /* ── Alias body/background utilisés dans App.vue ── */
+  --background: #0f1117;
+  --foreground: #e8eaf0;
 }
 
 /* ── Reduced motion: keep transitions short or no-op ── */

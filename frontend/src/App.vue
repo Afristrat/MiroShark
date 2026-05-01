@@ -67,6 +67,7 @@ body, #app {
   -moz-osx-font-smoothing: grayscale;
   color: var(--foreground);
   background-color: var(--background);
+  transition: background-color 200ms ease, color 200ms ease;
 }
 
 /* ── Text Selection ── */
