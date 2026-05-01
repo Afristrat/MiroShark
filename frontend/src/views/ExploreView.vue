@@ -146,7 +146,7 @@
           v-for="(item, idx) in items"
           :key="item.simulation_id"
           :ref="el => setGalleryCardRef(el, idx)"
-          class="gallery-card"
+          class="gallery-card ms-card"
           :class="{
             'card-resolved': item.resolution_outcome,
             'card-verified-correct': item.outcome && item.outcome.label === 'correct',
@@ -873,11 +873,11 @@ onMounted(refresh)
 }
 
 .gallery-card {
-  background: var(--color-white);
-  border: var(--border-light);
+  /* .ms-card apporte background, border, border-radius, shadow, transition.
+     On override padding=0 : le card-body a son propre espacement. */
+  padding: 0;
   display: flex;
   flex-direction: column;
-  transition: var(--transition-medium);
   /* Initial state for the scroll-triggered fade-in. The
      `useScrollFadeIn` composable adds .ms-anim-fade-in once the card
      enters the viewport, which runs the global ms-fade-in keyframes. */
@@ -977,8 +977,8 @@ onMounted(refresh)
 }
 
 .pill-bullish {
-  background: rgba(67, 193, 101, 0.15);
-  color: #2a8545;
+  background: var(--ms-mint-soft);
+  color: var(--ms-status-success-text);
 }
 
 .pill-bearish {
@@ -992,18 +992,18 @@ onMounted(refresh)
 }
 
 .pill-quality-excellent {
-  background: rgba(67, 193, 101, 0.15);
-  color: #2a8545;
+  background: var(--ms-mint-soft);
+  color: var(--ms-status-success-text);
 }
 
 .pill-quality-good {
-  background: rgba(67, 193, 101, 0.1);
-  color: #2a8545;
+  background: var(--ms-mint-soft);
+  color: var(--ms-status-success-text);
 }
 
 .pill-quality-fair {
-  background: rgba(255, 179, 71, 0.18);
-  color: #a66414;
+  background: var(--ms-peach-soft);
+  color: var(--ms-status-warning-text);
 }
 
 .pill-quality-poor {
@@ -1056,7 +1056,7 @@ a.pill-verified:hover {
 
 .pill-verified-partial {
   background: rgba(255, 179, 71, 0.22);
-  color: #8a4a0a;
+  color: var(--ms-status-warning-text);
   outline: 1px solid rgba(255, 179, 71, 0.5);
   outline-offset: -1px;
 }

@@ -290,12 +290,12 @@ onMounted(() => {
   --bg: var(--ms-text-on-color);
   --fg: var(--li);
   --muted: var(--ms-text-muted);
-  --border: rgba(10, 10, 10, 0.08);
+  --border: var(--ms-border);
   --pill-bg: rgba(10, 10, 10, 0.05);
   --pill-fg: var(--li);
-  --bullish: #0ea5a0;
-  --neutral: #9aa0a6;
-  --bearish: #f07867;
+  --bullish: var(--ms-mint);       /* #7FD8A6 — teal/vert pour bullish */
+  --neutral: var(--ms-text-subtle); /* #9696A6 — gris neutre */
+  --bearish: var(--ms-rose);       /* #F4847A — rouge/saumon pour bearish */
   --consensus-line: rgba(10, 10, 10, 0.45);
   --link-color: var(--ms-status-orange-amber);
 
@@ -317,12 +317,12 @@ onMounted(() => {
 }
 
 .embed-widget.theme-dark {
-  --bg: #0f1115;
-  --fg: #f4f4f5;
-  --muted: #a1a1aa;
+  --bg: #0f1115; /* TODO US-027 : pas de token ms-* dark disponible */
+  --fg: #f4f4f5; /* TODO US-027 */
+  --muted: #a1a1aa; /* TODO US-027 */
   --border: rgba(244, 244, 245, 0.12);
   --pill-bg: rgba(244, 244, 245, 0.08);
-  --pill-fg: #f4f4f5;
+  --pill-fg: #f4f4f5; /* TODO US-027 */
   --consensus-line: rgba(244, 244, 245, 0.55);
 }
 
@@ -422,11 +422,11 @@ onMounted(() => {
 
 .embed-pill.quality.quality-good {
   background: rgba(234, 179, 8, 0.15);
-  color: #b45309;
+  color: var(--ms-status-warning-text);
 }
 
 .embed-widget.theme-dark .embed-pill.quality.quality-good {
-  color: #facc15;
+  color: var(--ms-peach); /* #FFB347 — approximation de #facc15 en thème dark */
 }
 
 .embed-pill.quality.quality-low {

@@ -592,7 +592,7 @@ onUnmounted(() => {
 }
 
 .control-btn.play:hover {
-  background: #E05A10;
+  background: var(--ms-legacy-orange-strong);
 }
 
 .speed-controls {

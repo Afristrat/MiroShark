@@ -173,7 +173,7 @@
                 :x2="chartW - chartPad"
                 :y1="chartPad + ((chartH - 2*chartPad) / 4) * (i-1)"
                 :y2="chartPad + ((chartH - 2*chartPad) / 4) * (i-1)"
-                stroke="#1E1E1E"
+                stroke="var(--ms-legacy-ink-soft)"
                 stroke-width="1"
               />
               <!-- Sim A line -->
@@ -449,7 +449,7 @@ const downloadComparison = () => {
   align-items: center;
   justify-content: space-between;
   padding: 16px 32px;
-  border-bottom: 1px solid #1E1E1E;
+  border-bottom: 1px solid var(--ms-legacy-ink-soft);
 }
 .brand {
   font-family: 'Young Serif', serif;
@@ -465,7 +465,7 @@ const downloadComparison = () => {
 }
 .download-btn {
   padding: 7px 16px;
-  border: 1px solid #3A3A3A;
+  border: 1px solid var(--ms-legacy-ink-mid);
   background: transparent;
   color: var(--ms-legacy-muted-6);
   border-radius: 4px;
@@ -486,7 +486,7 @@ const downloadComparison = () => {
   gap: 16px;
   padding: 20px 32px;
   border-bottom: 1px solid var(--li2);
-  background: #0D0D0D;
+  background: var(--li);
 }
 .selector-group {
   display: flex;
@@ -517,7 +517,7 @@ const downloadComparison = () => {
 }
 .vs-badge {
   padding: 8px 14px;
-  border: 1px solid #3A3A3A;
+  border: 1px solid var(--ms-legacy-ink-mid);
   border-radius: 4px;
   color: var(--ms-legacy-muted);
   font-size: 11px;
@@ -573,7 +573,7 @@ const downloadComparison = () => {
 .cmp-empty {
   padding: 60px 32px;
   text-align: center;
-  color: #444;
+  color: var(--ms-legacy-muted);
   font-size: 13px;
 }
 
@@ -662,7 +662,7 @@ const downloadComparison = () => {
   align-items: center;
   gap: 6px;
   padding: 6px 0;
-  border-bottom: 1px solid #161616;
+  border-bottom: 1px solid var(--li);
   font-size: 12px;
 }
 .lb-rank { color: var(--ms-legacy-muted); font-size: 11px; }
@@ -672,20 +672,20 @@ const downloadComparison = () => {
 .delta-up { color: var(--ls); }
 .delta-down { color: var(--lo); }
 .delta-equal { color: var(--ms-legacy-muted); }
-.lb-empty { color: #444; font-size: 12px; padding: 12px 0; }
+.lb-empty { color: var(--ms-legacy-muted); font-size: 12px; padding: 12px 0; }
 
 /* Chart */
 .chart-container { display: flex; flex-direction: column; gap: 12px; }
 .activity-chart {
   width: 100%;
   height: 180px;
-  background: #0D0D0D;
+  background: var(--li);
   border-radius: 4px;
-  border: 1px solid #1E1E1E;
+  border: 1px solid var(--ms-legacy-ink-soft);
 }
 .chart-legend { display: flex; gap: 20px; font-size: 11px; color: var(--ms-legacy-muted-2); }
 .legend-item { }
-.legend-label { color: #444; margin-inline-start: auto; }
+.legend-label { color: var(--ms-legacy-muted); margin-inline-start: auto; }
 .sim-a-color { color: var(--lo); }
 .sim-b-color { color: var(--ls); }
 
