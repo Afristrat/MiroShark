@@ -906,6 +906,22 @@
       "loading": "Loading…",
       "savingNotice": "Saving…",
       "invalidUrl": "Invalid URL — use http(s)://"
+    },
+    "howto": {
+      "title": "How the Calibration page works",
+      "step1": "1. Run a simulation from the home page and let it complete.",
+      "step2": "2. Open the embed dialog (⌘ icon) and toggle 'Public' to make the simulation visible in the inbox below.",
+      "step3": "3. Activate admin mode (🔑) with your MIROSHARK_ADMIN_TOKEN to unlock the rating buttons.",
+      "step4": "4. Rate each prediction: 'Called it' if the event occurred, 'Partial' if partially correct, 'Wrong' otherwise.",
+      "note": "The Brier score updates in real time after each rating. A score < 0.25 indicates excellent calibration."
+    },
+    "adminToken": {
+      "activate": "🔑 Admin mode",
+      "placeholder": "MIROSHARK_ADMIN_TOKEN",
+      "confirm": "Activate",
+      "active": "Admin ✓",
+      "deactivate": "Deactivate",
+      "requiresAdmin": "Activate admin mode to rate predictions"
     }
   },
   "errors": {
@@ -981,18 +997,18 @@
     },
     "eyebrow": "Predict before it happens",
     "hero": {
-      "title": "Ten ways to put a swarm of synthetic agents to work on your decision",
-      "subtitle": "From 10,000 MAD Discovery to a 240,000 MAD scientific Twin: one package per stakes level."
+      "title": "Strategic intelligence protocols for decision-makers.",
+      "subtitle": "Ten engagement formats — from rapid resilience tests to digital twin simulations. MAD / USD, delivered in 24 h to 4 weeks."
     },
     "featuredBadge": "Most chosen",
     "filters": {
-      "ariaLabel": "Filter packages by category",
-      "all": "All",
-      "discovery": "Discovery",
-      "drill": "Drill",
-      "stress": "Stress",
-      "twin": "Twin",
-      "retainer": "Retainer"
+      "ariaLabel": "Filter offers by domain",
+      "all": "All offers",
+      "discovery": "Strategic discovery",
+      "drill": "Crisis drill",
+      "stress": "Stress test",
+      "twin": "Digital twin",
+      "retainer": "Continuous watch"
     },
     "carousel": {
       "ariaLabel": "Bassira packages carousel",
@@ -1010,15 +1026,9 @@
         "annual": "/ month (billed annually)"
       }
     },
-    "mena": {
-      "eyebrow": "MENA Startups Programme",
-      "title": "MENA Startups Programme — accelerators and teams under 5 FTEs",
-      "body": "−40% on Discovery and Drill packages for startups backed by a MENA accelerator. Required proof: accelerator agreement or IFC, Africa50, or Endeavor MENA certificate.",
-      "cta": "Check my eligibility"
-    },
     "packages": {
       "pmf_discovery": {
-        "sectorBadge": "Founders",
+        "sectorBadge": "Founders & Investors",
         "name": "PMF Discovery",
         "delay": "1 to 2 weeks",
         "description": "Validate your product-market fit before your first round. 50 synthetic target prospects across pan-Africa stress-test your value proposition over 10 weeks.",
@@ -1034,7 +1044,7 @@
         }
       },
       "crisis_drill_24h": {
-        "sectorBadge": "Crisis",
+        "sectorBadge": "Executive leadership",
         "name": "Crisis Drill 24h",
         "delay": "24h turnaround",
         "description": "Stress-test your next reputation crisis 24 hours before it lands. 50 synthetic citizens react hour-by-hour on Twitter, Reddit, and WhatsApp.",
@@ -1050,7 +1060,7 @@
         }
       },
       "adcheck_lite": {
-        "sectorBadge": "Marketing",
+        "sectorBadge": "Marketing leadership",
         "name": "Adcheck Lite",
         "delay": "3 days",
         "description": "Test 2 ad concepts on a synthetic Moroccan 25-45 audience. Verdict in 72h, ideal for fast iteration before media buy.",
@@ -1065,7 +1075,7 @@
         }
       },
       "adcheck_pro": {
-        "sectorBadge": "Marketing",
+        "sectorBadge": "Marketing leadership",
         "name": "Adcheck Pro",
         "delay": "3 to 5 days",
         "description": "3 ad concepts tested in depth on 80 segmented agents. For Ramadan campaigns, regional launches, or strategic pivots.",
@@ -1086,7 +1096,7 @@
         }
       },
       "product_launch": {
-        "sectorBadge": "Marketing",
+        "sectorBadge": "Marketing leadership",
         "name": "Product Launch B2C",
         "delay": "1 week",
         "description": "Simulate one week of B2C product launch pan-Africa with adoption trajectory + early-adopter churn peak at D+5.",
@@ -1101,7 +1111,7 @@
         }
       },
       "policy_stress": {
-        "sectorBadge": "Policy",
+        "sectorBadge": "Ministries & Think-tanks",
         "name": "Policy Stress Test",
         "delay": "5 business days",
         "description": "Stress test of a draft law or policy brief against political opposition, stakeholders, and authorities. For cabinet advisors and think tanks.",
@@ -1116,7 +1126,7 @@
         }
       },
       "cohort_replay": {
-        "sectorBadge": "Research",
+        "sectorBadge": "Research & NGOs",
         "name": "Cohort Replay",
         "delay": "10 weeks",
         "description": "Scientific replication of a real cohort (incubator, programme, accelerator) over 10 weeks with 3 A/B/C variants to measure predictive fidelity.",
@@ -1138,7 +1148,7 @@
         }
       },
       "crisis_watch": {
-        "sectorBadge": "Crisis",
+        "sectorBadge": "Executive leadership",
         "name": "Crisis Watch",
         "delay": "Annual engagement",
         "description": "Permanent comms-director watch and 24/7 monitoring. 1 Crisis Drill per month included + predictive alerts on weak signals.",
@@ -1154,7 +1164,7 @@
         }
       },
       "brand_pulse": {
-        "sectorBadge": "Marketing",
+        "sectorBadge": "Marketing leadership",
         "name": "Brand Pulse",
         "delay": "Annual engagement",
         "description": "Unlimited Adcheck + continuous sentiment tracking + competitor benchmark. For brand managers and CMOs in test-and-learn mode.",

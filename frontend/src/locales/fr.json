@@ -906,6 +906,22 @@
       "loading": "Chargement…",
       "savingNotice": "Enregistrement en cours…",
       "invalidUrl": "URL invalide — utilise http(s)://"
+    },
+    "howto": {
+      "title": "Comment fonctionne la page Calibration",
+      "step1": "1. Lancez une simulation depuis la page d'accueil et laissez-la se terminer.",
+      "step2": "2. Ouvrez le dialogue d'intégration (icône ⌘) et cochez « Public » pour rendre la simulation visible dans l'inbox ci-dessous.",
+      "step3": "3. Activez le mode admin (🔑) avec votre token MIROSHARK_ADMIN_TOKEN pour débloquer les boutons de notation.",
+      "step4": "4. Notez chaque prédiction : « Bien anticipé » si l'événement s'est produit, « Partiel » si partiellement correct, « Manqué » sinon.",
+      "note": "Le score de Brier se met à jour en temps réel après chaque notation. Un score < 0,25 indique une calibration excellente."
+    },
+    "adminToken": {
+      "activate": "🔑 Mode admin",
+      "placeholder": "Token MIROSHARK_ADMIN_TOKEN",
+      "confirm": "Activer",
+      "active": "Admin ✓",
+      "deactivate": "Déverrouiller",
+      "requiresAdmin": "Activez le mode admin pour noter les prédictions"
     }
   },
   "errors": {
@@ -981,18 +997,18 @@
     },
     "eyebrow": "Prédisez avant que ça arrive",
     "hero": {
-      "title": "Dix façons de mettre une nuée d’agents synthétiques au service de votre décision",
-      "subtitle": "Du Discovery à 10 000 MAD au Twin scientifique à 240 000 MAD : un pack pour chaque enjeu."
+      "title": "Les protocoles d’intelligence stratégique pour ceux qui décident.",
+      "subtitle": "Dix modalités d’engagement — du test de résilience express à la simulation de jumeaux numériques. MAD / USD, livraison sous 24 h à 4 semaines."
     },
     "featuredBadge": "Le plus choisi",
     "filters": {
-      "ariaLabel": "Filtrer les packages par catégorie",
-      "all": "Tous",
-      "discovery": "Discovery",
-      "drill": "Drill",
-      "stress": "Stress",
-      "twin": "Twin",
-      "retainer": "Retainer"
+      "ariaLabel": "Filtrer les offres par domaine",
+      "all": "Toutes les offres",
+      "discovery": "Exploration stratégique",
+      "drill": "Exercice de crise",
+      "stress": "Test de résistance",
+      "twin": "Jumeau numérique",
+      "retainer": "Veille continue"
     },
     "carousel": {
       "ariaLabel": "Carousel des packages Bassira",
@@ -1010,15 +1026,9 @@
         "annual": "/ mois (facturé annuel)"
       }
     },
-    "mena": {
-      "eyebrow": "Programme MENA Startups",
-      "title": "Programme MENA Startups — accélérateurs et structures < 5 ETP",
-      "body": "−40 % sur les packages Discovery et Drill pour les startups financées par un accélérateur MENA. Justificatif requis : convention d’accélérateur ou attestation IFC, Africa50, ou Endeavor MENA.",
-      "cta": "Vérifier mon éligibilité"
-    },
     "packages": {
       "pmf_discovery": {
-        "sectorBadge": "Founders",
+        "sectorBadge": "Fondateurs & Investisseurs",
         "name": "PMF Discovery",
         "delay": "1 à 2 semaines",
         "description": "Validez votre product-market fit avant la 1ʳᵉ levée. 50 prospects-cible synthétiques pan-Afrique testent votre proposition de valeur sur 10 semaines.",
@@ -1034,7 +1044,7 @@
         }
       },
       "crisis_drill_24h": {
-        "sectorBadge": "Crisis",
+        "sectorBadge": "Directions générales",
         "name": "Crisis Drill 24h",
         "delay": "Livré sous 24 h",
         "description": "Stress-testez votre prochaine crise réputationnelle 24 h avant qu’elle ne tombe. 50 citoyens synthétiques réagissent heure par heure sur Twitter, Reddit et WhatsApp.",
@@ -1050,7 +1060,7 @@
         }
       },
       "adcheck_lite": {
-        "sectorBadge": "Marketing",
+        "sectorBadge": "Directions marketing",
         "name": "Adcheck Lite",
         "delay": "3 jours",
         "description": "Test de 2 concepts publicitaires sur audience marocaine 25-45 ans synthétique. Verdict en 72 h, idéal pour itération rapide avant achat media.",
@@ -1065,7 +1075,7 @@
         }
       },
       "adcheck_pro": {
-        "sectorBadge": "Marketing",
+        "sectorBadge": "Directions marketing",
         "name": "Adcheck Pro",
         "delay": "3 à 5 jours",
         "description": "3 concepts publicitaires testés en profondeur sur 80 agents segmentés. Pour campagnes Ramadan, lancement régional ou pivot stratégique.",
@@ -1086,7 +1096,7 @@
         }
       },
       "product_launch": {
-        "sectorBadge": "Marketing",
+        "sectorBadge": "Directions marketing",
         "name": "Product Launch B2C",
         "delay": "1 semaine",
         "description": "Simulez 1 semaine de lancement produit B2C en pan-Afrique avec trajectoire d’adoption + pic de churn early-adopters à J+5.",
@@ -1101,7 +1111,7 @@
         }
       },
       "policy_stress": {
-        "sectorBadge": "Policy",
+        "sectorBadge": "Ministères & Think-tanks",
         "name": "Policy Stress Test",
         "delay": "5 jours ouvrés",
         "description": "Stress test d’un projet de loi ou policy brief contre opposition politique, parties prenantes et autorités. Pour conseillers cabinet et think tanks.",
@@ -1116,7 +1126,7 @@
         }
       },
       "cohort_replay": {
-        "sectorBadge": "Research",
+        "sectorBadge": "Recherche & ONG",
         "name": "Cohort Replay",
         "delay": "10 semaines",
         "description": "Réplique scientifique d’une cohorte réelle (incubateur, programme, accélérateur) sur 10 semaines avec 3 variants A/B/C pour mesurer la fidélité prédictive.",
@@ -1138,7 +1148,7 @@
         }
       },
       "crisis_watch": {
-        "sectorBadge": "Crisis",
+        "sectorBadge": "Directions générales",
         "name": "Crisis Watch",
         "delay": "Engagement annuel",
         "description": "Veille permanente DirCom et monitoring 24/7. Crisis Drill 1×/mois inclus + alerte prédictive sur signaux faibles.",
@@ -1154,7 +1164,7 @@
         }
       },
       "brand_pulse": {
-        "sectorBadge": "Marketing",
+        "sectorBadge": "Directions marketing",
         "name": "Brand Pulse",
         "delay": "Engagement annuel",
         "description": "Adcheck illimité + tracking sentiment continu + benchmark compétiteurs. Pour brand managers et CMO en mode test-and-learn.",
@@ -1170,7 +1180,7 @@
         }
       },
       "custom": {
-        "sectorBadge": "Enterprise",
+        "sectorBadge": "Grand compte",
         "name": "Sur-mesure",
         "delay": "Variable",
         "priceLabel": "Sur devis",

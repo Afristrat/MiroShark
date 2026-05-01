@@ -32,6 +32,11 @@ service.interceptors.request.use(
     } catch (_) {
       // i18n pas encore initialisé (rarissime au boot) → backend default 'fr'
     }
+    // Admin token (opérateur uniquement) — stocké dans sessionStorage
+    const adminToken = sessionStorage.getItem('bassira_admin_token')
+    if (adminToken && config.url && config.url.includes('/outcome')) {
+      config.headers['Authorization'] = `Bearer ${adminToken}`
+    }
     return config
   },
   error => {

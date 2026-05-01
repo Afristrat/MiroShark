@@ -122,6 +122,18 @@
         </article>
       </section>
 
+      <!-- ───────────── How-to (US-046) ───────────── -->
+      <section class="cal-howto">
+        <h2>{{ $t('calibration.howto.title') }}</h2>
+        <ol>
+          <li>{{ $t('calibration.howto.step1') }}</li>
+          <li>{{ $t('calibration.howto.step2') }}</li>
+          <li>{{ $t('calibration.howto.step3') }}</li>
+          <li>{{ $t('calibration.howto.step4') }}</li>
+        </ol>
+        <p class="cal-howto-note">{{ $t('calibration.howto.note') }}</p>
+      </section>
+
       <!-- ───────────── Plot + filtres ───────────── -->
       <section class="cal-plot-grid" :ref="el => setSectionRef(el, 2)">
         <article class="ms-card cal-plot-card">
@@ -327,6 +339,50 @@
           <p class="calib-eval-intro">{{ $t('calibration.evaluables.intro') }}</p>
         </header>
 
+        <!-- Admin token block (US-046 fix) -->
+        <div class="calib-admin-bar">
+          <!-- Mode inactif : bouton discret pour ouvrir le formulaire -->
+          <template v-if="!isAdminMode">
+            <button
+              v-if="!showAdminInput"
+              type="button"
+              class="ms-btn ms-btn-ghost ms-btn--sm calib-admin-activate"
+              @click="showAdminInput = true"
+            >
+              {{ $t('calibration.adminToken.activate') }}
+            </button>
+            <div v-else class="calib-admin-form">
+              <input
+                v-model="adminTokenDraft"
+                type="password"
+                class="ms-input calib-admin-input"
+                :placeholder="$t('calibration.adminToken.placeholder')"
+                @keydown.enter="activateAdmin"
+                @keydown.esc="showAdminInput = false"
+              />
+              <button
+                type="button"
+                class="ms-btn ms-btn--sm"
+                @click="activateAdmin"
+              >
+                {{ $t('calibration.adminToken.confirm') }}
+              </button>
+            </div>
+          </template>
+
+          <!-- Mode actif : badge + bouton déverrouiller -->
+          <template v-else>
+            <span class="calib-admin-badge">{{ $t('calibration.adminToken.active') }}</span>
+            <button
+              type="button"
+              class="ms-btn ms-btn-ghost ms-btn--sm"
+              @click="deactivateAdmin"
+            >
+              {{ $t('calibration.adminToken.deactivate') }}
+            </button>
+          </template>
+        </div>
+
         <!-- Filtre rapide en pills -->
         <div class="calib-eval-pills" role="tablist" :aria-label="$t('calibration.evaluables.title')">
           <button
@@ -432,7 +488,8 @@
                   <button
                     class="ms-btn ms-btn--sm outcome-btn outcome-btn--called-it"
                     :class="{ 'outcome-btn--active': sim.outcome === 'correct' || sim.outcome === 'called_it' }"
-                    :disabled="savingId === sim.id"
+                    :disabled="savingId === sim.id || !isAdminMode"
+                    :title="!isAdminMode ? $t('calibration.adminToken.requiresAdmin') : undefined"
                     @click="markOutcome(sim, 'correct')"
                   >
                     {{ $t('calibration.evaluables.markCalledIt') }}
@@ -440,7 +497,8 @@
                   <button
                     class="ms-btn ms-btn--sm outcome-btn outcome-btn--partial"
                     :class="{ 'outcome-btn--active': sim.outcome === 'partial' }"
-                    :disabled="savingId === sim.id"
+                    :disabled="savingId === sim.id || !isAdminMode"
+                    :title="!isAdminMode ? $t('calibration.adminToken.requiresAdmin') : undefined"
                     @click="markOutcome(sim, 'partial')"
                   >
                     {{ $t('calibration.evaluables.markPartial') }}
@@ -448,14 +506,16 @@
                   <button
                     class="ms-btn ms-btn--sm outcome-btn outcome-btn--wrong"
                     :class="{ 'outcome-btn--active': sim.outcome === 'incorrect' || sim.outcome === 'wrong' }"
-                    :disabled="savingId === sim.id"
+                    :disabled="savingId === sim.id || !isAdminMode"
+                    :title="!isAdminMode ? $t('calibration.adminToken.requiresAdmin') : undefined"
                     @click="markOutcome(sim, 'incorrect')"
                   >
                     {{ $t('calibration.evaluables.markWrong') }}
                   </button>
                   <button
                     class="ms-btn ms-btn--sm ms-btn-ghost outcome-btn outcome-btn--na"
-                    :disabled="savingId === sim.id"
+                    :disabled="savingId === sim.id || !isAdminMode"
+                    :title="!isAdminMode ? $t('calibration.adminToken.requiresAdmin') : undefined"
                     @click="markOutcome(sim, null)"
                   >
                     {{ $t('calibration.evaluables.markNA') }}
@@ -769,6 +829,32 @@ const toast = reactive({
 })
 let toastTimer = null
 
+// ─── Admin token (US-046 fix) ────────────────────────────────────────────────
+// Le token est lu depuis sessionStorage au mount. Il n'est jamais envoyé
+// ailleurs que sur les requêtes /outcome (cf. intercepteur api/index.js).
+const ADMIN_TOKEN_KEY = 'bassira_admin_token'
+const isAdminMode = ref(false)
+const showAdminInput = ref(false)
+const adminTokenDraft = ref('')
+
+const activateAdmin = () => {
+  const token = adminTokenDraft.value.trim()
+  if (!token) return
+  sessionStorage.setItem(ADMIN_TOKEN_KEY, token)
+  isAdminMode.value = true
+  showAdminInput.value = false
+  adminTokenDraft.value = ''
+  // Re-fetch pour garantir que les boutons sont réactifs immédiatement.
+  fetchEvaluables()
+}
+
+const deactivateAdmin = () => {
+  sessionStorage.removeItem(ADMIN_TOKEN_KEY)
+  isAdminMode.value = false
+  showAdminInput.value = false
+  adminTokenDraft.value = ''
+}
+
 const showToast = (message, kind = 'success', durationMs = 3000) => {
   toast.message = message
   toast.kind = kind
@@ -935,6 +1021,10 @@ const formatRelativeTime = (iso) => {
 
 // ─── Lifecycle ──────────────────────────────────────────────────────────────
 onMounted(() => {
+  // Restaurer le mode admin si le token est déjà en sessionStorage.
+  if (sessionStorage.getItem(ADMIN_TOKEN_KEY)) {
+    isAdminMode.value = true
+  }
   fetchData()
   fetchEvaluables()
 })
@@ -1750,6 +1840,90 @@ onMounted(() => {
   font-size: 13px;
   /* RTL : forcer le texte à toujours partir du bord logique de début. */
   text-align: start;
+}
+
+/* ── How-to section (US-046) ── */
+.cal-howto {
+  background: var(--ms-surface-2, var(--ms-bg-elevated));
+  border-radius: var(--ms-radius-md);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ms-space-3);
+}
+
+.cal-howto h2 {
+  font-family: var(--ms-font-display);
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--ms-text);
+}
+
+.cal-howto ol {
+  margin: 0;
+  padding-inline-start: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ms-space-2);
+}
+
+.cal-howto ol li {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ms-text-muted);
+  list-style: none;
+  padding: 0;
+}
+
+.cal-howto-note {
+  font-size: 13px;
+  color: var(--ms-text-subtle);
+  margin: 0;
+  line-height: 1.55;
+  padding-top: var(--ms-space-2);
+  border-top: 1px solid var(--ms-border);
+}
+
+/* ── Admin token bar (US-046 fix) ── */
+.calib-admin-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--ms-space-2);
+  flex-wrap: wrap;
+}
+
+.calib-admin-form {
+  display: flex;
+  align-items: center;
+  gap: var(--ms-space-2);
+  flex-wrap: wrap;
+}
+
+.calib-admin-input {
+  width: 280px;
+  font-size: 13px;
+}
+
+.calib-admin-activate {
+  font-size: 12px;
+  opacity: 0.7;
+}
+.calib-admin-activate:hover {
+  opacity: 1;
+}
+
+.calib-admin-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: var(--ms-mint-soft);
+  color: var(--ms-status-success-text);
+  border: 1px solid rgba(127, 216, 166, 0.35);
+  border-radius: var(--ms-radius-pill);
+  font-size: 12px;
+  font-weight: 600;
 }
 
 /* ── Pager ── */
