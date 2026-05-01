@@ -158,8 +158,9 @@ class TestCleanSuggestions:
         result = _clean_suggestions(payload, framework="policy")
         assert len(result) == 3
 
-    def test_invalid_label_for_framework(self):
-        """Un label 'Bull' doit être rejeté si le cadre actif est 'crisis'."""
+    def test_cross_framework_label_kept(self):
+        """Un label d'un autre framework est conservé (cross-framework tolerance).
+        Le LLM dévie parfois du template — on garde plutôt que de jeter."""
         payload = {
             "suggestions": [
                 _make_suggestion("Bull"),
@@ -168,10 +169,13 @@ class TestCleanSuggestions:
             ]
         }
         result = _clean_suggestions(payload, framework="crisis")
-        assert result == []
+        # Cross-framework labels kept rather than discarded so the user
+        # always sees 3 suggestions instead of 0.
+        assert len(result) == 3
+        assert result[0]["label"] == "Bull"
 
-    def test_invalid_label_cerberus_in_market(self):
-        """'Challenger' doit être rejeté dans le cadre 'market'."""
+    def test_cross_framework_label_cerberus_in_market(self):
+        """'Challenger' d'un cadre cerberus est conservé même dans 'market'."""
         payload = {
             "suggestions": [
                 _make_suggestion("Challenger"),
@@ -180,7 +184,8 @@ class TestCleanSuggestions:
             ]
         }
         result = _clean_suggestions(payload, framework="market")
-        assert result == []
+        assert len(result) == 3
+        assert result[0]["label"] == "Challenger"
 
     def test_simulation_requirement_preserved(self):
         """Le champ simulation_requirement est transmis dans le résultat."""

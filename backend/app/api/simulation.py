@@ -494,30 +494,48 @@ _SCENARIO_SUGGEST_SYSTEM_PROMPT = _FRAMEWORK_PROMPTS["market"]  # noqa: F811
 
 
 def _detect_framework(text: str) -> str:
-    """Auto-detect the most relevant Cerberus framework from document content."""
+    """Auto-detect the most relevant Cerberus framework from document content.
+
+    Uses word-boundary regex so "politique" doesn't match inside "géopolitique",
+    and "loi" doesn't match inside "emploi".
+    """
+    import re as _re
+
+    def _match_words(t: str, words: list) -> bool:
+        for w in words:
+            # Words with a trailing space are literal substring checks (legacy).
+            # All others use word boundaries so we don't match inside longer words.
+            if w.endswith(" "):
+                if w in t:
+                    return True
+            elif _re.search(r"\b" + _re.escape(w) + r"\b", t):
+                return True
+        return False
+
     t = text.lower()
     # Crisis signals
-    if any(w in t for w in [
+    if _match_words(t, [
         "crisis", "crise", "scandal", "scandale", "leak", "fuite",
         "reputat", "réputa", "pr disaster", "backlash", "controversy",
     ]):
         return "crisis"
-    # Policy signals
-    if any(w in t for w in [
-        "policy", "politique", "regulation", "réglementation", "gouvernance",
+    # Policy signals — use word-boundary so "géopolitique" ≠ "politique"
+    if _match_words(t, [
+        "policy", "politique", "réglementation", "gouvernance",
         "legislation", "loi ", "décret", "minister", "ministre", "parlement",
-        "senate", "sénat", "eu ai act", "directive",
+        "sénat", "eu ai act", "directive", "regulation",
     ]):
         return "policy"
     # Market / finance signals
-    if any(w in t for w in [
+    if _match_words(t, [
         "stock", "bourse", "crypto", "bitcoin", "forex", "trading", "invest",
         "fund", "portfolio", "yield", "token", "blockchain", "defi", "nft",
-        "market cap",
+        "market cap", "dividende", "actionnaire", "obligations", "cac40",
+        "analyst", "notation", "fitch", "moody",
     ]):
         return "market"
     # Decision / product signals
-    if any(w in t for w in [
+    if _match_words(t, [
         "launch", "lancement", "product", "produit", "startup", "pmf",
         "product-market fit", "customer", "client", "adoption", "go-to-market",
         "campaign", "campagne", "ad", "publicité",
@@ -544,20 +562,30 @@ def _clean_suggestions(payload, framework: str = "cerberus") -> list:
         return []
 
     valid_labels = _FRAMEWORK_LABELS.get(framework, _FRAMEWORK_LABELS["cerberus"])
+    # All labels across every framework — fallback pool so a suggestion with an
+    # unexpected-but-valid label isn't silently discarded.
+    all_labels = {lbl for tup in _FRAMEWORK_LABELS.values() for lbl in tup}
 
     out = []
     for item in raw:
         if not isinstance(item, dict):
             continue
         question = (item.get("question") or "").strip()
-        # Labels from the LLM are title-cased; preserve as-is for multi-word ones.
         raw_label = (item.get("label") or "").strip()
-        # Normalize: try exact match first, then capitalize fallback for
-        # single-word labels (backward-compat with old "bull"/"bear" responses).
+        # Normalize: prefer framework-specific label, then cross-framework label,
+        # then capitalize fallback, then accept as-is so we never discard a
+        # suggestion purely because the LLM deviated slightly from the template.
         if raw_label in valid_labels:
             label = raw_label
         elif raw_label.capitalize() in valid_labels:
             label = raw_label.capitalize()
+        elif raw_label in all_labels:
+            label = raw_label
+        elif raw_label.capitalize() in all_labels:
+            label = raw_label.capitalize()
+        elif raw_label:
+            # Unknown label — keep as-is; UI renders it as plain text gracefully.
+            label = raw_label.capitalize() if raw_label.islower() else raw_label
         else:
             continue
         yes_range = item.get("expected_yes_range")
