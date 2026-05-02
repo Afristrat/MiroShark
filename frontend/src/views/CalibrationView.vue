@@ -1279,8 +1279,8 @@ onMounted(() => {
 
 .cal-plot-card {
   padding: var(--ms-space-8);
-  border-radius: var(--ms-radius-lg);
-  box-shadow: var(--ms-shadow-md);
+  border-radius: var(--wi-radius-card);
+  box-shadow: var(--wi-shadow-ambient);
 }
 .cal-plot-head {
   margin-bottom: var(--ms-space-5);
