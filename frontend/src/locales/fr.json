@@ -30,6 +30,40 @@
     "en": "English",
     "switch": "Changer de langue"
   },
+  "onboarding": {
+    "ariaLabel": "Visite guidée — premiers pas avec Bassira",
+    "stepLabel": "ÉTAPE",
+    "skip": "Passer",
+    "next": "Suivant",
+    "prev": "Précédent",
+    "finish": "C'est parti !",
+    "startExample": "Lancer un exemple →",
+    "startExampleLoading": "Préparation de l'exemple…",
+    "step1": {
+      "title": "Déposez votre première graine",
+      "body": "Glissez un article, un rapport ou un PDF — c'est le point de départ de votre simulation. Bassira en extrait les acteurs, les tensions et les variables.",
+      "bodyMissing": "La zone d'upload n'est pas encore visible sur cette page. Faites défiler jusqu'à la console de simulation pour la trouver, puis revenez ici.",
+      "hint": "Pas de document sous la main ? Cliquez « Lancer un exemple » pour explorer une simulation Loi de finances déjà configurée."
+    },
+    "step2": {
+      "title": "Formulez votre question stratégique",
+      "body": "Décrivez en une phrase ce que vous voulez tester : un arbitrage budgétaire, un risque géopolitique, une crise sectorielle. Plus c'est précis, plus la simulation est calibrée.",
+      "bodyMissing": "Le champ de question apparaîtra dès que la console sera chargée. Continuez la visite pour voir les étapes suivantes.",
+      "hint": "Exemple : « Quel impact aura la hausse de la TVA sur la consommation des ménages au Maroc en 2027 ? »"
+    },
+    "step3": {
+      "title": "Choisissez un scénario suggéré ou écrivez le vôtre",
+      "body": "Bassira analyse votre graine et propose 3 scénarios cadrés (croissance, risque, opportunité). Sélectionnez-en un — vous pourrez toujours l'amender.",
+      "bodyMissing": "Les scénarios suggérés apparaîtront ici dès que vous aurez ajouté un document ou écrit votre question. Passez à l'étape suivante pour découvrir le bouton de lancement.",
+      "hint": "Les scénarios sont générés à partir de votre document : ils reflètent ses tensions réelles, pas un cadre générique."
+    },
+    "step4": {
+      "title": "Vous êtes prêt — lancez votre simulation",
+      "body": "Les agents multi-acteurs sont prêts à délibérer. La première simulation prend environ 3 minutes : vous verrez les rounds se dérouler en direct.",
+      "bodyMissing": "Le bouton de lancement apparaîtra une fois votre graine et votre question définies. Préparez vos données puis revenez lancer votre première simulation.",
+      "hint": "Vous pourrez rejouer, comparer plusieurs variantes et exporter le rapport final en PDF."
+    }
+  },
   "home": {
     "nav": {
       "exploreTitle": "Parcourir les simulations publiques",
@@ -1464,6 +1498,195 @@
       "back": "Retour",
       "submit": "Envoyer la demande",
       "submitting": "Envoi en cours…"
+    }
+  },
+  "partners": {
+    "nav": {
+      "backTitle": "Retour à l’accueil"
+    },
+    "hero": {
+      "eyebrow": "Programme partenaires",
+      "title": "Renforcez vos scénarios avec la simulation computationnelle",
+      "subtitle": "Bassira complète vos méthodologies, ne les remplace pas. Apportez à vos clients la rigueur quantitative qui consolide vos scénarios qualitatifs.",
+      "cta": "Initier un partenariat stratégique"
+    },
+    "logos": {
+      "title": "Institutions partenaires",
+      "categories": "Catégories : Think tanks · Cabinets conseil · Universités · ONG · Médias spécialisés"
+    },
+    "process": {
+      "title": "Comment s’articule la collaboration",
+      "subtitle": "Un protocole en trois temps qui préserve votre méthodologie et l’augmente d’une couche computationnelle.",
+      "step1": {
+        "title": "Vos scénarios qualitatifs",
+        "body": "Vous fournissez vos hypothèses, vos cadres d’analyse et vos paramètres stratégiques."
+      },
+      "step2": {
+        "title": "Stress-test multi-agents",
+        "body": "Bassira instancie vos hypothèses dans des simulations à plusieurs milliers d’agents cognitifs."
+      },
+      "step3": {
+        "title": "Rapport co-brandé",
+        "body": "Vous recevez une synthèse quantifiée portant votre marque et la mention méthodologique Bassira."
+      }
+    },
+    "tiers": {
+      "title": "Trois modèles de partenariat",
+      "subtitle": "Chaque modèle préserve votre indépendance éditoriale et l’antériorité de vos publications.",
+      "featuredBadge": "Le plus choisi",
+      "research": {
+        "eyebrow": "Recherche",
+        "title": "Research Partner",
+        "body": "Pour les think tanks et institutions académiques souhaitant valider leurs scénarios.",
+        "feature1": "Accès recherche aux modèles",
+        "feature2": "Citation Bassira en méthodologie",
+        "feature3": "Collaboration éditoriale ponctuelle",
+        "cta": "Discuter du programme"
+      },
+      "integration": {
+        "eyebrow": "Intégration",
+        "title": "Integration Partner",
+        "body": "Pour les cabinets conseil intégrant la simulation dans leur offre récurrente.",
+        "feature1": "Accès API + instances dédiées",
+        "feature2": "Co-marketing et études conjointes",
+        "feature3": "Partage de revenus contractuel",
+        "cta": "Contacter l’équipe"
+      },
+      "whitelabel": {
+        "eyebrow": "White-label",
+        "title": "White-label",
+        "body": "Pour les acteurs souhaitant déployer leur propre plateforme de prospective.",
+        "feature1": "Votre marque, notre moteur",
+        "feature2": "Personnalisation complète UI",
+        "feature3": "SLA et support prioritaires",
+        "cta": "Demander une démonstration"
+      }
+    },
+    "testimonials": {
+      "title": "Ce que disent nos partenaires",
+      "quote1": {
+        "text": "« La traduction de nos analyses qualitatives en scénarios computables a fondamentalement renforcé l’autorité de nos recommandations stratégiques. »",
+        "name": "Nom à confirmer",
+        "role": "Directeur de la recherche",
+        "org": "Think tank — Région MENA"
+      },
+      "quote2": {
+        "text": "« Bassira nous permet de stress-tester nos hypothèses sectorielles avant de les présenter en comité de direction. C’est devenu un filtre méthodologique standard. »",
+        "name": "Nom à confirmer",
+        "role": "Partner",
+        "org": "Cabinet conseil — Europe"
+      }
+    },
+    "contact": {
+      "title": "Initier une discussion confidentielle",
+      "subtitle": "Présentez-nous votre cadre de recherche : nous revenons sous 48 h ouvrées avec une proposition de protocole adapté.",
+      "fields": {
+        "name": "Nom",
+        "organization": "Institution",
+        "email": "E-mail professionnel",
+        "message": "Contexte et objectif"
+      },
+      "placeholders": {
+        "name": "Prénom Nom",
+        "organization": "Nom du think tank, cabinet ou université",
+        "email": "vous{'@'}institution.org",
+        "message": "Décrivez brièvement votre cadre de recherche et l’horizon visé."
+      },
+      "submit": "Envoyer la demande",
+      "fallbackNote": "Vous pouvez aussi nous écrire directement à"
+    }
+  },
+  "landing": {
+    "nav": {
+      "ariaLabel": "Navigation principale",
+      "calibration": "Brier score",
+      "pricing": "Tarifs",
+      "demo": "Demander une démo"
+    },
+    "hero": {
+      "ariaLabel": "Section principale",
+      "eyebrow": "Strategic Foresight",
+      "title": "Stress-testez votre stratégie en 48 h — sans cabinet de conseil ni hypothèses Excel.",
+      "subtitle": "Bassira simule des milliers d’agents calibrés sur les marchés MENA et européens pour révéler vos angles morts avant la prochaine crise.",
+      "ctaPrimary": "Demander une démo",
+      "ctaSecondary": "Voir un exemple",
+      "trust": "Adopté par les directions stratégie en Afrique, au Moyen-Orient et en Europe"
+    },
+    "pains": {
+      "kicker": "Le statu quo est intenable",
+      "title": "3 raisons pour lesquelles vos décisions stratégiques ratent leur cible",
+      "pivotLabel": "Avec Bassira",
+      "speed": {
+        "quote": "Nos scénarios Excel sont trop lents et trop fragiles pour suivre le rythme du marché.",
+        "solution": "Simulez 10 000 interactions d’agents en 5 minutes, avec une trace auditable de chaque hypothèse."
+      },
+      "blindspot": {
+        "quote": "Nous naviguons à l’aveugle face aux chocs géopolitiques et aux ruptures de chaînes d’approvisionnement.",
+        "solution": "Stress-testez votre plan contre 50+ variables exogènes — FX, sanctions, climat, social — calibrées MENA."
+      },
+      "cost": {
+        "quote": "Les cabinets de conseil facturent six chiffres pour des slides d’hypothèses non vérifiables.",
+        "solution": "Obtenez une rigueur institutionnelle, des prédictions horodatées et un Brier score public, à une fraction du coût."
+      }
+    },
+    "product": {
+      "kicker": "Comment ça marche",
+      "title": "Une plateforme de simulation calibrée pour les marchés que vous opérez réellement.",
+      "lead": "Bassira combine 5 000+ profils cognitifs distincts, une calibration spécifique MENA + Europe et un mode air-gapped pour vos données sensibles.",
+      "agents": {
+        "title": "Intelligence multi-agents",
+        "desc": "Plus de 5 000 profils cognitifs distincts — décideurs, opérateurs, régulateurs, foules — calibrés sur des décennies de comportements observés."
+      },
+      "calibrated": {
+        "title": "Calibration MENA + Europe",
+        "desc": "Modèles ajustés pour le Maroc, le GCC, la France et le Royaume-Uni. Pas de biais « Silicon Valley » — vos hypothèses tiennent face à la réalité locale."
+      },
+      "sovereign": {
+        "title": "Confidentialité air-gapped",
+        "desc": "Vos scénarios n’alimentent jamais les corpus publics. Souveraineté des données, déploiement on-premise possible."
+      }
+    },
+    "proof": {
+      "kicker": "Preuve, pas promesse",
+      "title": "Brier score 0,18 — vérifié, horodaté, public.",
+      "metric": "Brier score moyen",
+      "context": "94 prédictions horodatées · 2024-2026",
+      "body": "Le Brier score mesure la calibration probabiliste d’un modèle prédictif. Plus il est bas, plus le modèle est fiable. 0,18 nous place devant la majorité des cabinets traditionnels — et nous le prouvons publiquement, prédiction par prédiction.",
+      "cta": "Voir le track-record complet"
+    },
+    "pricing": {
+      "kicker": "Tarifs",
+      "title": "Trois formats. Aucune hypothèse cachée.",
+      "subtitle": "Du sprint de découverte au jumeau stratégique permanent — choisissez l’engagement adapté à votre horizon de décision.",
+      "from": "À partir de",
+      "featuredFlag": "Le plus demandé",
+      "cta": "Voir les 10 packages",
+      "tiers": {
+        "discovery": {
+          "name": "PMF Discovery",
+          "tag": "Sprint 1 semaine",
+          "blurb": "Validez un product-market-fit sur un nouveau segment avant d’y engager du capital."
+        },
+        "drill": {
+          "name": "Crisis Drill 24 h",
+          "tag": "Stress-test express",
+          "blurb": "Simulez une crise (cyber, FX, géopolitique) et identifiez vos trois plus grosses vulnérabilités en 24 h."
+        },
+        "twin": {
+          "name": "Strategic Twin",
+          "tag": "Engagement 6 mois",
+          "blurb": "Un jumeau numérique de votre marché, mis à jour en continu, branché à votre comité stratégique."
+        }
+      }
+    },
+    "finalCta": {
+      "title": "Votre prochaine décision stratégique mérite mieux qu’un fichier Excel.",
+      "subtitle": "30 minutes pour cadrer votre cas d’usage. 48 h pour livrer la première simulation. Aucun engagement.",
+      "cta": "Lancer ma première simulation"
+    },
+    "footer": {
+      "tagline": "Authority without coldness",
+      "navAria": "Navigation pied de page"
     }
   },
   "theme": {
