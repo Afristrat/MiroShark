@@ -520,36 +520,37 @@ onMounted(() => {
    reproduire la palette M3 du mockup, sans Tailwind. */
 
 .quote-page {
-  --stitch-primary-container: #ff8551;
-  --stitch-primary: #a13f0f;
-  --stitch-on-primary: #ffffff;
+  /* ── Alias --stitch-* → tokens globaux --wi-* (US-053) ── */
+  --stitch-primary-container: var(--wi-primary-container);
+  --stitch-primary: var(--wi-primary);
+  --stitch-on-primary: var(--wi-on-primary);
   --stitch-on-primary-fixed: #370e00;
   --stitch-primary-fixed: #ffdbce;
-  --stitch-surface: #fff8f6;
-  --stitch-surface-container: #ffeae2;
-  --stitch-surface-container-low: #fff1ec;
-  --stitch-surface-container-lowest: #ffffff;
-  --stitch-surface-container-high: #f9e4dd;
-  --stitch-surface-container-highest: #f3ded7;
-  --stitch-on-surface: #241915;
-  --stitch-on-surface-variant: #57423a;
-  --stitch-outline: #8a7269;
-  --stitch-outline-variant: #dec0b6;
-  --stitch-secondary: #006d44;
-  --stitch-secondary-container: #98f2be;
-  --stitch-error: #ba1a1a;
-  --stitch-error-container: #ffdad6;
-  --stitch-on-error-container: #93000a;
+  --stitch-surface: var(--wi-bg);
+  --stitch-surface-container: var(--wi-surface-container);
+  --stitch-surface-container-low: var(--wi-surface-container-low);
+  --stitch-surface-container-lowest: var(--wi-surface);
+  --stitch-surface-container-high: var(--wi-surface-container-high);
+  --stitch-surface-container-highest: var(--wi-surface-container-highest);
+  --stitch-on-surface: var(--wi-on-surface);
+  --stitch-on-surface-variant: var(--wi-on-surface-variant);
+  --stitch-outline: var(--wi-outline);
+  --stitch-outline-variant: var(--wi-outline-variant);
+  --stitch-secondary: var(--wi-secondary);
+  --stitch-secondary-container: var(--wi-secondary-container);
+  --stitch-error: var(--wi-error);
+  --stitch-error-container: var(--wi-error-container);
+  --stitch-on-error-container: var(--wi-on-error-container);
 
-  --stitch-page-bg: #faf7f2;
-  --stitch-input-bg: #faf7f2;
-  --stitch-stepper-line: #ebe5da;
+  --stitch-page-bg: var(--wi-bg);
+  --stitch-input-bg: var(--wi-surface-container-low);
+  --stitch-stepper-line: var(--wi-outline-variant);
 
-  --stitch-shadow-card: 0 12px 32px rgba(74, 69, 64, 0.08);
-  --stitch-shadow-soft: 0 1px 2px rgba(74, 69, 64, 0.05);
+  --stitch-shadow-card: var(--wi-shadow-ambient);
+  --stitch-shadow-soft: var(--wi-shadow-sm);
 
-  --stitch-font-display: 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  --stitch-font-body: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --stitch-font-display: var(--wi-font-heading);
+  --stitch-font-body: var(--wi-font-body);
 
   min-height: 100vh;
   background: var(--stitch-page-bg);
@@ -591,7 +592,7 @@ onMounted(() => {
   color: #4a4540;
   text-decoration: none;
   padding: 6px 12px;
-  border-radius: 9999px;
+  border-radius: var(--wi-radius-pill);
   transition: color 0.2s ease, background 0.2s ease;
 }
 .quote-back:hover {
@@ -623,7 +624,7 @@ onMounted(() => {
   background: #f3ede4;
   color: var(--stitch-on-surface-variant);
   padding: 8px 16px;
-  border-radius: 9999px;
+  border-radius: var(--wi-radius-pill);
   font-family: var(--stitch-font-body);
   font-size: 12px;
   font-weight: 500;
@@ -644,7 +645,7 @@ onMounted(() => {
   width: 100%;
   max-width: 640px;
   background: var(--stitch-surface-container-lowest);
-  border-radius: 24px;
+  border-radius: var(--wi-radius-card);
   box-shadow: var(--stitch-shadow-card);
   padding: 48px;
   position: relative;
@@ -702,7 +703,7 @@ onMounted(() => {
 .quote-step-circle {
   width: 40px;
   height: 40px;
-  border-radius: 9999px;
+  border-radius: var(--wi-radius-pill);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -835,7 +836,7 @@ onMounted(() => {
   flex-shrink: 0;
   width: 24px;
   height: 24px;
-  border-radius: 9999px;
+  border-radius: var(--wi-radius-pill);
   border: 2px solid var(--stitch-stepper-line);
   display: inline-flex;
   align-items: center;
@@ -846,7 +847,7 @@ onMounted(() => {
 .quote-radio-bullet-dot {
   width: 8px;
   height: 8px;
-  border-radius: 9999px;
+  border-radius: var(--wi-radius-pill);
   background: transparent;
   transition: background 0.2s ease;
 }
@@ -891,7 +892,7 @@ onMounted(() => {
   width: 100%;
   background: var(--stitch-input-bg);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--wi-radius-interactive);
   padding: 16px;
   font-family: var(--stitch-font-body);
   font-size: 16px;
@@ -969,7 +970,7 @@ onMounted(() => {
   letter-spacing: 0.01em;
   padding: 16px 24px;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--wi-radius-interactive);
   cursor: pointer;
   transition: opacity 0.2s ease, transform 0.1s ease;
   box-shadow: 0 8px 20px rgba(255, 133, 81, 0.25);
@@ -1015,7 +1016,7 @@ onMounted(() => {
   font-size: 14px;
   padding: 14px 24px;
   border: 1.5px solid var(--stitch-stepper-line);
-  border-radius: 12px;
+  border-radius: var(--wi-radius-interactive);
   cursor: pointer;
   transition: border-color 0.2s ease, color 0.2s ease;
 }
@@ -1042,7 +1043,7 @@ onMounted(() => {
 .quote-success-icon {
   width: 80px;
   height: 80px;
-  border-radius: 9999px;
+  border-radius: var(--wi-radius-pill);
   background: var(--stitch-secondary-container);
   color: var(--stitch-secondary);
   display: inline-flex;
@@ -1058,7 +1059,7 @@ onMounted(() => {
 .quote-error-icon {
   width: 80px;
   height: 80px;
-  border-radius: 9999px;
+  border-radius: var(--wi-radius-pill);
   background: var(--stitch-error-container);
   color: var(--stitch-error);
   display: inline-flex;
@@ -1086,7 +1087,7 @@ onMounted(() => {
   gap: 8px;
   background: var(--stitch-input-bg);
   border: 1px dashed var(--stitch-stepper-line);
-  border-radius: 12px;
+  border-radius: var(--wi-radius-interactive);
   padding: 10px 16px;
   margin: 8px 0 16px 0;
   font-size: 13px;
