@@ -1792,6 +1792,63 @@
       "navAria": "Footer navigation"
     }
   },
+  "interactionAudit": {
+    "documentTitle": "Interactions · Bassira",
+    "topnav": {
+      "aria": "Audit sections",
+      "network": "Network",
+      "telemetry": "Telemetry",
+      "methodology": "Methodology"
+    },
+    "tab": {
+      "audit": "Methodological audit",
+      "sandbox": "Interaction sandbox"
+    },
+    "topbar": {
+      "simIdPrefix": "SIM-ID:",
+      "exporting": "Exporting…",
+      "exportAuditLog": "Export Audit Log"
+    },
+    "network": {
+      "title": "Interaction Topology",
+      "roundPhase": "Round {round} · Dynamic Equilibrium Phase",
+      "legend": {
+        "active": "Active",
+        "confirmed": "Confirmed",
+        "flagged": "Flagged"
+      },
+      "loadingPlaceholder": "Loading simulation context…"
+    },
+    "telemetry": {
+      "title": "Agent Telemetry",
+      "live": "Live",
+      "loading": "Loading",
+      "filterByAgent": "Filter by agent",
+      "filterByRound": "Filter by round",
+      "allAgents": "All Agents",
+      "round": "Round {round}",
+      "reasoningExcerpt": "Reasoning Excerpt",
+      "readingTelemetry": "Reading agent telemetry…",
+      "noMatch": "No interactions match the current filter.",
+      "agentLabel": "Agent {id}"
+    },
+    "stance": {
+      "active": "Bullish / Active",
+      "confirmed": "Neutral / Confirmed",
+      "flagged": "Bearish / Flagged"
+    },
+    "methodology": {
+      "aria": "Methodology explainer",
+      "text": "Network layout rendered via Force-Directed Layout (Fruchterman–Reingold). Belief states sampled per agent at each round.",
+      "link": "Review Methodology Documentation"
+    },
+    "errors": {
+      "resolveSimulation": "Could not resolve simulation from report.",
+      "reportFetch": "Report fetch failed.",
+      "network": "Network error.",
+      "loadInteractions": "Failed to load interactions."
+    }
+  },
   "theme": {
     "switchToDark": "Switch to dark mode",
     "switchToLight": "Switch to light mode"

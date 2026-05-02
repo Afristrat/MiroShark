@@ -100,17 +100,17 @@
                   </linearGradient>
                 </defs>
 
-                <!-- Grid lines at 0/25/50/75/100 -->
+                <!-- Grid lines at 0/25/50/75/100 — WI: --wi-outline-variant -->
                 <g v-for="pct in [0, 25, 50, 75, 100]" :key="pct">
                   <line
                     :x1="ML" :y1="yScale(pct / 100)"
                     :x2="W - MR" :y2="yScale(pct / 100)"
-                    stroke="rgba(10,10,10,0.08)" stroke-width="1"
+                    :stroke="gridStroke" stroke-width="1"
                     :stroke-dasharray="pct === 50 ? '' : '2,3'"
                   />
                   <text
                     :x="W - MR + 8" :y="yScale(pct / 100) + 4"
-                    fill="rgba(10,10,10,0.45)" font-size="10"
+                    :fill="axisLabelFill" font-size="10"
                     font-family="'Space Mono', ui-monospace, monospace"
                   >{{ pct }}%</text>
                 </g>
@@ -146,19 +146,19 @@
                   fill-opacity="0.2"
                 />
 
-                <!-- Hover crosshair + tooltip -->
+                <!-- Hover crosshair + tooltip — WI: --wi-on-surface-variant -->
                 <g v-if="hoverPoint !== null && hasPath">
                   <line
                     :x1="xScale(hoverPoint)" :y1="MT"
                     :x2="xScale(hoverPoint)" :y2="H - MB"
-                    stroke="rgba(10,10,10,0.25)" stroke-width="1" stroke-dasharray="2,3"
+                    :stroke="crosshairStroke" stroke-width="1" stroke-dasharray="2,3"
                   />
                   <circle
                     :cx="xScale(hoverPoint)"
                     :cy="yScale(selected.points[hoverPoint].price_yes)"
                     r="4"
                     :fill="lineColor"
-                    stroke="var(--lp)" stroke-width="2"
+                    stroke="var(--wi-surface, var(--lp))" stroke-width="2"
                   />
                 </g>
               </svg>
@@ -203,6 +203,37 @@ import { readChartPalette } from '../utils/css-vars'
 // pour rester synchrones avec --ms-chart-*. Voir frontend/src/utils/css-vars.js.
 const palette = readChartPalette()
 
+// US-053 : helper de lecture des design tokens Warm Intelligence à la volée.
+// Permet la bascule de thème (dark mode futur) sans recharger le composant.
+const cssVar = (name) => {
+  if (typeof window === 'undefined') return ''
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+}
+
+// Couleurs WI dérivées des tokens. Yes (price ≥ 0.55) → mint --wi-secondary,
+// No (price ≤ 0.45) → terracotta --wi-on-primary-container, neutre → orange
+// --wi-primary-container. Override de la palette ms-chart pour le rendu inline.
+const wiColors = {
+  yes: cssVar('--wi-secondary') || palette.chart2,        // bullish / positive
+  no: cssVar('--wi-on-primary-container') || palette.chart5, // bearish / negative
+  neutral: cssVar('--wi-primary-container') || palette.chart1, // neutral
+  ink: cssVar('--wi-on-surface') || palette.chart3,
+}
+
+// Helpers RGB pour stroke/fill avec alpha (axes et grid)
+const _hexToRgba = (hex, alpha) => {
+  if (!hex || !hex.startsWith('#')) return hex
+  let h = hex.slice(1)
+  if (h.length === 3) h = h.split('').map(c => c + c).join('')
+  const r = parseInt(h.slice(0, 2), 16)
+  const g = parseInt(h.slice(2, 4), 16)
+  const b = parseInt(h.slice(4, 6), 16)
+  return `rgba(${r},${g},${b},${alpha})`
+}
+const gridStroke = _hexToRgba(cssVar('--wi-outline-variant') || '#dec0b6', 0.5)
+const axisLabelFill = _hexToRgba(cssVar('--wi-on-surface-variant') || '#57423a', 0.7)
+const crosshairStroke = _hexToRgba(cssVar('--wi-on-surface-variant') || '#57423a', 0.4)
+
 const props = defineProps({
   simulationId: { type: String, required: true },
   visible: { type: Boolean, default: false },
@@ -246,9 +277,10 @@ const priceDelta = computed(() => {
 
 const lineColor = computed(() => {
   const p = latestPrice.value
-  if (p >= 0.55) return palette.chart2 // #43C165 — bullish (--ms-chart-2)
-  if (p <= 0.45) return palette.chart5 // #FF4444 — bearish (--ms-chart-5)
-  return palette.chart1                // #FF6B1A — neutral (--ms-chart-1)
+  // US-053 WI : Yes → mint, No → terracotta, neutre → orange
+  if (p >= 0.55) return wiColors.yes
+  if (p <= 0.45) return wiColors.no
+  return wiColors.neutral
 })
 
 const tradeVolume = computed(() => {
@@ -384,10 +416,11 @@ function handleHover(event) {
 const PX = 32 // header horizontal padding
 
 // Colour matching `priceClass` / `deltaClass` used in the live panel.
+// US-053 WI : aligné sur la palette warm intelligence du chart inline.
 const _priceColor = (p) => {
-  if (p >= 0.55) return palette.chart2 // bullish
-  if (p <= 0.45) return palette.chart5 // bearish
-  return palette.chart1                // neutral
+  if (p >= 0.55) return wiColors.yes
+  if (p <= 0.45) return wiColors.no
+  return wiColors.neutral
 }
 
 const _buildExportCanvas = async () => {
@@ -405,7 +438,7 @@ const _buildExportCanvas = async () => {
   const deltaStr = delta != null ? `${delta >= 0 ? '▲' : '▼'} ${(Math.abs(delta) * 100).toFixed(1)}%` : null
   const deltaColor = delta == null
     ? null
-    : (delta > 0.005 ? palette.chart2 : (delta < -0.005 ? palette.chart5 : palette.chart1))
+    : (delta > 0.005 ? wiColors.yes : (delta < -0.005 ? wiColors.no : wiColors.neutral))
 
   const stats = [
     { k: 'TRADES', v: String(Math.max(pts.length - 1, 0)) },
@@ -430,8 +463,8 @@ const _buildExportCanvas = async () => {
   const drawHeader = (ctx) => {
     let y = 36
 
-    // ── Title ── Young Serif, largest element
-    ctx.fillStyle = palette.chart3 // #0A0A0A (--ms-chart-3, encre)
+    // ── Title ── Young Serif, largest element. US-053 WI : ink --wi-on-surface
+    ctx.fillStyle = wiColors.ink
     ctx.font = titleFont
     ctx.textAlign = 'left'
     ctx.textBaseline = 'top'
@@ -483,8 +516,8 @@ const _buildExportCanvas = async () => {
       ctx.textAlign = 'left'
       ctx.textBaseline = 'top'
       ctx.fillText(s.k, cx, y)
-      // Value
-      ctx.fillStyle = palette.chart3 // #0A0A0A (--ms-chart-3, encre)
+      // Value — US-053 WI : ink --wi-on-surface
+      ctx.fillStyle = wiColors.ink
       ctx.font = '700 14px "Space Mono", "JetBrains Mono", ui-monospace, monospace'
       ctx.fillText(s.v, cx, y + 16)
     })
@@ -582,12 +615,12 @@ onBeforeUnmount(() => {
 .pm-panel {
   width: 100%;
   height: 100%;
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--wi-surface, var(--background));
+  color: var(--wi-on-surface, var(--foreground));
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  font-family: var(--font-mono);
+  font-family: var(--wi-font-body, var(--font-mono));
 }
 
 /* ── Header — mirrors .lb-header ── */
@@ -596,7 +629,7 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  border-bottom: 1px solid rgba(10, 10, 10, 0.08);
+  border-bottom: 1px solid var(--wi-outline-variant, rgba(10, 10, 10, 0.08));
   flex-shrink: 0;
 }
 
@@ -614,20 +647,23 @@ onBeforeUnmount(() => {
 }
 
 .pm-export-btn {
-  background: none;
-  border: 1px solid rgba(10, 10, 10, 0.15);
-  color: rgba(10, 10, 10, 0.5);
+  background: var(--wi-surface-container-low, transparent);
+  border: 1px solid var(--wi-outline-variant, rgba(10, 10, 10, 0.15));
+  border-radius: var(--wi-radius-md, 8px);
+  color: var(--wi-on-surface-variant, rgba(10, 10, 10, 0.5));
   padding: 4px 10px;
-  font-family: var(--font-mono);
+  font-family: var(--wi-font-body, var(--font-mono));
   font-size: 11px;
+  font-weight: 600;
   letter-spacing: 1px;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .pm-export-btn:hover:not(:disabled) {
-  border-color: var(--color-orange);
-  color: var(--color-orange);
+  border-color: var(--wi-primary-container, var(--color-orange));
+  color: var(--wi-primary, var(--color-orange));
+  background: var(--wi-surface-container, transparent);
 }
 
 .pm-export-btn:disabled {
@@ -642,22 +678,24 @@ onBeforeUnmount(() => {
 }
 
 .pm-header-title {
-  font-family: var(--font-mono);
+  font-family: var(--wi-font-heading, var(--font-mono));
   font-size: 12px;
+  font-weight: 600;
   letter-spacing: 3px;
   text-transform: uppercase;
-  color: rgba(10, 10, 10, 0.5);
+  color: var(--wi-on-surface-variant, rgba(10, 10, 10, 0.5));
 }
 
 .pm-live-dot {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 3px 8px;
-  background: transparent;
-  border: 1px solid var(--color-orange);
-  color: var(--color-orange);
-  font-family: var(--font-mono);
+  padding: 3px 10px;
+  background: var(--wi-surface-container-low, transparent);
+  border: 1px solid var(--wi-primary-container, var(--color-orange));
+  border-radius: var(--wi-radius-pill, 9999px);
+  color: var(--wi-on-primary-container, var(--color-orange));
+  font-family: var(--wi-font-heading, var(--font-mono));
   font-size: 10px;
   letter-spacing: 2px;
   font-weight: 700;
@@ -668,7 +706,7 @@ onBeforeUnmount(() => {
 .pm-live-pulse {
   width: 6px;
   height: 6px;
-  background: var(--color-orange);
+  background: var(--wi-primary-container, var(--color-orange));
   border-radius: 50%;
   animation: pm-pulse 1.4s ease-in-out infinite;
 }
@@ -687,10 +725,10 @@ onBeforeUnmount(() => {
 
 /* Market list — subtler separator, rows match .lb-row treatment */
 .pm-market-list {
-  border-inline-end: 1px solid rgba(10, 10, 10, 0.08);
+  border-inline-end: 1px solid var(--wi-outline-variant, rgba(10, 10, 10, 0.08));
   overflow-y: auto;
   padding: 0;
-  background: var(--background);
+  background: var(--wi-surface, var(--background));
 }
 
 .pm-market-row {
@@ -698,12 +736,12 @@ onBeforeUnmount(() => {
   text-align: start;
   background: transparent;
   border: none;
-  border-bottom: 1px solid rgba(10, 10, 10, 0.04);
+  border-bottom: 1px solid var(--wi-outline-variant, rgba(10, 10, 10, 0.04));
   border-inline-start: 3px solid transparent;
   padding: 10px 14px;
   cursor: pointer;
   color: inherit;
-  font-family: var(--font-mono);
+  font-family: var(--wi-font-body, var(--font-mono));
   transition: background 0.1s ease;
   display: flex;
   flex-direction: column;
@@ -711,20 +749,20 @@ onBeforeUnmount(() => {
 }
 
 .pm-market-row:hover {
-  background: rgba(10, 10, 10, 0.02);
+  background: var(--wi-surface-container-low, rgba(10, 10, 10, 0.02));
 }
 
-/* Active row — same orange left-accent pattern as .lb-row.top-three */
+/* Active row — left-accent terracotta WI */
 .pm-market-row-active {
-  background: rgba(10, 10, 10, 0.02);
-  border-inline-start-color: var(--color-orange);
+  background: var(--wi-surface-container, rgba(10, 10, 10, 0.02));
+  border-inline-start-color: var(--wi-primary-container, var(--color-orange));
 }
 
 .pm-market-q {
-  font-family: var(--font-mono);
+  font-family: var(--wi-font-body, var(--font-mono));
   font-size: 12px;
   line-height: 1.4;
-  color: var(--color-black);
+  color: var(--wi-on-surface, var(--color-black));
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -745,9 +783,10 @@ onBeforeUnmount(() => {
   letter-spacing: 0.5px;
 }
 
-.pm-up { color: var(--color-green); }
-.pm-down { color: var(--color-red); }
-.pm-neutral { color: var(--color-orange); }
+/* US-053 WI : Yes=mint, No=terracotta, neutre=orange */
+.pm-up { color: var(--wi-secondary, var(--color-green)); }
+.pm-down { color: var(--wi-on-primary-container, var(--color-red)); }
+.pm-neutral { color: var(--wi-primary-container, var(--color-orange)); }
 
 .pm-market-trades {
   color: rgba(10, 10, 10, 0.5);
@@ -758,12 +797,12 @@ onBeforeUnmount(() => {
 
 .pm-market-resolved {
   margin-inline-start: auto;
-  padding: 2px 6px;
-  background: var(--color-black);
-  color: var(--color-white);
+  padding: 2px 8px;
+  background: var(--wi-on-surface, var(--color-black));
+  color: var(--wi-surface, var(--color-white));
   font-size: 9px;
   letter-spacing: 1px;
-  border-radius: 0;
+  border-radius: var(--wi-radius-pill, 0);
   text-transform: uppercase;
 }
 
@@ -779,8 +818,9 @@ onBeforeUnmount(() => {
 }
 
 .pm-empty-title {
-  color: var(--color-black);
-  font-weight: 700;
+  color: var(--wi-on-surface, var(--color-black));
+  font-family: var(--wi-font-heading, var(--font-mono));
+  font-weight: 600;
   font-size: 12px;
   letter-spacing: 2px;
   text-transform: uppercase;
@@ -788,12 +828,12 @@ onBeforeUnmount(() => {
 
 .pm-empty-hint {
   font-size: 11px;
-  color: rgba(10, 10, 10, 0.5);
+  color: var(--wi-on-surface-variant, rgba(10, 10, 10, 0.5));
   line-height: 1.5;
 }
 
 .pm-error {
-  color: var(--color-red);
+  color: var(--wi-error, var(--color-red));
 }
 
 /* Chart section */
@@ -803,7 +843,7 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  background: var(--color-white);
+  background: var(--wi-surface, var(--color-white));
 }
 
 .pm-placeholder {
@@ -813,8 +853,8 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  color: rgba(10, 10, 10, 0.35);
-  font-family: var(--font-mono);
+  color: var(--wi-on-surface-variant, rgba(10, 10, 10, 0.35));
+  font-family: var(--wi-font-heading, var(--font-mono));
   font-size: 11px;
   letter-spacing: 2px;
   text-transform: uppercase;
@@ -822,7 +862,7 @@ onBeforeUnmount(() => {
 
 .pm-placeholder-icon {
   font-size: 36px;
-  color: var(--color-orange);
+  color: var(--wi-primary-container, var(--color-orange));
   opacity: 0.4;
 }
 
@@ -831,15 +871,15 @@ onBeforeUnmount(() => {
   flex-direction: column;
   gap: 10px;
   padding-bottom: 14px;
-  border-bottom: 1px solid rgba(10, 10, 10, 0.12);
+  border-bottom: 1px solid var(--wi-outline-variant, rgba(10, 10, 10, 0.12));
 }
 
 .pm-chart-q {
-  font-family: var(--font-display);
+  font-family: var(--wi-font-heading, var(--font-display));
   font-size: 22px;
-  font-weight: 400;
+  font-weight: 600;
   line-height: 1.25;
-  color: var(--color-black);
+  color: var(--wi-on-surface, var(--color-black));
 }
 
 .pm-chart-price-row {
@@ -857,34 +897,34 @@ onBeforeUnmount(() => {
 }
 
 .pm-chart-outcome-label {
-  font-family: var(--font-mono);
+  font-family: var(--wi-font-body, var(--font-mono));
   font-size: 10px;
-  color: rgba(10, 10, 10, 0.5);
+  color: var(--wi-on-surface-variant, rgba(10, 10, 10, 0.5));
   margin-inline-start: 10px;
   letter-spacing: 2px;
   text-transform: uppercase;
 }
 
 .pm-chart-delta {
-  font-family: var(--font-mono);
+  font-family: var(--wi-font-body, var(--font-mono));
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.5px;
-  padding: 3px 8px;
-  border-radius: 0;
+  padding: 3px 10px;
+  border-radius: var(--wi-radius-pill, 0);
 }
 
-/* US-013: hex hardcodés remplacés par tokens --ms-chart-* */
+/* US-053 WI : delta tints sur palette warm */
 .pm-chart-delta.pm-up {
-  background: color-mix(in srgb, var(--ms-chart-2) 12%, transparent);
+  background: color-mix(in srgb, var(--wi-secondary, var(--ms-chart-2)) 12%, transparent);
 }
 
 .pm-chart-delta.pm-down {
-  background: color-mix(in srgb, var(--ms-chart-5) 12%, transparent);
+  background: color-mix(in srgb, var(--wi-on-primary-container, var(--ms-chart-5)) 12%, transparent);
 }
 
 .pm-chart-delta.pm-neutral {
-  background: color-mix(in srgb, var(--ms-chart-1) 12%, transparent);
+  background: color-mix(in srgb, var(--wi-primary-container, var(--ms-chart-1)) 12%, transparent);
 }
 
 .pm-chart-stats {
@@ -902,28 +942,29 @@ onBeforeUnmount(() => {
 }
 
 .pm-stat-k {
+  font-family: var(--wi-font-heading, var(--font-mono));
   font-size: 9px;
   letter-spacing: 2px;
-  color: rgba(10, 10, 10, 0.45);
-  font-weight: 700;
+  color: var(--wi-on-surface-variant, rgba(10, 10, 10, 0.45));
+  font-weight: 600;
   text-transform: uppercase;
 }
 
 .pm-stat-v {
   font-size: 12px;
-  font-family: var(--font-mono);
-  color: var(--color-black);
+  font-family: var(--wi-font-body, var(--font-mono));
+  color: var(--wi-on-surface, var(--color-black));
   font-weight: 700;
 }
 
 .pm-stat-resolved {
-  padding: 6px 10px;
-  background: var(--color-green);
-  color: var(--color-white);
+  padding: 6px 12px;
+  background: var(--wi-secondary, var(--color-green));
+  color: var(--wi-on-secondary, var(--color-white));
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 2px;
-  border-radius: 0;
+  border-radius: var(--wi-radius-pill, 0);
   align-self: center;
   text-transform: uppercase;
 }
@@ -932,8 +973,9 @@ onBeforeUnmount(() => {
   flex: 1;
   min-height: 320px;
   position: relative;
-  background: rgba(10, 10, 10, 0.02);
-  border: 1px solid rgba(10, 10, 10, 0.06);
+  background: var(--wi-surface-container-low, rgba(10, 10, 10, 0.02));
+  border: 1px solid var(--wi-outline-variant, rgba(10, 10, 10, 0.06));
+  border-radius: var(--wi-radius-md, 0);
   padding: 4px;
 }
 
@@ -943,21 +985,22 @@ onBeforeUnmount(() => {
   display: block;
 }
 
-/* Tooltip — flat light card, no offset-drop-shadow (matches the rest of the
-   design system which uses subtle 1px borders instead). */
+/* Tooltip — WI surface, soft shadow, radius md */
 .pm-tooltip {
   position: absolute;
   min-width: 150px;
-  padding: 8px 10px;
-  background: var(--color-white);
-  border: 1px solid rgba(10, 10, 10, 0.12);
+  padding: 10px 12px;
+  background: var(--wi-surface, var(--color-white));
+  border: 1px solid var(--wi-outline-variant, rgba(10, 10, 10, 0.12));
+  border-radius: var(--wi-radius-md, 0);
+  box-shadow: var(--wi-shadow-md, none);
   pointer-events: none;
   z-index: 5;
-  font-family: var(--font-mono);
+  font-family: var(--wi-font-body, var(--font-mono));
 }
 
 .pm-tooltip-price {
-  font-family: var(--font-mono);
+  font-family: var(--wi-font-body, var(--font-mono));
   font-size: 16px;
   font-weight: 700;
   line-height: 1.2;
@@ -966,7 +1009,7 @@ onBeforeUnmount(() => {
 
 .pm-tooltip-trade {
   font-size: 10px;
-  color: rgba(10, 10, 10, 0.65);
+  color: var(--wi-on-surface, rgba(10, 10, 10, 0.65));
   margin-top: 4px;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -974,9 +1017,9 @@ onBeforeUnmount(() => {
 
 .pm-tooltip-time {
   font-size: 10px;
-  color: rgba(10, 10, 10, 0.45);
+  color: var(--wi-on-surface-variant, rgba(10, 10, 10, 0.45));
   margin-top: 2px;
-  font-family: var(--font-mono);
+  font-family: var(--wi-font-body, var(--font-mono));
 }
 
 /* Scrollbar in light theme */
@@ -986,10 +1029,11 @@ onBeforeUnmount(() => {
 }
 .pm-market-list::-webkit-scrollbar-track,
 .pm-chart-section::-webkit-scrollbar-track {
-  background: var(--color-gray);
+  background: var(--wi-surface-container-low, var(--color-gray));
 }
 .pm-market-list::-webkit-scrollbar-thumb,
 .pm-chart-section::-webkit-scrollbar-thumb {
-  background: rgba(10, 10, 10, 0.2);
+  background: var(--wi-outline-variant, rgba(10, 10, 10, 0.2));
+  border-radius: var(--wi-radius-pill, 0);
 }
 </style>

@@ -269,8 +269,9 @@ onMounted(() => { if (props.visible) load() })
   flex-direction: column;
   height: 100%;
   overflow: hidden;
-  font-family: var(--font-mono);
-  background: var(--background);
+  font-family: var(--wi-font-body, var(--font-mono));
+  background: var(--wi-surface, var(--background));
+  color: var(--wi-on-surface, var(--foreground));
 }
 
 .demo-header {
@@ -278,7 +279,7 @@ onMounted(() => { if (props.visible) load() })
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  border-bottom: 1px solid rgba(10,10,10,0.08);
+  border-bottom: 1px solid var(--wi-outline-variant, rgba(10,10,10,0.08));
   flex-shrink: 0;
 }
 
@@ -289,15 +290,18 @@ onMounted(() => { if (props.visible) load() })
 }
 
 .demo-icon {
-  color: var(--ms-status-pink);
+  /* US-053 WI : primary terracotta (sub-groupes / segments) */
+  color: var(--wi-primary, var(--ms-status-pink));
   font-size: 14px;
 }
 
 .demo-label {
+  font-family: var(--wi-font-heading, var(--font-mono));
   font-size: 12px;
+  font-weight: 600;
   letter-spacing: 3px;
   text-transform: uppercase;
-  color: rgba(10,10,10,0.5);
+  color: var(--wi-on-surface-variant, rgba(10,10,10,0.5));
 }
 
 .demo-header-actions {
@@ -307,26 +311,30 @@ onMounted(() => { if (props.visible) load() })
 }
 
 .demo-meta {
+  font-family: var(--wi-font-body, var(--font-mono));
   font-size: 10px;
   letter-spacing: 1px;
-  color: rgba(10,10,10,0.4);
+  color: var(--wi-on-surface-variant, rgba(10,10,10,0.45));
 }
 
 .demo-export-btn {
-  background: none;
-  border: 1px solid rgba(10,10,10,0.15);
+  background: var(--wi-surface-container-low, transparent);
+  border: 1px solid var(--wi-outline-variant, rgba(10,10,10,0.15));
+  border-radius: var(--wi-radius-md, 8px);
   padding: 4px 10px;
-  font-family: var(--font-mono);
+  font-family: var(--wi-font-body, var(--font-mono));
   font-size: 11px;
+  font-weight: 600;
   letter-spacing: 1px;
   cursor: pointer;
-  color: rgba(10,10,10,0.5);
+  color: var(--wi-on-surface-variant, rgba(10,10,10,0.5));
   transition: all 0.15s ease;
 }
 
 .demo-export-btn:hover:not(:disabled) {
-  border-color: var(--ms-status-pink);
-  color: var(--ms-status-pink);
+  border-color: var(--wi-primary, var(--ms-status-pink));
+  color: var(--wi-primary, var(--ms-status-pink));
+  background: var(--wi-surface-container, transparent);
 }
 
 .demo-export-btn:disabled {
@@ -338,7 +346,7 @@ onMounted(() => { if (props.visible) load() })
   display: flex;
   gap: 0;
   padding: 0 12px;
-  border-bottom: 1px solid rgba(10,10,10,0.05);
+  border-bottom: 1px solid var(--wi-outline-variant, rgba(10,10,10,0.05));
   flex-shrink: 0;
   overflow-x: auto;
 }
@@ -348,11 +356,12 @@ onMounted(() => { if (props.visible) load() })
   border: none;
   border-bottom: 2px solid transparent;
   padding: 10px 14px;
-  font-family: var(--font-mono);
+  font-family: var(--wi-font-heading, var(--font-mono));
   font-size: 11px;
+  font-weight: 600;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  color: rgba(10,10,10,0.4);
+  color: var(--wi-on-surface-variant, rgba(10,10,10,0.4));
   cursor: pointer;
   transition: all 0.15s ease;
   display: flex;
@@ -362,26 +371,28 @@ onMounted(() => { if (props.visible) load() })
 }
 
 .demo-tab:hover {
-  color: rgba(10,10,10,0.7);
+  color: var(--wi-on-surface, rgba(10,10,10,0.7));
 }
 
 .demo-tab.active {
-  color: var(--ms-status-pink);
-  border-bottom-color: var(--ms-status-pink);
+  /* US-053 WI : tab actif primary terracotta */
+  color: var(--wi-primary, var(--ms-status-pink));
+  border-bottom-color: var(--wi-primary, var(--ms-status-pink));
 }
 
 .demo-tab-count {
+  font-family: var(--wi-font-body, var(--font-mono));
   font-size: 9px;
-  opacity: 0.5;
-  background: rgba(10,10,10,0.06);
-  padding: 1px 5px;
-  border-radius: 8px;
+  opacity: 0.6;
+  background: var(--wi-surface-container, rgba(10,10,10,0.06));
+  padding: 2px 7px;
+  border-radius: var(--wi-radius-pill, 8px);
   letter-spacing: 0;
 }
 
 .demo-tab.active .demo-tab-count {
-  background: rgba(236,72,153,0.15);
-  color: var(--ms-status-pink);
+  background: color-mix(in srgb, var(--wi-primary, var(--ms-status-pink)) 12%, transparent);
+  color: var(--wi-primary, var(--ms-status-pink));
   opacity: 1;
 }
 
@@ -392,27 +403,28 @@ onMounted(() => { if (props.visible) load() })
   justify-content: center;
   flex: 1;
   gap: 8px;
-  color: rgba(10,10,10,0.4);
+  color: var(--wi-on-surface-variant, rgba(10,10,10,0.45));
+  font-family: var(--wi-font-body, var(--font-mono));
   font-size: 12px;
   letter-spacing: 1px;
 }
 
-/* US-013: hex hardcodé remplacé par token --ms-status-danger */
+/* US-053 WI : error sur token --wi-error */
 .demo-error-state {
-  color: var(--ms-status-danger);
+  color: var(--wi-error, var(--ms-status-danger));
 }
 
 .demo-hint {
   font-size: 10px;
-  color: rgba(10,10,10,0.3);
+  color: var(--wi-on-surface-variant, rgba(10,10,10,0.4));
 }
 
 .pulse-ring {
   width: 24px;
   height: 24px;
-  /* US-013: hex hardcodés remplacés par token --ms-status-pink */
-  border: 2px solid color-mix(in srgb, var(--ms-status-pink) 15%, transparent);
-  border-top-color: var(--ms-status-pink);
+  /* US-053 WI : ring primary terracotta */
+  border: 2px solid color-mix(in srgb, var(--wi-primary, var(--ms-status-pink)) 15%, transparent);
+  border-top-color: var(--wi-primary, var(--ms-status-pink));
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -429,50 +441,61 @@ onMounted(() => { if (props.visible) load() })
 }
 
 .demo-highlight {
-  background: rgba(236,72,153,0.06);
-  border-left: 3px solid var(--ms-status-pink);
-  padding: 8px 12px;
+  /* US-053 WI : highlight primary soft, border-left terracotta */
+  background: var(--wi-primary-soft, rgba(236,72,153,0.06));
+  border-left: 3px solid var(--wi-primary, var(--ms-status-pink));
+  border-radius: var(--wi-radius-md, 0);
+  padding: 10px 14px;
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
 .demo-highlight-muted {
-  background: rgba(10,10,10,0.04);
-  border-left-color: rgba(10,10,10,0.2);
+  background: var(--wi-surface-container-low, rgba(10,10,10,0.04));
+  border-left-color: var(--wi-outline, rgba(10,10,10,0.2));
 }
 
 .demo-highlight-label {
+  font-family: var(--wi-font-heading, var(--font-mono));
   font-size: 9px;
+  font-weight: 600;
   letter-spacing: 2px;
-  color: var(--ms-status-pink);
+  color: var(--wi-primary, var(--ms-status-pink));
   text-transform: uppercase;
 }
 
 .demo-highlight-muted .demo-highlight-label {
-  color: rgba(10,10,10,0.4);
+  color: var(--wi-on-surface-variant, rgba(10,10,10,0.4));
 }
 
 .demo-highlight-text {
+  font-family: var(--wi-font-body, var(--font-mono));
   font-size: 12px;
-  color: rgba(10,10,10,0.8);
+  color: var(--wi-on-surface, rgba(10,10,10,0.8));
   line-height: 1.5;
 }
 
 .demo-legend {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   flex-wrap: wrap;
   align-items: center;
-  font-size: 10px;
-  color: rgba(10,10,10,0.4);
-  letter-spacing: 1px;
+  font-family: var(--wi-font-heading, var(--font-mono));
+  font-size: 11px;
+  color: var(--wi-on-surface-variant, rgba(10,10,10,0.45));
+  letter-spacing: 0.5px;
 }
 
 .legend-item {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  padding: 3px 10px 3px 8px;
+  background: var(--wi-surface-container-low, transparent);
+  border-radius: var(--wi-radius-pill, 9999px);
+  font-weight: 600;
+  color: var(--wi-on-surface, rgba(10,10,10,0.7));
 }
 
 .legend-dot {
@@ -481,13 +504,15 @@ onMounted(() => { if (props.visible) load() })
   border-radius: 50%;
 }
 
-/* US-013: hex hardcodés remplacés par tokens --ms-status-* / --ms-chart-9 */
-.bullish-dot { background: var(--ms-status-success); opacity: 0.8; }
-.neutral-dot { background: var(--ms-chart-9); opacity: 0.8; }
-.bearish-dot { background: var(--ms-status-danger); opacity: 0.8; }
+/* US-053 WI : bullish=mint (trust), neutral=outline, bearish=terracotta */
+.bullish-dot { background: var(--wi-secondary, var(--ms-status-success)); opacity: 0.9; }
+.neutral-dot { background: var(--wi-outline, var(--ms-chart-9)); opacity: 0.85; }
+.bearish-dot { background: var(--wi-on-primary-container, var(--ms-status-danger)); opacity: 0.9; }
 
 .legend-sep {
-  color: rgba(10,10,10,0.15);
+  color: var(--wi-outline-variant, rgba(10,10,10,0.15));
+  background: transparent;
+  padding: 0;
 }
 
 .demo-segments {
@@ -497,9 +522,10 @@ onMounted(() => { if (props.visible) load() })
 }
 
 .demo-row {
-  padding: 10px 12px;
-  background: rgba(10,10,10,0.02);
-  border: 1px solid rgba(10,10,10,0.04);
+  padding: 12px 14px;
+  background: var(--wi-surface-container-low, rgba(10,10,10,0.02));
+  border: 1px solid var(--wi-outline-variant, rgba(10,10,10,0.04));
+  border-radius: var(--wi-radius-md, 0);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -512,22 +538,25 @@ onMounted(() => { if (props.visible) load() })
 }
 
 .demo-row-label {
-  font-size: 12px;
-  color: rgba(10,10,10,0.8);
-  letter-spacing: 0.5px;
+  font-family: var(--wi-font-heading, var(--font-mono));
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--wi-on-surface, rgba(10,10,10,0.85));
+  letter-spacing: 0.3px;
 }
 
 .demo-row-count {
+  font-family: var(--wi-font-body, var(--font-mono));
   font-size: 10px;
-  color: rgba(10,10,10,0.4);
+  color: var(--wi-on-surface-variant, rgba(10,10,10,0.45));
   letter-spacing: 1px;
 }
 
 .stance-bar {
   display: flex;
-  height: 8px;
-  background: rgba(10,10,10,0.04);
-  border-radius: 2px;
+  height: 10px;
+  background: var(--wi-surface-container, rgba(10,10,10,0.04));
+  border-radius: var(--wi-radius-pill, 2px);
   overflow: hidden;
 }
 
@@ -540,10 +569,10 @@ onMounted(() => { if (props.visible) load() })
   transition: width 0.25s ease;
 }
 
-/* US-013: hex hardcodés remplacés par tokens --ms-status-* / --ms-chart-9 */
-.stance-bullish { background: color-mix(in srgb, var(--ms-status-success) 75%, transparent); }
-.stance-neutral { background: color-mix(in srgb, var(--ms-chart-9) 55%, transparent); }
-.stance-bearish { background: color-mix(in srgb, var(--ms-status-danger) 75%, transparent); }
+/* US-053 WI : bullish=mint, neutral=outline, bearish=terracotta */
+.stance-bullish { background: color-mix(in srgb, var(--wi-secondary, var(--ms-status-success)) 80%, transparent); }
+.stance-neutral { background: color-mix(in srgb, var(--wi-outline, var(--ms-chart-9)) 55%, transparent); }
+.stance-bearish { background: color-mix(in srgb, var(--wi-on-primary-container, var(--ms-status-danger)) 80%, transparent); }
 
 .demo-metrics {
   display: flex;
@@ -560,28 +589,33 @@ onMounted(() => { if (props.visible) load() })
 }
 
 .metric-label {
+  font-family: var(--wi-font-heading, var(--font-mono));
   font-size: 9px;
+  font-weight: 600;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: rgba(10,10,10,0.35);
+  color: var(--wi-on-surface-variant, rgba(10,10,10,0.45));
 }
 
 .metric-value {
+  font-family: var(--wi-font-body, var(--font-mono));
   font-size: 13px;
-  color: rgba(10,10,10,0.85);
+  font-weight: 600;
+  color: var(--wi-on-surface, rgba(10,10,10,0.85));
   letter-spacing: 0.5px;
 }
 
-/* US-013: hex hardcodés remplacés par tokens --ms-status-* / --ms-chart-9 */
-.stance-val-bullish { color: var(--ms-status-success-strong); }
-.stance-val-bearish { color: var(--ms-status-danger-strong); }
-.stance-val-neutral { color: var(--ms-chart-9); }
+/* US-053 WI : stance values cohérents avec stance-seg */
+.stance-val-bullish { color: var(--wi-secondary, var(--ms-status-success-strong)); }
+.stance-val-bearish { color: var(--wi-on-primary-container, var(--ms-status-danger-strong)); }
+.stance-val-neutral { color: var(--wi-outline, var(--ms-chart-9)); }
 
 .demo-footer-hint {
+  font-family: var(--wi-font-body, var(--font-mono));
   font-size: 10px;
-  color: rgba(10,10,10,0.35);
+  color: var(--wi-on-surface-variant, rgba(10,10,10,0.45));
   line-height: 1.6;
-  border-top: 1px solid rgba(10,10,10,0.05);
+  border-top: 1px solid var(--wi-outline-variant, rgba(10,10,10,0.05));
   padding-top: 10px;
   margin-top: 4px;
 }

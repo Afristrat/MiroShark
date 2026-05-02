@@ -4,27 +4,57 @@
     <header class="iv-topbar">
       <div class="iv-topbar-left">
         <div class="iv-brand" @click="router.push('/')" role="button" tabindex="0">BASSIRA</div>
-        <nav class="iv-topnav" aria-label="Audit sections">
-          <a class="iv-topnav-link" href="#network" aria-current="page">Network</a>
-          <a class="iv-topnav-link" href="#telemetry">Telemetry</a>
-          <a class="iv-topnav-link" href="#methodology">Methodology</a>
+        <nav
+          class="iv-topnav"
+          :aria-label="$t('interactionAudit.topnav.aria')"
+          v-if="activeTab === 'audit'"
+        >
+          <a class="iv-topnav-link" href="#network" aria-current="page">{{ $t('interactionAudit.topnav.network') }}</a>
+          <a class="iv-topnav-link" href="#telemetry">{{ $t('interactionAudit.topnav.telemetry') }}</a>
+          <a class="iv-topnav-link" href="#methodology">{{ $t('interactionAudit.topnav.methodology') }}</a>
         </nav>
       </div>
-      <div class="iv-topbar-right">
-        <span class="iv-sim-id" v-if="simulationId">SIM-ID: {{ shortSimId }}</span>
+
+      <!-- View toggle : Audit méthodologique vs Interaction sandbox -->
+      <div class="iv-tabs" role="tablist">
         <button
+          type="button"
+          role="tab"
+          class="iv-tab"
+          :class="{ 'is-active': activeTab === 'audit' }"
+          :aria-selected="activeTab === 'audit'"
+          @click="setActiveTab('audit')"
+        >
+          {{ $t('interactionAudit.tab.audit') }}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          class="iv-tab"
+          :class="{ 'is-active': activeTab === 'sandbox' }"
+          :aria-selected="activeTab === 'sandbox'"
+          @click="setActiveTab('sandbox')"
+        >
+          {{ $t('interactionAudit.tab.sandbox') }}
+        </button>
+      </div>
+
+      <div class="iv-topbar-right">
+        <span class="iv-sim-id" v-if="simulationId">{{ $t('interactionAudit.topbar.simIdPrefix') }} {{ shortSimId }}</span>
+        <button
+          v-if="activeTab === 'audit'"
           class="iv-export-btn"
           type="button"
           :disabled="!simulationId || exportingAudit"
           @click="exportAuditLog"
         >
-          {{ exportingAudit ? 'Exporting…' : 'Export Audit Log' }}
+          {{ exportingAudit ? $t('interactionAudit.topbar.exporting') : $t('interactionAudit.topbar.exportAuditLog') }}
         </button>
       </div>
     </header>
 
-    <!-- Main split layout : 60% network · 40% telemetry -->
-    <main class="iv-main">
+    <!-- Audit méthodologique : layout US-077 -->
+    <main v-if="activeTab === 'audit'" class="iv-main">
       <!-- LEFT — Interaction Network (D3 force graph) -->
       <section
         id="network"
@@ -33,20 +63,20 @@
       >
         <header class="iv-panel-header">
           <div>
-            <h1 id="iv-network-title" class="iv-h3">Interaction Topology</h1>
+            <h1 id="iv-network-title" class="iv-h3">{{ $t('interactionAudit.network.title') }}</h1>
             <p class="iv-panel-meta">
-              Round {{ currentRound }} · Dynamic Equilibrium Phase
+              {{ $t('interactionAudit.network.roundPhase', { round: currentRound }) }}
             </p>
           </div>
           <div class="iv-legend" role="list">
             <span class="iv-legend-pill" role="listitem">
-              <span class="iv-pill-dot iv-pill-dot--active"></span> Active
+              <span class="iv-pill-dot iv-pill-dot--active"></span> {{ $t('interactionAudit.network.legend.active') }}
             </span>
             <span class="iv-legend-pill" role="listitem">
-              <span class="iv-pill-dot iv-pill-dot--confirmed"></span> Confirmed
+              <span class="iv-pill-dot iv-pill-dot--confirmed"></span> {{ $t('interactionAudit.network.legend.confirmed') }}
             </span>
             <span class="iv-legend-pill" role="listitem">
-              <span class="iv-pill-dot iv-pill-dot--flagged"></span> Flagged
+              <span class="iv-pill-dot iv-pill-dot--flagged"></span> {{ $t('interactionAudit.network.legend.flagged') }}
             </span>
           </div>
         </header>
@@ -58,7 +88,7 @@
             :visible="true"
           />
           <div v-else class="iv-network-placeholder">
-            <span>Loading simulation context…</span>
+            <span>{{ $t('interactionAudit.network.loadingPlaceholder') }}</span>
           </div>
         </div>
       </section>
@@ -71,22 +101,22 @@
       >
         <header class="iv-telemetry-header">
           <div class="iv-telemetry-titlebar">
-            <h2 id="iv-telemetry-title" class="iv-h3">Agent Telemetry</h2>
+            <h2 id="iv-telemetry-title" class="iv-h3">{{ $t('interactionAudit.telemetry.title') }}</h2>
             <span class="iv-live-tag" :class="{ 'is-loading': loadingInteractions }">
               <span class="iv-live-dot"></span>
-              {{ loadingInteractions ? 'Loading' : 'Live' }}
+              {{ loadingInteractions ? $t('interactionAudit.telemetry.loading') : $t('interactionAudit.telemetry.live') }}
             </span>
           </div>
           <div class="iv-telemetry-filters">
             <label class="iv-select-wrap">
-              <span class="iv-sr-only">Filter by agent</span>
+              <span class="iv-sr-only">{{ $t('interactionAudit.telemetry.filterByAgent') }}</span>
               <select
                 class="iv-select"
                 :value="selectedAgent"
                 @change="filterByAgent($event.target.value)"
-                aria-label="Filter by agent"
+                :aria-label="$t('interactionAudit.telemetry.filterByAgent')"
               >
-                <option value="">All Agents</option>
+                <option value="">{{ $t('interactionAudit.telemetry.allAgents') }}</option>
                 <option
                   v-for="agent in availableAgents"
                   :key="agent.id"
@@ -97,15 +127,15 @@
               </select>
             </label>
             <label class="iv-select-wrap">
-              <span class="iv-sr-only">Filter by round</span>
+              <span class="iv-sr-only">{{ $t('interactionAudit.telemetry.filterByRound') }}</span>
               <select
                 class="iv-select"
                 :value="selectedRound"
                 @change="filterByRound(Number($event.target.value))"
-                aria-label="Filter by round"
+                :aria-label="$t('interactionAudit.telemetry.filterByRound')"
               >
                 <option v-for="r in availableRounds" :key="r" :value="r">
-                  Round {{ r }}
+                  {{ $t('interactionAudit.telemetry.round', { round: r }) }}
                 </option>
               </select>
             </label>
@@ -124,7 +154,7 @@
                 <span
                   class="iv-log-avatar"
                   :class="`iv-log-avatar--${entry.stance}`"
-                  :aria-label="`Agent ${entry.agentId}`"
+                  :aria-label="$t('interactionAudit.telemetry.agentLabel', { id: entry.agentId })"
                 >{{ entry.agentId }}</span>
                 <div class="iv-log-agent-meta">
                   <span class="iv-log-agent-role">{{ entry.role }}</span>
@@ -141,7 +171,7 @@
 
             <details v-if="entry.reasoning" class="iv-log-reasoning">
               <summary class="iv-log-reasoning-summary">
-                <span>Reasoning Excerpt</span>
+                <span>{{ $t('interactionAudit.telemetry.reasoningExcerpt') }}</span>
                 <span class="iv-log-chevron" aria-hidden="true">▾</span>
               </summary>
               <pre class="iv-log-reasoning-body">{{ entry.reasoning }}</pre>
@@ -149,9 +179,9 @@
           </article>
 
           <div v-if="!filteredInteractions.length" class="iv-log-empty">
-            <span v-if="loadingInteractions">Reading agent telemetry…</span>
+            <span v-if="loadingInteractions">{{ $t('interactionAudit.telemetry.readingTelemetry') }}</span>
             <span v-else-if="errorInteractions">{{ errorInteractions }}</span>
-            <span v-else>No interactions match the current filter.</span>
+            <span v-else>{{ $t('interactionAudit.telemetry.noMatch') }}</span>
           </div>
         </div>
 
@@ -159,11 +189,10 @@
         <footer
           id="methodology"
           class="iv-methodology"
-          aria-label="Methodology explainer"
+          :aria-label="$t('interactionAudit.methodology.aria')"
         >
           <p class="iv-methodology-text">
-            Network layout rendered via Force-Directed Layout
-            (Fruchterman–Reingold). Belief states sampled per agent at each round.
+            {{ $t('interactionAudit.methodology.text') }}
           </p>
           <a
             class="iv-methodology-link"
@@ -171,10 +200,20 @@
             target="_blank"
             rel="noopener"
           >
-            Review Methodology Documentation <span aria-hidden="true">→</span>
+            {{ $t('interactionAudit.methodology.link') }} <span aria-hidden="true">→</span>
           </a>
         </footer>
       </section>
+    </main>
+
+    <!-- Interaction sandbox : Step5Interaction réintégré -->
+    <main v-else class="iv-sandbox">
+      <Step5Interaction
+        :reportId="reportId"
+        :simulationId="simulationId"
+        @add-log="onSandboxLog"
+        @update-status="onSandboxStatus"
+      />
     </main>
   </div>
 </template>
@@ -182,16 +221,40 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import InteractionNetwork from '../components/InteractionNetwork.vue'
+import Step5Interaction from '../components/Step5Interaction.vue'
 import { getReport } from '../api/report'
 import { getInteractionNetwork } from '../api/simulation'
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 
 defineProps({
   reportId: { type: String, default: null }
 })
+
+// ─── Tab toggle (audit méthodologique vs interaction sandbox) ──
+const TAB_STORAGE_KEY = 'bassira:interactionView:activeTab'
+const readPersistedTab = () => {
+  try {
+    const v = localStorage.getItem(TAB_STORAGE_KEY)
+    return v === 'sandbox' || v === 'audit' ? v : 'audit'
+  } catch (_) {
+    return 'audit'
+  }
+}
+const activeTab = ref(readPersistedTab())
+const setActiveTab = (next) => {
+  if (next !== 'audit' && next !== 'sandbox') return
+  activeTab.value = next
+  try { localStorage.setItem(TAB_STORAGE_KEY, next) } catch (_) { /* ignore */ }
+}
+
+// Sandbox event sinks (Step5Interaction emits add-log / update-status)
+const onSandboxLog = (_msg) => { /* no-op : sandbox owns its own log UI */ }
+const onSandboxStatus = (_status) => { /* no-op */ }
 
 // ─── Core state preserved (route + simulation linkage) ─────────
 const reportId = ref(route.params.reportId || null)
@@ -256,9 +319,9 @@ const filterByRound = (round) => {
 const buildEntries = (network) => {
   if (!network?.nodes?.length) return []
   const stanceMap = {
-    bullish: { stanceLabel: 'Bullish / Active', class: 'active' },
-    bearish: { stanceLabel: 'Bearish / Flagged', class: 'flagged' },
-    neutral: { stanceLabel: 'Neutral / Confirmed', class: 'confirmed' },
+    bullish: { stanceLabel: t('interactionAudit.stance.active'), class: 'active' },
+    bearish: { stanceLabel: t('interactionAudit.stance.flagged'), class: 'flagged' },
+    neutral: { stanceLabel: t('interactionAudit.stance.confirmed'), class: 'confirmed' },
   }
   const sorted = [...network.nodes].sort((a, b) => (a.rank || 0) - (b.rank || 0))
   return sorted.map((node, idx) => {
@@ -294,10 +357,10 @@ const fetchInteractions = async () => {
         selectedRound.value = availableRounds.value[0]
       }
     } else {
-      errorInteractions.value = res.error || 'Failed to load interactions.'
+      errorInteractions.value = res.error || t('interactionAudit.errors.loadInteractions')
     }
   } catch (err) {
-    errorInteractions.value = err.message || 'Network error.'
+    errorInteractions.value = err.message || t('interactionAudit.errors.network')
   } finally {
     loadingInteractions.value = false
   }
@@ -311,10 +374,10 @@ const loadReportContext = async () => {
       simulationId.value = res.data.simulation_id
       await fetchInteractions()
     } else {
-      errorInteractions.value = 'Could not resolve simulation from report.'
+      errorInteractions.value = t('interactionAudit.errors.resolveSimulation')
     }
   } catch (err) {
-    errorInteractions.value = err.message || 'Report fetch failed.'
+    errorInteractions.value = err.message || t('interactionAudit.errors.reportFetch')
   }
 }
 
@@ -357,7 +420,7 @@ watch(() => route.params.reportId, (newId) => {
 }, { immediate: false })
 
 onMounted(() => {
-  document.title = 'Interactions · Bassira'
+  document.title = t('interactionAudit.documentTitle')
   loadReportContext()
 })
 
@@ -434,6 +497,48 @@ onUnmounted(() => {
   padding-bottom: 2px;
 }
 
+/* ── View toggle (Audit méthodologique vs Sandbox) ─────── */
+.iv-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--wi-surface-container-low);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-pill);
+  padding: 4px;
+}
+
+.iv-tab {
+  appearance: none;
+  background: transparent;
+  border: none;
+  padding: 6px 14px;
+  border-radius: var(--wi-radius-pill);
+  font-family: var(--wi-font-heading);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--wi-on-surface-variant);
+  cursor: pointer;
+  transition: color var(--ms-transition), background var(--ms-transition);
+}
+
+.iv-tab:hover {
+  color: var(--wi-on-surface);
+}
+
+.iv-tab.is-active {
+  background: var(--wi-surface);
+  color: var(--wi-on-surface);
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px var(--wi-primary-container);
+}
+
+.iv-tab:focus-visible {
+  outline: 2px solid var(--wi-primary-container);
+  outline-offset: 2px;
+}
+
 .iv-topbar-right {
   display: flex;
   align-items: center;
@@ -494,6 +599,21 @@ onUnmounted(() => {
   box-shadow: var(--wi-shadow-sm);
   display: flex;
   flex-direction: column;
+  min-height: 0;
+}
+
+/* ── Sandbox wrapper (hosts Step5Interaction) ──────────── */
+.iv-sandbox {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  padding: var(--wi-space-md);
+  background: var(--wi-bg);
+}
+
+.iv-sandbox > * {
+  flex: 1;
+  min-width: 0;
   min-height: 0;
 }
 

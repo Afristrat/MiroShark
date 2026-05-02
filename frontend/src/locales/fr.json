@@ -1792,6 +1792,63 @@
       "navAria": "Navigation pied de page"
     }
   },
+  "interactionAudit": {
+    "documentTitle": "Interactions · Bassira",
+    "topnav": {
+      "aria": "Sections d’audit",
+      "network": "Réseau",
+      "telemetry": "Télémétrie",
+      "methodology": "Méthodologie"
+    },
+    "tab": {
+      "audit": "Audit méthodologique",
+      "sandbox": "Bac à sable interactions"
+    },
+    "topbar": {
+      "simIdPrefix": "ID-SIM :",
+      "exporting": "Export en cours…",
+      "exportAuditLog": "Exporter le journal d’audit"
+    },
+    "network": {
+      "title": "Topologie des interactions",
+      "roundPhase": "Tour {round} · Phase d’équilibre dynamique",
+      "legend": {
+        "active": "Actif",
+        "confirmed": "Confirmé",
+        "flagged": "Signalé"
+      },
+      "loadingPlaceholder": "Chargement du contexte de simulation…"
+    },
+    "telemetry": {
+      "title": "Télémétrie des agents",
+      "live": "En direct",
+      "loading": "Chargement",
+      "filterByAgent": "Filtrer par agent",
+      "filterByRound": "Filtrer par tour",
+      "allAgents": "Tous les agents",
+      "round": "Tour {round}",
+      "reasoningExcerpt": "Extrait du raisonnement",
+      "readingTelemetry": "Lecture de la télémétrie des agents…",
+      "noMatch": "Aucune interaction ne correspond au filtre actuel.",
+      "agentLabel": "Agent {id}"
+    },
+    "stance": {
+      "active": "Haussier / Actif",
+      "confirmed": "Neutre / Confirmé",
+      "flagged": "Baissier / Signalé"
+    },
+    "methodology": {
+      "aria": "Explication méthodologique",
+      "text": "Disposition du réseau rendue via une mise en page à forces dirigées (Fruchterman–Reingold). Les états de croyance sont échantillonnés par agent à chaque tour.",
+      "link": "Consulter la documentation méthodologique"
+    },
+    "errors": {
+      "resolveSimulation": "Impossible de résoudre la simulation depuis le rapport.",
+      "reportFetch": "Échec du chargement du rapport.",
+      "network": "Erreur réseau.",
+      "loadInteractions": "Échec du chargement des interactions."
+    }
+  },
   "theme": {
     "switchToDark": "Passer en mode sombre",
     "switchToLight": "Passer en mode clair"

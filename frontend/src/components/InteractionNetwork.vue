@@ -108,38 +108,37 @@
           <circle
             :r="nodeRadius(n)"
             :fill="nodeColor(n)"
-            :stroke="n.id === hoveredNode ? 'rgba(10,10,10,0.7)' : 'rgba(10,10,10,0.15)'"
+            :stroke="n.id === hoveredNode ? nodeStrokeHover : nodeStrokeIdle"
             :stroke-width="n.id === hoveredNode ? 2 : 1"
           />
           <text
             v-if="nodeRadius(n) >= 6 || n.id === hoveredNode"
             :y="nodeRadius(n) + 10"
             text-anchor="middle"
-            fill="rgba(10,10,10,0.5)"
+            :fill="nodeLabelFill"
             :font-size="n.id === hoveredNode ? 10 : 8"
             font-family="monospace"
           >{{ n.name.length > 12 ? n.name.slice(0, 11) + '…' : n.name }}</text>
         </g>
 
-        <!-- Tooltip -->
+        <!-- Tooltip — WI surface, radius md, soft border -->
         <g v-if="hoveredNode && nodePos[hoveredNode]" :transform="`translate(${tooltipX},${tooltipY})`">
-          <!-- US-013: rx remplacé par style rx=var(--ms-radius-md), fond var(--ms-surface) -->
           <rect
-            x="-4" y="-14"
-            :width="tooltipWidth + 8"
-            height="52"
-            style="rx: var(--ms-radius-md);"
-            fill="var(--ms-surface, rgba(250,250,250,0.95))"
-            stroke="rgba(10,10,10,0.15)"
+            x="-6" y="-16"
+            :width="tooltipWidth + 12"
+            height="56"
+            rx="8"
+            :fill="tooltipBg"
+            :stroke="tooltipBorder"
             stroke-width="1"
           />
-          <text x="0" y="0" font-size="10" font-family="monospace" fill="rgba(10,10,10,0.8)" font-weight="bold">
+          <text x="0" y="0" font-size="10" font-family="monospace" :fill="tooltipTextStrong" font-weight="bold">
             {{ hoveredNodeData?.name }}
           </text>
-          <text x="0" y="13" font-size="9" font-family="monospace" fill="rgba(10,10,10,0.5)">
+          <text x="0" y="13" font-size="9" font-family="monospace" :fill="tooltipTextMuted">
             {{ hoveredNodeData?.stance }} · {{ hoveredNodeData?.platforms?.join(', ') }}
           </text>
-          <text x="0" y="26" font-size="9" font-family="monospace" fill="rgba(10,10,10,0.5)">
+          <text x="0" y="26" font-size="9" font-family="monospace" :fill="tooltipTextMuted">
             In: {{ hoveredNodeData?.in_degree }} · Out: {{ hoveredNodeData?.out_degree }} · Rank #{{ hoveredNodeData?.rank }}
           </text>
           <text x="0" y="34" font-size="0" fill="transparent">pad</text>
@@ -192,10 +191,28 @@ import {
 } from '../utils/chartExport'
 import { readChartPalette } from '../utils/css-vars'
 
-// US-013 : palette sémantique lue depuis les design tokens CSS.
-// Nodes : bullish → success, bearish → danger, neutral → chart9.
-// Edges : twitter → info, reddit → chart1 (orange), cross-platform → violet.
+// US-013 : palette sémantique conservée pour chartExport (canvas).
 const palette = readChartPalette()
+
+// US-053 : helper de lecture des design tokens Warm Intelligence à la volée.
+const cssVar = (name) => {
+  if (typeof window === 'undefined') return ''
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+}
+
+// Couleurs WI dérivées des tokens — palette force-graph par stance/platform.
+// Bull/Active → orange container, Bear/Flagged → terracotta, Neutral → mint,
+// Inactive → outline. Edges → outline-variant @ 0.4. Hover edge → primary.
+const wiColors = {
+  bullish: cssVar('--wi-primary-container') || '#ff8551',
+  bearish: cssVar('--wi-on-primary-container') || '#6d2400',
+  neutral: cssVar('--wi-secondary') || '#006d44',
+  inactive: cssVar('--wi-outline') || '#8a7269',
+  edge: cssVar('--wi-outline-variant') || '#dec0b6',
+  edgeCross: cssVar('--wi-primary') || '#a13f0f',
+  edgeReddit: cssVar('--wi-primary-container') || '#ff8551',
+  edgeTwitter: cssVar('--wi-tertiary') || '#006971',
+}
 
 const props = defineProps({
   simulationId: { type: String, required: true },
@@ -393,32 +410,47 @@ const nodeRadius = (n) => {
   return base + (n.total_degree / maxDegree.value) * scale
 }
 
-// US-013 : hex hardcodés remplacés par tokens CSS lus via readChartPalette().
-// Bullish → success (#22c55e), bearish → danger (#ef4444), neutral → chart9 (#7A7A7A).
-// Twitter → info (#3b82f6), reddit → chart1 (#FF6B1A, orange), cross → violet (#7C3AED).
+// US-053 : palette Warm Intelligence pour le force graph.
+// Bullish → --wi-primary-container (orange), Bearish → --wi-on-primary-container
+// (terracotta), Neutral → --wi-secondary (mint), Inactive → --wi-outline.
+// Edges : twitter → --wi-tertiary, reddit → --wi-primary-container,
+// cross-platform → --wi-primary, default → --wi-outline-variant @ 0.4.
 const _hexToRgba = (hex, alpha) => {
-  const r = parseInt(hex.slice(1, 3), 16)
-  const g = parseInt(hex.slice(3, 5), 16)
-  const b = parseInt(hex.slice(5, 7), 16)
+  if (!hex || !hex.startsWith('#')) return hex
+  let h = hex.slice(1)
+  if (h.length === 3) h = h.split('').map(c => c + c).join('')
+  const r = parseInt(h.slice(0, 2), 16)
+  const g = parseInt(h.slice(2, 4), 16)
+  const b = parseInt(h.slice(4, 6), 16)
   return `rgba(${r},${g},${b},${alpha})`
 }
 
 const nodeColor = (n) => {
   const colors = {
-    bullish: _hexToRgba(palette.success, 0.8),
-    bearish: _hexToRgba(palette.danger, 0.8),
-    neutral: _hexToRgba(palette.chart9, 0.8),
+    bullish: _hexToRgba(wiColors.bullish, 0.85),
+    bearish: _hexToRgba(wiColors.bearish, 0.85),
+    neutral: _hexToRgba(wiColors.neutral, 0.85),
+    inactive: _hexToRgba(wiColors.inactive, 0.6),
   }
   return colors[n.stance] || colors.neutral
 }
 
 const edgeColor = (e) => {
-  if (e.is_cross_platform) return _hexToRgba(palette.violet, 0.6)
+  if (e.is_cross_platform) return _hexToRgba(wiColors.edgeCross, 0.6)
   const p = e.platforms?.[0]
-  if (p === 'twitter') return _hexToRgba(palette.info, 0.5)
-  if (p === 'reddit') return _hexToRgba(palette.chart1, 0.5)
-  return _hexToRgba(palette.chart9, 0.4)
+  if (p === 'twitter') return _hexToRgba(wiColors.edgeTwitter, 0.5)
+  if (p === 'reddit') return _hexToRgba(wiColors.edgeReddit, 0.5)
+  return _hexToRgba(wiColors.edge, 0.4)
 }
+
+// Couleurs des bordures de nodes (hover + idle). WI : ink + outline-variant.
+const nodeStrokeIdle = _hexToRgba(cssVar('--wi-outline-variant') || '#dec0b6', 0.7)
+const nodeStrokeHover = _hexToRgba(cssVar('--wi-on-surface') || '#241915', 0.85)
+const nodeLabelFill = _hexToRgba(cssVar('--wi-on-surface-variant') || '#57423a', 0.7)
+const tooltipBg = cssVar('--wi-surface') || '#ffffff'
+const tooltipBorder = _hexToRgba(cssVar('--wi-outline-variant') || '#dec0b6', 0.7)
+const tooltipTextStrong = _hexToRgba(cssVar('--wi-on-surface') || '#241915', 0.95)
+const tooltipTextMuted = _hexToRgba(cssVar('--wi-on-surface-variant') || '#57423a', 0.75)
 
 const edgeWidth = (e) => {
   return 0.5 + (e.weight / maxWeight.value) * 3
@@ -626,8 +658,9 @@ onBeforeUnmount(() => {
   flex-direction: column;
   height: 100%;
   overflow: hidden;
-  font-family: var(--font-mono);
-  background: var(--background);
+  font-family: var(--wi-font-body, var(--font-mono));
+  background: var(--wi-surface, var(--background));
+  color: var(--wi-on-surface, var(--foreground));
 }
 
 /* Header */
@@ -636,7 +669,7 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  border-bottom: 1px solid rgba(10,10,10,0.08);
+  border-bottom: 1px solid var(--wi-outline-variant, rgba(10,10,10,0.08));
   flex-shrink: 0;
 }
 
@@ -647,15 +680,18 @@ onBeforeUnmount(() => {
 }
 
 .net-icon {
-  color: var(--ms-status-violet-soft);
+  /* US-053 WI : terracotta primary pour signaler le réseau */
+  color: var(--wi-primary, var(--ms-status-violet-soft));
   font-size: 14px;
 }
 
 .net-label {
+  font-family: var(--wi-font-heading, var(--font-mono));
   font-size: 12px;
+  font-weight: 600;
   letter-spacing: 3px;
   text-transform: uppercase;
-  color: rgba(10,10,10,0.5);
+  color: var(--wi-on-surface-variant, rgba(10,10,10,0.5));
 }
 
 .net-header-actions {
@@ -665,20 +701,23 @@ onBeforeUnmount(() => {
 }
 
 .net-export-btn {
-  background: none;
-  border: 1px solid rgba(10,10,10,0.15);
+  background: var(--wi-surface-container-low, transparent);
+  border: 1px solid var(--wi-outline-variant, rgba(10,10,10,0.15));
+  border-radius: var(--wi-radius-md, 8px);
   padding: 4px 10px;
-  font-family: var(--font-mono);
+  font-family: var(--wi-font-body, var(--font-mono));
   font-size: 11px;
+  font-weight: 600;
   letter-spacing: 1px;
   cursor: pointer;
-  color: rgba(10,10,10,0.5);
+  color: var(--wi-on-surface-variant, rgba(10,10,10,0.5));
   transition: all 0.15s ease;
 }
 
 .net-export-btn:hover:not(:disabled) {
-  border-color: var(--color-orange);
-  color: var(--color-orange);
+  border-color: var(--wi-primary-container, var(--color-orange));
+  color: var(--wi-primary, var(--color-orange));
+  background: var(--wi-surface-container, transparent);
 }
 
 .net-export-btn:disabled {
@@ -686,24 +725,29 @@ onBeforeUnmount(() => {
   cursor: not-allowed;
 }
 
-/* Legend */
+/* Legend — pills cream WI */
 .net-legend {
   display: flex;
-  gap: 12px;
-  padding: 8px 16px;
-  border-bottom: 1px solid rgba(10,10,10,0.05);
+  gap: 8px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--wi-outline-variant, rgba(10,10,10,0.05));
   flex-shrink: 0;
   flex-wrap: wrap;
   align-items: center;
 }
 
 .legend-item {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 10px;
-  color: rgba(10,10,10,0.35);
-  letter-spacing: 1px;
+  gap: 6px;
+  padding: 3px 10px 3px 8px;
+  background: var(--wi-surface-container-low, transparent);
+  border-radius: var(--wi-radius-pill, 9999px);
+  font-family: var(--wi-font-heading, var(--font-mono));
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--wi-on-surface, rgba(10,10,10,0.7));
+  letter-spacing: 0.01em;
 }
 
 .legend-dot {
@@ -712,26 +756,26 @@ onBeforeUnmount(() => {
   border-radius: 50%;
 }
 
-/* US-013: hex hardcodés remplacés par tokens --ms-status-* / --ms-chart-9 */
-.bullish-dot { background: var(--ms-status-success); opacity: 0.8; }
-.neutral-dot { background: var(--ms-chart-9); opacity: 0.8; }
-.bearish-dot { background: var(--ms-status-danger); opacity: 0.8; }
+/* US-053 WI : bullish=orange container, neutral=mint, bearish=terracotta */
+.bullish-dot { background: var(--wi-primary-container, var(--ms-status-success)); opacity: 0.9; }
+.neutral-dot { background: var(--wi-secondary, var(--ms-chart-9)); opacity: 0.9; }
+.bearish-dot { background: var(--wi-on-primary-container, var(--ms-status-danger)); opacity: 0.9; }
 
 .legend-sep {
-  color: rgba(10,10,10,0.15);
+  color: var(--wi-outline-variant, rgba(10,10,10,0.15));
   font-size: 10px;
 }
 
 .legend-line {
   width: 16px;
   height: 2px;
-  border-radius: 1px;
+  border-radius: var(--wi-radius-pill, 1px);
 }
 
-/* US-013: hex hardcodés remplacés par tokens --ms-status-info / --ms-chart-1 / --ms-status-violet */
-.twitter-line { background: var(--ms-status-info); opacity: 0.7; }
-.reddit-line { background: var(--ms-chart-1); opacity: 0.7; }
-.cross-line { background: var(--ms-status-violet); opacity: 0.7; }
+/* US-053 WI : twitter=tertiary cyan, reddit=orange container, cross=primary */
+.twitter-line { background: var(--wi-tertiary, var(--ms-status-info)); opacity: 0.85; }
+.reddit-line { background: var(--wi-primary-container, var(--ms-chart-1)); opacity: 0.85; }
+.cross-line { background: var(--wi-primary, var(--ms-status-violet)); opacity: 0.85; }
 
 /* Filters */
 .net-filters {
@@ -746,14 +790,15 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   gap: 4px;
+  font-family: var(--wi-font-body, var(--font-mono));
   font-size: 10px;
-  color: rgba(10,10,10,0.4);
+  color: var(--wi-on-surface-variant, rgba(10,10,10,0.4));
   letter-spacing: 1px;
   cursor: pointer;
 }
 
 .filter-check input {
-  accent-color: var(--ms-status-violet-soft);
+  accent-color: var(--wi-primary, var(--ms-status-violet-soft));
 }
 
 /* States */
@@ -771,17 +816,19 @@ onBeforeUnmount(() => {
   text-align: center;
 }
 
-.net-error-state { color: var(--ms-status-danger-strong); }
+.net-error-state { color: var(--wi-error, var(--ms-status-danger-strong)); }
 
 .net-hint {
+  font-family: var(--wi-font-body, var(--font-mono));
   font-size: 11px;
-  color: rgba(10,10,10,0.25);
+  color: var(--wi-on-surface-variant, rgba(10,10,10,0.45));
 }
 
 .pulse-ring {
   width: 20px;
   height: 20px;
-  border: 2px solid var(--ms-status-violet-soft);
+  /* US-053 WI : ring primary (terracotta) cohérent avec --net-icon */
+  border: 2px solid var(--wi-primary, var(--ms-status-violet-soft));
   border-radius: 50%;
   animation: pulse 1.2s ease-in-out infinite;
 }
@@ -815,7 +862,7 @@ onBeforeUnmount(() => {
   cursor: grabbing;
 }
 
-/* Zoom controls — bottom-right overlay */
+/* Zoom controls — WI surface card */
 .net-zoom-controls {
   position: absolute;
   bottom: 10px;
@@ -824,10 +871,11 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 4px;
   padding: 4px;
-  background: rgba(250, 250, 250, 0.9);
-  border: 1px solid rgba(10, 10, 10, 0.12);
-  border-radius: 2px;
-  font-family: var(--font-mono);
+  background: var(--wi-surface, rgba(250, 250, 250, 0.9));
+  border: 1px solid var(--wi-outline-variant, rgba(10, 10, 10, 0.12));
+  border-radius: var(--wi-radius-md, 2px);
+  box-shadow: var(--wi-shadow-sm, none);
+  font-family: var(--wi-font-body, var(--font-mono));
   user-select: none;
 }
 
@@ -837,10 +885,11 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-white);
-  border: 1px solid rgba(10, 10, 10, 0.15);
-  color: var(--color-black);
-  font-family: var(--font-mono);
+  background: var(--wi-surface-container-low, var(--color-white));
+  border: 1px solid var(--wi-outline-variant, rgba(10, 10, 10, 0.15));
+  border-radius: var(--wi-radius-sm, 0);
+  color: var(--wi-on-surface, var(--color-black));
+  font-family: var(--wi-font-body, var(--font-mono));
   font-size: 14px;
   font-weight: 700;
   line-height: 1;
@@ -850,9 +899,9 @@ onBeforeUnmount(() => {
 }
 
 .zoom-btn:hover {
-  background: var(--color-orange);
-  color: var(--color-white);
-  border-color: var(--color-orange);
+  background: var(--wi-primary-container, var(--color-orange));
+  color: var(--wi-on-primary-container, var(--color-white));
+  border-color: var(--wi-primary-container, var(--color-orange));
 }
 
 .zoom-reset {
@@ -864,7 +913,7 @@ onBeforeUnmount(() => {
   text-align: end;
   padding: 0 6px;
   font-size: 10px;
-  color: rgba(10, 10, 10, 0.55);
+  color: var(--wi-on-surface-variant, rgba(10, 10, 10, 0.55));
   letter-spacing: 0.5px;
 }
 
@@ -879,7 +928,7 @@ onBeforeUnmount(() => {
   flex-direction: column;
   gap: 6px;
   padding: 10px 16px;
-  border-top: 1px solid rgba(10,10,10,0.06);
+  border-top: 1px solid var(--wi-outline-variant, rgba(10,10,10,0.06));
   flex-shrink: 0;
   overflow-y: auto;
   max-height: 140px;
@@ -892,15 +941,18 @@ onBeforeUnmount(() => {
 }
 
 .insight-label {
+  font-family: var(--wi-font-heading, var(--font-mono));
   font-size: 10px;
+  font-weight: 600;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: rgba(10,10,10,0.35);
+  color: var(--wi-primary, rgba(10,10,10,0.45));
 }
 
 .insight-text {
+  font-family: var(--wi-font-body, var(--font-mono));
   font-size: 11px;
-  color: rgba(10,10,10,0.6);
+  color: var(--wi-on-surface, rgba(10,10,10,0.7));
   line-height: 1.4;
   letter-spacing: 0.3px;
 }
@@ -909,12 +961,13 @@ onBeforeUnmount(() => {
   flex-direction: row;
   gap: 16px;
   padding-top: 4px;
-  border-top: 1px solid rgba(10,10,10,0.05);
+  border-top: 1px solid var(--wi-outline-variant, rgba(10,10,10,0.05));
 }
 
 .insight-stat {
+  font-family: var(--wi-font-body, var(--font-mono));
   font-size: 10px;
-  color: rgba(10,10,10,0.3);
+  color: var(--wi-on-surface-variant, rgba(10,10,10,0.45));
   letter-spacing: 1px;
 }
 </style>

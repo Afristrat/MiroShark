@@ -54,8 +54,8 @@
                 <div v-else-if="currentSectionIndex === idx + 1" class="loading-state">
                   <div class="loading-icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                      <circle cx="12" cy="12" r="10" stroke-width="4" stroke="#E5E7EB"></circle>
-                      <path d="M12 2a10 10 0 0 1 10 10" stroke-width="4" stroke="#4B5563" stroke-linecap="round"></path>
+                      <circle cx="12" cy="12" r="10" stroke-width="4" stroke="#dec0b6"></circle>
+                      <path d="M12 2a10 10 0 0 1 10 10" stroke-width="4" stroke="#a13f0f" stroke-linecap="round"></path>
                     </svg>
                   </div>
                   <span class="loading-text">{{ $t('process.step4.generating') }} {{ section.title }}…</span>
@@ -1002,14 +1002,14 @@ watch(() => props.simulationId, (newId) => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: var(--ms-bg-muted);
-  font-family: var(--font-mono);
+  background: var(--wi-bg);
+  font-family: var(--wi-font-body);
   overflow: hidden;
 }
 
 /* Utility Classes */
 .mono {
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
 }
 
 /* Main Split Layout */
@@ -1023,8 +1023,8 @@ watch(() => props.simulationId, (newId) => {
 .left-panel.report-style {
   width: 45%;
   min-width: 450px;
-  background: var(--ms-bg-elevated);
-  border-inline-end: 2px solid rgba(10,10,10,0.12);
+  background: var(--wi-surface);
+  border-inline-end: 1px solid var(--wi-outline-variant);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -1071,47 +1071,47 @@ watch(() => props.simulationId, (newId) => {
 }
 
 .report-tag {
-  background: var(--ms-text);
-  color: var(--ms-bg-elevated);
+  background: var(--wi-on-primary-container);
+  color: var(--wi-bg);
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--wi-font-body);
   font-weight: 700;
-  padding: 6px 11px;
-  letter-spacing: 3px;
+  padding: 6px 14px;
+  border-radius: var(--wi-radius-pill);
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 .report-id {
-  font-size: 11px;
-  font-family: var(--font-mono);
-  color: rgba(10,10,10,0.4);
+  font-size: 12px;
+  font-family: var(--ms-font-mono);
+  color: var(--wi-on-surface-variant);
   font-weight: 500;
   letter-spacing: 0.02em;
 }
 
 .main-title {
-  font-family: var(--font-display);
-  font-size: 36px;
-  font-weight: 700;
-  color: var(--ms-text);
-  line-height: 1.2;
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-h1-size);
+  font-weight: var(--wi-h1-weight);
+  color: var(--wi-on-surface);
+  line-height: var(--wi-h1-leading);
   margin: 0 0 22px 0;
-  letter-spacing: -0.02em;
+  letter-spacing: var(--wi-h1-tracking);
 }
 
 .sub-title {
-  font-family: var(--font-display);
-  font-size: 16px;
-  color: rgba(10,10,10,0.5);
-  font-style: italic;
-  line-height: 1.6;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-body-lg);
+  color: var(--wi-on-surface-variant);
+  line-height: var(--wi-body-lg-leading);
   margin: 0 0 34px 0;
   font-weight: 400;
 }
 
 .header-divider {
-  height: 2px;
-  background: rgba(10,10,10,0.12);
+  height: 1px;
+  background: var(--wi-outline-variant);
   width: 100%;
 }
 
@@ -1142,12 +1142,12 @@ watch(() => props.simulationId, (newId) => {
 }
 
 .section-header-row.clickable:hover {
-  background-color: var(--ms-bg-muted);
+  background-color: var(--wi-surface-container-low);
 }
 
 .collapse-icon {
   margin-inline-start: auto;
-  color: rgba(10,10,10,0.4);
+  color: var(--wi-outline);
   transition: transform 0.3s ease;
   flex-shrink: 0;
   align-self: center;
@@ -1158,38 +1158,39 @@ watch(() => props.simulationId, (newId) => {
 }
 
 .section-number {
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-size: 16px;
-  color: rgba(10,10,10,0.12);
+  color: var(--wi-outline-variant);
   font-weight: 500;
   transition: color 0.3s ease;
 }
 
 .section-title {
-  font-family: var(--font-display);
-  font-size: 24px;
-  font-weight: 600;
-  color: var(--ms-text);
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-h3-size);
+  font-weight: var(--wi-h3-weight);
+  color: var(--wi-on-surface);
   margin: 0;
   transition: color 0.3s ease;
+  line-height: var(--wi-h3-leading);
 }
 
 /* States */
 .report-section-item.is-pending .section-number {
-  color: rgba(10,10,10,0.12);
+  color: var(--wi-outline-variant);
 }
 .report-section-item.is-pending .section-title {
-  color: rgba(10,10,10,0.2);
+  color: var(--wi-outline-variant);
 }
 
 .report-section-item.is-active .section-number,
 .report-section-item.is-completed .section-number {
-  color: rgba(10,10,10,0.4);
+  color: var(--wi-on-surface-variant);
 }
 
 .report-section-item.is-active .section-title,
 .report-section-item.is-completed .section-title {
-  color: var(--ms-text);
+  color: var(--wi-on-surface);
 }
 
 .section-body {
@@ -1199,7 +1200,7 @@ watch(() => props.simulationId, (newId) => {
 
 /* Generated Content */
 .generated-content {
-  font-family: var(--font-display);
+  font-family: var(--wi-font-heading);
   font-size: 14px;
   line-height: 1.8;
   color: rgba(10,10,10,0.7);
@@ -1212,7 +1213,7 @@ watch(() => props.simulationId, (newId) => {
 .generated-content :deep(.md-h2),
 .generated-content :deep(.md-h3),
 .generated-content :deep(.md-h4) {
-  font-family: var(--font-display);
+  font-family: var(--wi-font-heading);
   color: var(--ms-text);
   margin-top: 1.5em;
   margin-bottom: 0.8em;
@@ -1239,13 +1240,13 @@ watch(() => props.simulationId, (newId) => {
   margin: 1.5em 0;
   color: rgba(10,10,10,0.5);
   font-style: italic;
-  font-family: var(--font-display);
+  font-family: var(--wi-font-heading);
 }
 
 .generated-content :deep(.code-block) {
   background: var(--ms-bg-muted);
   padding: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-size: 12px;
   overflow-x: auto;
   margin: 1em 0;
@@ -1277,7 +1278,7 @@ watch(() => props.simulationId, (newId) => {
 }
 
 .loading-text {
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-size: 15px;
   color: rgba(10,10,10,0.5);
 }
@@ -1286,7 +1287,7 @@ watch(() => props.simulationId, (newId) => {
 
 /* Content Styles Override */
 .generated-content :deep(.md-h2) {
-  font-family: var(--font-display);
+  font-family: var(--wi-font-heading);
   font-size: 18px;
   margin-top: 0;
 }
@@ -1333,7 +1334,7 @@ watch(() => props.simulationId, (newId) => {
 
 .waiting-text {
   font-size: 14px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
 }
 
 /* Right Panel - Interaction */
@@ -1341,7 +1342,7 @@ watch(() => props.simulationId, (newId) => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: var(--ms-bg-elevated);
+  background: var(--wi-surface);
 }
 
 /* Action Bar - Professional Design */
@@ -1351,7 +1352,7 @@ watch(() => props.simulationId, (newId) => {
   justify-content: space-between;
   padding: 11px 22px;
   border-bottom: 2px solid rgba(10,10,10,0.12);
-  background: var(--ms-bg-elevated);
+  background: var(--wi-surface);
   gap: 22px;
   position: relative;
   z-index: 20;
@@ -1378,7 +1379,7 @@ watch(() => props.simulationId, (newId) => {
 
 .action-bar-title {
   font-size: 13px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 600;
   color: var(--ms-text);
   letter-spacing: -0.01em;
@@ -1386,12 +1387,12 @@ watch(() => props.simulationId, (newId) => {
 
 .action-bar-subtitle {
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   color: rgba(10,10,10,0.4);
 }
 
 .action-bar-subtitle.mono {
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
 }
 
 .action-bar-tabs {
@@ -1408,7 +1409,7 @@ watch(() => props.simulationId, (newId) => {
   gap: 6px;
   padding: 6px 11px;
   font-size: 12px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 500;
   color: rgba(10,10,10,0.5);
   background: var(--ms-bg-muted);
@@ -1427,7 +1428,7 @@ watch(() => props.simulationId, (newId) => {
 
 .tab-pill.active {
   background: var(--ms-text);
-  color: var(--ms-bg-elevated);
+  color: var(--wi-surface);
 }
 
 .tab-pill svg {
@@ -1471,14 +1472,14 @@ watch(() => props.simulationId, (newId) => {
 
 .survey-pill.active {
   background: var(--ms-mint);
-  color: var(--ms-bg-elevated);
+  color: var(--wi-surface);
 }
 
 /* Interaction Header */
 .interaction-header {
   padding: 22px;
   border-bottom: 2px solid rgba(10,10,10,0.12);
-  background: var(--ms-bg-elevated);
+  background: var(--wi-surface);
 }
 
 .tab-switcher {
@@ -1492,7 +1493,7 @@ watch(() => props.simulationId, (newId) => {
   gap: 6px;
   padding: 11px 22px;
   font-size: 13px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 600;
   color: rgba(10,10,10,0.5);
   background: transparent;
@@ -1510,7 +1511,7 @@ watch(() => props.simulationId, (newId) => {
 
 .tab-btn.active {
   background: var(--ms-text);
-  color: var(--ms-bg-elevated);
+  color: var(--wi-surface);
   border-color: var(--ms-text);
 }
 
@@ -1545,7 +1546,7 @@ watch(() => props.simulationId, (newId) => {
   min-width: 44px;
   min-height: 44px;
   background: var(--ms-text);
-  color: var(--ms-bg-elevated);
+  color: var(--wi-surface);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1569,14 +1570,14 @@ watch(() => props.simulationId, (newId) => {
 
 .tools-card-subtitle {
   font-size: 12px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   color: rgba(10,10,10,0.5);
 }
 
 .tools-card-toggle {
   width: 28px;
   height: 28px;
-  background: var(--ms-bg-elevated);
+  background: var(--wi-surface);
   border: 2px solid rgba(10,10,10,0.08);
   cursor: pointer;
   display: flex;
@@ -1614,7 +1615,7 @@ watch(() => props.simulationId, (newId) => {
   display: flex;
   gap: 11px;
   padding: 11px;
-  background: var(--ms-bg-elevated);
+  background: var(--wi-surface);
   border: 2px solid rgba(10,10,10,0.08);
   transition: all 0.2s ease;
 }
@@ -1660,7 +1661,7 @@ watch(() => props.simulationId, (newId) => {
 
 .tool-name {
   font-size: 12px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 600;
   color: var(--ms-text);
   margin-bottom: 4px;
@@ -1695,7 +1696,7 @@ watch(() => props.simulationId, (newId) => {
   min-width: 44px;
   min-height: 44px;
   background: var(--ms-text);
-  color: var(--ms-bg-elevated);
+  color: var(--wi-surface);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1722,7 +1723,7 @@ watch(() => props.simulationId, (newId) => {
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   color: rgba(10,10,10,0.5);
 }
 
@@ -1734,14 +1735,14 @@ watch(() => props.simulationId, (newId) => {
   padding: 2px 6px;
   background: rgba(10,10,10,0.08);
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 500;
 }
 
 .profile-card-toggle {
   width: 28px;
   height: 28px;
-  background: var(--ms-bg-elevated);
+  background: var(--wi-surface);
   border: 2px solid rgba(10,10,10,0.08);
   cursor: pointer;
   display: flex;
@@ -1774,7 +1775,7 @@ watch(() => props.simulationId, (newId) => {
 
 .profile-card-label {
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 600;
   color: rgba(10,10,10,0.4);
   text-transform: uppercase;
@@ -1783,7 +1784,7 @@ watch(() => props.simulationId, (newId) => {
 }
 
 .profile-card-bio {
-  background: var(--ms-bg-elevated);
+  background: var(--wi-surface);
   padding: 11px;
   border: 2px solid rgba(10,10,10,0.08);
 }
@@ -1803,7 +1804,7 @@ watch(() => props.simulationId, (newId) => {
 
 .selector-label {
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 600;
   color: rgba(10,10,10,0.4);
   text-transform: uppercase;
@@ -1822,7 +1823,7 @@ watch(() => props.simulationId, (newId) => {
   gap: 6px;
   padding: 11px 22px;
   font-size: 13px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 500;
   color: rgba(10,10,10,0.7);
   background: var(--ms-bg-muted);
@@ -1839,7 +1840,7 @@ watch(() => props.simulationId, (newId) => {
 
 .target-option.active {
   background: var(--ms-text);
-  color: var(--ms-bg-elevated);
+  color: var(--wi-surface);
   border-color: var(--ms-text);
 }
 
@@ -1863,7 +1864,7 @@ watch(() => props.simulationId, (newId) => {
   top: calc(100% + 4px);
   inset-inline-start: 0;
   width: 280px;
-  background: var(--ms-bg-elevated);
+  background: var(--wi-surface);
   border: 2px solid rgba(10,10,10,0.12);
   max-height: 50vh;
   overflow-y: auto;
@@ -1873,7 +1874,7 @@ watch(() => props.simulationId, (newId) => {
 .dropdown-header {
   padding: 11px 22px 6px;
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 600;
   color: rgba(10,10,10,0.4);
   text-transform: uppercase;
@@ -1910,7 +1911,7 @@ watch(() => props.simulationId, (newId) => {
   min-width: 32px;
   min-height: 32px;
   background: var(--ms-text);
-  color: var(--ms-bg-elevated);
+  color: var(--wi-surface);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1939,7 +1940,7 @@ watch(() => props.simulationId, (newId) => {
 
 .agent-role {
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   color: rgba(10,10,10,0.4);
   white-space: nowrap;
   overflow: hidden;
@@ -1972,7 +1973,7 @@ watch(() => props.simulationId, (newId) => {
 
 .empty-text {
   font-size: 14px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   text-align: center;
   max-width: 280px;
   line-height: 1.6;
@@ -2003,7 +2004,7 @@ watch(() => props.simulationId, (newId) => {
 
 .chat-message.user .message-avatar {
   background: var(--ms-text);
-  color: var(--ms-bg-elevated);
+  color: var(--wi-surface);
 }
 
 .chat-message.assistant .message-avatar {
@@ -2034,14 +2035,14 @@ watch(() => props.simulationId, (newId) => {
 
 .sender-name {
   font-size: 12px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 600;
   color: rgba(10,10,10,0.7);
 }
 
 .message-time {
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   color: rgba(10,10,10,0.4);
 }
 
@@ -2054,7 +2055,7 @@ watch(() => props.simulationId, (newId) => {
 
 .chat-message.user .message-text {
   background: var(--ms-text);
-  color: var(--ms-bg-elevated);
+  color: var(--wi-surface);
   border-color: var(--ms-text);
 }
 
@@ -2152,7 +2153,7 @@ watch(() => props.simulationId, (newId) => {
   font-family: inherit;
   line-height: 1.5;
   transition: border-color 0.2s ease;
-  background: var(--ms-bg-elevated);
+  background: var(--wi-surface);
 }
 
 .chat-input:focus {
@@ -2169,7 +2170,7 @@ watch(() => props.simulationId, (newId) => {
   width: 44px;
   height: 44px;
   background: var(--ms-text);
-  color: var(--ms-bg-elevated);
+  color: var(--wi-surface);
   border: none;
   cursor: pointer;
   display: flex;
@@ -2229,14 +2230,14 @@ watch(() => props.simulationId, (newId) => {
 
 .setup-section .section-header .section-title {
   font-size: 13px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 600;
   color: rgba(10,10,10,0.7);
 }
 
 .selection-count {
   font-size: 12px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   color: rgba(10,10,10,0.4);
 }
 
@@ -2320,7 +2321,7 @@ watch(() => props.simulationId, (newId) => {
 
 .agent-checkbox.checked .checkbox-avatar {
   background: var(--ms-mint);
-  color: var(--ms-bg-elevated);
+  color: var(--wi-surface);
 }
 
 .checkbox-info {
@@ -2341,7 +2342,7 @@ watch(() => props.simulationId, (newId) => {
 .checkbox-role {
   display: block;
   font-size: 10px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   color: rgba(10,10,10,0.4);
   white-space: nowrap;
   overflow: hidden;
@@ -2362,7 +2363,7 @@ watch(() => props.simulationId, (newId) => {
 .agent-checkbox.checked .checkbox-indicator {
   background: var(--ms-mint);
   border-color: var(--ms-mint);
-  color: var(--ms-bg-elevated);
+  color: var(--wi-surface);
 }
 
 .checkbox-indicator svg {
@@ -2384,7 +2385,7 @@ watch(() => props.simulationId, (newId) => {
 
 .action-link {
   font-size: 12px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   color: rgba(10,10,10,0.5);
   background: none;
   border: none;
@@ -2411,7 +2412,7 @@ watch(() => props.simulationId, (newId) => {
   font-family: inherit;
   line-height: 1.5;
   transition: border-color 0.2s ease;
-  background: var(--ms-bg-elevated);
+  background: var(--wi-surface);
 }
 
 .survey-input:focus {
@@ -2423,9 +2424,9 @@ watch(() => props.simulationId, (newId) => {
   width: 100%;
   padding: 11px 22px;
   font-size: 14px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 600;
-  color: var(--ms-bg-elevated);
+  color: var(--wi-surface);
   background: var(--ms-text);
   border: none;
   cursor: pointer;
@@ -2453,7 +2454,7 @@ watch(() => props.simulationId, (newId) => {
   width: 18px;
   height: 18px;
   border: 2px solid rgba(250, 250, 250, 0.3);
-  border-top-color: var(--ms-bg-elevated);
+  border-top-color: var(--wi-surface);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -2476,14 +2477,14 @@ watch(() => props.simulationId, (newId) => {
 
 .results-title {
   font-size: 14px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 600;
   color: var(--ms-text);
 }
 
 .results-count {
   font-size: 12px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   color: rgba(10,10,10,0.4);
 }
 
@@ -2512,7 +2513,7 @@ watch(() => props.simulationId, (newId) => {
   min-width: 36px;
   min-height: 36px;
   background: var(--ms-text);
-  color: var(--ms-bg-elevated);
+  color: var(--wi-surface);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -2536,7 +2537,7 @@ watch(() => props.simulationId, (newId) => {
 
 .result-role {
   font-size: 12px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   color: rgba(10,10,10,0.4);
 }
 
@@ -2545,7 +2546,7 @@ watch(() => props.simulationId, (newId) => {
   align-items: flex-start;
   gap: 6px;
   padding: 11px;
-  background: var(--ms-bg-elevated);
+  background: var(--wi-surface);
   margin-bottom: 11px;
   font-size: 13px;
   color: rgba(10,10,10,0.5);
@@ -2570,7 +2571,7 @@ watch(() => props.simulationId, (newId) => {
 
 :deep(.md-h2) {
   font-size: 20px;
-  font-family: var(--font-display);
+  font-family: var(--wi-font-heading);
   font-weight: 700;
   color: var(--ms-text);
   margin: 22px 0 11px 0;
@@ -2578,7 +2579,7 @@ watch(() => props.simulationId, (newId) => {
 
 :deep(.md-h3) {
   font-size: 16px;
-  font-family: var(--font-display);
+  font-family: var(--wi-font-heading);
   font-weight: 600;
   color: rgba(10,10,10,0.7);
   margin: 22px 0 11px 0;
@@ -2586,7 +2587,7 @@ watch(() => props.simulationId, (newId) => {
 
 :deep(.md-h4) {
   font-size: 14px;
-  font-family: var(--font-display);
+  font-family: var(--wi-font-heading);
   font-weight: 600;
   color: rgba(10,10,10,0.5);
   margin: 22px 0 6px 0;
@@ -2594,7 +2595,7 @@ watch(() => props.simulationId, (newId) => {
 
 :deep(.md-h5) {
   font-size: 13px;
-  font-family: var(--font-display);
+  font-family: var(--wi-font-heading);
   font-weight: 600;
   color: rgba(10,10,10,0.5);
   margin: 11px 0 6px 0;
@@ -2627,13 +2628,13 @@ watch(() => props.simulationId, (newId) => {
 }
 
 :deep(.code-block code) {
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-size: 13px;
   color: rgba(250,250,250,0.8);
 }
 
 :deep(.inline-code) {
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-size: 13px;
   background: var(--ms-bg-muted);
   padding: 2px 6px;
@@ -2658,7 +2659,7 @@ watch(() => props.simulationId, (newId) => {
 }
 
 .profile-popup {
-  background: var(--ms-bg-elevated);
+  background: var(--wi-surface);
   width: 520px;
   max-width: 90vw;
   max-height: 80vh;
@@ -2666,7 +2667,7 @@ watch(() => props.simulationId, (newId) => {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
 }
 
 .profile-popup-header {
@@ -2677,7 +2678,7 @@ watch(() => props.simulationId, (newId) => {
   border-bottom: 2px solid rgba(10,10,10,0.08);
   position: sticky;
   top: 0;
-  background: var(--ms-bg-elevated);
+  background: var(--wi-surface);
   z-index: 1;
 }
 
@@ -2686,7 +2687,7 @@ watch(() => props.simulationId, (newId) => {
   height: 40px;
   min-width: 40px;
   background: var(--ms-text);
-  color: var(--ms-bg-elevated);
+  color: var(--wi-surface);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -2723,7 +2724,7 @@ watch(() => props.simulationId, (newId) => {
 .popup-label {
   display: block;
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 3px;
@@ -2759,7 +2760,7 @@ watch(() => props.simulationId, (newId) => {
 
 .popup-stat {
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 500;
   padding: 3px 6px;
   background: var(--ms-bg-muted);
@@ -2774,7 +2775,7 @@ watch(() => props.simulationId, (newId) => {
 
 .popup-section-title {
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 3px;
@@ -2806,7 +2807,7 @@ watch(() => props.simulationId, (newId) => {
 
 .popup-action-badge {
   font-size: 9px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 3px;
@@ -2819,13 +2820,13 @@ watch(() => props.simulationId, (newId) => {
 .popup-action-badge.type-create_post, .popup-action-badge.type-quote_post { background: rgba(67,193,101,0.1); color: var(--ms-mint); }
 .popup-action-badge.type-like_post, .popup-action-badge.type-upvote_post { background: rgba(255,107,26,0.1); color: var(--ms-orange); }
 .popup-action-badge.type-create_comment { background: rgba(255,107,26,0.1); color: var(--ms-orange); }
-.popup-action-badge.type-repost { background: rgba(139, 92, 246, 0.1); color: #7B1FA2; }
-.popup-action-badge.type-follow { background: rgba(14, 116, 144, 0.1); color: #00838F; }
+.popup-action-badge.type-repost { background: rgba(139, 92, 246, 0.1); color: var(--ms-status-violet); }
+.popup-action-badge.type-follow { background: rgba(0, 105, 113, 0.1); color: var(--wi-tertiary); }
 
 .popup-action-round {
   font-size: 10px;
   color: rgba(10,10,10,0.2);
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   flex-shrink: 0;
 }
 
@@ -2846,7 +2847,7 @@ watch(() => props.simulationId, (newId) => {
 }
 
 .popup-action-item { cursor: pointer; padding: 6px; }
-.popup-action-item:hover { background: var(--ms-bg-elevated); }
+.popup-action-item:hover { background: var(--wi-surface); }
 
 .popup-action-item.expanded .popup-action-preview { display: none; }
 .popup-action-item.expanded .popup-action-badge { display: none; }

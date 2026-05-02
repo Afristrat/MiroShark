@@ -1045,19 +1045,25 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* ─── Warm Intelligence refresh (US-053) ───
+   GraphPanel : on garde un canvas D3 foncé (lisibilité dataviz),
+   mais toolbar / panneaux chrome s'alignent sur la palette warm.
+   Toolbar : surface-container warm, boutons ghost on-surface-variant,
+   stats chips surface-container-high pill mono. */
 .graph-panel {
   position: relative;
   width: 100%;
   height: 100%;
-  background-color: var(--li);
+  background-color: var(--wi-on-bg);
   background-image:
-    linear-gradient(rgba(67,193,101,0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(67,193,101,0.06) 1px, transparent 1px);
+    linear-gradient(rgba(255, 133, 81, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 133, 81, 0.05) 1px, transparent 1px);
   background-size: 70px 70px;
   overflow: hidden;
+  border-radius: var(--wi-radius-card);
 }
 
-/* Corner markers */
+/* Corner markers — warm primary haut, secondary mint bas */
 .graph-panel::before {
   content: '';
   position: absolute;
@@ -1065,7 +1071,7 @@ onUnmounted(() => {
   inset-inline-start: 0;
   inset-inline-end: 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--lo) 40px, transparent 40px, transparent calc(100% - 40px), var(--lo) calc(100% - 40px));
+  background: linear-gradient(90deg, var(--wi-primary-container) 40px, transparent 40px, transparent calc(100% - 40px), var(--wi-primary-container) calc(100% - 40px));
   z-index: 30;
   pointer-events: none;
 }
@@ -1077,7 +1083,7 @@ onUnmounted(() => {
   inset-inline-start: 0;
   inset-inline-end: 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--ls) 40px, transparent 40px, transparent calc(100% - 40px), var(--ls) calc(100% - 40px));
+  background: linear-gradient(90deg, var(--wi-secondary-container) 40px, transparent 40px, transparent calc(100% - 40px), var(--wi-secondary-container) calc(100% - 40px));
   z-index: 30;
   pointer-events: none;
 }
@@ -1087,22 +1093,23 @@ onUnmounted(() => {
   top: 0;
   inset-inline-start: 0;
   inset-inline-end: 0;
-  padding: 16px 20px;
+  padding: var(--wi-space-sm) var(--wi-space-md);
   z-index: 10;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(to bottom, rgba(10,10,10,0.95), rgba(10,10,10,0));
+  background: linear-gradient(to bottom, rgba(36, 25, 21, 0.92), rgba(36, 25, 21, 0));
   pointer-events: none;
+  border-block-end: 1px solid rgba(222, 192, 182, 0.12);
 }
 
 .panel-title {
-  font-family: var(--font-mono);
-  font-size: 11px;
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-label-sm);
   font-weight: 600;
-  color: rgba(250,250,250,0.5);
-  text-transform: uppercase;
-  letter-spacing: 3px;
+  color: var(--wi-surface-container-low);
+  text-transform: none;
+  letter-spacing: var(--wi-label-sm-tracking);
   pointer-events: auto;
 }
 
@@ -1116,32 +1123,36 @@ onUnmounted(() => {
 .tool-btn {
   height: 32px;
   padding: 0 12px;
-  border: 2px solid rgba(250,250,250,0.12);
-  background: rgba(10,10,10,0.6);
+  border: 1px solid rgba(222, 192, 182, 0.18);
+  background: rgba(36, 25, 21, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
   cursor: pointer;
-  color: rgba(250,250,250,0.5);
-  transition: all 0.2s;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  color: var(--wi-surface-container-low);
+  transition: background var(--ms-transition-fast),
+              color var(--ms-transition-fast),
+              border-color var(--ms-transition-fast);
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
+  font-weight: 500;
+  border-radius: var(--wi-radius-pill);
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .tool-btn:hover {
-  background: rgba(250,250,250,0.1);
-  color: var(--lp);
-  border-color: var(--lo);
+  background: var(--wi-primary-container);
+  color: var(--wi-on-primary-container);
+  border-color: var(--wi-primary-container);
 }
 
 .tool-btn .btn-text {
-  font-size: 11px;
-  font-family: var(--font-mono);
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  font-size: var(--wi-caption);
+  font-family: var(--wi-font-body);
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .icon-refresh.spinning {
@@ -1180,24 +1191,25 @@ onUnmounted(() => {
 /* Entity Types Legend - Bottom Left */
 .graph-legend {
   position: absolute;
-  bottom: 24px;
-  inset-inline-start: 24px;
-  background: rgba(10,10,10,0.85);
-  backdrop-filter: blur(8px);
+  bottom: var(--wi-space-md);
+  inset-inline-start: var(--wi-space-md);
+  background: rgba(36, 25, 21, 0.88);
+  backdrop-filter: blur(10px);
   padding: 12px 16px;
-  border: 2px solid rgba(250,250,250,0.08);
+  border: 1px solid rgba(222, 192, 182, 0.18);
+  border-radius: var(--wi-radius-md);
   z-index: 10;
 }
 
 .legend-title {
   display: block;
-  font-family: var(--font-mono);
-  font-size: 10px;
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-caption);
   font-weight: 600;
-  color: var(--lo);
+  color: var(--wi-primary-container);
   margin-bottom: 10px;
-  text-transform: uppercase;
-  letter-spacing: 3px;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .legend-items {
@@ -1211,9 +1223,9 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: rgba(250,250,250,0.5);
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
+  color: var(--wi-surface-container-low);
   cursor: pointer;
   user-select: none;
   transition: opacity 0.15s;
@@ -1249,10 +1261,11 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  background: rgba(10,10,10,0.85);
-  backdrop-filter: blur(8px);
-  padding: 8px 14px;
-  border: 2px solid rgba(250,250,250,0.08);
+  background: rgba(36, 25, 21, 0.88);
+  backdrop-filter: blur(10px);
+  padding: 10px 14px;
+  border: 1px solid rgba(222, 192, 182, 0.18);
+  border-radius: var(--wi-radius-md);
   z-index: 10;
 }
 
@@ -1298,7 +1311,7 @@ onUnmounted(() => {
 }
 
 input:checked + .slider {
-  background-color: var(--lo);
+  background-color: var(--wi-primary-container);
 }
 
 input:checked + .slider:before {
@@ -1306,11 +1319,11 @@ input:checked + .slider:before {
 }
 
 .toggle-label {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: rgba(250,250,250,0.5);
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
+  color: var(--wi-surface-container-low);
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 /* Detail Panel - Right Side */
@@ -1320,14 +1333,16 @@ input:checked + .slider:before {
   inset-inline-end: 20px;
   width: 320px;
   max-height: calc(100% - 100px);
-  background: var(--lp);
-  border: 2px solid rgba(10,10,10,0.08);
+  background: var(--wi-surface);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-md);
   overflow: hidden;
-  font-family: var(--font-mono);
+  font-family: var(--wi-font-body);
   font-size: 13px;
   z-index: 20;
   display: flex;
   flex-direction: column;
+  box-shadow: var(--wi-shadow-lg);
 }
 
 .detail-panel-header {
@@ -1335,18 +1350,18 @@ input:checked + .slider:before {
   justify-content: space-between;
   align-items: center;
   padding: 14px 16px;
-  background: var(--color-gray);
-  border-bottom: 2px solid rgba(10,10,10,0.08);
+  background: var(--wi-surface-container);
+  border-bottom: 1px solid var(--wi-outline-variant);
   flex-shrink: 0;
 }
 
 .detail-title {
-  font-family: var(--font-mono);
+  font-family: var(--wi-font-heading);
   font-weight: 600;
-  color: rgba(10,10,10,0.4);
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 3px;
+  color: var(--wi-on-surface-variant);
+  font-size: var(--wi-label-sm);
+  text-transform: none;
+  letter-spacing: var(--wi-label-sm-tracking);
 }
 
 .detail-type-badge {
@@ -1365,14 +1380,22 @@ input:checked + .slider:before {
   border: none;
   font-size: 20px;
   cursor: pointer;
-  color: rgba(10,10,10,0.4);
+  color: var(--wi-on-surface-variant);
   line-height: 1;
   padding: 0;
-  transition: color 0.2s;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--wi-radius-pill);
+  transition: background var(--ms-transition-fast),
+              color var(--ms-transition-fast);
 }
 
 .detail-close:hover {
-  color: rgba(10,10,10,0.7);
+  color: var(--wi-on-surface);
+  background: var(--wi-surface-container-high);
 }
 
 .detail-content {

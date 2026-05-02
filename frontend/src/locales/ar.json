@@ -1792,6 +1792,63 @@
       "navAria": "تنقّل التذييل"
     }
   },
+  "interactionAudit": {
+    "documentTitle": "التفاعلات · بصيرة",
+    "topnav": {
+      "aria": "أقسام التدقيق",
+      "network": "الشبكة",
+      "telemetry": "القياس عن بُعد",
+      "methodology": "المنهجية"
+    },
+    "tab": {
+      "audit": "تدقيق منهجي",
+      "sandbox": "صندوق تفاعلات"
+    },
+    "topbar": {
+      "simIdPrefix": "معرّف المحاكاة:",
+      "exporting": "جارٍ التصدير…",
+      "exportAuditLog": "تصدير سجل التدقيق"
+    },
+    "network": {
+      "title": "طوبولوجيا التفاعلات",
+      "roundPhase": "الجولة {round} · مرحلة التوازن الديناميكي",
+      "legend": {
+        "active": "نشط",
+        "confirmed": "مؤكَّد",
+        "flagged": "مُعلَّم"
+      },
+      "loadingPlaceholder": "جارٍ تحميل سياق المحاكاة…"
+    },
+    "telemetry": {
+      "title": "قياس بيانات الوكلاء",
+      "live": "مباشر",
+      "loading": "جارٍ التحميل",
+      "filterByAgent": "تصفية حسب الوكيل",
+      "filterByRound": "تصفية حسب الجولة",
+      "allAgents": "جميع الوكلاء",
+      "round": "الجولة {round}",
+      "reasoningExcerpt": "مقتطف الاستدلال",
+      "readingTelemetry": "جارٍ قراءة قياسات الوكلاء…",
+      "noMatch": "لا توجد تفاعلات تطابق المرشِّح الحالي.",
+      "agentLabel": "الوكيل {id}"
+    },
+    "stance": {
+      "active": "صاعد / نشط",
+      "confirmed": "محايد / مؤكَّد",
+      "flagged": "هابط / مُعلَّم"
+    },
+    "methodology": {
+      "aria": "شرح المنهجية",
+      "text": "تخطيط الشبكة مُقدَّم عبر تخطيط القوى المُوجَّهة (Fruchterman–Reingold). تُعاين حالات الاعتقاد لكل وكيل في كل جولة.",
+      "link": "مراجعة وثائق المنهجية"
+    },
+    "errors": {
+      "resolveSimulation": "تعذَّر استخراج المحاكاة من التقرير.",
+      "reportFetch": "فشل جلب التقرير.",
+      "network": "خطأ في الشبكة.",
+      "loadInteractions": "فشل تحميل التفاعلات."
+    }
+  },
   "theme": {
     "switchToDark": "التبديل إلى الوضع الداكن",
     "switchToLight": "التبديل إلى الوضع الفاتح"

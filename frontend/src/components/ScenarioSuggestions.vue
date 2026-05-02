@@ -311,73 +311,96 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* ─── Warm Intelligence refresh (US-053) ───
+   ScenarioSuggestions repensé sur la palette --wi-* :
+   - container surface cream avec radius card et padding lg,
+   - chips framework ghost cream / actif primary-container,
+   - cards par label (Cerberus, Market, Decision, Crisis, Policy)
+     teintées avec progression warm (orange / mint / charcoal).
+   La logique JS (cardClass / badgeClass) reste inchangée — seuls
+   les sélecteurs CSS changent de palette. */
 .ss-wrap {
-  margin-top: var(--space-sm);
-  padding: var(--space-sm) var(--space-md);
-  background: rgba(255, 107, 26, 0.05);
-  border: 2px dashed rgba(255, 107, 26, 0.35);
-  border-radius: 4px;
-  font-family: var(--font-mono);
+  margin-top: var(--wi-space-sm);
+  padding: var(--wi-space-md) var(--wi-space-lg);
+  background: var(--wi-surface);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-card);
+  font-family: var(--wi-font-body);
   position: relative;
+  box-shadow: var(--wi-shadow-sm);
 }
 
 .ss-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--space-sm);
+  margin-bottom: var(--wi-space-sm);
 }
 
 .ss-label {
-  font-size: 11px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--color-orange);
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-label-sm);
+  font-weight: 600;
+  letter-spacing: var(--wi-label-sm-tracking);
+  color: var(--wi-on-bg);
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
 .ss-dot {
-  color: var(--color-orange);
-  font-size: 12px;
+  color: var(--wi-primary-container);
+  font-size: 14px;
 }
 
 .ss-sub {
-  color: rgba(10, 10, 10, 0.45);
-  font-size: 10px;
-  letter-spacing: 1px;
-  font-weight: normal;
+  color: var(--wi-on-surface-variant);
+  font-size: var(--wi-caption);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .ss-close {
-  background: none;
-  border: none;
-  color: rgba(10, 10, 10, 0.4);
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--wi-on-surface-variant);
   font-size: 18px;
   line-height: 1;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  padding: 0 4px;
-  transition: var(--transition-fast);
+  border-radius: var(--wi-radius-pill);
+  transition: background var(--ms-transition-fast),
+              color var(--ms-transition-fast);
 }
 
-.ss-close:hover { color: var(--color-orange); }
+.ss-close:hover {
+  background: var(--wi-surface-container-high);
+  color: var(--wi-primary);
+}
 
 .ss-loading {
-  font-size: 11px;
-  color: rgba(10, 10, 10, 0.55);
-  letter-spacing: 0.5px;
+  font-size: var(--wi-body-md);
+  color: var(--wi-on-surface-variant);
+  letter-spacing: 0;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 2px;
+  gap: 12px;
+  padding: var(--wi-space-sm) 2px;
+  background: var(--wi-surface-container-low);
+  border-radius: var(--wi-radius-md);
+  padding-inline: var(--wi-space-sm);
 }
 
 .ss-spinner {
-  width: 10px;
-  height: 10px;
-  border: 2px solid rgba(255, 107, 26, 0.25);
-  border-top-color: var(--color-orange);
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--wi-primary-soft);
+  border-top-color: var(--wi-primary-container);
   border-radius: 50%;
   display: inline-block;
   animation: ss-spin 0.8s linear infinite;
@@ -389,25 +412,40 @@ onBeforeUnmount(() => {
 
 .ss-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--wi-space-sm);
 }
 
 .ss-card {
-  background: var(--color-white);
-  border: 2px solid rgba(10, 10, 10, 0.08);
-  border-radius: 4px;
-  padding: 10px 12px;
+  background: var(--wi-surface-container-low);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-interactive);
+  padding: var(--wi-space-sm);
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  transition: var(--transition-fast);
+  gap: 8px;
+  transition: transform var(--ms-transition),
+              box-shadow var(--ms-transition),
+              border-color var(--ms-transition);
 }
 
-.ss-card:hover { border-color: var(--color-orange); }
-.ss-card-bull { border-left: 4px solid var(--color-green); }
-.ss-card-bear { border-left: 4px solid var(--color-red); }
-.ss-card-neutral { border-left: 4px solid var(--color-amber); }
+.ss-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--wi-shadow-md);
+  border-color: var(--wi-primary-container);
+}
+
+/* ── Border-left accents par cadre ──
+   Cerberus : Challenger=orange, Defender=mint, Arbiter=charcoal
+   Market   : Bull=mint (bull-style), Bear=on-primary-container (terracotta), Neutral=outline
+   Decision : Optimist=primary-container, Skeptic=secondary, Pragmatist=on-bg
+   Crisis   : Amplifier=on-primary-container, Attenuator=secondary, Moderator=outline
+   Policy   : Progressive=primary-container, Conservative=on-bg, Technocrat=secondary */
+.ss-card-bull        { border-inline-start: 4px solid var(--wi-secondary); }
+.ss-card-bear        { border-inline-start: 4px solid var(--wi-on-primary-container); }
+.ss-card-neutral     { border-inline-start: 4px solid var(--wi-outline); }
+.ss-card-challenger  { border-inline-start: 4px solid var(--wi-primary-container); }
+.ss-card-defender    { border-inline-start: 4px solid var(--wi-secondary); }
 
 .ss-card-head {
   display: flex;
@@ -417,81 +455,97 @@ onBeforeUnmount(() => {
 }
 
 .ss-badge {
-  font-size: 9px;
-  letter-spacing: 2px;
+  font-family: var(--wi-font-heading);
+  font-size: 10px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 2px 8px;
-  border-radius: 2px;
+  padding: 4px 10px;
+  border-radius: var(--wi-radius-pill);
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--wi-on-primary);
+  background: var(--wi-primary);
 }
 
-.ss-badge-bull { background: var(--color-green); }
-.ss-badge-bear { background: var(--color-red); }
+.ss-badge-bull {
+  background: var(--wi-secondary-container);
+  color: var(--wi-on-secondary-container);
+}
+.ss-badge-bear {
+  background: var(--wi-primary-container);
+  color: var(--wi-on-primary-container);
+}
 .ss-badge-neutral {
-  background: var(--color-amber);
-  color: var(--color-black);
+  background: var(--wi-surface-container-high);
+  color: var(--wi-on-surface);
 }
-
-/* Cerberus framework badge variants */
-.ss-badge-challenger { background: rgba(239, 68, 68, 0.15); color: #dc2626; }
-.ss-badge-defender   { background: rgba(59, 130, 246, 0.15); color: #2563eb; }
-
-/* Cerberus framework card left-border variants */
-.ss-card-challenger { border-left: 4px solid #dc2626; }
-.ss-card-defender   { border-left: 4px solid #2563eb; }
+.ss-badge-challenger {
+  background: var(--wi-primary-container);
+  color: var(--wi-on-primary-container);
+}
+.ss-badge-defender {
+  background: var(--wi-secondary-container);
+  color: var(--wi-on-secondary-container);
+}
 
 .ss-range {
-  font-size: 10px;
-  color: rgba(10, 10, 10, 0.55);
-  letter-spacing: 0.5px;
+  font-family: var(--ms-font-mono);
+  font-size: var(--wi-caption);
+  color: var(--wi-on-surface-variant);
+  letter-spacing: 0.02em;
 }
 
 .ss-question {
-  font-family: var(--font-display);
-  font-size: 14px;
-  color: var(--color-black);
-  line-height: 1.35;
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-body-md);
+  font-weight: 500;
+  color: var(--wi-on-surface);
+  line-height: 1.4;
 }
 
 .ss-rationale {
-  font-size: 10px;
-  color: rgba(10, 10, 10, 0.55);
-  line-height: 1.4;
-  letter-spacing: 0.2px;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
+  color: var(--wi-on-surface-variant);
+  line-height: 1.5;
 }
 
 .ss-use {
   align-self: flex-start;
   margin-top: 4px;
-  background: transparent;
-  border: 1px solid var(--color-orange);
-  color: var(--color-orange);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  padding: 4px 10px;
-  border-radius: 2px;
+  background: var(--wi-on-primary-container);
+  border: 1px solid var(--wi-on-primary-container);
+  color: var(--wi-on-primary);
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-label-sm);
+  font-weight: 600;
+  letter-spacing: var(--wi-label-sm-tracking);
+  text-transform: none;
+  padding: 6px 14px;
+  border-radius: var(--wi-radius-pill);
   cursor: pointer;
-  transition: var(--transition-fast);
+  transition: background var(--ms-transition),
+              transform var(--ms-transition),
+              box-shadow var(--ms-transition);
 }
 
 .ss-use:hover {
-  background: var(--color-orange);
-  color: var(--color-white);
+  background: var(--wi-primary);
+  border-color: var(--wi-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--wi-shadow-md);
 }
 
 .ss-error {
-  font-size: 11px;
-  color: var(--color-red);
-  letter-spacing: 0.5px;
+  font-size: var(--wi-caption);
+  color: var(--wi-error);
+  letter-spacing: 0;
+  padding: var(--wi-space-xs) 0;
 }
 
 /* Panel enter/leave */
 .ss-fade-enter-active,
 .ss-fade-leave-active {
-  transition: opacity 0.18s ease, transform 0.18s ease;
+  transition: opacity var(--ms-transition), transform var(--ms-transition);
 }
 .ss-fade-enter-from,
 .ss-fade-leave-to {
@@ -499,56 +553,75 @@ onBeforeUnmount(() => {
   transform: translateY(-4px);
 }
 
-/* Framework picker */
+/* ── Framework picker ──
+   <details> collapse minimal, summary cliquable cream ; quand ouvert,
+   les chips s'affichent en ghost cream / actif primary-container. */
 .ss-framework-picker {
-  margin-bottom: var(--space-sm);
+  margin-bottom: var(--wi-space-sm);
 }
 
 .ss-framework-toggle {
-  font-size: 10px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: rgba(10, 10, 10, 0.5);
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--wi-on-surface-variant);
   cursor: pointer;
   user-select: none;
   list-style: none;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: var(--wi-radius-pill);
+  background: var(--wi-surface-container-low);
+  width: fit-content;
+  transition: background var(--ms-transition-fast);
+}
+
+.ss-framework-toggle:hover {
+  background: var(--wi-surface-container);
 }
 
 .ss-framework-toggle::-webkit-details-marker { display: none; }
-.ss-framework-toggle::marker { display: none; }
+.ss-framework-toggle::marker { content: ''; }
 
 .ss-framework-options {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 6px;
+  gap: 8px;
+  margin-top: var(--wi-space-xs);
 }
 
 .ss-fw-btn {
-  background: transparent;
-  border: 1px solid rgba(10, 10, 10, 0.15);
-  border-radius: 2px;
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: rgba(10, 10, 10, 0.55);
-  padding: 3px 8px;
+  background: var(--wi-surface-container-low);
+  border: 1px solid transparent;
+  border-radius: var(--wi-radius-pill);
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--wi-on-surface-variant);
+  padding: 6px 12px;
   cursor: pointer;
-  transition: var(--transition-fast);
+  transition: background var(--ms-transition-fast),
+              color var(--ms-transition-fast),
+              border-color var(--ms-transition-fast),
+              box-shadow var(--ms-transition-fast);
 }
 
 .ss-fw-btn:hover {
-  border-color: var(--color-orange);
-  color: var(--color-orange);
+  background: var(--wi-surface-container);
+  color: var(--wi-on-surface);
 }
 
 .ss-fw-btn--active {
-  border-color: var(--color-orange);
-  color: var(--color-orange);
-  background: rgba(255, 107, 26, 0.06);
+  border-color: var(--wi-primary-container);
+  color: var(--wi-on-primary-container);
+  background: var(--wi-primary-container);
+  box-shadow: var(--wi-shadow-sm);
+  font-weight: 600;
 }
 </style>

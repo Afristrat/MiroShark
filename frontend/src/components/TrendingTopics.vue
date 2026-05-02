@@ -161,78 +161,94 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* ─── Warm Intelligence refresh (US-053) ───
+   TrendingTopics : container cream avec header label « ◉ À la une »,
+   grille cards warm avec line-clamp 2, CTA terracotta ghost,
+   refresh button icon ghost. */
 .tt-wrap {
-  margin-top: var(--space-md);
-  padding: var(--space-sm) var(--space-md);
-  background: rgba(67, 193, 101, 0.04);
-  border: 2px dashed rgba(67, 193, 101, 0.3);
-  border-radius: 4px;
-  font-family: var(--font-mono);
+  margin-top: var(--wi-space-md);
+  padding: var(--wi-space-md);
+  background: var(--wi-bg);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-card);
+  font-family: var(--wi-font-body);
   position: relative;
+  box-shadow: var(--wi-shadow-sm);
 }
 
 .tt-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--space-sm);
+  margin-bottom: var(--wi-space-sm);
 }
 
 .tt-label {
-  font-size: 11px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--color-green);
+  font-family: var(--wi-font-heading);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--wi-on-bg);
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
 .tt-dot {
-  color: var(--color-green);
-  font-size: 12px;
+  color: var(--wi-primary-container);
+  font-size: 14px;
 }
 
 .tt-sub {
-  color: rgba(10, 10, 10, 0.45);
-  font-size: 10px;
-  letter-spacing: 1px;
-  font-weight: normal;
+  color: var(--wi-on-surface-variant);
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
+  font-weight: 500;
+  letter-spacing: 0;
   text-transform: none;
 }
 
 .tt-refresh {
-  background: none;
-  border: 1px solid rgba(10, 10, 10, 0.15);
-  color: rgba(10, 10, 10, 0.45);
-  font-size: 13px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--wi-on-surface-variant);
+  font-size: 16px;
   line-height: 1;
   cursor: pointer;
-  padding: 3px 8px;
-  border-radius: 2px;
-  transition: var(--transition-fast);
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--wi-radius-pill);
+  transition: background var(--ms-transition-fast),
+              color var(--ms-transition-fast);
 }
 
 .tt-refresh:hover {
-  color: var(--color-green);
-  border-color: var(--color-green);
+  color: var(--wi-primary);
+  background: var(--wi-surface-container-high);
 }
 
 .tt-loading {
-  font-size: 11px;
-  color: rgba(10, 10, 10, 0.55);
-  letter-spacing: 0.5px;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-body-md);
+  color: var(--wi-on-surface-variant);
+  letter-spacing: 0;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 2px;
+  gap: 12px;
+  padding: var(--wi-space-sm);
+  background: var(--wi-surface-container-low);
+  border-radius: var(--wi-radius-md);
 }
 
 .tt-spinner {
-  width: 10px;
-  height: 10px;
-  border: 2px solid rgba(67, 193, 101, 0.25);
-  border-top-color: var(--color-green);
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--wi-primary-soft);
+  border-top-color: var(--wi-primary-container);
   border-radius: 50%;
   display: inline-block;
   animation: tt-spin 0.8s linear infinite;
@@ -244,34 +260,42 @@ onMounted(() => {
 
 .tt-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--wi-space-sm);
 }
 
 .tt-card {
-  background: var(--color-white);
-  border: 2px solid rgba(10, 10, 10, 0.08);
-  border-inline-start: 4px solid var(--color-green);
-  border-radius: 4px;
-  padding: 10px 12px;
+  background: var(--wi-surface);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-card);
+  padding: var(--wi-space-sm);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   cursor: pointer;
   text-align: start;
   font-family: inherit;
-  transition: var(--transition-fast);
-  min-height: 110px;
+  transition: transform var(--ms-transition),
+              box-shadow var(--ms-transition),
+              border-color var(--ms-transition);
+  min-height: 130px;
+  box-shadow: var(--wi-shadow-sm);
 }
 
 .tt-card:hover:not(:disabled) {
-  border-color: var(--color-green);
-  border-inline-start-color: var(--color-green);
-  transform: translateY(-1px);
+  border-color: var(--wi-primary-container);
+  transform: translateY(-2px);
+  box-shadow: var(--wi-shadow-orange);
+}
+
+.tt-card:hover:not(:disabled) .tt-cta {
+  background: var(--wi-on-primary-container);
+  color: var(--wi-on-primary);
+  border-color: var(--wi-on-primary-container);
 }
 
 .tt-card:disabled {
-  opacity: 0.5;
+  opacity: 0.55;
   cursor: not-allowed;
 }
 
@@ -280,14 +304,15 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  font-size: 9px;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: rgba(10, 10, 10, 0.55);
+  font-family: var(--wi-font-body);
 }
 
 .tt-source {
-  font-weight: 600;
+  font-weight: 500;
+  font-size: var(--wi-caption);
+  color: var(--wi-on-surface-variant);
+  letter-spacing: 0;
+  text-transform: none;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -295,39 +320,50 @@ onMounted(() => {
 }
 
 .tt-time {
-  font-size: 9px;
-  color: rgba(10, 10, 10, 0.4);
-  letter-spacing: 0.5px;
+  font-size: var(--wi-caption);
+  color: var(--wi-outline);
+  letter-spacing: 0;
   text-transform: none;
   flex-shrink: 0;
 }
 
 .tt-title {
-  font-family: var(--font-display);
-  font-size: 13px;
-  color: var(--color-black);
-  line-height: 1.35;
+  font-family: var(--wi-font-body);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--wi-on-surface);
+  line-height: 1.4;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   flex: 1;
 }
 
 .tt-cta {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 4px;
   margin-top: auto;
-  font-size: 10px;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--color-green);
+  align-self: flex-start;
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-caption);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--wi-on-primary-container);
+  border: 1px solid var(--wi-on-primary-container);
+  background: transparent;
+  padding: 4px 10px;
+  border-radius: var(--wi-radius-pill);
+  transition: background var(--ms-transition-fast),
+              color var(--ms-transition-fast),
+              border-color var(--ms-transition-fast);
 }
 
 .tt-cta-arrow {
-  font-family: sans-serif;
+  font-family: var(--wi-font-body);
   font-size: 13px;
 }
 </style>

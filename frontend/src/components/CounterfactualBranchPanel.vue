@@ -190,23 +190,26 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ── Container — mirrors .influence-leaderboard base (Space Mono, light bg) ── */
+/* ── Container — refonte Warm Intelligence ── */
 .cf-panel {
   display: flex;
   flex-direction: column;
   gap: 0;
-  background: var(--background);
-  border: 1px solid rgba(10, 10, 10, 0.08);
-  font-family: var(--font-mono);
+  background: var(--wi-surface);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-card);
+  font-family: var(--wi-font-body);
+  color: var(--wi-on-surface);
+  box-shadow: var(--wi-shadow-sm);
 }
 
-/* ── Header — mirrors .lb-header ── */
+/* ── Header ── */
 .cf-header {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 12px 16px;
-  border-bottom: 1px solid rgba(10, 10, 10, 0.08);
+  padding: var(--wi-space-sm);
+  border-bottom: 1px solid var(--wi-outline-variant);
   flex-shrink: 0;
 }
 
@@ -218,20 +221,22 @@ onMounted(() => {
 
 .cf-icon {
   font-size: 14px;
-  color: var(--color-orange);
+  color: var(--wi-on-primary-container);
 }
 
 .cf-label {
-  font-size: 12px;
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-label-sm);
+  font-weight: var(--wi-label-sm-weight);
   letter-spacing: 3px;
   text-transform: uppercase;
-  color: rgba(10, 10, 10, 0.5);
+  color: var(--wi-on-surface-variant);
 }
 
 .cf-hint {
-  font-size: 11px;
+  font-size: var(--wi-caption);
   line-height: 1.5;
-  color: rgba(10, 10, 10, 0.5);
+  color: var(--wi-on-surface-variant);
   letter-spacing: 0.3px;
 }
 
@@ -241,8 +246,8 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 16px;
-  border-bottom: 1px solid rgba(10, 10, 10, 0.05);
+  padding: 10px var(--wi-space-sm);
+  border-bottom: 1px solid var(--wi-outline-variant);
 }
 
 .cf-form-row--stack {
@@ -253,11 +258,12 @@ onMounted(() => {
 
 .cf-preset-label,
 .cf-form-label {
-  font-family: var(--font-mono);
-  font-size: 10px;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
+  font-weight: 600;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: rgba(10, 10, 10, 0.4);
+  color: var(--wi-on-surface-variant);
   width: 120px;
   flex-shrink: 0;
 }
@@ -269,16 +275,17 @@ onMounted(() => {
 .cf-preset-select,
 .cf-form-input,
 .cf-form-textarea {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  padding: 6px 10px;
-  border: 1px solid rgba(10, 10, 10, 0.12);
-  background: var(--ms-text-on-color);
-  color: var(--foreground);
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-body-md);
+  padding: 8px 12px;
+  border: 1px solid var(--wi-outline-variant);
+  background: var(--wi-surface-container-low);
+  color: var(--wi-on-surface);
+  border-radius: var(--wi-radius-interactive);
   outline: none;
   flex: 1;
   min-width: 0;
-  transition: border-color 0.15s;
+  transition: border-color var(--ms-transition-fast), box-shadow var(--ms-transition-fast);
 }
 
 .cf-form-input--narrow {
@@ -295,42 +302,45 @@ onMounted(() => {
 .cf-form-input:focus,
 .cf-form-textarea:focus,
 .cf-preset-select:focus {
-  border-color: var(--color-orange);
+  border-color: var(--wi-primary-container);
+  box-shadow: 0 0 0 2px var(--wi-primary-container-soft);
 }
 
 .cf-form-meta {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  color: rgba(10, 10, 10, 0.4);
+  font-family: var(--ms-font-mono);
+  font-size: var(--wi-caption);
+  color: var(--wi-on-surface-variant);
   letter-spacing: 1px;
 }
 
 .cf-form-meta--right {
   text-align: end;
-  padding: 0 16px 10px;
+  padding: 0 var(--wi-space-sm) 10px;
 }
 
-/* ── Error / result states — mirrors .iv-error / .iv-answer ── */
+/* ── Error / result states ── */
 .cf-error {
-  margin: 10px 16px 0;
-  padding: 8px 10px;
-  font-family: var(--font-mono);
-  font-size: 11px;
+  margin: 10px var(--wi-space-sm) 0;
+  padding: 8px 12px;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
   line-height: 1.5;
-  color: var(--color-red);
-  background: rgba(255, 68, 68, 0.06);
-  border-inline-start: 2px solid var(--color-red);
+  color: var(--wi-on-error-container);
+  background: var(--wi-error-container);
+  border-inline-start: 2px solid var(--wi-error);
+  border-radius: var(--wi-radius-sm);
   letter-spacing: 0.3px;
 }
 
 .cf-result {
-  margin: 10px 16px 0;
-  padding: 8px 10px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: rgba(10, 10, 10, 0.8);
-  background: rgba(67, 193, 101, 0.06);
-  border-inline-start: 2px solid var(--color-green);
+  margin: 10px var(--wi-space-sm) 0;
+  padding: 8px 12px;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
+  color: var(--wi-on-surface);
+  background: var(--wi-secondary-soft);
+  border-inline-start: 2px solid var(--wi-secondary);
+  border-radius: var(--wi-radius-sm);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -339,51 +349,55 @@ onMounted(() => {
 }
 
 .cf-result code {
-  background: rgba(10, 10, 10, 0.04);
-  padding: 1px 4px;
-  font-size: 10px;
-  color: var(--foreground);
+  background: var(--wi-surface-container-high);
+  padding: 1px 6px;
+  font-size: var(--wi-caption);
+  font-family: var(--ms-font-mono);
+  color: var(--wi-on-surface);
+  border-radius: var(--wi-radius-sm);
 }
 
 .cf-open-btn {
   margin-inline-start: auto;
   background: none;
-  border: 1px solid var(--color-green);
-  color: var(--color-green);
-  font-family: var(--font-mono);
-  font-size: 10px;
+  border: 1px solid var(--wi-secondary);
+  color: var(--wi-secondary);
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
   letter-spacing: 1px;
-  padding: 3px 10px;
+  padding: 4px 12px;
+  border-radius: var(--wi-radius-pill);
   cursor: pointer;
   text-transform: uppercase;
-  transition: all 0.15s;
+  transition: background var(--ms-transition-fast), color var(--ms-transition-fast);
 }
 
 .cf-open-btn:hover {
-  background: var(--color-green);
-  color: var(--color-white);
+  background: var(--wi-secondary);
+  color: var(--wi-on-secondary);
 }
 
-/* ── Actions row — matches the Step3 action-btn language ── */
+/* ── Actions row ── */
 .cf-actions {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
-  padding: 12px 16px;
-  border-top: 1px solid rgba(10, 10, 10, 0.05);
+  padding: var(--wi-space-sm);
+  border-top: 1px solid var(--wi-outline-variant);
 }
 
 .cf-cancel,
 .cf-submit {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 400;
-  letter-spacing: 2.5px;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
+  font-weight: 600;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  padding: 8px 16px;
-  border: 2px solid rgba(10, 10, 10, 0.12);
+  padding: 10px 18px;
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-interactive);
   cursor: pointer;
-  transition: all 0.1s ease;
+  transition: background var(--ms-transition-fast), border-color var(--ms-transition-fast), opacity var(--ms-transition-fast);
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -391,36 +405,38 @@ onMounted(() => {
 
 .cf-cancel {
   background: transparent;
-  color: rgba(10, 10, 10, 0.4);
+  color: var(--wi-on-surface-variant);
 }
 
 .cf-cancel:hover:not(:disabled) {
-  border-color: rgba(10, 10, 10, 0.3);
-  color: rgba(10, 10, 10, 0.7);
+  border-color: var(--wi-outline);
+  color: var(--wi-on-surface);
+  background: var(--wi-surface-container-low);
 }
 
 .cf-submit {
-  background: var(--color-black);
-  color: var(--color-white);
-  border-color: var(--color-black);
+  background: var(--wi-on-primary-container);
+  color: var(--wi-bg);
+  border-color: var(--wi-on-primary-container);
 }
 
 .cf-submit:hover:not(:disabled) {
   opacity: 0.9;
+  box-shadow: var(--wi-shadow-md);
 }
 
 .cf-submit:disabled,
 .cf-cancel:disabled {
-  opacity: 0.3;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
-/* ── Spinner — dark-track on black submit, light track on cancel ── */
+/* ── Spinner ── */
 .cf-spinner {
   width: 10px;
   height: 10px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: var(--color-orange);
+  border: 2px solid var(--wi-primary-container-soft);
+  border-top-color: var(--wi-bg);
   border-radius: 50%;
   animation: cf-spin 0.8s linear infinite;
 }

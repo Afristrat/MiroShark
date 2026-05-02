@@ -2373,6 +2373,116 @@
                 "design_source": "stitch_bassira_global_design_system/bassira_r_vision_des_entit_s/code.html"
             },
             "completedAt": "2026-05-02"
+        },
+        {
+            "id": "US-080",
+            "chantier": "H-finish",
+            "title": "Refonte 5 Steps (Step1GraphBuild, Step2EnvSetup, Step3Simulation, Step4Report, Step5Interaction)",
+            "description": "Harmoniser tous ces composants sur la palette Causse Warm Intelligence. Tokens --wi-* + --ms-* exclusifs. Préserver toute logique métier.",
+            "acceptanceCriteria": [
+                "Tokens --wi-* / --ms-* exclusivement (zéro hex hardcodé)",
+                "Logique métier 100% préservée (refs, computed, watchers, API)",
+                "Outfit titres + Manrope body",
+                "i18n FR/EN/AR si nouvelles strings",
+                "npm run build passe"
+            ],
+            "passes": true,
+            "dependencies": [
+                "US-053"
+            ],
+            "metadata": {
+                "estimated_hours": 4,
+                "priority": "P2"
+            },
+            "completedAt": "2026-05-02"
+        },
+        {
+            "id": "US-081",
+            "chantier": "H-finish",
+            "title": "Refonte 5 charts (BeliefDriftChart, PolymarketChart, InteractionNetwork, InfluenceLeaderboard, DemographicBreakdown)",
+            "description": "Harmoniser tous ces composants sur la palette Causse Warm Intelligence. Tokens --wi-* + --ms-* exclusifs. Préserver toute logique métier.",
+            "acceptanceCriteria": [
+                "Tokens --wi-* / --ms-* exclusivement (zéro hex hardcodé)",
+                "Logique métier 100% préservée (refs, computed, watchers, API)",
+                "Outfit titres + Manrope body",
+                "i18n FR/EN/AR si nouvelles strings",
+                "npm run build passe"
+            ],
+            "passes": true,
+            "dependencies": [
+                "US-053"
+            ],
+            "metadata": {
+                "estimated_hours": 4,
+                "priority": "P2"
+            },
+            "completedAt": "2026-05-02"
+        },
+        {
+            "id": "US-082",
+            "chantier": "H-finish",
+            "title": "Refonte 6 panels (SettingsPanel, DebugPanel, WhatIfPanel, CounterfactualBranchPanel, HistoryDatabase, EmbedDialog)",
+            "description": "Harmoniser tous ces composants sur la palette Causse Warm Intelligence. Tokens --wi-* + --ms-* exclusifs. Préserver toute logique métier.",
+            "acceptanceCriteria": [
+                "Tokens --wi-* / --ms-* exclusivement (zéro hex hardcodé)",
+                "Logique métier 100% préservée (refs, computed, watchers, API)",
+                "Outfit titres + Manrope body",
+                "i18n FR/EN/AR si nouvelles strings",
+                "npm run build passe"
+            ],
+            "passes": true,
+            "dependencies": [
+                "US-053"
+            ],
+            "metadata": {
+                "estimated_hours": 4,
+                "priority": "P2"
+            },
+            "completedAt": "2026-05-02"
+        },
+        {
+            "id": "US-083",
+            "chantier": "H-finish",
+            "title": "Refonte 5 composants simulation (ScenarioSuggestions, TemplateGallery, TrendingTopics, GraphPanel, NetworkPanel)",
+            "description": "Harmoniser tous ces composants sur la palette Causse Warm Intelligence. Tokens --wi-* + --ms-* exclusifs. Préserver toute logique métier.",
+            "acceptanceCriteria": [
+                "Tokens --wi-* / --ms-* exclusivement (zéro hex hardcodé)",
+                "Logique métier 100% préservée (refs, computed, watchers, API)",
+                "Outfit titres + Manrope body",
+                "i18n FR/EN/AR si nouvelles strings",
+                "npm run build passe"
+            ],
+            "passes": true,
+            "dependencies": [
+                "US-053"
+            ],
+            "metadata": {
+                "estimated_hours": 3,
+                "priority": "P2"
+            },
+            "completedAt": "2026-05-02"
+        },
+        {
+            "id": "US-084",
+            "chantier": "H-finish",
+            "title": "Fix InteractionView : recâbler Step5Interaction + i18n des libellés anglais",
+            "description": "Harmoniser tous ces composants sur la palette Causse Warm Intelligence. Tokens --wi-* + --ms-* exclusifs. Préserver toute logique métier.",
+            "acceptanceCriteria": [
+                "Tokens --wi-* / --ms-* exclusivement (zéro hex hardcodé)",
+                "Logique métier 100% préservée (refs, computed, watchers, API)",
+                "Outfit titres + Manrope body",
+                "i18n FR/EN/AR si nouvelles strings",
+                "npm run build passe"
+            ],
+            "passes": true,
+            "dependencies": [
+                "US-053"
+            ],
+            "metadata": {
+                "estimated_hours": 1,
+                "priority": "P2"
+            },
+            "completedAt": "2026-05-02"
         }
     ]
 }

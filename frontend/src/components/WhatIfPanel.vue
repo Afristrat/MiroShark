@@ -105,12 +105,12 @@
               <line
                 :x1="ML" :y1="yS(pct)"
                 :x2="W - MR" :y2="yS(pct)"
-                stroke="rgba(10,10,10,0.06)" stroke-width="1"
+                stroke="var(--wi-outline-variant)" stroke-width="1"
               />
               <text
                 :x="ML - 5" :y="yS(pct) + 4"
-                fill="rgba(10,10,10,0.35)" font-size="9"
-                font-family="'Space Mono', monospace" text-anchor="end"
+                fill="var(--wi-on-surface-variant)" font-size="9"
+                font-family="var(--ms-font-mono)" text-anchor="end"
               >{{ pct }}%</text>
             </g>
 
@@ -118,24 +118,24 @@
             <line
               :x1="ML" :y1="yS(50)"
               :x2="W - MR" :y2="yS(50)"
-              stroke="rgba(10,10,10,0.18)" stroke-width="1"
+              stroke="var(--wi-outline)" stroke-width="1"
               stroke-dasharray="2,3"
             />
 
-            <!-- Original bullish curve (muted gray, dashed) -->
+            <!-- Original bullish curve (muted, dashed) -->
             <path
               :d="originalPath"
               fill="none"
-              stroke="rgba(10,10,10,0.35)"
+              stroke="var(--wi-outline)"
               stroke-width="1.5"
               stroke-dasharray="5,3"
             />
 
-            <!-- Counterfactual bullish curve (orange, solid highlight) -->
+            <!-- Counterfactual bullish curve (terracotta, solid highlight) -->
             <path
               :d="counterfactualPath"
               fill="none"
-              stroke="var(--lo)"
+              stroke="var(--wi-on-primary-container)"
               stroke-width="2.2"
             />
 
@@ -144,14 +144,14 @@
               v-if="origEnd"
               :cx="origEnd.x" :cy="origEnd.y"
               r="3"
-              fill="rgba(10,10,10,0.35)"
+              fill="var(--wi-outline)"
             />
             <circle
               v-if="cfEnd"
               :cx="cfEnd.x" :cy="cfEnd.y"
               r="4"
-              fill="var(--lo)"
-              stroke="var(--lp)" stroke-width="1.5"
+              fill="var(--wi-on-primary-container)"
+              stroke="var(--wi-bg)" stroke-width="1.5"
             />
 
             <!-- Consensus markers — orig in gray, cf in green (design bicolor) -->
@@ -159,26 +159,26 @@
               <line
                 :x1="xS(origData.consensus_round)" :y1="MT"
                 :x2="xS(origData.consensus_round)" :y2="H - MB"
-                stroke="rgba(10,10,10,0.3)" stroke-width="1"
+                stroke="var(--wi-outline)" stroke-width="1"
                 stroke-dasharray="3,3"
               />
               <text
                 :x="xS(origData.consensus_round) + 4" :y="MT + 10"
-                fill="rgba(10,10,10,0.45)" font-size="9"
-                font-family="'Space Mono', monospace"
+                fill="var(--wi-on-surface-variant)" font-size="9"
+                font-family="var(--ms-font-mono)"
               >orig r{{ origData.consensus_round }}</text>
             </g>
             <g v-if="cfData?.consensus_round != null && cfData.consensus_round !== origData?.consensus_round">
               <line
                 :x1="xS(cfData.consensus_round)" :y1="MT"
                 :x2="xS(cfData.consensus_round)" :y2="H - MB"
-                stroke="var(--ls)" stroke-width="1.2"
+                stroke="var(--wi-secondary)" stroke-width="1.2"
                 stroke-dasharray="3,3"
               />
               <text
                 :x="xS(cfData.consensus_round) + 4" :y="MT + 22"
-                fill="var(--ls)" font-size="9"
-                font-family="'Space Mono', monospace"
+                fill="var(--wi-secondary)" font-size="9"
+                font-family="var(--ms-font-mono)"
               >cf r{{ cfData.consensus_round }}</text>
             </g>
 
@@ -187,13 +187,13 @@
               v-for="r in xTicks"
               :key="'xt' + r"
               :x="xS(r)" :y="H - MB + 13"
-              fill="rgba(10,10,10,0.35)" font-size="9"
-              font-family="'Space Mono', monospace" text-anchor="middle"
+              fill="var(--wi-on-surface-variant)" font-size="9"
+              font-family="var(--ms-font-mono)" text-anchor="middle"
             >{{ r }}</text>
             <text
               :x="ML + (W - ML - MR) / 2" :y="H - 2"
-              fill="rgba(10,10,10,0.3)" font-size="9"
-              font-family="'Space Mono', monospace" text-anchor="middle"
+              fill="var(--wi-outline)" font-size="9"
+              font-family="var(--ms-font-mono)" text-anchor="middle"
             >Round — bullish %</text>
           </svg>
 
@@ -521,23 +521,24 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* ── Container — mirrors .influence-leaderboard (Space Mono, light bg) ── */
+/* ── Container — refonte Warm Intelligence ── */
 .what-if {
   display: flex;
   flex-direction: column;
   height: 100%;
   overflow-y: auto;
-  font-family: var(--font-mono);
-  background: var(--background);
+  font-family: var(--wi-font-body);
+  background: var(--wi-bg);
+  color: var(--wi-on-bg);
 }
 
-/* ── Header — mirrors .lb-header ── */
+/* ── Header ── */
 .wi-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
-  border-bottom: 1px solid rgba(10,10,10,0.08);
+  padding: var(--wi-space-sm);
+  border-bottom: 1px solid var(--wi-outline-variant);
   flex-shrink: 0;
 }
 
@@ -549,14 +550,16 @@ onBeforeUnmount(() => {
 
 .wi-icon {
   font-size: 14px;
-  color: var(--color-orange);
+  color: var(--wi-on-primary-container);
 }
 
 .wi-label {
-  font-size: 12px;
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-label-sm);
+  font-weight: var(--wi-label-sm-weight);
   letter-spacing: 3px;
   text-transform: uppercase;
-  color: rgba(10,10,10,0.5);
+  color: var(--wi-on-surface-variant);
 }
 
 /* Header action cluster */
@@ -566,34 +569,37 @@ onBeforeUnmount(() => {
   gap: 8px;
 }
 
-/* ── Export button — mirrors .export-btn ── */
+/* ── Export button ── */
 .wi-export-btn {
-  background: none;
-  border: 1px solid rgba(10,10,10,0.15);
-  color: rgba(10,10,10,0.5);
-  padding: 4px 10px;
-  font-family: var(--font-mono);
-  font-size: 11px;
+  background: var(--wi-surface-container-low);
+  border: 1px solid var(--wi-outline-variant);
+  color: var(--wi-on-surface-variant);
+  padding: 6px 12px;
+  border-radius: var(--wi-radius-pill);
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
+  font-weight: 600;
   letter-spacing: 1px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background var(--ms-transition-fast), border-color var(--ms-transition-fast), color var(--ms-transition-fast);
 }
 .wi-export-btn:hover:not(:disabled) {
-  border-color: var(--color-orange);
-  color: var(--color-orange);
+  border-color: var(--wi-on-primary-container);
+  color: var(--wi-on-primary-container);
+  background: var(--wi-primary-container-soft);
 }
-.wi-export-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.wi-export-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .wi-hint {
-  padding: 8px 16px;
-  font-size: 11px;
+  padding: 8px var(--wi-space-sm);
+  font-size: var(--wi-caption);
   line-height: 1.5;
-  color: rgba(10,10,10,0.5);
-  border-bottom: 1px solid rgba(10,10,10,0.05);
+  color: var(--wi-on-surface-variant);
+  border-bottom: 1px solid var(--wi-outline-variant);
   letter-spacing: 0.3px;
 }
 
-/* ── States — mirrors .lb-loading / .lb-empty / .lb-error ── */
+/* ── States ── */
 .wi-state {
   display: flex;
   flex-direction: column;
@@ -602,16 +608,16 @@ onBeforeUnmount(() => {
   gap: 12px;
   padding: 40px;
   text-align: center;
-  color: rgba(10,10,10,0.35);
-  font-size: 13px;
+  color: var(--wi-outline);
+  font-size: var(--wi-body-md);
   letter-spacing: 1px;
 }
-.wi-state.wi-error { color: var(--color-red); }
+.wi-state.wi-error { color: var(--wi-error); }
 
 .pulse-ring {
   width: 20px;
   height: 20px;
-  border: 2px solid var(--color-orange);
+  border: 2px solid var(--wi-on-primary-container);
   border-radius: 50%;
   animation: wi-pulse 1.2s ease-in-out infinite;
 }
@@ -621,8 +627,8 @@ onBeforeUnmount(() => {
 }
 
 .wi-picker {
-  padding: 12px 16px;
-  border-bottom: 1px solid rgba(10,10,10,0.05);
+  padding: var(--wi-space-sm);
+  border-bottom: 1px solid var(--wi-outline-variant);
 }
 
 .wi-picker-header {
@@ -632,23 +638,28 @@ onBeforeUnmount(() => {
   margin-bottom: 10px;
 }
 .wi-picker-title {
-  font-size: 10px;
+  font-size: var(--wi-caption);
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: rgba(10,10,10,0.4);
+  color: var(--wi-on-surface-variant);
+  font-weight: 600;
 }
 .wi-clear {
   background: none;
   border: none;
-  font-family: var(--font-mono);
-  font-size: 10px;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
   letter-spacing: 1px;
-  color: rgba(10,10,10,0.5);
+  color: var(--wi-on-surface-variant);
   cursor: pointer;
-  padding: 2px 6px;
-  transition: color 0.15s;
+  padding: 4px 8px;
+  border-radius: var(--wi-radius-sm);
+  transition: color var(--ms-transition-fast), background var(--ms-transition-fast);
 }
-.wi-clear:hover { color: var(--color-orange); }
+.wi-clear:hover {
+  color: var(--wi-on-primary-container);
+  background: var(--wi-primary-container-soft);
+}
 
 .wi-agent-grid {
   display: grid;
@@ -656,52 +667,55 @@ onBeforeUnmount(() => {
   gap: 6px;
 }
 
-/* ── Agent card — same hover/selected pattern as the leaderboard's top-three
-   accent (orange left-border, no radius), keeps the row-like feel ── */
+/* ── Agent card ── */
 .wi-agent-card {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 8px 10px;
-  border: 1px solid rgba(10,10,10,0.12);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-interactive);
+  background: var(--wi-surface);
   cursor: pointer;
-  font-size: 11px;
-  color: rgba(10,10,10,0.7);
-  transition: background-color 0.12s, border-color 0.12s;
+  font-size: var(--wi-caption);
+  color: var(--wi-on-surface);
+  transition: background-color var(--ms-transition-fast), border-color var(--ms-transition-fast);
 }
 .wi-agent-card:hover:not(.disabled) {
-  background: rgba(10,10,10,0.02);
-  border-color: rgba(255, 107, 26, 0.35);
+  background: var(--wi-surface-container-low);
+  border-color: var(--wi-primary-container-edge);
 }
 .wi-agent-card.selected {
-  background: rgba(255, 107, 26, 0.06);
-  border-color: var(--color-orange);
-  color: var(--foreground);
+  background: var(--wi-primary-container-soft);
+  border-color: var(--wi-on-primary-container);
+  color: var(--wi-on-surface);
 }
 .wi-agent-card.disabled {
-  opacity: 0.3;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
-.wi-check { margin: 0; cursor: inherit; accent-color: var(--color-orange); }
+.wi-check { margin: 0; cursor: inherit; accent-color: var(--wi-on-primary-container); }
 
 .wi-rank {
-  font-size: 10px;
-  color: rgba(10,10,10,0.4);
+  font-size: var(--wi-caption);
+  color: var(--wi-on-surface-variant);
   min-width: 24px;
   font-weight: 700;
+  font-family: var(--ms-font-mono);
 }
 .wi-agent-name {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-weight: 700;
+  font-weight: 600;
 }
 .wi-agent-score {
-  font-size: 10px;
-  color: var(--color-orange);
+  font-size: var(--wi-caption);
+  color: var(--wi-on-primary-container);
   font-weight: 700;
+  font-family: var(--ms-font-mono);
 }
 
 .wi-actions {
@@ -710,49 +724,55 @@ onBeforeUnmount(() => {
   justify-content: flex-end;
 }
 
-/* ── Recompute — primary CTA, matches .action-btn.primary (black filled) ── */
+/* ── Recompute primary CTA ── */
 .wi-recompute {
-  background: var(--color-black);
-  color: var(--color-white);
-  border: 2px solid var(--color-black);
-  padding: 8px 16px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 2.5px;
+  background: var(--wi-on-primary-container);
+  color: var(--wi-bg);
+  border: 1px solid var(--wi-on-primary-container);
+  border-radius: var(--wi-radius-interactive);
+  padding: 10px 18px;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
+  font-weight: 700;
+  letter-spacing: 2px;
   text-transform: uppercase;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  transition: opacity 0.15s ease;
+  transition: opacity var(--ms-transition-fast), box-shadow var(--ms-transition-fast);
 }
-.wi-recompute:hover:not(:disabled) { opacity: 0.9; }
+.wi-recompute:hover:not(:disabled) {
+  opacity: 0.92;
+  box-shadow: var(--wi-shadow-md);
+}
 .wi-recompute:disabled {
-  opacity: 0.3;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
 .wi-spinner {
   width: 10px;
   height: 10px;
-  border: 2px solid rgba(255,255,255,0.3);
-  border-top-color: var(--color-orange);
+  border: 2px solid var(--wi-primary-container-soft);
+  border-top-color: var(--wi-bg);
   border-radius: 50%;
   animation: wi-spin 0.8s linear infinite;
 }
 @keyframes wi-spin { to { transform: rotate(360deg); } }
 
 .wi-result {
-  padding: 12px 16px 16px;
+  padding: 12px var(--wi-space-sm) var(--wi-space-sm);
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
 .wi-chart-wrap {
-  background: rgba(10,10,10,0.02);
-  border: 1px solid rgba(10,10,10,0.06);
-  padding: 10px 6px 4px;
+  background: var(--wi-surface-container-low);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-md);
+  padding: 12px 8px 6px;
 }
 
 .wi-svg { width: 100%; height: auto; display: block; }
@@ -761,9 +781,9 @@ onBeforeUnmount(() => {
   display: flex;
   gap: 16px;
   padding: 6px 8px 0;
-  font-size: 10px;
+  font-size: var(--wi-caption);
   letter-spacing: 1px;
-  color: rgba(10,10,10,0.5);
+  color: var(--wi-on-surface-variant);
 }
 .wi-legend-item { display: inline-flex; align-items: center; gap: 6px; }
 .wi-legend-swatch {
@@ -771,113 +791,119 @@ onBeforeUnmount(() => {
   height: 2px;
   display: inline-block;
 }
-/* ── Chart strokes — orange bicolor palette (dashed = original, solid = cf) ── */
 .wi-legend-swatch.orig {
   background: repeating-linear-gradient(
     90deg,
-    rgba(10, 10, 10, 0.35) 0,
-    rgba(10, 10, 10, 0.35) 4px,
+    var(--wi-outline) 0,
+    var(--wi-outline) 4px,
     transparent 4px,
     transparent 7px
   );
 }
 .wi-legend-swatch.cf {
-  background: var(--color-orange);
+  background: var(--wi-on-primary-container);
   height: 3px;
 }
 
-/* ── Impact panel — light card with subtle border, matches .lb footer feel ── */
+/* ── Impact panel ── */
 .wi-impact {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 12px 14px;
-  border: 1px solid rgba(10,10,10,0.08);
-  background: var(--color-white);
+  padding: 14px 16px;
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-md);
+  background: var(--wi-surface);
 }
 
 .wi-impact-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 11px;
+  font-size: var(--wi-caption);
   gap: 12px;
 }
 .wi-impact-label {
-  color: rgba(10,10,10,0.4);
+  color: var(--wi-on-surface-variant);
   letter-spacing: 2px;
   text-transform: uppercase;
-  font-size: 10px;
+  font-size: var(--wi-caption);
+  font-weight: 600;
 }
 .wi-impact-values {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
 }
-.wi-val.orig { color: rgba(10,10,10,0.5); }
-.wi-val.cf { color: var(--foreground); font-weight: 700; }
-.wi-arrow { color: rgba(10,10,10,0.3); }
+.wi-val.orig { color: var(--wi-on-surface-variant); }
+.wi-val.cf { color: var(--wi-on-surface); font-weight: 700; }
+.wi-arrow { color: var(--wi-outline); }
 
-/* ── Delta pill — orange = positive shift, red = negative, neutral gray ── */
+/* ── Delta pill ── */
 .wi-delta {
-  padding: 1px 6px;
-  font-size: 10px;
+  padding: 2px 8px;
+  font-size: var(--wi-caption);
   font-weight: 700;
   letter-spacing: 0.5px;
   border: 1px solid transparent;
+  border-radius: var(--wi-radius-pill);
 }
 .wi-delta.positive {
-  color: var(--color-orange);
-  border-color: rgba(255, 107, 26, 0.35);
+  color: var(--wi-on-primary-container);
+  border-color: var(--wi-primary-container-edge);
+  background: var(--wi-primary-container-soft);
 }
 .wi-delta.negative {
-  color: var(--color-red);
-  border-color: rgba(255, 68, 68, 0.35);
+  color: var(--wi-on-error-container);
+  border-color: var(--wi-on-error-container);
+  background: var(--wi-error-container);
 }
 .wi-delta.neutral {
-  color: rgba(10,10,10,0.4);
-  border-color: rgba(10,10,10,0.12);
+  color: var(--wi-on-surface-variant);
+  border-color: var(--wi-outline-variant);
+  background: var(--wi-surface-container-low);
 }
 
 .wi-impact-badge-row { margin-top: 4px; }
 .wi-impact-badge {
   display: inline-block;
-  padding: 3px 10px;
-  font-size: 10px;
+  padding: 4px 12px;
+  font-size: var(--wi-caption);
   font-weight: 700;
   letter-spacing: 2px;
   text-transform: uppercase;
   border: 1px solid transparent;
+  border-radius: var(--wi-radius-pill);
 }
 .wi-impact-badge.impact-strong {
-  color: var(--color-orange);
-  background: rgba(255, 107, 26, 0.08);
-  border-color: rgba(255, 107, 26, 0.4);
+  color: var(--wi-on-primary-container);
+  background: var(--wi-primary-container-soft);
+  border-color: var(--wi-primary-container-edge);
 }
 .wi-impact-badge.impact-moderate {
-  color: var(--color-amber);
-  background: rgba(255, 179, 71, 0.1);
-  border-color: rgba(255, 179, 71, 0.45);
+  color: var(--wi-secondary);
+  background: var(--wi-secondary-soft);
+  border-color: var(--wi-secondary-edge);
 }
 .wi-impact-badge.impact-minimal {
-  color: rgba(10,10,10,0.45);
-  background: rgba(10,10,10,0.04);
-  border-color: rgba(10,10,10,0.12);
+  color: var(--wi-on-surface-variant);
+  background: var(--wi-surface-container-low);
+  border-color: var(--wi-outline-variant);
 }
 
 .wi-summary {
-  font-size: 11px;
+  font-size: var(--wi-caption);
   line-height: 1.55;
-  color: rgba(10,10,10,0.75);
+  color: var(--wi-on-surface);
   padding-top: 8px;
-  border-top: 1px solid rgba(10,10,10,0.06);
+  border-top: 1px solid var(--wi-outline-variant);
   letter-spacing: 0.2px;
 }
 
 .wi-warn {
-  font-size: 10px;
-  color: var(--color-orange);
+  font-size: var(--wi-caption);
+  color: var(--wi-on-primary-container);
   padding-top: 2px;
   letter-spacing: 1px;
 }

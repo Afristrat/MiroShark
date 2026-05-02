@@ -57,16 +57,16 @@
         ref="svgRef"
         xmlns="http://www.w3.org/2000/svg"
       >
-        <!-- Horizontal grid lines + Y labels -->
+        <!-- Horizontal grid lines + Y labels — WI palette: --wi-outline-variant -->
         <g v-for="pct in [0, 25, 50, 75, 100]" :key="pct">
           <line
             :x1="ML" :y1="yS(pct)"
             :x2="W - MR" :y2="yS(pct)"
-            stroke="rgba(10,10,10,0.06)" stroke-width="1"
+            :stroke="gridStroke" stroke-width="1"
           />
           <text
             :x="ML - 5" :y="yS(pct) + 4"
-            fill="rgba(10,10,10,0.35)" font-size="9"
+            :fill="axisLabelFill" font-size="9"
             font-family="monospace" text-anchor="end"
           >{{ pct }}%</text>
         </g>
@@ -95,32 +95,32 @@
           stroke-width="1"
         />
 
-        <!-- Consensus vertical line -->
+        <!-- Consensus vertical line — WI: --wi-on-surface-variant -->
         <line
           v-if="driftData.consensus_round != null"
           :x1="xS(driftData.consensus_round)" :y1="MT"
           :x2="xS(driftData.consensus_round)" :y2="H - MB"
-          stroke="rgba(10,10,10,0.5)" stroke-width="1.5"
+          :stroke="consensusStroke" stroke-width="1.5"
           stroke-dasharray="4,3"
         />
         <text
           v-if="driftData.consensus_round != null"
           :x="xS(driftData.consensus_round) + 4" :y="MT + 12"
-          fill="rgba(10,10,10,0.5)" font-size="9" font-family="monospace"
+          :fill="consensusStroke" font-size="9" font-family="monospace"
         >consensus r{{ driftData.consensus_round }}</text>
 
-        <!-- Director event injection markers -->
+        <!-- Director event injection markers — WI: --wi-primary -->
         <g v-for="(evt, idx) in eventMarkers" :key="'evt' + idx">
           <line
             :x1="xS(evt.round)" :y1="MT"
             :x2="xS(evt.round)" :y2="H - MB"
-            stroke="rgba(245,158,11,0.7)" stroke-width="1.5"
+            :stroke="eventStroke" stroke-width="1.5"
             stroke-dasharray="3,2"
           />
           <text
             :x="xS(evt.round) + 4"
             :y="MT + 12 + idx * 11"
-            fill="rgba(245,158,11,0.8)" font-size="8" font-family="monospace"
+            :fill="eventLabelFill" font-size="8" font-family="monospace"
           >⚡ r{{ evt.round }}</text>
         </g>
 
@@ -129,14 +129,14 @@
           v-for="r in xTicks"
           :key="'xt' + r"
           :x="xS(r)" :y="H - MB + 13"
-          fill="rgba(10,10,10,0.35)" font-size="9"
+          :fill="axisLabelFill" font-size="9"
           font-family="monospace" text-anchor="middle"
         >{{ r }}</text>
 
         <!-- X axis title -->
         <text
           :x="ML + (W - ML - MR) / 2" :y="H - 2"
-          fill="rgba(10,10,10,0.3)" font-size="9"
+          :fill="axisTitleFill" font-size="9"
           font-family="monospace" text-anchor="middle"
         >Round</text>
       </svg>
@@ -169,11 +169,18 @@ import {
 } from '../utils/chartExport'
 import { readChartPalette } from '../utils/css-vars'
 
-// US-013 : palette sémantique lue depuis les design tokens CSS au mount.
-// bullish → --ms-status-success (#22c55e), bearish → --ms-status-danger (#ef4444)
-// neutral → --ms-chart-9 (#7A7A7A — gris neutre).
-// Les hex rgba hardcodés (teal/slate/coral) sont remplacés par ces tokens.
+// US-013 : palette sémantique lue depuis les design tokens CSS au mount
+// (conservée pour chartExport / fallback). Les couleurs effectives du chart
+// sont désormais lues à la volée depuis les tokens --wi-* (Warm Intelligence).
 const palette = readChartPalette()
+
+// US-053 : helper de lecture des design tokens CSS Warm Intelligence.
+// Lu à chaque calcul pour permettre la bascule de thème (dark mode futur)
+// sans recharger le composant. Retourne le hex/rgba résolu trimé.
+const cssVar = (name) => {
+  if (typeof window === 'undefined') return ''
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+}
 
 const props = defineProps({
   simulationId: { type: String, required: true },
@@ -261,21 +268,40 @@ const eventMarkers = computed(() => {
     .map(e => ({ round: e.injected_at_round, text: e.event_text }))
 })
 
-// US-013 : couleurs sémantiques issues des design tokens.
-// Bullish = success (vert), bearish = danger (rouge), neutral = chart9 (gris).
-// Les fills utilisent une opacité de 55 % et les strokes 80 %.
+// US-053 : palette Warm Intelligence pour le chart de dérive.
+// Bullish (haut) → mint --wi-secondary, neutral → --wi-outline,
+// Bearish (bas) → terracotta --wi-on-primary-container.
+// Les fills utilisent 35 %, les strokes 80 % d'opacité.
 const _hexToRgba = (hex, alpha) => {
-  const r = parseInt(hex.slice(1, 3), 16)
-  const g = parseInt(hex.slice(3, 5), 16)
-  const b = parseInt(hex.slice(5, 7), 16)
+  if (!hex || !hex.startsWith('#')) return hex
+  // Supporte #RGB ou #RRGGBB
+  let h = hex.slice(1)
+  if (h.length === 3) h = h.split('').map(c => c + c).join('')
+  const r = parseInt(h.slice(0, 2), 16)
+  const g = parseInt(h.slice(2, 4), 16)
+  const b = parseInt(h.slice(4, 6), 16)
   return `rgba(${r},${g},${b},${alpha})`
 }
-const bullishFill   = _hexToRgba(palette.success, 0.55)
-const bullishStroke = _hexToRgba(palette.success, 0.8)
-const bearishFill   = _hexToRgba(palette.danger, 0.55)
-const bearishStroke = _hexToRgba(palette.danger, 0.8)
-const neutralFill   = _hexToRgba(palette.chart9, 0.55)
-const neutralStroke = _hexToRgba(palette.chart9, 0.8)
+// Lazy getters via computed-like patterns. Vue parsera la fct ref en run-time.
+const _wi = (name, fallback) => _hexToRgba(cssVar(name) || fallback, 1)
+const bullishColor = cssVar('--wi-secondary') || '#006d44'
+const bearishColor = cssVar('--wi-on-primary-container') || '#6d2400'
+const neutralColor = cssVar('--wi-outline') || '#8a7269'
+
+const bullishFill   = _hexToRgba(bullishColor, 0.35)
+const bullishStroke = _hexToRgba(bullishColor, 0.8)
+const bearishFill   = _hexToRgba(bearishColor, 0.35)
+const bearishStroke = _hexToRgba(bearishColor, 0.8)
+const neutralFill   = _hexToRgba(neutralColor, 0.30)
+const neutralStroke = _hexToRgba(neutralColor, 0.7)
+
+// Axes / grid / overlay strokes — tokens WI
+const gridStroke = _hexToRgba(cssVar('--wi-outline-variant') || '#dec0b6', 0.55)
+const axisLabelFill = _hexToRgba(cssVar('--wi-on-surface-variant') || '#57423a', 0.7)
+const axisTitleFill = _hexToRgba(cssVar('--wi-on-surface-variant') || '#57423a', 0.55)
+const consensusStroke = _hexToRgba(cssVar('--wi-on-surface-variant') || '#57423a', 0.7)
+const eventStroke = _hexToRgba(cssVar('--wi-primary') || '#a13f0f', 0.7)
+const eventLabelFill = _hexToRgba(cssVar('--wi-primary') || '#a13f0f', 0.85)
 
 const load = async () => {
   if (!props.simulationId) return
@@ -375,8 +401,9 @@ onBeforeUnmount(() => {
   flex-direction: column;
   height: 100%;
   overflow: hidden;
-  font-family: var(--font-mono);
-  background: var(--background);
+  font-family: var(--wi-font-body, var(--font-mono));
+  background: var(--wi-surface, var(--background));
+  color: var(--wi-on-surface, var(--foreground));
 }
 
 /* Header */
@@ -385,7 +412,7 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  border-bottom: 1px solid rgba(10,10,10,0.08);
+  border-bottom: 1px solid var(--wi-outline-variant, rgba(10,10,10,0.08));
   flex-shrink: 0;
 }
 
@@ -396,15 +423,18 @@ onBeforeUnmount(() => {
 }
 
 .bd-icon {
-  color: var(--ms-status-success); /* US-013: was #14b8a6 (teal hardcodé) */
+  /* US-053 WI : mint pour signaler la confiance / dérive trackée */
+  color: var(--wi-secondary, var(--ms-status-success));
   font-size: 14px;
 }
 
 .bd-label {
+  font-family: var(--wi-font-heading, var(--font-mono));
   font-size: 12px;
+  font-weight: 600;
   letter-spacing: 3px;
   text-transform: uppercase;
-  color: rgba(10,10,10,0.5);
+  color: var(--wi-on-surface-variant, rgba(10,10,10,0.5));
 }
 
 .bd-header-actions {
@@ -414,20 +444,23 @@ onBeforeUnmount(() => {
 }
 
 .bd-export-btn {
-  background: none;
-  border: 1px solid rgba(10,10,10,0.15);
+  background: var(--wi-surface-container-low, transparent);
+  border: 1px solid var(--wi-outline-variant, rgba(10,10,10,0.15));
+  border-radius: var(--wi-radius-md, 8px);
   padding: 4px 10px;
-  font-family: var(--font-mono);
+  font-family: var(--wi-font-body, var(--font-mono));
   font-size: 11px;
+  font-weight: 600;
   letter-spacing: 1px;
   cursor: pointer;
-  color: rgba(10,10,10,0.5);
+  color: var(--wi-on-surface-variant, rgba(10,10,10,0.5));
   transition: all 0.15s ease;
 }
 
 .bd-export-btn:hover:not(:disabled) {
-  border-color: var(--color-orange);
-  color: var(--color-orange);
+  border-color: var(--wi-primary-container, var(--color-orange));
+  color: var(--wi-primary, var(--color-orange));
+  background: var(--wi-surface-container, transparent);
 }
 
 .bd-export-btn:disabled {
@@ -435,33 +468,40 @@ onBeforeUnmount(() => {
   cursor: not-allowed;
 }
 
-/* Legend */
+/* Legend — WI pills cream avec border-left colored par série */
 .bd-legend {
   display: flex;
-  gap: 16px;
-  padding: 8px 16px;
-  border-bottom: 1px solid rgba(10,10,10,0.05);
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--wi-outline-variant, rgba(10,10,10,0.05));
   flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
 .legend-item {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 10px;
-  color: rgba(10,10,10,0.35);
-  letter-spacing: 1px;
+  gap: 6px;
+  padding: 3px 10px 3px 8px;
+  background: var(--wi-surface-container-low, transparent);
+  border-radius: var(--wi-radius-pill, 9999px);
+  font-family: var(--wi-font-heading, var(--font-mono));
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--wi-on-surface, rgba(10,10,10,0.7));
+  letter-spacing: 0.01em;
 }
 
 .legend-dot {
   width: 8px;
   height: 8px;
+  border-radius: var(--wi-radius-sm, 2px);
 }
 
-/* US-013: hex hardcodés remplacés par tokens --ms-status-* / --ms-chart-9 */
-.bullish-dot { background: var(--ms-status-success); opacity: 0.7; }
-.neutral-dot  { background: var(--ms-chart-9); opacity: 0.7; }
-.bearish-dot  { background: var(--ms-status-danger); opacity: 0.7; }
+/* US-053 WI : bullish=mint, neutral=outline, bearish=terracotta */
+.bullish-dot { background: var(--wi-secondary, var(--ms-status-success)); opacity: 0.85; }
+.neutral-dot { background: var(--wi-outline, var(--ms-chart-9)); opacity: 0.7; }
+.bearish-dot { background: var(--wi-on-primary-container, var(--ms-status-danger)); opacity: 0.85; }
 
 /* States */
 .bd-state {
@@ -478,17 +518,19 @@ onBeforeUnmount(() => {
   text-align: center;
 }
 
-.bd-error-state { color: var(--ms-status-danger-strong); }
+.bd-error-state { color: var(--wi-error, var(--ms-status-danger-strong)); }
 
 .bd-hint {
+  font-family: var(--wi-font-body, var(--font-mono));
   font-size: 11px;
-  color: rgba(10,10,10,0.25);
+  color: var(--wi-on-surface-variant, rgba(10,10,10,0.45));
 }
 
 .pulse-ring {
   width: 20px;
   height: 20px;
-  border: 2px solid var(--ms-status-success); /* US-013: was #14b8a6 */
+  /* US-053 WI : ring mint (cohérent avec --bd-icon) */
+  border: 2px solid var(--wi-secondary, var(--ms-status-success));
   border-radius: 50%;
   animation: pulse 1.2s ease-in-out infinite;
 }
@@ -518,20 +560,22 @@ onBeforeUnmount(() => {
 /* Summary */
 .bd-summary {
   padding: 10px 16px 4px;
+  font-family: var(--wi-font-body, var(--font-mono));
   font-size: 12px;
-  color: rgba(10,10,10,0.55);
-  letter-spacing: 0.5px;
+  color: var(--wi-on-surface, rgba(10,10,10,0.7));
+  letter-spacing: 0.3px;
   line-height: 1.5;
-  border-top: 1px solid rgba(10,10,10,0.05);
+  border-top: 1px solid var(--wi-outline-variant, rgba(10,10,10,0.05));
   flex-shrink: 0;
 }
 
 /* Topics */
 .bd-topics {
   padding: 4px 16px 10px;
+  font-family: var(--wi-font-body, var(--font-mono));
   font-size: 10px;
-  color: rgba(10,10,10,0.3);
-  letter-spacing: 1px;
+  color: var(--wi-on-surface-variant, rgba(10,10,10,0.45));
+  letter-spacing: 0.5px;
   flex-shrink: 0;
 }
 </style>

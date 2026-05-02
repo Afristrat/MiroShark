@@ -266,104 +266,139 @@ const launchTemplate = async (template, variantLetter = null) => {
 </script>
 
 <style scoped>
+/* ─── Warm Intelligence refresh (US-053) ───
+   TemplateGallery sur la palette --wi-* :
+   - container surface cream sans bordure rigide,
+   - grille 3 colonnes desktop avec cards radius-card et lift hover,
+   - category badges teintés alternativement (warm progressive),
+   - CTA Launch terracotta plein. */
 .template-gallery {
-  border: 1px solid #E5E5E5;
-  padding: 30px;
-  margin-top: 60px;
+  background: var(--wi-bg);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-card);
+  padding: var(--wi-space-lg);
+  margin-top: var(--wi-space-xl);
+  box-shadow: var(--wi-shadow-sm);
 }
 
 .gallery-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 25px;
+  align-items: baseline;
+  margin-bottom: var(--wi-space-md);
+  gap: var(--wi-space-md);
+  flex-wrap: wrap;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.8rem;
-  color: var(--ms-legacy-muted-4);
+  gap: 12px;
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-h3-size);
+  font-weight: var(--wi-h3-weight);
+  line-height: var(--wi-h3-leading);
+  color: var(--wi-on-bg);
 }
 
 .header-icon {
   font-size: 1.2rem;
-  color: var(--lo);
+  color: var(--wi-primary-container);
 }
 
 .header-meta {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.75rem;
-  color: #BBB;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
+  font-weight: 500;
+  color: var(--wi-on-surface-variant);
+  letter-spacing: 0;
 }
 
 .gallery-loading,
 .gallery-empty {
   text-align: center;
-  padding: 40px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.85rem;
-  color: var(--ms-legacy-muted-4);
+  padding: var(--wi-space-lg);
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-body-md);
+  color: var(--wi-on-surface-variant);
+  background: var(--wi-surface-container-low);
+  border-radius: var(--wi-radius-interactive);
 }
 
 .template-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  gap: var(--wi-space-md);
 }
 
 .template-card {
-  border: 1px solid #E5E5E5;
-  padding: 24px;
+  background: var(--wi-surface);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-card);
+  padding: var(--wi-space-md);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: transform var(--ms-transition),
+              box-shadow var(--ms-transition),
+              border-color var(--ms-transition);
   display: flex;
   flex-direction: column;
   position: relative;
+  box-shadow: var(--wi-shadow-ambient);
 }
 
 .template-card:hover {
-  border-color: var(--ms-legacy-muted-4);
+  transform: translateY(-4px);
+  border-color: var(--wi-primary-container);
+  box-shadow: var(--wi-shadow-orange);
 }
 
 .template-card.selected {
-  border-color: var(--lo);
-  box-shadow: 0 0 0 1px var(--lo);
+  border-color: var(--wi-primary-container);
+  box-shadow: var(--wi-shadow-orange);
 }
 
 .card-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: var(--wi-space-sm);
 }
 
 .card-icon {
-  font-size: 1.4rem;
+  font-size: 1.6rem;
+  line-height: 1;
 }
 
+/* Category badge — alternance via :nth-child du parent .template-card.
+   Note : le sélecteur .template-card ne sait pas distinguer les types
+   sémantiques. On garde un look unifié warm cream + accent terracotta.  */
 .card-category {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.65rem;
-  color: var(--ms-legacy-muted-4);
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
+  font-weight: 600;
+  color: var(--wi-on-primary-container);
+  background: var(--wi-primary-container);
+  padding: 4px 10px;
+  border-radius: var(--wi-radius-pill);
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .card-title {
-  font-size: 1.1rem;
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-text-lg, 17px);
   font-weight: 600;
   margin: 0 0 8px 0;
   line-height: 1.3;
+  color: var(--wi-on-surface);
 }
 
 .card-desc {
-  font-size: 0.85rem;
-  color: var(--ms-legacy-muted-2);
-  line-height: 1.6;
-  margin: 0 0 16px 0;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-body-md);
+  color: var(--wi-on-surface-variant);
+  line-height: var(--wi-body-md-leading);
+  margin: 0 0 var(--wi-space-sm) 0;
   flex: 1;
 }
 
@@ -371,70 +406,73 @@ const launchTemplate = async (template, variantLetter = null) => {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 12px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
-  color: var(--ms-legacy-muted-4);
+  margin-bottom: var(--wi-space-xs);
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
+  color: var(--wi-on-surface-variant);
 }
 
 .meta-dot {
-  color: #DDD;
+  color: var(--wi-outline-variant);
 }
 
-.difficulty.easy { color: var(--ms-status-success); }
-.difficulty.medium { color: var(--ms-status-warning); }
-.difficulty.hard { color: var(--ms-status-danger); }
+/* Difficulty mapping warm — vert / peach / rose terracotta */
+.difficulty.easy   { color: var(--wi-secondary); font-weight: 600; }
+.difficulty.medium { color: var(--ms-peach); font-weight: 600; }
+.difficulty.hard   { color: var(--wi-on-primary-container); font-weight: 600; }
 
 .card-platforms {
   display: flex;
   gap: 6px;
-  margin-bottom: 16px;
-}
-
-.platform-badge {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.65rem;
-  padding: 2px 8px;
-  border: 1px solid #E5E5E5;
-  color: var(--ms-legacy-muted-2);
-  text-transform: lowercase;
-  white-space: nowrap;
-}
-
-.card-platforms {
+  margin-bottom: var(--wi-space-sm);
   flex-wrap: wrap;
   row-gap: 6px;
 }
 
+.platform-badge {
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
+  font-weight: 500;
+  padding: 4px 10px;
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-pill);
+  background: var(--wi-surface-container-low);
+  color: var(--wi-on-surface-variant);
+  text-transform: lowercase;
+  white-space: nowrap;
+}
+
 .platform-badge--cf {
-  border-color: rgba(255, 107, 26, 0.3);
-  color: var(--lo);
+  border-color: var(--wi-primary-container);
+  color: var(--wi-on-primary-container);
+  background: var(--wi-surface-container);
 }
 
 .platform-badge--oracle {
-  border-color: rgba(67, 193, 101, 0.3);
-  color: #2d8a3f;
+  border-color: var(--wi-secondary);
+  color: var(--wi-on-secondary-container);
+  background: var(--wi-secondary-container);
 }
 
 .oracle-toggle {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
-  color: #2d8a3f;
-  margin-bottom: 10px;
+  gap: 8px;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
+  color: var(--wi-on-secondary-container);
+  margin-bottom: var(--wi-space-xs);
   cursor: pointer;
   user-select: none;
 }
 
 .oracle-toggle input[type="checkbox"] {
-  accent-color: #2d8a3f;
+  accent-color: var(--wi-secondary);
   cursor: pointer;
 }
 
 .oracle-toggle.disabled {
-  color: var(--ms-legacy-muted-5);
+  color: var(--wi-outline);
   cursor: not-allowed;
 }
 
@@ -444,24 +482,32 @@ const launchTemplate = async (template, variantLetter = null) => {
 
 .launch-btn {
   width: 100%;
-  padding: 10px;
-  background: var(--li);
-  color: var(--ms-text-on-color);
-  border: none;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.8rem;
+  padding: 12px;
+  background: var(--wi-on-primary-container);
+  color: var(--wi-on-primary);
+  border: 1px solid var(--wi-on-primary-container);
+  border-radius: var(--wi-radius-pill);
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-label-sm);
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
-  letter-spacing: 0.5px;
+  transition: background var(--ms-transition),
+              transform var(--ms-transition),
+              box-shadow var(--ms-transition);
+  letter-spacing: var(--wi-label-sm-tracking);
 }
 
 .launch-btn:hover:not(:disabled) {
-  background: var(--lo);
+  background: var(--wi-primary);
+  border-color: var(--wi-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--wi-shadow-md);
 }
 
 .launch-btn:disabled {
-  background: var(--ms-legacy-muted-6);
+  background: var(--wi-surface-container-high);
+  color: var(--wi-outline);
+  border-color: var(--wi-outline-variant);
   cursor: not-allowed;
 }
 
@@ -470,7 +516,7 @@ const launchTemplate = async (template, variantLetter = null) => {
 .variant-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
+  gap: 8px;
   margin-block-start: auto;
 }
 
@@ -479,30 +525,33 @@ const launchTemplate = async (template, variantLetter = null) => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  padding: 10px 6px;
-  background: var(--ms-bg-elevated, var(--ms-text-on-color));
-  color: var(--ms-text, var(--ms-text));
-  border: 1px solid var(--ms-orange, var(--ms-orange));
-  border-radius: var(--ms-radius-sm, 8px);
+  gap: 4px;
+  padding: 12px 8px;
+  background: var(--wi-surface-container-low);
+  color: var(--wi-on-primary-container);
+  border: 1px solid var(--wi-primary-container);
+  border-radius: var(--wi-radius-interactive);
   cursor: pointer;
-  font-family: var(--ms-font-body, 'Manrope'), sans-serif;
-  font-size: 0.75rem;
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-caption);
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: var(--wi-label-sm-tracking);
   line-height: 1.2;
-  transition: background 200ms, color 200ms, transform 200ms, box-shadow 200ms;
+  transition: background var(--ms-transition),
+              color var(--ms-transition),
+              transform var(--ms-transition),
+              box-shadow var(--ms-transition);
   min-height: 56px;
 }
 
 .variant-btn:hover:not(:disabled) {
-  background: var(--ms-orange, var(--ms-orange));
-  color: var(--ms-text-on-color, var(--ms-text-on-color));
+  background: var(--wi-on-primary-container);
+  color: var(--wi-on-primary);
+  border-color: var(--wi-on-primary-container);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(255, 133, 81, 0.28);
+  box-shadow: var(--wi-shadow-md);
 }
 
-/* Spécificité 0,2,0 bat .variant-btn:hover/:focus (0,2,0) par ordre source. */
 .variant-btn.variant-btn:disabled,
 .variant-btn[disabled] {
   opacity: 0.55;
@@ -511,12 +560,12 @@ const launchTemplate = async (template, variantLetter = null) => {
 }
 
 .variant-btn.loading {
-  background: var(--ms-orange-soft, rgba(255, 133, 81, 0.12));
-  color: var(--ms-orange-strong, var(--ms-orange-strong));
+  background: var(--wi-primary-container);
+  color: var(--wi-on-primary-container);
 }
 
 .variant-letter {
-  font-family: var(--ms-font-mono, 'JetBrains Mono'), monospace;
+  font-family: var(--ms-font-mono);
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -524,7 +573,7 @@ const launchTemplate = async (template, variantLetter = null) => {
 }
 
 .variant-label {
-  font-size: 0.78rem;
+  font-size: var(--wi-caption);
   text-transform: none;
 }
 

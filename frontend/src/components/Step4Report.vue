@@ -54,8 +54,8 @@
                 <div v-else-if="currentSectionIndex === idx + 1" class="loading-state">
                   <div class="loading-icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                      <circle cx="12" cy="12" r="10" stroke-width="4" stroke="#E5E7EB"></circle>
-                      <path d="M12 2a10 10 0 0 1 10 10" stroke-width="4" stroke="#4B5563" stroke-linecap="round"></path>
+                      <circle cx="12" cy="12" r="10" stroke-width="4" stroke="#dec0b6"></circle>
+                      <path d="M12 2a10 10 0 0 1 10 10" stroke-width="4" stroke="#a13f0f" stroke-linecap="round"></path>
                     </svg>
                   </div>
                   <span class="loading-text">{{ $t('process.step4.generating') }} {{ section.title }}…</span>
@@ -2256,8 +2256,8 @@ watch(() => props.reportId, (newId) => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: var(--ms-bg-muted);
-  font-family: var(--font-mono);
+  background: var(--wi-bg);
+  font-family: var(--wi-font-body);
   overflow: hidden;
 }
 
@@ -2272,27 +2272,27 @@ watch(() => props.reportId, (newId) => {
 .panel-header {
   display: flex;
   align-items: center;
-  gap: 11px;
-  padding: 11px 22px;
-  background: var(--ms-bg-elevated);
-  border-bottom: 2px solid rgba(10,10,10,0.12);
+  gap: 12px;
+  padding: 14px var(--wi-space-md);
+  background: var(--wi-surface);
+  border-bottom: 1px solid var(--wi-outline-variant);
   font-size: 13px;
-  font-family: var(--font-mono);
+  font-family: var(--wi-font-body);
   font-weight: 600;
-  color: rgba(10,10,10,0.7);
-  text-transform: uppercase;
-  letter-spacing: 3px;
+  color: var(--wi-on-surface);
+  letter-spacing: 0.02em;
   position: sticky;
   top: 0;
   z-index: 10;
+  box-shadow: var(--wi-shadow-sm);
 }
 
 .header-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--ms-text);
-  border: 2px solid rgba(10,10,10,0.08);
+  background: var(--wi-on-surface);
+  border: 2px solid var(--wi-outline-variant);
   margin-inline-end: 11px;
   flex-shrink: 0;
   animation: pulse-dot 1.5s ease-in-out infinite;
@@ -2300,79 +2300,81 @@ watch(() => props.reportId, (newId) => {
 
 @keyframes pulse-dot {
   0%, 100% {
-    border-color: rgba(10,10,10,0.08);
+    border-color: var(--wi-outline-variant);
   }
   50% {
-    border-color: rgba(10,10,10,0.2);
+    border-color: var(--wi-outline);
   }
 }
 
 .header-index {
   font-size: 12px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 600;
-  color: rgba(10,10,10,0.4);
+  color: var(--wi-on-surface-variant);
   margin-inline-end: 11px;
   flex-shrink: 0;
 }
 
 .header-title {
-  font-size: 13px;
+  font-size: 14px;
+  font-family: var(--wi-font-heading);
   font-weight: 600;
-  color: rgba(10,10,10,0.7);
+  color: var(--wi-on-surface);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   text-transform: none;
-  letter-spacing: 0;
+  letter-spacing: -0.005em;
 }
 
 .header-meta {
   margin-inline-start: auto;
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 600;
-  color: rgba(10,10,10,0.5);
+  color: var(--wi-on-surface-variant);
   flex-shrink: 0;
 }
 
 /* Panel header status variants */
 .panel-header--active {
-  background: var(--ms-bg-elevated);
-  border-color: var(--ms-orange);
+  background: var(--wi-surface);
+  border-color: var(--wi-primary-container);
+  border-inline-start: 4px solid var(--wi-primary-container);
 }
 
 .panel-header--active .header-index {
-  color: var(--ms-orange);
+  color: var(--wi-on-primary-container);
 }
 
 .panel-header--active .header-title {
-  color: var(--ms-text);
+  color: var(--wi-on-surface);
 }
 
 .panel-header--active .header-meta {
-  color: var(--ms-text);
+  color: var(--wi-on-surface);
 }
 
 .panel-header--done {
-  background: var(--ms-bg-elevated);
+  background: var(--wi-surface);
 }
 
 .panel-header--done .header-index {
-  color: var(--ms-mint);
+  color: var(--wi-secondary);
 }
 
 .panel-header--todo .header-index,
 .panel-header--todo .header-title {
-  color: rgba(10,10,10,0.4);
+  color: var(--wi-outline);
 }
 
 /* Left Panel - Report Style */
 .left-panel.report-style {
   width: 45%;
   min-width: 450px;
-  background: var(--ms-bg-elevated);
-  border-inline-end: 2px solid rgba(10,10,10,0.12);
+  background: var(--wi-surface);
+  border-inline-end: 1px solid var(--wi-outline-variant);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -2419,20 +2421,21 @@ watch(() => props.reportId, (newId) => {
 }
 
 .report-tag {
-  background: var(--ms-text);
-  color: var(--ms-bg-elevated);
+  background: var(--wi-on-primary-container);
+  color: var(--wi-bg);
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--wi-font-body);
   font-weight: 700;
-  padding: 6px 11px;
-  letter-spacing: 3px;
+  padding: 6px 14px;
+  border-radius: var(--wi-radius-pill);
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 .report-id {
-  font-size: 11px;
-  font-family: var(--font-mono);
-  color: rgba(10,10,10,0.4);
+  font-size: 12px;
+  font-family: var(--ms-font-mono);
+  color: var(--wi-on-surface-variant);
   font-weight: 500;
   letter-spacing: 0.02em;
 }
@@ -2442,37 +2445,36 @@ watch(() => props.reportId, (newId) => {
 }
 
 .report-id.copyable:hover {
-  color: rgba(10,10,10,0.5);
+  color: var(--wi-on-surface);
   text-decoration: underline;
 }
 
 .report-id.copyable:active {
-  color: var(--ms-mint);
+  color: var(--wi-secondary);
 }
 
 .main-title {
-  font-family: var(--font-display);
-  font-size: 36px;
-  font-weight: 700;
-  color: var(--ms-text);
-  line-height: 1.2;
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-h1-size);
+  font-weight: var(--wi-h1-weight);
+  color: var(--wi-on-surface);
+  line-height: var(--wi-h1-leading);
   margin: 0 0 22px 0;
-  letter-spacing: -0.02em;
+  letter-spacing: var(--wi-h1-tracking);
 }
 
 .sub-title {
-  font-family: var(--font-display);
-  font-size: 16px;
-  color: rgba(10,10,10,0.5);
-  font-style: italic;
-  line-height: 1.6;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-body-lg);
+  color: var(--wi-on-surface-variant);
+  line-height: var(--wi-body-lg-leading);
   margin: 0 0 34px 0;
   font-weight: 400;
 }
 
 .header-divider {
-  height: 2px;
-  background: rgba(10,10,10,0.12);
+  height: 1px;
+  background: var(--wi-outline-variant);
   width: 100%;
 }
 
@@ -2503,12 +2505,12 @@ watch(() => props.reportId, (newId) => {
 }
 
 .section-header-row.clickable:hover {
-  background-color: var(--ms-bg-muted);
+  background-color: var(--wi-surface-container-low);
 }
 
 .collapse-icon {
   margin-inline-start: auto;
-  color: rgba(10,10,10,0.4);
+  color: var(--wi-outline);
   transition: transform 0.3s ease;
   flex-shrink: 0;
   align-self: center;
@@ -2519,29 +2521,30 @@ watch(() => props.reportId, (newId) => {
 }
 
 .section-number {
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-size: 16px;
-  color: rgba(10,10,10,0.4); /* Dark gray, does not change with state */
+  color: var(--wi-on-surface-variant);
   font-weight: 500;
 }
 
 .section-title {
-  font-family: var(--font-display);
-  font-size: 24px;
-  font-weight: 600;
-  color: var(--ms-text);
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-h3-size);
+  font-weight: var(--wi-h3-weight);
+  color: var(--wi-on-surface);
   margin: 0;
   transition: color 0.3s ease;
+  line-height: var(--wi-h3-leading);
 }
 
 /* States */
 .report-section-item.is-pending .section-title {
-  color: rgba(10,10,10,0.2);
+  color: var(--wi-outline-variant);
 }
 
 .report-section-item.is-active .section-title,
 .report-section-item.is-completed .section-title {
-  color: var(--ms-text);
+  color: var(--wi-on-surface);
 }
 
 .section-body {
@@ -2551,7 +2554,7 @@ watch(() => props.reportId, (newId) => {
 
 /* Generated Content */
 .generated-content {
-  font-family: var(--font-display);
+  font-family: var(--wi-font-heading);
   font-size: 14px;
   line-height: 1.8;
   color: rgba(10,10,10,0.7);
@@ -2564,7 +2567,7 @@ watch(() => props.reportId, (newId) => {
 .generated-content :deep(.md-h2),
 .generated-content :deep(.md-h3),
 .generated-content :deep(.md-h4) {
-  font-family: var(--font-display);
+  font-family: var(--wi-font-heading);
   color: var(--ms-text);
   margin-top: 1.5em;
   margin-bottom: 0.8em;
@@ -2592,13 +2595,13 @@ watch(() => props.reportId, (newId) => {
   margin: 1.5em 0;
   color: rgba(10,10,10,0.5);
   font-style: italic;
-  font-family: var(--font-display);
+  font-family: var(--wi-font-heading);
 }
 
 .generated-content :deep(.code-block) {
   background: var(--ms-bg-muted);
   padding: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-size: 12px;
   overflow-x: auto;
   margin: 1em 0;
@@ -2630,7 +2633,7 @@ watch(() => props.reportId, (newId) => {
 }
 
 .loading-text {
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-size: 15px;
   color: rgba(10,10,10,0.5);
 }
@@ -2653,7 +2656,7 @@ watch(() => props.reportId, (newId) => {
 
 /* Content Styles Override for this view */
 .generated-content :deep(.md-h2) {
-  font-family: var(--font-display);
+  font-family: var(--wi-font-heading);
   font-size: 18px;
   margin-top: 0;
 }
@@ -2720,7 +2723,7 @@ watch(() => props.reportId, (newId) => {
 
 .waiting-text {
   font-size: 14px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
 }
 
 /* Right Panel */
@@ -2770,7 +2773,7 @@ watch(() => props.reportId, (newId) => {
 }
 
 .mono {
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
 }
 
 /* Workflow Overview */
@@ -2853,7 +2856,7 @@ watch(() => props.reportId, (newId) => {
 
 .metric-label {
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 600;
   color: rgba(10,10,10,0.4);
   text-transform: uppercase;
@@ -2862,13 +2865,13 @@ watch(() => props.reportId, (newId) => {
 
 .metric-value {
   font-size: 12px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   color: rgba(10,10,10,0.7);
 }
 
 .metric-pill {
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 700;
   letter-spacing: 3px;
   text-transform: uppercase;
@@ -2970,7 +2973,7 @@ watch(() => props.reportId, (newId) => {
 
 .wf-step-index {
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 700;
   color: rgba(10,10,10,0.4);
   letter-spacing: 0.02em;
@@ -2978,7 +2981,7 @@ watch(() => props.reportId, (newId) => {
 }
 
 .wf-step-title {
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-size: 13px;
   font-weight: 600;
   color: var(--ms-text);
@@ -2992,7 +2995,7 @@ watch(() => props.reportId, (newId) => {
 .wf-step-meta {
   margin-inline-start: auto;
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 700;
   color: var(--wf-active-text);
   text-transform: uppercase;
@@ -3112,7 +3115,7 @@ watch(() => props.reportId, (newId) => {
 
 .action-label {
   font-size: 12px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 600;
   color: rgba(10,10,10,0.7);
   text-transform: uppercase;
@@ -3122,7 +3125,7 @@ watch(() => props.reportId, (newId) => {
 .action-time {
   font-size: 11px;
   color: rgba(10,10,10,0.4);
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
 }
 
 .timeline-body {
@@ -3154,7 +3157,7 @@ watch(() => props.reportId, (newId) => {
   color: rgba(10,10,10,0.5);
   background: var(--ms-bg-muted);
   padding: 2px 6px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
 }
 
 /* Timeline Body Elements */
@@ -3166,7 +3169,7 @@ watch(() => props.reportId, (newId) => {
 
 .info-key {
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   color: rgba(10,10,10,0.4);
   min-width: 80px;
 }
@@ -3201,7 +3204,7 @@ watch(() => props.reportId, (newId) => {
   color: rgba(10,10,10,0.5);
   border: 2px solid rgba(10,10,10,0.12);
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 500;
 }
 
@@ -3235,7 +3238,7 @@ watch(() => props.reportId, (newId) => {
 
 .tag-num {
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 700;
   color: rgba(10,10,10,0.5);
 }
@@ -3259,7 +3262,7 @@ watch(() => props.reportId, (newId) => {
   color: rgba(10,10,10,0.7);
   border: 2px solid var(--wf-border);
   font-size: 12px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 600;
   transition: all 0.2s ease;
 }
@@ -3272,7 +3275,7 @@ watch(() => props.reportId, (newId) => {
 .tool-badge.tool-purple {
   background: rgba(139, 92, 246, 0.08);
   border-color: rgba(139, 92, 246, 0.3);
-  color: #6D28D9;
+  color: var(--ms-status-violet);
 }
 .tool-badge.tool-purple .tool-icon {
   stroke: var(--ms-status-violet);
@@ -3308,31 +3311,31 @@ watch(() => props.reportId, (newId) => {
   stroke: var(--ms-orange);
 }
 
-/* Tool Colors - Cyan (Graph Stats) */
+/* Tool Colors - Cyan (Graph Stats) → tertiary warm */
 .tool-badge.tool-cyan {
-  background: rgba(14, 116, 144, 0.08);
-  border-color: rgba(14, 116, 144, 0.3);
-  color: #0E7490;
+  background: rgba(0, 105, 113, 0.08);
+  border-color: rgba(0, 105, 113, 0.3);
+  color: var(--wi-tertiary);
 }
 .tool-badge.tool-cyan .tool-icon {
-  stroke: #0891B2;
+  stroke: var(--wi-tertiary);
 }
 
 /* Tool Colors - Pink (Entity Query) */
 .tool-badge.tool-pink {
-  background: rgba(190, 24, 93, 0.08);
-  border-color: rgba(190, 24, 93, 0.3);
-  color: #BE185D;
+  background: rgba(236, 72, 153, 0.08);
+  border-color: rgba(236, 72, 153, 0.3);
+  color: var(--ms-status-pink);
 }
 .tool-badge.tool-pink .tool-icon {
-  stroke: #DB2777;
+  stroke: var(--ms-status-pink);
 }
 
 /* Tool Colors - Gray (Default) */
 .tool-badge.tool-gray {
-  background: var(--ms-bg-muted);
-  border-color: rgba(10,10,10,0.2);
-  color: rgba(10,10,10,0.7);
+  background: var(--wi-surface-container-low);
+  border-color: var(--wi-outline-variant);
+  color: var(--wi-on-surface-variant);
 }
 .tool-badge.tool-gray .tool-icon {
   stroke: rgba(10,10,10,0.5);
@@ -3348,7 +3351,7 @@ watch(() => props.reportId, (newId) => {
 
 .tool-params pre {
   margin: 0;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-size: 11px;
   color: rgba(10,10,10,0.5);
   white-space: pre-wrap;
@@ -3364,7 +3367,7 @@ watch(() => props.reportId, (newId) => {
   border: 2px solid rgba(10,10,10,0.08);
   padding: 6px 11px;
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 500;
   color: rgba(10,10,10,0.5);
   cursor: pointer;
@@ -3397,7 +3400,7 @@ watch(() => props.reportId, (newId) => {
 
 .result-tool {
   font-size: 12px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 600;
   color: rgba(10,10,10,0.7);
 }
@@ -3405,7 +3408,7 @@ watch(() => props.reportId, (newId) => {
 .result-size {
   font-size: 11px;
   color: rgba(10,10,10,0.5);
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
 }
 
 .result-raw {
@@ -3416,7 +3419,7 @@ watch(() => props.reportId, (newId) => {
 
 .result-raw pre {
   margin: 0;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-size: 11px;
   white-space: pre-wrap;
   word-break: break-word;
@@ -3428,7 +3431,7 @@ watch(() => props.reportId, (newId) => {
 
 .raw-preview {
   margin: 0;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-size: 11px;
   white-space: pre-wrap;
   word-break: break-word;
@@ -3446,7 +3449,7 @@ watch(() => props.reportId, (newId) => {
 
 .meta-tag {
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   padding: 3px 6px;
   background: var(--ms-bg-muted);
   color: rgba(10,10,10,0.5);
@@ -3473,7 +3476,7 @@ watch(() => props.reportId, (newId) => {
   border: 2px solid var(--ms-mint);
   color: var(--ms-mint);
   font-size: 12px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 500;
 }
 
@@ -3489,7 +3492,7 @@ watch(() => props.reportId, (newId) => {
 
 .llm-content pre {
   margin: 0;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-size: 11px;
   white-space: pre-wrap;
   word-break: break-word;
@@ -3508,7 +3511,7 @@ watch(() => props.reportId, (newId) => {
   border: 2px solid var(--ms-mint);
   color: var(--ms-mint);
   font-weight: 600;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-size: 14px;
 }
 
@@ -3521,7 +3524,7 @@ watch(() => props.reportId, (newId) => {
   margin: 6px 22px 0 22px;
   padding: 11px 22px;
   font-size: 14px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 600;
   color: var(--ms-bg-elevated);
   background: var(--ms-text);
@@ -3557,21 +3560,22 @@ watch(() => props.reportId, (newId) => {
   justify-content: center;
   gap: 6px;
   flex: 1;
-  padding: 10px 12px;
-  font-size: 12px;
+  padding: 10px 14px;
+  font-family: var(--wi-font-body);
+  font-size: 13px;
   font-weight: 500;
-  color: #6B7280;
-  background: #F9FAFB;
-  border: 1px solid #E5E7EB;
-  border-radius: 6px;
+  color: var(--wi-on-surface-variant);
+  background: var(--wi-surface-container-low);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-interactive);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s var(--ms-ease);
 }
 
 .export-btn:hover:not(:disabled) {
-  color: #374151;
-  background: #F3F4F6;
-  border-color: #D1D5DB;
+  color: var(--wi-on-surface);
+  background: var(--wi-surface-container);
+  border-color: var(--wi-outline);
 }
 
 .export-btn:disabled {
@@ -3588,7 +3592,7 @@ watch(() => props.reportId, (newId) => {
   padding: 56px 22px;
   color: rgba(10,10,10,0.4);
   font-size: 13px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
 }
 
 .empty-pulse {
@@ -3637,13 +3641,13 @@ watch(() => props.reportId, (newId) => {
   font-size: 20px;
   font-weight: 700;
   color: var(--ms-text);
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
 }
 
 :deep(.stat-box .stat-label) {
   display: block;
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   color: rgba(10,10,10,0.4);
   margin-top: 2px;
   text-transform: uppercase;
@@ -3683,7 +3687,7 @@ watch(() => props.reportId, (newId) => {
   border: 2px solid rgba(10,10,10,0.08);
   padding: 6px 11px;
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 500;
   color: rgba(10,10,10,0.5);
   cursor: pointer;
@@ -3706,7 +3710,7 @@ watch(() => props.reportId, (newId) => {
 
 :deep(.section-label) {
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 600;
   color: rgba(10,10,10,0.5);
   text-transform: uppercase;
@@ -3747,7 +3751,7 @@ watch(() => props.reportId, (newId) => {
   justify-content: center;
   background: var(--ms-bg-muted);
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 700;
   color: rgba(10,10,10,0.5);
   flex-shrink: 0;
@@ -3792,7 +3796,7 @@ watch(() => props.reportId, (newId) => {
 
 :deep(.chip-type) {
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   color: rgba(10,10,10,0.4);
   background: rgba(10,10,10,0.08);
   padding: 1px 6px;
@@ -3826,7 +3830,7 @@ watch(() => props.reportId, (newId) => {
 
 :deep(.rel-edge) {
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 600;
   color: var(--ms-bg-elevated);
   background: var(--ms-orange);
@@ -3853,7 +3857,7 @@ watch(() => props.reportId, (newId) => {
 }
 
 :deep(.interview-display .header-title) {
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-size: 13px;
   font-weight: 600;
   color: var(--ms-text);
@@ -3876,12 +3880,12 @@ watch(() => props.reportId, (newId) => {
   font-size: 14px;
   font-weight: 600;
   color: var(--ms-orange);
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
 }
 
 :deep(.interview-display .stat-label) {
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   color: rgba(10,10,10,0.4);
   text-transform: lowercase;
 }
@@ -3894,7 +3898,7 @@ watch(() => props.reportId, (newId) => {
 :deep(.interview-display .stat-size) {
   font-size: 11px;
   color: rgba(10,10,10,0.4);
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
 }
 
 :deep(.interview-display .header-topic) {
@@ -3941,7 +3945,7 @@ watch(() => props.reportId, (newId) => {
   background: var(--ms-bg-muted);
   border: 2px solid rgba(10,10,10,0.08);
   font-size: 12px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 500;
   color: rgba(10,10,10,0.5);
   cursor: pointer;
@@ -4034,7 +4038,7 @@ watch(() => props.reportId, (newId) => {
 
 :deep(.interview-display .profile-role) {
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   color: rgba(10,10,10,0.5);
   margin-bottom: 4px;
 }
@@ -4059,7 +4063,7 @@ watch(() => props.reportId, (newId) => {
 
 :deep(.interview-display .reason-label) {
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 600;
   color: rgba(10,10,10,0.5);
   text-transform: uppercase;
@@ -4101,7 +4105,7 @@ watch(() => props.reportId, (newId) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-size: 10px;
   font-weight: 700;
   flex-shrink: 0;
@@ -4126,7 +4130,7 @@ watch(() => props.reportId, (newId) => {
 
 :deep(.interview-display .qa-sender) {
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 600;
   color: rgba(10,10,10,0.4);
   margin-bottom: 4px;
@@ -4179,7 +4183,7 @@ watch(() => props.reportId, (newId) => {
   background: transparent;
   border: 2px solid transparent;
   font-size: 10px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 500;
   color: rgba(10,10,10,0.4);
   cursor: pointer;
@@ -4219,7 +4223,7 @@ watch(() => props.reportId, (newId) => {
   border: none;
   border-bottom: 1px dotted rgba(10,10,10,0.2);
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 500;
   color: rgba(10,10,10,0.4);
   cursor: pointer;
@@ -4243,7 +4247,7 @@ watch(() => props.reportId, (newId) => {
 
 :deep(.interview-display .quotes-header) {
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 600;
   color: rgba(10,10,10,0.4);
   text-transform: uppercase;
@@ -4279,7 +4283,7 @@ watch(() => props.reportId, (newId) => {
 
 :deep(.interview-display .summary-header) {
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 600;
   color: rgba(10,10,10,0.4);
   text-transform: uppercase;
@@ -4378,9 +4382,9 @@ watch(() => props.reportId, (newId) => {
 
 :deep(.insight-header .header-title) {
   font-size: 14px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 700;
-  color: #6D28D9;
+  color: var(--ms-status-violet);
 }
 
 :deep(.insight-header .header-stats) {
@@ -4397,7 +4401,7 @@ watch(() => props.reportId, (newId) => {
 }
 
 :deep(.insight-header .stat-value) {
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 700;
   color: var(--ms-status-violet);
 }
@@ -4405,23 +4409,23 @@ watch(() => props.reportId, (newId) => {
 :deep(.insight-header .stat-label) {
   color: var(--ms-status-violet-soft);
   font-size: 10px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
 }
 
 :deep(.insight-header .stat-divider) {
-  color: #C4B5FD;
+  color: var(--ms-status-violet-soft);
   margin: 0 4px;
 }
 
 :deep(.insight-header .stat-size) {
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-size: 10px;
   color: rgba(10,10,10,0.4);
 }
 
 :deep(.insight-header .header-topic) {
   font-size: 13px;
-  color: #5B21B6;
+  color: var(--ms-status-violet);
   line-height: 1.5;
 }
 
@@ -4452,7 +4456,7 @@ watch(() => props.reportId, (newId) => {
   background: transparent;
   border: 2px solid transparent;
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 500;
   color: rgba(10,10,10,0.5);
   cursor: pointer;
@@ -4467,7 +4471,7 @@ watch(() => props.reportId, (newId) => {
 :deep(.insight-tab.active) {
   background: var(--ms-bg-elevated);
   color: var(--ms-status-violet);
-  border-color: #C4B5FD;
+  border-color: var(--ms-status-violet-soft);
 }
 
 
@@ -4489,14 +4493,14 @@ watch(() => props.reportId, (newId) => {
 
 :deep(.insight-display .panel-title) {
   font-size: 12px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 600;
   color: rgba(10,10,10,0.7);
 }
 
 :deep(.insight-display .panel-count) {
   font-size: 10px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   color: rgba(10,10,10,0.4);
 }
 
@@ -4531,7 +4535,7 @@ watch(() => props.reportId, (newId) => {
   justify-content: center;
   background: rgba(10,10,10,0.12);
   border-radius: 50%;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-size: 10px;
   font-weight: 700;
   color: rgba(10,10,10,0.5);
@@ -4569,7 +4573,7 @@ watch(() => props.reportId, (newId) => {
 
 :deep(.insight-display .entity-tag .entity-type) {
   font-size: 9px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   color: var(--ms-status-violet);
   background: rgba(139, 92, 246, 0.1);
   padding: 1px 4px;
@@ -4577,7 +4581,7 @@ watch(() => props.reportId, (newId) => {
 
 :deep(.insight-display .entity-tag .entity-fact-count) {
   font-size: 9px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   color: rgba(10,10,10,0.4);
   margin-inline-start: 2px;
 }
@@ -4607,7 +4611,7 @@ watch(() => props.reportId, (newId) => {
 
 :deep(.insight-display .entity-card .entity-type) {
   font-size: 10px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   color: var(--ms-status-violet);
   background: rgba(139, 92, 246, 0.1);
   padding: 2px 6px;
@@ -4617,7 +4621,7 @@ watch(() => props.reportId, (newId) => {
 
 :deep(.insight-display .entity-card .entity-fact-count) {
   font-size: 10px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   color: rgba(10,10,10,0.4);
   background: var(--ms-bg-muted);
   padding: 2px 6px;
@@ -4669,7 +4673,7 @@ watch(() => props.reportId, (newId) => {
   padding: 2px 6px;
   background: rgba(139, 92, 246, 0.1);
   font-size: 10px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 500;
   color: var(--ms-status-violet);
   white-space: nowrap;
@@ -4688,7 +4692,7 @@ watch(() => props.reportId, (newId) => {
   flex-shrink: 0;
   padding: 2px 6px;
   background: var(--ms-status-violet);
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-size: 10px;
   font-weight: 700;
   color: var(--ms-bg-elevated);
@@ -4711,7 +4715,7 @@ watch(() => props.reportId, (newId) => {
   background: var(--ms-bg-muted);
   border: 2px solid rgba(10,10,10,0.08);
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 500;
   color: rgba(10,10,10,0.5);
   cursor: pointer;
@@ -4736,7 +4740,7 @@ watch(() => props.reportId, (newId) => {
   padding: 22px;
   text-align: center;
   font-size: 12px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   color: rgba(10,10,10,0.4);
 }
 
@@ -4761,7 +4765,7 @@ watch(() => props.reportId, (newId) => {
 
 :deep(.panorama-header .header-title) {
   font-size: 14px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 700;
   color: var(--ms-orange);
 }
@@ -4780,7 +4784,7 @@ watch(() => props.reportId, (newId) => {
 }
 
 :deep(.panorama-header .stat-value) {
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 700;
   color: var(--ms-orange);
 }
@@ -4788,7 +4792,7 @@ watch(() => props.reportId, (newId) => {
 :deep(.panorama-header .stat-label) {
   color: rgba(255,107,26,0.6);
   font-size: 10px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
 }
 
 :deep(.panorama-header .stat-divider) {
@@ -4797,7 +4801,7 @@ watch(() => props.reportId, (newId) => {
 }
 
 :deep(.panorama-header .stat-size) {
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-size: 10px;
   color: rgba(10,10,10,0.4);
 }
@@ -4825,7 +4829,7 @@ watch(() => props.reportId, (newId) => {
   background: transparent;
   border: 2px solid transparent;
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 500;
   color: rgba(10,10,10,0.5);
   cursor: pointer;
@@ -4862,14 +4866,14 @@ watch(() => props.reportId, (newId) => {
 
 :deep(.panorama-display .panel-title) {
   font-size: 12px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 600;
   color: rgba(10,10,10,0.7);
 }
 
 :deep(.panorama-display .panel-count) {
   font-size: 10px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   color: rgba(10,10,10,0.4);
 }
 
@@ -4906,7 +4910,7 @@ watch(() => props.reportId, (newId) => {
   justify-content: center;
   background: rgba(10,10,10,0.12);
   border-radius: 50%;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-size: 10px;
   font-weight: 700;
   color: rgba(10,10,10,0.5);
@@ -4934,7 +4938,7 @@ watch(() => props.reportId, (newId) => {
   font-size: 10px;
   color: rgba(10,10,10,0.4);
   margin-bottom: 4px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
 }
 
 :deep(.panorama-display .fact-text) {
@@ -4965,7 +4969,7 @@ watch(() => props.reportId, (newId) => {
 
 :deep(.panorama-display .entity-type) {
   font-size: 10px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   color: var(--ms-orange);
   background: rgba(255,107,26,0.1);
   padding: 2px 6px;
@@ -4992,7 +4996,7 @@ watch(() => props.reportId, (newId) => {
 
 :deep(.quicksearch-header .header-title) {
   font-size: 14px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 700;
   color: var(--ms-orange);
 }
@@ -5011,7 +5015,7 @@ watch(() => props.reportId, (newId) => {
 }
 
 :deep(.quicksearch-header .stat-value) {
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 700;
   color: var(--ms-orange);
 }
@@ -5019,7 +5023,7 @@ watch(() => props.reportId, (newId) => {
 :deep(.quicksearch-header .stat-label) {
   color: rgba(255,107,26,0.6);
   font-size: 10px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
 }
 
 :deep(.quicksearch-header .stat-divider) {
@@ -5028,7 +5032,7 @@ watch(() => props.reportId, (newId) => {
 }
 
 :deep(.quicksearch-header .stat-size) {
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-size: 10px;
   color: rgba(10,10,10,0.4);
 }
@@ -5060,7 +5064,7 @@ watch(() => props.reportId, (newId) => {
   background: transparent;
   border: 2px solid transparent;
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 500;
   color: rgba(10,10,10,0.5);
   cursor: pointer;
@@ -5102,14 +5106,14 @@ watch(() => props.reportId, (newId) => {
 
 :deep(.quick-search-display .panel-title) {
   font-size: 12px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 600;
   color: rgba(10,10,10,0.7);
 }
 
 :deep(.quick-search-display .panel-count) {
   font-size: 10px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   color: rgba(10,10,10,0.4);
 }
 
@@ -5141,7 +5145,7 @@ watch(() => props.reportId, (newId) => {
   justify-content: center;
   background: rgba(10,10,10,0.12);
   border-radius: 50%;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-size: 10px;
   font-weight: 700;
   color: rgba(10,10,10,0.5);
@@ -5202,7 +5206,7 @@ watch(() => props.reportId, (newId) => {
   padding: 2px 6px;
   background: rgba(255,107,26,0.1);
   font-size: 10px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   font-weight: 500;
   color: var(--ms-orange);
   white-space: nowrap;
@@ -5232,7 +5236,7 @@ watch(() => props.reportId, (newId) => {
 
 :deep(.quick-search-display .node-type) {
   font-size: 10px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   color: var(--ms-orange);
   background: rgba(255,107,26,0.1);
   padding: 2px 6px;
@@ -5243,7 +5247,7 @@ watch(() => props.reportId, (newId) => {
   background: var(--ms-text);
   color: rgba(10,10,10,0.2);
   padding: 22px;
-  font-family: var(--font-mono);
+  font-family: var(--ms-font-mono);
   border-top: 2px solid rgba(10,10,10,0.7);
   flex-shrink: 0;
 }
