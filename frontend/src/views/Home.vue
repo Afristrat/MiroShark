@@ -338,8 +338,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import HistoryDatabase from '../components/HistoryDatabase.vue'
 import TemplateGallery from '../components/TemplateGallery.vue'
@@ -364,6 +364,16 @@ const settingsOpen = ref(false)
 const previewDoc = ref(null)
 
 const router = useRouter()
+const route = useRoute()
+
+// US-058 — pré-remplir l'URL si ?url= présent (ex. clic depuis TrendingTopics dans SimulationView)
+onMounted(() => {
+  const preloadUrl = route.query.url
+  if (preloadUrl && typeof preloadUrl === 'string') {
+    urlInput.value = preloadUrl
+    fetchUrlDoc()
+  }
+})
 
 // US-044b — bouton « Scénarios » dans la navbar : scroll smooth vers
 // la galerie de templates plus bas dans la page (pas de route séparée).

@@ -87,6 +87,22 @@
           @update-phase="updatePhase"
         />
       </div>
+
+      <!-- ── Panneau À la une (US-058) ── -->
+      <aside v-if="showTrending" class="sim-trending-drawer">
+        <div class="sim-trending-header">
+          <span>◉ {{ $t('trending.label') }}</span>
+          <button class="sim-trending-close" type="button" @click="showTrending = false" :title="$t('trending.hideTitle', 'Masquer')">×</button>
+        </div>
+        <TrendingTopics @select="handleTrendingSelect" />
+      </aside>
+      <button
+        v-else
+        class="sim-trending-toggle"
+        type="button"
+        @click="showTrending = true"
+        :title="$t('trending.showTitle', 'Actualités')"
+      >◉</button>
     </main>
   </div>
 </template>
@@ -99,6 +115,7 @@ import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
 import GraphPanel from '../components/GraphPanel.vue'
 import Step2EnvSetup from '../components/Step2EnvSetup.vue'
+import TrendingTopics from '../components/TrendingTopics.vue'
 import { getProject, getGraphData } from '../api/graph'
 import { getSimulation, stopSimulation, getEnvStatus, closeSimulationEnv } from '../api/simulation'
 
@@ -112,6 +129,13 @@ const props = defineProps({
 
 // Layout State
 const viewMode = ref('split')
+
+// Trending panel (US-058)
+const showTrending = ref(false)
+const handleTrendingSelect = ({ url }) => {
+  if (!url) return
+  router.push({ name: 'Home', query: { url } })
+}
 
 // Data State
 const currentSimulationId = ref(route.params.simulationId)
@@ -584,5 +608,61 @@ onMounted(async () => {
 .sk-block-status { height: 96px; width: 100%; }
 .sk-block-feed { height: 180px; width: 100%; }
 .sk-block-market { height: 110px; width: 100%; }
+
+/* ── Panneau actualités (US-058) ── */
+.sim-trending-drawer {
+  position: fixed;
+  bottom: 0;
+  inset-inline-end: 0;
+  width: min(360px, 90vw);
+  max-height: 60vh;
+  overflow-y: auto;
+  background: var(--ms-bg-elevated);
+  border: 1px solid var(--ms-border-strong);
+  border-radius: var(--wi-radius-card, 24px) var(--wi-radius-card, 24px) 0 0;
+  box-shadow: var(--wi-shadow-lg, 0 -4px 24px rgba(42,42,53,0.12));
+  z-index: var(--ms-z-popover, 1200);
+  padding: 0 0 12px;
+}
+.sim-trending-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ms-text-muted);
+  border-bottom: 1px solid var(--ms-border);
+}
+.sim-trending-close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--ms-text-muted);
+  line-height: 1;
+  padding: 0 4px;
+}
+.sim-trending-close:hover { color: var(--ms-text); }
+.sim-trending-toggle {
+  position: fixed;
+  bottom: 16px;
+  inset-inline-end: 16px;
+  z-index: var(--ms-z-popover, 1200);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--wi-radius-pill, 9999px);
+  border: 1.5px solid var(--ms-border-strong);
+  background: var(--ms-bg-elevated);
+  box-shadow: var(--ms-shadow-md);
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 150ms, box-shadow 150ms;
+}
+.sim-trending-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--ms-shadow-orange);
+  border-color: var(--ms-orange);
+}
 </style>
 
