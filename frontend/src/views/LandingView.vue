@@ -102,6 +102,13 @@
       </section>
 
       <!-- ═══════════════════════════════════════════════════════
+           2.5. SECTOR USE CASES — CTAs par métier (US-085)
+           8 secteurs MENA + Europe avec 2 use cases chacun.
+           Au clic → /devis avec ?sector=X&package=Y pré-rempli.
+           ═══════════════════════════════════════════════════════ -->
+      <SectorUseCases anchor-id="sectors" />
+
+      <!-- ═══════════════════════════════════════════════════════
            3. PRODUCT — split layout
            Visuel à gauche (mock dashboard simplifié),
            3 capabilities à droite avec checkmarks mint.
@@ -279,6 +286,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import SectorUseCases from '../components/SectorUseCases.vue'
 
 // ════════════════════════════════════════════════════════════════════
 // Static data — IDs côté JS, copy côté i18n.

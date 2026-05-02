@@ -233,6 +233,81 @@
       "generic": "Erreur réseau. Vérifiez la connexion ou le token administrateur."
     }
   },
+  "sectors": {
+    "eyebrow": "CAS D'USAGE PAR MÉTIER",
+    "title": "La simulation stratégique parle votre langage métier",
+    "subtitle": "Chaque secteur a ses propres tensions, ses propres acteurs et ses propres scénarios. Bassira modélise les vôtres, pas une moyenne.",
+    "cta": {
+      "test": "Tester ce cas"
+    },
+    "featuredBadge": "Le plus demandé",
+    "footerNote": "Votre métier ne figure pas dans cette liste ?",
+    "customLink": "Décrivez votre cas sur mesure",
+    "finance": {
+      "name": "Banque & Finance",
+      "tagline": "Stress-test régulatoire, M&A transfrontalière, repositionnement de portefeuille.",
+      "cases": [
+        "Quel sera l'impact d'une hausse de 50 pb des taux directeurs sur notre exposition corporate africaine sur 18 mois ?",
+        "Notre projet de fusion avec [banque] tiendra-t-il face aux régulateurs marocains, BCEAO et superviseurs européens ?"
+      ]
+    },
+    "energy": {
+      "name": "Énergie & Mines",
+      "tagline": "Transition énergétique, projets d'investissement, géopolitique des ressources.",
+      "cases": [
+        "Comment la transition vers le renouvelable redessinera-t-elle les positions de OCP, Sonatrach, ADNOC d'ici 2030 ?",
+        "Notre projet d'électrification rurale en Afrique de l'Ouest survivra-t-il à un changement de gouvernement post-élections ?"
+      ]
+    },
+    "politics": {
+      "name": "Politique & Diplomatie",
+      "tagline": "Élections, réformes, négociations internationales, lobbying parlementaire.",
+      "cases": [
+        "Quels camps émergeront aux primaires du parti X dans 18 mois et quelle est la probabilité d'une coalition surprise ?",
+        "Notre proposition de loi sur la fiscalité numérique passera-t-elle au Parlement marocain face à l'opposition CGEM ?"
+      ]
+    },
+    "retail": {
+      "name": "Distribution & Retail",
+      "tagline": "Lancement produit, expansion géographique, war room concurrentiel.",
+      "cases": [
+        "Notre lancement e-commerce alimentaire au Maroc résistera-t-il à Marjane, Carrefour et Jumia simultanément ?",
+        "Quelle séquence d'ouverture pour 12 magasins en Afrique sub-saharienne post-Covid pour notre groupe régional ?"
+      ]
+    },
+    "tech": {
+      "name": "Tech & Startup",
+      "tagline": "Pivots stratégiques, levées de fonds, market fit, positionnement face aux GAFAM.",
+      "cases": [
+        "Notre pivot vers le B2B SaaS dans la zone GCC est-il bien timé face à la consolidation locale ?",
+        "Comment positionner notre LLM arabophone face à OpenAI, Anthropic et Mistral pour les institutions MENA ?"
+      ]
+    },
+    "industry": {
+      "name": "Industrie & Manufacturing",
+      "tagline": "Délocalisation, automatisation, chaînes d'approvisionnement, sanctions internationales.",
+      "cases": [
+        "Notre transfert d'usine de Casablanca vers Tanger Med tiendra-t-il face à l'automatisation des concurrents européens ?",
+        "Quel sera l'impact des sanctions UE sur la Russie et la Chine sur nos chaînes d'approvisionnement industrielles ?"
+      ]
+    },
+    "media": {
+      "name": "Médias & Communication",
+      "tagline": "Gestion de crise réputationnelle, lancement éditorial, stratégie d'audience diaspora.",
+      "cases": [
+        "Comment gérer le scandale réputationnel autour de notre influenceur partenaire avant qu'il ne touche notre marque mère ?",
+        "Notre nouveau format vidéo en darija captera-t-il la diaspora marocaine en France, Espagne et Belgique ?"
+      ]
+    },
+    "healthcare": {
+      "name": "Santé & Pharma",
+      "tagline": "Remboursement réglementaire, lancement médicament, négociations ministérielles.",
+      "cases": [
+        "Le remboursement de notre traitement de chimio sera-t-il accordé par l'ANAM et la CNOPS dans les 12 prochains mois ?",
+        "Notre lancement vaccin sur 8 pays africains sera-t-il accepté par les ministères de la santé et l'OMS-Afro ?"
+      ]
+    }
+  },
   "trending": {
     "label": "À la une",
     "subFetching": "// récupération…",

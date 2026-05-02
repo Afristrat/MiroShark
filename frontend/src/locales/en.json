@@ -233,6 +233,81 @@
       "generic": "Network error. Check the connection or the admin token."
     }
   },
+  "sectors": {
+    "eyebrow": "USE CASES BY INDUSTRY",
+    "title": "Strategic simulation that speaks your industry",
+    "subtitle": "Every sector has its own tensions, its own actors, its own scenarios. Bassira models yours — not an average.",
+    "cta": {
+      "test": "Test this case"
+    },
+    "featuredBadge": "Most requested",
+    "footerNote": "Your industry isn't on this list?",
+    "customLink": "Describe your custom case",
+    "finance": {
+      "name": "Banking & Finance",
+      "tagline": "Regulatory stress-tests, cross-border M&A, portfolio repositioning.",
+      "cases": [
+        "What's the 18-month impact of a 50bp policy rate hike on our African corporate exposure?",
+        "Will our merger with [bank] survive Moroccan regulators, BCEAO, and European supervisors?"
+      ]
+    },
+    "energy": {
+      "name": "Energy & Mining",
+      "tagline": "Energy transition, capex projects, geopolitics of resources.",
+      "cases": [
+        "How will the renewable transition reshape positions of OCP, Sonatrach, ADNOC by 2030?",
+        "Will our rural electrification project in West Africa survive a post-election government change?"
+      ]
+    },
+    "politics": {
+      "name": "Politics & Diplomacy",
+      "tagline": "Elections, reforms, international negotiations, parliamentary lobbying.",
+      "cases": [
+        "Which factions will emerge from party X primaries in 18 months — and what's the surprise coalition probability?",
+        "Will our digital tax proposal pass the Moroccan Parliament against CGEM opposition?"
+      ]
+    },
+    "retail": {
+      "name": "Retail & Distribution",
+      "tagline": "Product launch, geographic expansion, competitive war rooms.",
+      "cases": [
+        "Will our food e-commerce launch in Morocco resist Marjane, Carrefour and Jumia simultaneously?",
+        "What sequence to open 12 stores in sub-Saharan Africa post-Covid for our regional group?"
+      ]
+    },
+    "tech": {
+      "name": "Tech & Startup",
+      "tagline": "Strategic pivots, fundraising, market fit, positioning vs. GAFAM.",
+      "cases": [
+        "Is our B2B SaaS pivot in the GCC zone well-timed against local consolidation?",
+        "How to position our Arabic LLM against OpenAI, Anthropic and Mistral for MENA institutions?"
+      ]
+    },
+    "industry": {
+      "name": "Industry & Manufacturing",
+      "tagline": "Offshoring, automation, supply chains, international sanctions.",
+      "cases": [
+        "Will our plant transfer from Casablanca to Tanger Med hold against European competitors' automation?",
+        "What's the impact of EU sanctions on Russia and China on our industrial supply chains?"
+      ]
+    },
+    "media": {
+      "name": "Media & Communications",
+      "tagline": "Reputational crisis management, editorial launches, diaspora audience strategy.",
+      "cases": [
+        "How to manage the reputational scandal around our influencer partner before it hits our parent brand?",
+        "Will our new Darija video format capture the Moroccan diaspora in France, Spain and Belgium?"
+      ]
+    },
+    "healthcare": {
+      "name": "Healthcare & Pharma",
+      "tagline": "Regulatory reimbursement, drug launches, ministerial negotiations.",
+      "cases": [
+        "Will our chemo treatment reimbursement be granted by ANAM and CNOPS in the next 12 months?",
+        "Will our vaccine launch across 8 African countries be accepted by health ministries and WHO-Afro?"
+      ]
+    }
+  },
   "trending": {
     "label": "What's Trending",
     "subFetching": "// fetching…",

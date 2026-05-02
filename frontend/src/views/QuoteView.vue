@@ -502,17 +502,50 @@ async function submit() {
 }
 
 // ─── Préselection radio depuis ?package=… (depuis OffersView) ─────────
+// Mapping sector (US-085) → situation radio + package backend par défaut
+const SECTOR_TO_SITUATION = {
+  finance: 'crisis',
+  energy: 'policy',
+  politics: 'policy',
+  retail: 'campaign',
+  tech: 'campaign',
+  industry: 'crisis',
+  media: 'crisis',
+  healthcare: 'policy',
+  custom: '',
+}
+
+const VALID_SECTORS = Object.keys(SECTOR_TO_SITUATION)
+
 onMounted(() => {
+  // Pré-remplissage via ?package= (parcours depuis /offres carousel)
   const raw = (route.query?.package || '').toString().trim()
-  if (!raw) return
-  // On retient le slug carousel d'origine seulement s'il est connu, soit
-  // côté carousel 10-packages, soit comme slug backend valide.
-  if (CAROUSEL_TO_BACKEND[raw] || validBackendPackages.includes(raw)) {
+  if (raw && (CAROUSEL_TO_BACKEND[raw] || validBackendPackages.includes(raw))) {
     form.carouselPackage = raw
   }
-  const situation = PACKAGE_TO_SITUATION[raw]
-  if (situation) {
-    form.situation = situation
+  if (raw) {
+    const situation = PACKAGE_TO_SITUATION[raw]
+    if (situation) form.situation = situation
+  }
+
+  // Pré-remplissage via ?sector= et ?usecase= (depuis SectorUseCases sur /landing)
+  const sector = (route.query?.sector || '').toString().trim()
+  if (sector && VALID_SECTORS.includes(sector)) {
+    const mappedSituation = SECTOR_TO_SITUATION[sector]
+    if (mappedSituation) form.situation = mappedSituation
+
+    // Récupère le use case spécifique depuis i18n et le pré-remplit
+    // dans otherSituation pour donner du contexte au prospect.
+    const usecaseIdx = parseInt((route.query?.usecase || '0').toString(), 10) || 0
+    try {
+      const sectorName = t(`sectors.${sector}.name`)
+      const caseText = t(`sectors.${sector}.cases.${usecaseIdx}`)
+      if (caseText && !caseText.startsWith('sectors.')) {
+        form.otherSituation = `[${sectorName}] ${caseText}`
+      }
+    } catch (_) {
+      // i18n key absent → silently ignore
+    }
   }
 })
 </script>

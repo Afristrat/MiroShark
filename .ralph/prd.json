@@ -2483,6 +2483,38 @@
                 "priority": "P2"
             },
             "completedAt": "2026-05-02"
+        },
+        {
+            "id": "US-085",
+            "chantier": "I-sector-cta",
+            "title": "CTAs par métier/secteur — 8 secteurs avec use cases stratégiques",
+            "description": "Composant SectorUseCases avec 8 secteurs MENA/Europe (Banque, Énergie, Politique, Distribution, Tech, Industrie, Médias, Santé). 2 use cases par secteur. Au clic → /devis avec ?sector=X&usecase=Y&package=Z pré-remplis.",
+            "acceptanceCriteria": [
+                "SectorUseCases.vue créé avec 8 cards sectorielles",
+                "Chaque card : icône + nom + tagline + 2 cases + CTA Tester ce cas",
+                "Featured card (Banque) avec border 2px + gradient + badge mint Le plus demandé",
+                "i18n FR/EN/AR avec ~80 clés",
+                "Intégration dans LandingView entre Pains et Product",
+                "QuoteView lit ?sector=&usecase= et pré-remplit form.situation + form.otherSituation",
+                "Lien custom case → /devis?sector=custom",
+                "Tokens --wi-* exclusifs",
+                "npm run build passe"
+            ],
+            "passes": true,
+            "completedAt": "2026-05-02",
+            "dependencies": [
+                "US-061"
+            ],
+            "metadata": {
+                "estimated_hours": 2,
+                "priority": "P1",
+                "files_touched": [
+                    "frontend/src/components/SectorUseCases.vue",
+                    "frontend/src/views/LandingView.vue",
+                    "frontend/src/views/QuoteView.vue",
+                    "frontend/src/locales/{fr,en,ar}.json"
+                ]
+            }
         }
     ]
 }
