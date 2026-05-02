@@ -284,6 +284,15 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
   - Renommer `const t = Date.parse(...)` en `const ts = ...` pour éviter shadowing du t i18n
   - Symboles purs (◎ ◈ ↑ ↓ →) et identifiants techniques (PDF, MD, TXT, MiroShark-V1.0) laissés tels quels — ne sont pas du chrome UI
 
+### 2026-05-02 — Session : Warm Intelligence + Web Enrichment (US-053 à US-058)
+- **Chantiers** : 7-warm-intelligence (4 stories), 8-web-enrichment (2 stories)
+- **PRD** : 6 nouvelles stories ajoutées, ID US-053 → US-058
+- **Patterns à retenir** :
+  - Tokens Warm Intelligence : namespace --wi-* (pas --warm-* qui collision existant)
+  - Source : stitch_bassira_simulation_pricing_page/warm_intelligence/DESIGN.md
+  - Perplexity : WebEnricher déjà dans web_enrichment.py — extend, ne pas recréer
+  - TrendingTopics.vue : déjà opérationnel sur Home.vue — réutiliser sans modifier
+
 ### 2026-04-29 — US-001 Setup vue-i18n + structure locales
 - **Statut** : passes: true
 - **Fichiers** : frontend/src/i18n.js, frontend/src/locales/{fr,ar,en}.json, main.js, vite.config.js, package.json
