@@ -597,25 +597,29 @@ onBeforeUnmount(() => {
    Palette M3 Stitch via variables locales --stitch-* scopées au composant. */
 
 .offers-page {
-  --stitch-primary-container: #ff8551;
-  --stitch-primary: #a13f0f;
-  --stitch-on-primary: #ffffff;
+  /* ── Alias --stitch-* → tokens globaux --wi-* (US-053) ──
+     Les usages var(--stitch-*) dans ce composant sont conservés ;
+     les valeurs sont désormais héritées des tokens globaux,
+     ce qui active automatiquement le dark mode. */
+  --stitch-primary-container: var(--wi-primary-container);
+  --stitch-primary: var(--wi-primary);
+  --stitch-on-primary: var(--wi-on-primary);
   --stitch-on-primary-fixed: #370e00;
   --stitch-on-primary-fixed-variant: #7f2b00;
   --stitch-primary-fixed: #ffdbce;
-  --stitch-inverse-primary: #ffb598;
-  --stitch-surface: #fff8f6;
-  --stitch-surface-container: #ffeae2;
-  --stitch-surface-container-low: #fff1ec;
-  --stitch-surface-container-lowest: #ffffff;
-  --stitch-surface-container-high: #f9e4dd;
-  --stitch-surface-container-highest: #f3ded7;
-  --stitch-on-surface: #241915;
-  --stitch-on-surface-variant: #57423a;
-  --stitch-outline: #8a7269;
-  --stitch-outline-variant: #dec0b6;
-  --stitch-tertiary-container: #00b9c7;
-  --stitch-on-tertiary-container: #00444a;
+  --stitch-inverse-primary: var(--wi-inverse-primary);
+  --stitch-surface: var(--wi-bg);
+  --stitch-surface-container: var(--wi-surface-container);
+  --stitch-surface-container-low: var(--wi-surface-container-low);
+  --stitch-surface-container-lowest: var(--wi-surface);
+  --stitch-surface-container-high: var(--wi-surface-container-high);
+  --stitch-surface-container-highest: var(--wi-surface-container-highest);
+  --stitch-on-surface: var(--wi-on-surface);
+  --stitch-on-surface-variant: var(--wi-on-surface-variant);
+  --stitch-outline: var(--wi-outline);
+  --stitch-outline-variant: var(--wi-outline-variant);
+  --stitch-tertiary-container: var(--wi-tertiary-container);
+  --stitch-on-tertiary-container: var(--wi-on-tertiary-container);
   --stitch-secondary-fixed-dim: #7fd8a6;
   --stitch-on-secondary-fixed: #002111;
 
@@ -624,15 +628,15 @@ onBeforeUnmount(() => {
   --stitch-on-warning-container: #5c3d00;
   --stitch-violet-container: #c9b6ff;
   --stitch-on-violet-container: #2b1762;
-  --stitch-outline-container: #d8d1cb;
-  --stitch-on-outline-container: #3d3530;
+  --stitch-outline-container: var(--wi-surface-container-high);
+  --stitch-on-outline-container: var(--wi-on-surface-variant);
 
-  --stitch-shadow-ambient: 0 12px 32px rgba(74, 69, 64, 0.08);
-  --stitch-shadow-soft: 0 1px 2px rgba(74, 69, 64, 0.05);
-  --stitch-shadow-strong: 0 24px 48px rgba(74, 69, 64, 0.18);
+  --stitch-shadow-ambient: var(--wi-shadow-ambient);
+  --stitch-shadow-soft: var(--wi-shadow-sm);
+  --stitch-shadow-strong: var(--wi-shadow-lg);
 
-  --stitch-font-display: 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  --stitch-font-body: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --stitch-font-display: var(--wi-font-heading);
+  --stitch-font-body: var(--wi-font-body);
 
   min-height: 100vh;
   background: var(--stitch-surface);
@@ -672,7 +676,7 @@ onBeforeUnmount(() => {
   color: #4a4540;
   text-decoration: none;
   padding: 6px 12px;
-  border-radius: 9999px;
+  border-radius: var(--wi-radius-pill);
   transition: color 0.2s ease, background 0.2s ease;
 }
 .offers-back:hover {
@@ -713,7 +717,7 @@ onBeforeUnmount(() => {
   background: var(--stitch-primary-fixed);
   opacity: 0.3;
   filter: blur(48px);
-  border-radius: 9999px;
+  border-radius: var(--wi-radius-pill);
   z-index: -1;
   pointer-events: none;
   mix-blend-mode: multiply;
@@ -726,7 +730,7 @@ onBeforeUnmount(() => {
   background: var(--stitch-surface-container-high);
   color: var(--stitch-on-surface);
   padding: 6px 14px;
-  border-radius: 9999px;
+  border-radius: var(--wi-radius-pill);
   border: 1px solid var(--stitch-outline-variant);
   font-family: var(--stitch-font-body);
   font-weight: 600;
@@ -776,7 +780,7 @@ onBeforeUnmount(() => {
   background: var(--stitch-surface-container);
   color: var(--stitch-on-surface);
   padding: 8px 16px;
-  border-radius: 9999px;
+  border-radius: var(--wi-radius-pill);
   border: 1px solid transparent;
   font-family: var(--stitch-font-body);
   font-weight: 600;
@@ -816,7 +820,7 @@ onBeforeUnmount(() => {
 .offers-carousel:focus-visible {
   outline: 2px solid var(--stitch-primary-container);
   outline-offset: 4px;
-  border-radius: 24px;
+  border-radius: var(--wi-radius-card);
 }
 
 .offers-track-viewport {
@@ -868,7 +872,7 @@ onBeforeUnmount(() => {
   flex-shrink: 0;
   width: 48px;
   height: 48px;
-  border-radius: 9999px;
+  border-radius: var(--wi-radius-pill);
   border: 1px solid var(--stitch-outline-variant);
   background: var(--stitch-surface-container-lowest);
   color: var(--stitch-on-surface);
@@ -911,7 +915,7 @@ onBeforeUnmount(() => {
 .offers-dot {
   width: 8px;
   height: 8px;
-  border-radius: 9999px;
+  border-radius: var(--wi-radius-pill);
   background: var(--stitch-outline-variant);
   border: none;
   padding: 0;
@@ -934,7 +938,7 @@ onBeforeUnmount(() => {
   width: 100%;
   background: var(--stitch-surface-container-lowest);
   border: 1px solid rgba(222, 192, 182, 0.3);
-  border-radius: 24px;
+  border-radius: var(--wi-radius-card);
   padding: 32px;
   box-shadow: var(--stitch-shadow-ambient);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -956,7 +960,7 @@ onBeforeUnmount(() => {
   background: var(--stitch-primary-container);
   color: #ffffff;
   padding: 4px 16px;
-  border-radius: 9999px;
+  border-radius: var(--wi-radius-pill);
   font-family: var(--stitch-font-body);
   font-weight: 600;
   font-size: 12px;
@@ -977,7 +981,7 @@ onBeforeUnmount(() => {
   gap: 8px;
   align-self: flex-start;
   padding: 4px 12px;
-  border-radius: 9999px;
+  border-radius: var(--wi-radius-pill);
   font-family: var(--stitch-font-body);
   font-weight: 600;
   font-size: 12px;
@@ -988,7 +992,7 @@ onBeforeUnmount(() => {
 .offers-sector-dot {
   width: 8px;
   height: 8px;
-  border-radius: 9999px;
+  border-radius: var(--wi-radius-pill);
 }
 .offers-sector--orange {
   background: rgba(255, 181, 152, 0.2);
@@ -1068,7 +1072,7 @@ onBeforeUnmount(() => {
 .offers-billing-toggle {
   display: inline-flex;
   background: var(--stitch-surface-container);
-  border-radius: 9999px;
+  border-radius: var(--wi-radius-pill);
   padding: 4px;
   margin-bottom: 16px;
   align-self: flex-start;
@@ -1081,7 +1085,7 @@ onBeforeUnmount(() => {
   font-weight: 600;
   font-size: 12px;
   padding: 6px 12px;
-  border-radius: 9999px;
+  border-radius: var(--wi-radius-pill);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -1096,7 +1100,7 @@ onBeforeUnmount(() => {
 .offers-billing-badge {
   background: var(--stitch-primary-container);
   color: #ffffff;
-  border-radius: 9999px;
+  border-radius: var(--wi-radius-pill);
   padding: 1px 6px;
   font-size: 10px;
   font-weight: 700;
@@ -1123,7 +1127,7 @@ onBeforeUnmount(() => {
   width: 100%;
   background: var(--stitch-surface-container-low);
   border: 1px solid var(--stitch-outline-variant);
-  border-radius: 12px;
+  border-radius: var(--wi-radius-interactive);
   padding: 10px 36px 10px 14px;
   font-family: var(--stitch-font-body);
   font-size: 14px;
@@ -1226,7 +1230,7 @@ onBeforeUnmount(() => {
   letter-spacing: 0.01em;
   padding: 14px 24px;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--wi-radius-interactive);
   cursor: pointer;
   transition: opacity 0.2s ease, transform 0.1s ease;
   margin-top: auto;
@@ -1266,7 +1270,7 @@ onBeforeUnmount(() => {
 .offers-faq-item {
   background: var(--stitch-surface-container-lowest);
   border: 1px solid rgba(222, 192, 182, 0.3);
-  border-radius: 12px;
+  border-radius: var(--wi-radius-interactive);
   box-shadow: var(--stitch-shadow-soft);
   overflow: hidden;
 }
@@ -1343,7 +1347,7 @@ onBeforeUnmount(() => {
   letter-spacing: 0.01em;
   padding: 14px 32px;
   border: 2px solid var(--stitch-outline);
-  border-radius: 12px;
+  border-radius: var(--wi-radius-interactive);
   text-decoration: none;
   transition: border-color 0.2s ease, color 0.2s ease;
   cursor: pointer;
