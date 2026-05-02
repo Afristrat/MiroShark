@@ -31,3 +31,7 @@ from .share import share_bp  # noqa: E402, F401
 # /api/calibration/brier-score — see api/calibration.py.
 from .calibration import calibration_bp  # noqa: E402, F401
 
+# admin_bp serves the ops analytics endpoint at /api/admin/analytics
+# (US-065). Gated on BASSIRA_ADMIN_TOKEN — see api/admin.py.
+from .admin import admin_bp  # noqa: E402, F401
+

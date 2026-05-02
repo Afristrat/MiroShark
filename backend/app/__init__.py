@@ -95,7 +95,7 @@ def create_app(config_class=Config):
         return response
     
     # Register blueprints
-    from .api import graph_bp, simulation_bp, report_bp, templates_bp, settings_bp, observability_bp, mcp_bp, docs_bp, share_bp, calibration_bp
+    from .api import graph_bp, simulation_bp, report_bp, templates_bp, settings_bp, observability_bp, mcp_bp, docs_bp, share_bp, calibration_bp, admin_bp
     app.register_blueprint(graph_bp, url_prefix='/api/graph')
     app.register_blueprint(simulation_bp, url_prefix='/api/simulation')
     app.register_blueprint(report_bp, url_prefix='/api/report')
@@ -114,6 +114,10 @@ def create_app(config_class=Config):
     # endpoint at /api/calibration/brier-score (no auth — calibration
     # numbers are the commercial argument).
     app.register_blueprint(calibration_bp, url_prefix='/api/calibration')
+    # admin_bp serves the ops analytics dashboard endpoint at
+    # /api/admin/analytics (US-065). Gated on BASSIRA_ADMIN_TOKEN —
+    # internal-only, never expose to unauthenticated clients.
+    app.register_blueprint(admin_bp, url_prefix='/api/admin')
     # quote_bp serves the commercial-form receiver at POST /api/quote
     # (US-025) — public, rate-limited, fires a notification email.
     from .api.quote import quote_bp

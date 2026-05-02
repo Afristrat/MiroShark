@@ -170,6 +170,59 @@
     "frameworkCrisis": "Gestion de crise",
     "frameworkPolicy": "Politique publique"
   },
+  "analytics": {
+    "title": "Bassira Analytics",
+    "subtitle": "Vue d'ensemble — état de la plateforme en temps réel.",
+    "opsBadge": "Console ops",
+    "logout": "Déconnexion",
+    "footer": "Dernière actualisation : {date}",
+    "nav": {
+      "backTitle": "Retour à l'accueil"
+    },
+    "gate": {
+      "title": "Accès opérateur",
+      "subtitle": "Saisissez le token administrateur pour accéder au tableau de bord interne.",
+      "label": "Token administrateur",
+      "placeholder": "BASSIRA_ADMIN_TOKEN",
+      "submit": "Se connecter",
+      "errors": {
+        "empty": "Token requis."
+      }
+    },
+    "kpi": {
+      "total": "Simulations (total)",
+      "completed": "Simulations clôturées",
+      "last30d": "Clôtures (30 j)",
+      "quotes": "Demandes de devis",
+      "trend": {
+        "active": "actif"
+      }
+    },
+    "funnel": {
+      "title": "Entonnoir de conversion",
+      "help": "De la visite à la demande de devis",
+      "steps": {
+        "visits": "Visites",
+        "simulations": "Simulations",
+        "completed": "Clôturées",
+        "quotes": "Devis"
+      }
+    },
+    "topPackages": {
+      "title": "Top packages",
+      "help": "Top 5 par nombre de simulations",
+      "empty": "Aucun package détecté pour le moment."
+    },
+    "timeSeries": {
+      "title": "Activité — 30 derniers jours",
+      "help": "Clôtures par jour (UTC)"
+    },
+    "error": {
+      "title": "Impossible de charger les analytics",
+      "retry": "Réessayer",
+      "generic": "Erreur réseau. Vérifiez la connexion ou le token administrateur."
+    }
+  },
   "trending": {
     "label": "À la une",
     "subFetching": "// récupération…",

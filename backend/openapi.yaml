@@ -82,6 +82,8 @@ tags:
     description: MCP server status surface for AI IDE clients.
   - name: Commercial
     description: Public commercial tunnel — quote requests from the /devis form.
+  - name: Admin
+    description: Internal operator dashboard — gated on `BASSIRA_ADMIN_TOKEN`. Never expose to unauthenticated clients.
   - name: Documentation
     description: This OpenAPI spec and Swagger UI.
 
@@ -2062,6 +2064,91 @@ paths:
               schema: { $ref: "#/components/schemas/ErrorEnvelope" }
         "429":
           description: Rate-limited (5 quotes / IP / hour).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+
+  # ────────────────────────────────────────────────────────────────────
+  # Admin — internal ops analytics (US-065)
+  # ────────────────────────────────────────────────────────────────────
+
+  /api/admin/analytics:
+    get:
+      tags: [Admin]
+      summary: Aggregate KPIs / funnel / 30-day series / top packages for the ops dashboard.
+      description: |
+        Powers the founders/operators dashboard at `/admin/analytics`
+        on the SPA. One aggregate read — no per-day pagination — so
+        the dashboard renders in a single round trip.
+
+        Data is computed live from the on-disk simulation and quote
+        artefacts. A fresh deploy with no completed runs returns
+        zeros / empty arrays rather than a 500. `funnel.visits` is
+        `null` until a real analytics provider is wired (the SPA
+        renders that as "—").
+
+        Auth: gated on `BASSIRA_ADMIN_TOKEN` via the shared
+        `AdminToken` security scheme. Same fail-closed semantics as
+        `POST /publish` / `POST /resolve` / `POST /outcome` — the
+        endpoint returns `503` when the env var is unset.
+      security:
+        - AdminToken: []
+      responses:
+        "200":
+          description: Aggregate analytics payload.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [kpis, funnel, time_series, top_packages]
+                        properties:
+                          kpis:
+                            type: object
+                            required: [total, completed, last_30d, quotes]
+                            properties:
+                              total:     { type: integer, minimum: 0 }
+                              completed: { type: integer, minimum: 0 }
+                              last_30d:  { type: integer, minimum: 0 }
+                              quotes:    { type: integer, minimum: 0 }
+                          funnel:
+                            type: array
+                            items:
+                              type: object
+                              required: [step, n]
+                              properties:
+                                step: { type: string }
+                                n:    { type: [integer, "null"], minimum: 0 }
+                          time_series:
+                            type: array
+                            description: Always 30 entries (one per day, oldest → today, UTC).
+                            items:
+                              type: object
+                              required: [date, completed]
+                              properties:
+                                date:      { type: string, format: date }
+                                completed: { type: integer, minimum: 0 }
+                          top_packages:
+                            type: array
+                            items:
+                              type: object
+                              required: [package, n]
+                              properties:
+                                package: { type: string }
+                                n:       { type: integer, minimum: 1 }
+        "401":
+          description: Missing or wrong bearer token.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+        "503":
+          description: |
+            `BASSIRA_ADMIN_TOKEN` is unset on the server — fail-closed.
+            Configure the env var before exposing the dashboard.
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorEnvelope" }

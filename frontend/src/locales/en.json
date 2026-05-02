@@ -170,6 +170,59 @@
     "frameworkCrisis": "Crisis management",
     "frameworkPolicy": "Public policy"
   },
+  "analytics": {
+    "title": "Bassira Analytics",
+    "subtitle": "Platform overview — real-time operational state.",
+    "opsBadge": "Ops console",
+    "logout": "Sign out",
+    "footer": "Last refreshed: {date}",
+    "nav": {
+      "backTitle": "Back to home"
+    },
+    "gate": {
+      "title": "Operator access",
+      "subtitle": "Enter the admin token to load the internal dashboard.",
+      "label": "Admin token",
+      "placeholder": "BASSIRA_ADMIN_TOKEN",
+      "submit": "Sign in",
+      "errors": {
+        "empty": "Token required."
+      }
+    },
+    "kpi": {
+      "total": "Simulations (total)",
+      "completed": "Simulations completed",
+      "last30d": "Completions (30 d)",
+      "quotes": "Quote requests",
+      "trend": {
+        "active": "active"
+      }
+    },
+    "funnel": {
+      "title": "Conversion funnel",
+      "help": "From visit to quote request",
+      "steps": {
+        "visits": "Visits",
+        "simulations": "Simulations",
+        "completed": "Completed",
+        "quotes": "Quotes"
+      }
+    },
+    "topPackages": {
+      "title": "Top packages",
+      "help": "Top 5 by simulation count",
+      "empty": "No package detected yet."
+    },
+    "timeSeries": {
+      "title": "Activity — last 30 days",
+      "help": "Completions per day (UTC)"
+    },
+    "error": {
+      "title": "Could not load analytics",
+      "retry": "Retry",
+      "generic": "Network error. Check the connection or the admin token."
+    }
+  },
   "trending": {
     "label": "What's Trending",
     "subFetching": "// fetching…",

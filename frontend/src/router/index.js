@@ -102,6 +102,30 @@ const routes = [
     path: '/devis',
     name: 'Quote',
     component: () => import('../views/QuoteView.vue')
+  },
+  {
+    // Landing page SEO marketing (US-061) — séparée de Home.vue.
+    // Optimisée pour cold traffic LinkedIn/Google. CTAs vers /devis et /explore.
+    path: '/landing',
+    name: 'Landing',
+    component: () => import('../views/LandingView.vue')
+  },
+  {
+    // Page partenariats institutionnels (US-062) — think tanks, cabinets
+    // conseil, universités. 3 tiers (Research / Integration / White-label).
+    // Registre académique — JAMAIS de language startup.
+    path: '/partenaires',
+    name: 'Partners',
+    component: () => import('../views/PartnersView.vue')
+  },
+  {
+    // Tableau analytique interne admin (US-065) — auth via
+    // BASSIRA_ADMIN_TOKEN sessionStorage. KPIs plateforme + funnel +
+    // top packages + time series 30j. Vue dark-mode par défaut.
+    path: '/admin/analytics',
+    name: 'AdminAnalytics',
+    component: () => import('../views/AnalyticsView.vue'),
+    meta: { requiresAdmin: true }
   }
 ]
 

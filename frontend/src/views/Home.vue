@@ -334,6 +334,9 @@
       <HistoryDatabase />
 
     </div>
+
+    <!-- US-060 — Onboarding solo 4 étapes (premier visit uniquement) -->
+    <OnboardingTour v-model="showOnboarding" />
   </div>
 </template>
 
@@ -346,6 +349,7 @@ import TemplateGallery from '../components/TemplateGallery.vue'
 import SettingsPanel from '../components/SettingsPanel.vue'
 import ScenarioSuggestions from '../components/ScenarioSuggestions.vue'
 import TrendingTopics from '../components/TrendingTopics.vue'
+import OnboardingTour from '../components/OnboardingTour.vue'
 import { fetchUrl } from '../api/graph'
 import { askMode, enrichAsk } from '../api/simulation'
 import { useScrollFadeIn } from '../composables/useScrollFadeIn'
@@ -362,6 +366,13 @@ const { t } = useI18n()
 
 const settingsOpen = ref(false)
 const previewDoc = ref(null)
+
+// US-060 — Onboarding solo 4 étapes : visible uniquement au premier visit.
+// Le flag `bassira_onboarding_done` est posé par OnboardingTour quand
+// l'utilisateur clique Skip / Suivant final / Lancer un exemple.
+const showOnboarding = ref(
+  typeof window !== 'undefined' && !window.localStorage?.getItem('bassira_onboarding_done')
+)
 
 const router = useRouter()
 const route = useRoute()

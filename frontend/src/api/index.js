@@ -32,9 +32,16 @@ service.interceptors.request.use(
     } catch (_) {
       // i18n pas encore initialisé (rarissime au boot) → backend default 'fr'
     }
-    // Admin token (opérateur uniquement) — stocké dans sessionStorage
+    // Admin token (opérateur uniquement) — stocké dans sessionStorage.
+    // Auto-attaché aux endpoints qui en ont besoin :
+    //   - POST /api/simulation/<id>/outcome (US-020 publish/resolve)
+    //   - GET  /api/admin/* (US-065 dashboard analytics)
     const adminToken = sessionStorage.getItem('bassira_admin_token')
-    if (adminToken && config.url && config.url.includes('/outcome')) {
+    if (
+      adminToken &&
+      config.url &&
+      (config.url.includes('/outcome') || config.url.includes('/admin'))
+    ) {
       config.headers['Authorization'] = `Bearer ${adminToken}`
     }
     return config

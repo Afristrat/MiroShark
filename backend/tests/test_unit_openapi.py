@@ -103,6 +103,8 @@ _BLUEPRINT_PREFIXES = {
     "share_bp":          "",
     # quote_bp serves the public commercial-form receiver (US-025).
     "quote_bp":          "/api/quote",
+    # admin_bp serves the gated ops analytics dashboard (US-065).
+    "admin_bp":          "/api/admin",
 }
 
 
