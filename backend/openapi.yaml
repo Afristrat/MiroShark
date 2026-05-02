@@ -1443,23 +1443,52 @@ paths:
   /api/simulation/{simulation_id}/export-pdf:
     post:
       tags: [Export]
-      summary: Generate a branded AIMPOWER PDF report for a finished simulation.
+      summary: Rapport PDF enrichi Bassira (10 sections + disclaimer + graphe).
       description: |
-        Returns a ready-to-download PDF containing a cover page, executive
-        summary, outcome results (verdict, bullish/bearish split), and
-        recommendations — formatted with the AIMPOWER/Bassira palette
-        (orange `#FF6B1A`, blue pastel `#A8C5DA`, warm-white background
-        `#FFFBF7`).
+        Génère un PDF board-ready avec 10 sections : page de garde, disclaimer légal,
+        résumé exécutif, résultats, agents/profils, posts clés, top influenceurs,
+        sources, image graphe (si graph_image_b64 fourni), méthodologie, recommandations.
+        Palette Bassira Warm Intelligence (#FF8551 orange, #006D44 vert, #A13F0F terracotta).
       parameters:
         - $ref: "#/components/parameters/SimulationIdPath"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                graph_image_b64:
+                  type: string
+                  description: Capture PNG du graphe encodée en base64 (optionnel).
       responses:
         "200":
-          description: Binary PDF file.
+          description: Fichier PDF binaire.
           content:
             application/pdf:
               schema:
                 type: string
                 format: binary
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/simulation/{simulation_id}/export-md:
+    get:
+      tags: [Export]
+      summary: Rapport Markdown Bassira (même structure que le PDF).
+      description: |
+        Génère un fichier .md structuré pour Notion/Obsidian/GitHub avec les mêmes
+        sections que le PDF (sans l'image graphe). Idéal pour intégration dans des
+        systèmes de knowledge management.
+      parameters:
+        - $ref: "#/components/parameters/SimulationIdPath"
+      responses:
+        "200":
+          description: Fichier Markdown.
+          content:
+            text/markdown:
+              schema:
+                type: string
         "404": { $ref: "#/components/responses/NotFound" }
         "500": { $ref: "#/components/responses/InternalError" }
 

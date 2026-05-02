@@ -31,11 +31,13 @@ if str(_BACKEND) not in sys.path:
 # ── Fake SimulationState ─────────────────────────────────────────────────────
 
 class _FakeState:
-    simulation_id = "sim_faketest001"
-    project_id    = "proj_fake"
-    graph_id      = "graph_fake"
-    current_round = 5
-    locale        = "fr"
+    simulation_id  = "sim_faketest001"
+    project_id     = "proj_fake"
+    graph_id       = "graph_fake"
+    current_round  = 5
+    profiles_count = 12
+    entities_count = 8
+    locale         = "fr"
 
     def to_dict(self) -> dict:
         return {"simulation_id": self.simulation_id}
@@ -163,13 +165,8 @@ class TestPdfExport200:
             f"Response does not start with PDF magic bytes: {resp.data[:10]!r}"
         )
 
-    def test_pdf_contains_aimpower_brand(self, client, tmp_path):
-        """The string AIMPOWER must appear in the extracted PDF text.
-
-        Uses PyMuPDF (already declared in pyproject.toml as PyMuPDF) to
-        extract text from every page and asserts the brand string is
-        present — without relying on the raw compressed byte stream.
-        """
+    def test_pdf_contains_bassira_brand(self, client, tmp_path):
+        """Le mot BASSIRA doit apparaître dans le texte extrait du PDF."""
         import fitz  # PyMuPDF
 
         p1, p2, p3 = _patch_manager(tmp_path)
@@ -179,16 +176,96 @@ class TestPdfExport200:
         doc = fitz.open(stream=resp.data, filetype="pdf")
         all_text = "\n".join(page.get_text() for page in doc)
         doc.close()
-        assert "AIMPOWER" in all_text, (
-            f"AIMPOWER brand not found in extracted PDF text. "
-            f"First 500 chars: {all_text[:500]!r}"
+        assert "BASSIRA" in all_text, (
+            f"BASSIRA brand not found in PDF text. First 500 chars: {all_text[:500]!r}"
+        )
+
+    def test_pdf_contains_disclaimer(self, client, tmp_path):
+        """Le disclaimer légal doit être présent dans le PDF."""
+        import fitz
+
+        p1, p2, p3 = _patch_manager(tmp_path)
+        with p1, p2, p3:
+            resp = client.post(f"/api/simulation/{_KNOWN_SIM_ID}/export-pdf")
+
+        doc = fitz.open(stream=resp.data, filetype="pdf")
+        all_text = "\n".join(page.get_text() for page in doc)
+        doc.close()
+        assert "probabiliste" in all_text.lower() or "avertissement" in all_text.lower(), (
+            "Disclaimer légal absent du PDF"
         )
 
     def test_pdf_size_greater_than_1kb(self, client, tmp_path):
-        """PDF must be > 1 kB — validates that résumé/sections are rendered."""
+        """PDF must be > 1 kB — validates enriched sections are rendered."""
         p1, p2, p3 = _patch_manager(tmp_path)
         with p1, p2, p3:
             resp = client.post(f"/api/simulation/{_KNOWN_SIM_ID}/export-pdf")
         assert len(resp.data) > 1024, (
-            f"PDF size {len(resp.data)} B is below 1 kB — résumé section likely missing"
+            f"PDF size {len(resp.data)} B is below 1 kB — sections likely missing"
         )
+
+    def test_pdf_with_graph_image(self, client, tmp_path):
+        """PDF accepte une image graphe base64 sans erreur."""
+        import base64
+
+        # 1x1 transparent PNG
+        tiny_png = base64.b64encode(
+            b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01'
+            b'\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89'
+            b'\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01'
+            b'\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82'
+        ).decode()
+
+        p1, p2, p3 = _patch_manager(tmp_path)
+        with p1, p2, p3:
+            resp = client.post(
+                f"/api/simulation/{_KNOWN_SIM_ID}/export-pdf",
+                json={"graph_image_b64": tiny_png},
+                content_type="application/json",
+            )
+        assert resp.status_code == 200
+        assert resp.data[:5] == b"%PDF-"
+
+
+class TestMarkdownExport:
+
+    def test_md_200_for_known_simulation(self, client, tmp_path):
+        p1, p2, p3 = _patch_manager(tmp_path)
+        with p1, p2, p3:
+            resp = client.get(f"/api/simulation/{_KNOWN_SIM_ID}/export-md")
+        assert resp.status_code == 200
+
+    def test_md_content_type(self, client, tmp_path):
+        p1, p2, p3 = _patch_manager(tmp_path)
+        with p1, p2, p3:
+            resp = client.get(f"/api/simulation/{_KNOWN_SIM_ID}/export-md")
+        assert "markdown" in resp.content_type or "text" in resp.content_type
+
+    def test_md_contains_bassira(self, client, tmp_path):
+        p1, p2, p3 = _patch_manager(tmp_path)
+        with p1, p2, p3:
+            resp = client.get(f"/api/simulation/{_KNOWN_SIM_ID}/export-md")
+        text = resp.data.decode("utf-8")
+        assert "Bassira" in text or "BASSIRA" in text
+
+    def test_md_contains_disclaimer(self, client, tmp_path):
+        p1, p2, p3 = _patch_manager(tmp_path)
+        with p1, p2, p3:
+            resp = client.get(f"/api/simulation/{_KNOWN_SIM_ID}/export-md")
+        text = resp.data.decode("utf-8")
+        assert "probabiliste" in text.lower() or "avertissement" in text.lower()
+
+    def test_md_contains_sections(self, client, tmp_path):
+        """Les sections clés doivent être présentes dans le Markdown."""
+        p1, p2, p3 = _patch_manager(tmp_path)
+        with p1, p2, p3:
+            resp = client.get(f"/api/simulation/{_KNOWN_SIM_ID}/export-md")
+        text = resp.data.decode("utf-8")
+        for section in ("Résumé exécutif", "Résultats", "Méthodologie", "Recommandations"):
+            assert section in text, f"Section '{section}' absente du Markdown"
+
+    def test_md_404_for_unknown(self, client, tmp_path):
+        p1, p2, p3 = _patch_manager(tmp_path)
+        with p1, p2, p3:
+            resp = client.get("/api/simulation/sim_doesnotexist/export-md")
+        assert resp.status_code == 404

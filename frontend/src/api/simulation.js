@@ -230,6 +230,31 @@ export const exportSimulationData = (simulationId, format = 'json') => {
 }
 
 /**
+ * Exporte un rapport PDF enrichi (US-059) — 10 sections + disclaimer + graphe.
+ * @param {string} simulationId
+ * @param {string} graphImageB64 — capture PNG base64 du graphe (optionnel)
+ * @returns {Promise<Blob>}
+ */
+export const exportSimulationPdf = async (simulationId, graphImageB64 = '') => {
+  const response = await service.post(
+    `/api/simulation/${simulationId}/export-pdf`,
+    graphImageB64 ? { graph_image_b64: graphImageB64 } : {},
+    { responseType: 'blob' }
+  )
+  return response instanceof Blob ? response : new Blob([response], { type: 'application/pdf' })
+}
+
+/**
+ * Exporte le rapport au format Markdown (US-059).
+ * @param {string} simulationId
+ * @returns {Promise<string>}
+ */
+export const exportSimulationMarkdown = async (simulationId) => {
+  const response = await service.get(`/api/simulation/${simulationId}/export-md`)
+  return typeof response === 'string' ? response : JSON.stringify(response)
+}
+
+/**
  * Batch interview Agents
  * @param {Object} data - { simulation_id, interviews: [{ agent_id, prompt }] }
  */

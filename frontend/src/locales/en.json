@@ -188,6 +188,10 @@
       "variantCTitle": "Variant C — Blind Spot Hunt (1 run, 5 real leaders removed): exposes the model’s blind spots."
     }
   },
+  "report": {
+    "exportPdf": "Download PDF report (10 sections, disclaimer, graph)",
+    "exportMd": "Download Markdown report (Notion / Obsidian)"
+  },
   "process": {
     "common": {
       "completed": "Completed",

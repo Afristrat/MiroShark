@@ -100,6 +100,39 @@
               <span class="metric-label">Tools</span>
               <span class="metric-value mono">{{ totalToolCalls }}</span>
             </div>
+            <!-- Export icons — PDF + MD — visibles uniquement quand la simulation est complète -->
+            <div v-if="isComplete" class="metric export-icons">
+              <button
+                class="export-icon-btn"
+                :class="{ 'is-loading': isExporting === 'pdf' }"
+                :disabled="!!isExporting"
+                :title="$t('report.exportPdf')"
+                @click="downloadPdf"
+              >
+                <svg v-if="isExporting !== 'pdf'" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/>
+                </svg>
+                <span v-else class="spin">⟳</span>
+                <span class="export-icon-label">PDF</span>
+              </button>
+              <button
+                class="export-icon-btn"
+                :class="{ 'is-loading': isExporting === 'md' }"
+                :disabled="!!isExporting"
+                :title="$t('report.exportMd')"
+                @click="downloadMarkdown"
+              >
+                <svg v-if="isExporting !== 'md'" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/>
+                </svg>
+                <span v-else class="spin">⟳</span>
+                <span class="export-icon-label">MD</span>
+              </button>
+            </div>
             <div class="metric metric-right">
               <span class="metric-pill" :class="`pill--${statusClass}`">{{ statusText }}</span>
             </div>
@@ -416,7 +449,7 @@ import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
 import { useRouter } from 'vue-router'
 import { getAgentLog, getConsoleLog } from '../api/report'
-import { exportSimulationData } from '../api/simulation'
+import { exportSimulationData, exportSimulationPdf, exportSimulationMarkdown } from '../api/simulation'
 import { renderMarkdown } from '../utils/markdown'
 import { truncate as truncateText } from '../utils/text'
 
@@ -456,6 +489,79 @@ const expandedLogs = ref(new Set())
 const collapsedSections = ref(new Set())
 const isComplete = ref(false)
 const isExporting = ref(false)
+
+// Capture le SVG du graphe depuis le DOM (si disponible) en PNG base64
+const _captureGraphImage = async () => {
+  try {
+    const svg = document.querySelector('.graph-panel svg, #graph-container svg')
+    if (!svg) return ''
+    const serialized = new XMLSerializer().serializeToString(svg)
+    const blob = new Blob([serialized], { type: 'image/svg+xml' })
+    const url = URL.createObjectURL(blob)
+    return await new Promise((resolve) => {
+      const img = new Image()
+      const canvas = document.createElement('canvas')
+      img.onload = () => {
+        canvas.width = img.naturalWidth || 800
+        canvas.height = img.naturalHeight || 500
+        const ctx = canvas.getContext('2d')
+        ctx.fillStyle = '#0f1117'
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+        ctx.drawImage(img, 0, 0)
+        URL.revokeObjectURL(url)
+        resolve(canvas.toDataURL('image/png').split(',')[1])
+      }
+      img.onerror = () => { URL.revokeObjectURL(url); resolve('') }
+      img.src = url
+    })
+  } catch (_) {
+    return ''
+  }
+}
+
+// Export PDF enrichi (10 sections + graphe)
+const downloadPdf = async () => {
+  if (!props.simulationId || isExporting.value) return
+  isExporting.value = 'pdf'
+  try {
+    const graphB64 = await _captureGraphImage()
+    const blob = await exportSimulationPdf(props.simulationId, graphB64)
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `bassira-${props.simulationId.slice(0, 12)}.pdf`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  } catch (err) {
+    console.error('PDF export failed:', err)
+  } finally {
+    isExporting.value = false
+  }
+}
+
+// Export Markdown
+const downloadMarkdown = async () => {
+  if (!props.simulationId || isExporting.value) return
+  isExporting.value = 'md'
+  try {
+    const text = await exportSimulationMarkdown(props.simulationId)
+    const blob = new Blob([text], { type: 'text/markdown' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `bassira-${props.simulationId.slice(0, 12)}.md`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  } catch (err) {
+    console.error('MD export failed:', err)
+  } finally {
+    isExporting.value = false
+  }
+}
 
 // Export simulation data as JSON or CSV
 const downloadExport = async (format) => {
@@ -2688,6 +2794,61 @@ watch(() => props.reportId, (newId) => {
 
 .metric-right {
   margin-inline-start: auto;
+}
+
+/* ── Export icons (PDF + MD) — US-059 ── */
+.export-icons {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-inline-start: auto;
+}
+
+.export-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 7px;
+  background: none;
+  border: 1px solid rgba(255, 133, 81, 0.3);
+  border-radius: var(--wi-radius-interactive, 12px);
+  color: var(--ms-text-muted);
+  font-family: var(--ms-font-mono, monospace);
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 150ms, border-color 150ms, color 150ms;
+}
+
+.export-icon-btn:hover:not(:disabled) {
+  background: var(--ms-orange-soft);
+  border-color: var(--ms-orange);
+  color: var(--ms-orange);
+}
+
+.export-icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.export-icon-btn.is-loading {
+  border-color: var(--ms-orange);
+  color: var(--ms-orange);
+}
+
+.export-icon-btn .spin {
+  display: inline-block;
+  animation: spin 800ms linear infinite;
+}
+
+.export-icon-label {
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .metric-label {

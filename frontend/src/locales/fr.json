@@ -188,6 +188,10 @@
       "variantCTitle": "Variant C — Blind Spot Hunt (1 run, 5 leaders réelles retirées) : détecte les angles morts du modèle."
     }
   },
+  "report": {
+    "exportPdf": "Télécharger le rapport PDF (10 sections, disclaimer, graphe)",
+    "exportMd": "Télécharger le rapport Markdown (Notion / Obsidian)"
+  },
   "process": {
     "common": {
       "completed": "Terminé",
