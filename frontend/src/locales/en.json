@@ -84,6 +84,7 @@
       "askPlaceholder": "e.g. Will the EU AI Act's biometrics clause survive the final trilogue?",
       "researchBtn": "Research →",
       "researchBusy": "Synthesizing briefing — this uses the Smart model and takes ~20–30s.",
+      "enriching": "Searching the web…",
       "askDocTitle": "Click to preview the generated briefing",
       "urlLabel": "01b / URL Import",
       "urlMeta": "Paste article or report URL",

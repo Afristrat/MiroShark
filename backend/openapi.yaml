@@ -237,6 +237,44 @@ paths:
         "400": { $ref: "#/components/responses/BadRequest" }
         "429": { $ref: "#/components/responses/RateLimited" }
 
+  /api/simulation/enrich-ask:
+    post:
+      tags: [Setup & Discovery]
+      summary: Enrichit une question avec un contexte web via Perplexity (US-057).
+      description: |
+        Appelle Perplexity sonar (ou le WEB_SEARCH_MODEL configuré) pour obtenir
+        un contexte factuel récent sur une question brute. Retourne un contexte vide
+        si WEB_SEARCH_MODEL n'est pas configuré. Cache TTL 1h, rate-limit 10/60s/IP.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [question]
+              properties:
+                question:
+                  type: string
+                  maxLength: 2000
+      responses:
+        "200":
+          description: Contexte enrichi (ou vide si WEB_SEARCH_MODEL absent).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: object
+                    properties:
+                      context: { type: string }
+                      sources: { type: array, items: { type: string } }
+                      model: { type: string }
+                      cached: { type: boolean }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+
   /api/graph/fetch-url:
     post:
       tags: [Setup & Discovery]

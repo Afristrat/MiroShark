@@ -224,3 +224,52 @@ class WebEnricher:
         except Exception as e:
             logger.warning(f"Web enrichment LLM call failed for '{entity_name}': {e}")
             return ""
+
+    # ── Question enrichment (US-057) ──────────────────────────────────────
+    # SHA-256 cache key, TTL managed externally by the API endpoint.
+
+    _QUESTION_SYSTEM_PROMPT = """\
+You are a research assistant providing factual background context for a prediction simulation.
+Given a topic or question, return a concise factual briefing (8-12 bullet points) covering:
+- Current state of the situation
+- Key actors and their positions
+- Recent developments (last 6-12 months if available)
+- Known tensions, uncertainties, or inflection points
+
+Be factual, neutral, and concise. No disclaimers. No speculative assertions.
+If you have web search capability, use it to ground your answer in recent events.\
+"""
+
+    def enrich_question(self, question: str) -> dict:
+        """Research factual background context for an open question.
+
+        Returns a dict: { context: str, sources: list, model: str }
+        On failure: { context: '', sources: [], model: '' }
+        """
+        if not question or not question.strip():
+            return {"context": "", "sources": [], "model": ""}
+
+        try:
+            llm = self._get_llm()
+            response = llm.chat(
+                messages=[
+                    {"role": "system", "content": self._QUESTION_SYSTEM_PROMPT},
+                    {"role": "user", "content": question.strip()[:2000]},
+                ],
+                temperature=0.3,
+                max_tokens=1024,
+            )
+
+            if not response or len(response.strip()) < 30:
+                return {"context": "", "sources": [], "model": ""}
+
+            model_used = Config.WEB_SEARCH_MODEL or "default"
+            return {
+                "context": response.strip(),
+                "sources": [],
+                "model": model_used,
+            }
+
+        except Exception as e:
+            logger.warning(f"Question enrichment failed: {e}")
+            return {"context": "", "sources": [], "model": ""}

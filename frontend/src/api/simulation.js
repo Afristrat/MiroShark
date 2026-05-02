@@ -518,6 +518,15 @@ export const askMode = (question, opts = {}) => {
 }
 
 /**
+ * Enrichit une question avec un contexte web via Perplexity (US-057).
+ * Retourne { context, sources, model, cached } ou contexte vide si non configuré.
+ * @param {string} question
+ */
+export const enrichAsk = (question) => {
+  return service.post('/api/simulation/enrich-ask', { question })
+}
+
+/**
  * Get demographic breakdown (age / gender / country / archetype / primary
  * platform) cross-tabbed against final stance, stance volatility, and
  * influence.

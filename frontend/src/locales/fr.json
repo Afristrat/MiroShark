@@ -84,6 +84,7 @@
       "askPlaceholder": "ex. La clause biométrie de l’IA Act survivra-t-elle au trilogue final ?",
       "researchBtn": "Rechercher →",
       "researchBusy": "Synthèse du briefing en cours — utilise le modèle Smart, ~20–30 s.",
+      "enriching": "Recherche web en cours…",
       "askDocTitle": "Cliquez pour prévisualiser le briefing généré",
       "urlLabel": "01b / Importer une URL",
       "urlMeta": "Collez l’URL d’un article ou d’un rapport",

@@ -207,7 +207,8 @@
                 </button>
               </div>
               <div v-if="askError" class="url-error">{{ askError }}</div>
-              <div v-if="askBusy" class="url-doc-meta" style="margin-top:6px">{{ $t('home.console.researchBusy') }}</div>
+              <div v-if="askEnriching" class="url-doc-meta" style="margin-top:6px">{{ $t('home.enriching') }}</div>
+              <div v-else-if="askBusy" class="url-doc-meta" style="margin-top:6px">{{ $t('home.console.researchBusy') }}</div>
               <div v-if="askDocs.length > 0" class="url-doc-list">
                 <div
                   v-for="doc in askDocs"
@@ -346,7 +347,7 @@ import SettingsPanel from '../components/SettingsPanel.vue'
 import ScenarioSuggestions from '../components/ScenarioSuggestions.vue'
 import TrendingTopics from '../components/TrendingTopics.vue'
 import { fetchUrl } from '../api/graph'
-import { askMode } from '../api/simulation'
+import { askMode, enrichAsk } from '../api/simulation'
 import { useScrollFadeIn } from '../composables/useScrollFadeIn'
 
 // Refs for the 4 workflow step cards — populated via :ref callback in the
@@ -566,16 +567,33 @@ const fetchUrlDoc = async () => {
   }
 }
 
-// Ask mode: ask → synthesized briefing becomes a url_doc; we also prefill the
-// simulation_requirement textarea with the LLM's framing. Rest of the flow is
-// unchanged.
+// Ask mode: ask → enrichissement web optionnel → synthesized briefing.
+// Si WEB_SEARCH_MODEL est configuré côté backend, enrichAsk() est appelé
+// en premier pour injecter un contexte web récent dans la question.
+const askEnriching = ref(false)
+
 const runAskMode = async () => {
   const q = askQuestion.value.trim()
   if (!q || askBusy.value) return
   askBusy.value = true
   askError.value = ''
+
+  // Enrichissement web (US-057) — silencieux si non configuré
+  let enrichedQuestion = q
   try {
-    const res = await askMode(q)
+    askEnriching.value = true
+    const enrichRes = await enrichAsk(q)
+    if (enrichRes?.data?.context) {
+      enrichedQuestion = `${q}\n\n--- Web Context ---\n${enrichRes.data.context}`
+    }
+  } catch (_) {
+    // enrichissement non bloquant
+  } finally {
+    askEnriching.value = false
+  }
+
+  try {
+    const res = await askMode(enrichedQuestion)
     if (!res.success) {
       askError.value = res.error || t('home.console.askFailed')
       return

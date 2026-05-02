@@ -8,6 +8,8 @@ import io
 import csv
 import hmac
 import json
+import hashlib
+import time
 import traceback
 from datetime import datetime, timezone
 from functools import wraps
@@ -26,6 +28,7 @@ from ..services.simulation_runner import SimulationRunner, RunnerStatus
 from ..utils.logger import get_logger
 from ..utils.file_parser import FileParser
 from ..models.project import ProjectManager
+from ..services.web_enrichment import WebEnricher
 
 logger = get_logger('miroshark.api.simulation')
 
@@ -888,6 +891,60 @@ _ASK_SYSTEM_PROMPT = (
     "Do not include disclaimers. Do not invent specific quotes or precise "
     "figures. Do not include any other fields."
 )
+
+
+# ── /enrich-ask — US-057 ──────────────────────────────────────────────────
+
+_ENRICH_RATE_HITS: dict = {}
+_ENRICH_RATE_WINDOW_SEC = 60
+_ENRICH_RATE_MAX_CALLS = 10
+_ENRICH_CACHE: dict = {}   # sha256(question) -> { result, expires_at }
+_ENRICH_CACHE_TTL = 3600   # 1 hour
+
+
+def _enrich_rate_limited(client_ip: str) -> bool:
+    return _sliding_window_rate_limited(
+        _ENRICH_RATE_HITS,
+        client_ip,
+        window_sec=_ENRICH_RATE_WINDOW_SEC,
+        max_calls=_ENRICH_RATE_MAX_CALLS,
+    )
+
+
+@simulation_bp.route('/enrich-ask', methods=['POST'])
+def enrich_ask():
+    """Enrichit une question brute avec un contexte web via Perplexity/LLM.
+
+    Request  (JSON): { "question": str }
+    Response (JSON): { success: true, data: { context, sources, model, cached } }
+
+    Si WEB_SEARCH_API_KEY est absent → retourne contexte vide avec 200.
+    """
+    client_ip = request.headers.get("X-Forwarded-For", request.remote_addr or "unknown")
+    if _enrich_rate_limited(client_ip):
+        return jsonify({"success": False, "error": "RATE_LIMITED"}), 429
+
+    body = request.get_json(silent=True) or {}
+    question = (body.get("question") or "").strip()
+    if not question:
+        return jsonify({"success": False, "error": "MISSING_QUESTION"}), 400
+    if len(question) > 2000:
+        question = question[:2000]
+
+    # Cache hit
+    cache_key = hashlib.sha256(question.encode()).hexdigest()
+    cached = _ENRICH_CACHE.get(cache_key)
+    if cached and cached["expires_at"] > time.time():
+        return jsonify({"success": True, "data": {**cached["result"], "cached": True}})
+
+    # Graceful no-op if web search is not configured
+    if not Config.WEB_SEARCH_MODEL:
+        return jsonify({"success": True, "data": {"context": "", "sources": [], "model": "", "cached": False}})
+
+    enricher = WebEnricher()
+    result = enricher.enrich_question(question)
+    _ENRICH_CACHE[cache_key] = {"result": result, "expires_at": time.time() + _ENRICH_CACHE_TTL}
+    return jsonify({"success": True, "data": {**result, "cached": False}})
 
 
 def _ask_rate_limited(client_ip: str) -> bool:
