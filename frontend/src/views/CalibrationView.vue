@@ -10,13 +10,17 @@
     </header>
 
     <main class="cal-main">
-      <!-- ───────────── Hero band ───────────── -->
+      <!-- ───────────── Hero band — publication-style centered display ───────────── -->
       <section class="cal-hero" :ref="el => setSectionRef(el, 0)">
-        <span class="cal-eyebrow">{{ $t('calibration.eyebrow') }}</span>
-        <h1 class="cal-headline">{{ $t('calibration.hero.headline') }}</h1>
-        <p class="cal-sub">{{ $t('calibration.hero.sub') }}</p>
+        <header class="cal-hero-header">
+          <span class="cal-eyebrow">{{ $t('calibration.eyebrow') }}</span>
+          <h1 class="cal-headline">{{ $t('calibration.hero.headline') }}</h1>
+          <p class="cal-sub">{{ $t('calibration.hero.sub') }}</p>
+        </header>
 
-        <div class="cal-big-row">
+        <div class="cal-brier-display">
+          <p class="cal-brier-eyebrow">{{ $t('calibration.hero.label') }}</p>
+
           <!-- Skeleton placeholder pendant le fetch initial -->
           <template v-if="loading && data === null">
             <div class="cal-big-skeleton-wrap">
@@ -27,26 +31,24 @@
 
           <!-- Etat avec donnée -->
           <template v-else-if="data && data.brier !== null && data.brier !== undefined">
-            <div class="cal-big-num ms-mono" :title="$t('calibration.hero.brierTitle')">
-              {{ formatBrier(data.brier) }}
+            <div class="cal-brier-row">
+              <h2 class="cal-big-num ms-mono" :title="$t('calibration.hero.brierTitle')">
+                {{ formatBrier(data.brier) }}
+              </h2>
+              <div v-if="deltaChip" class="cal-delta-chip" :class="deltaChip.cls">
+                <span class="cal-delta-arrow" aria-hidden="true">{{ deltaChip.arrow }}</span>
+                <span class="ms-mono">{{ deltaChip.text }}</span>
+              </div>
             </div>
-            <div v-if="deltaChip" class="cal-delta-chip" :class="deltaChip.cls">
-              <span class="cal-delta-arrow" aria-hidden="true">{{ deltaChip.arrow }}</span>
-              <span class="ms-mono">{{ deltaChip.text }}</span>
-            </div>
-            <div class="cal-big-caption">
-              <span class="cal-big-label">{{ $t('calibration.hero.label') }}</span>
-              <span class="cal-big-help">{{ $t('calibration.hero.help') }}</span>
-            </div>
+            <p class="cal-brier-help">{{ $t('calibration.hero.help') }}</p>
           </template>
 
           <!-- Aucun verdict encore -->
           <template v-else-if="data">
-            <div class="cal-big-num cal-big-num--empty ms-mono">—</div>
-            <div class="cal-big-caption">
-              <span class="cal-big-label">{{ $t('calibration.hero.label') }}</span>
-              <span class="cal-big-help">{{ $t('calibration.empty.helper') }}</span>
+            <div class="cal-brier-row">
+              <h2 class="cal-big-num cal-big-num--empty ms-mono">—</h2>
             </div>
+            <p class="cal-brier-help">{{ $t('calibration.empty.helper') }}</p>
           </template>
         </div>
       </section>
@@ -65,59 +67,56 @@
 
       <!-- ───────────── Stats strip (4 cards) ───────────── -->
       <section class="cal-stats" :ref="el => setSectionRef(el, 1)" aria-label="Calibration stats">
-        <!-- Total verified -->
-        <article class="ms-card cal-stat-card">
-          <div class="cal-stat-num ms-mono">
-            <span v-if="loading && data === null" class="ms-skeleton cal-num-skel" aria-hidden="true"></span>
-            <template v-else>{{ data ? data.n : 0 }}</template>
-          </div>
-          <div class="cal-stat-row">
-            <span class="cal-stat-label">{{ $t('calibration.stats.total') }}</span>
-          </div>
-        </article>
-
         <!-- Called it -->
-        <article class="ms-card cal-stat-card">
-          <div class="cal-stat-num ms-mono">
+        <article class="cal-stat-card cal-stat-card--success">
+          <p class="cal-stat-label">{{ $t('calibration.stats.calledIt') }}</p>
+          <div class="cal-stat-num">
             <span v-if="loading && data === null" class="ms-skeleton cal-num-skel" aria-hidden="true"></span>
             <template v-else>
-              {{ outcomeCounts.called_it }}
-              <span class="cal-stat-pct">{{ formatPct(outcomeCounts.called_it, data ? data.n : 0) }}</span>
+              <span class="cal-stat-value ms-mono">{{ outcomeCounts.called_it }}</span>
+              <span class="cal-stat-pct ms-mono">{{ formatPct(outcomeCounts.called_it, data ? data.n : 0) }}</span>
             </template>
           </div>
-          <div class="cal-stat-row">
-            <span class="cal-stat-label">{{ $t('calibration.stats.calledIt') }}</span>
-            <span class="ms-badge ms-badge-success">{{ $t('calibration.badges.success') }}</span>
-          </div>
+          <span class="cal-stat-foot">{{ $t('calibration.badges.success') }}</span>
         </article>
 
         <!-- Partial -->
-        <article class="ms-card cal-stat-card">
-          <div class="cal-stat-num ms-mono">
+        <article class="cal-stat-card cal-stat-card--partial">
+          <p class="cal-stat-label">{{ $t('calibration.stats.partial') }}</p>
+          <div class="cal-stat-num">
             <span v-if="loading && data === null" class="ms-skeleton cal-num-skel" aria-hidden="true"></span>
             <template v-else>
-              {{ outcomeCounts.partial }}
-              <span class="cal-stat-pct">{{ formatPct(outcomeCounts.partial, data ? data.n : 0) }}</span>
+              <span class="cal-stat-value ms-mono">{{ outcomeCounts.partial }}</span>
+              <span class="cal-stat-pct ms-mono">{{ formatPct(outcomeCounts.partial, data ? data.n : 0) }}</span>
             </template>
           </div>
-          <div class="cal-stat-row">
-            <span class="cal-stat-label">{{ $t('calibration.stats.partial') }}</span>
-            <span class="ms-badge ms-badge-warning">{{ $t('calibration.badges.partial') }}</span>
-          </div>
+          <span class="cal-stat-foot">{{ $t('calibration.badges.partial') }}</span>
         </article>
 
         <!-- Wrong -->
-        <article class="ms-card cal-stat-card">
-          <div class="cal-stat-num ms-mono">
+        <article class="cal-stat-card cal-stat-card--wrong">
+          <p class="cal-stat-label">
+            <span>{{ $t('calibration.stats.wrong') }}</span>
+            <span class="cal-stat-warn-dot" aria-hidden="true"></span>
+          </p>
+          <div class="cal-stat-num">
             <span v-if="loading && data === null" class="ms-skeleton cal-num-skel" aria-hidden="true"></span>
             <template v-else>
-              {{ outcomeCounts.wrong }}
-              <span class="cal-stat-pct">{{ formatPct(outcomeCounts.wrong, data ? data.n : 0) }}</span>
+              <span class="cal-stat-value ms-mono">{{ outcomeCounts.wrong }}</span>
+              <span class="cal-stat-pct ms-mono">{{ formatPct(outcomeCounts.wrong, data ? data.n : 0) }}</span>
             </template>
           </div>
-          <div class="cal-stat-row">
-            <span class="cal-stat-label">{{ $t('calibration.stats.wrong') }}</span>
-            <span class="ms-badge ms-badge-danger">{{ $t('calibration.badges.wrong') }}</span>
+          <span class="cal-stat-foot">{{ $t('calibration.badges.wrong') }}</span>
+        </article>
+
+        <!-- Total verified -->
+        <article class="cal-stat-card cal-stat-card--total">
+          <p class="cal-stat-label">{{ $t('calibration.stats.total') }}</p>
+          <div class="cal-stat-num">
+            <span v-if="loading && data === null" class="ms-skeleton cal-num-skel" aria-hidden="true"></span>
+            <template v-else>
+              <span class="cal-stat-value ms-mono">{{ data ? data.n : 0 }}</span>
+            </template>
           </div>
         </article>
       </section>
@@ -226,7 +225,8 @@
                 text-anchor="middle"
               >{{ $t('calibration.plot.yAxis') }}</text>
 
-              <!-- Bullet points -->
+              <!-- Bullet points — warm palette : mint when accurate,
+                   orange when underconfident, terracotta when overconfident -->
               <g class="cal-plot-points">
                 <circle
                   v-for="(b, idx) in plotPoints"
@@ -236,6 +236,7 @@
                   :r="bucketRadius(b.n)"
                   class="cal-plot-dot"
                   :data-bucket="b.bucket"
+                  :data-tone="bucketTone(b)"
                   @mouseenter="showTooltip($event, b)"
                 />
               </g>
@@ -310,17 +311,20 @@
       <!-- ───────────── Methodology + CTA ───────────── -->
       <section class="cal-bottom-grid" :ref="el => setSectionRef(el, 3)">
         <article class="cal-method">
+          <span class="cal-method-eyebrow">{{ $t('calibration.eyebrow') }}</span>
           <h2 class="cal-method-title">{{ $t('calibration.methodology.title') }}</h2>
-          <p class="cal-method-p">{{ $t('calibration.methodology.p1') }}</p>
-          <p class="cal-method-p">{{ $t('calibration.methodology.p2') }}</p>
-          <p class="cal-method-p">{{ $t('calibration.methodology.p3') }}</p>
+          <div class="cal-method-body">
+            <p class="cal-method-p">{{ $t('calibration.methodology.p1') }}</p>
+            <p class="cal-method-p">{{ $t('calibration.methodology.p2') }}</p>
+            <p class="cal-method-p">{{ $t('calibration.methodology.p3') }}</p>
+          </div>
         </article>
 
-        <aside class="ms-card cal-cta-card">
+        <aside class="cal-cta-card">
           <h2 class="cal-cta-title">{{ $t('calibration.cta.title') }}</h2>
           <p class="cal-cta-p">{{ $t('calibration.cta.body') }}</p>
-          <router-link to="/devis" class="ms-btn cal-cta-btn">
-            {{ $t('calibration.cta.button') }}
+          <router-link to="/devis" class="cal-cta-btn">
+            <span>{{ $t('calibration.cta.button') }}</span>
             <span class="cal-cta-arrow" aria-hidden="true">→</span>
           </router-link>
         </aside>
@@ -754,6 +758,20 @@ const bucketRadius = (n) => {
   return Math.max(4, Math.min(20, r))
 }
 
+// Tone selon l'écart prédiction/observation. Mappe sur la palette warm :
+//   accurate (delta < 0.05)  → vert (mint, --wi-secondary)
+//   underconfident (observed > predicted) → orange (--ms-orange)
+//   overconfident (observed < predicted)  → terracotta (--wi-primary)
+// La diagonale "parfait" est observed = predicted ; on colore les points en
+// fonction de leur côté de cette diagonale pour rendre la lecture du graphe
+// immédiate sans légende lourde.
+const bucketTone = (b) => {
+  if (!b || !Number.isFinite(b.predicted) || !Number.isFinite(b.observed)) return 'accurate'
+  const delta = b.observed - b.predicted
+  if (Math.abs(delta) < 0.05) return 'accurate'
+  return delta > 0 ? 'under' : 'over'
+}
+
 // ─── Tooltip ────────────────────────────────────────────────────────────────
 const tooltip = reactive({
   visible: false,
@@ -1037,166 +1055,196 @@ onMounted(() => {
 
 .cal-page {
   min-height: 100vh;
-  background: var(--ms-bg);
-  color: var(--ms-text);
-  font-family: var(--ms-font-body);
+  background: var(--wi-bg);
+  color: var(--wi-on-bg);
+  font-family: var(--wi-font-body);
 }
 
 /* ── Top bar ── */
 .cal-topbar {
   max-width: 1280px;
   margin: 0 auto;
-  padding: var(--ms-space-6) var(--ms-space-6) 0;
+  padding-block-start: var(--wi-space-md);
+  padding-inline: var(--wi-gutter);
 }
 
 .cal-back {
   display: inline-flex;
   align-items: center;
   gap: var(--ms-space-2);
-  font-family: var(--ms-font-display);
+  font-family: var(--wi-font-heading);
   font-weight: 600;
-  font-size: var(--ms-text-base);
-  color: var(--ms-text);
+  font-size: var(--wi-label-sm);
+  color: var(--wi-on-surface);
   text-decoration: none;
-  padding: 8px 14px;
-  border-radius: var(--ms-radius-pill);
-  background: var(--ms-bg-elevated);
-  box-shadow: var(--ms-shadow-sm);
+  padding-block: 8px;
+  padding-inline: 14px;
+  border-radius: var(--wi-radius-pill);
+  background: var(--wi-surface);
+  border: 1px solid var(--wi-outline-variant);
+  box-shadow: var(--wi-shadow-sm);
   transition: transform var(--ms-transition), box-shadow var(--ms-transition);
 }
 .cal-back:hover {
   transform: translateY(-1px);
-  box-shadow: var(--ms-shadow-md);
+  box-shadow: var(--wi-shadow-md);
 }
 .cal-back-arrow {
-  color: var(--ms-orange);
+  color: var(--wi-primary);
   font-weight: 700;
 }
 
-/* ── Main container ── */
+/* ── Main container — generous publication margins ── */
 .cal-main {
   max-width: 1280px;
   margin: 0 auto;
-  padding: var(--ms-space-8) var(--ms-space-6) var(--ms-space-12);
+  padding-block: var(--wi-space-xl) var(--wi-space-xl);
+  padding-inline: var(--wi-gutter);
   display: flex;
   flex-direction: column;
-  gap: var(--ms-space-12);
+  gap: var(--wi-space-xl);
 }
 
-/* ── Hero band ── */
+/* ── Hero band — publication-style centered ── */
 .cal-hero {
   display: flex;
   flex-direction: column;
-  gap: var(--ms-space-4);
-  align-items: flex-start;
+  align-items: center;
+  text-align: center;
+  gap: var(--wi-space-lg);
+  padding-block-end: var(--wi-space-lg);
+  border-block-end: 1px solid var(--wi-outline-variant);
+}
+
+.cal-hero-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--wi-space-sm);
+  max-width: 760px;
 }
 
 .cal-eyebrow {
   display: inline-block;
-  background: var(--ms-orange-soft);
-  color: var(--ms-text);
-  padding: 4px 12px;
-  border-radius: var(--ms-radius-pill);
-  font-size: 11px;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  color: var(--wi-on-surface-variant);
+  padding-block: 4px;
 }
 
 .cal-headline {
-  font-family: var(--ms-font-display);
-  font-size: 48px;
-  font-weight: 600;
-  line-height: 1.1;
-  letter-spacing: -0.01em;
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-h1-size);
+  font-weight: var(--wi-h1-weight);
+  line-height: var(--wi-h1-leading);
+  letter-spacing: var(--wi-h1-tracking);
   margin: 0;
-  color: var(--ms-text);
+  color: var(--wi-on-surface);
 }
 
 .cal-sub {
-  font-size: 17px;
-  line-height: 1.55;
-  color: var(--ms-text-muted);
-  max-width: 720px;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-body-lg);
+  line-height: var(--wi-body-lg-leading);
+  color: var(--wi-on-surface-variant);
+  max-width: 680px;
   margin: 0;
 }
 
-.cal-big-row {
+/* Brier display — centered, large, mint */
+.cal-brier-display {
   display: flex;
-  align-items: flex-end;
-  gap: var(--ms-space-5);
+  flex-direction: column;
+  align-items: center;
+  gap: var(--wi-space-sm);
+}
+
+.cal-brier-eyebrow {
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-label-sm);
+  font-weight: var(--wi-label-sm-weight);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--wi-on-surface-variant);
+  margin: 0;
+}
+
+.cal-brier-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--wi-space-md);
   flex-wrap: wrap;
-  margin-top: var(--ms-space-4);
 }
 
 .cal-big-num {
-  font-family: var(--ms-font-display);
-  font-size: 96px;
-  font-weight: 600;
+  font-family: var(--wi-font-heading);
+  font-size: clamp(72px, 10vw, 96px);
+  font-weight: 700;
   line-height: 1;
-  color: var(--ms-orange-strong);
-  letter-spacing: -0.03em;
+  color: var(--wi-secondary);
+  letter-spacing: -0.04em;
+  margin: 0;
 }
 
 .cal-big-num--empty {
-  color: var(--ms-text-subtle);
+  color: var(--wi-on-surface-variant);
+  opacity: 0.4;
 }
 
 .cal-delta-chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
-  border-radius: var(--ms-radius-pill);
-  font-size: 13px;
+  padding-block: 8px;
+  padding-inline: 16px;
+  border-radius: var(--wi-radius-pill);
+  font-family: var(--wi-font-heading);
+  font-size: 14px;
   font-weight: 600;
-  margin-bottom: 16px;
+  box-shadow: var(--wi-shadow-sm);
 }
 .cal-delta-chip--better {
-  background: var(--ms-mint-soft);
-  color: var(--ms-status-success-text);
+  background: var(--wi-secondary-container);
+  color: var(--wi-on-secondary-container);
 }
 .cal-delta-chip--worse {
   background: var(--ms-peach-soft);
-  color: var(--ms-status-warning-text);
+  color: var(--wi-on-primary-container);
 }
 .cal-delta-chip--neutral {
-  background: var(--ms-bg-muted);
-  color: var(--ms-text-muted);
+  background: var(--wi-surface-container);
+  color: var(--wi-on-surface-variant);
 }
 .cal-delta-arrow { font-weight: 700; }
 
-.cal-big-caption {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-bottom: 12px;
-}
-.cal-big-label {
-  font-family: var(--ms-font-display);
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--ms-text);
-}
-.cal-big-help {
-  font-size: 13px;
-  color: var(--ms-text-muted);
+.cal-brier-help {
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-body-md);
+  line-height: var(--wi-body-md-leading);
+  color: var(--wi-on-surface-variant);
+  margin: 0;
+  max-width: 560px;
 }
 
 .cal-big-skeleton-wrap {
   display: flex;
   gap: var(--ms-space-4);
-  align-items: flex-end;
+  align-items: center;
+  justify-content: center;
 }
 .cal-big-skeleton-num {
   width: 220px;
   height: 86px;
-  border-radius: var(--ms-radius-md);
+  border-radius: var(--wi-radius-interactive);
 }
 .cal-big-skeleton-chip {
-  width: 90px;
-  height: 28px;
-  border-radius: var(--ms-radius-pill);
+  width: 140px;
+  height: 32px;
+  border-radius: var(--wi-radius-pill);
   margin-bottom: 16px;
 }
 
@@ -1228,75 +1276,123 @@ onMounted(() => {
   word-break: break-word;
 }
 
-/* ── Stats strip ── */
+/* ── Stats strip — publication-grade cards with semantic color ── */
 .cal-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--ms-space-4);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--wi-gutter);
 }
 .cal-stat-card {
   display: flex;
   flex-direction: column;
   gap: var(--ms-space-3);
+  padding: var(--wi-space-md);
+  background: var(--wi-surface);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-card);
+  box-shadow: var(--wi-shadow-ambient);
+  transition: box-shadow var(--ms-transition), transform var(--ms-transition);
 }
-.cal-stat-num {
-  font-family: var(--ms-font-display);
-  font-weight: 600;
-  font-size: 36px;
-  line-height: 1.1;
-  color: var(--ms-text);
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
+.cal-stat-card:hover {
+  box-shadow: var(--wi-shadow-lg);
+  transform: translateY(-2px);
 }
-.cal-stat-pct {
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--ms-text-muted);
-}
-.cal-stat-row {
+
+.cal-stat-label {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--ms-space-2);
+  margin: 0;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--wi-on-surface-variant);
 }
-.cal-stat-label {
+
+.cal-stat-warn-dot {
+  display: inline-block;
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: 50%;
+  background: var(--wi-primary);
+}
+
+.cal-stat-num {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  line-height: 1.05;
+}
+.cal-stat-value {
+  font-family: var(--wi-font-heading);
+  font-weight: 700;
+  font-size: 40px;
+  letter-spacing: -0.02em;
+  color: var(--wi-on-surface);
+}
+.cal-stat-pct {
+  font-family: var(--wi-font-body);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--wi-on-surface-variant);
+}
+.cal-stat-foot {
+  font-family: var(--wi-font-body);
   font-size: 13px;
-  color: var(--ms-text-muted);
+  color: var(--wi-on-surface-variant);
+  opacity: 0.85;
 }
+
+/* Semantic recolor — Called it (mint), Partial (orange), Wrong (terracotta) */
+.cal-stat-card--success .cal-stat-value { color: var(--wi-secondary); }
+.cal-stat-card--partial .cal-stat-value { color: var(--ms-orange); }
+.cal-stat-card--wrong .cal-stat-value { color: var(--wi-primary); }
+.cal-stat-card--total .cal-stat-value { color: var(--wi-on-surface); }
+
 .cal-num-skel {
   display: inline-block;
-  width: 80px;
-  height: 36px;
+  width: 96px;
+  height: 40px;
+  border-radius: var(--wi-radius-md);
 }
 
 /* ── Plot grid (plot + filters) ── */
 .cal-plot-grid {
   display: grid;
   grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
-  gap: var(--ms-space-6);
+  gap: var(--wi-gutter);
 }
 
 .cal-plot-card {
-  padding: var(--ms-space-8);
+  padding: var(--wi-space-lg);
+  background: var(--wi-surface);
+  border: 1px solid var(--wi-outline-variant);
   border-radius: var(--wi-radius-card);
   box-shadow: var(--wi-shadow-ambient);
 }
 .cal-plot-head {
-  margin-bottom: var(--ms-space-5);
+  margin-bottom: var(--wi-space-md);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 .cal-plot-title {
-  font-family: var(--ms-font-display);
-  font-size: 22px;
-  font-weight: 600;
-  margin: 0 0 4px 0;
-  color: var(--ms-text);
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-h3-size);
+  font-weight: var(--wi-h3-weight);
+  line-height: var(--wi-h3-leading);
+  margin: 0;
+  color: var(--wi-on-surface);
 }
 .cal-plot-explainer {
-  font-size: 13px;
-  color: var(--ms-text-muted);
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-body-md);
+  color: var(--wi-on-surface-variant);
   margin: 0;
-  line-height: 1.55;
+  line-height: var(--wi-body-md-leading);
+  max-width: 640px;
 }
 
 .cal-plot-skeleton {
@@ -1346,43 +1442,60 @@ onMounted(() => {
 }
 
 .cal-plot-grid-lines line {
-  stroke: var(--ms-border);
+  stroke: var(--wi-outline-variant);
   stroke-width: 1;
+  stroke-opacity: 0.55;
 }
 .cal-plot-axis {
-  stroke: var(--ms-border-strong);
-  stroke-width: 1.5;
+  stroke: var(--wi-on-surface-variant);
+  stroke-width: 1.25;
+  stroke-opacity: 0.65;
 }
+/* Diagonal "perfect calibration" reference line */
 .cal-plot-diagonal {
-  stroke: var(--ms-text-subtle);
+  stroke: var(--wi-on-bg);
   stroke-width: 1.5;
-  stroke-dasharray: 4 4;
+  stroke-dasharray: 4 5;
+  stroke-opacity: 0.45;
 }
 .cal-tick {
-  fill: var(--ms-text-muted);
+  fill: var(--wi-on-surface-variant);
   font-size: 11px;
+  font-family: var(--wi-font-body);
+  font-weight: 500;
 }
 .cal-tick-x { text-anchor: middle; }
 .cal-tick-y { text-anchor: end; }
 .cal-axis-title {
-  fill: var(--ms-text-muted);
-  font-size: 12px;
+  fill: var(--wi-on-surface-variant);
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  font-family: var(--ms-font-body);
+  font-family: var(--wi-font-body);
 }
 
+/* Warm palette dots — colored by calibration delta in JS via inline fill is
+   not necessary ; we color by proximity to the diagonal using filter classes
+   below. Default = mint (well-calibrated). */
 .cal-plot-dot {
-  fill: var(--ms-orange);
-  fill-opacity: 0.85;
-  stroke: var(--ms-bg-elevated);
+  fill: var(--wi-secondary);
+  fill-opacity: 0.78;
+  stroke: var(--wi-surface);
   stroke-width: 1.5;
   cursor: pointer;
   transition: fill-opacity var(--ms-transition), transform var(--ms-transition);
 }
 .cal-plot-dot:hover {
   fill-opacity: 1;
+}
+/* Buckets where observed > predicted (underconfident) → orange */
+.cal-plot-dot[data-tone="under"] {
+  fill: var(--ms-orange);
+}
+/* Buckets where observed < predicted (overconfident) → terracotta */
+.cal-plot-dot[data-tone="over"] {
+  fill: var(--wi-primary);
 }
 
 /* Tooltip — on garde left:/top: en JS via :style car la position colle au
@@ -1418,18 +1531,21 @@ onMounted(() => {
 
 /* ── Filters card ── */
 .cal-filters-card {
-  padding: var(--ms-space-6);
+  padding: var(--wi-space-md);
+  background: var(--wi-surface-container-low);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-card);
   display: flex;
   flex-direction: column;
   gap: var(--ms-space-4);
   align-self: start;
 }
 .cal-filters-title {
-  font-family: var(--ms-font-display);
-  font-size: 17px;
-  font-weight: 600;
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-h3-size);
+  font-weight: var(--wi-h3-weight);
   margin: 0;
-  color: var(--ms-text);
+  color: var(--wi-on-surface);
 }
 .cal-field {
   display: flex;
@@ -1437,17 +1553,19 @@ onMounted(() => {
   gap: 6px;
 }
 .cal-field-label {
-  font-size: 12px;
+  font-size: var(--wi-caption);
   font-weight: 600;
-  color: var(--ms-text-muted);
-  letter-spacing: 0.02em;
+  color: var(--wi-on-surface-variant);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 .cal-filters-note {
   font-size: 12px;
-  color: var(--ms-text-subtle);
+  color: var(--wi-on-surface-variant);
   margin: 0;
   line-height: 1.5;
+  font-style: italic;
+  opacity: 0.85;
 }
 .cal-filters-actions {
   display: flex;
@@ -1455,62 +1573,98 @@ onMounted(() => {
   flex-wrap: wrap;
 }
 
-/* ── Methodology + CTA bottom ── */
+/* ── Methodology + CTA bottom — publication treatment ── */
 .cal-bottom-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--ms-space-8);
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: var(--wi-space-lg);
+  align-items: start;
+}
+.cal-method {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wi-space-sm);
+  padding-block-start: var(--wi-space-md);
+  border-block-start: 1px solid var(--wi-outline-variant);
+}
+.cal-method-eyebrow {
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--wi-on-surface-variant);
 }
 .cal-method-title {
-  font-family: var(--ms-font-display);
-  font-size: 28px;
-  font-weight: 600;
-  margin: 0 0 var(--ms-space-4) 0;
-  letter-spacing: -0.01em;
-  color: var(--ms-text);
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-h2-size);
+  font-weight: var(--wi-h2-weight);
+  letter-spacing: var(--wi-h2-tracking);
+  line-height: var(--wi-h2-leading);
+  margin: 0;
+  color: var(--wi-on-surface);
+  max-width: 580px;
+}
+.cal-method-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ms-space-4);
+  max-width: 640px;
 }
 .cal-method-p {
-  font-size: 15px;
-  line-height: 1.65;
-  color: var(--ms-text-muted);
-  margin: 0 0 var(--ms-space-3) 0;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-body-md);
+  line-height: 1.7;
+  color: var(--wi-on-surface-variant);
+  margin: 0;
 }
 
 .cal-cta-card {
-  background: var(--ms-mint-soft);
-  border-color: rgba(127, 216, 166, 0.35);
+  background: var(--wi-secondary-container);
   display: flex;
   flex-direction: column;
   gap: var(--ms-space-3);
-  padding: var(--ms-space-8);
-  border-radius: var(--ms-radius-lg);
+  padding: var(--wi-space-lg);
+  border-radius: var(--wi-radius-card);
+  box-shadow: var(--wi-shadow-ambient);
 }
 .cal-cta-title {
-  font-family: var(--ms-font-display);
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--ms-text);
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-h3-size);
+  font-weight: var(--wi-h3-weight);
+  color: var(--wi-on-secondary-container);
   margin: 0;
 }
 .cal-cta-p {
-  font-size: 15px;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-body-md);
   line-height: 1.6;
-  color: var(--ms-text);
-  opacity: 0.78;
+  color: var(--wi-on-secondary-container);
+  opacity: 0.85;
   margin: 0;
 }
 .cal-cta-btn {
-  margin-top: var(--ms-space-2);
-  background: var(--ms-mint);
-  color: var(--ms-text);
-  border: 1px solid rgba(47, 122, 82, 0.18);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ms-space-2);
+  margin-block-start: var(--ms-space-2);
+  background: var(--wi-secondary);
+  color: var(--wi-on-secondary);
+  padding-block: 12px;
+  padding-inline: 22px;
+  border-radius: var(--wi-radius-pill);
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-label-sm);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-decoration: none;
   align-self: flex-start;
-  box-shadow: var(--ms-shadow-sm);
+  box-shadow: var(--wi-shadow-sm);
+  transition: transform var(--ms-transition), box-shadow var(--ms-transition);
 }
 .cal-cta-btn:hover {
-  filter: brightness(1.04);
   transform: translateY(-1px);
-  box-shadow: var(--ms-shadow-md);
+  box-shadow: var(--wi-shadow-md);
 }
 .cal-cta-arrow {
   font-weight: 700;
@@ -1537,18 +1691,20 @@ onMounted(() => {
 }
 
 .calib-eval-title {
-  font-family: var(--ms-font-display);
-  font-size: 28px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-h2-size);
+  font-weight: var(--wi-h2-weight);
+  letter-spacing: var(--wi-h2-tracking);
+  line-height: var(--wi-h2-leading);
   margin: 0;
-  color: var(--ms-text);
+  color: var(--wi-on-surface);
 }
 
 .calib-eval-intro {
-  font-size: 14px;
-  color: var(--ms-text-muted);
-  line-height: 1.55;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-body-md);
+  color: var(--wi-on-surface-variant);
+  line-height: var(--wi-body-md-leading);
   margin: 0;
   max-width: 760px;
 }
@@ -1678,12 +1834,16 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: var(--ms-space-3);
-  padding: var(--ms-space-5);
+  padding: var(--wi-space-md);
+  background: var(--wi-surface);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-card);
+  box-shadow: var(--wi-shadow-sm);
   transition: transform var(--ms-transition), box-shadow var(--ms-transition);
 }
 .calib-eval-card:hover {
   transform: translateY(-2px);
-  box-shadow: var(--ms-shadow-md);
+  box-shadow: var(--wi-shadow-ambient);
 }
 .calib-eval-card--saving {
   opacity: 0.7;
@@ -1738,16 +1898,16 @@ onMounted(() => {
   padding: 4px 10px;
 }
 .calib-eval-current--success {
-  background: var(--ms-mint-soft);
-  color: var(--ms-status-success-text);
+  background: var(--wi-secondary-container);
+  color: var(--wi-on-secondary-container);
 }
 .calib-eval-current--partial {
   background: var(--ms-peach-soft);
-  color: var(--ms-status-warning-text);
+  color: var(--wi-on-primary-container);
 }
 .calib-eval-current--wrong {
-  background: var(--ms-rose-soft);
-  color: var(--ms-status-danger-text);
+  background: var(--wi-error-container);
+  color: var(--wi-on-error-container);
 }
 
 .calib-eval-card-snippet {
@@ -1811,23 +1971,23 @@ onMounted(() => {
 }
 
 .outcome-btn--called-it {
-  background: var(--ms-mint);
-  color: var(--ms-text);
-  border-color: rgba(47, 122, 82, 0.18);
+  background: var(--wi-secondary-container);
+  color: var(--wi-on-secondary-container);
+  border-color: var(--wi-secondary);
 }
 .outcome-btn--partial {
-  background: var(--ms-peach);
-  color: var(--ms-text);
-  border-color: rgba(138, 86, 16, 0.18);
+  background: var(--ms-peach-soft);
+  color: var(--wi-on-primary-container);
+  border-color: var(--ms-orange);
 }
 .outcome-btn--wrong {
-  background: var(--ms-rose);
-  color: var(--ms-text);
-  border-color: rgba(161, 64, 58, 0.18);
+  background: var(--wi-error-container);
+  color: var(--wi-on-error-container);
+  border-color: var(--wi-primary);
 }
 .outcome-btn--na {
   background: transparent;
-  color: var(--ms-text-muted);
+  color: var(--wi-on-surface-variant);
 }
 .outcome-btn--active {
   filter: brightness(0.94);
@@ -1842,22 +2002,23 @@ onMounted(() => {
   text-align: start;
 }
 
-/* ── How-to section (US-046) ── */
+/* ── How-to section (US-046) — publication "method box" ── */
 .cal-howto {
-  background: var(--ms-surface-2, var(--ms-bg-elevated));
-  border-radius: var(--ms-radius-md);
-  padding: 1.5rem;
+  background: var(--wi-surface-container-low);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-card);
+  padding: var(--wi-space-md);
   display: flex;
   flex-direction: column;
   gap: var(--ms-space-3);
 }
 
 .cal-howto h2 {
-  font-family: var(--ms-font-display);
-  font-size: 20px;
-  font-weight: 600;
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-h3-size);
+  font-weight: var(--wi-h3-weight);
   margin: 0;
-  color: var(--ms-text);
+  color: var(--wi-on-surface);
 }
 
 .cal-howto ol {
@@ -1866,23 +2027,35 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: var(--ms-space-2);
+  counter-reset: howto-step;
 }
 
 .cal-howto ol li {
-  font-size: 14px;
-  line-height: 1.6;
-  color: var(--ms-text-muted);
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-body-md);
+  line-height: 1.65;
+  color: var(--wi-on-surface-variant);
   list-style: none;
-  padding: 0;
+  padding-inline-start: var(--ms-space-2);
+  position: relative;
+  counter-increment: howto-step;
+}
+.cal-howto ol li::before {
+  content: counter(howto-step) ".";
+  font-family: var(--wi-font-heading);
+  font-weight: 600;
+  color: var(--wi-primary);
+  margin-inline-end: 6px;
 }
 
 .cal-howto-note {
   font-size: 13px;
-  color: var(--ms-text-subtle);
+  color: var(--wi-on-surface-variant);
   margin: 0;
   line-height: 1.55;
-  padding-top: var(--ms-space-2);
-  border-top: 1px solid var(--ms-border);
+  padding-block-start: var(--ms-space-2);
+  border-block-start: 1px solid var(--wi-outline-variant);
+  font-style: italic;
 }
 
 /* ── Admin token bar (US-046 fix) ── */
@@ -1917,11 +2090,12 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 12px;
-  background: var(--ms-mint-soft);
-  color: var(--ms-status-success-text);
-  border: 1px solid rgba(127, 216, 166, 0.35);
-  border-radius: var(--ms-radius-pill);
+  padding-block: 4px;
+  padding-inline: 12px;
+  background: var(--wi-secondary-container);
+  color: var(--wi-on-secondary-container);
+  border: 1px solid var(--wi-secondary);
+  border-radius: var(--wi-radius-pill);
   font-size: 12px;
   font-weight: 600;
 }
@@ -1951,15 +2125,18 @@ onMounted(() => {
 }
 
 @media (max-width: 768px) {
-  .cal-headline { font-size: 36px; }
+  .cal-headline { font-size: 32px; }
   .cal-big-num { font-size: 64px; }
   .cal-stats {
     grid-template-columns: repeat(2, 1fr);
+    gap: var(--ms-space-4);
   }
-  .cal-plot-card { padding: var(--ms-space-5); }
+  .cal-stat-value { font-size: 32px; }
+  .cal-plot-card { padding: var(--wi-space-md); }
   .cal-plot-skeleton { height: 400px; }
   .cal-plot-empty { height: 340px; }
-  .calib-eval-title { font-size: 24px; }
+  .cal-method-title { font-size: 26px; }
+  .calib-eval-title { font-size: 26px; }
   .calib-eval-card { padding: var(--ms-space-4); }
   .calib-eval-card-footer {
     align-items: stretch;

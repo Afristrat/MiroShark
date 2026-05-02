@@ -18,56 +18,94 @@
       </div>
     </nav>
 
-    <div class="main-content">
-      <!-- Header -->
-      <header class="explore-header">
-        <div class="tag-row">
-          <span class="orange-tag">{{ verifiedOnly ? '📍 ' + $t('explore.header.verified') : '◎ ' + $t('explore.header.title') }}</span>
-          <span class="meta-sep">·</span>
-          <span class="meta-text">
-            {{ verifiedOnly ? $t('explore.header.verified') : $t('explore.header.subtitle') }}
-          </span>
-        </div>
-        <h1 class="page-title">{{ verifiedOnly ? $t('explore.header.verified') : $t('explore.header.title') }}</h1>
-        <p class="page-subtitle">
+    <main class="main-content">
+      <!-- ───────────── Hero & Search ───────────── -->
+      <section class="explore-hero">
+        <span class="hero-eyebrow">
+          {{ verifiedOnly ? '📍 ' + $t('explore.header.verified') : '◎ ' + $t('explore.header.title') }}
+        </span>
+        <h1 class="hero-title">
+          {{ verifiedOnly
+            ? $t('explore.header.verified')
+            : 'Simulations en cours et passées' }}
+        </h1>
+        <p class="hero-subtitle">
           <template v-if="verifiedOnly">
-            Each card is a public Bassira run whose operator marked the
-            real-world outcome. Hover the badge for the source link, open
-            one to see how the agent consensus formed, or fork it to test
-            the same agent population on a fresh scenario.
+            Chaque carte est une simulation Bassira publique dont l'opérateur a
+            confirmé l'issue réelle. Survolez l'étiquette pour la source,
+            ouvrez-en une pour voir la formation du consensus, ou forkez-la
+            pour tester la même population d'agents sur un nouveau scénario.
           </template>
           <template v-else>
-            Every card is a real Bassira run someone published. Open one to see
-            the full belief drift, agent network, and prediction outcome — or fork
-            it in one click and run your own variant with the same agent population.
+            Chaque carte est une simulation Bassira réelle, publiée par un
+            décideur. Ouvrez-en une pour voir la dérive des croyances, le
+            réseau d'agents et l'issue prédite — ou forkez-la en un clic
+            pour relancer votre propre variante.
           </template>
         </p>
-        <div class="stats-row">
-          <span class="stat-chip">
-            <span class="stat-num">{{ loading ? '…' : total }}</span>
+
+        <!-- Search bar -->
+        <div class="hero-search">
+          <span class="hero-search-icon" aria-hidden="true">⌕</span>
+          <input
+            v-model="searchQuery"
+            type="search"
+            class="hero-search-input"
+            :placeholder="$t('explore.filters.search')"
+            :aria-label="$t('explore.filters.search')"
+          />
+        </div>
+      </section>
+
+      <!-- ───────────── Filters & Sort ───────────── -->
+      <section class="filters-bar">
+        <div class="filter-chips">
+          <button
+            class="cat-chip cat-chip-verified"
+            :class="{ 'cat-chip-active': verifiedFilter }"
+            @click="toggleVerifiedFilter"
+            :disabled="loading"
+            :title="verifiedFilter ? $t('explore.header.title') : $t('explore.header.verified')"
+          >
+            <span class="cat-chip-icon" aria-hidden="true">📍</span>
+            <span>{{ $t('explore.filters.verified') }}</span>
+          </button>
+
+          <button
+            v-for="cat in CATEGORIES"
+            :key="cat.id"
+            class="cat-chip"
+            :class="['cat-chip-' + cat.id, { 'cat-chip-active': categoryFilter === cat.id }]"
+            @click="toggleCategory(cat.id)"
+            :title="cat.label"
+          >
+            <span class="cat-chip-icon" aria-hidden="true">{{ cat.glyph }}</span>
+            <span>{{ cat.label }}</span>
+          </button>
+        </div>
+
+        <div class="filters-right">
+          <span class="stat-chip" v-if="!loading">
+            <span class="stat-num">{{ total }}</span>
             <span class="stat-label">{{ verifiedOnly ? 'verified' : 'published' }}</span>
           </span>
           <span v-if="!verifiedOnly && !loading && items.length > 0" class="stat-chip">
             <span class="stat-num">{{ resolvedCount }}</span>
             <span class="stat-label">resolved</span>
           </span>
-          <span v-if="!verifiedOnly && !loading && items.length > 0" class="stat-chip">
-            <span class="stat-num">{{ verifiedCount }}</span>
-            <span class="stat-label">verified</span>
-          </span>
 
-          <!-- Verified filter chip — toggles a `?verified=1` fetch + the
-               /verified URL so the view is shareable. -->
-          <button
-            class="filter-chip"
-            :class="{ 'filter-chip-active': verifiedFilter }"
-            @click="toggleVerifiedFilter"
-            :disabled="loading"
-            :title="verifiedFilter ? $t('explore.header.title') : $t('explore.header.verified')"
-          >
-            <span class="filter-chip-icon">📍</span>
-            <span>{{ $t('explore.filters.verified') }}</span>
-          </button>
+          <div class="sort-wrapper">
+            <select
+              v-model="sortBy"
+              class="sort-select"
+              :aria-label="$t('explore.filters.sortBy')"
+            >
+              <option value="recent">{{ $t('explore.filters.newest') }}</option>
+              <option value="oldest">{{ $t('explore.filters.oldest') }}</option>
+              <option value="popular">{{ $t('explore.filters.popular') }}</option>
+            </select>
+            <span class="sort-caret" aria-hidden="true">⌄</span>
+          </div>
 
           <button
             class="refresh-btn"
@@ -76,14 +114,14 @@
             :title="$t('common.retry')"
           >
             <span v-if="loading">…</span>
-            <span v-else>↻ {{ $t('common.retry') }}</span>
+            <span v-else>↻</span>
           </button>
         </div>
-      </header>
+      </section>
 
       <!-- Loading skeletons — uses .ms-skeleton (shimmer + reduced-motion
            handling) from src/styles/components.css. -->
-      <div v-if="loading && items.length === 0" class="gallery-loading">
+      <section v-if="loading && items.length === 0" class="gallery-loading">
         <div class="loading-grid">
           <div v-for="n in 8" :key="n" class="skeleton-card" aria-hidden="true">
             <div class="ms-skeleton skeleton-thumb"></div>
@@ -104,46 +142,71 @@
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       <!-- Error -->
-      <div v-else-if="error" class="gallery-error">
-        <div class="error-icon">⚠</div>
+      <section v-else-if="error" class="gallery-error">
+        <div class="error-icon" aria-hidden="true">⚠</div>
         <div class="error-title">{{ $t('explore.error') }}</div>
         <div class="error-msg">{{ error }}</div>
         <button class="error-retry" @click="refresh">{{ $t('common.retry') }}</button>
-      </div>
+      </section>
 
-      <!-- Empty -->
-      <div v-else-if="items.length === 0" class="gallery-empty">
-        <div class="empty-icon">{{ verifiedFilter ? '📍' : '◇' }}</div>
+      <!-- Empty — illustré et inviting -->
+      <section v-else-if="filteredItems.length === 0" class="gallery-empty">
+        <div class="empty-illustration" aria-hidden="true">
+          <span class="empty-glyph empty-glyph-1">◇</span>
+          <span class="empty-glyph empty-glyph-2">◎</span>
+          <span class="empty-glyph empty-glyph-3">◈</span>
+        </div>
         <div class="empty-title">
-          {{ $t('explore.empty') }}
+          <template v-if="searchQuery || categoryFilter">
+            Aucun résultat pour ces filtres
+          </template>
+          <template v-else>
+            {{ $t('explore.empty') }}
+          </template>
         </div>
         <div class="empty-msg">
-          <template v-if="verifiedFilter">
-            Once an operator marks a public simulation's real-world outcome
-            from the Embed dialog, it shows up here. In the meantime, browse
-            every published run on
+          <template v-if="searchQuery || categoryFilter">
+            Essayez d'élargir votre recherche ou
+            <button class="inline-link inline-link-button" @click="clearFilters">
+              réinitialisez les filtres
+            </button>
+            pour voir toutes les simulations publiées.
+          </template>
+          <template v-else-if="verifiedFilter">
+            Une simulation rejoint cet espace dès qu'un opérateur confirme son
+            issue depuis la fenêtre d'intégration. En attendant, parcourez
+            toutes les simulations publiées sur
             <router-link to="/explore" class="inline-link">/explore</router-link>.
           </template>
           <template v-else>
-            Yours could be first. Run a simulation, click the share icon on the
-            result page, toggle "Public" — it'll appear here within 30 seconds.
+            La vôtre pourrait être la première. Lancez une simulation,
+            ouvrez la fenêtre d'intégration sur la page de résultat,
+            activez « Public » — elle apparaîtra ici en moins de 30 secondes.
           </template>
         </div>
         <router-link
+          v-if="!searchQuery && !categoryFilter"
           :to="verifiedFilter ? '/explore' : '/'"
           class="empty-cta"
         >
-          {{ verifiedFilter ? 'Browse all public sims →' : 'Run a simulation →' }}
+          {{ verifiedFilter ? 'Voir toutes les simulations →' : 'Lancer une simulation →' }}
         </router-link>
-      </div>
+        <button
+          v-else
+          class="empty-cta"
+          @click="clearFilters"
+        >
+          Réinitialiser les filtres →
+        </button>
+      </section>
 
       <!-- Grid -->
-      <div v-else class="gallery-grid">
+      <section v-else class="gallery-grid">
         <article
-          v-for="(item, idx) in items"
+          v-for="(item, idx) in filteredItems"
           :key="item.simulation_id"
           :ref="el => setGalleryCardRef(el, idx)"
           class="gallery-card ms-card"
@@ -172,6 +235,17 @@
 
           <!-- Body -->
           <div class="card-body">
+            <span
+              v-if="categoryOf(item)"
+              class="card-category"
+              :class="'card-category-' + categoryOf(item).id"
+            >
+              <span class="card-category-glyph" aria-hidden="true">
+                {{ categoryOf(item).glyph }}
+              </span>
+              {{ categoryOf(item).label }}
+            </span>
+
             <h2 class="card-scenario" :title="item.scenario">
               {{ item.scenario || '(untitled scenario)' }}
             </h2>
@@ -287,25 +361,25 @@
             </div>
           </div>
         </article>
-      </div>
+      </section>
 
       <!-- Load more -->
-      <div v-if="items.length > 0 && hasMore" class="load-more-row">
+      <div v-if="filteredItems.length > 0 && hasMore" class="load-more-row">
         <button
           class="load-more-btn"
           @click="loadMore"
           :disabled="loadingMore"
         >
-          <span v-if="loadingMore">Loading…</span>
-          <span v-else>Load more ({{ total - items.length }} remaining)</span>
+          <span v-if="loadingMore">{{ $t('explore.loading') }}</span>
+          <span v-else>{{ $t('explore.loadMore') }} ({{ total - items.length }})</span>
         </button>
       </div>
-    </div>
+    </main>
 
     <footer class="explore-footer">
       <span class="footer-line"></span>
       <span class="footer-text">
-        Want yours here? Run a sim, open the Embed dialog, toggle "Public."
+        Lancez une simulation, ouvrez la fenêtre d'intégration, activez « Public ».
       </span>
       <span class="footer-line"></span>
     </footer>
@@ -345,6 +419,69 @@ const forkingId = ref('')
 const forkErrors = ref({})
 const verifiedFilter = ref(props.verifiedOnly)
 
+// ── Refonte Stitch : recherche, catégorie, tri ─────────────────────
+// Filtrage / tri appliqués côté client sur les items déjà chargés.
+// Le fetch backend reste piloté par verifiedFilter pour préserver la
+// pagination existante.
+const searchQuery = ref('')
+const categoryFilter = ref('') // '' | 'crisis' | 'market' | 'policy' | 'decision'
+const sortBy = ref('recent')   // 'recent' | 'oldest' | 'popular'
+
+// Catégories alignées sur le design Stitch (4 chips colorés).
+// Le glyphe ASCII évite la dépendance Material Symbols dans la vue.
+const CATEGORIES = [
+  { id: 'crisis',   label: 'Crisis',   glyph: '◬', match: /(crisis|crise|tension|conflict|conflit|guerre|attaque|sanction|embarg)/i },
+  { id: 'market',   label: 'Market',   glyph: '▲', match: /(market|marché|prix|price|adoption|demand|offre|vente|stock|action|trade|tarif|inflation|petrole|pétrole|véhicule|vehicule|énerg|energ)/i },
+  { id: 'policy',   label: 'Policy',   glyph: '§', match: /(policy|politique|réglementation|reglementation|loi|law|tax|taxe|cbam|carbone|fiscal|réforme|reforme|régulation|regulation)/i },
+  { id: 'decision', label: 'Decision', glyph: '◇', match: /(decision|décision|stratégie|strategy|arbitrage|choix|allocation|priorit|gouvernance)/i },
+]
+
+const categoryOf = (item) => {
+  const text = String(item?.scenario || '').toLowerCase()
+  if (!text) return null
+  for (const cat of CATEGORIES) {
+    if (cat.match.test(text)) return cat
+  }
+  return null
+}
+
+const toggleCategory = (id) => {
+  categoryFilter.value = categoryFilter.value === id ? '' : id
+}
+
+const clearFilters = () => {
+  searchQuery.value = ''
+  categoryFilter.value = ''
+}
+
+// Items affichés : items chargés filtrés par search + category, triés.
+// On préserve la liste source `items` pour ne pas perturber pagination
+// (`total - items.length` reste juste pour le bouton "Charger plus").
+const filteredItems = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase()
+  const cat = categoryFilter.value
+  let result = items.value
+  if (q) {
+    result = result.filter((it) =>
+      String(it.scenario || '').toLowerCase().includes(q),
+    )
+  }
+  if (cat) {
+    result = result.filter((it) => categoryOf(it)?.id === cat)
+  }
+  if (sortBy.value === 'oldest') {
+    result = [...result].sort((a, b) =>
+      String(a.created_at || '').localeCompare(String(b.created_at || '')),
+    )
+  } else if (sortBy.value === 'popular') {
+    result = [...result].sort(
+      (a, b) => (b.agent_count || 0) - (a.agent_count || 0),
+    )
+  }
+  // 'recent' = ordre du backend (déjà trié desc) → pas de re-tri.
+  return result
+})
+
 // Refs for the gallery cards — populated via :ref callback so the scroll
 // observer can fade each card in once it enters the viewport. Cleared on
 // every refresh so stale entries from a previous page don't leak in.
@@ -356,10 +493,6 @@ useScrollFadeIn(galleryCardRefs)
 
 const resolvedCount = computed(
   () => items.value.filter((item) => item.resolution_outcome).length,
-)
-
-const verifiedCount = computed(
-  () => items.value.filter((item) => item.outcome && item.outcome.label).length,
 )
 
 const shareCardSrc = (item) => {
@@ -575,123 +708,276 @@ onMounted(refresh)
 </script>
 
 <style scoped>
+/* ═══════════════════════════════════════════════════════════
+   ExploreView — Refonte Stitch « Bassira Galerie Explore »
+   Tokens : --wi-* (Warm Intelligence) sur fond cream museum.
+   Audience : prospect cold (LinkedIn / referral). Objectif
+   cognitif : social proof + curiosité.
+   ═══════════════════════════════════════════════════════ */
 .explore-container {
   min-height: 100vh;
-  background: var(--background);
-  font-family: var(--font-display);
-  color: var(--foreground);
+  background: var(--wi-bg);
+  font-family: var(--wi-font-body);
+  color: var(--wi-on-bg);
 }
 
-/* ── Nav (refonte Playful & Soft, miroir de Home.vue US-044b) ── */
+/* ── Nav (miroir de Home.vue US-044b, palette --wi-*) ── */
 .navbar {
-  height: 56px;
-  background: var(--ms-bg, var(--ms-bg));
-  color: var(--ms-text, var(--ms-text));
-  border-bottom: 1px solid var(--ms-border, rgba(42, 42, 53, 0.08));
+  height: 64px;
+  background: rgba(255, 248, 246, 0.9);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  color: var(--wi-on-bg);
+  border-bottom: 1px solid var(--wi-outline-variant);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 var(--ms-space-6, 24px);
+  padding: 0 var(--wi-space-md);
+  position: sticky;
+  top: 0;
+  z-index: var(--ms-z-sticky, 950);
   /* Réserve la place du LanguageSwitcher floating top-right */
   padding-inline-end: 110px;
 }
 
 .nav-brand {
-  font-family: var(--ms-font-display, 'Outfit'), sans-serif;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  font-size: 16px;
-  text-transform: uppercase;
-  color: var(--ms-text, var(--ms-text));
+  font-family: var(--wi-font-heading);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-size: 22px;
+  color: var(--wi-on-bg);
   text-decoration: none;
-  transition: color 200ms;
+  transition: color var(--ms-transition);
 }
-.nav-brand:hover { color: var(--ms-orange, var(--ms-orange)); }
+.nav-brand:hover { color: var(--wi-primary); }
 
 .nav-links {
   display: flex;
   align-items: center;
-  gap: var(--ms-space-3, 12px);
+  gap: var(--wi-space-sm);
 }
 
 .nav-link {
-  color: var(--ms-text-muted, var(--ms-text-muted));
+  color: var(--wi-on-surface-variant);
   text-decoration: none;
-  font-family: var(--ms-font-body, 'Manrope'), sans-serif;
-  font-size: 14px;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-body-md);
   font-weight: 500;
-  letter-spacing: 0.01em;
-  padding: 6px 12px;
-  border-radius: var(--ms-radius-pill, 999px);
-  transition: color 200ms, background 200ms;
+  padding: 8px 14px;
+  border-radius: var(--wi-radius-interactive);
+  transition: color var(--ms-transition), background var(--ms-transition);
   background: transparent;
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
 .nav-link:hover {
-  color: var(--ms-text, var(--ms-text));
-  background: var(--ms-bg-muted, var(--ms-bg-muted));
+  color: var(--wi-on-bg);
+  background: var(--wi-surface-container-low);
 }
 .nav-link.router-link-active {
-  color: var(--ms-orange, var(--ms-orange));
+  color: var(--wi-primary);
+}
+
+.github-link {
+  color: var(--wi-on-surface-variant);
+  text-decoration: none;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-body-md);
+  font-weight: 500;
+  padding: 8px 14px;
+  border-radius: var(--wi-radius-interactive);
+  transition: color var(--ms-transition), background var(--ms-transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.github-link:hover {
+  color: var(--wi-on-bg);
+  background: var(--wi-surface-container-low);
 }
 
 .arrow { font-family: sans-serif; }
 
-/* ── Main Content ── */
+/* ── Main Content (max-width: container Stitch 1280px) ── */
 .main-content {
-  max-width: 1400px;
+  max-width: 1280px;
+  width: 100%;
   margin: 0 auto;
-  padding: var(--space-2xl) var(--space-lg) var(--space-xl);
-}
-
-/* ── Header ── */
-.explore-header {
-  margin-bottom: var(--space-xl);
-  max-width: 780px;
-}
-
-.tag-row {
+  padding: var(--wi-space-xl) var(--wi-gutter);
   display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  margin-bottom: var(--space-md);
-  font-family: var(--font-mono);
-  font-size: 13px;
+  flex-direction: column;
+  gap: var(--wi-space-xl);
 }
 
-.orange-tag {
-  background: var(--color-orange);
-  color: var(--color-white);
-  padding: 4px var(--space-sm);
-  letter-spacing: 1.5px;
+/* ── Hero & Search ── */
+.explore-hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wi-space-md);
+  align-items: center;
+  text-align: center;
+  max-width: 768px;
+  margin: 0 auto;
+  padding-top: var(--wi-space-md);
+}
+
+.hero-eyebrow {
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-label-sm);
+  font-weight: 600;
+  color: var(--wi-primary);
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  font-weight: 700;
 }
 
-.meta-sep { color: rgba(10, 10, 10, 0.35); }
-.meta-text { color: rgba(10, 10, 10, 0.7); }
-
-.page-title {
-  font-family: var(--font-display);
-  font-size: 52px;
-  line-height: 1.1;
-  margin-bottom: var(--space-md);
-  letter-spacing: -0.5px;
+.hero-title {
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-h1-size);
+  font-weight: var(--wi-h1-weight);
+  line-height: var(--wi-h1-leading);
+  letter-spacing: var(--wi-h1-tracking);
+  color: var(--wi-on-bg);
+  margin: 0;
 }
 
-.page-subtitle {
-  font-size: 17px;
-  line-height: 1.55;
-  color: rgba(10, 10, 10, 0.7);
-  margin-bottom: var(--space-lg);
+.hero-subtitle {
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-body-lg);
+  line-height: var(--wi-body-lg-leading);
+  color: var(--wi-on-surface-variant);
+  margin: 0;
+  max-width: 640px;
 }
 
-.stats-row {
+.hero-search {
+  width: 100%;
+  position: relative;
+  margin-top: var(--wi-space-sm);
+}
+
+.hero-search-icon {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--wi-outline);
+  font-size: 20px;
+  pointer-events: none;
+}
+
+.hero-search-input {
+  width: 100%;
+  background: var(--wi-surface);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-interactive);
+  padding: 16px 16px 16px 48px;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-body-lg);
+  color: var(--wi-on-surface);
+  box-shadow: var(--wi-shadow-sm);
+  transition: border-color var(--ms-transition), box-shadow var(--ms-transition);
+}
+
+.hero-search-input::placeholder {
+  color: var(--wi-outline);
+}
+
+.hero-search-input:focus {
+  outline: none;
+  border-color: var(--wi-primary);
+  box-shadow: 0 0 0 3px var(--wi-shadow-md), 0 0 0 3px rgba(161, 63, 15, 0.12);
+}
+
+/* ── Filters & Sort ── */
+.filters-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--wi-space-sm);
+  padding-bottom: var(--wi-space-sm);
+  border-bottom: 1px solid var(--wi-outline-variant);
+}
+
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Catégories — chips bordurés colorés selon la nature du sujet.
+   Couleurs alignées sur la spec : Crisis = terracotta clair (--wi-on-primary-container),
+   Market = orange Bassira (--wi-primary-container), Policy = mint (--wi-secondary),
+   Decision = charcoal (--wi-on-bg, inversion sur fond cream). */
+.cat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--wi-surface);
+  border: 1px solid currentColor;
+  border-radius: var(--wi-radius-pill);
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-label-sm);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: background var(--ms-transition), color var(--ms-transition),
+    transform var(--ms-transition-fast);
+}
+
+.cat-chip-icon {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.cat-chip:hover { transform: translateY(-1px); }
+
+.cat-chip-crisis   { color: var(--wi-on-primary-container); }
+.cat-chip-market   { color: var(--wi-primary-container); }
+.cat-chip-policy   { color: var(--wi-secondary); }
+.cat-chip-decision { color: var(--wi-on-bg); }
+.cat-chip-verified { color: var(--wi-primary); }
+
+.cat-chip-crisis:hover   { background: rgba(109, 36, 0, 0.06); }
+.cat-chip-market:hover   { background: rgba(255, 133, 81, 0.08); }
+.cat-chip-policy:hover   { background: rgba(0, 109, 68, 0.06); }
+.cat-chip-decision:hover { background: rgba(36, 25, 21, 0.06); }
+.cat-chip-verified:hover { background: rgba(161, 63, 15, 0.06); }
+
+/* Active : chip rempli avec sa couleur, texte cream pour contraste */
+.cat-chip-active.cat-chip-crisis {
+  background: var(--wi-on-primary-container);
+  color: var(--wi-bg);
+}
+.cat-chip-active.cat-chip-market {
+  background: var(--wi-primary-container);
+  color: var(--wi-on-primary-container);
+}
+.cat-chip-active.cat-chip-policy {
+  background: var(--wi-secondary);
+  color: var(--wi-on-secondary);
+}
+.cat-chip-active.cat-chip-decision {
+  background: var(--wi-on-bg);
+  color: var(--wi-bg);
+}
+.cat-chip-active.cat-chip-verified {
+  background: var(--wi-primary);
+  color: var(--wi-on-primary);
+}
+
+.cat-chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.filters-right {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
+  gap: var(--wi-space-xs);
   flex-wrap: wrap;
 }
 
@@ -700,39 +986,80 @@ onMounted(refresh)
   align-items: baseline;
   gap: 6px;
   padding: 6px 12px;
-  background: var(--color-gray);
-  border: var(--border-light);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.5px;
+  background: var(--wi-surface-container-low);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-pill);
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
 }
 
 .stat-num {
-  font-weight: 700;
-  font-size: 16px;
-  color: var(--color-orange);
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  font-size: var(--wi-label-sm);
+  color: var(--wi-primary);
 }
 
 .stat-label {
-  color: rgba(10, 10, 10, 0.5);
+  color: var(--wi-on-surface-variant);
   text-transform: uppercase;
+  font-size: var(--wi-caption);
+  letter-spacing: 0.04em;
+}
+
+.sort-wrapper {
+  position: relative;
+}
+
+.sort-select {
+  appearance: none;
+  background: var(--wi-surface);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-interactive);
+  padding: 8px 36px 8px 14px;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-body-md);
+  color: var(--wi-on-surface);
+  cursor: pointer;
+  transition: border-color var(--ms-transition);
+}
+
+.sort-select:focus {
+  outline: none;
+  border-color: var(--wi-primary);
+}
+
+.sort-caret {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--wi-outline);
+  pointer-events: none;
+  font-size: 16px;
 }
 
 .refresh-btn {
-  padding: 6px 12px;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: transparent;
-  border: var(--border-medium);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.5px;
-  color: rgba(10, 10, 10, 0.7);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-interactive);
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-body-md);
+  color: var(--wi-on-surface-variant);
   cursor: pointer;
-  transition: var(--transition-fast);
+  transition: color var(--ms-transition), border-color var(--ms-transition),
+    background var(--ms-transition);
 }
 
 .refresh-btn:hover:not(:disabled) {
-  color: var(--color-orange);
-  border-color: var(--color-orange);
+  color: var(--wi-primary);
+  border-color: var(--wi-primary);
+  background: rgba(161, 63, 15, 0.04);
 }
 
 .refresh-btn:disabled {
@@ -744,39 +1071,37 @@ onMounted(refresh)
    Builds on `.ms-skeleton` from src/styles/components.css — that class
    already handles the shimmer keyframes + `prefers-reduced-motion` opt-out,
    so we only style sizes / layout here. */
-.gallery-loading { margin-top: var(--space-lg); }
+.gallery-loading { margin-top: var(--wi-space-md); }
 
 .loading-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: var(--space-md);
+  gap: var(--wi-gutter);
 }
 
 .skeleton-card {
   display: flex;
   flex-direction: column;
-  border: var(--border-light);
-  background: var(--color-white);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-interactive);
+  background: var(--wi-surface);
+  overflow: hidden;
 }
 
 .skeleton-thumb {
   aspect-ratio: 1200 / 630;
   width: 100%;
-  border-radius: 0;
 }
 
 .skeleton-body {
-  padding: var(--space-md);
+  padding: var(--wi-space-md);
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
+  gap: var(--wi-space-xs);
   flex: 1;
 }
 
-.skeleton-line {
-  height: 14px;
-  border-radius: 3px;
-}
+.skeleton-line { height: 14px; border-radius: 4px; }
 .skeleton-line-title { width: 90%; height: 18px; }
 .skeleton-line-title-short { width: 60%; height: 18px; }
 .skeleton-line-meta { width: 70%; height: 11px; }
@@ -789,98 +1114,147 @@ onMounted(refresh)
 .skeleton-pill {
   height: 18px;
   width: 64px;
-  border-radius: 2px;
+  border-radius: 4px;
 }
 
-.skeleton-bar {
-  height: 6px;
-  width: 100%;
-  border-radius: 3px;
-}
+.skeleton-bar { height: 6px; width: 100%; border-radius: 3px; }
 
 .skeleton-actions {
   display: flex;
-  gap: var(--space-xs);
+  gap: var(--wi-space-xs);
   margin-top: auto;
-  padding-top: var(--space-sm);
+  padding-top: var(--wi-space-xs);
 }
 
-.skeleton-btn {
-  height: 32px;
-  flex: 1;
-  border-radius: 2px;
-}
+.skeleton-btn { height: 36px; flex: 1; border-radius: var(--wi-radius-interactive); }
 
 /* ── Error ── */
 .gallery-error,
 .gallery-empty {
-  padding: var(--space-2xl) var(--space-lg);
-  border: var(--border-medium);
+  padding: var(--wi-space-xl) var(--wi-space-md);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-card);
+  background: var(--wi-surface-container-low);
   text-align: center;
-  max-width: 540px;
-  margin: var(--space-xl) auto;
+  max-width: 560px;
+  margin: var(--wi-space-md) auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--wi-space-sm);
 }
 
-.error-icon,
-.empty-icon {
-  font-size: 32px;
-  color: var(--color-orange);
-  margin-bottom: var(--space-sm);
+.error-icon {
+  font-size: 36px;
+  color: var(--wi-error);
 }
 
 .error-title,
 .empty-title {
-  font-family: var(--font-display);
-  font-size: 22px;
-  margin-bottom: var(--space-sm);
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-h3-size);
+  font-weight: var(--wi-h3-weight);
+  line-height: var(--wi-h3-leading);
+  color: var(--wi-on-bg);
+  margin: 0;
 }
 
 .error-msg,
 .empty-msg {
-  color: rgba(10, 10, 10, 0.65);
-  font-size: 15px;
-  line-height: 1.5;
-  margin-bottom: var(--space-md);
+  color: var(--wi-on-surface-variant);
+  font-size: var(--wi-body-md);
+  line-height: var(--wi-body-md-leading);
+  margin: 0;
+  max-width: 440px;
+}
+
+/* Empty state illustré : trois glyphes flottants en gradient terracotta/cream
+   pour une atmosphère « curiosity museum », jamais clinique. */
+.empty-illustration {
+  position: relative;
+  width: 120px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-glyph {
+  position: absolute;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 28px;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+.empty-glyph-1 {
+  color: var(--wi-primary);
+  transform: translate(-32px, -8px) rotate(-12deg);
+  font-size: 32px;
+}
+.empty-glyph-2 {
+  color: var(--wi-primary-container);
+  font-size: 44px;
+  z-index: 1;
+}
+.empty-glyph-3 {
+  color: var(--wi-secondary);
+  transform: translate(36px, 12px) rotate(8deg);
+  font-size: 26px;
 }
 
 .error-retry,
 .empty-cta {
-  display: inline-block;
-  padding: 10px 20px;
-  background: var(--color-orange);
-  color: var(--color-white);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 24px;
+  background: var(--wi-primary);
+  color: var(--wi-on-primary);
   border: none;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
+  border-radius: var(--wi-radius-interactive);
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-body-md);
+  font-weight: 600;
   text-decoration: none;
   cursor: pointer;
-  transition: var(--transition-fast);
+  transition: background var(--ms-transition), box-shadow var(--ms-transition),
+    transform var(--ms-transition-fast);
 }
 
 .error-retry:hover,
 .empty-cta:hover {
-  background: var(--color-black);
+  background: var(--wi-on-primary-container);
+  box-shadow: var(--wi-shadow-md);
+  transform: translateY(-1px);
 }
 
 /* ── Grid ── */
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: var(--space-md);
-  margin-top: var(--space-md);
+  gap: var(--wi-gutter);
+}
+
+@media (min-width: 1024px) {
+  .gallery-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 .gallery-card {
-  /* .ms-card apporte background, border, border-radius, shadow, transition.
-     On override padding=0 : le card-body a son propre espacement. */
+  /* .ms-card apporte background/border/shadow, on override en --wi-* */
   padding: 0;
   display: flex;
   flex-direction: column;
-  /* Initial state for the scroll-triggered fade-in. The
-     `useScrollFadeIn` composable adds .ms-anim-fade-in once the card
-     enters the viewport, which runs the global ms-fade-in keyframes. */
+  background: var(--wi-surface);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-interactive);
+  overflow: hidden;
+  box-shadow: var(--wi-shadow-sm);
+  transition: transform var(--ms-transition), box-shadow var(--ms-transition),
+    border-color var(--ms-transition);
+  /* Initial state pour scroll-triggered fade-in (useScrollFadeIn) */
   opacity: 0;
 }
 
@@ -889,18 +1263,17 @@ onMounted(refresh)
 }
 
 @media (prefers-reduced-motion: reduce) {
-  /* Reduced-motion users get no animation — but they still need to see
-     the cards, so force them visible up-front. */
   .gallery-card { opacity: 1; }
 }
 
 .gallery-card:hover {
-  border-color: var(--color-orange);
-  transform: translateY(-2px);
+  transform: translateY(-6px);
+  box-shadow: var(--wi-shadow-orange);
+  border-color: rgba(255, 133, 81, 0.4);
 }
 
 .card-resolved {
-  border-inline-start: 3px solid var(--color-green);
+  border-left: 4px solid var(--wi-secondary);
 }
 
 /* ── Thumbnail ── */
@@ -908,7 +1281,7 @@ onMounted(refresh)
   display: block;
   position: relative;
   aspect-ratio: 1200 / 630;
-  background: var(--color-black);
+  background: var(--wi-surface-container-highest);
   overflow: hidden;
 }
 
@@ -917,11 +1290,11 @@ onMounted(refresh)
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: var(--transition-medium);
+  transition: transform var(--ms-transition-slow);
 }
 
 .gallery-card:hover .card-thumb {
-  transform: scale(1.015);
+  transform: scale(1.03);
 }
 
 .card-thumb-overlay {
@@ -929,32 +1302,74 @@ onMounted(refresh)
   inset: 0;
   background: linear-gradient(
     180deg,
-    transparent 60%,
-    rgba(10, 10, 10, 0.15) 100%
+    transparent 55%,
+    rgba(36, 25, 21, 0.12) 100%
   );
   pointer-events: none;
 }
 
 /* ── Card body ── */
 .card-body {
-  padding: var(--space-md);
+  padding: var(--wi-space-md);
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
+  gap: 12px;
   flex: 1;
 }
 
+/* Badge catégorie en haut de card — couleur dérivée du type détecté.
+   Forme : pilule remplie, palette --wi-* (Crisis terracotta foncé,
+   Market orange, Policy mint, Decision charcoal). */
+.card-category {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--wi-radius-sm);
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  width: fit-content;
+}
+
+.card-category-glyph {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.card-category-crisis {
+  background: rgba(109, 36, 0, 0.10);
+  color: var(--wi-on-primary-container);
+}
+.card-category-market {
+  background: rgba(255, 133, 81, 0.18);
+  color: var(--wi-primary);
+}
+.card-category-policy {
+  background: rgba(0, 109, 68, 0.12);
+  color: var(--wi-secondary);
+}
+.card-category-decision {
+  background: var(--wi-on-bg);
+  color: var(--wi-bg);
+}
+
 .card-scenario {
-  font-family: var(--font-display);
-  font-size: 18px;
-  line-height: 1.3;
-  letter-spacing: -0.2px;
+  font-family: var(--wi-font-heading);
+  font-size: 20px;
+  line-height: 1.35;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--wi-on-bg);
   margin: 0;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  min-height: calc(18px * 1.3 * 2);
+  min-height: calc(20px * 1.35 * 2);
 }
 
 .card-pills {
@@ -968,89 +1383,79 @@ onMounted(refresh)
   align-items: center;
   gap: 4px;
   padding: 3px 9px;
-  font-family: var(--font-mono);
+  font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   font-weight: 600;
-  border-radius: 2px;
+  border-radius: var(--wi-radius-sm);
 }
 
 .pill-bullish {
-  background: var(--ms-mint-soft);
-  color: var(--ms-status-success-text);
+  background: rgba(0, 109, 68, 0.12);
+  color: var(--wi-secondary);
 }
 
 .pill-bearish {
-  background: rgba(255, 68, 68, 0.14);
-  color: var(--ms-legacy-danger-dark);
+  background: rgba(186, 26, 26, 0.12);
+  color: var(--wi-error);
 }
 
 .pill-neutral {
-  background: rgba(10, 10, 10, 0.08);
-  color: rgba(10, 10, 10, 0.7);
+  background: var(--wi-surface-container-high);
+  color: var(--wi-on-surface-variant);
 }
 
-.pill-quality-excellent {
-  background: var(--ms-mint-soft);
-  color: var(--ms-status-success-text);
-}
-
+.pill-quality-excellent,
 .pill-quality-good {
-  background: var(--ms-mint-soft);
-  color: var(--ms-status-success-text);
+  background: rgba(0, 109, 68, 0.12);
+  color: var(--wi-secondary);
 }
 
 .pill-quality-fair {
-  background: var(--ms-peach-soft);
+  background: rgba(255, 179, 71, 0.18);
   color: var(--ms-status-warning-text);
 }
 
 .pill-quality-poor {
-  background: rgba(255, 68, 68, 0.14);
-  color: var(--ms-legacy-danger-dark);
+  background: rgba(186, 26, 26, 0.12);
+  color: var(--wi-error);
 }
 
 .pill-quality-unknown {
-  background: rgba(10, 10, 10, 0.06);
-  color: rgba(10, 10, 10, 0.5);
+  background: var(--wi-surface-container-low);
+  color: var(--wi-outline);
 }
 
 .pill-resolved {
-  background: var(--color-green);
-  color: var(--color-white);
+  background: var(--wi-secondary);
+  color: var(--wi-on-secondary);
 }
 
 .pill-status {
-  background: rgba(10, 10, 10, 0.06);
-  color: rgba(10, 10, 10, 0.55);
+  background: var(--wi-surface-container-low);
+  color: var(--wi-on-surface-variant);
 }
 
-/* Verified-prediction pills — slightly stronger visual weight than the
-   generic pills so the credibility signal lands at a glance. */
+/* Verified-prediction pills — credibility signal renforcé. */
 .pill-verified {
   text-decoration: none;
   cursor: default;
-  letter-spacing: 0.6px;
+  letter-spacing: 0.05em;
 }
 
-a.pill-verified {
-  cursor: pointer;
-}
-
-a.pill-verified:hover {
-  filter: brightness(0.92);
-}
+a.pill-verified { cursor: pointer; }
+a.pill-verified:hover { filter: brightness(0.92); }
 
 .pill-verified-correct {
-  background: var(--color-orange);
-  color: var(--color-white);
+  background: var(--wi-primary);
+  color: var(--wi-on-primary);
 }
 
 .pill-verified-incorrect {
-  background: rgba(255, 68, 68, 0.18);
-  color: var(--ms-legacy-danger-dark);
-  outline: 1px solid rgba(255, 68, 68, 0.35);
+  background: rgba(186, 26, 26, 0.16);
+  color: var(--wi-error);
+  outline: 1px solid rgba(186, 26, 26, 0.32);
   outline-offset: -1px;
 }
 
@@ -1061,68 +1466,21 @@ a.pill-verified:hover {
   outline-offset: -1px;
 }
 
-/* Card-level accent strip — same idea as .card-resolved (a thin coloured
-   left border) but using the outcome palette so the verified hall reads
-   at a glance even when scrolling fast. */
+/* Card-level accent strip — bordure gauche colorée selon l'outcome. */
 .card-verified-correct {
-  border-inline-start: 3px solid var(--color-orange);
+  border-left: 4px solid var(--wi-primary-container);
 }
 
 .card-verified-incorrect {
-  border-inline-start: 3px solid var(--color-red);
+  border-left: 4px solid var(--wi-error);
 }
 
 .card-verified-partial {
-  border-inline-start: 3px solid var(--ms-status-warning);
-}
-
-/* Filter chip in the stats row — toggles `?verified=1`. Active state
-   leans on the brand orange so it reads as the primary call-to-action
-   when an operator is hunting for credibility-anchored sims. */
-.filter-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: transparent;
-  border: var(--border-medium);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.5px;
-  color: rgba(10, 10, 10, 0.7);
-  cursor: pointer;
-  transition: var(--transition-fast);
-  text-transform: uppercase;
-}
-
-.filter-chip:hover:not(:disabled) {
-  border-color: var(--color-orange);
-  color: var(--color-orange);
-}
-
-.filter-chip-active {
-  background: var(--color-orange);
-  border-color: var(--color-orange);
-  color: var(--color-white);
-}
-
-.filter-chip-active:hover:not(:disabled) {
-  background: var(--color-black);
-  border-color: var(--color-black);
-  color: var(--color-white);
-}
-
-.filter-chip:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.filter-chip-icon {
-  font-family: sans-serif;
+  border-left: 4px solid var(--wi-primary-container);
 }
 
 .inline-link {
-  color: var(--color-orange);
+  color: var(--wi-primary);
   text-decoration: none;
   font-weight: 600;
 }
@@ -1131,30 +1489,41 @@ a.pill-verified:hover {
   text-decoration: underline;
 }
 
+.inline-link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+}
+
 /* ── Consensus bar ── */
 .consensus-bar {
   display: flex;
   height: 6px;
-  background: rgba(10, 10, 10, 0.06);
+  background: var(--wi-surface-container-high);
   overflow: hidden;
   border-radius: 3px;
 }
 
 .bar-seg { height: 100%; transition: width 0.2s ease; }
-.bar-bullish { background: var(--color-green); }
-.bar-neutral { background: rgba(10, 10, 10, 0.3); }
-.bar-bearish { background: var(--color-red); }
+.bar-bullish { background: var(--wi-secondary); }
+.bar-neutral { background: var(--wi-outline); }
+.bar-bearish { background: var(--wi-error); }
 
 /* ── Metadata ── */
 .card-meta {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: rgba(10, 10, 10, 0.55);
-  letter-spacing: 0.3px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: var(--wi-caption);
+  color: var(--wi-on-surface-variant);
   flex-wrap: wrap;
+  padding: 8px 0;
+  border-top: 1px solid var(--wi-outline-variant);
+  border-bottom: 1px solid var(--wi-outline-variant);
 }
 
 .meta-item {
@@ -1165,55 +1534,62 @@ a.pill-verified:hover {
 
 .meta-label {
   text-transform: uppercase;
-  color: rgba(10, 10, 10, 0.4);
+  color: var(--wi-outline);
+  letter-spacing: 0.04em;
 }
 
 .meta-val {
-  color: rgba(10, 10, 10, 0.75);
+  color: var(--wi-on-bg);
   font-weight: 600;
 }
 
-/* ── Actions ── */
+.meta-sep { color: var(--wi-outline); }
+.meta-text { color: var(--wi-on-surface-variant); }
+
+/* ── Actions : ghost terracotta border → fill on hover (spec) ── */
 .card-actions {
   display: flex;
-  gap: var(--space-xs);
+  gap: var(--wi-space-xs);
   margin-top: auto;
-  padding-top: var(--space-sm);
-  border-top: 1px solid rgba(10, 10, 10, 0.06);
 }
 
 .action-btn {
   flex: 1;
-  padding: 8px 12px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
+  padding: 10px 14px;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-body-md);
+  font-weight: 600;
+  letter-spacing: 0.01em;
   text-decoration: none;
   text-align: center;
-  border: var(--border-light);
+  border: 1px solid var(--wi-primary);
+  border-radius: var(--wi-radius-interactive);
   background: transparent;
-  color: rgba(10, 10, 10, 0.75);
+  color: var(--wi-primary);
   cursor: pointer;
-  transition: var(--transition-fast);
-  font-weight: 600;
+  transition: background var(--ms-transition), color var(--ms-transition),
+    border-color var(--ms-transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
 .action-view:hover {
-  background: var(--color-black);
-  color: var(--color-white);
-  border-color: var(--color-black);
+  background: var(--wi-primary);
+  color: var(--wi-on-primary);
+  border-color: var(--wi-primary);
 }
 
 .action-fork {
-  background: var(--color-orange);
-  color: var(--color-white);
-  border-color: var(--color-orange);
+  background: var(--wi-primary);
+  color: var(--wi-on-primary);
+  border-color: var(--wi-primary);
 }
 
 .action-fork:hover:not(:disabled) {
-  background: var(--color-black);
-  border-color: var(--color-black);
+  background: var(--wi-on-primary-container);
+  border-color: var(--wi-on-primary-container);
 }
 
 .action-fork:disabled {
@@ -1223,9 +1599,9 @@ a.pill-verified:hover {
 
 .fork-error {
   margin-top: 6px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--ms-legacy-danger-dark);
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
+  color: var(--wi-error);
   line-height: 1.4;
 }
 
@@ -1233,27 +1609,27 @@ a.pill-verified:hover {
 .load-more-row {
   display: flex;
   justify-content: center;
-  margin-top: var(--space-xl);
+  margin-top: var(--wi-space-md);
 }
 
 .load-more-btn {
-  padding: 12px 32px;
-  background: transparent;
-  border: var(--border-medium);
-  font-family: var(--font-mono);
-  font-size: 13px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: rgba(10, 10, 10, 0.75);
-  cursor: pointer;
-  transition: var(--transition-fast);
+  padding: 12px 28px;
+  background: var(--wi-surface);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-interactive);
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-body-md);
   font-weight: 600;
+  color: var(--wi-on-surface);
+  cursor: pointer;
+  transition: background var(--ms-transition), border-color var(--ms-transition),
+    box-shadow var(--ms-transition);
 }
 
 .load-more-btn:hover:not(:disabled) {
-  background: var(--color-black);
-  color: var(--color-white);
-  border-color: var(--color-black);
+  background: var(--wi-surface-container-high);
+  border-color: var(--wi-primary);
+  box-shadow: var(--wi-shadow-sm);
 }
 
 .load-more-btn:disabled {
@@ -1263,31 +1639,36 @@ a.pill-verified:hover {
 
 /* ── Footer ── */
 .explore-footer {
-  max-width: 1400px;
+  max-width: 1280px;
+  width: 100%;
   margin: 0 auto;
-  padding: var(--space-lg);
+  padding: var(--wi-space-md) var(--wi-gutter) var(--wi-space-lg);
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
-  color: rgba(10, 10, 10, 0.4);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.5px;
+  gap: var(--wi-space-sm);
+  color: var(--wi-outline);
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
 }
 
 .footer-line {
   flex: 1;
   height: 1px;
-  background: rgba(10, 10, 10, 0.08);
+  background: var(--wi-outline-variant);
 }
 
 .footer-text { white-space: nowrap; }
 
 /* ── Responsive ── */
-@media (max-width: 720px) {
-  .page-title { font-size: 36px; }
-  .page-subtitle { font-size: 15px; }
-  .main-content { padding: var(--space-xl) var(--space-md); }
+@media (max-width: 768px) {
+  .hero-title { font-size: 32px; }
+  .hero-subtitle { font-size: var(--wi-body-md); }
+  .main-content {
+    padding: var(--wi-space-md) var(--wi-space-sm);
+    gap: var(--wi-space-md);
+  }
   .gallery-grid { grid-template-columns: 1fr; }
+  .filters-bar { flex-direction: column; align-items: stretch; }
+  .filters-right { justify-content: space-between; }
 }
 </style>

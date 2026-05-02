@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+
+<html lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bassira - Nos formules</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-container": "#ffcdbb",
+                        "surface": "#fff8f6",
+                        "on-primary": "#ffffff",
+                        "on-secondary-fixed-variant": "#7f2b00",
+                        "on-secondary": "#ffffff",
+                        "secondary-container": "#fd8450",
+                        "on-background": "#241915",
+                        "primary": "#7e2b00",
+                        "inverse-surface": "#3a2e29",
+                        "error": "#ba1a1a",
+                        "error-container": "#ffdad6",
+                        "surface-variant": "#f3ded7",
+                        "on-tertiary-fixed-variant": "#005232",
+                        "on-tertiary-container": "#91eab7",
+                        "surface-container-high": "#f9e4dd",
+                        "secondary": "#a13f0f",
+                        "surface-container": "#ffe9e2",
+                        "primary-container": "#a13f0f",
+                        "inverse-on-surface": "#ffede7",
+                        "outline": "#8a7269",
+                        "on-primary-fixed-variant": "#7f2b00",
+                        "primary-fixed-dim": "#ffb599",
+                        "on-error": "#ffffff",
+                        "surface-container-low": "#fff1ec",
+                        "surface-dim": "#ebd6cf",
+                        "secondary-fixed": "#ffdbce",
+                        "on-surface": "#241915",
+                        "on-surface-variant": "#57423a",
+                        "surface-tint": "#a13f0f",
+                        "outline-variant": "#dec0b6",
+                        "on-primary-fixed": "#370e00",
+                        "tertiary-fixed-dim": "#80d8a6",
+                        "tertiary-fixed": "#9cf5c1",
+                        "primary-fixed": "#ffdbce",
+                        "background": "#fff8f6",
+                        "surface-container-highest": "#f3ded7",
+                        "secondary-fixed-dim": "#ffb598",
+                        "inverse-primary": "#ffb599",
+                        "tertiary": "#005132",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#fff8f6",
+                        "on-tertiary-fixed": "#002111",
+                        "on-secondary-container": "#6c2400",
+                        "on-error-container": "#93000a",
+                        "tertiary-container": "#006c43",
+                        "on-secondary-fixed": "#370e00",
+                        "on-tertiary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "32px",
+                        "xs": "4px",
+                        "container-max": "1280px",
+                        "base": "8px",
+                        "lg": "48px",
+                        "xl": "80px",
+                        "sm": "12px",
+                        "md": "24px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["JetBrains Mono", "monospace"],
+                        "body-lg": ["Manrope", "sans-serif"],
+                        "h2": ["Outfit", "sans-serif"],
+                        "h3": ["Outfit", "sans-serif"],
+                        "h1": ["Outfit", "sans-serif"],
+                        "body-md": ["Manrope", "sans-serif"],
+                        "arabic-body": ["Tajawal", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", { "lineHeight": "1.2", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "h2": ["36px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+                        "h3": ["24px", { "lineHeight": "1.3", "letterSpacing": "0", "fontWeight": "500" }],
+                        "h1": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "arabic-body": ["18px", { "lineHeight": "1.8", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased pt-20">
+<!-- TopNavBar -->
+<nav class="bg-stone-50/90 dark:bg-stone-950/90 backdrop-blur-md fixed top-0 w-full z-50 border-b border-stone-200/60 dark:border-stone-800/60">
+<div class="flex justify-between items-center h-20 px-12 max-w-screen-2xl mx-auto">
+<div class="text-2xl font-bold text-orange-800 dark:text-orange-500 tracking-tighter">
+                Bassira Causse
+            </div>
+<div class="hidden md:flex gap-8">
+<a class="font-['Outfit'] font-medium tracking-tight text-stone-600 dark:text-stone-400 hover:text-orange-700 dark:hover:text-orange-300 transition-colors hover:opacity-80 transition-opacity duration-300" href="#">Methodology</a>
+<a class="font-['Outfit'] font-medium tracking-tight text-stone-600 dark:text-stone-400 hover:text-orange-700 dark:hover:text-orange-300 transition-colors hover:opacity-80 transition-opacity duration-300" href="#">Insights</a>
+<a class="font-['Outfit'] font-medium tracking-tight text-stone-600 dark:text-stone-400 hover:text-orange-700 dark:hover:text-orange-300 transition-colors hover:opacity-80 transition-opacity duration-300" href="#">Network</a>
+<a class="font-['Outfit'] font-medium tracking-tight text-orange-800 dark:text-orange-500 border-b-2 border-orange-800 dark:border-orange-500 pb-1 hover:opacity-80 transition-opacity duration-300" href="#">Pricing</a>
+</div>
+<div class="hidden md:flex items-center gap-6">
+<button class="font-['Outfit'] font-medium tracking-tight text-stone-600 dark:text-stone-400 hover:text-orange-700 dark:hover:text-orange-300 transition-colors">Language</button>
+<button class="font-['Outfit'] font-medium tracking-tight text-orange-800 dark:text-orange-500 hover:opacity-80 transition-opacity duration-300">Get Started</button>
+</div>
+<!-- Mobile Menu Placeholder -->
+<button class="md:hidden text-stone-600">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</nav>
+<main class="min-h-screen">
+<!-- Header Section -->
+<section class="pt-xl pb-lg px-gutter max-w-container-max mx-auto text-center">
+<h1 class="font-h1 text-h1 text-on-surface mb-base font-semibold">Nos formules</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">
+                Des solutions de prospective augmentée pour les décideurs souverains.
+            </p>
+</section>
+<!-- Controls Section -->
+<section class="flex flex-col items-center gap-md pb-lg px-gutter max-w-container-max mx-auto">
+<div class="flex flex-col md:flex-row gap-sm items-center">
+<!-- Currency Toggle -->
+<div class="inline-flex items-center bg-surface-container-high rounded-full p-xs border border-outline-variant/30">
+<button class="px-md py-sm rounded-full font-label-sm text-label-sm bg-secondary-container text-on-primary-container shadow-sm transition-all">MAD</button>
+<button class="px-md py-sm rounded-full font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-all">USD</button>
+</div>
+<!-- Billing Toggle -->
+<div class="inline-flex items-center bg-surface-container-high rounded-full p-xs border border-outline-variant/30">
+<button class="px-md py-sm rounded-full font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-all">Standard</button>
+<button class="px-md py-sm rounded-full font-label-sm text-label-sm bg-secondary text-on-primary shadow-sm transition-all">Flexible</button>
+</div>
+</div>
+<!-- Tier Pills -->
+<div class="flex flex-wrap justify-center gap-sm mt-sm">
+<button class="px-md py-sm rounded-full border border-outline-variant text-on-surface-variant font-label-sm text-label-sm hover:border-outline transition-colors">Essentiel</button>
+<button class="px-md py-sm rounded-full border border-secondary bg-surface-container text-primary font-label-sm text-label-sm shadow-sm transition-colors">Stratégique</button>
+<button class="px-md py-sm rounded-full border border-outline-variant text-on-surface-variant font-label-sm text-label-sm hover:border-outline transition-colors">Avancé</button>
+<button class="px-md py-sm rounded-full border border-outline-variant text-on-surface-variant font-label-sm text-label-sm hover:border-outline transition-colors">Souverain</button>
+<button class="px-md py-sm rounded-full border border-outline-variant text-on-surface-variant font-label-sm text-label-sm hover:border-outline transition-colors">Enterprise</button>
+</div>
+</section>
+<!-- Pricing Grid -->
+<section class="max-w-container-max mx-auto px-gutter pb-xl grid grid-cols-1 md:grid-cols-3 gap-gutter items-center">
+<!-- Card 1: Essentiel -->
+<div class="bg-surface border border-outline-variant/50 rounded-lg p-lg h-full flex flex-col">
+<h3 class="font-h3 text-h3 text-on-surface mb-xs">Essentiel</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-lg">Fondations analytiques pour un suivi sectoriel de base.</p>
+<div class="mb-lg">
+<span class="font-h1 text-h1 text-on-surface font-bold">1 500</span>
+<span class="font-body-md text-body-md text-on-surface-variant">MAD /simulation</span>
+</div>
+<ul class="flex flex-col gap-sm mb-xl flex-grow">
+<li class="flex items-start gap-sm">
+<span class="material-symbols-outlined text-tertiary-container mt-1" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Accès base de données standard</span>
+</li>
+<li class="flex items-start gap-sm">
+<span class="material-symbols-outlined text-tertiary-container mt-1" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface-variant">1 rapport mensuel automatisé</span>
+</li>
+<li class="flex items-start gap-sm">
+<span class="material-symbols-outlined text-tertiary-container mt-1" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Support par email</span>
+</li>
+</ul>
+<button class="w-full py-md border border-outline text-on-surface font-label-sm text-label-sm rounded DEFAULT hover:bg-surface-variant transition-colors">Choisir Essentiel</button>
+</div>
+<!-- Card 2: Stratégique (Featured) -->
+<div class="relative bg-surface border-2 border-secondary-container rounded-lg p-lg h-full flex flex-col scale-105 shadow-[0_20px_40px_-15px_rgba(253,132,80,0.15)] z-10">
+<div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-secondary text-on-primary px-sm py-1 rounded-full font-label-sm text-label-sm whitespace-nowrap shadow-sm">
+                    LE PLUS CHOISI
+                </div>
+<h3 class="font-h3 text-h3 text-on-surface mb-xs mt-sm">Stratégique</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-lg">Prospective augmentée pour décisions critiques.</p>
+<div class="mb-lg">
+<span class="font-h1 text-h1 text-on-surface font-bold">4 200</span>
+<span class="font-body-md text-body-md text-on-surface-variant">MAD /simulation</span>
+</div>
+<ul class="flex flex-col gap-sm mb-xl flex-grow">
+<li class="flex items-start gap-sm">
+<span class="material-symbols-outlined text-tertiary-container mt-1" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Modélisation de scénarios avancés</span>
+</li>
+<li class="flex items-start gap-sm">
+<span class="material-symbols-outlined text-tertiary-container mt-1" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Alertes géopolitiques temps réel</span>
+</li>
+<li class="flex items-start gap-sm">
+<span class="material-symbols-outlined text-tertiary-container mt-1" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Briefing analyste dédié (2h/mois)</span>
+</li>
+<li class="flex items-start gap-sm">
+<span class="material-symbols-outlined text-tertiary-container mt-1" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface-variant">API access (50k req/mois)</span>
+</li>
+</ul>
+<button class="w-full py-md bg-secondary text-on-primary font-label-sm text-label-sm rounded DEFAULT hover:opacity-90 transition-opacity">Demander un devis</button>
+</div>
+<!-- Card 3: Avancé -->
+<div class="bg-surface border border-outline-variant/50 rounded-lg p-lg h-full flex flex-col">
+<h3 class="font-h3 text-h3 text-on-surface mb-xs">Avancé</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-lg">Capacité complète pour équipes de veille.</p>
+<div class="mb-lg">
+<span class="font-h1 text-h1 text-on-surface font-bold">8 900</span>
+<span class="font-body-md text-body-md text-on-surface-variant">MAD /simulation</span>
+</div>
+<ul class="flex flex-col gap-sm mb-xl flex-grow">
+<li class="flex items-start gap-sm">
+<span class="material-symbols-outlined text-tertiary-container mt-1" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Toutes les options Stratégique</span>
+</li>
+<li class="flex items-start gap-sm">
+<span class="material-symbols-outlined text-tertiary-container mt-1" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Modèles IA sur-mesure</span>
+</li>
+<li class="flex items-start gap-sm">
+<span class="material-symbols-outlined text-tertiary-container mt-1" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Support prioritaire 24/7</span>
+</li>
+</ul>
+<button class="w-full py-md border border-outline text-on-surface font-label-sm text-label-sm rounded DEFAULT hover:bg-surface-variant transition-colors">Choisir Avancé</button>
+</div>
+</section>
+<!-- FAQ Section -->
+<section class="max-w-3xl mx-auto px-gutter py-xl">
+<h2 class="font-h2 text-h2 text-on-surface mb-lg text-center font-semibold">Questions Fréquentes</h2>
+<div class="border-b border-outline-variant/30 py-md">
+<button class="w-full flex justify-between items-center text-left group">
+<span class="font-h3 text-h3 text-on-surface text-[20px]">Comment fonctionne la facturation par simulation ?</span>
+<span class="material-symbols-outlined text-secondary-container group-hover:text-secondary transition-colors">expand_more</span>
+</button>
+</div>
+<div class="border-b border-outline-variant/30 py-md">
+<button class="w-full flex justify-between items-center text-left group">
+<span class="font-h3 text-h3 text-on-surface text-[20px]">Puis-je changer de formule en cours d'année ?</span>
+<span class="material-symbols-outlined text-secondary-container group-hover:text-secondary transition-colors">expand_more</span>
+</button>
+</div>
+<div class="border-b border-outline-variant/30 py-md">
+<button class="w-full flex justify-between items-center text-left group">
+<span class="font-h3 text-h3 text-on-surface text-[20px]">Quelles sont les garanties de confidentialité ?</span>
+<span class="material-symbols-outlined text-secondary-container group-hover:text-secondary transition-colors">expand_more</span>
+</button>
+</div>
+</section>
+<!-- Footer CTA Band -->
+<section class="bg-secondary py-xl px-gutter text-center mt-lg">
+<h2 class="font-h2 text-h2 text-surface mb-sm font-semibold">Besoin d'une formule sur mesure ?</h2>
+<p class="font-body-lg text-body-lg text-surface-variant mb-lg max-w-2xl mx-auto">
+                Nos experts conçoivent des architectures de veille et de prospective adaptées aux exigences spécifiques de votre organisation.
+            </p>
+<button class="px-xl py-md bg-surface text-secondary font-label-sm text-label-sm rounded hover:bg-surface-variant transition-colors shadow-sm">
+                Contacter l'équipe d'ingénierie
+            </button>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-stone-100 dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 w-full rounded-t-none">
+<div class="flex flex-col md:flex-row justify-between items-center py-16 px-12 gap-8 max-w-screen-2xl mx-auto">
+<div class="text-xl font-bold text-stone-800 dark:text-stone-100">
+                Bassira Causse
+            </div>
+<div class="flex flex-wrap justify-center gap-6">
+<a class="font-['Outfit'] text-sm tracking-wide text-stone-500 dark:text-stone-400 hover:text-orange-800 dark:hover:text-orange-300 underline-offset-4 hover:underline Transition-all duration-300 ease-in-out" href="#">Strategic Consulting</a>
+<a class="font-['Outfit'] text-sm tracking-wide text-stone-500 dark:text-stone-400 hover:text-orange-800 dark:hover:text-orange-300 underline-offset-4 hover:underline Transition-all duration-300 ease-in-out" href="#">Global Risk Index</a>
+<a class="font-['Outfit'] text-sm tracking-wide text-stone-500 dark:text-stone-400 hover:text-orange-800 dark:hover:text-orange-300 underline-offset-4 hover:underline Transition-all duration-300 ease-in-out" href="#">Terms of Service</a>
+<a class="font-['Outfit'] text-sm tracking-wide text-stone-500 dark:text-stone-400 hover:text-orange-800 dark:hover:text-orange-300 underline-offset-4 hover:underline Transition-all duration-300 ease-in-out" href="#">Privacy Policy</a>
+<a class="font-['Outfit'] text-sm tracking-wide text-stone-500 dark:text-stone-400 hover:text-orange-800 dark:hover:text-orange-300 underline-offset-4 hover:underline Transition-all duration-300 ease-in-out" href="#">Contact Support</a>
+</div>
+<div class="font-['Outfit'] text-sm tracking-wide text-stone-500 dark:text-stone-400">
+                © 2024 Bassira Causse Foresight. All rights reserved.
+            </div>
+</div>
+</footer>
+</body></html>

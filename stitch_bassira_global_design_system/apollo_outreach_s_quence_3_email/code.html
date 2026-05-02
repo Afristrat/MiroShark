@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bassira - Outreach Template Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&amp;family=Manrope:wght@400;500;600&amp;family=Tajawal:wght@400;500;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary": "#ffffff",
+                    "tertiary-fixed": "#9cf5c1",
+                    "primary-fixed": "#ffdbce",
+                    "on-tertiary-fixed-variant": "#005232",
+                    "outline-variant": "#dec0b6",
+                    "on-background": "#241915",
+                    "on-primary-container": "#ffcdbb",
+                    "surface-container-highest": "#f3ded7",
+                    "on-secondary-container": "#6c2400",
+                    "surface-dim": "#ebd6cf",
+                    "surface-container-lowest": "#ffffff",
+                    "on-error": "#ffffff",
+                    "surface-container-high": "#f9e4dd",
+                    "background": "#fff8f6",
+                    "surface": "#fff8f6",
+                    "on-error-container": "#93000a",
+                    "on-primary-fixed-variant": "#7f2b00",
+                    "primary-fixed-dim": "#ffb599",
+                    "error-container": "#ffdad6",
+                    "inverse-on-surface": "#ffede7",
+                    "tertiary": "#005132",
+                    "on-primary-fixed": "#370e00",
+                    "inverse-primary": "#ffb599",
+                    "surface-container-low": "#fff1ec",
+                    "outline": "#8a7269",
+                    "surface-variant": "#f3ded7",
+                    "on-secondary-fixed": "#370e00",
+                    "on-surface": "#241915",
+                    "secondary-fixed-dim": "#ffb598",
+                    "surface-container": "#ffe9e2",
+                    "surface-bright": "#fff8f6",
+                    "inverse-surface": "#3a2e29",
+                    "on-tertiary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "primary": "#7e2b00",
+                    "secondary": "#a13f0f",
+                    "secondary-fixed": "#ffdbce",
+                    "primary-container": "#a13f0f",
+                    "surface-tint": "#a13f0f",
+                    "on-tertiary-container": "#91eab7",
+                    "on-secondary": "#ffffff",
+                    "secondary-container": "#fd8450",
+                    "on-surface-variant": "#57423a",
+                    "on-secondary-fixed-variant": "#7f2b00",
+                    "on-tertiary-fixed": "#002111",
+                    "tertiary-container": "#006c43",
+                    "tertiary-fixed-dim": "#80d8a6"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "md": "24px",
+                    "xs": "4px",
+                    "lg": "48px",
+                    "base": "8px",
+                    "sm": "12px",
+                    "container-max": "1280px",
+                    "xl": "80px",
+                    "gutter": "32px"
+            },
+            "fontFamily": {
+                    "h3": [
+                            "Outfit"
+                    ],
+                    "h1": [
+                            "Outfit"
+                    ],
+                    "arabic-body": [
+                            "Tajawal"
+                    ],
+                    "body-md": [
+                            "Manrope"
+                    ],
+                    "body-lg": [
+                            "Manrope"
+                    ],
+                    "h2": [
+                            "Outfit"
+                    ],
+                    "label-sm": [
+                            "JetBrains Mono"
+                    ]
+            },
+            "fontSize": {
+                    "h3": [
+                            "24px",
+                            {
+                                    "lineHeight": "1.3",
+                                    "letterSpacing": "0",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "h1": [
+                            "48px",
+                            {
+                                    "lineHeight": "1.1",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "arabic-body": [
+                            "18px",
+                            {
+                                    "lineHeight": "1.8",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "1.6",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "1.6",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "h2": [
+                            "36px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "label-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "fontWeight": "500"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-body-md text-on-background selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="bg-[#FAF7F2] dark:bg-stone-950 w-full top-0 border-b border-stone-200/50 dark:border-stone-800/50 font-['Outfit'] font-semibold tracking-tight sticky z-50">
+<div class="flex justify-between items-center w-full px-8 py-4 max-w-7xl mx-auto">
+<!-- Brand -->
+<div class="flex items-center gap-lg">
+<span class="text-2xl font-bold text-[#A13F0F] dark:text-[#A13F0F] uppercase tracking-widest cursor-pointer active:opacity-80">Bassira</span>
+<!-- Desktop Nav -->
+<nav class="hidden md:flex gap-8">
+<!-- Active Tab: Templates (Intent match for previewing a template) -->
+<a class="text-[#A13F0F] border-b-2 border-[#A13F0F] pb-1 cursor-pointer active:opacity-80" href="#">Templates</a>
+<a class="text-stone-500 dark:text-stone-400 font-medium hover:text-[#A13F0F] transition-colors duration-200 cursor-pointer active:opacity-80" href="#">Campaigns</a>
+<a class="text-stone-500 dark:text-stone-400 font-medium hover:text-[#A13F0F] transition-colors duration-200 cursor-pointer active:opacity-80" href="#">Analytics</a>
+<a class="text-stone-500 dark:text-stone-400 font-medium hover:text-[#A13F0F] transition-colors duration-200 cursor-pointer active:opacity-80" href="#">Inbox</a>
+</nav>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-6">
+<div class="flex gap-4">
+<button class="text-stone-500 dark:text-stone-400 font-medium hover:text-[#A13F0F] transition-colors duration-200 cursor-pointer active:opacity-80 flex items-center justify-center">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<button class="text-stone-500 dark:text-stone-400 font-medium hover:text-[#A13F0F] transition-colors duration-200 cursor-pointer active:opacity-80 flex items-center justify-center">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+<button class="hidden md:block bg-secondary text-on-secondary px-6 py-2 rounded font-label-sm text-label-sm uppercase tracking-wide hover:opacity-90 transition-opacity">
+                    New Template
+                </button>
+<div class="h-10 w-10 rounded-full bg-surface-variant overflow-hidden border border-outline-variant flex-shrink-0 cursor-pointer">
+<img alt="User profile" class="w-full h-full object-cover" data-alt="A minimalist, high-quality headshot of a professional user, styled in a bright, modern light-mode aesthetic with warm undertones. The portrait is clear and trustworthy, fitting seamlessly into an enterprise software interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCGqC02UqRT9KJtC5Ycxh_c6L9JKQMGhj6g5gtJOx2bxAWTJZl5qO2lACjJAuAlXdAlppyb93P83rJ3NxyLoDu44SmTE3MqToSK9_RLMttzFlpsLHUUScpQKIJE6tRZkIow-tnEP8MKuc09emxITLrCE-8ec_EAVAGetVZeWbs9itTeuJGl6M7t-weidqj9YUcK_nea1a9QgZs8cR-096-Rdb3ruxIQhbZ5w8_h_pWa_R7G-8bkOg5gXYFv3B0do00ddGEQrUKvy74"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-grow w-full max-w-container-max mx-auto px-gutter py-xl">
+<!-- Context Header -->
+<div class="mb-lg max-w-3xl mx-auto flex flex-col gap-sm">
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Sequence 3</span>
+<span class="material-symbols-outlined text-on-surface-variant text-[16px]">chevron_right</span>
+<span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider">Calibration proof</span>
+</div>
+<h1 class="font-h2 text-h2 text-on-background">Outreach Template</h1>
+</div>
+<!-- Email Preview Card -->
+<div class="max-w-3xl mx-auto bg-surface-container-lowest border border-outline-variant/30 rounded-lg shadow-[0_8px_30px_rgb(161,63,15,0.03)] overflow-hidden">
+<!-- Email Metadata Header -->
+<div class="border-b border-outline-variant/20 bg-surface-bright px-lg py-md flex flex-col gap-sm">
+<div class="flex justify-between items-start">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-3">
+<span class="font-label-sm text-label-sm text-on-surface-variant w-16">From:</span>
+<span class="font-body-md text-body-md text-on-background font-medium">Amine &lt;amine@bassira.com&gt;</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="font-label-sm text-label-sm text-on-surface-variant w-16">To:</span>
+<span class="font-body-md text-body-md text-on-background">{{prospect_email}}</span>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="h-8 w-8 rounded-full hover:bg-surface-container flex items-center justify-center text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[20px]">content_copy</span>
+</button>
+<button class="h-8 w-8 rounded-full hover:bg-surface-container flex items-center justify-center text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</div>
+</div>
+<div class="mt-md flex items-baseline gap-3">
+<span class="font-label-sm text-label-sm text-on-surface-variant w-16 flex-shrink-0">Subject:</span>
+<h3 class="font-h3 text-h3 text-on-background">Brier score 0.18: A technical performance audit</h3>
+</div>
+</div>
+<!-- Email Body -->
+<div class="px-lg py-xl flex flex-col gap-lg bg-surface-container-lowest">
+<div class="font-body-lg text-body-lg text-on-surface leading-relaxed flex flex-col gap-6">
+<p>Hi {{first_name}},</p>
+<p>Most forecasting models are never measured; ours are.</p>
+<p>Our current Brier score is 0.18, signaling a high level of predictive calibration. I’ve attached our methodology report to show how this precision impacts C-level decision certainty.</p>
+</div>
+<!-- Technical Data Signal Chip -->
+<div class="flex items-center mt-sm">
+<div class="inline-flex items-center gap-2 bg-tertiary-container/10 border border-tertiary-container/20 px-3 py-1.5 rounded-full">
+<span class="material-symbols-outlined text-tertiary-container text-[16px]" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span class="font-label-sm text-label-sm text-tertiary-container tracking-wide">Brier: 0.18</span>
+</div>
+</div>
+<!-- CTA Document Attachment Simulation -->
+<div class="mt-md">
+<button class="group inline-flex items-center gap-3 bg-secondary text-on-secondary px-6 py-3 rounded-md hover:bg-primary transition-colors duration-300">
+<span class="material-symbols-outlined text-[20px]">description</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wide">Download calibration report</span>
+<span class="material-symbols-outlined text-[18px] opacity-70 group-hover:translate-y-0.5 transition-transform">download</span>
+</button>
+</div>
+<!-- Sign-off -->
+<div class="mt-lg pt-lg border-t border-outline-variant/10">
+<p class="font-body-md text-body-md text-on-surface-variant italic">
+                        — Amine, Bassira
+                    </p>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-[#FAF7F2] dark:bg-stone-950 w-full border-t border-stone-200/50 dark:border-stone-800/50 font-['Manrope'] text-sm tracking-wide mt-auto">
+<div class="flex flex-col md:flex-row justify-between items-center w-full px-12 py-10 opacity-80 max-w-7xl mx-auto gap-6 md:gap-0">
+<div class="text-stone-400 dark:text-stone-600">
+                © 2024 Bassira. All rights reserved.
+            </div>
+<div class="flex flex-wrap justify-center gap-8">
+<a class="text-stone-400 dark:text-stone-600 hover:text-stone-600 dark:hover:text-stone-400 transition-colors cursor-pointer" href="#">Privacy Policy</a>
+<a class="text-stone-400 dark:text-stone-600 hover:text-stone-600 dark:hover:text-stone-400 transition-colors cursor-pointer" href="#">Terms of Service</a>
+<a class="text-stone-400 dark:text-stone-600 hover:text-stone-600 dark:hover:text-stone-400 transition-colors cursor-pointer" href="#">Contact Support</a>
+</div>
+</div>
+</footer>
+</body></html>

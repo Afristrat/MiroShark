@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Email Template Preview - Bassira</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&amp;family=Outfit:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;family=Tajawal:wght@400&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed": "#9cf5c1",
+                        "primary-fixed": "#ffdbce",
+                        "on-tertiary-fixed-variant": "#005232",
+                        "outline-variant": "#dec0b6",
+                        "on-background": "#241915",
+                        "on-primary-container": "#ffcdbb",
+                        "surface-container-highest": "#f3ded7",
+                        "on-secondary-container": "#6c2400",
+                        "surface-dim": "#ebd6cf",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error": "#ffffff",
+                        "surface-container-high": "#f9e4dd",
+                        "background": "#fff8f6",
+                        "surface": "#fff8f6",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#7f2b00",
+                        "primary-fixed-dim": "#ffb599",
+                        "error-container": "#ffdad6",
+                        "inverse-on-surface": "#ffede7",
+                        "tertiary": "#005132",
+                        "on-primary-fixed": "#370e00",
+                        "inverse-primary": "#ffb599",
+                        "surface-container-low": "#fff1ec",
+                        "outline": "#8a7269",
+                        "surface-variant": "#f3ded7",
+                        "on-secondary-fixed": "#370e00",
+                        "on-surface": "#241915",
+                        "secondary-fixed-dim": "#ffb598",
+                        "surface-container": "#ffe9e2",
+                        "surface-bright": "#fff8f6",
+                        "inverse-surface": "#3a2e29",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "primary": "#7e2b00",
+                        "secondary": "#a13f0f",
+                        "secondary-fixed": "#ffdbce",
+                        "primary-container": "#a13f0f",
+                        "surface-tint": "#a13f0f",
+                        "on-tertiary-container": "#91eab7",
+                        "on-secondary": "#ffffff",
+                        "secondary-container": "#fd8450",
+                        "on-surface-variant": "#57423a",
+                        "on-secondary-fixed-variant": "#7f2b00",
+                        "on-tertiary-fixed": "#002111",
+                        "tertiary-container": "#006c43",
+                        "tertiary-fixed-dim": "#80d8a6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "24px",
+                        "xs": "4px",
+                        "lg": "48px",
+                        "base": "8px",
+                        "sm": "12px",
+                        "container-max": "1280px",
+                        "xl": "80px",
+                        "gutter": "32px"
+                    },
+                    "fontFamily": {
+                        "h3": ["Outfit"],
+                        "h1": ["Outfit"],
+                        "arabic-body": ["Tajawal"],
+                        "body-md": ["Manrope"],
+                        "body-lg": ["Manrope"],
+                        "h2": ["Outfit"],
+                        "label-sm": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "h3": ["24px", { "lineHeight": "1.3", "letterSpacing": "0", "fontWeight": "500" }],
+                        "h1": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "arabic-body": ["18px", { "lineHeight": "1.8", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "h2": ["36px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+                        "label-sm": ["12px", { "lineHeight": "1.2", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-[#FAF7F2] text-on-surface font-body-md text-body-md min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="bg-[#FAF7F2] dark:bg-stone-950 font-['Outfit'] font-semibold tracking-tight docked full-width top-0 border-b border-stone-200/50 dark:border-stone-800/50 flat no shadows flex justify-between items-center w-full px-8 py-4 max-w-7xl mx-auto">
+<div class="flex items-center gap-md">
+<span class="text-2xl font-bold text-[#A13F0F] dark:text-[#A13F0F] uppercase tracking-widest">Bassira</span>
+<nav class="hidden md:flex gap-md ml-lg">
+<a class="text-[#A13F0F] border-b-2 border-[#A13F0F] pb-1 hover:text-[#A13F0F] transition-colors duration-200 cursor-pointer active:opacity-80" href="#">Templates</a>
+<a class="text-stone-500 dark:text-stone-400 font-medium hover:text-[#A13F0F] transition-colors duration-200 cursor-pointer active:opacity-80" href="#">Campaigns</a>
+<a class="text-stone-500 dark:text-stone-400 font-medium hover:text-[#A13F0F] transition-colors duration-200 cursor-pointer active:opacity-80" href="#">Analytics</a>
+<a class="text-stone-500 dark:text-stone-400 font-medium hover:text-[#A13F0F] transition-colors duration-200 cursor-pointer active:opacity-80" href="#">Inbox</a>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<button class="bg-[#A13F0F] text-on-primary px-sm py-base rounded hover:opacity-90 transition-opacity">New Template</button>
+<span class="material-symbols-outlined text-[#A13F0F] dark:text-[#A13F0F] cursor-pointer hover:text-[#A13F0F] transition-colors duration-200 active:opacity-80">settings</span>
+<span class="material-symbols-outlined text-[#A13F0F] dark:text-[#A13F0F] cursor-pointer hover:text-[#A13F0F] transition-colors duration-200 active:opacity-80">notifications</span>
+<img alt="User profile" class="w-8 h-8 rounded-full border border-stone-200/50" data-alt="A professional headshot of a person with a warm, approachable expression. The lighting is soft and natural, emphasizing a modern corporate aesthetic. The background is slightly blurred to keep the focus on the subject." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYLEw_dQVwe0f37xvVbIvkwncjLjsxn9hLJYzvzogpX8Pk25HeT4nUmFJ47WwLmN7WwW-QrCBvqZrsm8UN9SvdufTchI6NwA9D0SZ99hOb55RYQnk3_AAyDmnL--Pclvl52T0FW0UgKpdHaCoYCMUZqBVz0EMluADKITUQN5w9WkFn3afN1wGSmZ74_VsmddhbP0yH4BcGxuVIbDJW63a6XmyCzFM_ZLohpnhfym74IyG1t8vdy39nu6hmRb1gPCCyAfkbmM-BFdc"/>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow w-full flex justify-center items-start pt-xl pb-xl px-4">
+<!-- Email Preview Container -->
+<div class="w-full max-w-[600px] bg-surface-container-lowest border border-outline-variant/20 rounded-lg p-lg mx-auto shadow-[0_4px_24px_rgba(161,63,15,0.05)]">
+<!-- Email Header / Meta -->
+<div class="mb-lg pb-md border-b border-surface-variant flex justify-between items-center">
+<div>
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider block mb-xs">Preview: Sequence 1</span>
+<h2 class="font-h3 text-h3 text-on-surface">Pre-decision anxiety</h2>
+</div>
+<div class="flex gap-sm">
+<button class="text-outline hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-md">edit</span>
+</button>
+<button class="text-outline hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-md">content_copy</span>
+</button>
+</div>
+</div>
+<!-- The Actual Email Simulation -->
+<div class="bg-surface p-lg rounded border border-surface-variant">
+<!-- Email Subject -->
+<div class="mb-lg">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider block mb-base">Subject</span>
+<p class="font-body-lg text-body-lg text-on-surface font-medium">Strategic risk assessment for your upcoming M&amp;A</p>
+</div>
+<!-- Email Body -->
+<div class="space-y-md">
+<p class="font-body-md text-body-md text-on-surface text-[#241915]">
+                        Your upcoming merger involves significant narrative volatility.
+                    </p>
+<p class="font-body-md text-body-md text-on-surface text-[#241915]">
+                        We simulated 10,000 agent interactions to identify hidden risk vectors. You can review the stress-test results here.
+                    </p>
+<!-- CTA -->
+<div class="pt-sm pb-sm">
+<a class="inline-block bg-[#A13F0F] text-on-primary font-body-md text-body-md font-medium px-md py-sm rounded hover:bg-opacity-90 transition-colors" href="#">
+                            Review stress-test results
+                        </a>
+</div>
+<!-- Sign-off -->
+<div class="pt-sm">
+<p class="font-body-md text-body-md text-on-surface text-[#241915]">
+                            — Amine, Bassira
+                        </p>
+</div>
+</div>
+<!-- Email Footer -->
+<div class="mt-xl pt-md border-t border-surface-variant text-center">
+<p class="font-['Outfit'] text-[12px] font-medium text-[#8A7269]">
+                        Strategic Foresight for MENA &amp; Europe.
+                    </p>
+</div>
+</div>
+<!-- Contextual Actions -->
+<div class="mt-md flex justify-end gap-sm">
+<button class="border border-outline text-on-surface font-body-md text-body-md px-md py-sm rounded hover:bg-surface-variant transition-colors">Send Test</button>
+<button class="bg-secondary text-on-primary font-body-md text-body-md px-md py-sm rounded hover:bg-opacity-90 transition-colors">Save Template</button>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-[#FAF7F2] dark:bg-stone-950 font-['Manrope'] text-sm tracking-wide full-width border-t border-stone-200/50 dark:border-stone-800/50 flat no shadows flex flex-col md:flex-row justify-between items-center w-full px-12 py-10 mt-20 opacity-80 text-stone-400 dark:text-stone-600">
+<div>© 2024 Bassira. All rights reserved.</div>
+<div class="flex gap-md mt-4 md:mt-0">
+<a class="text-stone-400 dark:text-stone-600 hover:text-stone-600 dark:hover:text-stone-400 transition-colors cursor-pointer" href="#">Privacy Policy</a>
+<a class="text-stone-400 dark:text-stone-600 hover:text-stone-600 dark:hover:text-stone-400 transition-colors cursor-pointer" href="#">Terms of Service</a>
+<a class="text-stone-400 dark:text-stone-600 hover:text-stone-600 dark:hover:text-stone-400 transition-colors cursor-pointer" href="#">Contact Support</a>
+</div>
+</footer>
+</body></html>

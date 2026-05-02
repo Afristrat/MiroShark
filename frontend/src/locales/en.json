@@ -75,19 +75,29 @@
     },
     "hero": {
       "tag": "Universal Swarm Intelligence Engine",
+      "eyebrow": "بصيرة · Strategic Foresight",
       "title": "Simulate anything, for $1",
+      "subtitle": "The augmented foresight platform for MENA and European decision-makers.",
       "descriptionPart1": "Drop in anything — a press release, a news headline, a policy draft, a question you can't answer, a historical what-if — and",
       "brand": "Bassira",
       "descriptionPart2": "spawns",
       "agents": "hundreds of agents",
       "descriptionPart3": "that react to it hour by hour. Posting, arguing, trading, changing their minds.",
       "slogan": "Don't predict the future. Simulate it",
+      "cta": "Launch a simulation",
+      "trust": {
+        "brier": "Brier 0.18",
+        "sims": "12k simulations",
+        "iso": "ISO 27001"
+      },
       "scrollDownTitle": "Scroll down"
     },
     "panel": {
       "systemStatus": "System Status",
       "ready": "Ready",
-      "readyDesc": "First simulation in ~10 min, ~$1 on the Cheap preset. Drop in a doc or pick a trending headline to start."
+      "readyDesc": "First simulation in ~10 min, ~$1 on the Cheap preset. Drop in a doc or pick a trending headline to start.",
+      "consoleTitle": "Reality Seeds",
+      "consoleSubtitle": "Start by providing raw data or your initial hypotheses."
     },
     "steps": {
       "title": "What it does",
@@ -417,13 +427,52 @@
         "undo": "Undo",
         "skip": "Looks good — skip",
         "saveAndContinue": "Apply changes",
-        "saving": "Applying…"
+        "saving": "Applying…",
+        "launch": "Approve & Launch Simulation",
+        "validate": "Validate selected",
+        "flag": "Flag selected",
+        "removeSelection": "Remove selected",
+        "clearSelection": "Clear selection"
       },
       "badges": {
         "renamed": "Renamed",
         "merged": "Merged",
         "deleted": "Deleted",
-        "added": "Added"
+        "added": "Added",
+        "valid": "Valid",
+        "flagged": "Flagged",
+        "removed": "Removed"
+      },
+      "filters": {
+        "all": "All",
+        "person": "Person",
+        "organization": "Organization",
+        "concept": "Concept",
+        "location": "Location",
+        "sortConfidence": "Sort: type",
+        "searchPlaceholder": "Search entities…"
+      },
+      "panel": {
+        "selected": "Selected entity",
+        "noSelection": "Select an entity to review",
+        "noSelectionHelp": "Click any row in the list to inspect its details and adjust its status.",
+        "status": "Validation status",
+        "canonicalName": "Canonical name",
+        "category": "Category",
+        "mergeInto": "Merge into",
+        "notes": "Notes (optional)",
+        "notesPlaceholder": "Record the reason for the flag or removal…",
+        "close": "Close panel",
+        "noMergeTarget": "— No merge —"
+      },
+      "batch": {
+        "selected": "{count} entity(ies) selected"
+      },
+      "summary": {
+        "valid": "{count} valid",
+        "flagged": "{count} flagged",
+        "removed": "{count} removed",
+        "minRequired": "At least 3 valid entities are required to launch the simulation."
       },
       "add": {
         "button": "Add",
@@ -1493,6 +1542,7 @@
     },
     "step2": {
       "title": "Tell us about you",
+      "subtitle": "Your contact details help us tailor an approach that fits your context.",
       "fullName": {
         "label": "Full name",
         "placeholder": "Karim Bensaid"

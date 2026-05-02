@@ -75,19 +75,29 @@
     },
     "hero": {
       "tag": "Moteur d’intelligence collective universel",
+      "eyebrow": "بصيرة · Prospective stratégique",
       "title": "Simulez tout, pour 1 $",
+      "subtitle": "La plateforme de prospective augmentée pour les décideurs MENA et Europe.",
       "descriptionPart1": "Déposez n’importe quoi — un communiqué de presse, un titre d’actualité, un projet de loi, une question sans réponse, un « et si ? » historique — et",
       "brand": "Bassira",
       "descriptionPart2": "fait apparaître",
       "agents": "des centaines d’agents",
       "descriptionPart3": "qui réagissent heure par heure. Ils publient, débattent, échangent, changent d’avis.",
       "slogan": "Ne prédisez pas l’avenir. Simulez-le",
+      "cta": "Lancer une simulation",
+      "trust": {
+        "brier": "Brier 0,18",
+        "sims": "12 k simulations",
+        "iso": "ISO 27001"
+      },
       "scrollDownTitle": "Aller plus bas"
     },
     "panel": {
       "systemStatus": "Statut du système",
       "ready": "Prêt",
-      "readyDesc": "Première simulation en ~10 min, ~1 $ avec le préréglage Économique. Déposez un document ou choisissez un titre tendance pour commencer."
+      "readyDesc": "Première simulation en ~10 min, ~1 $ avec le préréglage Économique. Déposez un document ou choisissez un titre tendance pour commencer.",
+      "consoleTitle": "Graines de réalité",
+      "consoleSubtitle": "Commencez par fournir les données brutes ou les hypothèses de départ."
     },
     "steps": {
       "title": "Ce que ça fait",
@@ -417,13 +427,52 @@
         "undo": "Annuler",
         "skip": "Tout est bon — ignorer",
         "saveAndContinue": "Appliquer les modifications",
-        "saving": "Application en cours…"
+        "saving": "Application en cours…",
+        "launch": "Approuver et lancer la simulation",
+        "validate": "Valider la sélection",
+        "flag": "Signaler la sélection",
+        "removeSelection": "Retirer la sélection",
+        "clearSelection": "Vider la sélection"
       },
       "badges": {
         "renamed": "Renommée",
         "merged": "Fusionnée",
         "deleted": "Supprimée",
-        "added": "Ajoutée"
+        "added": "Ajoutée",
+        "valid": "Valide",
+        "flagged": "Signalée",
+        "removed": "Retirée"
+      },
+      "filters": {
+        "all": "Tous",
+        "person": "Personne",
+        "organization": "Organisation",
+        "concept": "Concept",
+        "location": "Lieu",
+        "sortConfidence": "Tri : type",
+        "searchPlaceholder": "Rechercher une entité…"
+      },
+      "panel": {
+        "selected": "Entité sélectionnée",
+        "noSelection": "Sélectionnez une entité pour la réviser",
+        "noSelectionHelp": "Cliquez sur une ligne dans la liste pour afficher les détails et ajuster son statut.",
+        "status": "Statut de validation",
+        "canonicalName": "Nom canonique",
+        "category": "Catégorie",
+        "mergeInto": "Fusionner avec",
+        "notes": "Notes (facultatif)",
+        "notesPlaceholder": "Précisez le motif du signalement ou de la suppression…",
+        "close": "Fermer le panneau",
+        "noMergeTarget": "— Aucune fusion —"
+      },
+      "batch": {
+        "selected": "{count} entité(s) sélectionnée(s)"
+      },
+      "summary": {
+        "valid": "{count} valide(s)",
+        "flagged": "{count} signalée(s)",
+        "removed": "{count} retirée(s)",
+        "minRequired": "Minimum 3 entités valides requises pour lancer la simulation."
       },
       "add": {
         "button": "Ajouter",
@@ -1493,6 +1542,7 @@
     },
     "step2": {
       "title": "Parlons de vous",
+      "subtitle": "Vos coordonnées nous permettront de préparer une approche sur-mesure.",
       "fullName": {
         "label": "Nom complet",
         "placeholder": "Karim Bensaid"

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bassira - Onboarding Step 3</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;family=Tajawal:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface": "#fff8f6",
+                      "surface-bright": "#fff8f6",
+                      "on-tertiary-container": "#91eab7",
+                      "tertiary-fixed-dim": "#80d8a6",
+                      "on-secondary-fixed": "#370e00",
+                      "on-secondary-fixed-variant": "#7f2b00",
+                      "on-background": "#241915",
+                      "surface-dim": "#ebd6cf",
+                      "on-secondary": "#ffffff",
+                      "secondary-fixed": "#ffdbce",
+                      "on-tertiary-fixed-variant": "#005232",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary-container": "#006c43",
+                      "surface-variant": "#f3ded7",
+                      "primary-fixed-dim": "#ffb599",
+                      "on-error": "#ffffff",
+                      "surface-container-highest": "#f3ded7",
+                      "inverse-primary": "#ffb599",
+                      "secondary-container": "#fd8450",
+                      "primary": "#7e2b00",
+                      "surface-container": "#ffe9e2",
+                      "primary-container": "#a13f0f",
+                      "outline-variant": "#dec0b6",
+                      "on-primary-fixed": "#370e00",
+                      "on-error-container": "#93000a",
+                      "surface-container-high": "#f9e4dd",
+                      "primary-fixed": "#ffdbce",
+                      "background": "#fff8f6",
+                      "tertiary": "#005132",
+                      "on-primary-fixed-variant": "#7f2b00",
+                      "inverse-on-surface": "#ffede7",
+                      "secondary-fixed-dim": "#ffb598",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary-container": "#6c2400",
+                      "on-primary": "#ffffff",
+                      "on-surface": "#241915",
+                      "error-container": "#ffdad6",
+                      "secondary": "#a13f0f",
+                      "inverse-surface": "#3a2e29",
+                      "tertiary-fixed": "#9cf5c1",
+                      "on-surface-variant": "#57423a",
+                      "surface-container-low": "#fff1ec",
+                      "error": "#ba1a1a",
+                      "surface-tint": "#a13f0f",
+                      "outline": "#8a7269",
+                      "on-tertiary-fixed": "#002111",
+                      "on-primary-container": "#ffcdbb"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xl": "80px",
+                      "sm": "12px",
+                      "container-max": "1280px",
+                      "xs": "4px",
+                      "lg": "48px",
+                      "md": "24px",
+                      "base": "8px",
+                      "gutter": "32px"
+              },
+              "fontFamily": {
+                      "label-sm": [
+                              "JetBrains Mono"
+                      ],
+                      "h1": [
+                              "Outfit"
+                      ],
+                      "h2": [
+                              "Outfit"
+                      ],
+                      "h3": [
+                              "Outfit"
+                      ],
+                      "body-md": [
+                              "Manrope"
+                      ],
+                      "arabic-body": [
+                              "Tajawal"
+                      ],
+                      "body-lg": [
+                              "Manrope"
+                      ]
+              },
+              "fontSize": {
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "h1": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "h2": [
+                              "36px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "h3": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "arabic-body": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.8",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md min-h-screen flex flex-col relative overflow-hidden">
+<!-- Header / Nav Shell -->
+<header class="docked full-width top-0 border-b border-stone-200 dark:border-stone-800 bg-[#FDFCFB]/80 backdrop-blur-md z-50 flex justify-between items-center px-8 w-full h-16">
+<div class="flex items-center gap-md">
+<span class="text-xl font-bold text-[#A13F0F] dark:text-orange-500 font-['Outfit'] tracking-tight">Bassira Causse</span>
+</div>
+<div class="flex items-center gap-md">
+<button class="text-stone-500 hover:text-[#A13F0F] font-medium font-body-md text-body-md transition-colors duration-200">Support</button>
+<button class="text-[#A13F0F] hover:text-[#A13F0F] font-semibold font-body-md text-body-md transition-colors duration-200">Save Progress</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col items-center justify-center relative z-10 px-gutter py-xl">
+<!-- Onboarding Spotlight Overlay (Simulated with absolute positioning for context) -->
+<div class="absolute inset-0 bg-surface-variant/80 z-20 pointer-events-none"></div>
+<!-- The "Mock" Underlying Interface (Blurred/Dimmed out) -->
+<div class="w-full max-w-container-max mx-auto grid grid-cols-1 md:grid-cols-3 gap-gutter opacity-40 blur-[2px]">
+<!-- Side Panel Mock -->
+<div class="col-span-1 bg-surface-container rounded-xl p-md border border-outline-variant/30 h-[600px]">
+<div class="h-8 bg-outline-variant/20 rounded mb-sm w-1/2"></div>
+<div class="h-4 bg-outline-variant/20 rounded mb-md w-full"></div>
+<div class="space-y-sm">
+<div class="h-12 bg-surface rounded-lg w-full"></div>
+<div class="h-12 bg-surface rounded-lg w-full"></div>
+<div class="h-12 bg-surface rounded-lg w-full"></div>
+</div>
+</div>
+<!-- Main Content Mock -->
+<div class="col-span-2 space-y-gutter">
+<div class="bg-surface-container rounded-xl p-md border border-outline-variant/30 h-[200px]"></div>
+<div class="bg-surface-container rounded-xl p-md border border-outline-variant/30 h-[368px]"></div>
+</div>
+</div>
+<!-- Spotlight Focus Area (The actual interactive part for this step) -->
+<div class="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
+<div class="relative w-full max-w-container-max px-gutter pointer-events-auto">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Spacer for the mock side panel -->
+<div class="col-span-1 hidden md:block"></div>
+<div class="col-span-1 md:col-span-2 relative">
+<!-- The Highlighted Component (Scenario Suggestions Gallery) -->
+<div class="bg-surface rounded-xl p-lg border-2 border-primary-container shadow-[0_0_40px_rgba(161,63,15,0.1)] relative z-40">
+<!-- Pulsing Beacon -->
+<div class="absolute -top-3 -left-3 w-6 h-6 z-50">
+<div class="absolute inset-0 rounded-full bg-secondary-container animate-ping opacity-75"></div>
+<div class="relative rounded-full w-6 h-6 bg-primary-container border-2 border-surface"></div>
+</div>
+<div class="mb-md">
+<h3 class="font-h3 text-h3 text-on-surface mb-xs">Scénarios Suggérés</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Sélectionnez un point de départ pour votre analyse.</p>
+</div>
+<!-- Bento Grid for Scenarios -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-sm">
+<!-- Card 1 (Focused) -->
+<div class="bg-surface-container-low border border-primary-container/30 rounded-lg p-md cursor-pointer hover:bg-surface-container transition-colors group relative overflow-hidden">
+<div class="absolute top-0 right-0 w-16 h-16 bg-primary-container/5 rounded-bl-full"></div>
+<span class="material-symbols-outlined text-primary-container mb-sm text-[32px]">trending_up</span>
+<h4 class="font-body-lg text-body-lg font-medium text-on-surface mb-xs">Croissance du Marché</h4>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Analyse prédictive de l'expansion du secteur sur 5 ans.</p>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface border border-outline-variant/30 rounded-lg p-md cursor-pointer hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-outline mb-sm text-[32px]">group</span>
+<h4 class="font-body-lg text-body-lg font-medium text-on-surface mb-xs">Acquisition Client</h4>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Modélisation des coûts d'acquisition par canal.</p>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface border border-outline-variant/30 rounded-lg p-md cursor-pointer hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-outline mb-sm text-[32px]">shield</span>
+<h4 class="font-body-lg text-body-lg font-medium text-on-surface mb-xs">Analyse de Risque</h4>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Évaluation des facteurs de risque opérationnels.</p>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface border border-outline-variant/30 border-dashed rounded-lg p-md flex flex-col items-center justify-center cursor-pointer hover:bg-surface-container-low transition-colors text-center min-h-[140px]">
+<span class="material-symbols-outlined text-outline mb-sm text-[32px]">edit</span>
+<h4 class="font-body-lg text-body-lg font-medium text-on-surface">Créer sur mesure</h4>
+</div>
+</div>
+</div>
+<!-- Tooltip/Popover connected to the spotlight -->
+<div class="absolute top-0 right-full mr-md w-[320px] bg-surface rounded-lg border border-outline-variant/20 shadow-xl z-50 p-md before:content-[''] before:absolute before:top-12 before:-right-2 before:w-4 before:h-4 before:bg-surface before:border-r before:border-b before:border-outline-variant/20 before:transform before:-rotate-45">
+<div class="mb-sm">
+<span class="font-label-sm text-label-sm text-tertiary-container uppercase tracking-wider">Étape 3/4</span>
+</div>
+<h2 class="font-h3 text-h3 text-on-surface mb-sm">Choisissez un scénario suggéré ou écrivez le vôtre</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-lg">
+                                Les scénarios suggérés sont basés sur les meilleures pratiques de votre industrie. Vous pouvez toujours les modifier par la suite.
+                            </p>
+<!-- Progress Bar -->
+<div class="w-full bg-surface-container-highest rounded-full h-2 mb-lg overflow-hidden">
+<div class="bg-primary-container h-2 rounded-full" style="width: 75%"></div>
+</div>
+<!-- Actions -->
+<div class="flex items-center justify-between">
+<button class="font-body-md text-body-md text-outline hover:text-on-surface transition-colors underline decoration-outline/30 underline-offset-4">Passer</button>
+<div class="flex gap-sm">
+<button class="px-sm py-xs border border-outline-variant rounded-md text-on-surface hover:bg-surface-container transition-colors font-label-sm text-label-sm">Précédent</button>
+<button class="px-sm py-xs bg-primary-container text-on-primary rounded-md hover:bg-primary transition-colors font-label-sm text-label-sm">Suivant</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

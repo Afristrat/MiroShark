@@ -770,7 +770,7 @@ const props = defineProps({
   systemLogs: Array
 })
 
-const emit = defineEmits(['go-back', 'next-step', 'add-log', 'update-status'])
+const emit = defineEmits(['go-back', 'next-step', 'add-log', 'update-status', 'update-progress'])
 
 const router = useRouter()
 const { t } = useI18n()
@@ -1607,6 +1607,16 @@ watch(phase, (newPhase) => {
     }).catch(() => {})
   }
 })
+
+// Mirror the round counter to the parent (SimulationRunView header heartbeat).
+// Emit on every runStatus change — the parent dedupes via watchers.
+watch(runStatus, (status) => {
+  emit('update-progress', {
+    currentRound: status?.current_round || 0,
+    totalRounds: status?.total_rounds || 0,
+    runnerStatus: status?.runner_status || null
+  })
+}, { deep: true })
 
 onMounted(() => {
   addLog('Step3 Simulation Run initialized')

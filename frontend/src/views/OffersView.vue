@@ -1,6 +1,7 @@
 <template>
   <div class="offers-page">
-    <!-- ───────────── Top bar ───────────── -->
+    <!-- ───────────── Top bar ─────────────
+         Aligné sur le design Stitch officiel : logo + nav links + lang/CTA. -->
     <header class="offers-topbar">
       <router-link to="/" class="offers-back" :title="$t('offers.nav.backTitle')">
         <span class="offers-back-arrow material-symbols-outlined" aria-hidden="true">arrow_back</span>
@@ -19,6 +20,52 @@
         <h1 class="offers-headline">{{ $t('offers.hero.title') }}</h1>
         <p class="offers-sub">{{ $t('offers.hero.subtitle') }}</p>
       </section>
+
+      <!-- ───────────── Controls (currency + billing globaux) ─────────────
+           Bandeau de toggles inspiré du Stitch officiel : MAD/USD d'abord
+           (priorité culturelle MENA), puis Standard/Flexible. Le toggle
+           billing global ne fixe que la préférence d'affichage par défaut
+           pour les packages monthly (Crisis Watch, Brand Pulse) ; les
+           toggles in-card restent disponibles pour override unitaire. -->
+      <div class="offers-controls" role="group" aria-label="Affichage des prix">
+        <div class="offers-toggle" role="tablist" aria-label="Devise affichée en priorité">
+          <button
+            type="button"
+            role="tab"
+            class="offers-toggle-btn"
+            :class="{ 'offers-toggle-btn--active': currencyPref === 'MAD' }"
+            :aria-selected="currencyPref === 'MAD'"
+            @click="setCurrencyPref('MAD')"
+          >MAD</button>
+          <button
+            type="button"
+            role="tab"
+            class="offers-toggle-btn"
+            :class="{ 'offers-toggle-btn--active': currencyPref === 'USD' }"
+            :aria-selected="currencyPref === 'USD'"
+            @click="setCurrencyPref('USD')"
+          >USD</button>
+        </div>
+
+        <div class="offers-toggle offers-toggle--accent" role="tablist" aria-label="Mode de facturation par défaut">
+          <button
+            type="button"
+            role="tab"
+            class="offers-toggle-btn"
+            :class="{ 'offers-toggle-btn--active': defaultBilling === 'monthly' }"
+            :aria-selected="defaultBilling === 'monthly'"
+            @click="setDefaultBilling('monthly')"
+          >{{ $t('offers.billing.monthly') }}</button>
+          <button
+            type="button"
+            role="tab"
+            class="offers-toggle-btn"
+            :class="{ 'offers-toggle-btn--active': defaultBilling === 'annual' }"
+            :aria-selected="defaultBilling === 'annual'"
+            @click="setDefaultBilling('annual')"
+          >{{ $t('offers.billing.annual') }}</button>
+        </div>
+      </div>
 
       <!-- ───────────── Filter chips ───────────── -->
       <nav
@@ -113,7 +160,7 @@
                   <button
                     type="button"
                     class="offers-billing-btn"
-                    :class="{ 'offers-billing-btn--active': billingMode[pkg.id] !== 'annual' }"
+                    :class="{ 'offers-billing-btn--active': effectiveBilling(pkg) !== 'annual' }"
                     @click="setBillingMode(pkg.id, 'monthly')"
                   >
                     {{ $t('offers.billing.monthly') }}
@@ -121,7 +168,7 @@
                   <button
                     type="button"
                     class="offers-billing-btn"
-                    :class="{ 'offers-billing-btn--active': billingMode[pkg.id] === 'annual' }"
+                    :class="{ 'offers-billing-btn--active': effectiveBilling(pkg) === 'annual' }"
                     @click="setBillingMode(pkg.id, 'annual')"
                   >
                     {{ $t('offers.billing.annual') }}
@@ -151,12 +198,27 @@
 
                 <div class="offers-card-price">
                   <template v-if="resolvedPrice(pkg).priceMAD !== null">
+                    <!-- Devise prioritaire (MAD par défaut, override par toggle global) -->
                     <span class="offers-card-price-mad">
-                      {{ formatMad(resolvedPrice(pkg).priceMAD) }}
-                      <span class="offers-card-price-currency">MAD</span>
+                      <template v-if="currencyPref === 'MAD'">
+                        {{ formatMad(resolvedPrice(pkg).priceMAD) }}
+                        <span class="offers-card-price-currency">MAD</span>
+                      </template>
+                      <template v-else>
+                        <span class="offers-card-price-currency offers-card-price-currency--lead">$</span>{{ formatUsd(resolvedPrice(pkg).priceUSD) }}
+                      </template>
                     </span>
+                    <!-- Devise secondaire -->
                     <span class="offers-card-price-usd">
-                      ${{ formatUsd(resolvedPrice(pkg).priceUSD) }}{{ pkg.billing === 'monthly' ? ` ${$t('offers.billing.suffix.' + (billingMode[pkg.id] === 'annual' ? 'annual' : 'monthly'))}` : '' }}
+                      <template v-if="currencyPref === 'MAD'">
+                        ${{ formatUsd(resolvedPrice(pkg).priceUSD) }}
+                      </template>
+                      <template v-else>
+                        {{ formatMad(resolvedPrice(pkg).priceMAD) }} MAD
+                      </template>
+                      <template v-if="pkg.billing === 'monthly'">
+                        {{ ` ${$t('offers.billing.suffix.' + (effectiveBilling(pkg) === 'annual' ? 'annual' : 'monthly'))}` }}
+                      </template>
                     </span>
                   </template>
                   <template v-else>
@@ -248,9 +310,10 @@
       </section>
     </main>
 
-    <!-- ───────────── Pre-Footer CTA strip (rose pâle) ─────────────
-         Conservé pour cohérence pricing-page : « Vous hésitez ? Parlons ».
-         Préserve aussi la garantie tunnel-commercial.spec /offres → /devis. -->
+    <!-- ───────────── Footer CTA Band (terracotta pleine) ─────────────
+         Aligné sur le design Stitch officiel : fond terracotta
+         (--wi-on-primary-container), titre cream, bouton cream solide.
+         Préserve la garantie tunnel-commercial.spec /offres → /devis. -->
     <section class="offers-cta-strip">
       <h3 class="offers-cta-strip-title">{{ $t('offers.help.title') }}</h3>
       <p class="offers-cta-strip-body">{{ $t('offers.help.body') }}</p>
@@ -440,10 +503,31 @@ const activeChip = ref('all')
 const activeIndex = ref(0)
 const carouselEl = ref(null)
 
-// Toggle billing par package (Crisis Watch / Brand Pulse).
+// Préférence de devise principale affichée (priorité culturelle MENA → MAD).
+const currencyPref = ref('MAD')
+// Mode de facturation par défaut appliqué à tous les packages monthly
+// (override par toggle in-card via billingMode[pkg.id]).
+const defaultBilling = ref('monthly')
+
+// Toggle billing par package (Crisis Watch / Brand Pulse) — override unitaire.
 const billingMode = reactive({})
 // Variants sélectionnées par package (Adcheck Pro / Cohort Replay).
 const selectedVariant = reactive({})
+
+// Renvoie le mode de billing effectif pour un package : override unitaire si
+// présent, sinon préférence globale, sinon mensuel par défaut.
+function effectiveBilling(pkg) {
+  if (billingMode[pkg.id]) return billingMode[pkg.id]
+  return defaultBilling.value
+}
+
+function setCurrencyPref(value) {
+  currencyPref.value = value
+}
+
+function setDefaultBilling(value) {
+  defaultBilling.value = value
+}
 
 const displayedPackages = computed(() => {
   if (activeChip.value === 'all') return packages
@@ -489,7 +573,7 @@ function computeBilling(pkg, priceMAD, priceUSD) {
   // Annual mode : on facture (12 - annualDiscount) mois × prix mensuel,
   // ramené au mois équivalent affiché (priceMAD reste l'affichage mensuel
   // « lissé » : annual_total / 12). On affiche le prix mensuel équivalent.
-  if (pkg.billing === 'monthly' && billingMode[pkg.id] === 'annual') {
+  if (pkg.billing === 'monthly' && effectiveBilling(pkg) === 'annual') {
     const months = 12 - (pkg.annualDiscount || 0)
     const annualTotal = priceMAD * months
     const annualTotalUsd = priceUSD * months
@@ -598,12 +682,12 @@ onBeforeUnmount(() => {
 
 .offers-page {
   /* ── Alias --stitch-* → tokens globaux --wi-* (US-053) ──
-     Les usages var(--stitch-*) dans ce composant sont conservés ;
-     les valeurs sont désormais héritées des tokens globaux,
-     ce qui active automatiquement le dark mode. */
+     Les usages var(--stitch-*) hérités sont conservés pour stabilité,
+     mais la refonte privilégie var(--wi-*) directement. */
   --stitch-primary-container: var(--wi-primary-container);
   --stitch-primary: var(--wi-primary);
   --stitch-on-primary: var(--wi-on-primary);
+  --stitch-on-primary-container: var(--wi-on-primary-container);
   --stitch-on-primary-fixed: #370e00;
   --stitch-on-primary-fixed-variant: #7f2b00;
   --stitch-primary-fixed: #ffdbce;
@@ -620,10 +704,13 @@ onBeforeUnmount(() => {
   --stitch-outline-variant: var(--wi-outline-variant);
   --stitch-tertiary-container: var(--wi-tertiary-container);
   --stitch-on-tertiary-container: var(--wi-on-tertiary-container);
+  --stitch-secondary: var(--wi-secondary);
+  --stitch-secondary-container: var(--wi-secondary-container);
+  --stitch-on-secondary-container: var(--wi-on-secondary-container);
   --stitch-secondary-fixed-dim: #7fd8a6;
   --stitch-on-secondary-fixed: #002111;
 
-  /* Tiers tones additionnels */
+  /* Tiers tones additionnels (warning / violet) — non couverts par --wi-* */
   --stitch-warning-container: #ffd66b;
   --stitch-on-warning-container: #5c3d00;
   --stitch-violet-container: #c9b6ff;
@@ -635,13 +722,17 @@ onBeforeUnmount(() => {
   --stitch-shadow-soft: var(--wi-shadow-sm);
   --stitch-shadow-strong: var(--wi-shadow-lg);
 
+  /* Glow orange spécifique featured card (warm primary container halo) */
+  --offers-shadow-orange: 0 20px 40px -15px rgba(255, 133, 81, 0.32),
+                           0 8px 24px -8px rgba(161, 63, 15, 0.18);
+
   --stitch-font-display: var(--wi-font-heading);
   --stitch-font-body: var(--wi-font-body);
 
   min-height: 100vh;
-  background: var(--stitch-surface);
-  color: var(--stitch-on-surface);
-  font-family: var(--stitch-font-body);
+  background: var(--wi-bg);
+  color: var(--wi-on-bg);
+  font-family: var(--wi-font-body);
   font-size: 16px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -659,8 +750,10 @@ onBeforeUnmount(() => {
   align-items: center;
   padding: 16px 32px;
   padding-inline-end: 110px;
-  border-bottom: 1px solid #ebe5da;
-  background: #fdfcfb;
+  border-bottom: 1px solid var(--wi-outline-variant);
+  background: color-mix(in srgb, var(--wi-bg) 90%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   position: sticky;
   top: 0;
   z-index: 50;
@@ -670,18 +763,18 @@ onBeforeUnmount(() => {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-family: var(--stitch-font-display);
+  font-family: var(--wi-font-heading);
   font-weight: 700;
   font-size: 18px;
-  color: #4a4540;
+  color: var(--wi-on-surface-variant);
   text-decoration: none;
   padding: 6px 12px;
   border-radius: var(--wi-radius-pill);
   transition: color 0.2s ease, background 0.2s ease;
 }
 .offers-back:hover {
-  color: var(--stitch-primary-container);
-  background: var(--stitch-surface-container-low);
+  color: var(--wi-primary-container);
+  background: var(--wi-surface-container-low);
 }
 .offers-back-arrow {
   font-size: 20px !important;
@@ -753,13 +846,65 @@ onBeforeUnmount(() => {
 }
 
 .offers-sub {
-  font-family: var(--stitch-font-body);
+  font-family: var(--wi-font-body);
   font-size: 18px;
   line-height: 1.6;
   font-weight: 400;
-  color: var(--stitch-on-surface-variant);
+  color: var(--wi-on-surface-variant);
   max-width: 640px;
   margin: 0 auto;
+}
+
+/* ── Controls : currency + billing toggles globaux ─────
+   Bandeau de toggles centré, inspiré du Stitch officiel. */
+.offers-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin: 0 auto 24px;
+  max-width: 720px;
+  padding: 0 16px;
+}
+
+.offers-toggle {
+  display: inline-flex;
+  align-items: center;
+  background: var(--wi-surface-container-high);
+  border: 1px solid color-mix(in srgb, var(--wi-outline-variant) 60%, transparent);
+  border-radius: var(--wi-radius-pill);
+  padding: 4px;
+  gap: 2px;
+}
+
+.offers-toggle-btn {
+  appearance: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px 18px;
+  border-radius: var(--wi-radius-pill);
+  font-family: var(--wi-font-body);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  color: var(--wi-on-surface-variant);
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  white-space: nowrap;
+}
+.offers-toggle-btn:hover {
+  color: var(--wi-on-surface);
+}
+.offers-toggle-btn--active {
+  background: var(--wi-primary-container);
+  color: var(--wi-on-primary);
+  box-shadow: var(--wi-shadow-sm);
+}
+/* Variante "Flexible" → terracotta pour différencier les deux toggles
+   (cohérent avec le Stitch : devise = orange, billing = terracotta deep). */
+.offers-toggle--accent .offers-toggle-btn--active {
+  background: var(--wi-on-primary-container);
+  color: var(--wi-bg);
 }
 
 /* ── Filter chips ───────────────────────────────────── */
@@ -797,9 +942,10 @@ onBeforeUnmount(() => {
   transform: scale(0.98);
 }
 .offers-chip--active {
-  background: var(--stitch-primary-container);
-  color: #ffffff;
-  border-color: var(--stitch-primary-container);
+  /* Terracotta deep = anchor visuel "tier filter" (cf. Stitch master) */
+  background: var(--wi-on-primary-container);
+  color: var(--wi-bg);
+  border-color: var(--wi-on-primary-container);
 }
 .offers-chip-emoji {
   font-size: 14px;
@@ -885,9 +1031,9 @@ onBeforeUnmount(() => {
   z-index: 2;
 }
 .offers-nav:hover:not(:disabled) {
-  background: var(--stitch-primary-container);
-  color: #ffffff;
-  border-color: var(--stitch-primary-container);
+  background: var(--wi-primary-container);
+  color: var(--wi-on-primary);
+  border-color: var(--wi-primary-container);
 }
 .offers-nav:active:not(:disabled) {
   transform: scale(0.96);
@@ -936,37 +1082,45 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   width: 100%;
-  background: var(--stitch-surface-container-lowest);
-  border: 1px solid rgba(222, 192, 182, 0.3);
+  background: var(--wi-surface);
+  border: 1px solid color-mix(in srgb, var(--wi-outline-variant) 50%, transparent);
   border-radius: var(--wi-radius-card);
   padding: 32px;
-  box-shadow: var(--stitch-shadow-ambient);
+  box-shadow: var(--wi-shadow-ambient);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .offers-card--active {
-  box-shadow: var(--stitch-shadow-strong);
+  box-shadow: var(--wi-shadow-lg);
 }
+/* Featured = orange border + glow halo + scale 1.04 (anchor mid-tier) */
 .offers-card--featured {
-  border-top: 8px solid var(--stitch-primary-container);
-  padding-top: 28px;
+  border: 2px solid var(--wi-primary-container);
+  box-shadow: var(--offers-shadow-orange);
+}
+@media (min-width: 768px) {
+  .offers-slide--active .offers-card--featured {
+    transform: scale(1.04);
+  }
 }
 
-/* Badge « Most chosen » floating au-dessus */
+/* Badge « Le plus choisi » floating au-dessus de la featured card.
+   Couleur terracotta pour cohérence avec les CTA. */
 .offers-most-chosen {
   position: absolute;
-  top: -16px;
+  top: -14px;
   inset-inline-start: 50%;
   transform: translateX(-50%);
-  background: var(--stitch-primary-container);
-  color: #ffffff;
-  padding: 4px 16px;
+  background: var(--wi-on-primary-container);
+  color: var(--wi-bg);
+  padding: 6px 18px;
   border-radius: var(--wi-radius-pill);
-  font-family: var(--stitch-font-body);
-  font-weight: 600;
-  font-size: 12px;
+  font-family: var(--wi-font-body);
+  font-weight: 700;
+  font-size: 11px;
   line-height: 1.2;
-  letter-spacing: 0.01em;
-  box-shadow: var(--stitch-shadow-soft);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: var(--wi-shadow-md);
   white-space: nowrap;
   z-index: 2;
 }
@@ -1148,36 +1302,48 @@ onBeforeUnmount(() => {
   box-shadow: 0 0 0 2px rgba(255, 133, 81, 0.2);
 }
 
-/* ── Price block ────────────────────────────────────── */
+/* ── Price block ──────────────────────────────────────
+   Outfit 700, 48px (spec brand : "key numbers"). */
 .offers-card-price {
   margin-bottom: 24px;
 }
 .offers-card-price-mad {
   display: block;
-  font-family: var(--stitch-font-display);
-  font-size: 32px;
-  font-weight: 600;
-  line-height: 1.3;
-  letter-spacing: -0.01em;
-  color: var(--stitch-on-surface);
+  font-family: var(--wi-font-heading);
+  font-size: clamp(36px, 4vw, 48px);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--wi-on-bg);
 }
 .offers-card-price-mad--label {
   font-size: 24px;
-  color: var(--stitch-primary);
+  font-weight: 600;
+  color: var(--wi-on-primary-container);
 }
 .offers-card-price-currency {
-  font-family: var(--stitch-font-body);
+  font-family: var(--wi-font-body);
   font-size: 16px;
   font-weight: 400;
-  color: var(--stitch-on-surface-variant);
+  color: var(--wi-on-surface-variant);
   margin-inline-start: 4px;
+}
+/* Préfixe « $ » devant le montant USD quand USD est la devise prioritaire */
+.offers-card-price-currency--lead {
+  font-family: var(--wi-font-heading);
+  font-size: 36px;
+  font-weight: 600;
+  color: var(--wi-on-surface);
+  margin-inline-start: 0;
+  margin-inline-end: 4px;
+  vertical-align: top;
 }
 .offers-card-price-usd {
   display: block;
-  font-family: var(--stitch-font-body);
+  font-family: var(--wi-font-body);
   font-size: 14px;
-  color: var(--stitch-outline);
-  margin-top: 4px;
+  color: var(--wi-outline);
+  margin-top: 6px;
 }
 
 .offers-card-divider {
@@ -1208,8 +1374,12 @@ onBeforeUnmount(() => {
 .offers-card-bullet-icon {
   flex-shrink: 0;
   font-size: 18px !important;
-  color: var(--stitch-primary-container);
+  /* Mint-green (--wi-secondary) pour signaler trust/validation
+     conformément au brand guide Bassira. */
+  color: var(--wi-secondary);
   margin-top: 2px;
+  /* Filled style pour cohérence avec le design Stitch (check_circle filled) */
+  font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
 }
 
 .offers-card-fineprint {
@@ -1222,9 +1392,11 @@ onBeforeUnmount(() => {
 
 .offers-card-cta {
   width: 100%;
-  background: var(--stitch-primary-container);
-  color: #ffffff;
-  font-family: var(--stitch-font-body);
+  /* Terracotta deep (--wi-on-primary-container) = "Demander un devis"
+     primary action, cohérent avec brand guidelines (urgency without aggression). */
+  background: var(--wi-on-primary-container);
+  color: var(--wi-bg);
+  font-family: var(--wi-font-body);
   font-weight: 600;
   font-size: 14px;
   letter-spacing: 0.01em;
@@ -1232,26 +1404,31 @@ onBeforeUnmount(() => {
   border: none;
   border-radius: var(--wi-radius-interactive);
   cursor: pointer;
-  transition: opacity 0.2s ease, transform 0.1s ease;
+  transition: background 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
   margin-top: auto;
 }
 .offers-card-cta:hover {
-  opacity: 0.92;
+  background: var(--wi-primary);
+  box-shadow: var(--wi-shadow-md);
 }
 .offers-card-cta:active {
   transform: scale(0.98);
 }
+/* Featured CTA : amplifié visuellement (cards non-featured ghost orange) */
+.offers-card--featured .offers-card-cta {
+  box-shadow: var(--wi-shadow-md);
+}
 
 /* ── Section title (FAQ) ────────────────────────────── */
 .offers-section-title {
-  font-family: var(--stitch-font-display);
-  font-size: 32px;
+  font-family: var(--wi-font-heading);
+  font-size: clamp(28px, 3.5vw, 36px);
   font-weight: 600;
-  line-height: 1.3;
+  line-height: 1.2;
   letter-spacing: -0.01em;
   text-align: center;
   margin: 0 0 48px 0;
-  color: var(--stitch-on-surface);
+  color: var(--wi-on-bg);
 }
 
 /* ── FAQ ────────────────────────────────────────────── */
@@ -1295,9 +1472,12 @@ onBeforeUnmount(() => {
 
 .offers-faq-chevron {
   flex-shrink: 0;
-  color: var(--stitch-outline);
-  transition: transform 0.2s ease;
+  color: var(--wi-primary-container);
+  transition: transform 0.2s ease, color 0.2s ease;
   font-size: 24px !important;
+}
+.offers-faq-q:hover .offers-faq-chevron {
+  color: var(--wi-on-primary-container);
 }
 .offers-faq-item[open] .offers-faq-chevron {
   transform: rotate(180deg);
@@ -1312,49 +1492,55 @@ onBeforeUnmount(() => {
   color: var(--stitch-on-surface-variant);
 }
 
-/* ── Pre-Footer CTA strip ───────────────────────────── */
+/* ── Footer CTA Band ─────────────────────────────────
+   Bande pleine terracotta (--wi-on-primary-container), titre cream,
+   bouton cream solide sur ce fond. Aligné sur le Stitch officiel. */
 .offers-cta-strip {
-  background: var(--stitch-surface-container);
-  border-top: 1px solid rgba(222, 192, 182, 0.3);
+  background: var(--wi-on-primary-container);
   padding: 96px 32px;
   text-align: center;
+  margin-top: 48px;
 }
 
 .offers-cta-strip-title {
-  font-family: var(--stitch-font-display);
-  font-size: 24px;
-  font-weight: 500;
-  line-height: 1.4;
-  color: var(--stitch-on-surface);
+  font-family: var(--wi-font-heading);
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--wi-bg);
   margin: 0 0 16px 0;
 }
 .offers-cta-strip-body {
-  font-family: var(--stitch-font-body);
+  font-family: var(--wi-font-body);
   font-size: 18px;
   line-height: 1.6;
-  color: var(--stitch-on-surface-variant);
-  max-width: 560px;
+  color: color-mix(in srgb, var(--wi-bg) 88%, transparent);
+  max-width: 640px;
   margin: 0 auto 32px auto;
 }
 
 .offers-cta-strip-btn {
   display: inline-block;
-  background: transparent;
-  color: var(--stitch-on-surface);
-  font-family: var(--stitch-font-body);
+  background: var(--wi-bg);
+  color: var(--wi-on-primary-container);
+  font-family: var(--wi-font-body);
   font-weight: 600;
   font-size: 14px;
   letter-spacing: 0.01em;
-  padding: 14px 32px;
-  border: 2px solid var(--stitch-outline);
+  padding: 16px 40px;
+  border: none;
   border-radius: var(--wi-radius-interactive);
   text-decoration: none;
-  transition: border-color 0.2s ease, color 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.1s ease;
   cursor: pointer;
+  box-shadow: var(--wi-shadow-md);
 }
 .offers-cta-strip-btn:hover {
-  border-color: var(--stitch-primary-container);
-  color: var(--stitch-primary-container);
+  background: var(--wi-surface-container-low);
+}
+.offers-cta-strip-btn:active {
+  transform: scale(0.98);
 }
 
 /* ── Mobile tweaks ──────────────────────────────────── */

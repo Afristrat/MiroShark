@@ -1,53 +1,95 @@
 <template>
-  <div class="main-view">
-    <!-- Header -->
+  <div class="main-view" :class="{ 'is-mobile': isMobile, 'is-tablet': isTablet }">
+    <!-- Dense Header — Tier 2 Analyst console -->
     <header class="app-header">
+      <!-- LEFT: Brand + project context (Sim ID + LIVE) -->
       <div class="header-left">
-        <div class="brand" @click="router.push('/')">BASSIRA</div>
-      </div>
-      
-      <div class="header-center">
-        <div class="view-switcher">
-          <button 
-            v-for="mode in ['graph', 'split', 'workbench']" 
-            :key="mode"
-            class="switch-btn"
-            :class="{ active: viewMode === mode }"
-            @click="viewMode = mode"
-          >
-            {{ { graph: 'Graph', split: 'Split', workbench: 'Workbench' }[mode] }}
-          </button>
+        <button class="brand" type="button" @click="router.push('/')" :title="$t('common.home', 'Home')">
+          <span class="brand-mark" aria-hidden="true">⬡</span>
+          <span class="brand-name">BASSIRA</span>
+        </button>
+        <div class="header-divider" aria-hidden="true"></div>
+        <div class="project-context">
+          <div class="project-name" :title="projectTitle">{{ projectTitle }}</div>
+          <div class="project-meta">
+            <span class="sim-id">{{ simId }}</span>
+            <span class="status-pill" :class="statusClass">
+              <span class="status-dot"></span>
+              {{ statusText }}
+            </span>
+          </div>
         </div>
       </div>
 
+      <!-- CENTER: View switcher (icon + label) -->
+      <nav class="view-switcher" :aria-label="$t('common.view', 'View')">
+        <button
+          v-for="mode in viewModes"
+          :key="mode.id"
+          type="button"
+          class="switch-btn"
+          :class="{ active: viewMode === mode.id }"
+          :aria-pressed="viewMode === mode.id"
+          @click="viewMode = mode.id"
+        >
+          <span class="switch-icon" aria-hidden="true" v-html="mode.icon"></span>
+          <span class="switch-label">{{ mode.label }}</span>
+        </button>
+      </nav>
+
+      <!-- RIGHT: Workflow step + actions -->
       <div class="header-right">
-        <div class="workflow-step">
-          <span class="step-num">Step {{ currentStep }}/4</span>
+        <div class="workflow-step" :title="stepNames[currentStep - 1]">
+          <span class="step-num">{{ currentStep }} / 4</span>
           <span class="step-name">{{ stepNames[currentStep - 1] }}</span>
         </div>
-        <div class="step-divider"></div>
-        <span class="status-indicator" :class="statusClass">
-          <span class="dot"></span>
-          {{ statusText }}
-        </span>
+        <div class="header-divider" aria-hidden="true"></div>
+        <div class="kbd-hint">
+          <span class="kbd">⌘S</span>
+          <span class="kbd-label">Save</span>
+        </div>
       </div>
     </header>
 
-    <!-- Main Content Area -->
-    <main class="content-area">
+    <!-- Main Content Area — Resizable split workspace -->
+    <main class="content-area" :data-mode="viewMode">
       <!-- Left Panel: Graph -->
-      <div class="panel-wrapper left" :style="leftPanelStyle">
-        <GraphPanel 
+      <section
+        v-show="viewMode !== 'workbench'"
+        class="panel-wrapper left"
+        :style="leftPanelStyle"
+        :aria-label="$t('charts.graph.title', 'Network Topology')"
+      >
+        <GraphPanel
           :graphData="graphData"
           :loading="graphLoading"
           :currentPhase="currentPhase"
           @refresh="refreshGraph"
           @toggle-maximize="toggleMaximize('graph')"
         />
+      </section>
+
+      <!-- Resize divider — only in split mode on desktop -->
+      <div
+        v-if="viewMode === 'split' && !isMobile"
+        class="resize-divider"
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Resize panels"
+        tabindex="0"
+        @mousedown="startResize"
+        @keydown="onResizeKey"
+      >
+        <div class="resize-grip" aria-hidden="true"></div>
       </div>
 
       <!-- Right Panel: Step Components -->
-      <div class="panel-wrapper right" :style="rightPanelStyle">
+      <section
+        v-show="viewMode !== 'graph'"
+        class="panel-wrapper right"
+        :style="rightPanelStyle"
+        :aria-label="$t('common.workbench', 'Workbench')"
+      >
         <!-- US-040 — Step 1.5 review banner. Shown only when the graph
              build has finished and the user has not yet entered Step 2. -->
         <div
@@ -89,7 +131,7 @@
           @next-step="handleNextStep"
           @add-log="addLog"
         />
-      </div>
+      </section>
     </main>
   </div>
 </template>
@@ -108,6 +150,25 @@ const router = useRouter()
 
 // Layout State
 const viewMode = ref('split') // graph | split | workbench
+
+// View switcher tabs (Stitch dense console — icon + label)
+const viewModes = [
+  {
+    id: 'graph',
+    label: 'Graph',
+    icon: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4M12 11l-7 8M12 11l7 8"/></svg>'
+  },
+  {
+    id: 'split',
+    label: 'Split',
+    icon: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="8" height="16" rx="1"/><rect x="13" y="4" width="8" height="16" rx="1"/></svg>'
+  },
+  {
+    id: 'workbench',
+    label: 'Workbench',
+    icon: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></svg>'
+  }
+]
 
 // Step State
 const currentStep = ref(1) // 1: Graph Construction, 2: Agent Setup, 3: Start Simulation, 4: Report Generation, 5: Deep Interaction
@@ -129,17 +190,102 @@ const systemLogs = ref([])
 let pollTimer = null
 let graphPollTimer = null
 
+// --- Project context (header dense info) ---
+const projectTitle = computed(() => {
+  return projectData.value?.name
+    || projectData.value?.title
+    || (currentProjectId.value && currentProjectId.value !== 'new'
+        ? `Project ${String(currentProjectId.value).slice(0, 8)}`
+        : 'New Simulation')
+})
+
+const simId = computed(() => {
+  const pid = currentProjectId.value
+  if (!pid || pid === 'new') return 'SIM-NEW'
+  return `SIM-${String(pid).slice(0, 8).toUpperCase()}`
+})
+
+// --- Resizable split (horizontal drag between left/right panels) ---
+const splitRatio = ref(0.5)            // 0..1 — left panel proportion in split mode
+const isResizing = ref(false)
+const MIN_RATIO = 0.2
+const MAX_RATIO = 0.8
+
+const startResize = (event) => {
+  event.preventDefault()
+  isResizing.value = true
+  document.body.style.cursor = 'col-resize'
+  document.body.style.userSelect = 'none'
+  window.addEventListener('mousemove', onResize)
+  window.addEventListener('mouseup', stopResize)
+}
+
+const onResize = (event) => {
+  if (!isResizing.value) return
+  const container = document.querySelector('.main-view .content-area')
+  if (!container) return
+  const rect = container.getBoundingClientRect()
+  const ratio = (event.clientX - rect.left) / rect.width
+  splitRatio.value = Math.min(MAX_RATIO, Math.max(MIN_RATIO, ratio))
+}
+
+const stopResize = () => {
+  isResizing.value = false
+  document.body.style.cursor = ''
+  document.body.style.userSelect = ''
+  window.removeEventListener('mousemove', onResize)
+  window.removeEventListener('mouseup', stopResize)
+}
+
+const onResizeKey = (event) => {
+  // Keyboard accessibility: arrow keys nudge the divider in 5% steps.
+  if (event.key === 'ArrowLeft') {
+    event.preventDefault()
+    splitRatio.value = Math.max(MIN_RATIO, splitRatio.value - 0.05)
+  } else if (event.key === 'ArrowRight') {
+    event.preventDefault()
+    splitRatio.value = Math.min(MAX_RATIO, splitRatio.value + 0.05)
+  } else if (event.key === 'Home') {
+    event.preventDefault()
+    splitRatio.value = 0.5
+  }
+}
+
+// --- Responsive breakpoints ---
+const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1280)
+const isMobile = computed(() => windowWidth.value < 720)
+const isTablet = computed(() => windowWidth.value >= 720 && windowWidth.value < 1080)
+const onResizeWindow = () => { windowWidth.value = window.innerWidth }
+
 // --- Computed Layout Styles ---
 const leftPanelStyle = computed(() => {
+  if (isMobile.value) {
+    // Mobile: tabs (single panel visible at a time)
+    if (viewMode.value === 'graph') return { width: '100%' }
+    if (viewMode.value === 'workbench') return { width: '0%', opacity: 0 }
+    return { width: '100%' }
+  }
+  if (isTablet.value && viewMode.value === 'split') {
+    // Tablet: stack — left takes full width above
+    return { width: '100%' }
+  }
   if (viewMode.value === 'graph') return { width: '100%', opacity: 1, transform: 'translateX(0)' }
   if (viewMode.value === 'workbench') return { width: '0%', opacity: 0, transform: 'translateX(-20px)' }
-  return { width: '50%', opacity: 1, transform: 'translateX(0)' }
+  return { width: `${splitRatio.value * 100}%`, opacity: 1, transform: 'translateX(0)' }
 })
 
 const rightPanelStyle = computed(() => {
+  if (isMobile.value) {
+    if (viewMode.value === 'workbench') return { width: '100%' }
+    if (viewMode.value === 'graph') return { width: '0%', opacity: 0 }
+    return { width: '100%' }
+  }
+  if (isTablet.value && viewMode.value === 'split') {
+    return { width: '100%' }
+  }
   if (viewMode.value === 'workbench') return { width: '100%', opacity: 1, transform: 'translateX(0)' }
   if (viewMode.value === 'graph') return { width: '0%', opacity: 0, transform: 'translateX(20px)' }
-  return { width: '50%', opacity: 1, transform: 'translateX(0)' }
+  return { width: `${(1 - splitRatio.value) * 100}%`, opacity: 1, transform: 'translateX(0)' }
 })
 
 // --- Status Computed ---
@@ -450,189 +596,447 @@ watchEffect(() => {
 
 onMounted(() => {
   initProject()
+  window.addEventListener('resize', onResizeWindow)
 })
 
 onUnmounted(() => {
   document.title = 'Bassira'
   stopPolling()
   stopGraphPolling()
+  window.removeEventListener('resize', onResizeWindow)
+  // Defensive cleanup if user navigates away mid-drag.
+  if (isResizing.value) stopResize()
 })
 </script>
 
 <style scoped>
-/* Hyperstitions Design System v2.0 — Local Tokens */
-.main-view {
-  /* Bridges legacy ramp onto canonical --ms-* tokens. */
-  --color-orange: var(--ms-orange);
-  --color-green: var(--ms-mint);
-  --color-black: var(--ms-text);
-  --color-white: var(--ms-bg);
-  --color-gray: var(--ms-bg-muted);
-  --color-red: var(--ms-rose);
-  --color-amber: var(--ms-peach);
-  --font-display: var(--ms-font-display);
-  --font-mono: var(--ms-font-mono);
-  --border-light: 1px solid var(--ms-border);
-  --border-medium: 1px solid var(--ms-border-strong);
-  --space-xs: var(--ms-space-1);
-  --space-sm: var(--ms-space-3);
-  --space-md: var(--ms-space-5);
-  --space-lg: var(--ms-space-8);
-  --space-xl: var(--ms-space-12);
-}
+/* ─────────────────────────────────────────────────────────────
+   MainView — Bassira Strategic Console (Tier 2 Analyst)
+   Dark shell first. Density of info = signal of pro confidence.
+   Tokens : --wi-* (Warm Intelligence) for warmth, --ms-* (legacy) for logic.
+   No hex hardcoded — all colors via CSS custom properties.
+   ───────────────────────────────────────────────────────────── */
 
 .main-view {
+  /* ──────────────────────────────────────────────────────────
+     Local DARK SHELL scope — Tier 2 Analyst console.
+     This view is DARK MODE FIRST regardless of global theme.
+     Tokens redefined locally so cream global theme is unaffected,
+     and so we never depend on user toggling [data-theme="dark"].
+     All values trace back to the existing palette in design-tokens.css :
+       --ms-orange / --ms-mint / --ms-peach / --ms-rose
+       --wi-on-primary-container (terracotta — destructive)
+       --wi-secondary-container  (mint — confirmatory)
+     ────────────────────────────────────────────────────────── */
+  --shell-bg:           var(--ms-shell-bg);
+  --shell-bg-deep:      var(--ms-shell-bg-deep);
+  --shell-bg-elevated:  var(--ms-shell-bg-elevated);
+  --shell-bg-panel:     var(--ms-shell-bg-panel);
+  --shell-border:       var(--ms-shell-border);
+  --shell-border-soft:  var(--ms-shell-border-soft);
+  --shell-text:         var(--ms-shell-text);
+  --shell-text-muted:   var(--ms-shell-text-muted);
+  --shell-text-subtle:  var(--ms-shell-text-subtle);
+  --shell-accent:       var(--ms-orange);
+  --shell-accent-soft:  var(--ms-orange-soft);
+  --shell-success:      var(--wi-secondary-container);
+  --shell-warning:      var(--ms-peach);
+  --shell-danger:       var(--ms-rose);
+  --shell-confirmatory: var(--ms-mint);                /* validate / confirmatory */
+  --shell-destructive:  var(--wi-on-primary-container); /* terracotta — never bright red */
+
+  /* Local fallbacks — always resolved here so we don't rely on global dark mode. */
+  --ms-shell-bg:           #0f1117;
+  --ms-shell-bg-deep:      #0a0c10;
+  --ms-shell-bg-elevated:  #1a1d27;
+  --ms-shell-bg-panel:     #151720;
+  --ms-shell-border:       #2e3248;
+  --ms-shell-border-soft:  rgba(46, 50, 72, 0.5);
+  --ms-shell-text:         #fff8f6;
+  --ms-shell-text-muted:   #9ea3b5;
+  --ms-shell-text-subtle:  #6b7094;
+
+  /* Tints derived from semantic colors (kept as scoped tokens
+     to avoid inline rgba() in rules — mirrors design-tokens.css). */
+  --shell-tint-confirmatory:        rgba(127, 216, 166, 0.10);
+  --shell-tint-confirmatory-strong: rgba(127, 216, 166, 0.30);
+  --shell-tint-danger:              rgba(244, 132, 122, 0.10);
+  --shell-tint-danger-strong:       rgba(244, 132, 122, 0.30);
+  --shell-tint-accent-strong:       rgba(255, 133, 81, 0.30);
+  --shell-tint-accent-glow:         rgba(255, 133, 81, 0.10);
+  --shell-tint-ink-soft:            rgba(255, 255, 255, 0.04);
+  --shell-tint-shadow-deep:         rgba(0, 0, 0, 0.35);
+  --shell-tint-overlay-bg:          rgba(0, 0, 0, 0.30);
+
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--ms-bg);
+  background: var(--shell-bg);
+  color: var(--shell-text);
   overflow: hidden;
   font-family: var(--ms-font-body);
 }
 
-/* Header */
+/* ───── Header — dense console bar ───── */
 .app-header {
-  height: 60px;
-  border-bottom: var(--border-medium);
-  display: flex;
+  height: 56px;
+  border-bottom: 1px solid var(--shell-border);
+  background: var(--shell-bg);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
-  padding: 0 var(--space-md);
-  background: var(--ms-text);
-  color: var(--ms-text-on-color);
-  z-index: 100;
+  gap: 24px;
+  padding: 0 24px;
   position: relative;
+  z-index: 50;
+  flex-shrink: 0;
 }
 
-.header-center {
-  position: absolute;
-  inset-inline-start: 50%;
-  transform: translateX(-50%);
-}
-
-.brand {
-  font-family: var(--ms-font-display);
-  font-weight: 800;
-  font-size: 18px;
-  letter-spacing: 3px;
-  cursor: pointer;
-  text-transform: uppercase;
-  color: var(--ms-text-on-color);
-}
-
-.view-switcher {
-  display: flex;
-  background: rgba(255,255,255,0.08);
-  padding: 4px;
-  gap: 4px;
-}
-
-.switch-btn {
-  border: none;
-  background: transparent;
-  padding: var(--space-xs) 16px;
-  font-family: var(--ms-font-body);
-  font-size: 13px;
-  font-weight: 600;
-  color: rgba(250,250,250,0.5);
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  cursor: pointer;
-  border-radius: var(--ms-radius-sm);
-  transition: all var(--ms-transition);
-}
-
-.switch-btn.active {
-  background: var(--ms-bg-elevated);
-  color: var(--ms-text);
-  border: 1px solid var(--ms-orange);
-}
-
-.status-indicator {
+.header-left {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-family: var(--ms-font-body);
-  font-size: 13px;
-  color: rgba(250,250,250,0.5);
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 3px;
+  gap: 16px;
+  min-width: 0;
 }
 
 .header-right {
   display: flex;
   align-items: center;
   gap: 16px;
+  justify-content: flex-end;
+  min-width: 0;
 }
 
-.workflow-step {
+.header-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--shell-border);
+  flex-shrink: 0;
+}
+
+/* Brand */
+.brand {
   display: flex;
   align-items: center;
   gap: 8px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: background 150ms var(--ms-ease);
+  color: var(--shell-text);
+}
+.brand:hover { background: var(--shell-accent-soft); }
+.brand:focus-visible { outline: 2px solid var(--shell-accent); outline-offset: 2px; }
+
+.brand-mark {
+  font-size: 18px;
+  color: var(--shell-accent);
+  line-height: 1;
+}
+
+.brand-name {
+  font-family: var(--ms-font-display);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--shell-text);
+}
+
+/* Project context — dense pro info block */
+.project-context {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.project-name {
+  font-family: var(--ms-font-display);
+  font-weight: 600;
   font-size: 14px;
+  color: var(--shell-text);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 280px;
+}
+
+.project-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sim-id {
+  font-family: var(--ms-font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--shell-text-muted);
+  letter-spacing: 0.04em;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--ms-font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 2px 7px;
+  border-radius: 3px;
+  border: 1px solid transparent;
+  background: var(--shell-tint-ink-soft);
+  color: var(--shell-text-muted);
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--shell-text-subtle);
+  flex-shrink: 0;
+}
+
+.status-pill.processing {
+  color: var(--shell-accent);
+  border-color: var(--shell-accent-soft);
+  background: var(--shell-accent-soft);
+}
+.status-pill.processing .status-dot {
+  background: var(--shell-accent);
+  animation: shell-pulse 1.4s infinite;
+}
+.status-pill.completed {
+  color: var(--shell-confirmatory);
+  border-color: var(--shell-tint-confirmatory-strong);
+  background: var(--shell-tint-confirmatory);
+}
+.status-pill.completed .status-dot { background: var(--shell-confirmatory); }
+.status-pill.idle .status-dot { background: var(--shell-warning); }
+.status-pill.error {
+  color: var(--shell-danger);
+  border-color: var(--shell-tint-danger-strong);
+  background: var(--shell-tint-danger);
+}
+.status-pill.error .status-dot { background: var(--shell-danger); }
+
+@keyframes shell-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ───── View Switcher — icon + label tabs (Stitch style) ───── */
+.view-switcher {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  background: var(--shell-tint-overlay-bg);
+  border: 1px solid var(--shell-border);
+  border-radius: 8px;
+}
+
+.switch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--shell-text-muted);
+  font-family: var(--ms-font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: color 150ms var(--ms-ease),
+              background 150ms var(--ms-ease),
+              border-color 150ms var(--ms-ease),
+              box-shadow 150ms var(--ms-ease);
+}
+
+.switch-btn:hover {
+  color: var(--shell-text);
+  background: var(--shell-bg-elevated);
+}
+
+.switch-btn.active {
+  color: var(--shell-accent);
+  background: var(--shell-bg-elevated);
+  border-color: var(--shell-tint-accent-strong);
+  box-shadow: 0 0 12px var(--shell-tint-accent-glow);
+}
+
+.switch-btn:focus-visible {
+  outline: 2px solid var(--shell-accent);
+  outline-offset: 1px;
+}
+
+.switch-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+.switch-icon :deep(svg) { width: 100%; height: 100%; }
+
+.switch-label { white-space: nowrap; }
+
+/* ───── Workflow step indicator ───── */
+.workflow-step {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  text-align: end;
+  min-width: 0;
 }
 
 .step-num {
   font-family: var(--ms-font-mono);
-  font-weight: 700;
-  color: rgba(250,250,250,0.4);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--shell-text-muted);
+  letter-spacing: 0.05em;
 }
 
 .step-name {
-  font-weight: 700;
-  color: var(--ms-text-on-color);
+  font-family: var(--ms-font-display);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--shell-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
 }
 
-.step-divider {
-  width: 1px;
-  height: 14px;
-  background-color: rgba(250,250,250,0.2);
+/* ───── Keyboard shortcut hint (JetBrains Mono muted cream) ───── */
+.kbd-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--shell-text-muted);
+  opacity: 0.7;
 }
 
-.dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(250,250,250,0.2);
+.kbd {
+  font-family: var(--ms-font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 6px;
+  background: var(--shell-border);
+  color: var(--shell-text);
+  border-radius: 3px;
+  letter-spacing: 0.02em;
 }
 
-.status-indicator.processing .dot { background: var(--ms-orange); animation: pulse 1s infinite; }
-.status-indicator.completed .dot { background: var(--ms-mint); }
-.status-indicator.idle .dot { background: var(--ms-peach); }
-.status-indicator.error .dot { background: var(--ms-rose); }
+.kbd-label {
+  font-family: var(--ms-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+}
 
-/* @keyframes pulse factorisé dans styles/components.css */
-
-/* Content */
+/* ───── Content area + resizable panels ───── */
 .content-area {
   flex: 1;
   display: flex;
   position: relative;
   overflow: hidden;
+  background: var(--shell-bg-deep);
 }
 
 .panel-wrapper {
   height: 100%;
   overflow: hidden;
-  transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease, transform 0.3s ease;
+  transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+              opacity 0.3s ease,
+              transform 0.3s ease;
   will-change: width, opacity, transform;
+  position: relative;
 }
 
 .panel-wrapper.left {
-  border-inline-end: var(--border-light);
+  background: var(--shell-bg-deep);
+  border-inline-end: 1px solid var(--shell-border);
 }
 
-/* ─── US-040 — Step 1.5 review banner ─── */
+.panel-wrapper.right {
+  background: var(--shell-bg);
+  position: relative;
+  z-index: 2;
+  box-shadow: -4px 0 24px var(--shell-tint-shadow-deep);
+}
+
+/* Disable transition while user is dragging — feels instant */
+.content-area:has(.resize-divider:active) .panel-wrapper {
+  transition: none;
+}
+
+/* ───── Resize divider ───── */
+.resize-divider {
+  width: 5px;
+  flex-shrink: 0;
+  cursor: col-resize;
+  background: var(--shell-border);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 150ms var(--ms-ease);
+}
+
+.resize-divider:hover,
+.resize-divider:focus-visible {
+  background: var(--shell-accent);
+  outline: none;
+}
+
+.resize-grip {
+  width: 1px;
+  height: 32px;
+  background: var(--shell-text-subtle);
+  border-radius: 1px;
+  position: relative;
+}
+
+.resize-grip::before,
+.resize-grip::after {
+  content: '';
+  position: absolute;
+  width: 1px;
+  height: 32px;
+  background: var(--shell-text-subtle);
+  top: 0;
+}
+.resize-grip::before { left: -3px; }
+.resize-grip::after { left: 3px; }
+
+.resize-divider:hover .resize-grip,
+.resize-divider:hover .resize-grip::before,
+.resize-divider:hover .resize-grip::after {
+  background: var(--shell-text);
+}
+
+/* ─── US-040 — Step 1.5 review banner (dark shell adapted) ─── */
 .review-entities-banner {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   padding: 10px 16px;
-  background: var(--ms-orange-soft, var(--ms-legacy-orange-soft));
-  border-bottom: 1px solid var(--ms-orange, var(--ms-legacy-orange-strong));
-  color: var(--ms-text-primary);
+  background: var(--shell-accent-soft);
+  border-bottom: 1px solid var(--shell-tint-accent-strong);
+  color: var(--shell-text);
   flex-wrap: wrap;
 }
 
@@ -648,7 +1052,7 @@ onUnmounted(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--ms-orange, var(--ms-legacy-orange-strong));
+  background: var(--shell-accent);
   color: var(--ms-text-on-color);
   font-family: var(--ms-font-mono);
   font-weight: 700;
@@ -666,17 +1070,83 @@ onUnmounted(() => {
 .reb-title {
   font-size: 14px;
   font-weight: 700;
-  color: var(--ms-text-primary);
+  color: var(--shell-text);
 }
 
 .reb-desc {
   font-size: 12px;
-  color: var(--ms-text-primary);
+  color: var(--shell-text);
   opacity: 0.85;
 }
 
 .reb-actions {
   display: flex;
   flex-shrink: 0;
+}
+
+/* ───── Responsive collapse ─────
+   Tablet (<1080px) : split mode stacks panels vertically.
+   Mobile (<720px)  : view switcher becomes condensed tabs (hide Split mode);
+                       only one panel visible at a time. */
+
+@media (max-width: 1079px) {
+  .app-header {
+    grid-template-columns: minmax(0, auto) 1fr minmax(0, auto);
+    gap: 12px;
+    padding: 0 16px;
+  }
+  .project-name { max-width: 180px; }
+  .step-name { display: none; }
+  .kbd-hint { display: none; }
+
+  /* Stack panels in split mode on tablet */
+  .content-area[data-mode="split"] {
+    flex-direction: column;
+  }
+  .content-area[data-mode="split"] .panel-wrapper {
+    width: 100% !important;
+    height: 50% !important;
+  }
+  .content-area[data-mode="split"] .panel-wrapper.left {
+    border-inline-end: none;
+    border-bottom: 1px solid var(--shell-border);
+  }
+  .content-area[data-mode="split"] .panel-wrapper.right {
+    box-shadow: 0 -4px 24px var(--shell-tint-shadow-deep);
+  }
+}
+
+@media (max-width: 719px) {
+  .app-header {
+    height: auto;
+    min-height: 56px;
+    padding: 8px 12px;
+    gap: 8px;
+  }
+  .brand-name { display: none; }
+  .header-divider { display: none; }
+  .project-name { max-width: 140px; font-size: 13px; }
+  .sim-id { font-size: 9px; }
+
+  .switch-btn {
+    padding: 6px 9px;
+  }
+  .switch-label { display: none; }
+
+  .workflow-step { display: none; }
+
+  /* Mobile : panels are single-view tabs (controlled by viewMode) */
+  .content-area .panel-wrapper {
+    width: 100% !important;
+    height: 100% !important;
+    border-inline-end: none !important;
+    box-shadow: none !important;
+  }
+}
+
+/* High-contrast / forced-colors guard rails */
+@media (prefers-contrast: more) {
+  .switch-btn.active { border-width: 2px; }
+  .status-pill { border-width: 2px; }
 }
 </style>

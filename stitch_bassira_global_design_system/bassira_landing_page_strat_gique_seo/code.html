@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+
+<html class="light" dir="ltr" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bassira - Stress-testez votre stratégie</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&amp;family=Manrope:wght@400&amp;family=Outfit:wght@500;600&amp;family=Tajawal:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed": "#9cf5c1",
+                        "surface-bright": "#fff8f6",
+                        "on-primary-fixed-variant": "#7f2b00",
+                        "tertiary-fixed-dim": "#80d8a6",
+                        "primary-container": "#a13f0f",
+                        "primary-fixed-dim": "#ffb599",
+                        "primary": "#7e2b00",
+                        "on-surface-variant": "#57423a",
+                        "surface-dim": "#ebd6cf",
+                        "secondary-fixed": "#ffdbce",
+                        "outline-variant": "#dec0b6",
+                        "surface-container": "#ffe9e2",
+                        "on-tertiary-container": "#91eab7",
+                        "surface-container-low": "#fff1ec",
+                        "surface-container-high": "#f9e4dd",
+                        "surface-tint": "#a13f0f",
+                        "surface": "#fff8f6",
+                        "secondary-fixed-dim": "#ffb598",
+                        "surface-container-highest": "#f3ded7",
+                        "on-secondary-fixed": "#370e00",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#241915",
+                        "error": "#ba1a1a",
+                        "on-primary": "#ffffff",
+                        "primary-fixed": "#ffdbce",
+                        "on-primary-fixed": "#370e00",
+                        "outline": "#8a7269",
+                        "inverse-surface": "#3a2e29",
+                        "background": "#fff8f6",
+                        "tertiary-container": "#006c43",
+                        "on-background": "#241915",
+                        "on-tertiary-fixed": "#002111",
+                        "error-container": "#ffdad6",
+                        "surface-variant": "#f3ded7",
+                        "secondary": "#a13f0f",
+                        "on-secondary-fixed-variant": "#7f2b00",
+                        "on-primary-container": "#ffcdbb",
+                        "inverse-primary": "#ffb599",
+                        "on-tertiary-fixed-variant": "#005232",
+                        "on-error-container": "#93000a",
+                        "on-tertiary": "#ffffff",
+                        "secondary-container": "#fd8450",
+                        "on-error": "#ffffff",
+                        "inverse-on-surface": "#ffede7",
+                        "tertiary": "#005132",
+                        "on-secondary-container": "#6c2400"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "80px",
+                        "md": "24px",
+                        "gutter": "32px",
+                        "lg": "48px",
+                        "container-max": "1280px",
+                        "base": "8px",
+                        "xs": "4px",
+                        "sm": "12px"
+                    },
+                    "fontFamily": {
+                        "h3": ["Outfit"],
+                        "body-lg": ["Manrope"],
+                        "arabic-body": ["Tajawal"],
+                        "label-sm": ["JetBrains Mono"],
+                        "h1": ["Outfit"],
+                        "h2": ["Outfit"],
+                        "body-md": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "h3": ["24px", { "lineHeight": "1.3", "letterSpacing": "0", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "arabic-body": ["18px", { "lineHeight": "1.8", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "1.2", "fontWeight": "500" }],
+                        "h1": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "h2": ["36px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 border-b border-stone-200/40 dark:border-stone-800/40 bg-[#F9F7F2]/90 backdrop-blur-md dark:bg-stone-950/90 font-outfit antialiased flat no-shadows">
+<div class="flex justify-between items-center px-8 md:px-12 py-4 max-w-screen-2xl mx-auto">
+<div class="text-2xl font-bold tracking-tighter text-stone-900 dark:text-stone-50">
+                Bassira
+            </div>
+<!-- Web Navigation -->
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-stone-600 dark:text-stone-400 hover:text-[#A13F0F] transition-colors hover:bg-stone-100/50 dark:hover:bg-stone-800/50 transition-all duration-300 px-3 py-2 rounded-md active:scale-95 transition-transform duration-150" href="#">Solutions</a>
+<a class="text-stone-600 dark:text-stone-400 hover:text-[#A13F0F] transition-colors hover:bg-stone-100/50 dark:hover:bg-stone-800/50 transition-all duration-300 px-3 py-2 rounded-md active:scale-95 transition-transform duration-150" href="#">Forecasting</a>
+<a class="text-stone-600 dark:text-stone-400 hover:text-[#A13F0F] transition-colors hover:bg-stone-100/50 dark:hover:bg-stone-800/50 transition-all duration-300 px-3 py-2 rounded-md active:scale-95 transition-transform duration-150" href="#">Brier Score</a>
+<a class="text-[#A13F0F] border-b-2 border-[#A13F0F] pb-1 font-semibold hover:bg-stone-100/50 dark:hover:bg-stone-800/50 transition-all duration-300 px-3 py-2 rounded-md active:scale-95 transition-transform duration-150" href="#">Pricing</a>
+</nav>
+<div class="flex items-center gap-4">
+<a class="hidden md:inline-block text-stone-600 hover:text-[#A13F0F] font-medium transition-colors font-body-md text-body-md" href="#">Sign In</a>
+<a class="bg-primary-container text-on-primary px-6 py-2.5 rounded hover:bg-primary transition-colors font-medium active:scale-95 duration-150 font-body-md text-body-md" href="#">Request Demo</a>
+</div>
+</div>
+</header>
+<main class="pt-[80px]">
+<!-- HERO SECTION -->
+<section class="max-w-container-max mx-auto px-gutter pt-xl pb-lg md:pt-[120px] md:pb-xl text-center">
+<h1 class="font-h1 text-[48px] md:text-[64px] text-on-background max-w-[900px] mx-auto mb-md leading-[1.1] tracking-[-0.02em]">
+                Stress-testez votre stratégie en 48h — sans consultants.
+            </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-[700px] mx-auto mb-lg">
+                La première plateforme de simulation stratégique par IA calibrée pour les marchés MENA et Européens.
+            </p>
+<div class="flex flex-col sm:flex-row justify-center items-center gap-md mb-xl">
+<button class="w-full sm:w-auto bg-primary-container text-on-primary font-body-md text-body-md px-8 py-4 rounded hover:bg-primary transition-colors shadow-sm">
+                    Demander une démo
+                </button>
+<button class="w-full sm:w-auto border border-outline text-on-background font-body-md text-body-md px-8 py-4 rounded hover:bg-surface-variant transition-colors">
+                    Voir un exemple
+                </button>
+</div>
+<!-- Social Proof -->
+<div class="border-t border-outline-variant/30 pt-lg">
+<p class="font-label-sm text-label-sm text-outline mb-md uppercase tracking-wider">Adopté par les institutions de pointe</p>
+<div class="flex flex-wrap justify-center items-center gap-xl opacity-60 grayscale">
+<!-- Placeholder logos using typography for brutalist feel -->
+<span class="font-h3 text-h3 font-bold text-on-surface">BNP PARIBAS</span>
+<span class="font-h3 text-h3 font-bold text-on-surface">TOTAL ENERGIES</span>
+<span class="font-h3 text-h3 font-bold text-on-surface">MINISTÈRE</span>
+<span class="font-h3 text-h3 font-bold text-on-surface">OCP GROUP</span>
+</div>
+</div>
+</section>
+<!-- PAIN SECTION -->
+<section class="bg-surface-container-low py-xl">
+<div class="max-w-container-max mx-auto px-gutter">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest p-lg rounded-lg border border-outline-variant/20 hover:border-outline-variant/50 transition-colors">
+<div class="mb-md">
+<span class="material-symbols-outlined text-primary-container text-3xl" data-icon="hourglass_empty" data-weight="fill">hourglass_empty</span>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface italic mb-md">"Nos scénarios Excel sont trop lents et fragiles."</p>
+<div class="mt-auto">
+<div class="inline-flex items-center gap-xs font-label-sm text-label-sm text-tertiary-container bg-tertiary-fixed-dim/20 px-2 py-1 rounded mb-xs">
+                                Avec Bassira :
+                            </div>
+<p class="font-body-md text-body-md text-on-surface-variant">Simulez 10,000 interactions d'agents en 5 minutes.</p>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest p-lg rounded-lg border border-outline-variant/20 hover:border-outline-variant/50 transition-colors">
+<div class="mb-md">
+<span class="material-symbols-outlined text-primary-container text-3xl" data-icon="visibility_off" data-weight="fill">visibility_off</span>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface italic mb-md">"Nous naviguons à l'aveugle face aux chocs exogènes."</p>
+<div class="mt-auto">
+<div class="inline-flex items-center gap-xs font-label-sm text-label-sm text-tertiary-container bg-tertiary-fixed-dim/20 px-2 py-1 rounded mb-xs">
+                                Avec Bassira :
+                            </div>
+<p class="font-body-md text-body-md text-on-surface-variant">Testez vos stratégies contre 50+ variables géopolitiques.</p>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-lowest p-lg rounded-lg border border-outline-variant/20 hover:border-outline-variant/50 transition-colors">
+<div class="mb-md">
+<span class="material-symbols-outlined text-primary-container text-3xl" data-icon="account_balance_wallet" data-weight="fill">account_balance_wallet</span>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface italic mb-md">"Les cabinets de conseil coûtent trop cher pour des hypothèses."</p>
+<div class="mt-auto">
+<div class="inline-flex items-center gap-xs font-label-sm text-label-sm text-tertiary-container bg-tertiary-fixed-dim/20 px-2 py-1 rounded mb-xs">
+                                Avec Bassira :
+                            </div>
+<p class="font-body-md text-body-md text-on-surface-variant">Obtenez une rigueur institutionnelle à une fraction du coût.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-[#F9F7F2] dark:bg-stone-950 w-full border-t border-stone-200 dark:border-stone-800 flat">
+<div class="max-w-7xl mx-auto px-8 py-12 flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="text-lg font-black text-stone-900 dark:text-stone-50">
+                Bassira
+            </div>
+<p class="font-outfit text-sm tracking-wide text-stone-500 dark:text-stone-400">
+                © 2024 Bassira AI. Authority without Coldness.
+            </p>
+<nav class="flex gap-4">
+<a class="font-outfit text-sm tracking-wide text-stone-500 dark:text-stone-400 hover:text-[#A13F0F] underline-offset-4 hover:underline opacity-80 hover:opacity-100 transition-opacity" href="#">Methodology</a>
+<a class="font-outfit text-sm tracking-wide text-stone-500 dark:text-stone-400 hover:text-[#A13F0F] underline-offset-4 hover:underline opacity-80 hover:opacity-100 transition-opacity" href="#">Privacy</a>
+<a class="font-outfit text-sm tracking-wide text-stone-500 dark:text-stone-400 hover:text-[#A13F0F] underline-offset-4 hover:underline opacity-80 hover:opacity-100 transition-opacity" href="#">Security</a>
+<a class="font-outfit text-sm tracking-wide text-[#A13F0F] font-medium opacity-80 hover:opacity-100 transition-opacity" href="#">Institutional Access</a>
+</nav>
+</div>
+</footer>
+</body></html>

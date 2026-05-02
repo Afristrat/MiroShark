@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Calibration Log - Foresight Studio</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&amp;family=Manrope:wght@400&amp;family=Outfit:wght@500;600&amp;family=Tajawal:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary-fixed-variant": "#7f2b00",
+                      "on-secondary-container": "#6c2400",
+                      "on-tertiary-fixed": "#002111",
+                      "surface-tint": "#a13f0f",
+                      "outline": "#8a7269",
+                      "surface-dim": "#ebd6cf",
+                      "surface-container-lowest": "#ffffff",
+                      "on-primary-container": "#ffcdbb",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary-fixed-variant": "#7f2b00",
+                      "inverse-primary": "#ffb599",
+                      "primary-fixed-dim": "#ffb599",
+                      "surface": "#fff8f6",
+                      "surface-container-high": "#f9e4dd",
+                      "on-secondary-fixed": "#370e00",
+                      "inverse-surface": "#3a2e29",
+                      "on-secondary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "tertiary": "#005132",
+                      "surface-container-highest": "#f3ded7",
+                      "background": "#fff8f6",
+                      "outline-variant": "#dec0b6",
+                      "on-tertiary-fixed-variant": "#005232",
+                      "on-primary-fixed": "#370e00",
+                      "secondary-fixed": "#ffdbce",
+                      "secondary-container": "#fd8450",
+                      "primary-fixed": "#ffdbce",
+                      "on-error": "#ffffff",
+                      "on-background": "#241915",
+                      "primary": "#7e2b00",
+                      "tertiary-container": "#006c43",
+                      "surface-container": "#ffe9e2",
+                      "on-tertiary-container": "#91eab7",
+                      "tertiary-fixed-dim": "#80d8a6",
+                      "surface-variant": "#f3ded7",
+                      "error": "#ba1a1a",
+                      "on-surface": "#241915",
+                      "secondary-fixed-dim": "#ffb598",
+                      "tertiary-fixed": "#9cf5c1",
+                      "surface-container-low": "#fff1ec",
+                      "on-surface-variant": "#57423a",
+                      "secondary": "#a13f0f",
+                      "surface-bright": "#fff8f6",
+                      "primary-container": "#a13f0f",
+                      "error-container": "#ffdad6",
+                      "on-primary": "#ffffff",
+                      "inverse-on-surface": "#ffede7"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "lg": "48px",
+                      "container-max": "1280px",
+                      "md": "24px",
+                      "xs": "4px",
+                      "xl": "80px",
+                      "sm": "12px",
+                      "base": "8px",
+                      "gutter": "32px"
+              },
+              "fontFamily": {
+                      "h2": [
+                              "Outfit"
+                      ],
+                      "h1": [
+                              "Outfit"
+                      ],
+                      "h3": [
+                              "Outfit"
+                      ],
+                      "arabic-body": [
+                              "Tajawal"
+                      ],
+                      "body-md": [
+                              "Manrope"
+                      ],
+                      "label-sm": [
+                              "JetBrains Mono"
+                      ],
+                      "body-lg": [
+                              "Manrope"
+                      ]
+              },
+              "fontSize": {
+                      "h2": [
+                              "36px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "h1": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "h3": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "arabic-body": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.8",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+</head>
+<body class="bg-surface-container-lowest min-h-screen flex items-center justify-center p-md">
+<!-- 4:5 Aspect Ratio Container for LinkedIn Post (approx 1080x1350) -->
+<div class="relative w-full max-w-[540px] aspect-[4/5] bg-surface-container-lowest border border-outline-variant/30 overflow-hidden flex flex-col">
+<!-- Subtle Grid Background -->
+<div class="absolute inset-0 pointer-events-none opacity-[0.03]" style="background-image: radial-gradient(circle at center, #241915 1px, transparent 1px); background-size: 24px 24px;"></div>
+<!-- Header -->
+<header class="p-lg flex justify-between items-start z-10">
+<div>
+<h2 class="font-h2 text-h2 text-on-surface mb-xs">Calibration Log</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-[80%]">Tracking predictive accuracy across enterprise initiatives. Q3 outcomes vs initial forecasting confidence.</p>
+</div>
+<div class="bg-surface-variant/50 p-sm rounded-full border border-outline-variant/50">
+<span class="material-symbols-outlined text-primary" data-icon="track_changes" data-weight="fill" style="font-variation-settings: 'FILL' 1;">track_changes</span>
+</div>
+</header>
+<!-- Main Content Area - Bento Layout -->
+<main class="flex-grow p-lg pt-0 flex flex-col gap-md z-10">
+<!-- Primary Prediction Card -->
+<article class="bg-surface p-md border border-outline-variant/30 relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-32 h-32 bg-secondary-container/5 rounded-full blur-2xl -mr-16 -mt-16"></div>
+<div class="flex justify-between items-center mb-md">
+<span class="font-label-sm text-label-sm text-on-surface-variant tracking-widest uppercase">ID: FST-892</span>
+<!-- Status Pill: Correct -->
+<div class="inline-flex items-center gap-xs px-sm py-1 bg-[#006D44]/10 border border-[#006D44]/20 rounded-full">
+<div class="w-1.5 h-1.5 rounded-full bg-[#006D44]"></div>
+<span class="font-label-sm text-label-sm text-[#006D44]">Correct</span>
+</div>
+</div>
+<h3 class="font-h3 text-h3 text-on-surface mb-sm">European Market Entry Timeline</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-md">Forecast predicted successful regulatory approval by close of Q3, enabling Q4 soft launch in core target regions.</p>
+<!-- Data Row -->
+<div class="grid grid-cols-3 gap-base border-t border-outline-variant/30 pt-sm">
+<div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mb-xs">Confidence</div>
+<div class="font-h3 text-h3 text-on-surface">85%</div>
+</div>
+<div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mb-xs">Outcome</div>
+<div class="font-h3 text-h3 text-on-surface">100%</div>
+</div>
+<div class="bg-surface-container/50 p-xs -m-xs rounded-sm border border-outline-variant/20 flex flex-col justify-center pl-sm">
+<div class="font-label-sm text-label-sm text-on-surface-variant mb-xs">Brier Delta</div>
+<div class="font-body-md text-body-md text-primary font-medium">-0.022</div>
+</div>
+</div>
+</article>
+<!-- Secondary Predictions Layout -->
+<div class="grid grid-cols-2 gap-md flex-grow">
+<!-- Card 2: Close -->
+<article class="bg-surface p-md border border-outline-variant/30 flex flex-col">
+<div class="flex justify-between items-center mb-sm">
+<span class="font-label-sm text-label-sm text-on-surface-variant">ID: FST-901</span>
+<!-- Status Pill: Close -->
+<div class="inline-flex items-center gap-xs px-2 py-1 bg-[#FF8551]/10 border border-[#FF8551]/20 rounded-full">
+<div class="w-1.5 h-1.5 rounded-full bg-[#FF8551]"></div>
+<span class="font-label-sm text-label-sm text-[#FF8551]">Close</span>
+</div>
+</div>
+<h3 class="font-body-lg text-body-lg text-on-surface font-medium mb-auto">Series B Valuation Target</h3>
+<div class="mt-md border-t border-outline-variant/30 pt-sm flex justify-between items-end">
+<div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mb-xs">Conf</div>
+<div class="font-body-lg text-body-lg text-on-surface">60%</div>
+</div>
+<div class="text-right">
+<div class="font-label-sm text-label-sm text-on-surface-variant mb-xs">Delta</div>
+<div class="font-body-md text-body-md text-on-surface-variant">+0.14</div>
+</div>
+</div>
+</article>
+<!-- Card 3: Miss -->
+<article class="bg-surface p-md border border-outline-variant/30 flex flex-col">
+<div class="flex justify-between items-center mb-sm">
+<span class="font-label-sm text-label-sm text-on-surface-variant">ID: FST-844</span>
+<!-- Status Pill: Miss -->
+<div class="inline-flex items-center gap-xs px-2 py-1 bg-[#A13F0F]/10 border border-[#A13F0F]/20 rounded-full">
+<div class="w-1.5 h-1.5 rounded-full bg-[#A13F0F]"></div>
+<span class="font-label-sm text-label-sm text-[#A13F0F]">Miss</span>
+</div>
+</div>
+<h3 class="font-body-lg text-body-lg text-on-surface font-medium mb-auto">Supply Chain Disruption</h3>
+<div class="mt-md border-t border-outline-variant/30 pt-sm flex justify-between items-end">
+<div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mb-xs">Conf</div>
+<div class="font-body-lg text-body-lg text-on-surface">30%</div>
+</div>
+<div class="text-right">
+<div class="font-label-sm text-label-sm text-on-surface-variant mb-xs">Delta</div>
+<div class="font-body-md text-body-md text-on-surface-variant">+0.49</div>
+</div>
+</div>
+</article>
+</div>
+</main>
+<!-- Footer Footer -->
+<footer class="p-lg pb-xl flex justify-between items-end border-t border-outline-variant/20 z-10 mt-auto bg-surface/50">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary text-sm" data-icon="hub" data-weight="fill" style="font-variation-settings: 'FILL' 1;">hub</span>
+</div>
+<div>
+<div class="font-h3 text-h3 text-on-surface text-base">Foresight Studio</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Enterprise Intelligence</div>
+</div>
+</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">
+                Q3 Report · Excerpt
+            </div>
+</footer>
+</div>
+</body></html>

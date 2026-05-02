@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>LinkedIn Pillar 1: The Blindspot</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&amp;family=Manrope:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;family=Tajawal:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary-fixed-variant": "#7f2b00",
+                      "on-secondary-container": "#6c2400",
+                      "on-tertiary-fixed": "#002111",
+                      "surface-tint": "#a13f0f",
+                      "outline": "#8a7269",
+                      "surface-dim": "#ebd6cf",
+                      "surface-container-lowest": "#ffffff",
+                      "on-primary-container": "#ffcdbb",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary-fixed-variant": "#7f2b00",
+                      "inverse-primary": "#ffb599",
+                      "primary-fixed-dim": "#ffb599",
+                      "surface": "#fff8f6",
+                      "surface-container-high": "#f9e4dd",
+                      "on-secondary-fixed": "#370e00",
+                      "inverse-surface": "#3a2e29",
+                      "on-secondary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "tertiary": "#005132",
+                      "surface-container-highest": "#f3ded7",
+                      "background": "#fff8f6",
+                      "outline-variant": "#dec0b6",
+                      "on-tertiary-fixed-variant": "#005232",
+                      "on-primary-fixed": "#370e00",
+                      "secondary-fixed": "#ffdbce",
+                      "secondary-container": "#fd8450",
+                      "primary-fixed": "#ffdbce",
+                      "on-error": "#ffffff",
+                      "on-background": "#241915",
+                      "primary": "#7e2b00",
+                      "tertiary-container": "#006c43",
+                      "surface-container": "#ffe9e2",
+                      "on-tertiary-container": "#91eab7",
+                      "tertiary-fixed-dim": "#80d8a6",
+                      "surface-variant": "#f3ded7",
+                      "error": "#ba1a1a",
+                      "on-surface": "#241915",
+                      "secondary-fixed-dim": "#ffb598",
+                      "tertiary-fixed": "#9cf5c1",
+                      "surface-container-low": "#fff1ec",
+                      "on-surface-variant": "#57423a",
+                      "secondary": "#a13f0f",
+                      "surface-bright": "#fff8f6",
+                      "primary-container": "#a13f0f",
+                      "error-container": "#ffdad6",
+                      "on-primary": "#ffffff",
+                      "inverse-on-surface": "#ffede7"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "lg": "48px",
+                      "container-max": "1280px",
+                      "md": "24px",
+                      "xs": "4px",
+                      "xl": "80px",
+                      "sm": "12px",
+                      "base": "8px",
+                      "gutter": "32px"
+              },
+              "fontFamily": {
+                      "h2": [
+                              "Outfit"
+                      ],
+                      "h1": [
+                              "Outfit"
+                      ],
+                      "h3": [
+                              "Outfit"
+                      ],
+                      "arabic-body": [
+                              "Tajawal"
+                      ],
+                      "body-md": [
+                              "Manrope"
+                      ],
+                      "label-sm": [
+                              "JetBrains Mono"
+                      ],
+                      "body-lg": [
+                              "Manrope"
+                      ]
+              },
+              "fontSize": {
+                      "h2": [
+                              "36px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "h1": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "h3": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "arabic-body": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.8",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+</head>
+<body class="bg-surface-container-lowest text-on-surface font-body-md min-h-screen flex items-center justify-center p-md">
+<!-- 1:1 Aspect Ratio Container -->
+<main class="w-full max-w-[800px] aspect-square relative flex shadow-2xl rounded-xl overflow-hidden border border-outline-variant">
+<!-- Left Side: Cream Background -->
+<section class="w-1/2 h-full bg-[#FAF7F2] flex flex-col justify-center items-center p-xl relative z-10">
+<div class="text-center max-w-[80%]">
+<span class="font-label-sm text-label-sm text-outline tracking-widest uppercase mb-sm block">The Assumption</span>
+<h2 class="font-h2 text-h2 text-[#241915] leading-tight">What decision-makers assumed</h2>
+</div>
+<!-- Abstract decorative element to add editorial feel -->
+<div class="absolute bottom-xl left-xl w-16 h-16 border-l-2 border-b-2 border-outline/30"></div>
+</section>
+<!-- Right Side: Dark Background -->
+<section class="w-1/2 h-full bg-[#0f1117] flex flex-col justify-center items-center p-xl relative z-10">
+<div class="text-center max-w-[80%]">
+<span class="font-label-sm text-label-sm text-surface-variant/60 tracking-widest uppercase mb-sm block">The Reality</span>
+<h2 class="font-h2 text-h2 text-[#FAF7F2] leading-tight">What the simulation showed</h2>
+</div>
+<!-- Abstract decorative element to add editorial feel -->
+<div class="absolute top-xl right-xl w-16 h-16 border-r-2 border-t-2 border-surface-variant/30"></div>
+</section>
+<!-- Central Divider (Vertical Line) -->
+<div class="absolute inset-y-0 left-1/2 w-px bg-gradient-to-b from-transparent via-outline-variant to-transparent transform -translate-x-1/2 z-20 mix-blend-difference"></div>
+<!-- Central Focal Point Icon/Element -->
+<div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 w-16 h-16 rounded-full bg-surface-container-lowest border border-outline-variant flex items-center justify-center shadow-lg">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">visibility</span>
+</div>
+<!-- Watermark -->
+<div class="absolute bottom-md w-full flex justify-center z-30 pointer-events-none">
+<span class="font-label-sm text-label-sm text-outline mix-blend-difference tracking-widest opacity-60">BASSIRA</span>
+</div>
+</main>
+</body></html>

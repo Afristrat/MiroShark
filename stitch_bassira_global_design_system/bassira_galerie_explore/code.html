@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bassira - Explore</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;family=Manrope:wght@400;500;600&amp;family=Outfit:wght@500;600;700&amp;family=Tajawal:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-container": "#ffcdbb",
+                        "surface-container-highest": "#f3ded7",
+                        "on-secondary-container": "#6c2400",
+                        "surface-dim": "#ebd6cf",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error": "#ffffff",
+                        "surface-container-high": "#f9e4dd",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed": "#9cf5c1",
+                        "primary-fixed": "#ffdbce",
+                        "on-tertiary-fixed-variant": "#005232",
+                        "outline-variant": "#dec0b6",
+                        "on-background": "#241915",
+                        "inverse-on-surface": "#ffede7",
+                        "tertiary": "#005132",
+                        "on-primary-fixed": "#370e00",
+                        "inverse-primary": "#ffb599",
+                        "surface-container-low": "#fff1ec",
+                        "outline": "#8a7269",
+                        "surface-variant": "#f3ded7",
+                        "on-secondary-fixed": "#370e00",
+                        "background": "#fff8f6",
+                        "surface": "#fff8f6",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#7f2b00",
+                        "primary-fixed-dim": "#ffb599",
+                        "error-container": "#ffdad6",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "primary": "#7e2b00",
+                        "secondary": "#a13f0f",
+                        "on-surface": "#241915",
+                        "secondary-fixed-dim": "#ffb598",
+                        "surface-container": "#ffe9e2",
+                        "surface-bright": "#fff8f6",
+                        "inverse-surface": "#3a2e29",
+                        "secondary-container": "#fd8450",
+                        "on-surface-variant": "#57423a",
+                        "on-secondary-fixed-variant": "#7f2b00",
+                        "on-tertiary-fixed": "#002111",
+                        "tertiary-container": "#006c43",
+                        "tertiary-fixed-dim": "#80d8a6",
+                        "secondary-fixed": "#ffdbce",
+                        "primary-container": "#a13f0f",
+                        "surface-tint": "#a13f0f",
+                        "on-tertiary-container": "#91eab7",
+                        "on-secondary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "12px",
+                        "container-max": "1280px",
+                        "xl": "80px",
+                        "gutter": "32px",
+                        "base": "8px",
+                        "xs": "4px",
+                        "lg": "48px",
+                        "md": "24px"
+                    },
+                    "fontFamily": {
+                        "h3": ["Outfit"],
+                        "h1": ["Outfit"],
+                        "arabic-body": ["Tajawal"],
+                        "body-md": ["Manrope"],
+                        "body-lg": ["Manrope"],
+                        "h2": ["Outfit"],
+                        "label-sm": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "h3": ["24px", { "lineHeight": "1.3", "letterSpacing": "0", "fontWeight": "500" }],
+                        "h1": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "arabic-body": ["18px", { "lineHeight": "1.8", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "h2": ["36px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+                        "label-sm": ["12px", { "lineHeight": "1.2", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill-icon {
+          font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-[#FAF7F2] text-on-surface font-body-md min-h-screen flex flex-col antialiased">
+<!-- TopAppBar -->
+<nav class="sticky top-0 w-full z-50 bg-stone-50/90 dark:bg-stone-950/90 backdrop-blur-md border-b border-stone-200/50 dark:border-stone-800/50 shadow-sm shadow-orange-900/5">
+<div class="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto">
+<div class="text-2xl font-bold tracking-tighter text-stone-900 dark:text-stone-50 font-outfit">Bassira</div>
+<div class="hidden md:flex gap-8 items-center">
+<a class="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors font-body-md text-body-md hover:bg-stone-100 dark:hover:bg-stone-800 rounded-lg px-3 py-2 transition-all" href="#">Solutions</a>
+<a class="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors font-body-md text-body-md hover:bg-stone-100 dark:hover:bg-stone-800 rounded-lg px-3 py-2 transition-all" href="#">Méthodologie</a>
+<a class="text-orange-800 dark:text-orange-500 font-bold border-b-2 border-orange-800 dark:border-orange-500 pb-1 font-body-md text-body-md scale-95 active:scale-90 transition-transform duration-200" href="#">Explore</a>
+<a class="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors font-body-md text-body-md hover:bg-stone-100 dark:hover:bg-stone-800 rounded-lg px-3 py-2 transition-all" href="#">Tarifs</a>
+<a class="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors font-body-md text-body-md hover:bg-stone-100 dark:hover:bg-stone-800 rounded-lg px-3 py-2 transition-all" href="#">Ressources</a>
+</div>
+<div class="flex items-center gap-4">
+<span class="font-body-md text-body-md text-stone-600 dark:text-stone-400">FR / AR / EN</span>
+<button class="bg-secondary text-on-primary px-6 py-2 rounded-lg font-body-md text-body-md hover:bg-primary transition-colors">Lancer une simulation</button>
+</div>
+</div>
+</nav>
+<!-- Main Canvas -->
+<main class="flex-grow max-w-[1280px] w-full mx-auto px-gutter py-xl flex flex-col gap-xl">
+<!-- Hero & Search -->
+<section class="flex flex-col gap-lg items-center text-center max-w-3xl mx-auto pt-lg">
+<h1 class="font-h1 text-h1 text-on-background">Simulations en cours et passées</h1>
+<div class="w-full relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full bg-surface-container-lowest border border-outline/20 rounded-xl py-4 pl-12 pr-4 font-body-lg text-body-lg text-on-surface focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-all shadow-sm" placeholder="Rechercher une simulation..." type="text"/>
+</div>
+</section>
+<!-- Filters & Sort -->
+<section class="flex flex-wrap justify-between items-center gap-md pb-md border-b border-outline-variant/30">
+<div class="flex flex-wrap gap-sm">
+<button class="px-4 py-2 rounded-full border border-secondary text-secondary bg-surface-container-lowest font-label-sm text-label-sm flex items-center gap-2 hover:bg-secondary/5 transition-colors">
+<span class="material-symbols-outlined text-[16px]">crisis_alert</span>
+                    Crisis
+                </button>
+<button class="px-4 py-2 rounded-full border border-secondary-container text-secondary-container bg-surface-container-lowest font-label-sm text-label-sm flex items-center gap-2 hover:bg-secondary-container/5 transition-colors">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+                    Market
+                </button>
+<button class="px-4 py-2 rounded-full border border-tertiary-container text-tertiary-container bg-surface-container-lowest font-label-sm text-label-sm flex items-center gap-2 hover:bg-tertiary-container/5 transition-colors">
+<span class="material-symbols-outlined text-[16px]">policy</span>
+                    Policy
+                </button>
+<button class="px-4 py-2 rounded-full border border-on-surface-variant text-on-surface-variant bg-surface-container-lowest font-label-sm text-label-sm flex items-center gap-2 hover:bg-on-surface-variant/5 transition-colors">
+<span class="material-symbols-outlined text-[16px]">account_tree</span>
+                    Decision
+                </button>
+</div>
+<div class="relative">
+<select class="appearance-none bg-surface-container-lowest border border-outline/20 rounded-lg py-2 pl-4 pr-10 font-body-md text-body-md text-on-surface focus:outline-none focus:border-secondary">
+<option>Recent</option>
+<option>Most Agents</option>
+<option>Brier Score</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none">expand_more</span>
+</div>
+</section>
+<!-- Featured Card -->
+<section>
+<div class="group relative flex flex-col md:flex-row bg-[#FAF7F2] border-l-4 border-l-secondary border border-outline-variant/20 rounded-r-xl overflow-hidden shadow-sm hover:shadow-[0_6px_24px_rgba(161,63,15,0.08)] hover:-translate-y-1 transition-all duration-300">
+<div class="md:w-2/5 relative min-h-[300px]">
+<img class="absolute inset-0 w-full h-full object-cover" data-alt="An abstract representation of maritime geopolitical tension, featuring sharp, angular waves intersecting with rigid structural forms. The scene is rendered in a highly sophisticated, minimalist art style, utilizing a palette of deep charcoal, warm cream, and striking deep terracotta accents. Soft, diffused lighting creates a sense of gravitas and subtle depth, evoking an atmosphere of serious strategic analysis suitable for a premium intelligence platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDZFFhheRU6IRfdEf8S5z5XUQ9wr9Jb13ZXNryCjCKMgvrDrOSD20FxyURNEUrruBpsHuJszVwPbPkgwH25LkCfpdF9wVpCjunGdF4hAlrigmjJJL9o84IKGDTGv-GxRNTxwK85OhhOFWX42B2kb4Od1aAG5OFCMsL8vfhdpVChZaXWs9Rf8G4B5VrwKf_wTEN3fZAFHl6KbKFQSe34ruYJwINRbmDdgY21T39RlI542jKR3-PO4WSUbEsSB0NPcXQkSWVbNN-uEdk"/>
+<div class="absolute inset-0 bg-gradient-to-r from-transparent to-[#FAF7F2] opacity-0 md:opacity-100"></div>
+</div>
+<div class="md:w-3/5 p-lg flex flex-col justify-center gap-md">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded bg-secondary/10 text-secondary font-label-sm text-label-sm w-fit">
+<span class="material-symbols-outlined text-[14px]">crisis_alert</span>
+                        Crisis Simulation
+                    </div>
+<h2 class="font-h2 text-h2 text-on-background">Tensions Géopolitiques : Détroit d'Ormuz</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
+                        Analyse prédictive de l'impact des blocus maritimes sur les chaînes d'approvisionnement énergétiques mondiales, modélisant les réponses des états acteurs et non-étatiques.
+                    </p>
+<div class="flex gap-6 mt-sm font-label-sm text-label-sm text-on-surface-variant">
+<div class="flex items-center gap-2"><span class="material-symbols-outlined text-outline">group</span> 12,500 Agents</div>
+<div class="flex items-center gap-2"><span class="material-symbols-outlined text-outline">sync</span> 48 Rounds</div>
+<div class="flex items-center gap-2"><span class="material-symbols-outlined text-outline">score</span> 0.12 Brier</div>
+</div>
+<button class="mt-md border border-secondary text-secondary hover:bg-secondary hover:text-on-primary px-6 py-3 rounded-lg font-body-md text-body-md transition-colors w-fit flex items-center gap-2">
+                        Voir la simulation <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Grid -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+<!-- Card 1 -->
+<div class="group bg-surface-container-lowest border border-outline-variant/20 rounded-xl p-md flex flex-col gap-sm hover:shadow-[0_6px_24px_rgba(161,63,15,0.08)] hover:-translate-y-1 transition-all duration-300">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded bg-secondary-container/10 text-secondary-container font-label-sm text-label-sm w-fit mb-xs">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+                    Market
+                </div>
+<h3 class="font-h3 text-[20px] font-semibold text-on-background">Adoption VE : Zone MENA 2030</h3>
+<p class="font-body-md text-[14px] text-[#57423A] flex-grow">
+                    Modélisation de la pénétration des véhicules électriques face aux fluctuations des prix du pétrole et aux incitations gouvernementales.
+                </p>
+<div class="flex justify-between mt-sm py-sm border-y border-outline-variant/20 font-label-sm text-label-sm text-on-surface-variant">
+<span><span class="material-symbols-outlined align-middle text-[14px] text-outline">group</span> 5.2k</span>
+<span><span class="material-symbols-outlined align-middle text-[14px] text-outline">sync</span> 24</span>
+<span><span class="material-symbols-outlined align-middle text-[14px] text-outline">score</span> 0.15</span>
+</div>
+<button class="mt-xs w-full border border-secondary text-secondary hover:bg-secondary hover:text-on-primary px-4 py-2 rounded-lg font-body-md text-body-md transition-colors">
+                    Voir la simulation
+                </button>
+</div>
+<!-- Card 2 -->
+<div class="group bg-surface-container-lowest border border-outline-variant/20 rounded-xl p-md flex flex-col gap-sm hover:shadow-[0_6px_24px_rgba(161,63,15,0.08)] hover:-translate-y-1 transition-all duration-300">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded bg-tertiary-container/10 text-tertiary-container font-label-sm text-label-sm w-fit mb-xs">
+<span class="material-symbols-outlined text-[14px]">policy</span>
+                    Policy
+                </div>
+<h3 class="font-h3 text-[20px] font-semibold text-on-background">Impact Taxe Carbone Transfrontalière</h3>
+<p class="font-body-md text-[14px] text-[#57423A] flex-grow">
+                    Évaluation des répercussions sur les chaînes de valeur industrielles entre l'UE et les marchés émergents suite à l'implémentation du CBAM.
+                </p>
+<div class="flex justify-between mt-sm py-sm border-y border-outline-variant/20 font-label-sm text-label-sm text-on-surface-variant">
+<span><span class="material-symbols-outlined align-middle text-[14px] text-outline">group</span> 8.1k</span>
+<span><span class="material-symbols-outlined align-middle text-[14px] text-outline">sync</span> 36</span>
+<span><span class="material-symbols-outlined align-middle text-[14px] text-outline">score</span> 0.09</span>
+</div>
+<button class="mt-xs w-full border border-secondary text-secondary hover:bg-secondary hover:text-on-primary px-4 py-2 rounded-lg font-body-md text-body-md transition-colors">
+                    Voir la simulation
+                </button>
+</div>
+<!-- Card 3 -->
+<div class="group bg-surface-container-lowest border border-outline-variant/20 rounded-xl p-md flex flex-col gap-sm hover:shadow-[0_6px_24px_rgba(161,63,15,0.08)] hover:-translate-y-1 transition-all duration-300">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded bg-on-surface-variant/10 text-on-surface-variant font-label-sm text-label-sm w-fit mb-xs">
+<span class="material-symbols-outlined text-[14px]">account_tree</span>
+                    Decision
+                </div>
+<h3 class="font-h3 text-[20px] font-semibold text-on-background">Résilience Supply Chain Micro-Puces</h3>
+<p class="font-body-md text-[14px] text-[#57423A] flex-grow">
+                    Simulation des goulots d'étranglement logistiques et de la reallocation des capacités de production en Asie du Sud-Est.
+                </p>
+<div class="flex justify-between mt-sm py-sm border-y border-outline-variant/20 font-label-sm text-label-sm text-on-surface-variant">
+<span><span class="material-symbols-outlined align-middle text-[14px] text-outline">group</span> 15.3k</span>
+<span><span class="material-symbols-outlined align-middle text-[14px] text-outline">sync</span> 60</span>
+<span><span class="material-symbols-outlined align-middle text-[14px] text-outline">score</span> 0.18</span>
+</div>
+<button class="mt-xs w-full border border-secondary text-secondary hover:bg-secondary hover:text-on-primary px-4 py-2 rounded-lg font-body-md text-body-md transition-colors">
+                    Voir la simulation
+                </button>
+</div>
+</section>
+<div class="flex justify-center mt-lg">
+<button class="px-6 py-3 rounded-lg border border-outline-variant bg-surface-container-lowest font-body-md text-body-md hover:bg-surface-container-high transition-colors">
+                 Charger plus de simulations
+             </button>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-12 bg-stone-50 dark:bg-stone-950 border-t border-stone-200 dark:border-stone-800 mt-auto">
+<div class="max-w-7xl mx-auto px-8 flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="font-outfit font-bold text-stone-900 dark:text-stone-50">Bassira</div>
+<div class="font-manrope text-sm text-stone-500 dark:text-stone-400">© 2024 Bassira Strategic Foresight. Bureau de Paris &amp; Dubaï.</div>
+<div class="flex gap-6">
+<a class="font-manrope text-sm text-stone-500 dark:text-stone-400 hover:text-orange-800 dark:hover:text-orange-400 transition-colors opacity-80 hover:opacity-100 transition-opacity" href="#">Confidentialité</a>
+<a class="font-manrope text-sm text-stone-500 dark:text-stone-400 hover:text-orange-800 dark:hover:text-orange-400 transition-colors opacity-80 hover:opacity-100 transition-opacity" href="#">Conditions</a>
+<a class="font-manrope text-sm text-stone-500 dark:text-stone-400 hover:text-orange-800 dark:hover:text-orange-400 transition-colors opacity-80 hover:opacity-100 transition-opacity" href="#">Accessibilité</a>
+<a class="font-manrope text-sm text-stone-500 dark:text-stone-400 hover:text-orange-800 dark:hover:text-orange-400 transition-colors opacity-80 hover:opacity-100 transition-opacity" href="#">Contact</a>
+</div>
+</div>
+</footer>
+</body></html>

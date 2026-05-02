@@ -1776,6 +1776,603 @@
                 "implementation_notes": "TrendingTopics.vue émet un event 'select' avec { url, title }. Dans Step1GraphBuild.vue, écouter ce event et pré-remplir le champ fileUrl ou déclencher un fetchUrl(). Le param topic= côté backend est optionnel — si présent, filtrer les articles du cache GET /trending par pertinence (simple keyword match sur title+description). Si absent, retourner le feed général (comportement actuel inchangé)."
             },
             "completedAt": "2026-05-02"
+        },
+        {
+            "id": "US-059",
+            "chantier": "9-export",
+            "title": "Export PDF enrichi (10 sections + disclaimer + graphe) + export Markdown",
+            "description": "Enrichir POST /export-pdf avec 10 sections board-ready (agents, posts clés, influenceurs, sources, méthodologie, image graphe, disclaimer légal) + nouveau GET /export-md. Déplacer les boutons export dans la toolbar header de Step4Report comme icônes à gauche du pill completed.",
+            "acceptanceCriteria": [
+                "POST /export-pdf retourne un PDF avec 10 sections : couverture, disclaimer, résumé exécutif, résultats, agents/profils, posts clés, top influenceurs, sources, méthodologie, recommandations",
+                "Disclaimer légal visible sur la page de couverture ET en footer de chaque page",
+                "Image du graphe incluse si base64 fourni dans le corps de la requête POST",
+                "GET /api/simulation/<id>/export-md retourne un fichier .md structuré avec les mêmes sections",
+                "Step4Report.vue : 2 boutons icônes (PDF + MD) dans la row workflow-metrics, à gauche du pill completed, visibles uniquement quand isComplete=true",
+                "Boutons JSON/CSV existants conservés mais déplacés hors de la zone workflow-overview",
+                "uv run pytest tests/ -q : 0 régression",
+                "npm run build passe"
+            ],
+            "passes": true,
+            "dependencies": [],
+            "metadata": {
+                "estimated_hours": 5,
+                "priority": "P1",
+                "files_touched": [
+                    "backend/app/api/pdf_export.py",
+                    "backend/app/api/simulation.py",
+                    "backend/openapi.yaml",
+                    "backend/tests/test_unit_pdf_export.py",
+                    "frontend/src/components/Step4Report.vue",
+                    "frontend/src/api/simulation.js",
+                    "frontend/src/locales/fr.json",
+                    "frontend/src/locales/en.json",
+                    "frontend/src/locales/ar.json"
+                ]
+            },
+            "completedAt": "2026-05-02"
+        },
+        {
+            "id": "US-060",
+            "chantier": "A-onboarding",
+            "title": "Onboarding solo — 4 étapes guided tour",
+            "description": "Composant OnboardingTour.vue qui guide un nouvel utilisateur en 4 étapes (graine, question, scénario, lancement). Bouton \"Lancer avec un exemple\" qui charge budget_loi_finances. Source: stitch_bassira_global_design_system/bassira_onboarding_tape_*.",
+            "acceptanceCriteria": [
+                "OnboardingTour.vue créé avec 4 steps + spotlight overlay",
+                "Bouton \"Lancer un exemple\" pré-charge un template",
+                "Auto-démarre au premier visit (localStorage flag)",
+                "Skip toujours visible, jamais bloquant",
+                "i18n FR/EN/AR",
+                "npm run build passe"
+            ],
+            "passes": true,
+            "dependencies": [],
+            "metadata": {
+                "estimated_hours": 4,
+                "priority": "P1",
+                "files_touched": [
+                    "frontend/src/components/OnboardingTour.vue",
+                    "frontend/src/views/Home.vue",
+                    "frontend/src/locales/{fr,en,ar}.json"
+                ]
+            },
+            "completedAt": "2026-05-02"
+        },
+        {
+            "id": "US-061",
+            "chantier": "B-landing-seo",
+            "title": "Landing page SEO — /landing",
+            "description": "Nouvelle vue LandingView.vue séparée de Home.vue, optimisée pour cold traffic SEO/LinkedIn. Hero + 3 pains + 3 proofs + CTA terracotta. Source: stitch_bassira_global_design_system/bassira_landing_page_strat_gique_seo.",
+            "acceptanceCriteria": [
+                "Vue LandingView.vue créée, route /landing",
+                "Hero + 3 pains + 3 proofs + final CTA",
+                "Meta title/description SEO",
+                "Boutons CTA pointent vers /devis (terracotta) et /explore (ghost)",
+                "i18n FR/EN/AR",
+                "npm run build passe"
+            ],
+            "passes": true,
+            "dependencies": [
+                "US-053"
+            ],
+            "metadata": {
+                "estimated_hours": 5,
+                "priority": "P1",
+                "files_touched": [
+                    "frontend/src/views/LandingView.vue",
+                    "frontend/src/router/index.js",
+                    "frontend/src/locales/{fr,en,ar}.json",
+                    "frontend/index.html"
+                ]
+            },
+            "completedAt": "2026-05-02"
+        },
+        {
+            "id": "US-062",
+            "chantier": "C-partners",
+            "title": "Page partenariats institutionnels — /partenaires",
+            "description": "Nouvelle vue PartnersView.vue pour think tanks et cabinets conseil. 3 tiers (Research / Integration / White-label). Source: stitch_bassira_global_design_system/bassira_partenariats_institutionnels.",
+            "acceptanceCriteria": [
+                "Vue PartnersView.vue créée, route /partenaires",
+                "Hero institutionnel (registre académique, pas startup)",
+                "3 cards tiers partnership",
+                "Section \"Comment ça fonctionne\" 3-step visual",
+                "Form contact partenariat → mailto fallback",
+                "i18n FR/EN/AR",
+                "npm run build passe"
+            ],
+            "passes": true,
+            "dependencies": [
+                "US-053"
+            ],
+            "metadata": {
+                "estimated_hours": 4,
+                "priority": "P2",
+                "files_touched": [
+                    "frontend/src/views/PartnersView.vue",
+                    "frontend/src/router/index.js",
+                    "frontend/src/locales/{fr,en,ar}.json"
+                ]
+            },
+            "completedAt": "2026-05-02"
+        },
+        {
+            "id": "US-063",
+            "chantier": "D-apollo",
+            "title": "Apollo CRM séquences — 3 templates email + copy",
+            "description": "Document de référence avec 3 séquences Apollo prêtes à charger : Pre-decision anxiety, Blindspot, Calibration proof. HTML email + plain text + LinkedIn DM, FR/EN/AR. Source: stitch_bassira_global_design_system/apollo_outreach_s_quence_*.",
+            "acceptAceCriteria": [],
+            "acceptanceCriteria": [
+                "bassira_apollo_sequences.md créé à la racine",
+                "3 séquences x 3 emails (cold + follow-up 1 + follow-up 2)",
+                "Templates HTML inline-style ready to paste in Apollo",
+                "Versions FR + EN + AR",
+                "LinkedIn DM templates"
+            ],
+            "passes": true,
+            "dependencies": [],
+            "metadata": {
+                "estimated_hours": 3,
+                "priority": "P2",
+                "files_touched": [
+                    "bassira_apollo_sequences.md"
+                ]
+            },
+            "completedAt": "2026-05-02"
+        },
+        {
+            "id": "US-064",
+            "chantier": "E-linkedin",
+            "title": "LinkedIn — 4 piliers + 12 posts d'exemple",
+            "description": "Document éditorial LinkedIn : 4 piliers (Blindspot, Calibration Log, Simulation Debrief, Decision Science), 3 posts par pilier prêts à publier. Source: stitch_bassira_global_design_system/linkedin_*.",
+            "acceptanceCriteria": [
+                "bassira_linkedin_calendar.md créé à la racine",
+                "4 piliers définis avec hook formula",
+                "12 posts complets (3 par pilier) prêts à publier",
+                "Visuels par post (description Canva/Stitch)",
+                "Cadence et horaires recommandés"
+            ],
+            "passes": true,
+            "dependencies": [],
+            "metadata": {
+                "estimated_hours": 3,
+                "priority": "P2",
+                "files_touched": [
+                    "bassira_linkedin_calendar.md"
+                ]
+            },
+            "completedAt": "2026-05-02"
+        },
+        {
+            "id": "US-065",
+            "chantier": "F-analytics",
+            "title": "Tableau analytique interne — /admin/analytics",
+            "description": "Vue admin AnalyticsView.vue avec KPIs plateforme (acquisition, activation, completion, conversion). Source: stitch_bassira_global_design_system/bassira_tableau_de_bord_analytique_interne.",
+            "acceptanceCriteria": [
+                "Vue AnalyticsView.vue créée, route /admin/analytics",
+                "Auth via BASSIRA_ADMIN_TOKEN sessionStorage",
+                "4 KPI cards : visits, activations, completions, quote rate",
+                "Funnel chart + time series",
+                "Endpoint backend GET /api/admin/analytics",
+                "npm run build passe"
+            ],
+            "passes": true,
+            "dependencies": [],
+            "metadata": {
+                "estimated_hours": 5,
+                "priority": "P2",
+                "files_touched": [
+                    "frontend/src/views/AnalyticsView.vue",
+                    "frontend/src/router/index.js",
+                    "backend/app/api/admin.py"
+                ]
+            },
+            "completedAt": "2026-05-02"
+        },
+        {
+            "id": "US-066",
+            "chantier": "G-stitch-refonte",
+            "title": "Refonte Home.vue selon design Stitch — Refonte hero + console workflow",
+            "description": "Refonte structurelle de Home.vue selon le design Stitch dans stitch_bassira_global_design_system/bassira_home_strategic_foresight/code.html. Audience: Public/Prospect. Funnel: Discovery → Activation. Conserver toute la logique métier (refs, computed, watchers, API calls). Seul le template + scoped CSS changent. Tokens --wi-* + --ms-* exclusifs. RTL via CSS logical properties.",
+            "acceptanceCriteria": [
+                "Home.vue : template aligné sur le design Stitch (sections, layout, copy, hierarchy)",
+                "Logique métier 100% préservée (refs, computed, watchers, API)",
+                "Zero hex hardcodé — tokens --wi-* / --ms-* exclusifs",
+                "Outfit titres + Manrope body + Tajawal RTL",
+                "Dark mode hérite des overrides design-tokens.css (zéro override scoped supplémentaire)",
+                "i18n FR/EN/AR enrichi si nouvelles strings",
+                "npm run build passe sans erreur ni warning"
+            ],
+            "passes": true,
+            "dependencies": [
+                "US-053"
+            ],
+            "metadata": {
+                "estimated_hours": 3,
+                "priority": "P2",
+                "files_touched": [
+                    "frontend/src/views/Home.vue",
+                    "frontend/src/locales/{fr,en,ar}.json"
+                ],
+                "design_source": "stitch_bassira_global_design_system/bassira_home_strategic_foresight/code.html"
+            },
+            "completedAt": "2026-05-02"
+        },
+        {
+            "id": "US-067",
+            "chantier": "G-stitch-refonte",
+            "title": "Refonte CalibrationView.vue selon design Stitch — Refonte hero Brier + stats + plot card",
+            "description": "Refonte structurelle de CalibrationView.vue selon le design Stitch dans stitch_bassira_global_design_system/bassira_calibration_methodological_track_record/code.html. Audience: Tier1+Tier3. Funnel: Trust. Conserver toute la logique métier (refs, computed, watchers, API calls). Seul le template + scoped CSS changent. Tokens --wi-* + --ms-* exclusifs. RTL via CSS logical properties.",
+            "acceptanceCriteria": [
+                "CalibrationView.vue : template aligné sur le design Stitch (sections, layout, copy, hierarchy)",
+                "Logique métier 100% préservée (refs, computed, watchers, API)",
+                "Zero hex hardcodé — tokens --wi-* / --ms-* exclusifs",
+                "Outfit titres + Manrope body + Tajawal RTL",
+                "Dark mode hérite des overrides design-tokens.css (zéro override scoped supplémentaire)",
+                "i18n FR/EN/AR enrichi si nouvelles strings",
+                "npm run build passe sans erreur ni warning"
+            ],
+            "passes": true,
+            "dependencies": [
+                "US-053"
+            ],
+            "metadata": {
+                "estimated_hours": 3,
+                "priority": "P2",
+                "files_touched": [
+                    "frontend/src/views/CalibrationView.vue",
+                    "frontend/src/locales/{fr,en,ar}.json"
+                ],
+                "design_source": "stitch_bassira_global_design_system/bassira_calibration_methodological_track_record/code.html"
+            },
+            "completedAt": "2026-05-02"
+        },
+        {
+            "id": "US-068",
+            "chantier": "G-stitch-refonte",
+            "title": "Refonte OffersView.vue selon design Stitch — Refonte carousel pricing 10 packages + filtres",
+            "description": "Refonte structurelle de OffersView.vue selon le design Stitch dans stitch_bassira_global_design_system/bassira_formules_tarifs/code.html. Audience: Tier1. Funnel: Decision. Conserver toute la logique métier (refs, computed, watchers, API calls). Seul le template + scoped CSS changent. Tokens --wi-* + --ms-* exclusifs. RTL via CSS logical properties.",
+            "acceptanceCriteria": [
+                "OffersView.vue : template aligné sur le design Stitch (sections, layout, copy, hierarchy)",
+                "Logique métier 100% préservée (refs, computed, watchers, API)",
+                "Zero hex hardcodé — tokens --wi-* / --ms-* exclusifs",
+                "Outfit titres + Manrope body + Tajawal RTL",
+                "Dark mode hérite des overrides design-tokens.css (zéro override scoped supplémentaire)",
+                "i18n FR/EN/AR enrichi si nouvelles strings",
+                "npm run build passe sans erreur ni warning"
+            ],
+            "passes": true,
+            "dependencies": [
+                "US-053"
+            ],
+            "metadata": {
+                "estimated_hours": 3,
+                "priority": "P2",
+                "files_touched": [
+                    "frontend/src/views/OffersView.vue",
+                    "frontend/src/locales/{fr,en,ar}.json"
+                ],
+                "design_source": "stitch_bassira_global_design_system/bassira_formules_tarifs/code.html"
+            },
+            "completedAt": "2026-05-02"
+        },
+        {
+            "id": "US-069",
+            "chantier": "G-stitch-refonte",
+            "title": "Refonte QuoteView.vue selon design Stitch — Refonte 3 steps + success state",
+            "description": "Refonte structurelle de QuoteView.vue selon le design Stitch dans stitch_bassira_global_design_system/bassira_demande_de_devis_tape_1+2+envoy_e/code.html. Audience: Prospect. Funnel: Conversion. Conserver toute la logique métier (refs, computed, watchers, API calls). Seul le template + scoped CSS changent. Tokens --wi-* + --ms-* exclusifs. RTL via CSS logical properties.",
+            "acceptanceCriteria": [
+                "QuoteView.vue : template aligné sur le design Stitch (sections, layout, copy, hierarchy)",
+                "Logique métier 100% préservée (refs, computed, watchers, API)",
+                "Zero hex hardcodé — tokens --wi-* / --ms-* exclusifs",
+                "Outfit titres + Manrope body + Tajawal RTL",
+                "Dark mode hérite des overrides design-tokens.css (zéro override scoped supplémentaire)",
+                "i18n FR/EN/AR enrichi si nouvelles strings",
+                "npm run build passe sans erreur ni warning"
+            ],
+            "passes": true,
+            "dependencies": [
+                "US-053"
+            ],
+            "metadata": {
+                "estimated_hours": 3,
+                "priority": "P2",
+                "files_touched": [
+                    "frontend/src/views/QuoteView.vue",
+                    "frontend/src/locales/{fr,en,ar}.json"
+                ],
+                "design_source": "stitch_bassira_global_design_system/bassira_demande_de_devis_tape_1+2+envoy_e/code.html"
+            },
+            "completedAt": "2026-05-02"
+        },
+        {
+            "id": "US-070",
+            "chantier": "G-stitch-refonte",
+            "title": "Refonte ExploreView.vue selon design Stitch — Refonte gallery + filtres categorie",
+            "description": "Refonte structurelle de ExploreView.vue selon le design Stitch dans stitch_bassira_global_design_system/bassira_galerie_explore/code.html. Audience: Public. Funnel: Social proof. Conserver toute la logique métier (refs, computed, watchers, API calls). Seul le template + scoped CSS changent. Tokens --wi-* + --ms-* exclusifs. RTL via CSS logical properties.",
+            "acceptanceCriteria": [
+                "ExploreView.vue : template aligné sur le design Stitch (sections, layout, copy, hierarchy)",
+                "Logique métier 100% préservée (refs, computed, watchers, API)",
+                "Zero hex hardcodé — tokens --wi-* / --ms-* exclusifs",
+                "Outfit titres + Manrope body + Tajawal RTL",
+                "Dark mode hérite des overrides design-tokens.css (zéro override scoped supplémentaire)",
+                "i18n FR/EN/AR enrichi si nouvelles strings",
+                "npm run build passe sans erreur ni warning"
+            ],
+            "passes": true,
+            "dependencies": [
+                "US-053"
+            ],
+            "metadata": {
+                "estimated_hours": 3,
+                "priority": "P2",
+                "files_touched": [
+                    "frontend/src/views/ExploreView.vue",
+                    "frontend/src/locales/{fr,en,ar}.json"
+                ],
+                "design_source": "stitch_bassira_global_design_system/bassira_galerie_explore/code.html"
+            },
+            "completedAt": "2026-05-02"
+        },
+        {
+            "id": "US-071",
+            "chantier": "G-stitch-refonte",
+            "title": "Refonte ReportView.vue selon design Stitch — Refonte rapport board-ready 11 sections",
+            "description": "Refonte structurelle de ReportView.vue selon le design Stitch dans stitch_bassira_global_design_system/bassira_rapport_de_simulation_final/code.html. Audience: Tier1. Funnel: Retention. Conserver toute la logique métier (refs, computed, watchers, API calls). Seul le template + scoped CSS changent. Tokens --wi-* + --ms-* exclusifs. RTL via CSS logical properties.",
+            "acceptanceCriteria": [
+                "ReportView.vue : template aligné sur le design Stitch (sections, layout, copy, hierarchy)",
+                "Logique métier 100% préservée (refs, computed, watchers, API)",
+                "Zero hex hardcodé — tokens --wi-* / --ms-* exclusifs",
+                "Outfit titres + Manrope body + Tajawal RTL",
+                "Dark mode hérite des overrides design-tokens.css (zéro override scoped supplémentaire)",
+                "i18n FR/EN/AR enrichi si nouvelles strings",
+                "npm run build passe sans erreur ni warning"
+            ],
+            "passes": true,
+            "dependencies": [
+                "US-053"
+            ],
+            "metadata": {
+                "estimated_hours": 3,
+                "priority": "P2",
+                "files_touched": [
+                    "frontend/src/views/ReportView.vue",
+                    "frontend/src/locales/{fr,en,ar}.json"
+                ],
+                "design_source": "stitch_bassira_global_design_system/bassira_rapport_de_simulation_final/code.html"
+            },
+            "completedAt": "2026-05-02"
+        },
+        {
+            "id": "US-072",
+            "chantier": "G-stitch-refonte",
+            "title": "Refonte SimulationView.vue selon design Stitch — Refonte cockpit graph + agents split",
+            "description": "Refonte structurelle de SimulationView.vue selon le design Stitch dans stitch_bassira_global_design_system/bassira_simulation_cockpit/code.html. Audience: Tier2. Funnel: Activation. Conserver toute la logique métier (refs, computed, watchers, API calls). Seul le template + scoped CSS changent. Tokens --wi-* + --ms-* exclusifs. RTL via CSS logical properties.",
+            "acceptanceCriteria": [
+                "SimulationView.vue : template aligné sur le design Stitch (sections, layout, copy, hierarchy)",
+                "Logique métier 100% préservée (refs, computed, watchers, API)",
+                "Zero hex hardcodé — tokens --wi-* / --ms-* exclusifs",
+                "Outfit titres + Manrope body + Tajawal RTL",
+                "Dark mode hérite des overrides design-tokens.css (zéro override scoped supplémentaire)",
+                "i18n FR/EN/AR enrichi si nouvelles strings",
+                "npm run build passe sans erreur ni warning"
+            ],
+            "passes": true,
+            "dependencies": [
+                "US-053"
+            ],
+            "metadata": {
+                "estimated_hours": 3,
+                "priority": "P2",
+                "files_touched": [
+                    "frontend/src/views/SimulationView.vue",
+                    "frontend/src/locales/{fr,en,ar}.json"
+                ],
+                "design_source": "stitch_bassira_global_design_system/bassira_simulation_cockpit/code.html"
+            },
+            "completedAt": "2026-05-02"
+        },
+        {
+            "id": "US-073",
+            "chantier": "G-stitch-refonte",
+            "title": "Refonte SimulationRunView.vue selon design Stitch — Refonte run live + activity feed",
+            "description": "Refonte structurelle de SimulationRunView.vue selon le design Stitch dans stitch_bassira_global_design_system/bassira_simulation_en_cours/code.html. Audience: Tier2. Funnel: Activation. Conserver toute la logique métier (refs, computed, watchers, API calls). Seul le template + scoped CSS changent. Tokens --wi-* + --ms-* exclusifs. RTL via CSS logical properties.",
+            "acceptanceCriteria": [
+                "SimulationRunView.vue : template aligné sur le design Stitch (sections, layout, copy, hierarchy)",
+                "Logique métier 100% préservée (refs, computed, watchers, API)",
+                "Zero hex hardcodé — tokens --wi-* / --ms-* exclusifs",
+                "Outfit titres + Manrope body + Tajawal RTL",
+                "Dark mode hérite des overrides design-tokens.css (zéro override scoped supplémentaire)",
+                "i18n FR/EN/AR enrichi si nouvelles strings",
+                "npm run build passe sans erreur ni warning"
+            ],
+            "passes": true,
+            "dependencies": [
+                "US-053"
+            ],
+            "metadata": {
+                "estimated_hours": 3,
+                "priority": "P2",
+                "files_touched": [
+                    "frontend/src/views/SimulationRunView.vue",
+                    "frontend/src/locales/{fr,en,ar}.json"
+                ],
+                "design_source": "stitch_bassira_global_design_system/bassira_simulation_en_cours/code.html"
+            },
+            "completedAt": "2026-05-02"
+        },
+        {
+            "id": "US-074",
+            "chantier": "G-stitch-refonte",
+            "title": "Refonte MainView.vue selon design Stitch — Refonte console multi-modes",
+            "description": "Refonte structurelle de MainView.vue selon le design Stitch dans stitch_bassira_global_design_system/bassira_console_d_analyse_avanc_e/code.html. Audience: Tier2. Funnel: Retention. Conserver toute la logique métier (refs, computed, watchers, API calls). Seul le template + scoped CSS changent. Tokens --wi-* + --ms-* exclusifs. RTL via CSS logical properties.",
+            "acceptanceCriteria": [
+                "MainView.vue : template aligné sur le design Stitch (sections, layout, copy, hierarchy)",
+                "Logique métier 100% préservée (refs, computed, watchers, API)",
+                "Zero hex hardcodé — tokens --wi-* / --ms-* exclusifs",
+                "Outfit titres + Manrope body + Tajawal RTL",
+                "Dark mode hérite des overrides design-tokens.css (zéro override scoped supplémentaire)",
+                "i18n FR/EN/AR enrichi si nouvelles strings",
+                "npm run build passe sans erreur ni warning"
+            ],
+            "passes": true,
+            "dependencies": [
+                "US-053"
+            ],
+            "metadata": {
+                "estimated_hours": 3,
+                "priority": "P2",
+                "files_touched": [
+                    "frontend/src/views/MainView.vue",
+                    "frontend/src/locales/{fr,en,ar}.json"
+                ],
+                "design_source": "stitch_bassira_global_design_system/bassira_console_d_analyse_avanc_e/code.html"
+            },
+            "completedAt": "2026-05-02"
+        },
+        {
+            "id": "US-075",
+            "chantier": "G-stitch-refonte",
+            "title": "Refonte ComparisonView.vue selon design Stitch — Refonte side-by-side + delta",
+            "description": "Refonte structurelle de ComparisonView.vue selon le design Stitch dans stitch_bassira_global_design_system/bassira_comparaison_strat_gique_delta/code.html. Audience: Tier2+Tier1. Funnel: Decision. Conserver toute la logique métier (refs, computed, watchers, API calls). Seul le template + scoped CSS changent. Tokens --wi-* + --ms-* exclusifs. RTL via CSS logical properties.",
+            "acceptanceCriteria": [
+                "ComparisonView.vue : template aligné sur le design Stitch (sections, layout, copy, hierarchy)",
+                "Logique métier 100% préservée (refs, computed, watchers, API)",
+                "Zero hex hardcodé — tokens --wi-* / --ms-* exclusifs",
+                "Outfit titres + Manrope body + Tajawal RTL",
+                "Dark mode hérite des overrides design-tokens.css (zéro override scoped supplémentaire)",
+                "i18n FR/EN/AR enrichi si nouvelles strings",
+                "npm run build passe sans erreur ni warning"
+            ],
+            "passes": true,
+            "dependencies": [
+                "US-053"
+            ],
+            "metadata": {
+                "estimated_hours": 3,
+                "priority": "P2",
+                "files_touched": [
+                    "frontend/src/views/ComparisonView.vue",
+                    "frontend/src/locales/{fr,en,ar}.json"
+                ],
+                "design_source": "stitch_bassira_global_design_system/bassira_comparaison_strat_gique_delta/code.html"
+            },
+            "completedAt": "2026-05-02"
+        },
+        {
+            "id": "US-076",
+            "chantier": "G-stitch-refonte",
+            "title": "Refonte ReplayView.vue selon design Stitch — Refonte timeline scrubber + chapitres",
+            "description": "Refonte structurelle de ReplayView.vue selon le design Stitch dans stitch_bassira_global_design_system/bassira_relecture_de_simulation_strat_gique/code.html. Audience: Tier2. Funnel: Retention. Conserver toute la logique métier (refs, computed, watchers, API calls). Seul le template + scoped CSS changent. Tokens --wi-* + --ms-* exclusifs. RTL via CSS logical properties.",
+            "acceptanceCriteria": [
+                "ReplayView.vue : template aligné sur le design Stitch (sections, layout, copy, hierarchy)",
+                "Logique métier 100% préservée (refs, computed, watchers, API)",
+                "Zero hex hardcodé — tokens --wi-* / --ms-* exclusifs",
+                "Outfit titres + Manrope body + Tajawal RTL",
+                "Dark mode hérite des overrides design-tokens.css (zéro override scoped supplémentaire)",
+                "i18n FR/EN/AR enrichi si nouvelles strings",
+                "npm run build passe sans erreur ni warning"
+            ],
+            "passes": true,
+            "dependencies": [
+                "US-053"
+            ],
+            "metadata": {
+                "estimated_hours": 3,
+                "priority": "P2",
+                "files_touched": [
+                    "frontend/src/views/ReplayView.vue",
+                    "frontend/src/locales/{fr,en,ar}.json"
+                ],
+                "design_source": "stitch_bassira_global_design_system/bassira_relecture_de_simulation_strat_gique/code.html"
+            },
+            "completedAt": "2026-05-02"
+        },
+        {
+            "id": "US-077",
+            "chantier": "G-stitch-refonte",
+            "title": "Refonte InteractionView.vue selon design Stitch — Refonte interaction graph + reasoning log",
+            "description": "Refonte structurelle de InteractionView.vue selon le design Stitch dans stitch_bassira_global_design_system/bassira_vue_des_interactions_audit_m_thodologique/code.html. Audience: Tier3. Funnel: Trust. Conserver toute la logique métier (refs, computed, watchers, API calls). Seul le template + scoped CSS changent. Tokens --wi-* + --ms-* exclusifs. RTL via CSS logical properties.",
+            "acceptanceCriteria": [
+                "InteractionView.vue : template aligné sur le design Stitch (sections, layout, copy, hierarchy)",
+                "Logique métier 100% préservée (refs, computed, watchers, API)",
+                "Zero hex hardcodé — tokens --wi-* / --ms-* exclusifs",
+                "Outfit titres + Manrope body + Tajawal RTL",
+                "Dark mode hérite des overrides design-tokens.css (zéro override scoped supplémentaire)",
+                "i18n FR/EN/AR enrichi si nouvelles strings",
+                "npm run build passe sans erreur ni warning"
+            ],
+            "passes": true,
+            "dependencies": [
+                "US-053"
+            ],
+            "metadata": {
+                "estimated_hours": 3,
+                "priority": "P2",
+                "files_touched": [
+                    "frontend/src/views/InteractionView.vue",
+                    "frontend/src/locales/{fr,en,ar}.json"
+                ],
+                "design_source": "stitch_bassira_global_design_system/bassira_vue_des_interactions_audit_m_thodologique/code.html"
+            },
+            "completedAt": "2026-05-02"
+        },
+        {
+            "id": "US-078",
+            "chantier": "G-stitch-refonte",
+            "title": "Refonte EmbedView.vue selon design Stitch — Refonte widget iframe-friendly",
+            "description": "Refonte structurelle de EmbedView.vue selon le design Stitch dans stitch_bassira_global_design_system/bassira_widget_d_int_gration_strat_gique/code.html. Audience: Public. Funnel: Social proof. Conserver toute la logique métier (refs, computed, watchers, API calls). Seul le template + scoped CSS changent. Tokens --wi-* + --ms-* exclusifs. RTL via CSS logical properties.",
+            "acceptanceCriteria": [
+                "EmbedView.vue : template aligné sur le design Stitch (sections, layout, copy, hierarchy)",
+                "Logique métier 100% préservée (refs, computed, watchers, API)",
+                "Zero hex hardcodé — tokens --wi-* / --ms-* exclusifs",
+                "Outfit titres + Manrope body + Tajawal RTL",
+                "Dark mode hérite des overrides design-tokens.css (zéro override scoped supplémentaire)",
+                "i18n FR/EN/AR enrichi si nouvelles strings",
+                "npm run build passe sans erreur ni warning"
+            ],
+            "passes": true,
+            "dependencies": [
+                "US-053"
+            ],
+            "metadata": {
+                "estimated_hours": 3,
+                "priority": "P2",
+                "files_touched": [
+                    "frontend/src/views/EmbedView.vue",
+                    "frontend/src/locales/{fr,en,ar}.json"
+                ],
+                "design_source": "stitch_bassira_global_design_system/bassira_widget_d_int_gration_strat_gique/code.html"
+            },
+            "completedAt": "2026-05-02"
+        },
+        {
+            "id": "US-079",
+            "chantier": "G-stitch-refonte",
+            "title": "Refonte ReviewEntitiesView.vue selon design Stitch — Refonte entity review 2-column",
+            "description": "Refonte structurelle de ReviewEntitiesView.vue selon le design Stitch dans stitch_bassira_global_design_system/bassira_r_vision_des_entit_s/code.html. Audience: Tier2. Funnel: Activation. Conserver toute la logique métier (refs, computed, watchers, API calls). Seul le template + scoped CSS changent. Tokens --wi-* + --ms-* exclusifs. RTL via CSS logical properties.",
+            "acceptanceCriteria": [
+                "ReviewEntitiesView.vue : template aligné sur le design Stitch (sections, layout, copy, hierarchy)",
+                "Logique métier 100% préservée (refs, computed, watchers, API)",
+                "Zero hex hardcodé — tokens --wi-* / --ms-* exclusifs",
+                "Outfit titres + Manrope body + Tajawal RTL",
+                "Dark mode hérite des overrides design-tokens.css (zéro override scoped supplémentaire)",
+                "i18n FR/EN/AR enrichi si nouvelles strings",
+                "npm run build passe sans erreur ni warning"
+            ],
+            "passes": true,
+            "dependencies": [
+                "US-053"
+            ],
+            "metadata": {
+                "estimated_hours": 3,
+                "priority": "P2",
+                "files_touched": [
+                    "frontend/src/views/ReviewEntitiesView.vue",
+                    "frontend/src/locales/{fr,en,ar}.json"
+                ],
+                "design_source": "stitch_bassira_global_design_system/bassira_r_vision_des_entit_s/code.html"
+            },
+            "completedAt": "2026-05-02"
         }
     ]
 }

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SimulationRunView</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&amp;family=Manrope:wght@400;500;600&amp;family=JetBrains+Mono:wght@500&amp;family=Tajawal:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "tertiary": "#005132",
+                "on-primary-fixed-variant": "#7f2b00",
+                "inverse-on-surface": "#ffede7",
+                "background": "#fff8f6",
+                "surface-container-high": "#f9e4dd",
+                "primary-fixed": "#ffdbce",
+                "on-primary-fixed": "#370e00",
+                "on-error-container": "#93000a",
+                "on-primary": "#ffffff",
+                "on-secondary-container": "#6c2400",
+                "secondary-fixed-dim": "#ffb598",
+                "on-tertiary": "#ffffff",
+                "inverse-surface": "#3a2e29",
+                "tertiary-fixed": "#9cf5c1",
+                "on-surface-variant": "#57423a",
+                "secondary": "#a13f0f",
+                "on-surface": "#241915",
+                "error-container": "#ffdad6",
+                "outline": "#8a7269",
+                "on-tertiary-fixed": "#002111",
+                "on-primary-container": "#ffcdbb",
+                "surface-tint": "#a13f0f",
+                "surface-container-low": "#fff1ec",
+                "error": "#ba1a1a",
+                "tertiary-fixed-dim": "#80d8a6",
+                "on-secondary-fixed": "#370e00",
+                "surface-bright": "#fff8f6",
+                "on-tertiary-container": "#91eab7",
+                "surface": "#fff8f6",
+                "surface-dim": "#ebd6cf",
+                "on-secondary": "#ffffff",
+                "secondary-fixed": "#ffdbce",
+                "on-tertiary-fixed-variant": "#005232",
+                "on-background": "#241915",
+                "on-secondary-fixed-variant": "#7f2b00",
+                "surface-container-highest": "#f3ded7",
+                "inverse-primary": "#ffb599",
+                "secondary-container": "#fd8450",
+                "tertiary-container": "#006c43",
+                "surface-variant": "#f3ded7",
+                "primary-fixed-dim": "#ffb599",
+                "on-error": "#ffffff",
+                "surface-container-lowest": "#ffffff",
+                "outline-variant": "#dec0b6",
+                "primary-container": "#a13f0f",
+                "surface-container": "#ffe9e2",
+                "primary": "#7e2b00"
+        },
+        "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+        },
+        "spacing": {
+                "base": "8px",
+                "gutter": "32px",
+                "md": "24px",
+                "lg": "48px",
+                "xl": "80px",
+                "sm": "12px",
+                "container-max": "1280px",
+                "xs": "4px"
+        },
+        "fontFamily": {
+                "label-sm": [
+                        "JetBrains Mono"
+                ],
+                "h1": [
+                        "Outfit"
+                ],
+                "h2": [
+                        "Outfit"
+                ],
+                "h3": [
+                        "Outfit"
+                ],
+                "body-md": [
+                        "Manrope"
+                ],
+                "arabic-body": [
+                        "Tajawal"
+                ],
+                "body-lg": [
+                        "Manrope"
+                ]
+        },
+        "fontSize": {
+                "label-sm": [
+                        "12px",
+                        {
+                                "lineHeight": "1.2",
+                                "fontWeight": "500"
+                        }
+                ],
+                "h1": [
+                        "48px",
+                        {
+                                "lineHeight": "1.1",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "600"
+                        }
+                ],
+                "h2": [
+                        "36px",
+                        {
+                                "lineHeight": "1.2",
+                                "letterSpacing": "-0.01em",
+                                "fontWeight": "500"
+                        }
+                ],
+                "h3": [
+                        "24px",
+                        {
+                                "lineHeight": "1.3",
+                                "letterSpacing": "0",
+                                "fontWeight": "500"
+                        }
+                ],
+                "body-md": [
+                        "16px",
+                        {
+                                "lineHeight": "1.6",
+                                "fontWeight": "400"
+                        }
+                ],
+                "arabic-body": [
+                        "18px",
+                        {
+                                "lineHeight": "1.8",
+                                "fontWeight": "400"
+                        }
+                ],
+                "body-lg": [
+                        "18px",
+                        {
+                                "lineHeight": "1.6",
+                                "fontWeight": "400"
+                        }
+                ]
+        }
+},
+    },
+  }
+</script>
+<style>
+  body {
+    background-color: #0f1117;
+    color: #f3ded7;
+  }
+  .bg-panel {
+    background-color: #1a1d27;
+  }
+  .border-stance-bullish { border-left-color: #FF8551; }
+  .border-stance-bearish { border-left-color: #a13f0f; }
+  .border-stance-neutral { border-left-color: #8a7269; }
+  .border-stance-attenuator { border-left-color: #006d44; }
+  .text-orange-stratos { color: #FF8551; }
+  .bg-orange-stratos { background-color: #FF8551; }
+</style>
+</head>
+<body class="font-body-md text-body-md h-screen flex flex-col overflow-hidden relative">
+<!-- Slim progress bar -->
+<div class="h-1 w-full bg-surface-variant/20 absolute top-0 left-0 z-[60]">
+<div class="h-full bg-orange-stratos w-[68%]"></div>
+</div>
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-8 py-4 sticky top-0 z-50 bg-[#0f1117]/95 backdrop-blur-md border-b border-outline/20 pt-[20px]">
+<div class="flex items-center gap-8">
+<div class="font-h3 text-h3 tracking-tighter text-orange-stratos">STRATOS EXECUTION</div>
+<nav class="hidden md:flex gap-6">
+<a class="font-label-sm text-label-sm text-orange-stratos border-b-2 border-orange-stratos pb-1" href="#">Live Feed</a>
+<a class="font-label-sm text-label-sm text-outline hover:text-orange-stratos transition-colors" href="#">Simulation Map</a>
+<a class="font-label-sm text-label-sm text-outline hover:text-orange-stratos transition-colors" href="#">Agent Registry</a>
+</nav>
+</div>
+<div class="absolute left-1/2 -translate-x-1/2 font-h1 text-[64px] font-bold text-orange-stratos leading-none flex items-center gap-2">
+<span class="material-symbols-outlined text-[32px] animate-pulse">radio_button_checked</span>
+      04
+    </div>
+<div class="flex items-center gap-4">
+<button class="font-label-sm text-label-sm border border-secondary text-secondary hover:bg-secondary/10 px-4 py-2 rounded transition-colors uppercase tracking-wider">Stop Simulation</button>
+<button class="font-label-sm text-label-sm bg-primary-container text-on-primary hover:bg-primary px-4 py-2 rounded transition-colors uppercase tracking-wider flex items-center gap-2">
+        Inject Event
+      </button>
+<div class="flex gap-2 text-outline">
+<button class="hover:text-surface-variant p-2"><span class="material-symbols-outlined">notifications</span></button>
+<button class="hover:text-surface-variant p-2"><span class="material-symbols-outlined">settings</span></button>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 flex overflow-hidden p-gutter gap-gutter max-w-[1600px] mx-auto w-full">
+<!-- Left: Activity Feed -->
+<section class="w-[60%] flex flex-col h-full bg-panel border border-outline/10 rounded-lg overflow-hidden">
+<div class="p-4 border-b border-outline/10 flex justify-between items-center bg-[#0f1117]/50">
+<h2 class="font-h3 text-h3 text-surface-variant">Agent Activity Stream</h2>
+<div class="flex gap-2">
+<span class="font-label-sm text-label-sm px-2 py-1 bg-surface-variant/10 text-surface-variant rounded">Filter: All</span>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto p-4 space-y-4">
+<!-- Card Bullish -->
+<div class="bg-[#0f1117]/40 p-4 border-l-4 border-stance-bullish rounded-r border border-t-outline/5 border-r-outline/5 border-b-outline/5">
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-orange-stratos/20 flex items-center justify-center text-orange-stratos font-label-sm text-label-sm">A1</div>
+<div>
+<div class="font-label-sm text-label-sm text-surface-variant">Alpha Sentinel</div>
+<div class="font-label-sm text-[10px] text-outline">Bullish Amplifier • Sector 4</div>
+</div>
+</div>
+<div class="font-label-sm text-label-sm text-outline">14:02:44</div>
+</div>
+<p class="font-body-md text-body-md text-surface-variant/80">Market sentiment analysis complete. Detecting significant upward momentum in resource allocation vectors. Recommending structural reinforcement.</p>
+</div>
+<!-- Card Bearish -->
+<div class="bg-[#0f1117]/40 p-4 border-l-4 border-stance-bearish rounded-r border border-t-outline/5 border-r-outline/5 border-b-outline/5">
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center text-secondary font-label-sm text-label-sm">B7</div>
+<div>
+<div class="font-label-sm text-label-sm text-surface-variant">Beta Observer</div>
+<div class="font-label-sm text-[10px] text-outline">Bearish Contractor • Sector 2</div>
+</div>
+</div>
+<div class="font-label-sm text-label-sm text-outline">14:01:12</div>
+</div>
+<p class="font-body-md text-body-md text-surface-variant/80">Anomaly detected in supply chain routing. Probability of bottleneck increased by 14%. Initiating defensive posturing sequence.</p>
+</div>
+<!-- Card Attenuator -->
+<div class="bg-[#0f1117]/40 p-4 border-l-4 border-stance-attenuator rounded-r border border-t-outline/5 border-r-outline/5 border-b-outline/5">
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-tertiary-container/20 flex items-center justify-center text-tertiary-container font-label-sm text-label-sm">O3</div>
+<div>
+<div class="font-label-sm text-label-sm text-surface-variant">Omega Stabilizer</div>
+<div class="font-label-sm text-[10px] text-outline">Attenuator • Sector 1</div>
+</div>
+</div>
+<div class="font-label-sm text-label-sm text-outline">13:58:05</div>
+</div>
+<p class="font-body-md text-body-md text-surface-variant/80">Applying friction to overly volatile nodes. Volatility index normalized. Holding current parameters until next epoch.</p>
+</div>
+</div>
+</section>
+<!-- Right: Data Viz & Console -->
+<section class="w-[40%] flex flex-col h-full gap-gutter">
+<!-- Chart Area Placeholder -->
+<div class="h-[40%] bg-panel border border-outline/10 rounded-lg p-4 flex flex-col">
+<h3 class="font-h3 text-[18px] text-surface-variant mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-orange-stratos">insights</span>
+          Belief Drift Vector
+        </h3>
+<div class="flex-1 relative flex items-end w-full border-b border-l border-outline/20 p-2">
+<!-- Faux grid lines -->
+<div class="absolute w-full border-t border-outline/10 top-1/4"></div>
+<div class="absolute w-full border-t border-outline/10 top-2/4"></div>
+<div class="absolute w-full border-t border-outline/10 top-3/4"></div>
+<!-- Faux lines -->
+<svg class="absolute inset-0 w-full h-full" preserveaspectratio="none">
+<!-- Reference Mint line -->
+<path d="M0,80 Q50,70 100,80 T200,60 T300,70 T400,50" fill="none" stroke="#006d44" stroke-dasharray="4 4" stroke-width="2"></path>
+<!-- Main Orange line -->
+<path d="M0,120 Q50,140 100,100 T200,80 T300,40 T400,20" fill="none" stroke="#FF8551" stroke-width="3"></path>
+</svg>
+</div>
+</div>
+<!-- Leaderboard -->
+<div class="flex-1 bg-panel border border-outline/10 rounded-lg p-4 flex flex-col min-h-0">
+<h3 class="font-h3 text-[18px] text-surface-variant mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-secondary">military_tech</span>
+          Influence Topology
+        </h3>
+<div class="overflow-y-auto pr-2 space-y-2">
+<div class="flex justify-between items-center p-2 hover:bg-[#0f1117] rounded border border-transparent hover:border-outline/10 transition-colors">
+<div class="font-label-sm text-label-sm text-surface-variant">1. Alpha Sentinel</div>
+<div class="font-label-sm text-label-sm text-orange-stratos">94.2 IV</div>
+</div>
+<div class="flex justify-between items-center p-2 hover:bg-[#0f1117] rounded border border-transparent hover:border-outline/10 transition-colors">
+<div class="font-label-sm text-label-sm text-surface-variant">2. Gamma Protocol</div>
+<div class="font-label-sm text-label-sm text-orange-stratos">88.7 IV</div>
+</div>
+<div class="flex justify-between items-center p-2 hover:bg-[#0f1117] rounded border border-transparent hover:border-outline/10 transition-colors">
+<div class="font-label-sm text-label-sm text-surface-variant">3. Beta Observer</div>
+<div class="font-label-sm text-label-sm text-outline">76.1 IV</div>
+</div>
+</div>
+</div>
+<!-- Console Log -->
+<div class="h-[25%] bg-[#0f1117] border border-outline/20 rounded-lg p-4 font-label-sm text-label-sm text-[#8b90a0] overflow-y-auto whitespace-pre-wrap flex flex-col justify-end">
+&gt; SYS_INIT: Round 04 executing...
+&gt; VAR_CHK: Nominal variance detected.
+&gt; ALERT: Injection port open.
+&gt; LOG: Agent O3 deployed counter-measure.
+&gt; AWAITING INSTRUCTION...<span class="animate-pulse">_</span>
+</div>
+</section>
+</main>
+<!-- Toast -->
+<div class="fixed bottom-8 right-8 bg-panel border border-[#006d44]/30 rounded-lg p-4 flex items-center gap-4 shadow-xl z-50">
+<div class="w-8 h-8 rounded-full bg-[#006d44]/20 flex items-center justify-center text-[#006d44]">
+<span class="material-symbols-outlined text-[18px]">check</span>
+</div>
+<div>
+<div class="font-label-sm text-label-sm text-[#006d44]">Phase 3 Complete</div>
+<div class="font-label-sm text-[10px] text-outline">All parameters verified.</div>
+</div>
+</div>
+<!-- Slide-in Panel (Semi-visible state) -->
+<aside class="fixed right-0 top-0 h-full w-[400px] bg-panel border-l border-outline/20 shadow-2xl transform translate-x-[360px] hover:translate-x-0 transition-transform duration-300 z-50 flex flex-col">
+<div class="p-4 border-b border-outline/10 flex items-center gap-4 bg-[#0f1117]/80">
+<span class="material-symbols-outlined text-outline">chevron_left</span>
+<h2 class="font-h3 text-[20px] text-surface-variant">Director Inject</h2>
+</div>
+<div class="p-6 space-y-6">
+<div>
+<label class="block font-label-sm text-label-sm text-outline mb-2">Event Type</label>
+<select class="w-full bg-[#0f1117] border border-outline/20 rounded p-2 text-surface-variant font-label-sm focus:border-secondary focus:ring-0">
+<option>Market Shock</option>
+<option>Information Leak</option>
+<option>Regulatory Shift</option>
+</select>
+</div>
+<div>
+<label class="block font-label-sm text-label-sm text-outline mb-2">Magnitude (1-10)</label>
+<input class="w-full accent-secondary" max="10" min="1" type="range" value="5"/>
+</div>
+<div>
+<label class="block font-label-sm text-label-sm text-outline mb-2">Target Sectors</label>
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-secondary/20 text-secondary border border-secondary/30 rounded font-label-sm text-label-sm cursor-pointer">Sector 1</span>
+<span class="px-3 py-1 bg-[#0f1117] text-outline border border-outline/20 rounded font-label-sm text-label-sm cursor-pointer hover:border-outline/50">Sector 2</span>
+<span class="px-3 py-1 bg-[#0f1117] text-outline border border-outline/20 rounded font-label-sm text-label-sm cursor-pointer hover:border-outline/50">Sector 3</span>
+</div>
+</div>
+<button class="w-full bg-primary-container text-on-primary font-label-sm text-label-sm py-3 rounded uppercase tracking-wider hover:bg-primary transition-colors mt-8">
+        Execute Injection
+      </button>
+</div>
+</aside>
+</body></html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Decision Science - Bassira</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&amp;family=Manrope:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;family=Tajawal:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#7f2b00",
+                        "on-secondary-container": "#6c2400",
+                        "on-tertiary-fixed": "#002111",
+                        "surface-tint": "#a13f0f",
+                        "outline": "#8a7269",
+                        "surface-dim": "#ebd6cf",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-container": "#ffcdbb",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed-variant": "#7f2b00",
+                        "inverse-primary": "#ffb599",
+                        "primary-fixed-dim": "#ffb599",
+                        "surface": "#fff8f6",
+                        "surface-container-high": "#f9e4dd",
+                        "on-secondary-fixed": "#370e00",
+                        "inverse-surface": "#3a2e29",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "tertiary": "#005132",
+                        "surface-container-highest": "#f3ded7",
+                        "background": "#fff8f6",
+                        "outline-variant": "#dec0b6",
+                        "on-tertiary-fixed-variant": "#005232",
+                        "on-primary-fixed": "#370e00",
+                        "secondary-fixed": "#ffdbce",
+                        "secondary-container": "#fd8450",
+                        "primary-fixed": "#ffdbce",
+                        "on-error": "#ffffff",
+                        "on-background": "#241915",
+                        "primary": "#7e2b00",
+                        "tertiary-container": "#006c43",
+                        "surface-container": "#ffe9e2",
+                        "on-tertiary-container": "#91eab7",
+                        "tertiary-fixed-dim": "#80d8a6",
+                        "surface-variant": "#f3ded7",
+                        "error": "#ba1a1a",
+                        "on-surface": "#241915",
+                        "secondary-fixed-dim": "#ffb598",
+                        "tertiary-fixed": "#9cf5c1",
+                        "surface-container-low": "#fff1ec",
+                        "on-surface-variant": "#57423a",
+                        "secondary": "#a13f0f",
+                        "surface-bright": "#fff8f6",
+                        "primary-container": "#a13f0f",
+                        "error-container": "#ffdad6",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#ffede7",
+                        "cream-bg": "#FAF7F2",
+                        "warm-orange": "#FF8551"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "48px",
+                        "container-max": "1280px",
+                        "md": "24px",
+                        "xs": "4px",
+                        "xl": "80px",
+                        "sm": "12px",
+                        "base": "8px",
+                        "gutter": "32px"
+                    },
+                    "fontFamily": {
+                        "h2": ["Outfit", "sans-serif"],
+                        "h1": ["Outfit", "sans-serif"],
+                        "h3": ["Outfit", "sans-serif"],
+                        "arabic-body": ["Tajawal", "sans-serif"],
+                        "body-md": ["Manrope", "sans-serif"],
+                        "label-sm": ["JetBrains Mono", "monospace"],
+                        "body-lg": ["Manrope", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "h2": ["36px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+                        "h1": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "h3": ["24px", { "lineHeight": "1.3", "letterSpacing": "0", "fontWeight": "500" }],
+                        "arabic-body": ["18px", { "lineHeight": "1.8", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "1.2", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .aspect-4-5 {
+            aspect-ratio: 4 / 5;
+        }
+    </style>
+</head>
+<body class="bg-surface-container-lowest min-h-screen flex items-center justify-center p-md">
+<!-- LinkedIn Post Container (4:5 Aspect Ratio) -->
+<div class="w-full max-w-[800px] aspect-4-5 bg-cream-bg relative overflow-hidden border border-outline-variant/30 flex flex-col shadow-[0_20px_40px_-15px_rgba(161,63,15,0.05)]">
+<!-- Header Section -->
+<div class="px-xl pt-xl pb-md z-10">
+<span class="font-label-sm text-label-sm text-surface-tint uppercase tracking-wider mb-sm block">Pillar 4</span>
+<h1 class="font-h1 text-h1 text-on-background">Decision Science</h1>
+</div>
+<!-- Main Content Area -->
+<div class="flex-grow flex flex-col items-center justify-center relative px-xl z-10">
+<!-- Minimalist Illustration Container -->
+<div class="w-full max-w-[500px] aspect-square relative mb-lg">
+<!-- Abstract Representation of Hyperbolic Discounting / Availability Bias -->
+<div class="absolute inset-0 flex items-center justify-center">
+<!-- Structural Grid / Background Elements -->
+<div class="absolute w-[80%] h-[1px] bg-outline-variant/50 top-1/2 -translate-y-1/2"></div>
+<div class="absolute h-[80%] w-[1px] bg-outline-variant/50 left-1/2 -translate-x-1/2"></div>
+<!-- The 'Now' vs 'Later' visualization -->
+<div class="relative w-full h-full">
+<!-- 'Now' - Large, immediate, vivid (Availability Bias) -->
+<div class="absolute top-[30%] left-[30%] w-32 h-32 rounded-full bg-warm-orange flex items-center justify-center transform -translate-x-1/2 -translate-y-1/2 shadow-[0_0_40px_rgba(255,133,81,0.3)] z-20">
+<span class="material-symbols-outlined text-surface-container-lowest text-4xl" style="font-variation-settings: 'FILL' 1;">visibility</span>
+</div>
+<!-- Connecting Line showing the 'discount' -->
+<svg class="absolute top-0 left-0 w-full h-full z-10" viewbox="0 0 500 500">
+<path d="M 150 150 Q 250 250 350 350" fill="none" stroke="#dec0b6" stroke-dasharray="8,8" stroke-width="2"></path>
+</svg>
+<!-- 'Later' - Small, distant, faded -->
+<div class="absolute top-[70%] left-[70%] w-16 h-16 rounded-full border-2 border-outline-variant flex items-center justify-center transform -translate-x-1/2 -translate-y-1/2 bg-cream-bg z-20">
+<span class="material-symbols-outlined text-outline-variant text-xl">hourglass_empty</span>
+</div>
+<!-- Data Points / Noise representing cognitive bias -->
+<div class="absolute top-[20%] left-[60%] w-4 h-4 bg-outline-variant/40 rounded-full"></div>
+<div class="absolute top-[60%] left-[25%] w-6 h-6 bg-outline-variant/30 rounded-full"></div>
+<div class="absolute top-[45%] left-[80%] w-3 h-3 bg-outline-variant/50 rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- Explanatory Text -->
+<div class="max-w-[600px] text-center bg-surface-container-lowest/50 backdrop-blur-sm p-lg border border-outline-variant/20">
+<h3 class="font-h3 text-h3 text-on-background mb-md">Overcoming The Availability Bias</h3>
+<p class="font-body-lg text-body-lg text-on-surface-variant">
+                    Human intuition heavily weights immediate, vivid data while discounting distant, abstract realities. Bassira’s predictive models simulate beyond hyperbolic discounting, ensuring your strategic narrative is anchored in objective long-term outcomes rather than cognitive mirages.
+                </p>
+</div>
+</div>
+<!-- Footer / Branding -->
+<div class="px-xl pb-xl pt-md z-10 flex justify-between items-end mt-auto">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-surface-tint" style="font-variation-settings: 'FILL' 1;">change_history</span>
+<span class="font-h3 text-h3 text-on-background tracking-tight font-bold">Bassira</span>
+</div>
+<div class="font-label-sm text-label-sm text-outline tracking-widest uppercase">
+                Foresight Studio
+            </div>
+</div>
+<!-- Subtle Ambient Background Gradient -->
+<div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,133,81,0.03)_0%,transparent_50%)] z-0 pointer-events-none"></div>
+<div class="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(161,63,15,0.02)_0%,transparent_50%)] z-0 pointer-events-none"></div>
+</div>
+</body></html>

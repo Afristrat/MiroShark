@@ -1,42 +1,76 @@
 <template>
-  <div class="main-view">
-    <!-- Header -->
-    <header class="app-header">
-      <div class="header-left">
-        <div class="brand" @click="router.push('/')">BASSIRA</div>
-      </div>
-      
-      <div class="header-center">
-        <div class="view-switcher">
+  <!-- data-theme="dark" : cinema mode immersif pour l'analyste qui regarde
+       la simulation se dérouler. Tokens --wi-* basculent automatiquement. -->
+  <div class="sim-run" data-theme="dark">
+    <!-- Slim progress bar (top of page, heartbeat visuel) -->
+    <div
+      class="sim-run__progress"
+      :aria-label="$t('simulation.run.title')"
+      role="progressbar"
+      :aria-valuenow="progressPercent"
+      aria-valuemin="0"
+      aria-valuemax="100"
+    >
+      <div
+        class="sim-run__progress-fill"
+        :style="{ width: progressPercent + '%' }"
+      ></div>
+    </div>
+
+    <!-- TopAppBar — Stitch "STRATOS EXECUTION" : brand + nav + heartbeat
+         counter + actions. Nav-switcher conservé pour garder le contrat
+         existant (graph / network / split / workbench). -->
+    <header class="sim-run__topbar">
+      <div class="sim-run__topbar-left">
+        <div class="sim-run__brand" @click="router.push('/')">BASSIRA</div>
+        <nav class="sim-run__nav" aria-label="Simulation views">
           <button
-            v-for="mode in ['graph', 'network', 'split', 'workbench']"
-            :key="mode"
-            class="switch-btn"
-            :class="{ active: viewMode === mode }"
-            @click="viewMode = mode"
+            v-for="mode in viewModes"
+            :key="mode.key"
+            class="sim-run__nav-link"
+            :class="{ 'sim-run__nav-link--active': viewMode === mode.key }"
+            @click="viewMode = mode.key"
           >
-            {{ { graph: $t('simulation.view.stage.graph'), network: $t('charts.network.title'), split: $t('simulation.view.stage.config'), workbench: $t('simulation.view.stage.config') }[mode] }}
+            {{ mode.label }}
           </button>
-        </div>
+        </nav>
       </div>
 
-      <div class="header-right">
-        <div class="workflow-step">
-          <span class="step-num">{{ $t('simulation.run.title') }}</span>
-          <span class="step-name">{{ $t('simulation.view.stage.running') }}</span>
-        </div>
-        <div class="step-divider"></div>
-        <span class="status-indicator" :class="statusClass">
-          <span class="dot"></span>
+      <!-- Round counter heartbeat (Outfit 700 64px) — centered absolutely
+           pour rester aligné au pixel près quel que soit l'état des panneaux. -->
+      <div class="sim-run__heartbeat" aria-live="polite">
+        <span
+          class="sim-run__heartbeat-dot"
+          :class="{ 'sim-run__heartbeat-dot--pulse': isSimulating }"
+          aria-hidden="true"
+        ></span>
+        <span class="sim-run__heartbeat-num">{{ formattedRound }}</span>
+        <span
+          v-if="totalRounds > 0"
+          class="sim-run__heartbeat-total"
+        >/ {{ String(totalRounds).padStart(2, '0') }}</span>
+      </div>
+
+      <div class="sim-run__topbar-right">
+        <span class="sim-run__status" :class="`sim-run__status--${currentStatus}`">
+          <span class="sim-run__status-dot" aria-hidden="true"></span>
           {{ statusText }}
         </span>
+        <button
+          v-if="isSimulating"
+          class="sim-run__stop-btn"
+          :disabled="stopInFlight"
+          @click="handleStopSimulation"
+        >
+          <span v-if="stopInFlight" class="sim-run__spinner" aria-hidden="true"></span>
+          {{ stopInFlight ? $t('simulation.run.paused') : $t('simulation.run.stop') }}
+        </button>
       </div>
     </header>
 
-    <!-- Main Content Area -->
-    <main class="content-area">
-      <!-- Left Panel: Graph or Network -->
-      <div class="panel-wrapper left" :style="leftPanelStyle">
+    <!-- Main content : 2-panneau split (graph + workbench) inchangé -->
+    <main class="sim-run__main">
+      <div class="sim-run__panel sim-run__panel--left" :style="leftPanelStyle">
         <GraphPanel
           v-if="viewMode !== 'network'"
           :graphData="graphData"
@@ -54,8 +88,7 @@
         />
       </div>
 
-      <!-- Right Panel: Step3 Start Simulation -->
-      <div class="panel-wrapper right" :style="rightPanelStyle">
+      <div class="sim-run__panel sim-run__panel--right" :style="rightPanelStyle">
         <Step3Simulation
           :simulationId="currentSimulationId"
           :maxRounds="maxRounds"
@@ -67,9 +100,21 @@
           @next-step="handleNextStep"
           @add-log="addLog"
           @update-status="updateStatus"
+          @update-progress="handleProgress"
         />
       </div>
     </main>
+
+    <!-- Phase complete toast (mint, bottom-right) — fade in 200ms -->
+    <transition name="sim-run-toast">
+      <div v-if="showCompleteToast" class="sim-run__toast" role="status">
+        <span class="sim-run__toast-icon" aria-hidden="true"></span>
+        <div class="sim-run__toast-body">
+          <div class="sim-run__toast-title">{{ $t('simulation.run.completed') }}</div>
+          <div class="sim-run__toast-sub">{{ $t('process.step3.events.totalEvents') }} — Round {{ currentRound }}</div>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -82,6 +127,10 @@ const { t } = useI18n()
 import GraphPanel from '../components/GraphPanel.vue'
 import NetworkPanel from '../components/NetworkPanel.vue'
 import Step3Simulation from '../components/Step3Simulation.vue'
+// Imports BeliefDriftChart / InfluenceLeaderboard préservés (utilisés par
+// Step3Simulation en interne — ne pas retirer de la chaîne d'imports).
+import BeliefDriftChart from '../components/BeliefDriftChart.vue' // eslint-disable-line no-unused-vars
+import InfluenceLeaderboard from '../components/InfluenceLeaderboard.vue' // eslint-disable-line no-unused-vars
 import { getProject, getGraphData } from '../api/graph'
 import { getSimulation, getSimulationConfig, stopSimulation, closeSimulationEnv, getEnvStatus } from '../api/simulation'
 
@@ -96,6 +145,13 @@ const props = defineProps({
 // Layout State
 const viewMode = ref('split')
 
+const viewModes = computed(() => [
+  { key: 'graph',     label: t('simulation.view.stage.graph') },
+  { key: 'network',   label: t('charts.network.title') },
+  { key: 'split',     label: t('simulation.view.stage.config') },
+  { key: 'workbench', label: t('simulation.view.stage.config') }
+])
+
 // Data State
 const currentSimulationId = ref(route.params.simulationId)
 // Get maxRounds from query params at initialization, ensuring child component gets the value immediately
@@ -106,6 +162,15 @@ const graphData = ref(null)
 const graphLoading = ref(false)
 const systemLogs = ref([])
 const currentStatus = ref('processing') // processing | completed | error
+
+// Round heartbeat (header) — alimenté par Step3Simulation via update-progress.
+// On garde des refs locales pour que le compteur reste indépendant de la
+// remontée full runStatus (perf : pas besoin de tout l'objet pour 2 chiffres).
+const currentRound = ref(0)
+const totalRounds = ref(maxRounds.value || 0)
+
+const stopInFlight = ref(false)
+const showCompleteToast = ref(false)
 
 // --- Computed Layout Styles ---
 const leftPanelStyle = computed(() => {
@@ -121,10 +186,6 @@ const rightPanelStyle = computed(() => {
 })
 
 // --- Status Computed ---
-const statusClass = computed(() => {
-  return currentStatus.value
-})
-
 const statusText = computed(() => {
   if (currentStatus.value === 'error') return t('common.error')
   if (currentStatus.value === 'completed') return t('simulation.run.completed')
@@ -132,6 +193,14 @@ const statusText = computed(() => {
 })
 
 const isSimulating = computed(() => currentStatus.value === 'processing')
+
+const formattedRound = computed(() => String(currentRound.value || 0).padStart(2, '0'))
+
+const progressPercent = computed(() => {
+  const total = totalRounds.value || maxRounds.value || 0
+  if (!total) return 0
+  return Math.min(100, Math.round((currentRound.value / total) * 100))
+})
 
 // --- Helpers ---
 const addLog = (msg) => {
@@ -144,6 +213,41 @@ const addLog = (msg) => {
 
 const updateStatus = (status) => {
   currentStatus.value = status
+}
+
+// Reçoit le tick de Step3Simulation (mirror du runStatus côté enfant).
+const handleProgress = ({ currentRound: cr, totalRounds: tr }) => {
+  if (typeof cr === 'number') currentRound.value = cr
+  if (typeof tr === 'number' && tr > 0) totalRounds.value = tr
+}
+
+// Stop simulation depuis le header (raccourci au bouton Pause de Step3).
+// Réutilise la même API qu'handleGoBack — pas de duplication de logique.
+const handleStopSimulation = async () => {
+  if (stopInFlight.value) return
+  stopInFlight.value = true
+  addLog('Stop requested from top bar — closing simulation environment...')
+  try {
+    const envStatusRes = await getEnvStatus({ simulation_id: currentSimulationId.value })
+    if (envStatusRes.success && envStatusRes.data?.env_alive) {
+      try {
+        await closeSimulationEnv({ simulation_id: currentSimulationId.value, timeout: 10 })
+        addLog('Simulation environment closed')
+      } catch (closeErr) {
+        addLog('Graceful close failed, attempting force stop...')
+        await stopSimulation({ simulation_id: currentSimulationId.value })
+        addLog('Simulation force stopped')
+      }
+    } else if (isSimulating.value) {
+      await stopSimulation({ simulation_id: currentSimulationId.value })
+      addLog('Simulation stopped')
+    }
+    currentStatus.value = 'completed'
+  } catch (err) {
+    addLog(`Stop failed: ${err.message}`)
+  } finally {
+    stopInFlight.value = false
+  }
 }
 
 // --- Layout Methods ---
@@ -218,7 +322,7 @@ const loadSimulationData = async () => {
     const simRes = await getSimulation(currentSimulationId.value)
     if (simRes.success && simRes.data) {
       const simData = simRes.data
-      
+
       // Get simulation config to obtain minutes_per_round
       try {
         const configRes = await getSimulationConfig(currentSimulationId.value)
@@ -257,7 +361,7 @@ const loadGraph = async (graphId) => {
   if (!isSimulating.value) {
     graphLoading.value = true
   }
-  
+
   try {
     const res = await getGraphData(graphId)
     if (res.success) {
@@ -305,9 +409,22 @@ watch(isSimulating, (newValue) => {
   }
 }, { immediate: true })
 
+// Phase complete toast — fire when status flips to completed.
+// Auto-dismiss after 4s, accessible via aria-live (role=status sur le toast).
+let toastTimer = null
+watch(currentStatus, (status) => {
+  if (status === 'completed') {
+    showCompleteToast.value = true
+    if (toastTimer) clearTimeout(toastTimer)
+    toastTimer = setTimeout(() => {
+      showCompleteToast.value = false
+    }, 4000)
+  }
+})
+
 watchEffect(() => {
-  const status = statusClass.value
-  const dot = status === 'processing' ? '\uD83D\uDFE0' : status === 'error' ? '\uD83D\uDD34' : status === 'completed' ? '\uD83D\uDFE2' : ''
+  const status = currentStatus.value
+  const dot = status === 'processing' ? '🟠' : status === 'error' ? '🔴' : status === 'completed' ? '🟢' : ''
   document.title = dot ? `${dot} (3/4) Bassira` : '(3/4) Bassira'
 })
 
@@ -318,156 +435,333 @@ onMounted(() => {
   if (maxRounds.value) {
     addLog(`Custom simulation rounds: ${maxRounds.value}`)
   }
-  
+
   loadSimulationData()
 })
 
 onUnmounted(() => {
   stopGraphRefresh()
+  if (toastTimer) clearTimeout(toastTimer)
 })
 </script>
 
 <style scoped>
-.main-view {
+/* ───────────── Sim Run — Cinema dark cockpit ─────────────
+   Toutes les couleurs sont issues des tokens --wi-* (palette Warm
+   Intelligence) en variant data-theme="dark" forcé sur la racine.
+   Aucun hex hardcodé. Tous les composants enfants conservent leur
+   propre style — on ne touche qu'au cadre. */
+
+.sim-run {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--ms-bg);
+  background: var(--wi-surface-dim);
+  color: var(--wi-on-surface);
+  font-family: var(--wi-font-body);
   overflow: hidden;
-  font-family: var(--ms-font-body);
-}
-
-/* Header */
-.app-header {
-  height: 60px;
-  border-bottom: 1px solid var(--ms-border-strong);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 22px;
-  background: var(--ms-text);
-  z-index: 100;
   position: relative;
 }
 
-.header-center {
+/* ─── Slim progress bar (heartbeat visuel global) ─── */
+.sim-run__progress {
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  height: 3px;
+  background: var(--wi-outline-variant);
+  opacity: 0.35;
+  z-index: 60;
+  pointer-events: none;
+}
+.sim-run__progress-fill {
+  height: 100%;
+  background: var(--wi-primary-container);
+  transition: width 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 12px var(--wi-primary-container);
+}
+
+/* ─── TopAppBar ─── */
+.sim-run__topbar {
+  position: relative;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--wi-space-sm) var(--wi-space-lg);
+  padding-top: calc(var(--wi-space-sm) + 4px); /* leaves room for progress bar */
+  background: var(--wi-surface-dim);
+  border-bottom: 1px solid var(--wi-outline-variant);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.sim-run__topbar-left {
+  display: flex;
+  align-items: center;
+  gap: var(--wi-space-md);
+  min-width: 0;
+}
+
+.sim-run__brand {
+  font-family: var(--wi-font-heading);
+  font-weight: 700;
+  font-size: var(--wi-h3-size);
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: var(--wi-primary-container);
+  cursor: pointer;
+  transition: opacity var(--ms-transition, 200ms ease);
+}
+.sim-run__brand:hover { opacity: 0.85; }
+
+.sim-run__nav {
+  display: none;
+  gap: var(--wi-space-md);
+}
+@media (min-width: 920px) {
+  .sim-run__nav { display: flex; }
+}
+
+.sim-run__nav-link {
+  background: transparent;
+  border: none;
+  padding: 4px 0;
+  cursor: pointer;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
+  font-weight: var(--wi-label-sm-weight);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--wi-outline);
+  border-bottom: 2px solid transparent;
+  transition: color var(--ms-transition, 200ms ease), border-color var(--ms-transition, 200ms ease);
+}
+.sim-run__nav-link:hover {
+  color: var(--wi-primary-container);
+}
+.sim-run__nav-link--active {
+  color: var(--wi-primary-container);
+  border-bottom-color: var(--wi-primary-container);
+}
+
+/* ─── Heartbeat round counter (centered, Outfit 700 64px) ─── */
+.sim-run__heartbeat {
   position: absolute;
   inset-inline-start: 50%;
   transform: translateX(-50%);
-}
-
-.brand {
-  font-family: var(--ms-font-display);
-  font-weight: 800;
-  font-size: 18px;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  cursor: pointer;
-  color: var(--ms-text-on-color);
-}
-
-.view-switcher {
-  display: flex;
-  background: rgba(250,250,250,0.08);
-  padding: 4px;
-  gap: 4px;
-  border-radius: var(--ms-radius-sm);
-}
-
-.switch-btn {
-  border: 1px solid transparent;
-  background: transparent;
-  padding: 6px 16px;
-  font-family: var(--ms-font-body);
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  color: rgba(250,250,250,0.5);
-  cursor: pointer;
-  border-radius: var(--ms-radius-sm);
-  transition: all var(--ms-transition);
-}
-
-.switch-btn.active {
-  background: var(--ms-text);
-  color: var(--ms-text-on-color);
-  border: 1px solid var(--ms-orange);
-}
-
-.header-right {
+  top: 50%;
+  margin-top: -34px; /* offset for the progress bar */
   display: flex;
   align-items: center;
-  gap: 16px;
-}
-
-.workflow-step {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-}
-
-.step-num {
-  font-family: var(--ms-font-mono);
+  gap: var(--wi-space-xs);
+  font-family: var(--wi-font-heading);
   font-weight: 700;
-  color: rgba(250,250,250,0.4);
+  font-size: 64px;
+  line-height: 1;
+  color: var(--wi-primary-container);
+  pointer-events: none;
+  letter-spacing: -0.02em;
 }
 
-.step-name {
-  font-weight: 700;
-  color: var(--ms-text-on-color);
+.sim-run__heartbeat-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--wi-primary-container);
+  flex-shrink: 0;
+  box-shadow: 0 0 0 0 var(--wi-primary-container);
+}
+.sim-run__heartbeat-dot--pulse {
+  animation: sim-run-pulse 1.6s ease-in-out infinite;
 }
 
-.step-divider {
-  width: 1px;
-  height: 14px;
-  background-color: rgba(250,250,250,0.12);
+.sim-run__heartbeat-num {
+  font-variant-numeric: tabular-nums;
 }
 
-.status-indicator {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--ms-font-body);
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  color: rgba(250,250,250,0.5);
+.sim-run__heartbeat-total {
+  font-size: 24px;
   font-weight: 500;
+  color: var(--wi-outline);
+  margin-inline-start: 4px;
+  letter-spacing: 0;
 }
 
-.dot {
+@keyframes sim-run-pulse {
+  0%   { box-shadow: 0 0 0 0 var(--wi-primary-container); opacity: 1; }
+  70%  { box-shadow: 0 0 0 14px transparent; opacity: 0.6; }
+  100% { box-shadow: 0 0 0 0 transparent; opacity: 1; }
+}
+
+/* ─── Right cluster (status + stop) ─── */
+.sim-run__topbar-right {
+  display: flex;
+  align-items: center;
+  gap: var(--wi-space-sm);
+}
+
+.sim-run__status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--wi-space-xs);
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
+  font-weight: var(--wi-label-sm-weight);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--wi-outline);
+}
+.sim-run__status-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: rgba(250,250,250,0.2);
+  background: var(--wi-outline);
+}
+.sim-run__status--processing { color: var(--wi-primary-container); }
+.sim-run__status--processing .sim-run__status-dot {
+  background: var(--wi-primary-container);
+  animation: sim-run-pulse 1.2s ease-in-out infinite;
+}
+.sim-run__status--completed { color: var(--wi-secondary-container); }
+.sim-run__status--completed .sim-run__status-dot { background: var(--wi-secondary-container); }
+.sim-run__status--error { color: var(--wi-error); }
+.sim-run__status--error .sim-run__status-dot { background: var(--wi-error); }
+
+/* Stop simulation : ghost button bordé terracotta (= --wi-on-primary-container)
+   selon le brief ; l'inject d'événement reste exposé par Step3Simulation
+   (action "Director Mode") pour préserver la logique existante. */
+.sim-run__stop-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--wi-space-xs);
+  background: transparent;
+  color: var(--wi-on-primary-container);
+  border: 1px solid var(--wi-on-primary-container);
+  padding: 8px 16px;
+  border-radius: var(--wi-radius-interactive);
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background var(--ms-transition, 200ms ease), color var(--ms-transition, 200ms ease);
+}
+.sim-run__stop-btn:hover:not(:disabled) {
+  background: var(--wi-on-primary-container);
+  color: var(--wi-on-primary);
+}
+.sim-run__stop-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
-.status-indicator.processing .dot { background: var(--ms-orange); animation: pulse 1s infinite; }
-.status-indicator.completed .dot { background: var(--ms-mint); }
-.status-indicator.idle .dot { background: var(--ms-peach); }
-.status-indicator.error .dot { background: var(--ms-rose); }
+.sim-run__spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: sim-run-spin 0.8s linear infinite;
+}
+@keyframes sim-run-spin { to { transform: rotate(360deg); } }
 
-/* @keyframes pulse factorisé dans styles/components.css */
-
-/* Content */
-.content-area {
+/* ─── Main split panels (logique inchangée) ─── */
+.sim-run__main {
   flex: 1;
   display: flex;
   position: relative;
   overflow: hidden;
+  background: var(--wi-bg);
 }
 
-.panel-wrapper {
+.sim-run__panel {
   height: 100%;
   overflow: hidden;
-  transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease, transform 0.3s ease;
+  transition:
+    width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+    opacity 0.3s ease,
+    transform 0.3s ease;
   will-change: width, opacity, transform;
 }
+.sim-run__panel--left {
+  border-inline-end: 1px solid var(--wi-outline-variant);
+}
 
-.panel-wrapper.left {
-  border-inline-end: 1px solid var(--ms-border-strong);
+/* ─── Phase complete toast (mint, bottom-right) ─── */
+.sim-run__toast {
+  position: fixed;
+  bottom: var(--wi-space-lg);
+  inset-inline-end: var(--wi-space-lg);
+  z-index: 1400;
+  display: flex;
+  align-items: center;
+  gap: var(--wi-space-sm);
+  padding: var(--wi-space-sm) var(--wi-space-md);
+  background: var(--wi-surface);
+  border: 1px solid var(--wi-secondary);
+  border-radius: var(--wi-radius-interactive);
+  box-shadow: var(--wi-shadow-lg);
+  min-width: 240px;
+}
+.sim-run__toast-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--wi-secondary-container);
+  flex-shrink: 0;
+  position: relative;
+}
+/* Pure CSS checkmark — pas d'emoji conformément au standard Bassira. */
+.sim-run__toast-icon::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 5px;
+  border-inline-start: 2px solid var(--wi-on-secondary-container);
+  border-block-end: 2px solid var(--wi-on-secondary-container);
+  transform: translate(-50%, -65%) rotate(-45deg);
+}
+.sim-run__toast-body { display: flex; flex-direction: column; gap: 2px; }
+.sim-run__toast-title {
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-label-sm);
+  font-weight: 600;
+  color: var(--wi-secondary-container);
+  letter-spacing: 0.01em;
+}
+.sim-run__toast-sub {
+  font-size: var(--wi-caption);
+  color: var(--wi-outline);
+  font-family: var(--wi-font-body);
+}
+
+/* Toast transition (200ms fade-in selon le brief) */
+.sim-run-toast-enter-active,
+.sim-run-toast-leave-active {
+  transition: opacity 200ms ease-out, transform 200ms ease-out;
+}
+.sim-run-toast-enter-from,
+.sim-run-toast-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+/* ─── Reduced motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  .sim-run__heartbeat-dot--pulse,
+  .sim-run__status--processing .sim-run__status-dot {
+    animation: none;
+  }
+  .sim-run__panel,
+  .sim-run__progress-fill,
+  .sim-run__stop-btn,
+  .sim-run-toast-enter-active,
+  .sim-run-toast-leave-active {
+    transition: none;
+  }
 }
 </style>
-

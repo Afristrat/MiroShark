@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bassira Replay - Strategic Debrief</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;family=Tajawal:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary": "#a13f0f",
+                        "on-surface": "#241915",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed": "#9cf5c1",
+                        "on-surface-variant": "#57423a",
+                        "inverse-surface": "#3a2e29",
+                        "surface-tint": "#a13f0f",
+                        "surface-container-low": "#fff1ec",
+                        "error": "#ba1a1a",
+                        "outline": "#8a7269",
+                        "on-tertiary-fixed": "#002111",
+                        "on-primary-container": "#ffcdbb",
+                        "surface-container-high": "#f9e4dd",
+                        "primary-fixed": "#ffdbce",
+                        "on-primary-fixed": "#370e00",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#7f2b00",
+                        "inverse-on-surface": "#ffede7",
+                        "tertiary": "#005132",
+                        "background": "#fff8f6",
+                        "secondary-fixed-dim": "#ffb598",
+                        "on-tertiary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-secondary-container": "#6c2400",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#fd8450",
+                        "surface-container-highest": "#f3ded7",
+                        "inverse-primary": "#ffb599",
+                        "tertiary-container": "#006c43",
+                        "surface-variant": "#f3ded7",
+                        "primary-fixed-dim": "#ffb599",
+                        "on-error": "#ffffff",
+                        "surface-container": "#ffe9e2",
+                        "primary": "#7e2b00",
+                        "outline-variant": "#dec0b6",
+                        "primary-container": "#a13f0f",
+                        "surface": "#fff8f6",
+                        "on-secondary-fixed": "#370e00",
+                        "tertiary-fixed-dim": "#80d8a6",
+                        "surface-bright": "#fff8f6",
+                        "on-tertiary-container": "#91eab7",
+                        "on-secondary-fixed-variant": "#7f2b00",
+                        "secondary-fixed": "#ffdbce",
+                        "on-tertiary-fixed-variant": "#005232",
+                        "surface-dim": "#ebd6cf",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#241915"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "80px",
+                        "sm": "12px",
+                        "container-max": "1280px",
+                        "xs": "4px",
+                        "lg": "48px",
+                        "md": "24px",
+                        "base": "8px",
+                        "gutter": "32px"
+                    },
+                    "fontFamily": {
+                        "h2": ["Outfit"],
+                        "label-sm": ["JetBrains Mono"],
+                        "h1": ["Outfit"],
+                        "body-lg": ["Manrope"],
+                        "h3": ["Outfit"],
+                        "body-md": ["Manrope"],
+                        "arabic-body": ["Tajawal"]
+                    },
+                    "fontSize": {
+                        "h2": ["36px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "500"}],
+                        "label-sm": ["12px", {"lineHeight": "1.2", "fontWeight": "500"}],
+                        "h1": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "h3": ["24px", {"lineHeight": "1.3", "letterSpacing": "0", "fontWeight": "500"}],
+                        "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "arabic-body": ["18px", {"lineHeight": "1.8", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-[#FAF7F2] text-on-surface min-h-screen flex flex-col font-body-md overflow-hidden">
+<!-- TopNavBar (Shared Component) -->
+<nav class="docked full-width top-0 bg-stone-50 border-b border-stone-200/50 flat no shadows z-50">
+<div class="flex justify-between items-center w-full px-8 py-4 max-w-container-max mx-auto">
+<div class="font-outfit tracking-tight antialiased text-xl font-bold text-orange-700">
+                Bassira Replay
+            </div>
+<div class="hidden md:flex gap-8">
+<a class="text-orange-700 font-bold border-b-2 border-orange-700 pb-1 font-outfit tracking-tight antialiased" href="#">Timeline</a>
+<a class="text-stone-500 hover:text-orange-800 transition-colors scale-95 active:scale-100 transition-transform font-outfit tracking-tight antialiased" href="#">Inflection Points</a>
+<a class="text-stone-500 hover:text-orange-800 transition-colors scale-95 active:scale-100 transition-transform font-outfit tracking-tight antialiased" href="#">Round Analytics</a>
+</div>
+<div class="flex gap-4">
+<button class="text-stone-500 hover:text-orange-800 transition-colors scale-95 active:scale-100 transition-transform"><span class="material-symbols-outlined">history</span></button>
+<button class="text-stone-500 hover:text-orange-800 transition-colors scale-95 active:scale-100 transition-transform"><span class="material-symbols-outlined">settings</span></button>
+<button class="text-stone-500 hover:text-orange-800 transition-colors scale-95 active:scale-100 transition-transform"><span class="material-symbols-outlined">help</span></button>
+</div>
+</div>
+</nav>
+<div class="flex flex-1 h-[calc(100vh-130px)]">
+<!-- SideNavBar (Shared Component) -->
+<aside class="h-full w-72 border-r border-r border-stone-200 flat no shadows bg-stone-50 flex flex-col overflow-y-auto hidden md:flex shrink-0 z-40">
+<div class="p-6">
+<h2 class="font-h2 text-h2 text-[#A13F0F] mb-1">Simulation Debrief</h2>
+<p class="font-body-md text-body-md text-stone-600 mb-6">Strategic Analysis</p>
+<button class="w-full py-3 bg-[#A13F0F] text-white font-label-sm text-label-sm rounded uppercase tracking-wider transition-all duration-300 ease-in-out hover:bg-stone-100 hover:text-[#A13F0F] border border-transparent hover:border-[#A13F0F]">Export Report</button>
+</div>
+<nav class="flex-1 px-4 flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-3 text-[#A13F0F] font-bold border-r-4 border-[#A13F0F] bg-stone-100/80 font-outfit text-sm font-medium transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">groups</span>
+                    Agent States
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-stone-600 hover:bg-stone-100 font-outfit text-sm font-medium transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">query_stats</span>
+                    Belief Drift
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-stone-600 hover:bg-stone-100 font-outfit text-sm font-medium transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">auto_stories</span>
+                    Narrative
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-stone-600 hover:bg-stone-100 font-outfit text-sm font-medium transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">info</span>
+                    Metadata
+                </a>
+</nav>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-full overflow-hidden relative">
+<!-- Sticky Timeline Scrubber -->
+<div class="bg-surface border-b border-outline-variant/30 px-gutter py-md shrink-0">
+<div class="flex items-center justify-between mb-sm">
+<div class="font-h1 text-h1 text-secondary">R-42</div>
+<div class="flex items-center gap-md">
+<div class="flex items-center gap-2 bg-surface-variant/50 rounded-full px-4 py-2 border border-outline-variant/30">
+<span class="font-label-sm text-label-sm text-on-surface-variant">1.0x</span>
+<div class="w-px h-4 bg-outline-variant/50 mx-1"></div>
+<span class="font-label-sm text-label-sm text-secondary font-bold">1.5x</span>
+<div class="w-px h-4 bg-outline-variant/50 mx-1"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">2.0x</span>
+</div>
+</div>
+</div>
+<!-- Timeline Track -->
+<div class="relative h-2 bg-[#EADCC8] rounded-full w-full mt-lg mb-sm">
+<div class="absolute top-0 left-0 h-full bg-[#FF8551] rounded-l-full" style="width: 65%;"></div>
+<!-- Markers -->
+<div class="absolute top-1/2 -translate-y-1/2 left-[10%] w-3 h-3 rounded-full bg-[#006D44] border-2 border-white"></div>
+<div class="absolute top-1/2 -translate-y-1/2 left-[25%] w-3 h-3 rounded-full bg-[#FF8551] border-2 border-white"></div>
+<div class="absolute top-1/2 -translate-y-1/2 left-[40%] w-4 h-4 bg-[#A13F0F] rotate-45 border border-white"></div>
+<div class="absolute top-1/2 -translate-y-1/2 left-[65%] w-5 h-5 rounded-full bg-white border-4 border-[#FF8551] shadow-sm transform -translate-x-1/2 cursor-pointer z-10"></div>
+<div class="absolute top-1/2 -translate-y-1/2 left-[80%] w-3 h-3 rounded-full bg-[#006D44] border-2 border-white"></div>
+</div>
+</div>
+<!-- Canvas -->
+<div class="flex-1 overflow-y-auto p-gutter flex gap-gutter bg-transparent">
+<!-- Center Column -->
+<div class="flex-1 flex flex-col gap-lg max-w-4xl mx-auto">
+<!-- Narrative Event Card -->
+<div class="bg-surface rounded-xl p-xl border-l-[8px] border-[#FF8551] shadow-[0_8px_30px_rgb(161,63,15,0.05)] relative overflow-hidden">
+<div class="absolute top-0 right-0 p-md opacity-10">
+<span class="material-symbols-outlined" style="font-size: 120px;">account_balance</span>
+</div>
+<div class="flex items-center gap-xs mb-md">
+<span class="font-label-sm text-label-sm text-[#A13F0F] bg-surface-container-high px-2 py-1 rounded">INFLECTION POINT</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant ml-auto">04:22 PM EST</span>
+</div>
+<h2 class="font-h2 text-h2 text-on-surface mb-md">Market Contagion Triggered</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">
+                            Agent 'Aurelius' unexpectedly liquidated 40% of standard holdings, violating presumed conservative thresholds. This action caused a cascading confidence drop among tier-2 institutional agents. The underlying rationale traces back to a misinterpretation of a subtle central bank signal simulated in Round 38.
+                        </p>
+</div>
+<!-- Belief Drift Chart Area -->
+<div class="bg-surface rounded-xl border border-outline-variant/30 p-md flex-1 min-h-[300px] relative flex flex-col">
+<div class="flex justify-between items-center mb-md">
+<h3 class="font-h3 text-h3 text-on-surface">Belief Drift Aggregate</h3>
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1"><span class="material-symbols-outlined" style="font-size: 16px;">visibility</span> Live Tracking</span>
+</div>
+<!-- Simulated Chart Canvas -->
+<div class="flex-1 relative border-b border-l border-outline-variant/30 mt-4 mx-4 mb-8">
+<!-- Playhead Line -->
+<div class="absolute top-0 bottom-0 left-[65%] w-px bg-secondary shadow-[0_0_8px_rgba(161,63,15,0.5)] z-20">
+<div class="absolute -top-3 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-secondary"></div>
+</div>
+<!-- Dummy Chart Lines (SVG) -->
+<svg class="absolute inset-0 w-full h-full" preserveaspectratio="none" viewbox="0 0 100 100">
+<path d="M0,80 Q20,70 40,90 T80,30 T100,20" fill="none" opacity="0.8" stroke="#FF8551" stroke-width="2"></path>
+<path d="M0,50 Q30,60 50,40 T90,60 T100,50" fill="none" opacity="0.6" stroke="#006D44" stroke-width="2"></path>
+<path d="M0,20 Q10,30 30,10 T70,50 T100,80" fill="none" opacity="0.7" stroke="#A13F0F" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+</div>
+<!-- Right Side Panel: Agent States -->
+<div class="w-80 shrink-0 flex flex-col gap-md">
+<div class="bg-surface rounded-xl border border-outline-variant/30 p-md flex-1 shadow-[0_4px_20px_rgb(161,63,15,0.03)]">
+<h3 class="font-h3 text-h3 text-on-surface mb-lg border-b border-outline-variant/20 pb-sm">Agent States</h3>
+<div class="flex flex-col gap-md">
+<!-- Agent Item -->
+<div class="flex items-center gap-sm p-2 rounded-lg hover:bg-surface-variant/30 transition-colors">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center font-h3 text-h3 text-secondary">A</div>
+<div class="flex-1">
+<div class="font-body-md text-body-md font-medium text-on-surface">Aurelius</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Tier 1 Institutional</div>
+</div>
+<span class="px-2 py-1 bg-[#ffdad6] text-[#ba1a1a] font-label-sm text-label-sm rounded">BEARISH</span>
+</div>
+<!-- Agent Item -->
+<div class="flex items-center gap-sm p-2 rounded-lg hover:bg-surface-variant/30 transition-colors">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center font-h3 text-h3 text-secondary">C</div>
+<div class="flex-1">
+<div class="font-body-md text-body-md font-medium text-on-surface">Cassandra</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Retail Aggregate</div>
+</div>
+<span class="px-2 py-1 bg-[#ffdbce] text-[#7f2b00] font-label-sm text-label-sm rounded">BULLISH</span>
+</div>
+<!-- Agent Item -->
+<div class="flex items-center gap-sm p-2 rounded-lg hover:bg-surface-variant/30 transition-colors">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center font-h3 text-h3 text-secondary">H</div>
+<div class="flex-1">
+<div class="font-body-md text-body-md font-medium text-on-surface">Hermes</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">High-Frequency</div>
+</div>
+<span class="px-2 py-1 bg-surface-variant text-on-surface-variant font-label-sm text-label-sm rounded">NEUTRAL</span>
+</div>
+<!-- Agent Item -->
+<div class="flex items-center gap-sm p-2 rounded-lg hover:bg-surface-variant/30 transition-colors">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center font-h3 text-h3 text-secondary">S</div>
+<div class="flex-1">
+<div class="font-body-md text-body-md font-medium text-on-surface">Solon</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Regulatory Sim</div>
+</div>
+<span class="px-2 py-1 bg-[#9cf5c1] text-[#002111] font-label-sm text-label-sm rounded">CALM</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- BottomNavBar (Shared Component) - Mobile Only -->
+<nav class="md:hidden docked full-width bottom-0 border-t bg-stone-50/95 backdrop-blur-md border-t border-stone-200 shadow-2xl shadow-orange-900/5 fixed bottom-0 left-0 w-full z-50 flex justify-center gap-12 px-12 py-3">
+<a class="flex flex-col items-center justify-center text-stone-600 p-2 hover:text-[#A13F0F] active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">fast_rewind</span>
+<span class="font-outfit text-[10px] uppercase tracking-widest mt-1">Rewind</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-[#A13F0F] text-white rounded-xl p-2 active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">play_circle</span>
+<span class="font-outfit text-[10px] uppercase tracking-widest mt-1">Play</span>
+</a>
+<a class="flex flex-col items-center justify-center text-stone-600 p-2 hover:text-[#A13F0F] active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">fast_forward</span>
+<span class="font-outfit text-[10px] uppercase tracking-widest mt-1">Forward</span>
+</a>
+<a class="flex flex-col items-center justify-center text-stone-600 p-2 hover:text-[#A13F0F] active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">slow_motion_video</span>
+<span class="font-outfit text-[10px] uppercase tracking-widest mt-1">Speed</span>
+</a>
+<a class="flex flex-col items-center justify-center text-stone-600 p-2 hover:text-[#A13F0F] active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">keyboard</span>
+<span class="font-outfit text-[10px] uppercase tracking-widest mt-1">Hotkeys</span>
+</a>
+</nav>
+<!-- Footer Desktop Controls / Hints -->
+<div class="hidden md:flex fixed bottom-0 left-72 right-0 bg-surface border-t border-outline-variant/30 px-gutter py-sm items-center justify-between z-50">
+<div class="flex items-center gap-md">
+<button class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-secondary hover:bg-secondary hover:text-white transition-colors border border-outline-variant/20 shadow-sm"><span class="material-symbols-outlined">fast_rewind</span></button>
+<button class="w-16 h-16 rounded-full bg-secondary flex items-center justify-center text-white hover:bg-primary transition-colors shadow-md"><span class="material-symbols-outlined" data-weight="fill" style="font-size: 32px;">play_arrow</span></button>
+<button class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-secondary hover:bg-secondary hover:text-white transition-colors border border-outline-variant/20 shadow-sm"><span class="material-symbols-outlined">fast_forward</span></button>
+</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-lg">
+<span class="flex items-center gap-xs"><kbd class="bg-surface-variant px-2 py-1 rounded border border-outline-variant/50 text-xs">Space</kbd> Play / Pause</span>
+<span class="flex items-center gap-xs"><kbd class="bg-surface-variant px-2 py-1 rounded border border-outline-variant/50 text-xs">←</kbd> <kbd class="bg-surface-variant px-2 py-1 rounded border border-outline-variant/50 text-xs">→</kbd> Seek Timeline</span>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bassira Final Simulation Report</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&amp;family=Manrope:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;family=Tajawal:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+                  "surface-container": "#ffe9e2",
+                  "on-error": "#ffffff",
+                  "on-tertiary-fixed": "#002111",
+                  "surface-bright": "#fff8f6",
+                  "on-error-container": "#93000a",
+                  "surface-variant": "#f3ded7",
+                  "surface-container-lowest": "#ffffff",
+                  "on-primary": "#ffffff",
+                  "primary-fixed": "#ffdbce",
+                  "on-primary-fixed": "#370e00",
+                  "surface-container-high": "#f9e4dd",
+                  "surface-tint": "#a13f0f",
+                  "secondary-container": "#fd8450",
+                  "surface-container-highest": "#f3ded7",
+                  "on-tertiary-container": "#91eab7",
+                  "primary-fixed-dim": "#ffb599",
+                  "on-tertiary-fixed-variant": "#005232",
+                  "on-primary-container": "#ffcdbb",
+                  "inverse-primary": "#ffb599",
+                  "secondary": "#a13f0f",
+                  "on-secondary-fixed": "#370e00",
+                  "background": "#fff8f6",
+                  "on-surface": "#241915",
+                  "primary": "#7e2b00",
+                  "on-secondary-container": "#6c2400",
+                  "secondary-fixed": "#ffdbce",
+                  "on-primary-fixed-variant": "#7f2b00",
+                  "outline": "#8a7269",
+                  "inverse-surface": "#3a2e29",
+                  "tertiary-fixed-dim": "#80d8a6",
+                  "on-surface-variant": "#57423a",
+                  "surface-container-low": "#fff1ec",
+                  "on-background": "#241915",
+                  "surface": "#fff8f6",
+                  "tertiary-container": "#006c43",
+                  "primary-container": "#a13f0f",
+                  "on-secondary-fixed-variant": "#7f2b00",
+                  "tertiary-fixed": "#9cf5c1",
+                  "inverse-on-surface": "#ffede7",
+                  "on-secondary": "#ffffff",
+                  "surface-dim": "#ebd6cf",
+                  "on-tertiary": "#ffffff",
+                  "error": "#ba1a1a",
+                  "tertiary": "#005132",
+                  "error-container": "#ffdad6",
+                  "outline-variant": "#dec0b6",
+                  "secondary-fixed-dim": "#ffb598"
+          },
+          "borderRadius": {
+                  "DEFAULT": "0.25rem",
+                  "lg": "0.5rem",
+                  "xl": "0.75rem",
+                  "full": "9999px"
+          },
+          "spacing": {
+                  "gutter": "32px",
+                  "xl": "80px",
+                  "base": "8px",
+                  "lg": "48px",
+                  "xs": "4px",
+                  "sm": "12px",
+                  "container-max": "1280px",
+                  "md": "24px"
+          },
+          "fontFamily": {
+                  "h2": [
+                          "Outfit"
+                  ],
+                  "h1": [
+                          "Outfit"
+                  ],
+                  "body-md": [
+                          "Manrope"
+                  ],
+                  "arabic-body": [
+                          "Tajawal"
+                  ],
+                  "label-sm": [
+                          "JetBrains Mono"
+                  ],
+                  "h3": [
+                          "Outfit"
+                  ],
+                  "body-lg": [
+                          "Manrope"
+                  ]
+          },
+          "fontSize": {
+                  "h2": [
+                          "36px",
+                          {
+                                  "lineHeight": "1.2",
+                                  "letterSpacing": "-0.01em",
+                                  "fontWeight": "500"
+                          }
+                  ],
+                  "h1": [
+                          "48px",
+                          {
+                                  "lineHeight": "1.1",
+                                  "letterSpacing": "-0.02em",
+                                  "fontWeight": "600"
+                          }
+                  ],
+                  "body-md": [
+                          "16px",
+                          {
+                                  "lineHeight": "1.6",
+                                  "fontWeight": "400"
+                          }
+                  ],
+                  "arabic-body": [
+                          "18px",
+                          {
+                                  "lineHeight": "1.8",
+                                  "fontWeight": "400"
+                          }
+                  ],
+                  "label-sm": [
+                          "12px",
+                          {
+                                  "lineHeight": "1.2",
+                                  "fontWeight": "500"
+                          }
+                  ],
+                  "h3": [
+                          "24px",
+                          {
+                                  "lineHeight": "1.3",
+                                  "letterSpacing": "0",
+                                  "fontWeight": "500"
+                          }
+                  ],
+                  "body-lg": [
+                          "18px",
+                          {
+                                  "lineHeight": "1.6",
+                                  "fontWeight": "400"
+                          }
+                  ]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      background-color: #FAF7F2;
+    }
+    .watermark {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-45deg);
+      font-size: 15vw;
+      color: rgba(250, 247, 242, 0.4);
+      z-index: -1;
+      white-space: nowrap;
+      pointer-events: none;
+      font-weight: 900;
+      user-select: none;
+    }
+  </style>
+</head>
+<body class="antialiased text-on-surface relative pb-xl">
+<div class="watermark font-h1">BASSIRA · بصيرة</div>
+<!-- Header / Toolbar -->
+<header class="sticky top-0 z-50 bg-[#241915] text-[#FAF7F2] py-sm px-gutter shadow-sm border-b border-[#3a2e29]">
+<div class="max-w-[1000px] mx-auto flex justify-between items-center">
+<div class="flex items-center gap-base">
+<span class="material-symbols-outlined text-[#FAF7F2]">analytics</span>
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-[#FAF7F2]/80">Bassira Final Simulation Report</span>
+</div>
+<div class="flex items-center gap-md">
+<button class="flex items-center gap-xs font-label-sm text-label-sm hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">share</span>
+          Share
+        </button>
+<button class="flex items-center gap-xs font-label-sm text-label-sm hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">link</span>
+          Copy Link
+        </button>
+<button class="bg-[#FAF7F2] text-[#241915] px-sm py-xs rounded flex items-center gap-xs font-label-sm text-label-sm hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+          Export to PDF
+        </button>
+</div>
+</div>
+</header>
+<main class="max-w-[1000px] mx-auto px-gutter pt-lg mt-xl space-y-xl">
+<!-- Title Section -->
+<section class="bg-surface-container-lowest rounded-[24px] p-xl border border-outline-variant/30 shadow-[0_4px_40px_rgba(161,63,15,0.03)]">
+<div class="space-y-lg">
+<div>
+<span class="font-label-sm text-label-sm text-secondary uppercase tracking-widest mb-base block">Simulation Alpha - Phase IV</span>
+<h1 class="font-h1 text-h1 text-on-surface mb-md tracking-tight">Market Sentiment Resilience Under Regulatory Stress</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-3xl">An analysis of simulated agent dynamics and belief drift across multiple socio-economic strata following a simulated policy intervention.</p>
+</div>
+<div class="flex flex-wrap gap-lg pt-md border-t border-outline-variant/30">
+<div>
+<span class="font-label-sm text-label-sm text-outline block mb-xs">SIMULATION ID</span>
+<span class="font-label-sm text-label-sm text-on-surface">SIM-2024-89A-X</span>
+</div>
+<div>
+<span class="font-label-sm text-label-sm text-outline block mb-xs">DATE GENERATED</span>
+<span class="font-label-sm text-label-sm text-on-surface">24 Oct 2024, 14:32 UTC</span>
+</div>
+<div>
+<span class="font-label-sm text-label-sm text-outline block mb-xs">N_ROUNDS</span>
+<span class="font-label-sm text-label-sm text-on-surface">15,000</span>
+</div>
+<div>
+<span class="font-label-sm text-label-sm text-outline block mb-xs">AGENT COUNT</span>
+<span class="font-label-sm text-label-sm text-on-surface">50,000</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Executive Summary -->
+<section class="bg-surface-container-lowest rounded-[24px] p-xl border-l-[8px] border-secondary shadow-[0_4px_40px_rgba(161,63,15,0.03)]">
+<h2 class="font-h3 text-[20px] text-secondary uppercase tracking-widest mb-md">Executive Summary</h2>
+<div class="space-y-sm font-body-md text-[15px] leading-[1.7] text-on-surface">
+<div class="flex gap-md items-start">
+<span class="material-symbols-outlined text-secondary mt-[2px] text-[20px]">check_circle</span>
+<p>Initial resistance to policy change decayed by 42% after 8,000 rounds, primarily driven by peer-to-peer influence in dense urban agent clusters.</p>
+</div>
+<div class="flex gap-md items-start">
+<span class="material-symbols-outlined text-secondary mt-[2px] text-[20px]">check_circle</span>
+<p>Sub-population 'Demographic C' (high income, low regulatory trust) exhibited significant belief polarization, forming echo chambers isolated from the mainstream narrative.</p>
+</div>
+<div class="flex gap-md items-start">
+<span class="material-symbols-outlined text-secondary mt-[2px] text-[20px]">check_circle</span>
+<p>The introduction of a 'trusted intermediary' agent type accelerated consensus building by 3.4x compared to the baseline control simulation.</p>
+</div>
+</div>
+</section>
+<!-- Key Findings -->
+<section class="bg-surface-container-lowest rounded-[24px] p-xl border border-outline-variant/30 shadow-[0_4px_40px_rgba(161,63,15,0.03)]">
+<h2 class="font-h3 text-[20px] text-secondary uppercase tracking-widest mb-lg">Key Findings</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+<div class="space-y-md font-body-md text-[15px] leading-[1.7] text-on-surface">
+<p>The simulation revealed a non-linear relationship between intervention frequency and agent adoption rates. Early saturation of messaging led to diminishing returns, and in some localized networks, negative reactance.</p>
+<p>Analyzing the network topology over time showed that structural holes between demographic clusters acted as significant barriers to information flow, regardless of message potency.</p>
+</div>
+<div class="bg-[#FFE8DD] rounded-lg p-lg border border-secondary/20">
+<span class="font-label-sm text-label-sm text-secondary uppercase tracking-widest mb-sm block flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">priority_high</span>
+            Critical Finding
+          </span>
+<p class="font-h3 text-h3 text-secondary">Information decay across low-trust networks occurred 3x faster than predicted, requiring a recalibration of sustained engagement strategies.</p>
+</div>
+</div>
+</section>
+<!-- Agent Dynamics -->
+<section class="bg-surface-container-lowest rounded-[24px] p-xl border border-outline-variant/30 shadow-[0_4px_40px_rgba(161,63,15,0.03)]">
+<h2 class="font-h3 text-[20px] text-secondary uppercase tracking-widest mb-lg">Agent Dynamics</h2>
+<div class="space-y-lg font-body-md text-[15px] leading-[1.7] text-on-surface">
+<p>Agent behavior was modeled using a bounded rationality framework, incorporating memory decay and localized social influence. The state space of each agent was defined by a multidimensional vector representing their economic status, baseline policy preference, and network centrality.</p>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-md mt-md">
+<div class="bg-surface p-md rounded border border-outline-variant/30">
+<span class="material-symbols-outlined text-secondary mb-sm text-[32px]">hub</span>
+<h4 class="font-label-sm text-label-sm font-bold mb-xs">Network Formation</h4>
+<p class="text-sm text-on-surface-variant">Preferential attachment driven by homophily in ideological vectors.</p>
+</div>
+<div class="bg-surface p-md rounded border border-outline-variant/30">
+<span class="material-symbols-outlined text-secondary mb-sm text-[32px]">psychology</span>
+<h4 class="font-label-sm text-label-sm font-bold mb-xs">Update Rules</h4>
+<p class="text-sm text-on-surface-variant">Bayesian updating modified by emotional valence of peer interactions.</p>
+</div>
+<div class="bg-surface p-md rounded border border-outline-variant/30">
+<span class="material-symbols-outlined text-secondary mb-sm text-[32px]">trending_up</span>
+<h4 class="font-label-sm text-label-sm font-bold mb-xs">Drift Metrics</h4>
+<p class="text-sm text-on-surface-variant">Measured via cosine distance from the baseline state vector over t periods.</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+</body></html>

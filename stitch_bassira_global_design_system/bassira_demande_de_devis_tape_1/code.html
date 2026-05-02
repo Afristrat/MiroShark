@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+
+<html dir="ltr" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Quelle est votre situation ? - Bassira Causse</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;family=Tajawal:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed-dim": "#ffb599",
+                    "outline-variant": "#dec0b6",
+                    "on-secondary-fixed": "#370e00",
+                    "surface-bright": "#fff8f6",
+                    "tertiary": "#005132",
+                    "background": "#fff8f6",
+                    "on-secondary-container": "#6c2400",
+                    "tertiary-fixed": "#9cf5c1",
+                    "surface-dim": "#ebd6cf",
+                    "on-primary-fixed": "#370e00",
+                    "secondary-container": "#fd8450",
+                    "on-error-container": "#93000a",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-container": "#91eab7",
+                    "on-secondary": "#ffffff",
+                    "tertiary-fixed-dim": "#80d8a6",
+                    "secondary-fixed-dim": "#ffb598",
+                    "secondary-fixed": "#ffdbce",
+                    "primary-fixed": "#ffdbce",
+                    "on-tertiary-fixed-variant": "#005232",
+                    "on-primary-fixed-variant": "#7f2b00",
+                    "surface": "#fff8f6",
+                    "tertiary-container": "#006c43",
+                    "error": "#ba1a1a",
+                    "on-error": "#ffffff",
+                    "on-primary-container": "#ffcdbb",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-fixed-variant": "#7f2b00",
+                    "inverse-surface": "#3a2e29",
+                    "on-background": "#241915",
+                    "surface-container-lowest": "#ffffff",
+                    "primary": "#7e2b00",
+                    "error-container": "#ffdad6",
+                    "surface-variant": "#f3ded7",
+                    "surface-container-low": "#fff1ec",
+                    "primary-container": "#a13f0f",
+                    "inverse-on-surface": "#ffede7",
+                    "surface-container-high": "#f9e4dd",
+                    "surface-container": "#ffe9e2",
+                    "outline": "#8a7269",
+                    "secondary": "#a13f0f",
+                    "surface-container-highest": "#f3ded7",
+                    "on-surface": "#241915",
+                    "on-tertiary-fixed": "#002111",
+                    "inverse-primary": "#ffb599",
+                    "on-surface-variant": "#57423a",
+                    "surface-tint": "#a13f0f"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xs": "4px",
+                    "base": "8px",
+                    "lg": "48px",
+                    "gutter": "32px",
+                    "container-max": "1280px",
+                    "md": "24px",
+                    "xl": "80px",
+                    "sm": "12px"
+            },
+            "fontFamily": {
+                    "h3": ["Outfit"],
+                    "body-lg": ["Manrope"],
+                    "h2": ["Outfit"],
+                    "label-sm": ["JetBrains Mono"],
+                    "body-md": ["Manrope"],
+                    "h1": ["Outfit"],
+                    "arabic-body": ["Tajawal"]
+            },
+            "fontSize": {
+                    "h3": ["24px", {"lineHeight": "1.3", "letterSpacing": "0", "fontWeight": "500"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "h2": ["36px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "500"}],
+                    "label-sm": ["12px", {"lineHeight": "1.2", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "h1": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "arabic-body": ["18px", {"lineHeight": "1.8", "fontWeight": "400"}]
+            }
+          }
+        }
+      }
+    </script>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md antialiased selection:bg-secondary-container selection:text-on-secondary-container">
+<!-- Intent: Transactional/Linear (Quote Request Flow). TopNavBar is suppressed as per The "Destination" Rule. -->
+<main class="flex-grow flex items-center justify-center py-xl px-gutter">
+<div class="w-full max-w-[640px] bg-surface-container-lowest rounded-xl shadow-[0_4px_40px_rgba(161,63,15,0.05)] border border-outline-variant/30 p-lg">
+<!-- Stepper -->
+<div aria-label="Progress" class="flex items-center justify-between mb-lg">
+<ol class="flex items-center w-full" role="list">
+<li class="relative pr-8 sm:pr-20">
+<div aria-hidden="true" class="absolute inset-0 flex items-center">
+<div class="h-0.5 w-full bg-outline-variant/50"></div>
+</div>
+<a class="relative flex h-8 w-8 items-center justify-center rounded-full bg-primary-container hover:bg-primary transition-colors" href="#">
+<span class="font-label-sm text-label-sm text-on-primary">1</span>
+</a>
+</li>
+<li class="relative pr-8 sm:pr-20">
+<div aria-hidden="true" class="absolute inset-0 flex items-center">
+<div class="h-0.5 w-full bg-outline-variant/50"></div>
+</div>
+<a class="relative flex h-8 w-8 items-center justify-center rounded-full bg-surface-container-high border-2 border-outline-variant/50 hover:border-outline transition-colors" href="#">
+<span class="font-label-sm text-label-sm text-on-surface-variant">2</span>
+</a>
+</li>
+<li class="relative">
+<a class="relative flex h-8 w-8 items-center justify-center rounded-full bg-surface-container-high border-2 border-outline-variant/50 hover:border-outline transition-colors" href="#">
+<span class="font-label-sm text-label-sm text-on-surface-variant">3</span>
+</a>
+</li>
+</ol>
+</div>
+<!-- Trust Banner -->
+<div class="flex items-center gap-sm bg-tertiary-container/10 rounded-DEFAULT p-sm mb-lg border border-tertiary-container/20">
+<span class="material-symbols-outlined text-tertiary-container" style="font-variation-settings: 'FILL' 1;">shield_locked</span>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Vos données sont protégées par notre protocole de confidentialité souverain</p>
+</div>
+<!-- Heading -->
+<h1 class="font-h3 text-h3 text-on-background mb-md font-semibold">Quelle est votre situation ?</h1>
+<!-- Form/Options -->
+<form class="space-y-sm mb-lg">
+<!-- Option 1: Analyse Ponctuelle -->
+<label class="relative flex cursor-pointer rounded-lg border border-outline-variant/30 bg-surface-container-lowest p-md focus:outline-none hover:bg-surface-container-low transition-colors group">
+<input aria-describedby="option-1-description" aria-labelledby="option-1-label" class="sr-only" name="situation" type="radio" value="analyse"/>
+<div class="flex w-full items-center justify-between">
+<div class="flex items-center gap-md">
+<div class="h-5 w-5 rounded-full border-2 border-outline-variant group-hover:border-primary-container transition-colors flex items-center justify-center">
+<!-- Checked state circle would go here -->
+</div>
+<div class="flex flex-col">
+<span class="font-body-lg text-body-lg font-medium text-on-background" id="option-1-label">Analyse Ponctuelle</span>
+<span class="font-body-md text-body-md text-on-surface-variant mt-xs" id="option-1-description">Single simulation for a specific event.</span>
+</div>
+</div>
+</div>
+</label>
+<!-- Option 2: Veille Stratégique (Selected State Example) -->
+<label class="relative flex cursor-pointer rounded-lg border-l-[3px] border-l-secondary-container border-y border-r border-outline-variant/30 bg-surface-container p-md focus:outline-none transition-colors">
+<input aria-describedby="option-2-description" aria-labelledby="option-2-label" checked="" class="sr-only" name="situation" type="radio" value="veille"/>
+<div class="flex w-full items-center justify-between">
+<div class="flex items-center gap-md">
+<div class="h-5 w-5 rounded-full border-2 border-primary-container flex items-center justify-center">
+<div class="h-2.5 w-2.5 rounded-full bg-primary-container"></div>
+</div>
+<div class="flex flex-col">
+<span class="font-body-lg text-body-lg font-medium text-on-background" id="option-2-label">Veille Stratégique</span>
+<span class="font-body-md text-body-md text-on-surface-variant mt-xs" id="option-2-description">Recurring monthly insights and scenarios.</span>
+</div>
+</div>
+</div>
+</label>
+<!-- Option 3: Solution Entreprise -->
+<label class="relative flex cursor-pointer rounded-lg border border-outline-variant/30 bg-surface-container-lowest p-md focus:outline-none hover:bg-surface-container-low transition-colors group">
+<input aria-describedby="option-3-description" aria-labelledby="option-3-label" class="sr-only" name="situation" type="radio" value="entreprise"/>
+<div class="flex w-full items-center justify-between">
+<div class="flex items-center gap-md">
+<div class="h-5 w-5 rounded-full border-2 border-outline-variant group-hover:border-primary-container transition-colors flex items-center justify-center"></div>
+<div class="flex flex-col">
+<span class="font-body-lg text-body-lg font-medium text-on-background" id="option-3-label">Solution Entreprise</span>
+<span class="font-body-md text-body-md text-on-surface-variant mt-xs" id="option-3-description">Full API access and custom integrations.</span>
+</div>
+</div>
+</div>
+</label>
+</form>
+<!-- Actions -->
+<div class="flex items-center justify-between border-t border-outline-variant/30 pt-md mt-md">
+<button class="font-label-sm text-label-sm text-on-surface-variant hover:text-on-background transition-colors flex items-center gap-xs px-md py-sm rounded-DEFAULT" type="button">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                    Retour
+                </button>
+<button class="bg-primary-container text-on-primary font-label-sm text-label-sm px-lg py-sm rounded-DEFAULT hover:bg-primary transition-colors flex items-center gap-xs" type="button">
+                    Suivant
+                    <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Footer intentionally omitted for focused transactional flow as per guidelines, or a minimized version could be used. Omitting for strictest interpretation of "focused journey". -->
+</body></html>

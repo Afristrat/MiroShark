@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bassira Embed Widget</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;family=Tajawal:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed": "#ffdbce",
+                        "secondary": "#a13f0f",
+                        "on-secondary-fixed": "#370e00",
+                        "error": "#ba1a1a",
+                        "surface-container": "#ffe9e2",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#ffb599",
+                        "on-secondary-container": "#6c2400",
+                        "surface": "#fff8f6",
+                        "on-primary-fixed": "#370e00",
+                        "secondary-container": "#fd8450",
+                        "surface-tint": "#a13f0f",
+                        "tertiary-fixed": "#9cf5c1",
+                        "surface-container-low": "#fff1ec",
+                        "surface-container-highest": "#f3ded7",
+                        "tertiary": "#005132",
+                        "on-tertiary-fixed": "#002111",
+                        "surface-bright": "#fff8f6",
+                        "on-surface-variant": "#57423a",
+                        "on-primary-fixed-variant": "#7f2b00",
+                        "on-primary-container": "#ffcdbb",
+                        "surface-dim": "#ebd6cf",
+                        "background": "#fff8f6",
+                        "primary": "#7e2b00",
+                        "on-surface": "#241915",
+                        "primary-container": "#a13f0f",
+                        "tertiary-container": "#006c43",
+                        "primary-fixed-dim": "#ffb599",
+                        "tertiary-fixed-dim": "#80d8a6",
+                        "inverse-surface": "#3a2e29",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-container": "#91eab7",
+                        "outline": "#8a7269",
+                        "primary-fixed": "#ffdbce",
+                        "inverse-on-surface": "#ffede7",
+                        "secondary-fixed-dim": "#ffb598",
+                        "on-tertiary-fixed-variant": "#005232",
+                        "error-container": "#ffdad6",
+                        "surface-container-high": "#f9e4dd",
+                        "outline-variant": "#dec0b6",
+                        "on-error-container": "#93000a",
+                        "on-tertiary": "#ffffff",
+                        "on-background": "#241915",
+                        "surface-variant": "#f3ded7",
+                        "on-secondary-fixed-variant": "#7f2b00",
+                        "on-error": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-max": "1280px",
+                        "xs": "4px",
+                        "xl": "80px",
+                        "md": "24px",
+                        "sm": "12px",
+                        "lg": "48px",
+                        "gutter": "32px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["JetBrains Mono"],
+                        "h3": ["Outfit"],
+                        "h2": ["Outfit"],
+                        "arabic-body": ["Tajawal"],
+                        "body-lg": ["Manrope"],
+                        "body-md": ["Manrope"],
+                        "h1": ["Outfit"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", { "lineHeight": "1.2", "fontWeight": "500" }],
+                        "h3": ["24px", { "lineHeight": "1.3", "letterSpacing": "0", "fontWeight": "500" }],
+                        "h2": ["36px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+                        "arabic-body": ["18px", { "lineHeight": "1.8", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "h1": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface-variant min-h-screen flex items-center justify-center p-gutter">
+<!-- Embed Widget Container -->
+<div class="bg-surface-container-lowest w-full max-w-[400px] border border-outline-variant rounded-lg overflow-hidden shadow-sm flex flex-col">
+<!-- Header -->
+<div class="bg-[#FAF7F2] py-sm px-md flex items-center justify-between border-b border-outline-variant">
+<span class="font-h3 text-label-sm font-semibold tracking-widest text-on-surface">BASSIRA</span>
+<span class="material-symbols-outlined text-outline" style="font-variation-settings: 'FILL' 0;">open_in_new</span>
+</div>
+<!-- Content -->
+<div class="p-md flex flex-col gap-md">
+<!-- Meta & Title -->
+<div class="flex flex-col gap-xs">
+<div class="flex items-center gap-sm mb-xs">
+<span class="bg-secondary text-on-secondary px-2 py-1 rounded-sm font-label-sm text-label-sm uppercase tracking-wider">Crisis</span>
+<span class="font-label-sm text-label-sm text-outline">ID: SIM-B92 · 14 Oct 2024</span>
+</div>
+<h2 class="font-h3 text-h3 text-on-surface leading-tight">Stabilité du Marché Énergétique 2025</h2>
+</div>
+<!-- Metric & Chart -->
+<div class="bg-surface-bright rounded-md p-sm border border-surface-variant flex flex-col gap-sm">
+<div class="flex items-end justify-between">
+<div class="flex flex-col">
+<span class="font-h1 text-[48px] font-bold text-on-surface leading-none tracking-tight">84%</span>
+<span class="font-body-md text-[14px] text-on-surface-variant mt-1">Indice de Confiance</span>
+</div>
+<!-- Minimal Sparkline SVG (Decorative) -->
+<svg class="w-32 h-12" preserveaspectratio="none" viewbox="0 0 100 30">
+<polyline fill="none" points="0,25 10,28 20,20 30,22 40,15 50,18 60,10 70,12 80,5 90,8 100,2" stroke="#FF8551" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></polyline>
+<path d="M0,25 L10,28 L20,20 L30,22 L40,15 L50,18 L60,10 L70,12 L80,5 L90,8 L100,2 L100,30 L0,30 Z" fill="url(#sparkline-gradient)" opacity="0.2"></path>
+<defs>
+<lineargradient id="sparkline-gradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#FF8551"></stop>
+<stop offset="100%" stop-color="#FF8551" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+</svg>
+</div>
+</div>
+<!-- Key Findings -->
+<ul class="flex flex-col gap-2 font-body-md text-[14px] text-on-surface">
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined text-secondary mt-[2px] text-[16px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span>High resilience against moderate supply shocks.</span>
+</li>
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined text-secondary mt-[2px] text-[16px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span>Alternative energy buffers functioning as expected.</span>
+</li>
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined text-secondary mt-[2px] text-[16px]" style="font-variation-settings: 'FILL' 1;">warning</span>
+<span class="text-on-surface-variant italic">Vulnerability identified in Q3 distribution networks.</span>
+</li>
+</ul>
+<!-- Action -->
+<a class="inline-flex items-center gap-1 font-body-md text-[14px] font-medium text-secondary hover:text-on-primary-fixed-variant transition-colors mt-xs" href="#">
+                View full simulation
+                <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+<!-- Footer -->
+<div class="bg-surface py-xs px-md border-t border-outline-variant text-center">
+<span class="font-h3 text-[10px] text-outline tracking-wider uppercase">Powered by Bassira · <span class="font-arabic-body text-[12px] lowercase align-baseline">بصيرة</span></span>
+</div>
+</div>
+</body></html>

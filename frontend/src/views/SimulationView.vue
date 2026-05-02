@@ -1,34 +1,53 @@
 <template>
-  <div class="main-view">
-    <!-- Header -->
-    <header class="app-header">
-      <div class="header-left">
-        <div class="brand" @click="router.push('/')">BASSIRA</div>
+  <div class="main-view" data-cockpit="dark">
+    <!-- ───────────── Header cockpit ─────────────
+         Aligné sur Stitch bassira_simulation_cockpit : barre dense, sticky,
+         avec brand + chip ID, view-switcher segmenté et bloc statut/phase.
+         L'analyste passe 30-90 min ici → priorité densité d'info + flow. -->
+    <header class="cockpit-header">
+      <div class="cockpit-header-left">
+        <div class="cockpit-brand" @click="router.push('/')" role="link" tabindex="0">BASSIRA</div>
+        <div v-if="currentSimulationId" class="cockpit-sim-chip" :title="currentSimulationId">
+          {{ formattedSimId }}
+        </div>
       </div>
-      
-      <div class="header-center">
-        <div class="view-switcher">
+
+      <div class="cockpit-header-center">
+        <div class="cockpit-view-switcher" role="tablist" :aria-label="$t('simulation.view.stage.config')">
           <button
-            v-for="mode in ['graph', 'split', 'workbench']"
-            :key="mode"
-            class="switch-btn"
-            :class="{ active: viewMode === mode }"
-            @click="viewMode = mode"
+            v-for="mode in viewModes"
+            :key="mode.id"
+            type="button"
+            role="tab"
+            class="cockpit-view-btn"
+            :class="{ 'cockpit-view-btn--active': viewMode === mode.id }"
+            :aria-selected="viewMode === mode.id"
+            @click="viewMode = mode.id"
           >
-            {{ { graph: $t('simulation.view.stage.graph'), split: $t('simulation.view.stage.config'), workbench: $t('simulation.view.stage.config') }[mode] }}
+            <span class="material-symbols-outlined cockpit-view-icon" aria-hidden="true">{{ mode.icon }}</span>
+            <span>{{ mode.label }}</span>
           </button>
         </div>
       </div>
 
-      <div class="header-right">
-        <div class="workflow-step">
-          <span class="step-num">{{ $t('process.step2.step1.title') }}</span>
-          <span class="step-name">{{ $t('simulation.view.stage.config') }}</span>
+      <div class="cockpit-header-right">
+        <div class="cockpit-phase">
+          <span class="cockpit-phase-label">{{ $t('process.step2.step1.title') }}</span>
+          <div class="cockpit-phase-dots" aria-hidden="true">
+            <span
+              v-for="n in 4"
+              :key="n"
+              class="cockpit-phase-dot"
+              :class="{
+                'cockpit-phase-dot--done': n < currentPhase || currentStatus === 'completed',
+                'cockpit-phase-dot--active': n === currentPhase && currentStatus !== 'completed'
+              }"
+            ></span>
+          </div>
         </div>
-        <div class="step-divider"></div>
-        <span class="status-indicator" :class="statusClass">
-          <span class="dot"></span>
-          {{ statusText }}
+        <span class="cockpit-status" :class="`cockpit-status--${statusClass}`" role="status">
+          <span class="cockpit-status-dot"></span>
+          <span class="cockpit-status-label">{{ statusText }}</span>
         </span>
       </div>
     </header>
@@ -130,6 +149,15 @@ const props = defineProps({
 // Layout State
 const viewMode = ref('split')
 
+// View switcher modes — alignés sur Stitch (Graph / List=split / Summary=workbench).
+// On garde les 3 ids existants ('graph' | 'split' | 'workbench') pour préserver
+// la logique des computed leftPanelStyle / rightPanelStyle ci-dessous.
+const viewModes = computed(() => ([
+  { id: 'graph',     icon: 'hub',       label: t('simulation.view.stage.graph') },
+  { id: 'split',     icon: 'splitscreen', label: t('simulation.view.stage.config') },
+  { id: 'workbench', icon: 'dashboard', label: t('process.step2.step1.title') }
+]))
+
 // Trending panel (US-058)
 const showTrending = ref(false)
 const handleTrendingSelect = ({ url }) => {
@@ -149,6 +177,15 @@ const currentPhase = ref(0) // 0: Initializing, 1: Profiles, 2: Config, 3: Orche
 // True until the first project + graph round-trip resolves. Drives the
 // skeleton overlay that replaces the panels' bare "Loading..." flicker.
 const initialLoading = ref(true)
+
+// Chip ID lisible dans le header (8 derniers chars en MAJ, mono).
+// Évite d'afficher un UUID complet qui casse la grille du cockpit.
+const formattedSimId = computed(() => {
+  const id = currentSimulationId.value || ''
+  if (!id) return ''
+  const tail = id.length > 8 ? id.slice(-8) : id
+  return `SIM-${tail.toUpperCase()}`
+})
 
 // --- Computed Layout Styles ---
 const leftPanelStyle = computed(() => {
@@ -380,144 +417,244 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* ─────────────────────────────────────────────────────────────
+   SimulationView — Cockpit dark first
+   Source design : stitch_bassira_global_design_system/
+                   bassira_simulation_cockpit/code.html
+   Audience : Tier 2 Analyst (sessions 30-90 min) → flow state,
+   contrôle, densité d'info. Tokens --wi-* / --ms-* uniquement,
+   zéro hex hardcodé.
+   ───────────────────────────────────────────────────────────── */
+
+/* Le cockpit s'affiche par défaut en clair (warm) ; en dark mode
+   global ([data-theme="dark"] sur <html>), les tokens --wi-bg /
+   --wi-surface / --wi-surface-container basculent automatiquement
+   vers la palette "0f1117 / 1a1d27 / 22263a" du Stitch. */
 .main-view {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--lp);
+  background: var(--wi-bg);
+  color: var(--wi-on-bg);
   overflow: hidden;
-  font-family: var(--font-display);
+  font-family: var(--wi-font-body);
 }
 
-/* Header */
-.app-header {
-  height: 60px;
-  border-bottom: 2px solid rgba(10,10,10,0.08);
+/* ── Header cockpit (sticky, 64px, dense) ── */
+.cockpit-header {
+  flex-shrink: 0;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 22px;
-  background: var(--li);
-  z-index: 100;
+  padding: 0 var(--wi-space-md);
+  background: var(--wi-surface-dim);
+  border-block-end: 1px solid var(--wi-outline-variant);
   position: relative;
+  z-index: 100;
 }
 
-.brand {
-  font-family: var(--font-mono);
-  font-weight: 800;
-  font-size: 18px;
-  letter-spacing: 3px;
+.cockpit-header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--wi-space-md);
+  min-width: 0;
+}
+
+.cockpit-brand {
+  font-family: var(--wi-font-heading);
+  font-weight: 700;
+  font-size: var(--wi-label-sm);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
+  color: var(--wi-on-bg);
   cursor: pointer;
-  color: var(--lp);
+  user-select: none;
+  transition: color var(--ms-transition-fast);
+}
+.cockpit-brand:hover,
+.cockpit-brand:focus-visible { color: var(--wi-primary-container); outline: none; }
+
+.cockpit-sim-chip {
+  font-family: var(--ms-font-mono);
+  font-size: var(--wi-caption);
+  font-weight: 500;
+  color: var(--wi-on-surface-variant);
+  background: var(--wi-surface-container);
+  padding: 4px 10px;
+  border-radius: var(--wi-radius-sm);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 
-.header-center {
+.cockpit-header-center {
   position: absolute;
   inset-inline-start: 50%;
   transform: translateX(-50%);
 }
+[dir="rtl"] .cockpit-header-center { transform: translateX(50%); }
 
-.view-switcher {
+.cockpit-view-switcher {
   display: flex;
-  background: rgba(250,250,250,0.08);
-  padding: 4px;
+  background: var(--wi-surface-container);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-md);
+  padding: 3px;
+  gap: 2px;
+}
+
+.cockpit-view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  padding: 5px 12px;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
+  font-weight: 500;
+  color: var(--wi-on-surface-variant);
+  cursor: pointer;
+  border-radius: var(--wi-radius-sm);
+  transition: background var(--ms-transition-fast), color var(--ms-transition-fast);
+}
+.cockpit-view-btn:hover { color: var(--wi-on-bg); }
+.cockpit-view-btn:focus-visible {
+  outline: 2px solid var(--wi-primary-container);
+  outline-offset: 1px;
+}
+
+.cockpit-view-btn--active {
+  background: var(--wi-surface-container-highest);
+  color: var(--wi-on-bg);
+  box-shadow: var(--wi-shadow-sm);
+}
+
+.cockpit-view-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.cockpit-header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--wi-space-md);
+}
+
+/* Phase progress (dots mint/outline-variant per spec) */
+.cockpit-phase {
+  display: flex;
+  align-items: center;
+  gap: var(--wi-space-xs);
+}
+
+.cockpit-phase-label {
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-caption);
+  font-weight: 600;
+  color: var(--wi-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.cockpit-phase-dots {
+  display: inline-flex;
+  align-items: center;
   gap: 4px;
 }
 
-.switch-btn {
-  border: 2px solid transparent;
-  background: transparent;
-  padding: 6px 16px;
-  font-family: var(--font-mono);
+.cockpit-phase-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--wi-radius-pill);
+  background: var(--wi-outline-variant);
+  transition: background var(--ms-transition-fast), transform var(--ms-transition-fast);
+}
+.cockpit-phase-dot--done { background: var(--wi-secondary); }
+.cockpit-phase-dot--active {
+  background: var(--wi-primary-container);
+  transform: scale(1.3);
+}
+
+/* Status chip (Manrope 600 11px uppercase, colored par status) */
+.cockpit-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  font-family: var(--wi-font-body);
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 3px;
-  color: rgba(250,250,250,0.5);
-  cursor: pointer;
-  transition: all 0.2s;
+  letter-spacing: 0.08em;
+  border-radius: var(--wi-radius-sm);
+  border: 1px solid var(--wi-outline-variant);
+  background: var(--wi-surface-container);
+  color: var(--wi-on-surface-variant);
 }
 
-.switch-btn.active {
-  background: var(--li);
-  color: var(--lp);
-  border: 2px solid var(--lo);
+.cockpit-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--wi-radius-pill);
+  background: var(--wi-outline);
+  flex-shrink: 0;
 }
 
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
+.cockpit-status--processing { color: var(--wi-primary-container); border-color: var(--wi-primary-container); }
+.cockpit-status--processing .cockpit-status-dot { background: var(--wi-primary-container); animation: pulse 1.4s ease-in-out infinite; }
 
-.workflow-step {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-}
+.cockpit-status--completed { color: var(--wi-secondary); border-color: var(--wi-secondary); }
+.cockpit-status--completed .cockpit-status-dot { background: var(--wi-secondary); }
 
-.step-num {
-  font-family: var(--font-mono);
-  font-weight: 700;
-  color: rgba(250,250,250,0.4);
-}
+.cockpit-status--idle { color: var(--ms-peach); border-color: var(--ms-peach); }
+.cockpit-status--idle .cockpit-status-dot { background: var(--ms-peach); }
 
-.step-name {
-  font-weight: 700;
-  color: var(--lp);
-}
-
-.step-divider {
-  width: 1px;
-  height: 14px;
-  background-color: rgba(250,250,250,0.12);
-}
-
-.status-indicator {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  color: rgba(250,250,250,0.5);
-  font-weight: 500;
-}
-
-.dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(250,250,250,0.2);
-}
-
-.status-indicator.processing .dot { background: var(--lo); animation: pulse 1s infinite; }
-.status-indicator.completed .dot { background: var(--ls); }
-.status-indicator.idle .dot { background: var(--ms-peach); }
-.status-indicator.error .dot { background: var(--ld); }
+.cockpit-status--error { color: var(--wi-error); border-color: var(--wi-error); }
+.cockpit-status--error .cockpit-status-dot { background: var(--wi-error); }
 
 /* @keyframes pulse factorisé dans styles/components.css */
 
-/* Content */
+/* ── Main split panels ── */
 .content-area {
   flex: 1;
   display: flex;
   position: relative;
   overflow: hidden;
+  background: var(--wi-bg);
 }
 
 .panel-wrapper {
   height: 100%;
   overflow: hidden;
-  transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease, transform 0.3s ease;
+  transition:
+    width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+    opacity 0.3s ease,
+    transform 0.3s ease;
   will-change: width, opacity, transform;
 }
 
+/* Left panel = Network Graph cockpit area (--wi-surface) */
 .panel-wrapper.left {
-  border-inline-end: 2px solid rgba(10,10,10,0.08);
+  background: var(--wi-surface);
+  border-inline-end: 1px solid var(--wi-outline-variant);
+}
+
+/* Right panel = Agent Configuration aside (--wi-surface-container) */
+.panel-wrapper.right {
+  background: var(--wi-surface-container);
+  /* Indicateur d'étape active : barre verticale --wi-primary-container 4px,
+     posée sur le bord d'attaque du panneau (logical inline-start). */
+  border-inline-start: 4px solid var(--wi-primary-container);
+}
+
+/* En vue mono-panel (graph plein écran ou workbench), on retire les
+   liserés qui n'ont plus de sens visuellement. */
+.panel-wrapper.left[style*="100%"] {
+  border-inline-end: none;
+}
+.panel-wrapper.right[style*="100%"] {
+  border-inline-start: none;
 }
 
 /* ── Initial-fetch skeleton overlay ──
@@ -530,7 +667,7 @@ onMounted(async () => {
   inset: 0;
   display: flex;
   z-index: 5;
-  background: var(--lp);
+  background: var(--wi-bg);
   pointer-events: none;
 }
 
@@ -544,7 +681,8 @@ onMounted(async () => {
 }
 
 .skeleton-pane-left {
-  border-inline-end: 2px solid rgba(10, 10, 10, 0.08);
+  background: var(--wi-surface);
+  border-inline-end: 1px solid var(--wi-outline-variant);
   position: relative;
 }
 
@@ -591,7 +729,7 @@ onMounted(async () => {
 }
 
 .skeleton-pane-right {
-  background: var(--lp);
+  background: var(--wi-surface-container);
 }
 
 .sk-line {
@@ -609,7 +747,11 @@ onMounted(async () => {
 .sk-block-feed { height: 180px; width: 100%; }
 .sk-block-market { height: 110px; width: 100%; }
 
-/* ── Panneau actualités (US-058) ── */
+/* ── Panneau actualités (US-058) ──
+   Drawer "Trending Topics" en bas-droite. Stitch montre un FAB pill
+   blanc texte sombre ; on conserve notre drawer rétractable existant
+   (logique TrendingTopics.vue + showTrending), mais on aligne les
+   surfaces sur les tokens --wi-* du cockpit. */
 .sim-trending-drawer {
   position: fixed;
   bottom: 0;
@@ -617,10 +759,12 @@ onMounted(async () => {
   width: min(360px, 90vw);
   max-height: 60vh;
   overflow-y: auto;
-  background: var(--ms-bg-elevated);
-  border: 1px solid var(--ms-border-strong);
-  border-radius: var(--wi-radius-card, 24px) var(--wi-radius-card, 24px) 0 0;
-  box-shadow: var(--wi-shadow-lg, 0 -4px 24px rgba(42,42,53,0.12));
+  background: var(--wi-surface);
+  border: 1px solid var(--wi-outline-variant);
+  border-block-end: none;
+  border-inline-end: none;
+  border-radius: var(--wi-radius-card) var(--wi-radius-card) 0 0;
+  box-shadow: var(--wi-shadow-lg);
   z-index: var(--ms-z-popover, 1200);
   padding: 0 0 12px;
 }
@@ -629,40 +773,57 @@ onMounted(async () => {
   align-items: center;
   justify-content: space-between;
   padding: 10px 16px;
+  font-family: var(--wi-font-heading);
   font-size: 13px;
   font-weight: 600;
-  color: var(--ms-text-muted);
-  border-bottom: 1px solid var(--ms-border);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--wi-primary);
+  border-bottom: 1px solid var(--wi-outline-variant);
 }
 .sim-trending-close {
   background: none;
   border: none;
   font-size: 18px;
   cursor: pointer;
-  color: var(--ms-text-muted);
+  color: var(--wi-on-surface-variant);
   line-height: 1;
   padding: 0 4px;
+  transition: color var(--ms-transition-fast);
 }
-.sim-trending-close:hover { color: var(--ms-text); }
+.sim-trending-close:hover { color: var(--wi-on-surface); }
+
+/* FAB pill (Stitch montre un pill blanc texte sombre, posé bottom-right). */
 .sim-trending-toggle {
   position: fixed;
-  bottom: 16px;
-  inset-inline-end: 16px;
+  bottom: 24px;
+  inset-inline-end: 24px;
   z-index: var(--ms-z-popover, 1200);
-  width: 36px;
-  height: 36px;
-  border-radius: var(--wi-radius-pill, 9999px);
-  border: 1.5px solid var(--ms-border-strong);
-  background: var(--ms-bg-elevated);
-  box-shadow: var(--ms-shadow-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 44px;
+  padding: 0 16px;
+  border-radius: var(--wi-radius-pill);
+  border: 1px solid var(--wi-outline-variant);
+  background: var(--wi-surface);
+  color: var(--wi-on-surface);
+  box-shadow: var(--wi-shadow-md);
+  font-family: var(--wi-font-body);
   font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
-  transition: transform 150ms, box-shadow 150ms;
+  transition: transform var(--ms-transition-fast), box-shadow var(--ms-transition-fast), border-color var(--ms-transition-fast);
 }
 .sim-trending-toggle:hover {
   transform: translateY(-2px);
   box-shadow: var(--ms-shadow-orange);
-  border-color: var(--ms-orange);
+  border-color: var(--wi-primary-container);
+}
+.sim-trending-toggle:focus-visible {
+  outline: 2px solid var(--wi-primary-container);
+  outline-offset: 2px;
 }
 </style>
 

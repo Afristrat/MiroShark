@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bassira Onboarding - Step 4</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&amp;family=Manrope:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Tajawal:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#fff8f6",
+                        "surface-bright": "#fff8f6",
+                        "on-tertiary-container": "#91eab7",
+                        "tertiary-fixed-dim": "#80d8a6",
+                        "on-secondary-fixed": "#370e00",
+                        "on-secondary-fixed-variant": "#7f2b00",
+                        "on-background": "#241915",
+                        "surface-dim": "#ebd6cf",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed": "#ffdbce",
+                        "on-tertiary-fixed-variant": "#005232",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-container": "#006c43",
+                        "surface-variant": "#f3ded7",
+                        "primary-fixed-dim": "#ffb599",
+                        "on-error": "#ffffff",
+                        "surface-container-highest": "#f3ded7",
+                        "inverse-primary": "#ffb599",
+                        "secondary-container": "#fd8450",
+                        "primary": "#7e2b00",
+                        "surface-container": "#ffe9e2",
+                        "primary-container": "#a13f0f",
+                        "outline-variant": "#dec0b6",
+                        "on-primary-fixed": "#370e00",
+                        "on-error-container": "#93000a",
+                        "surface-container-high": "#f9e4dd",
+                        "primary-fixed": "#ffdbce",
+                        "background": "#fff8f6",
+                        "tertiary": "#005132",
+                        "on-primary-fixed-variant": "#7f2b00",
+                        "inverse-on-surface": "#ffede7",
+                        "secondary-fixed-dim": "#ffb598",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-container": "#6c2400",
+                        "on-primary": "#ffffff",
+                        "on-surface": "#241915",
+                        "error-container": "#ffdad6",
+                        "secondary": "#a13f0f",
+                        "inverse-surface": "#3a2e29",
+                        "tertiary-fixed": "#9cf5c1",
+                        "on-surface-variant": "#57423a",
+                        "surface-container-low": "#fff1ec",
+                        "error": "#ba1a1a",
+                        "surface-tint": "#a13f0f",
+                        "outline": "#8a7269",
+                        "on-tertiary-fixed": "#002111",
+                        "on-primary-container": "#ffcdbb"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "80px",
+                        "sm": "12px",
+                        "container-max": "1280px",
+                        "xs": "4px",
+                        "lg": "48px",
+                        "md": "24px",
+                        "base": "8px",
+                        "gutter": "32px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["JetBrains Mono"],
+                        "h1": ["Outfit"],
+                        "h2": ["Outfit"],
+                        "h3": ["Outfit"],
+                        "body-md": ["Manrope"],
+                        "arabic-body": ["Tajawal"],
+                        "body-lg": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", { "lineHeight": "1.2", "fontWeight": "500" }],
+                        "h1": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "h2": ["36px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+                        "h3": ["24px", { "lineHeight": "1.3", "letterSpacing": "0", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "arabic-body": ["18px", { "lineHeight": "1.8", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .fill-icon {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col items-center justify-center relative overflow-hidden font-body-md">
+<!-- Confetti Overlay Background -->
+<div aria-hidden="true" class="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+<!-- Abstract representation of confetti using styled divs -->
+<div class="absolute top-[10%] left-[20%] w-3 h-3 bg-tertiary-container rounded-sm rotate-45 opacity-60"></div>
+<div class="absolute top-[15%] right-[25%] w-2 h-4 bg-primary-container rounded-full rotate-12 opacity-80"></div>
+<div class="absolute top-[30%] left-[10%] w-4 h-4 bg-secondary-container rounded-full opacity-50"></div>
+<div class="absolute bottom-[40%] right-[15%] w-3 h-3 bg-tertiary-fixed rounded-sm -rotate-12 opacity-70"></div>
+<div class="absolute top-[50%] left-[80%] w-2 h-5 bg-primary rounded-full rotate-45 opacity-60"></div>
+<div class="absolute bottom-[20%] left-[30%] w-4 h-4 bg-on-tertiary-container rounded-full opacity-40"></div>
+<div class="absolute top-[25%] left-[50%] w-2 h-2 bg-secondary rounded-full opacity-90"></div>
+<div class="absolute bottom-[10%] right-[40%] w-3 h-3 bg-tertiary rounded-sm rotate-45 opacity-70"></div>
+<!-- Large blurred ambient glow -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary-container/5 rounded-full blur-[100px]"></div>
+</div>
+<!-- Main Content Container -->
+<main class="relative z-10 w-full max-w-container-max px-gutter mx-auto flex flex-col items-center justify-center min-h-[819px]">
+<!-- Celebratory Overlay Text -->
+<div class="text-center mb-lg">
+<h1 class="font-h1 text-h1 text-primary-container mb-sm">You're ready.</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-lg mx-auto">Your configuration is complete. The system is fully primed for high-fidelity financial modeling.</p>
+</div>
+<!-- The Spotlight Element (Dashboard Mockup excerpt) -->
+<div class="relative bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-lg shadow-[0_20px_60px_-15px_rgba(161,63,15,0.05)] max-w-3xl w-full mb-xl">
+<!-- Tooltip Anchor -->
+<div class="absolute -top-12 -right-8 z-20">
+<div class="relative bg-surface text-on-surface border border-outline-variant/50 rounded-lg p-md shadow-[0_10px_30px_-10px_rgba(161,63,15,0.1)] flex items-start gap-md max-w-[280px]">
+<span class="material-symbols-outlined text-primary-container text-2xl fill-icon mt-1">rocket_launch</span>
+<div>
+<p class="font-body-md text-body-md font-medium">Lancez — votre première simulation démarre</p>
+</div>
+<!-- Tooltip pointer -->
+<div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-surface border-r border-b border-outline-variant/50 rotate-45"></div>
+</div>
+</div>
+<!-- Faux Dashboard Content to highlight the CTA -->
+<div class="flex items-center justify-between border-b border-outline-variant/20 pb-md mb-lg">
+<div>
+<h2 class="font-h3 text-h3 text-on-background mb-xs">Simulation Engine</h2>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Ready State</p>
+</div>
+<!-- The Primary CTA being spotlighted -->
+<div class="relative">
+<!-- Pulsing Beacon -->
+<span class="absolute -top-1 -right-1 flex h-4 w-4 z-10">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary-container opacity-75"></span>
+<span class="relative inline-flex rounded-full h-4 w-4 bg-primary-container border-2 border-surface-container-lowest"></span>
+</span>
+<button class="bg-primary-container text-on-primary hover:bg-primary transition-colors duration-200 px-md py-sm rounded-DEFAULT font-label-sm text-label-sm uppercase tracking-wider flex items-center gap-sm">
+                        Lancer une simulation
+                        <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Faux Data Area to ground the UI -->
+<div class="grid grid-cols-3 gap-md opacity-40 grayscale-[50%] select-none pointer-events-none">
+<div class="h-24 bg-surface-container-low rounded-lg border border-outline-variant/20"></div>
+<div class="h-24 bg-surface-container-low rounded-lg border border-outline-variant/20"></div>
+<div class="h-24 bg-surface-container-low rounded-lg border border-outline-variant/20"></div>
+</div>
+</div>
+<!-- Onboarding Controls & Progress -->
+<div class="fixed bottom-0 left-0 w-full bg-surface/90 backdrop-blur-md border-t border-outline-variant/20 py-md z-30">
+<div class="max-w-container-max mx-auto px-gutter flex items-center justify-between">
+<!-- Back Button -->
+<button class="text-on-surface-variant hover:text-primary-container font-label-sm text-label-sm uppercase tracking-wider flex items-center gap-xs transition-colors">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+                    Précédent
+                </button>
+<!-- Progress Tracker -->
+<div class="flex flex-col items-center gap-sm flex-1 max-w-md mx-md">
+<div class="w-full bg-surface-container-high h-1 rounded-full overflow-hidden">
+<!-- 100% Progress Bar -->
+<div class="bg-primary-container h-full w-full rounded-full"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">Étape 4/4</span>
+</div>
+<!-- Final Action -->
+<button class="bg-primary-container text-on-primary hover:bg-primary transition-colors duration-200 px-lg py-sm rounded-DEFAULT font-label-sm text-label-sm uppercase tracking-wider shadow-sm shadow-primary-container/20">
+                    C'est parti !
+                </button>
+</div>
+</div>
+</main>
+</body></html>

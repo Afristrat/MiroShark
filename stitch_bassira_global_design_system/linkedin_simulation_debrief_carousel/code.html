@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Simulation Debrief Carousel</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&amp;family=Manrope:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;family=Tajawal:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#7f2b00",
+                        "on-secondary-container": "#6c2400",
+                        "on-tertiary-fixed": "#002111",
+                        "surface-tint": "#a13f0f",
+                        "outline": "#8a7269",
+                        "surface-dim": "#ebd6cf",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-container": "#ffcdbb",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed-variant": "#7f2b00",
+                        "inverse-primary": "#ffb599",
+                        "primary-fixed-dim": "#ffb599",
+                        "surface": "#fff8f6",
+                        "surface-container-high": "#f9e4dd",
+                        "on-secondary-fixed": "#370e00",
+                        "inverse-surface": "#3a2e29",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "tertiary": "#005132",
+                        "surface-container-highest": "#f3ded7",
+                        "background": "#fff8f6",
+                        "outline-variant": "#dec0b6",
+                        "on-tertiary-fixed-variant": "#005232",
+                        "on-primary-fixed": "#370e00",
+                        "secondary-fixed": "#ffdbce",
+                        "secondary-container": "#fd8450",
+                        "primary-fixed": "#ffdbce",
+                        "on-error": "#ffffff",
+                        "on-background": "#241915",
+                        "primary": "#7e2b00",
+                        "tertiary-container": "#006c43",
+                        "surface-container": "#ffe9e2",
+                        "on-tertiary-container": "#91eab7",
+                        "tertiary-fixed-dim": "#80d8a6",
+                        "surface-variant": "#f3ded7",
+                        "error": "#ba1a1a",
+                        "on-surface": "#241915",
+                        "secondary-fixed-dim": "#ffb598",
+                        "tertiary-fixed": "#9cf5c1",
+                        "surface-container-low": "#fff1ec",
+                        "on-surface-variant": "#57423a",
+                        "secondary": "#a13f0f",
+                        "surface-bright": "#fff8f6",
+                        "primary-container": "#a13f0f",
+                        "error-container": "#ffdad6",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#ffede7"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "48px",
+                        "container-max": "1280px",
+                        "md": "24px",
+                        "xs": "4px",
+                        "xl": "80px",
+                        "sm": "12px",
+                        "base": "8px",
+                        "gutter": "32px"
+                    },
+                    "fontFamily": {
+                        "h2": ["Outfit"],
+                        "h1": ["Outfit"],
+                        "h3": ["Outfit"],
+                        "arabic-body": ["Tajawal"],
+                        "body-md": ["Manrope"],
+                        "label-sm": ["JetBrains Mono"],
+                        "body-lg": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "h2": ["36px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+                        "h1": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "h3": ["24px", { "lineHeight": "1.3", "letterSpacing": "0", "fontWeight": "500" }],
+                        "arabic-body": ["18px", { "lineHeight": "1.8", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "1.2", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .carousel-slide {
+            aspect-ratio: 1 / 1;
+            width: 100%;
+            max-width: 600px;
+            scroll-snap-align: start;
+            flex-shrink: 0;
+        }
+        .carousel-container {
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .carousel-container::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-background min-h-screen font-body-md text-on-background antialiased flex flex-col md:flex-row">
+<!-- Side Navigation -->
+<nav class="bg-[#FDFCFB] dark:bg-[#121110] text-[#A13F0F] dark:text-[#A13F0F] font-['Outfit'] text-sm h-full border-r w-64 border-stone-200 dark:border-stone-800 flat no shadows flex flex-col h-screen p-4 space-y-2 hidden md:flex shrink-0 fixed">
+<div class="mb-8 px-4 py-2">
+<h1 class="font-bold text-stone-900 dark:text-stone-100 text-xl tracking-tighter">Foresight Studio</h1>
+</div>
+<div class="flex items-center px-4 py-3 mb-6">
+<img alt="Organization Logo" class="w-10 h-10 rounded-lg object-cover mr-3 border border-outline-variant" data-alt="A clean, minimalist corporate logo placeholder featuring geometric shapes in warm terracotta and charcoal tones. The design is modern, professional, and suitable for an enterprise brand identity, set against a pristine white background. High-resolution, crisp vector style representation." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpiSNukqEfYCyRV2RRoGcuOmNipssefaoPIxIjnW1QBJBpSr2At6aYHo5R2Rovds8ZjUwDmYfQLzmDiTDLL3TFfZicrcOd41Avcv4HIQKFuiB8ydXvl9tjiEt5T2DX_fXTNqt5FoKm2CaRClEXED5y6DOs5cBYdd8JIp0p6WN-I0cPoASVZ6Ch3WalDkBqnteFB-bPKMVgKe_AYlIDhdivAu3U_PVwQvF2pRWMBcPFBqRgRKz2gAnGKrVPhzoG2z-exV5_XuxefBQ"/>
+<div>
+<p class="font-semibold text-on-surface">Strategic Brand</p>
+<p class="text-xs text-on-surface-variant font-body-md">Enterprise Plan</p>
+</div>
+</div>
+<div class="flex-1 space-y-1">
+<a class="flex items-center px-4 py-2.5 text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-900/50 hover:translate-x-1 transition-transform duration-200 cursor-pointer active:bg-stone-200 rounded-lg" href="#">
+<span class="material-symbols-outlined mr-3 text-lg" style="font-variation-settings: 'FILL' 0;">dashboard</span>
+                Workspace
+            </a>
+<a class="flex items-center px-4 py-2.5 bg-stone-100 dark:bg-stone-900 text-[#A13F0F] font-semibold rounded-lg hover:translate-x-1 transition-transform duration-200 cursor-pointer active:bg-stone-200" href="#">
+<span class="material-symbols-outlined mr-3 text-lg" style="font-variation-settings: 'FILL' 1;">amp_stories</span>
+                Carousels
+            </a>
+<a class="flex items-center px-4 py-2.5 text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-900/50 hover:translate-x-1 transition-transform duration-200 cursor-pointer active:bg-stone-200 rounded-lg" href="#">
+<span class="material-symbols-outlined mr-3 text-lg" style="font-variation-settings: 'FILL' 0;">equalizer</span>
+                Visualizations
+            </a>
+<a class="flex items-center px-4 py-2.5 text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-900/50 hover:translate-x-1 transition-transform duration-200 cursor-pointer active:bg-stone-200 rounded-lg" href="#">
+<span class="material-symbols-outlined mr-3 text-lg" style="font-variation-settings: 'FILL' 0;">compare_arrows</span>
+                Comparison
+            </a>
+<a class="flex items-center px-4 py-2.5 text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-900/50 hover:translate-x-1 transition-transform duration-200 cursor-pointer active:bg-stone-200 rounded-lg" href="#">
+<span class="material-symbols-outlined mr-3 text-lg" style="font-variation-settings: 'FILL' 0;">auto_awesome</span>
+                Brand Assets
+            </a>
+</div>
+<div class="mt-auto space-y-1 pt-4 border-t border-outline-variant/30">
+<a class="flex items-center px-4 py-2.5 text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-900/50 hover:translate-x-1 transition-transform duration-200 cursor-pointer active:bg-stone-200 rounded-lg" href="#">
+<span class="material-symbols-outlined mr-3 text-lg" style="font-variation-settings: 'FILL' 0;">archive</span>
+                Archive
+            </a>
+<a class="flex items-center px-4 py-2.5 text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-900/50 hover:translate-x-1 transition-transform duration-200 cursor-pointer active:bg-stone-200 rounded-lg" href="#">
+<span class="material-symbols-outlined mr-3 text-lg" style="font-variation-settings: 'FILL' 0;">help_outline</span>
+                Support
+            </a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-64 flex flex-col min-h-screen">
+<!-- Top App Bar (Mobile) -->
+<header class="bg-[#FDFCFB] dark:bg-[#121110] text-[#A13F0F] dark:text-[#A13F0F] font-['Outfit'] font-medium tracking-tight docked full-width top-0 border-b border-stone-200 dark:border-stone-800 flat no shadows flex justify-between items-center w-full px-8 py-4 md:hidden sticky z-10">
+<div class="text-xl font-bold text-[#A13F0F] tracking-tighter">Foresight Studio</div>
+<div class="flex gap-4">
+<button class="text-stone-500 dark:text-stone-400 hover:text-[#A13F0F] transition-colors duration-200 scale-95 active:opacity-80">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</header>
+<!-- Canvas -->
+<div class="flex-1 p-gutter bg-surface-bright flex items-center justify-center overflow-hidden">
+<div class="w-full max-w-container-max mx-auto flex flex-col items-center">
+<div class="mb-lg text-center">
+<h2 class="font-h2 text-h2 text-on-background mb-2">LinkedIn Carousel Preview</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Simulation Debrief Series</p>
+</div>
+<!-- Carousel Wrapper -->
+<div class="w-full max-w-[600px] bg-surface-container-lowest shadow-[0_20px_40px_-15px_rgba(161,63,15,0.05)] rounded-xl border border-outline-variant overflow-hidden relative">
+<!-- Scrollable Container -->
+<div class="carousel-container flex overflow-x-auto snap-x snap-mandatory">
+<!-- Slide 1: Cover -->
+<div class="carousel-slide bg-surface relative p-12 flex flex-col justify-center border-r border-outline-variant/20">
+<div class="absolute top-8 left-8">
+<span class="font-label-sm text-label-sm text-primary tracking-widest uppercase opacity-80">Simulation Debrief</span>
+</div>
+<div class="space-y-6 z-10">
+<h1 class="font-h1 text-[56px] leading-[1.05] tracking-[-0.03em] font-semibold text-on-background">
+                                    Scenario: <br/>
+<span class="text-primary italic font-light">Market Entry</span>
+</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-sm border-l-2 border-primary pl-4">
+                                    Analyzing the cascading effects of a Q3 aggressive expansion strategy in the MENA region.
+                                </p>
+</div>
+<div class="absolute bottom-8 right-8 flex items-center gap-2 opacity-50">
+<span class="font-h3 text-h3 font-bold tracking-tighter text-on-background">BASSIRA</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+</div>
+</div>
+<!-- Slide 2: Key Findings -->
+<div class="carousel-slide bg-surface relative p-10 flex flex-col border-r border-outline-variant/20">
+<div class="mb-8 flex items-center gap-3">
+<span class="w-8 h-[2px] bg-primary"></span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Key Findings</span>
+</div>
+<div class="grid grid-cols-1 gap-4 flex-1">
+<div class="bg-surface-container-lowest p-6 rounded-lg border border-outline-variant/40 hover:border-primary/30 transition-colors">
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary">trending_up</span>
+</div>
+<div>
+<h3 class="font-h3 text-h3 text-on-background mb-1">Accelerated Adoption</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Early indicators suggest a 24% faster penetration rate than baseline models predicted.</p>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-lg border border-outline-variant/40 hover:border-primary/30 transition-colors">
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary">warning</span>
+</div>
+<div>
+<h3 class="font-h3 text-h3 text-on-background mb-1">Supply Chain Strain</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Local logistics partners show a high probability of bottlenecking by month 4.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Slide 3: Data Chart (Abstracted via Layout) -->
+<div class="carousel-slide bg-surface relative p-10 flex flex-col border-r border-outline-variant/20">
+<div class="mb-8 flex items-center gap-3">
+<span class="w-8 h-[2px] bg-primary"></span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Variance Analysis</span>
+</div>
+<div class="flex-1 bg-surface-container-lowest rounded-lg border border-outline-variant p-6 flex flex-col justify-between">
+<div class="flex justify-between items-end border-b border-outline-variant/30 pb-4">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-1">Projected ROI</p>
+<p class="font-h2 text-h2 text-on-background">+18.5%</p>
+</div>
+<div class="text-right">
+<span class="inline-flex items-center gap-1 bg-tertiary-container/10 text-tertiary-container font-label-sm text-label-sm px-2 py-1 rounded">
+<span class="material-symbols-outlined text-[14px]">arrow_upward</span>
+                                            Above Baseline
+                                        </span>
+</div>
+</div>
+<!-- Abstract Chart Representation -->
+<div class="flex items-end gap-3 h-48 pt-6">
+<div class="w-full bg-surface-container-high rounded-t-sm h-[30%] relative group">
+<div class="absolute -top-6 left-1/2 -translate-x-1/2 font-label-sm text-label-sm text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">Q1</div>
+</div>
+<div class="w-full bg-surface-container-high rounded-t-sm h-[45%] relative group">
+<div class="absolute -top-6 left-1/2 -translate-x-1/2 font-label-sm text-label-sm text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">Q2</div>
+</div>
+<div class="w-full bg-primary/80 rounded-t-sm h-[85%] relative group">
+<div class="absolute -top-6 left-1/2 -translate-x-1/2 font-label-sm text-label-sm text-primary font-bold opacity-100">Q3</div>
+</div>
+<div class="w-full bg-surface-container-high rounded-t-sm h-[60%] relative group">
+<div class="absolute -top-6 left-1/2 -translate-x-1/2 font-label-sm text-label-sm text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">Q4</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Slide 5: Call to Action -->
+<div class="carousel-slide bg-primary relative p-12 flex flex-col justify-center items-center text-center">
+<div class="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center mb-8">
+<span class="material-symbols-outlined text-white text-4xl" style="font-variation-settings: 'wght' 300;">play_arrow</span>
+</div>
+<h2 class="font-h1 text-h1 text-white mb-6 tracking-tight">Simulate this <span class="material-symbols-outlined align-middle">arrow_forward</span></h2>
+<p class="font-body-lg text-body-lg text-white/80 max-w-xs mb-10">
+                                Run this exact scenario through your organization's unique parameters.
+                            </p>
+<button class="bg-white text-primary font-h3 text-[18px] px-8 py-4 rounded hover:bg-surface-container transition-colors shadow-lg">
+                                Open in Studio
+                            </button>
+<div class="absolute bottom-8 right-8 flex items-center gap-2 opacity-50">
+<span class="font-h3 text-h3 font-bold tracking-tighter text-white">BASSIRA</span>
+</div>
+</div>
+</div>
+<!-- Navigation Hint -->
+<div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+</div>
+</div>
+<p class="mt-6 font-label-sm text-label-sm text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">swipe</span>
+                    Swipe to preview carousel
+                </p>
+</div>
+</div>
+</main>
+</body></html>

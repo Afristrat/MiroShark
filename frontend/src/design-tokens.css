@@ -316,6 +316,16 @@
   --wi-primary-container:         #ff8551;
   --wi-on-primary-container:      #6d2400;
   --wi-inverse-primary:           #ffb598;
+  /* Tint soft primary (eyebrow pill, soft hover backgrounds).
+     Dérivé du --wi-primary à 8 % pour rester WCAG sur fond cream. */
+  --wi-primary-soft:              rgba(161, 63, 15, 0.08);
+  /* US-COMPARE — tints 12 % et 18 % pour pastilles sim-a / sim-b sur ComparisonView.
+     Dérivés stricts de --wi-primary-container (#ff8551) et --wi-secondary (#006d44).
+     Centralisés ici pour respecter la règle « zéro hex hardcodé hors design-tokens ». */
+  --wi-primary-container-soft:    rgba(255, 133, 81, 0.12);
+  --wi-primary-container-edge:    rgba(161, 63, 15, 0.18);
+  --wi-secondary-soft:            rgba(0, 109, 68, 0.12);
+  --wi-secondary-edge:            rgba(0, 109, 68, 0.18);
 
   /* ── Couleurs secondaires (vert menthe) ── */
   --wi-secondary:                 #006d44;

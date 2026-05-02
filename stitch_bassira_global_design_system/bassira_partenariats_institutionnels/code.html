@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bassira Partnership Page</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&amp;family=Manrope:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed-dim": "#ffb599",
+                        "on-secondary-fixed-variant": "#7f2b00",
+                        "inverse-primary": "#ffb599",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-container": "#ffcdbb",
+                        "on-error-container": "#93000a",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed": "#370e00",
+                        "inverse-surface": "#3a2e29",
+                        "surface-container-high": "#f9e4dd",
+                        "surface": "#fff8f6",
+                        "surface-tint": "#a13f0f",
+                        "on-tertiary-fixed": "#002111",
+                        "on-secondary-container": "#6c2400",
+                        "on-primary-fixed-variant": "#7f2b00",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-dim": "#ebd6cf",
+                        "outline": "#8a7269",
+                        "tertiary-fixed": "#9cf5c1",
+                        "surface-container-low": "#fff1ec",
+                        "secondary-fixed-dim": "#ffb598",
+                        "on-surface": "#241915",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed-dim": "#80d8a6",
+                        "surface-variant": "#f3ded7",
+                        "on-tertiary-container": "#91eab7",
+                        "inverse-on-surface": "#ffede7",
+                        "on-primary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "surface-bright": "#fff8f6",
+                        "primary-container": "#a13f0f",
+                        "secondary": "#a13f0f",
+                        "on-surface-variant": "#57423a",
+                        "background": "#fff8f6",
+                        "tertiary": "#005132",
+                        "surface-container-highest": "#f3ded7",
+                        "tertiary-container": "#006c43",
+                        "surface-container": "#ffe9e2",
+                        "primary": "#7e2b00",
+                        "secondary-container": "#fd8450",
+                        "primary-fixed": "#ffdbce",
+                        "on-error": "#ffffff",
+                        "on-background": "#241915",
+                        "secondary-fixed": "#ffdbce",
+                        "outline-variant": "#dec0b6",
+                        "on-tertiary-fixed-variant": "#005232",
+                        "on-primary-fixed": "#370e00",
+                        "cream": "#FAF7F2",
+                        "charcoal-brown": "#241915",
+                        "deep-terracotta": "#A13F0F",
+                        "deep-mint": "#006D44"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "24px",
+                        "container-max": "1000px",
+                        "lg": "48px",
+                        "gutter": "32px",
+                        "sm": "12px",
+                        "base": "8px",
+                        "xs": "4px",
+                        "xl": "80px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Manrope", "sans-serif"],
+                        "label-sm": ["JetBrains Mono", "monospace"],
+                        "body-lg": ["Manrope", "sans-serif"],
+                        "h2": ["Outfit", "sans-serif"],
+                        "h1": ["Outfit", "sans-serif"],
+                        "h3": ["Outfit", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "1.2", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "h2": ["36px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+                        "h1": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "h3": ["24px", { "lineHeight": "1.3", "letterSpacing": "0", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .fill-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-cream text-charcoal-brown font-body-md antialiased selection:bg-deep-terracotta selection:text-white">
+<!-- TopAppBar -->
+<nav class="bg-[#FAF7F2] dark:bg-[#241915] w-full top-0 border-b border-[#241915]/10 dark:border-[#FAF7F2]/10 z-50">
+<div class="flex justify-between items-center w-full px-8 py-6 max-w-[1280px] mx-auto">
+<div class="text-2xl font-bold text-[#241915] dark:text-[#FAF7F2] uppercase tracking-widest font-['Outfit'] antialiased tracking-tight">
+                Foresight Platform
+            </div>
+<div class="hidden md:flex gap-8 items-center">
+<a class="font-['Outfit'] antialiased tracking-tight text-[#241915]/70 dark:text-[#FAF7F2]/70 hover:text-[#A13F0F] transition-colors hover:bg-[#A13F0F]/5 dark:hover:bg-[#FAF7F2]/5 transition-all duration-300 px-3 py-2 rounded-md" href="#">Solutions</a>
+<a class="font-['Outfit'] antialiased tracking-tight text-[#241915]/70 dark:text-[#FAF7F2]/70 hover:text-[#A13F0F] transition-colors hover:bg-[#A13F0F]/5 dark:hover:bg-[#FAF7F2]/5 transition-all duration-300 px-3 py-2 rounded-md" href="#">Methodology</a>
+<a class="font-['Outfit'] antialiased tracking-tight text-[#241915]/70 dark:text-[#FAF7F2]/70 hover:text-[#A13F0F] transition-colors hover:bg-[#A13F0F]/5 dark:hover:bg-[#FAF7F2]/5 transition-all duration-300 px-3 py-2 rounded-md" href="#">Insights</a>
+<a class="font-['Outfit'] antialiased tracking-tight text-[#A13F0F] font-semibold border-b-2 border-[#A13F0F] pb-1 px-3 py-2" href="#">Network</a>
+</div>
+<button class="bg-[#A13F0F] text-white px-6 py-2 rounded-DEFAULT font-label-sm uppercase tracking-wide hover:opacity-90 transition-opacity">
+                Contact Us
+            </button>
+</div>
+</nav>
+<!-- Hero Section -->
+<header class="max-w-container-max mx-auto px-gutter pt-xl pb-lg">
+<div class="text-center max-w-3xl mx-auto space-y-6">
+<span class="font-label-sm text-deep-mint tracking-wider uppercase">Strategic Partnership Network</span>
+<h1 class="font-h1 text-h1 text-charcoal-brown">
+                Renforcez vos scénarios avec la simulation computationnelle
+            </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">
+                Join our network of institutional partners leveraging advanced agent-based modeling to quantify qualitative expertise and build resilient strategic foresight.
+            </p>
+<div class="pt-8">
+<a class="inline-flex items-center gap-2 bg-charcoal-brown text-white px-8 py-4 rounded-DEFAULT font-body-md hover:bg-opacity-90 transition-all" href="#cta">
+                    Initier un partenariat stratégique
+                    <span class="material-symbols-outlined">arrow_forward</span>
+</a>
+</div>
+</div>
+</header>
+<!-- Partner Logos -->
+<section class="border-y border-charcoal-brown/10 py-12 bg-surface-container-lowest">
+<div class="max-w-container-max mx-auto px-gutter">
+<p class="text-center font-label-sm text-on-surface-variant mb-8 uppercase tracking-widest">Trusted by Leading Institutions</p>
+<div class="flex flex-wrap justify-center items-center gap-12 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
+<!-- Placeholder for logos -->
+<div class="h-8 w-32 bg-outline-variant/30 rounded"></div>
+<div class="h-10 w-40 bg-outline-variant/30 rounded"></div>
+<div class="h-8 w-36 bg-outline-variant/30 rounded"></div>
+<div class="h-12 w-32 bg-outline-variant/30 rounded"></div>
+<div class="h-9 w-36 bg-outline-variant/30 rounded"></div>
+</div>
+</div>
+</section>
+<!-- Value Proposition -->
+<section class="max-w-container-max mx-auto px-gutter py-xl">
+<div class="grid md:grid-cols-2 gap-16 items-center">
+<div>
+<h2 class="font-h2 text-h2 text-charcoal-brown mb-6">
+                    Quantifiez votre expertise qualitative
+                </h2>
+<div class="space-y-6">
+<p class="font-body-md text-body-md text-on-surface-variant">
+                        Our platform translates complex, nuanced qualitative insights into rigorous, quantifiable computational models. We empower your research teams to move beyond traditional forecasting.
+                    </p>
+<ul class="space-y-4">
+<li class="flex items-start gap-4">
+<span class="material-symbols-outlined text-deep-terracotta mt-1">analytics</span>
+<div>
+<h4 class="font-h3 text-lg text-charcoal-brown mb-1">Empirical Validation</h4>
+<p class="font-body-md text-sm text-on-surface-variant">Test hypotheses against thousands of simulated scenarios in culturally nuanced environments.</p>
+</div>
+</li>
+<li class="flex items-start gap-4">
+<span class="material-symbols-outlined text-deep-terracotta mt-1">account_tree</span>
+<div>
+<h4 class="font-h3 text-lg text-charcoal-brown mb-1">Complex Systems Mapping</h4>
+<p class="font-body-md text-sm text-on-surface-variant">Uncover hidden dependencies and cascading effects in geopolitical and economic networks.</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="relative h-96 bg-surface-container-high rounded-xl border border-charcoal-brown/10 overflow-hidden group">
+<img alt="Data Visualization" class="w-full h-full object-cover opacity-80 mix-blend-multiply transition-transform duration-700 group-hover:scale-105" data-alt="A sophisticated, high-end data visualization dashboard displayed on a sleek monitor. The UI features complex network graphs and geometric data nodes in deep terracotta and mint green against a light cream background. The aesthetic is clean, minimalist, and authoritative, embodying Bauhaus principles with precise typography and generous whitespace. Soft, diffuse lighting highlights the modern, professional setting, conveying a sense of institutional luxury and analytical rigor." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAFfsIibSFkGwIsa4lgvViQ-48KnlHGeysY3UYgXC0cFCtOBCF3Th-THJ7SJuOnNrqwrvzZEJ2ZQ4WdgoKQB8PGLKTPTjUjsWlWw2NsMl3sVerswqQzmClXL6QSEL9Y1mcgaFCa5NL1m8VYNV1mH68mAF_PrpySG5k8YKM2p0Iwu45OJHodaG37I2fdRjlMhB3UgltnatiyPAh1MhmyNOyr-LktAeqECqQY8YWESk-U-zb3UW5NSIU0KuoLOvFHRBdeekiEBF0d1g"/>
+</div>
+</div>
+</section>
+<!-- How it Works (3 Steps) -->
+<section class="bg-surface-container-low py-xl border-y border-charcoal-brown/10">
+<div class="max-w-container-max mx-auto px-gutter">
+<h2 class="font-h2 text-h2 text-center text-charcoal-brown mb-16">The Integration Process</h2>
+<div class="grid md:grid-cols-3 gap-8 relative">
+<!-- Connecting Line -->
+<div class="hidden md:block absolute top-1/2 left-[10%] right-[10%] h-[1px] bg-charcoal-brown/20 -translate-y-1/2 z-0"></div>
+<!-- Step 1 -->
+<div class="bg-cream p-8 rounded-xl border border-charcoal-brown/10 relative z-10 text-center shadow-[0_4px_24px_rgba(161,63,15,0.02)]">
+<div class="w-16 h-16 bg-surface-container-high rounded-full flex items-center justify-center mx-auto mb-6 border border-charcoal-brown/5">
+<span class="material-symbols-outlined text-deep-terracotta text-2xl">description</span>
+</div>
+<h3 class="font-h3 text-xl mb-3">Your Scenario</h3>
+<p class="font-body-md text-sm text-on-surface-variant">Input your qualitative research parameters and strategic hypotheses.</p>
+</div>
+<!-- Step 2 -->
+<div class="bg-cream p-8 rounded-xl border border-charcoal-brown/10 relative z-10 text-center shadow-[0_4px_24px_rgba(161,63,15,0.02)]">
+<div class="w-16 h-16 bg-deep-terracotta/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-deep-terracotta/20">
+<span class="material-symbols-outlined text-deep-terracotta text-2xl">memory</span>
+</div>
+<h3 class="font-h3 text-xl mb-3">Bassira Agents</h3>
+<p class="font-body-md text-sm text-on-surface-variant">Our computational models simulate complex interactions and outcomes.</p>
+</div>
+<!-- Step 3 -->
+<div class="bg-cream p-8 rounded-xl border border-charcoal-brown/10 relative z-10 text-center shadow-[0_4px_24px_rgba(161,63,15,0.02)]">
+<div class="w-16 h-16 bg-surface-container-high rounded-full flex items-center justify-center mx-auto mb-6 border border-charcoal-brown/5">
+<span class="material-symbols-outlined text-deep-terracotta text-2xl">article</span>
+</div>
+<h3 class="font-h3 text-xl mb-3">Branded Report</h3>
+<p class="font-body-md text-sm text-on-surface-variant">Receive quantifiable, actionable insights in a co-branded format.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Methodology Diagram & Co-branding Mockup -->
+<section class="max-w-container-max mx-auto px-gutter py-xl">
+<div class="grid md:grid-cols-2 gap-16">
+<!-- Methodology -->
+<div class="space-y-8">
+<h2 class="font-h2 text-h2 text-charcoal-brown">Methodology Architecture</h2>
+<div class="space-y-4">
+<div class="bg-cream p-6 border border-charcoal-brown/10 rounded-lg flex items-center gap-6">
+<div class="w-12 h-12 bg-[#fd8450]/20 rounded flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[#fd8450]">hub</span>
+</div>
+<div>
+<h4 class="font-label-sm uppercase tracking-wider text-charcoal-brown mb-1">Data Ingestion Nodes</h4>
+<p class="font-body-md text-sm text-on-surface-variant">Structured mapping of qualitative variables.</p>
+</div>
+<span class="material-symbols-outlined text-deep-mint ml-auto">arrow_forward</span>
+</div>
+<div class="bg-cream p-6 border border-charcoal-brown/10 rounded-lg flex items-center gap-6 ml-8">
+<div class="w-12 h-12 bg-[#fd8450]/20 rounded flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[#fd8450]">psychology</span>
+</div>
+<div>
+<h4 class="font-label-sm uppercase tracking-wider text-charcoal-brown mb-1">Agent Interaction Logic</h4>
+<p class="font-body-md text-sm text-on-surface-variant">Simulation of behavioral dynamics.</p>
+</div>
+<span class="material-symbols-outlined text-deep-mint ml-auto">arrow_forward</span>
+</div>
+<div class="bg-cream p-6 border border-charcoal-brown/10 rounded-lg flex items-center gap-6 ml-16">
+<div class="w-12 h-12 bg-[#fd8450]/20 rounded flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[#fd8450]">insights</span>
+</div>
+<div>
+<h4 class="font-label-sm uppercase tracking-wider text-charcoal-brown mb-1">Outcome Synthesis</h4>
+<p class="font-body-md text-sm text-on-surface-variant">Statistical aggregation of scenarios.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Co-branding Mockup -->
+<div>
+<h2 class="font-h2 text-h2 text-charcoal-brown mb-8">Co-branded Output</h2>
+<div class="bg-surface-container-highest p-8 rounded-xl border border-charcoal-brown/10 aspect-[3/4] flex flex-col justify-between">
+<div class="flex items-center justify-between border-b-2 border-deep-terracotta pb-6">
+<span class="font-h3 text-xl font-bold tracking-widest text-charcoal-brown">BASSIRA</span>
+<div class="h-6 w-[1px] bg-deep-terracotta/50"></div>
+<span class="font-h3 text-xl font-medium text-charcoal-brown/70">PARTNER</span>
+</div>
+<div class="space-y-4">
+<h3 class="font-h1 text-3xl leading-tight text-charcoal-brown">Strategic Foresight Report Q3</h3>
+<p class="font-label-sm text-deep-mint uppercase tracking-wider">Confidential Synthesis</p>
+</div>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<span class="material-symbols-outlined">insert_chart</span>
+<span class="font-label-sm">Computed from 10,000+ simulations</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Partnership Tiers -->
+<section class="bg-surface-container-low py-xl border-t border-charcoal-brown/10">
+<div class="max-w-container-max mx-auto px-gutter">
+<h2 class="font-h2 text-h2 text-center text-charcoal-brown mb-16">Partnership Models</h2>
+<div class="grid md:grid-cols-3 gap-6">
+<!-- Tier 1 -->
+<div class="bg-cream p-8 rounded-xl border border-charcoal-brown/10 flex flex-col">
+<h3 class="font-h3 text-xl mb-2">Research Partner</h3>
+<p class="font-body-md text-sm text-on-surface-variant mb-8 flex-grow">For think tanks and academic institutions requiring episodic access to simulation tools.</p>
+<button class="w-full py-3 border border-charcoal-brown/20 rounded font-label-sm hover:bg-surface-variant transition-colors">Explore</button>
+</div>
+<!-- Tier 2 (Featured) -->
+<div class="bg-cream p-8 rounded-xl border-2 border-[#fd8450] relative shadow-[0_8px_32px_rgba(161,63,15,0.08)] flex flex-col transform md:-translate-y-4">
+<div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#fd8450] text-white px-3 py-1 text-xs font-label-sm uppercase tracking-wider rounded-sm">Featured</div>
+<h3 class="font-h3 text-xl mb-2">Integration Partner</h3>
+<p class="font-body-md text-sm text-on-surface-variant mb-8 flex-grow">Continuous API access and deep workflow integration for enterprise intelligence units.</p>
+<ul class="space-y-3 mb-8">
+<li class="flex items-center gap-2 text-sm"><span class="material-symbols-outlined text-deep-mint text-sm">check</span> Dedicated compute instances</li>
+<li class="flex items-center gap-2 text-sm"><span class="material-symbols-outlined text-deep-mint text-sm">check</span> Custom agent definitions</li>
+<li class="flex items-center gap-2 text-sm"><span class="material-symbols-outlined text-deep-mint text-sm">check</span> Priority support SLA</li>
+</ul>
+<button class="w-full py-3 bg-deep-terracotta text-white rounded font-label-sm hover:opacity-90 transition-opacity">Contact Sales</button>
+</div>
+<!-- Tier 3 -->
+<div class="bg-cream p-8 rounded-xl border border-charcoal-brown/10 flex flex-col">
+<h3 class="font-h3 text-xl mb-2">White-label</h3>
+<p class="font-body-md text-sm text-on-surface-variant mb-8 flex-grow">Full platform embedding for consultancies delivering their own branded foresight services.</p>
+<button class="w-full py-3 border border-charcoal-brown/20 rounded font-label-sm hover:bg-surface-variant transition-colors">Inquire</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Testimonial -->
+<section class="max-w-container-max mx-auto px-gutter py-xl">
+<div class="bg-surface-container-high rounded-2xl p-12 md:p-16 border border-charcoal-brown/5 text-center relative overflow-hidden">
+<span class="material-symbols-outlined text-6xl text-deep-terracotta/10 absolute top-8 left-8">format_quote</span>
+<blockquote class="font-h3 text-2xl text-charcoal-brown leading-relaxed max-w-3xl mx-auto mb-8 relative z-10">
+                "The ability to translate our qualitative geopolitical analyses into robust, computable scenarios has fundamentally elevated the authority of our strategic advice. Bassira provides the empirical backbone to our expert intuition."
+            </blockquote>
+<div class="relative z-10">
+<p class="font-body-lg font-semibold text-charcoal-brown">Directeur de la Recherche</p>
+<p class="font-label-sm text-on-surface-variant uppercase tracking-wider mt-1">Policy Center for the New South</p>
+</div>
+</div>
+</section>
+<!-- Final CTA -->
+<section class="bg-charcoal-brown text-cream py-24 text-center" id="cta">
+<div class="max-w-3xl mx-auto px-gutter">
+<h2 class="font-h2 text-h2 mb-6">Prêt à transformer votre méthodologie ?</h2>
+<p class="font-body-md text-lg text-cream/70 mb-10">
+                Schedule a confidential consultation to discuss how our computational simulation platform can integrate with your specific research frameworks.
+            </p>
+<button class="bg-deep-terracotta text-white px-10 py-4 rounded-DEFAULT font-label-sm uppercase tracking-wider hover:bg-white hover:text-deep-terracotta transition-all duration-300">
+                Initier un partenariat stratégique
+            </button>
+</div>
+</section>
+<!-- Footer -->
+<footer class="bg-[#FAF7F2] dark:bg-[#1a1310] w-full border-t border-[#241915]/10 dark:border-[#FAF7F2]/10">
+<div class="flex flex-col md:flex-row justify-between items-center w-full px-8 py-12 max-w-[1280px] mx-auto gap-6">
+<div class="text-lg font-semibold text-[#A13F0F] font-['Outfit'] tracking-wide">
+                Foresight Platform
+            </div>
+<div class="flex flex-wrap justify-center gap-6 font-['Outfit'] text-sm tracking-wide">
+<a class="text-[#241915]/60 dark:text-[#FAF7F2]/60 hover:text-[#A13F0F] transition-colors ease-in-out duration-200" href="#">Privacy Framework</a>
+<a class="text-[#241915]/60 dark:text-[#FAF7F2]/60 hover:text-[#A13F0F] transition-colors ease-in-out duration-200" href="#">Methodology Disclosure</a>
+<a class="text-[#A13F0F] underline hover:text-[#A13F0F] transition-colors ease-in-out duration-200" href="#">Partnership Terms</a>
+<a class="text-[#241915]/60 dark:text-[#FAF7F2]/60 hover:text-[#A13F0F] transition-colors ease-in-out duration-200" href="#">Global Network</a>
+</div>
+<div class="text-[#241915] dark:text-[#FAF7F2] font-['Outfit'] text-sm tracking-wide">
+                © 2024 Institutional Foresight. All rights reserved.
+            </div>
+</div>
+</footer>
+</body></html>

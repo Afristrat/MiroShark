@@ -68,12 +68,12 @@
                 v-model="form.situation"
                 class="quote-radio-input"
               />
+              <span class="quote-radio-bullet" aria-hidden="true">
+                <span class="quote-radio-bullet-dot"></span>
+              </span>
               <span class="quote-radio-content">
                 <span class="quote-radio-title">{{ $t(`quote.step1.options.${opt.id}.title`) }}</span>
                 <span class="quote-radio-sub">{{ $t(`quote.step1.options.${opt.id}.sub`) }}</span>
-              </span>
-              <span class="quote-radio-bullet" aria-hidden="true">
-                <span class="quote-radio-bullet-dot"></span>
               </span>
             </label>
           </div>
@@ -106,59 +106,65 @@
           @submit.prevent="submit"
         >
           <h2 class="quote-step-title">{{ $t('quote.step2.title') }}</h2>
+          <p class="quote-step-subtitle">{{ $t('quote.step2.subtitle') }}</p>
 
-          <label class="quote-field-stitch">
-            <span class="quote-field-stitch-label">
-              {{ $t('quote.step2.fullName.label') }}
-              <span class="quote-required">*</span>
-            </span>
-            <input
-              v-model.trim="form.full_name"
-              type="text"
-              class="quote-input-stitch"
-              maxlength="100"
-              required
-              :placeholder="$t('quote.step2.fullName.placeholder')"
-            />
-          </label>
+          <!-- Grid 2 colonnes : nom/email puis organisation/role -->
+          <div class="quote-field-row">
+            <label class="quote-field-stitch">
+              <span class="quote-field-stitch-label">
+                {{ $t('quote.step2.fullName.label') }}
+                <span class="quote-required">*</span>
+              </span>
+              <input
+                v-model.trim="form.full_name"
+                type="text"
+                class="quote-input-stitch"
+                maxlength="100"
+                required
+                dir="ltr"
+                :placeholder="$t('quote.step2.fullName.placeholder')"
+              />
+            </label>
 
-          <label class="quote-field-stitch">
-            <span class="quote-field-stitch-label">
-              {{ $t('quote.step2.email.label') }}
-              <span class="quote-required">*</span>
-            </span>
-            <input
-              v-model.trim="form.email"
-              type="email"
-              class="quote-input-stitch"
-              required
-              :placeholder="$t('quote.step2.email.placeholder')"
-              :aria-invalid="form.email && !emailValid ? 'true' : 'false'"
-            />
-            <span
-              v-if="form.email && !emailValid"
-              class="quote-field-error"
-            >
-              {{ $t('quote.step2.email.invalid') }}
-            </span>
-          </label>
-
-          <label class="quote-field-stitch">
-            <span class="quote-field-stitch-label">
-              {{ $t('quote.step2.company.label') }}
-              <span class="quote-required">*</span>
-            </span>
-            <input
-              v-model.trim="form.company"
-              type="text"
-              class="quote-input-stitch"
-              maxlength="120"
-              required
-              :placeholder="$t('quote.step2.company.placeholder')"
-            />
-          </label>
+            <label class="quote-field-stitch">
+              <span class="quote-field-stitch-label">
+                {{ $t('quote.step2.email.label') }}
+                <span class="quote-required">*</span>
+              </span>
+              <input
+                v-model.trim="form.email"
+                type="email"
+                class="quote-input-stitch"
+                required
+                dir="ltr"
+                :placeholder="$t('quote.step2.email.placeholder')"
+                :aria-invalid="form.email && !emailValid ? 'true' : 'false'"
+              />
+              <span
+                v-if="form.email && !emailValid"
+                class="quote-field-error"
+              >
+                {{ $t('quote.step2.email.invalid') }}
+              </span>
+            </label>
+          </div>
 
           <div class="quote-field-row">
+            <label class="quote-field-stitch">
+              <span class="quote-field-stitch-label">
+                {{ $t('quote.step2.company.label') }}
+                <span class="quote-required">*</span>
+              </span>
+              <input
+                v-model.trim="form.company"
+                type="text"
+                class="quote-input-stitch"
+                maxlength="120"
+                required
+                :placeholder="$t('quote.step2.company.placeholder')"
+              />
+            </label>
+
             <label class="quote-field-stitch">
               <span class="quote-field-stitch-label">{{ $t('quote.step2.role.label') }}</span>
               <input
@@ -169,20 +175,21 @@
                 :placeholder="$t('quote.step2.role.placeholder')"
               />
             </label>
-            <label class="quote-field-stitch">
-              <span class="quote-field-stitch-label">{{ $t('quote.step2.deadline.label') }}</span>
-              <select v-model="form.target_deadline" class="quote-input-stitch quote-select">
-                <option value="">—</option>
-                <option
-                  v-for="opt in deadlineOptions"
-                  :key="opt"
-                  :value="opt"
-                >
-                  {{ $t(`quote.step2.deadline.options.${opt}`) }}
-                </option>
-              </select>
-            </label>
           </div>
+
+          <label class="quote-field-stitch">
+            <span class="quote-field-stitch-label">{{ $t('quote.step2.deadline.label') }}</span>
+            <select v-model="form.target_deadline" class="quote-input-stitch quote-select">
+              <option value="">—</option>
+              <option
+                v-for="opt in deadlineOptions"
+                :key="opt"
+                :value="opt"
+              >
+                {{ $t(`quote.step2.deadline.options.${opt}`) }}
+              </option>
+            </select>
+          </label>
 
           <label class="quote-consent-stitch">
             <input
@@ -616,27 +623,29 @@ onMounted(() => {
   align-items: center;
 }
 
-/* ── Trust banner (gris doux, top) ──────────────────── */
+/* ── Trust banner (mint icon, top — Stitch Step 1) ──── */
 .quote-trust-banner {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  background: #f3ede4;
+  gap: 12px;
+  background: var(--wi-bg);
   color: var(--stitch-on-surface-variant);
-  padding: 8px 16px;
-  border-radius: var(--wi-radius-pill);
+  padding: 10px 18px;
+  border-radius: var(--wi-radius-md);
+  border: 1px solid var(--stitch-outline-variant);
   font-family: var(--stitch-font-body);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   line-height: 1.4;
   margin-bottom: 32px;
   max-width: 100%;
-  text-align: center;
+  text-align: start;
 }
 .quote-trust-banner-icon {
-  font-size: 16px !important;
+  font-size: 18px !important;
   font-variation-settings: 'FILL' 1 !important;
-  color: var(--stitch-on-surface-variant);
+  /* Mint (--wi-secondary) — signal de protection souverain */
+  color: var(--stitch-secondary);
   flex-shrink: 0;
 }
 
@@ -659,39 +668,40 @@ onMounted(() => {
   }
 }
 
-/* ── Stepper 3 steps (rond + label) ─────────────────── */
+/* ── Stepper 3 steps (rond + label, fidèle Stitch Step 2) ─ */
 .quote-stepper {
   list-style: none;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  padding: 0;
-  margin: 0 0 48px 0;
+  gap: 0;
+  padding: 0 0 24px 0;
+  margin: 0 0 32px 0;
   position: relative;
 }
 
+/* Track de fond inactif (gris warm) qui traverse tout le stepper */
 .quote-stepper-line {
   position: absolute;
   top: 20px;
-  inset-inline-start: 0;
-  width: 100%;
-  height: 2px;
-  background: var(--stitch-stepper-line);
+  inset-inline-start: 20px;
+  inset-inline-end: 20px;
+  height: 1px;
+  background: var(--stitch-outline-variant);
   z-index: 0;
-  /* L'élément <li> sert juste de track ; pas de visuel interne. */
   list-style: none;
+  opacity: 0.4;
 }
 
 .quote-step {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 0;
   position: relative;
   z-index: 1;
-  background: var(--stitch-surface-container-lowest);
-  padding: 0 8px;
+  /* Pas de fond — la pastille couvre la ligne */
+  padding: 0;
   font-family: var(--stitch-font-body);
   font-size: 12px;
   font-weight: 500;
@@ -710,42 +720,57 @@ onMounted(() => {
   font-family: var(--stitch-font-body);
   font-size: 14px;
   font-weight: 700;
-  border: 2px solid var(--stitch-stepper-line);
-  background: var(--stitch-surface-container-lowest);
+  border: 1px solid var(--stitch-outline-variant);
+  background: var(--stitch-surface-container-highest);
   color: var(--stitch-on-surface-variant);
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .quote-step-check {
   font-size: 22px !important;
-  color: var(--stitch-on-primary);
+  /* Texte mint sur container mint clair */
+  color: var(--stitch-secondary);
+  font-variation-settings: 'FILL' 1 !important;
 }
 
+/* État courant : terracotta (--wi-on-primary-container) avec glow */
 .quote-step--current .quote-step-circle {
   background: var(--stitch-primary-container);
   border-color: var(--stitch-primary-container);
   color: var(--stitch-on-primary);
+  box-shadow: 0 0 0 4px rgba(255, 133, 81, 0.18);
 }
-.quote-step--current {
-  color: var(--stitch-primary);
+.quote-step--current .quote-step-label {
+  color: var(--stitch-primary-container);
   font-weight: 700;
 }
 
+/* État done : mint (--wi-secondary-container) avec checkmark */
 .quote-step--done .quote-step-circle {
-  background: var(--stitch-primary-container);
-  border-color: var(--stitch-primary-container);
-  color: var(--stitch-on-primary);
+  background: var(--wi-secondary-container);
+  border-color: var(--wi-secondary-container);
+  color: var(--stitch-secondary);
 }
 
 .quote-step-label {
-  font-size: 12px;
-  letter-spacing: 0.01em;
+  position: absolute;
+  top: calc(100% + 8px);
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  letter-spacing: 0.02em;
   white-space: nowrap;
+  color: var(--stitch-on-surface-variant);
+  font-family: var(--stitch-font-body);
+  font-weight: 500;
+}
+[dir="rtl"] .quote-step-label {
+  transform: translateX(50%);
 }
 
 @media (max-width: 480px) {
   .quote-step-label {
-    font-size: 11px;
+    font-size: 10px;
     letter-spacing: 0;
   }
 }
@@ -759,18 +784,27 @@ onMounted(() => {
 
 .quote-step-title {
   font-family: var(--stitch-font-display);
-  font-size: 32px;
+  font-size: 24px;
   font-weight: 600;
   line-height: 1.3;
   letter-spacing: -0.01em;
   color: var(--stitch-on-surface);
+  margin: 0 0 8px 0;
+  text-align: center;
+}
+
+.quote-step-subtitle {
+  font-family: var(--stitch-font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--stitch-on-surface-variant);
   margin: 0 0 16px 0;
   text-align: center;
 }
 
 @media (max-width: 480px) {
   .quote-step-title {
-    font-size: 24px;
+    font-size: 20px;
   }
 }
 
@@ -786,19 +820,23 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 24px;
-  background: var(--stitch-input-bg);
-  border: 1px solid var(--stitch-stepper-line);
-  border-radius: 16px;
+  padding: 20px 24px;
+  background: var(--stitch-surface-container-lowest);
+  border: 1px solid var(--stitch-outline-variant);
+  border-radius: var(--wi-radius-md);
   cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition: border-color 0.2s ease, background 0.2s ease, border-left-width 0.2s ease;
 }
 .quote-radio:hover {
   border-color: var(--stitch-primary-container);
+  background: var(--stitch-surface-container-low);
 }
+/* Sélection : border-left orange épaisse (3px) + fond orange soft */
 .quote-radio--checked {
-  border-color: var(--stitch-primary-container);
-  background: rgba(255, 133, 81, 0.04);
+  border-color: var(--stitch-outline-variant);
+  border-inline-start: 3px solid var(--stitch-primary-container);
+  padding-inline-start: 22px; /* compense les +2px de border */
+  background: var(--ms-orange-soft, rgba(255, 133, 81, 0.08));
 }
 
 .quote-radio-input {
@@ -1040,11 +1078,13 @@ onMounted(() => {
   padding: 24px 0;
 }
 
+/* Success icon : cercle mint translucide 80px + check_circle 64px outline mint
+   (fidèle au design Stitch "Demande envoyée") */
 .quote-success-icon {
   width: 80px;
   height: 80px;
   border-radius: var(--wi-radius-pill);
-  background: var(--stitch-secondary-container);
+  background: var(--ms-mint-soft);
   color: var(--stitch-secondary);
   display: inline-flex;
   align-items: center;
@@ -1052,8 +1092,8 @@ onMounted(() => {
   margin-bottom: 16px;
 }
 .quote-success-icon .material-symbols-outlined {
-  font-size: 48px !important;
-  font-variation-settings: 'FILL' 1 !important;
+  font-size: 64px !important;
+  font-variation-settings: 'FILL' 0 !important;
 }
 
 .quote-error-icon {

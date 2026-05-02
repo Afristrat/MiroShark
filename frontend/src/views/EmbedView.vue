@@ -1,87 +1,139 @@
 <template>
+  <!--
+    EmbedView — Bassira Embed Widget
+    ───────────────────────────────────────────────────────────────
+    Refonte Stitch (US-053 Warm Intelligence) :
+      - bandeau d'en-tête crème (--wi-bg) + wordmark BASSIRA
+      - badge catégoriel (couleur dépendante de quality.health)
+      - métrique-clé (Outfit 600, ~48px) + sparkline minimaliste
+      - liste de 3 « key findings » dérivée de consensus / résolution
+      - lien « View full simulation → »
+      - footer crème « Powered by Bassira · بصيرة »
+    Fonctionne dès 360 px, pensé pour l'intégration iframe (pas de
+    scroll lock, overflow maîtrisé, max-width 600 px).
+    Toute la logique data (simulationId, fetchData, refs) est
+    préservée — seul le rendu visuel change.
+  -->
   <div
     class="embed-widget"
     :class="[themeClass, { 'chart-only': chartOnly, 'compact': isCompact }]"
   >
     <div v-if="loading" class="embed-state">
-      <div class="embed-spinner"></div>
+      <div class="embed-spinner" aria-hidden="true"></div>
       <span>{{ $t('simulation.view.loading') }}</span>
     </div>
 
     <div v-else-if="error" class="embed-state embed-error">
       <span>{{ error }}</span>
-      <a class="embed-footer-link" :href="simulationUrl" target="_blank" rel="noopener">
+      <a class="embed-link" :href="simulationUrl" target="_blank" rel="noopener">
         {{ $t('embed.openInNewTab') }} ↗
       </a>
     </div>
 
     <template v-else>
-      <header v-if="!chartOnly" class="embed-header">
-        <div class="embed-scenario" :title="summary.scenario">{{ scenarioTitle }}</div>
-        <div class="embed-meta">
-          <span class="embed-pill status" :class="statusClass">{{ statusLabel }}</span>
-          <span v-if="hasRounds" class="embed-pill">
-            {{ $t('charts.common.round') }} {{ summary.current_round }}/{{ summary.total_rounds || summary.current_round }}
-          </span>
-          <span class="embed-pill">{{ $t('explore.card.agents', { count: summary.profiles_count || 0 }) }}</span>
-          <span v-if="summary.quality && summary.quality.health" class="embed-pill quality" :class="qualityClass">
-            {{ summary.quality.health }}
-          </span>
-        </div>
+      <!-- Bandeau d'en-tête crème : wordmark BASSIRA + icône lien externe -->
+      <header v-if="!chartOnly" class="embed-band embed-band--top">
+        <span class="embed-wordmark">BASSIRA</span>
+        <a
+          class="embed-icon-link"
+          :href="simulationUrl"
+          target="_blank"
+          rel="noopener"
+          :aria-label="$t('embed.openInNewTab')"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">open_in_new</span>
+        </a>
       </header>
 
-      <div class="embed-chart-wrap">
-        <svg
-          v-if="hasBelief"
-          class="embed-chart"
-          :viewBox="`0 0 ${CHART_W} ${CHART_H}`"
-          preserveAspectRatio="none"
-          xmlns="http://www.w3.org/2000/svg"
-          role="img"
-          :aria-label="chartAriaLabel"
-        >
-          <path :d="bullishPath" fill="var(--bullish)" opacity="0.85" />
-          <path :d="neutralPath" fill="var(--neutral)" opacity="0.85" />
-          <path :d="bearishPath" fill="var(--bearish)" opacity="0.85" />
-          <line
-            v-if="consensusX !== null"
-            :x1="consensusX" :x2="consensusX"
-            :y1="0" :y2="CHART_H"
-            stroke="var(--consensus-line)"
-            stroke-width="1.5"
-            stroke-dasharray="3,3"
-          />
-        </svg>
-        <div v-else class="embed-empty-chart">
-          <span>{{ $t('charts.belief.noData') || $t('charts.common.noData') }}</span>
+      <!-- Corps : meta + titre + métrique + sparkline + findings + CTA -->
+      <div class="embed-body">
+        <div v-if="!chartOnly" class="embed-meta-row">
+          <span v-if="categoryLabel" class="embed-badge" :class="`embed-badge--${categoryTone}`">
+            {{ categoryLabel }}
+          </span>
+          <span class="embed-meta-id">{{ metaIdLabel }}</span>
         </div>
 
-        <div v-if="hasBelief && !chartOnly" class="embed-final-row">
-          <span class="final-chip bullish">
-            <span class="chip-dot"></span>
-            {{ $t('scenarios.bull') }} {{ finalBullish }}%
-          </span>
-          <span class="final-chip neutral">
-            <span class="chip-dot"></span>
-            {{ $t('scenarios.neutral') }} {{ finalNeutral }}%
-          </span>
-          <span class="final-chip bearish">
-            <span class="chip-dot"></span>
-            {{ $t('scenarios.bear') }} {{ finalBearish }}%
-          </span>
+        <h2 v-if="!chartOnly" class="embed-title" :title="summary?.scenario">
+          {{ scenarioTitle }}
+        </h2>
+
+        <!-- Carte métrique : %  dominant + libellé + sparkline -->
+        <div class="embed-metric-card">
+          <div class="embed-metric-text">
+            <span class="embed-metric-value">{{ keyMetricValue }}</span>
+            <span class="embed-metric-label">{{ keyMetricLabel }}</span>
+          </div>
+          <svg
+            v-if="hasBelief"
+            class="embed-sparkline"
+            preserveAspectRatio="none"
+            :viewBox="`0 0 ${SPARK_W} ${SPARK_H}`"
+            role="img"
+            :aria-label="chartAriaLabel"
+          >
+            <defs>
+              <linearGradient :id="sparkGradientId" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="var(--wi-primary-container)" stop-opacity="0.45" />
+                <stop offset="100%" stop-color="var(--wi-primary-container)" stop-opacity="0" />
+              </linearGradient>
+            </defs>
+            <path
+              v-if="sparkArea"
+              :d="sparkArea"
+              :fill="`url(#${sparkGradientId})`"
+            />
+            <polyline
+              v-if="sparkLine"
+              :points="sparkLine"
+              fill="none"
+              stroke="var(--wi-primary-container)"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          <div v-else class="embed-sparkline-empty" aria-hidden="true">
+            <span class="material-symbols-outlined">show_chart</span>
+          </div>
         </div>
+
+        <!-- Liste des key findings dérivée des données disponibles -->
+        <ul v-if="!chartOnly && keyFindings.length" class="embed-findings">
+          <li
+            v-for="(finding, idx) in keyFindings"
+            :key="idx"
+            class="embed-finding"
+            :class="`embed-finding--${finding.tone}`"
+          >
+            <span
+              class="material-symbols-outlined embed-finding-icon"
+              aria-hidden="true"
+            >{{ finding.icon }}</span>
+            <span class="embed-finding-text">{{ finding.text }}</span>
+          </li>
+        </ul>
+
+        <!-- CTA texte « View full simulation → » -->
+        <a
+          v-if="!chartOnly"
+          class="embed-cta"
+          :href="simulationUrl"
+          target="_blank"
+          rel="noopener"
+        >
+          <span>{{ $t('embed.openInNewTab') }}</span>
+          <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+        </a>
       </div>
 
-      <footer v-if="!chartOnly" class="embed-footer">
-        <div class="embed-footer-left">
-          <span v-if="consensusLabel" class="embed-consensus">{{ consensusLabel }}</span>
-          <span v-if="resolutionLabel" class="embed-resolution" :class="resolutionClass">
-            {{ resolutionLabel }}
-          </span>
-        </div>
-        <a class="embed-footer-link" :href="simulationUrl" target="_blank" rel="noopener">
-          <strong>{{ $t('nav.brand') }}</strong> ↗
-        </a>
+      <!-- Bandeau de pied crème : attribution Bassira + بصيرة -->
+      <footer v-if="!chartOnly" class="embed-band embed-band--bottom">
+        <span class="embed-attribution">
+          Powered by Bassira
+          <span class="embed-attribution-dot" aria-hidden="true">·</span>
+          <span class="embed-attribution-arabic" lang="ar">بصيرة</span>
+        </span>
       </footer>
     </template>
   </div>
@@ -109,17 +161,22 @@ const theme = computed(() => (route.query.theme === 'dark' ? 'dark' : 'light'))
 const themeClass = computed(() => `theme-${theme.value}`)
 const chartOnly = computed(() => route.query.chart_only === 'true' || route.query.chart_only === '1')
 
-const CHART_W = 640
-const CHART_H = 180
+// Sparkline viewBox dimensions (responsive via CSS).
+const SPARK_W = 120
+const SPARK_H = 40
 
 const loading = ref(true)
 const error = ref('')
 const summary = ref(null)
 
+// Identifiant unique du gradient SVG : évite les collisions quand
+// plusieurs widgets co-existent sur la même page hôte.
+const sparkGradientId = `bassira-spark-${Math.random().toString(36).slice(2, 9)}`
+
 const scenarioTitle = computed(() => {
   const raw = (summary.value?.scenario || '').trim()
   if (!raw) return t('panels.history.noTitle')
-  return raw.length > 140 ? raw.slice(0, 140).trimEnd() + '…' : raw
+  return raw.length > 90 ? raw.slice(0, 90).trimEnd() + '…' : raw
 })
 
 const simulationUrl = computed(() => {
@@ -127,129 +184,229 @@ const simulationUrl = computed(() => {
   return `${window.location.origin}/simulation/${simulationId.value}/start`
 })
 
-const statusLabel = computed(() => {
-  if (!summary.value) return t('process.step2.step2.unknown')
+const statusKey = computed(() => {
+  if (!summary.value) return 'idle'
   const s = (summary.value.runner_status || summary.value.status || '').toLowerCase()
-  if (s === 'completed' || s === 'finished' || s === 'stopped') return t('simulation.run.completed')
-  if (s === 'running' || s === 'in_progress') return t('simulation.run.running')
-  if (s === 'error' || s === 'failed') return t('simulation.run.failed')
-  return s ? s.charAt(0).toUpperCase() + s.slice(1) : t('process.common.readyToLaunch')
+  if (s === 'completed' || s === 'finished' || s === 'stopped') return 'completed'
+  if (s === 'running' || s === 'in_progress') return 'running'
+  if (s === 'error' || s === 'failed') return 'failed'
+  return 'idle'
 })
 
-const statusClass = computed(() => {
-  const s = statusLabel.value.toLowerCase()
-  return `status-${s}`
-})
-
-const hasRounds = computed(() => {
-  if (!summary.value) return false
-  const total = summary.value.total_rounds || 0
-  const current = summary.value.current_round || 0
-  return total > 0 || current > 0
+const statusLabel = computed(() => {
+  switch (statusKey.value) {
+    case 'completed': return t('simulation.run.completed')
+    case 'running': return t('simulation.run.running')
+    case 'failed': return t('simulation.run.failed')
+    default: return t('process.common.readyToLaunch')
+  }
 })
 
 const hasBelief = computed(() => !!summary.value?.belief?.rounds?.length)
 
-const finalBullish = computed(() => summary.value?.belief?.final?.bullish ?? 0)
-const finalNeutral = computed(() => summary.value?.belief?.final?.neutral ?? 0)
-const finalBearish = computed(() => summary.value?.belief?.final?.bearish ?? 0)
+const finalBullish = computed(() => Math.round(summary.value?.belief?.final?.bullish ?? 0))
+const finalNeutral = computed(() => Math.round(summary.value?.belief?.final?.neutral ?? 0))
+const finalBearish = computed(() => Math.round(summary.value?.belief?.final?.bearish ?? 0))
 
-const qualityClass = computed(() => {
-  const h = (summary.value?.quality?.health || '').toLowerCase()
-  return `quality-${h || 'unknown'}`
+// Stance dominante calculée sur l'état final : alimente la métrique-clé.
+const dominantStance = computed(() => {
+  if (!hasBelief.value) return null
+  const bu = finalBullish.value
+  const ne = finalNeutral.value
+  const be = finalBearish.value
+  if (bu >= ne && bu >= be) return { key: 'bullish', value: bu }
+  if (be >= bu && be >= ne) return { key: 'bearish', value: be }
+  return { key: 'neutral', value: ne }
 })
 
-const consensusLabel = computed(() => {
-  const b = summary.value?.belief
-  if (!b?.consensus_round) return ''
-  return `Consensus formed at round ${b.consensus_round} (${b.consensus_stance})`
-})
-
-const resolutionLabel = computed(() => {
-  const r = summary.value?.resolution
-  if (!r) return ''
-  if (r.accuracy_score !== null && r.accuracy_score !== undefined) {
-    if (r.accuracy_score >= 1.0) return `✓ Correct · Actual ${r.actual_outcome}`
-    if (r.accuracy_score <= 0.0) return `✗ Missed · Actual ${r.actual_outcome}`
-    return `~ Split · Actual ${r.actual_outcome}`
+const keyMetricValue = computed(() => {
+  if (!hasBelief.value) {
+    // Fallback : afficher la progression (round courant / total) si pas de belief.
+    const total = summary.value?.total_rounds || 0
+    const current = summary.value?.current_round || 0
+    if (total > 0) return `${Math.round((current / total) * 100)}%`
+    return '—'
   }
-  return `Actual ${r.actual_outcome}`
+  return `${dominantStance.value?.value ?? 0}%`
 })
 
-const resolutionClass = computed(() => {
-  const r = summary.value?.resolution
-  if (!r || r.accuracy_score === null || r.accuracy_score === undefined) return 'neutral'
-  if (r.accuracy_score >= 1.0) return 'correct'
-  if (r.accuracy_score <= 0.0) return 'wrong'
-  return 'split'
+const keyMetricLabel = computed(() => {
+  if (!hasBelief.value) {
+    if ((summary.value?.total_rounds || 0) > 0) return t('charts.common.round')
+    return statusLabel.value
+  }
+  const k = dominantStance.value?.key
+  if (k === 'bullish') return t('scenarios.bull')
+  if (k === 'bearish') return t('scenarios.bear')
+  return t('scenarios.neutral')
 })
+
+// Catégorie / badge : dérivée de quality.health (excellent/good/low) ou
+// du statut runner. Donne le ton coloré du badge en haut du widget.
+const categoryLabel = computed(() => {
+  const h = (summary.value?.quality?.health || '').toLowerCase()
+  if (h) return h.charAt(0).toUpperCase() + h.slice(1)
+  return statusLabel.value
+})
+
+const categoryTone = computed(() => {
+  const h = (summary.value?.quality?.health || '').toLowerCase()
+  if (h === 'excellent') return 'mint'
+  if (h === 'good') return 'peach'
+  if (h === 'low' || h === 'poor') return 'terracotta'
+  if (statusKey.value === 'failed') return 'terracotta'
+  if (statusKey.value === 'running') return 'orange'
+  return 'orange'
+})
+
+// Méta : ID raccourci + date de création (formattée yyyy-mm-dd → DD MMM YYYY).
+const metaIdLabel = computed(() => {
+  const id = (summary.value?.simulation_id || simulationId.value || '').toString()
+  const shortId = id ? `SIM-${id.slice(0, 6).toUpperCase()}` : 'SIM-—'
+  const date = (summary.value?.created_date || '').trim()
+  if (!date) return shortId
+  return `${shortId} · ${formatDate(date)}`
+})
+
+function formatDate(iso) {
+  // iso : "YYYY-MM-DD" ou ISO complet ; on tolère un parse échoué.
+  try {
+    const d = new Date(iso)
+    if (Number.isNaN(d.getTime())) return iso
+    return d.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })
+  } catch {
+    return iso
+  }
+}
 
 const chartAriaLabel = computed(() => {
   if (!hasBelief.value) return 'No belief trajectory'
   return `Belief drift across ${summary.value.belief.rounds.length} rounds`
 })
 
-// Stacked area chart paths — stack order bullish (top), neutral (middle), bearish (bottom).
-// Each row sums to 100, so we paint the three bands as full-width stacked polygons.
-const stackPaths = computed(() => {
-  if (!hasBelief.value) return { bullish: '', neutral: '', bearish: '' }
-
-  const rounds = summary.value.belief.rounds
-  const bu = summary.value.belief.bullish
-  const ne = summary.value.belief.neutral
-  const be = summary.value.belief.bearish
-
-  const n = rounds.length
-  const xStep = n > 1 ? CHART_W / (n - 1) : CHART_W
-  const yFor = (pct) => CHART_H - (pct / 100) * CHART_H
-
-  const pts = (topSeries) => {
-    const top = topSeries.map((v, i) => `${(i * xStep).toFixed(2)},${yFor(v).toFixed(2)}`).join(' ')
-    return top
-  }
-
-  // Running top of each stacked band (cumulative percentage from bottom).
-  const bullishTop = bu.map(() => 100) // bullish always caps at 100
-  const neutralTop = bu.map((_, i) => ne[i] + be[i])
-  const bearishTop = be.map((v) => v)
-
-  const bottomLine = Array(n).fill(0)
-
-  const buildBand = (topSeries, bottomSeries) => {
-    const top = topSeries.map((v, i) => `${(i * xStep).toFixed(2)},${yFor(v).toFixed(2)}`).join(' L ')
-    const bottom = bottomSeries
-      .map((v, i) => `${((n - 1 - i) * xStep).toFixed(2)},${yFor(v).toFixed(2)}`)
-      .join(' L ')
-    return `M ${top} L ${bottom} Z`
-  }
-
-  const reversedBottomFor = (arr) => [...arr].reverse()
-
-  return {
-    bullish: buildBand(bullishTop, reversedBottomFor(neutralTop)),
-    neutral: buildBand(neutralTop, reversedBottomFor(bearishTop)),
-    bearish: buildBand(bearishTop, reversedBottomFor(bottomLine))
-  }
+// Sparkline : on trace la trajectoire bullish (ou la stance dominante)
+// sur la durée de la simulation. Une seule polyline + un fill dégradé.
+const sparkSeries = computed(() => {
+  if (!hasBelief.value) return []
+  const k = dominantStance.value?.key || 'bullish'
+  const series = summary.value.belief[k] || summary.value.belief.bullish || []
+  return series.map((v) => Math.max(0, Math.min(100, Number(v) || 0)))
 })
 
-const bullishPath = computed(() => stackPaths.value.bullish)
-const neutralPath = computed(() => stackPaths.value.neutral)
-const bearishPath = computed(() => stackPaths.value.bearish)
+const sparkLine = computed(() => {
+  const series = sparkSeries.value
+  if (series.length === 0) return ''
+  if (series.length === 1) {
+    // Trace une ligne plate horizontale au lieu d'un point isolé.
+    const y = (SPARK_H * (1 - series[0] / 100)).toFixed(2)
+    return `0,${y} ${SPARK_W},${y}`
+  }
+  const xStep = SPARK_W / (series.length - 1)
+  return series
+    .map((v, i) => `${(i * xStep).toFixed(2)},${(SPARK_H * (1 - v / 100)).toFixed(2)}`)
+    .join(' ')
+})
 
-const consensusX = computed(() => {
+const sparkArea = computed(() => {
+  const series = sparkSeries.value
+  if (series.length === 0) return ''
+  if (series.length === 1) {
+    const y = (SPARK_H * (1 - series[0] / 100)).toFixed(2)
+    return `M 0,${y} L ${SPARK_W},${y} L ${SPARK_W},${SPARK_H} L 0,${SPARK_H} Z`
+  }
+  const xStep = SPARK_W / (series.length - 1)
+  const top = series
+    .map((v, i) => `${(i * xStep).toFixed(2)},${(SPARK_H * (1 - v / 100)).toFixed(2)}`)
+    .join(' L ')
+  return `M ${top} L ${SPARK_W},${SPARK_H} L 0,${SPARK_H} Z`
+})
+
+// Key findings : liste de 2-3 entrées dérivées des données disponibles
+// (consensus, résolution, qualité, statut). Chaque entrée a un ton
+// (success / warning / info) qui colore l'icône Material Symbols.
+const keyFindings = computed(() => {
+  const items = []
   const b = summary.value?.belief
-  if (!b?.consensus_round || !b.rounds?.length) return null
-  const idx = b.rounds.indexOf(b.consensus_round)
-  if (idx < 0) return null
-  const n = b.rounds.length
-  const xStep = n > 1 ? CHART_W / (n - 1) : CHART_W
-  return idx * xStep
+  const r = summary.value?.resolution
+  const q = summary.value?.quality
+
+  if (b?.consensus_round && b?.consensus_stance) {
+    items.push({
+      tone: 'success',
+      icon: 'check_circle',
+      text: `Consensus ${b.consensus_stance} formé au round ${b.consensus_round}.`
+    })
+  } else if (b && b.rounds?.length) {
+    items.push({
+      tone: 'info',
+      icon: 'trending_flat',
+      text: `Aucun consensus majoritaire sur ${b.rounds.length} rounds.`
+    })
+  }
+
+  if (r) {
+    if (r.accuracy_score !== null && r.accuracy_score !== undefined) {
+      if (r.accuracy_score >= 1.0) {
+        items.push({
+          tone: 'success',
+          icon: 'check_circle',
+          text: `Prédiction correcte — outcome réel : ${r.actual_outcome}.`
+        })
+      } else if (r.accuracy_score <= 0.0) {
+        items.push({
+          tone: 'warning',
+          icon: 'warning',
+          text: `Prédiction manquée — outcome réel : ${r.actual_outcome}.`
+        })
+      } else {
+        items.push({
+          tone: 'warning',
+          icon: 'warning',
+          text: `Résolution partielle — outcome réel : ${r.actual_outcome}.`
+        })
+      }
+    } else if (r.actual_outcome) {
+      items.push({
+        tone: 'info',
+        icon: 'info',
+        text: `Outcome observé : ${r.actual_outcome}.`
+      })
+    }
+  }
+
+  if (q?.health) {
+    const h = q.health.toLowerCase()
+    if (h === 'excellent' || h === 'good') {
+      items.push({
+        tone: 'success',
+        icon: 'check_circle',
+        text: `Qualité simulation : ${q.health}.`
+      })
+    } else {
+      items.push({
+        tone: 'warning',
+        icon: 'warning',
+        text: `Vigilance qualité : ${q.health}.`
+      })
+    }
+  }
+
+  // Repli si la simulation est encore en cours / vide : on sert le statut.
+  if (items.length === 0) {
+    items.push({
+      tone: 'info',
+      icon: 'info',
+      text: statusLabel.value
+    })
+  }
+
+  return items.slice(0, 3)
 })
 
 const isCompact = computed(() => {
-  // Detect narrow iframe — 480×240 preset
+  // Détection iframe étroite — passe en mode compact sous 480 px de largeur.
   if (typeof window === 'undefined') return false
-  return window.innerWidth < 520
+  return window.innerWidth < 480
 })
 
 const fetchData = async () => {
@@ -274,8 +431,8 @@ const fetchData = async () => {
 
 onMounted(() => {
   fetchData()
-  // Remove body padding set by main app shell styles (if any) so the embed
-  // renders edge-to-edge inside an iframe host.
+  // Hôte iframe : on neutralise les paddings/backgrounds résiduels du shell
+  // applicatif pour que le widget s'affiche edge-to-edge sans halo.
   if (typeof document !== 'undefined') {
     document.body.style.margin = '0'
     document.body.style.padding = '0'
@@ -286,75 +443,58 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* ════════════════════════════════════════════════════════════════
+   EmbedView — alignement design Stitch « Bassira Embed Widget »
+   Tokens utilisés : --wi-* (Warm Intelligence) + fallback --ms-*.
+   ZÉRO hex hardcodé, responsive 360 px → 600 px.
+   ════════════════════════════════════════════════════════════════ */
 .embed-widget {
-  --bg: var(--ms-text-on-color);
-  --fg: var(--li);
-  --muted: var(--ms-text-muted);
-  --border: var(--ms-border);
-  --pill-bg: rgba(10, 10, 10, 0.05);
-  --pill-fg: var(--li);
-  --bullish: var(--ms-mint);       /* #7FD8A6 — teal/vert pour bullish */
-  --neutral: var(--ms-text-subtle); /* #9696A6 — gris neutre */
-  --bearish: var(--ms-rose);       /* #F4847A — rouge/saumon pour bearish */
-  --consensus-line: rgba(10, 10, 10, 0.45);
-  --link-color: var(--ms-status-orange-amber);
-
   box-sizing: border-box;
   width: 100%;
-  height: 100vh;
+  max-width: 600px;
   min-height: 220px;
-  padding: 16px 18px;
-  background: var(--bg);
-  color: var(--fg);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-size: 13px;
-  line-height: 1.45;
+  margin: 0 auto;
+  background: var(--wi-surface);
+  color: var(--wi-on-surface);
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-body-md);
+  line-height: var(--wi-body-md-leading);
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  border-radius: 8px;
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-md);
+  box-shadow: var(--wi-shadow-sm);
   overflow: hidden;
 }
 
-.embed-widget.theme-dark {
-  --bg: #0f1115; /* TODO US-027 : pas de token ms-* dark disponible */
-  --fg: #f4f4f5; /* TODO US-027 */
-  --muted: #a1a1aa; /* TODO US-027 */
-  --border: rgba(244, 244, 245, 0.12);
-  --pill-bg: rgba(244, 244, 245, 0.08);
-  --pill-fg: #f4f4f5; /* TODO US-027 */
-  --consensus-line: rgba(244, 244, 245, 0.55);
-}
-
+/* Variant chart-only : on retire les bandeaux et on resserre le padding. */
 .embed-widget.chart-only {
-  padding: 8px;
-  gap: 4px;
+  min-height: 120px;
+  border-radius: var(--wi-radius-sm);
 }
 
-.embed-widget.compact {
-  font-size: 12px;
-  padding: 12px 14px;
-}
-
+/* États (loading / error) */
 .embed-state {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  gap: 8px;
-  color: var(--muted);
+  gap: var(--wi-space-xs);
+  padding: var(--wi-space-md);
+  color: var(--wi-on-surface-variant);
+  font-size: var(--wi-body-md);
 }
 
 .embed-error {
-  color: var(--bearish);
+  color: var(--wi-error);
 }
 
 .embed-spinner {
   width: 22px;
   height: 22px;
-  border: 2px solid var(--border);
-  border-top-color: var(--fg);
+  border: 2px solid var(--wi-outline-variant);
+  border-top-color: var(--wi-primary);
   border-radius: 50%;
   animation: embed-spin 0.9s linear infinite;
 }
@@ -363,180 +503,362 @@ onMounted(() => {
   to { transform: rotate(360deg); }
 }
 
-.embed-header {
+/* Bandeaux crème (header + footer) */
+.embed-band {
+  background: var(--wi-bg);
+  padding: var(--wi-space-xs) var(--wi-space-sm);
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--wi-outline-variant);
 }
 
-.embed-scenario {
+.embed-band--bottom {
+  border-top: 1px solid var(--wi-outline-variant);
+  border-bottom: none;
+  justify-content: center;
+}
+
+.embed-wordmark {
+  font-family: var(--wi-font-heading);
   font-weight: 600;
-  font-size: 14px;
-  letter-spacing: 0.005em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: var(--wi-caption);
+  letter-spacing: 0.18em;
+  color: var(--wi-on-bg);
+  text-transform: uppercase;
 }
 
-.embed-widget.compact .embed-scenario {
-  font-size: 13px;
-}
-
-.embed-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.embed-pill {
+.embed-icon-link {
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: var(--pill-bg);
-  color: var(--pill-fg);
-  font-size: 11px;
-  font-weight: 500;
+  justify-content: center;
+  color: var(--wi-outline);
+  text-decoration: none;
+  transition: color var(--ms-transition-fast, 150ms ease);
+}
+
+.embed-icon-link:hover,
+.embed-icon-link:focus-visible {
+  color: var(--wi-primary);
+  outline: none;
+}
+
+.embed-icon-link .material-symbols-outlined {
+  font-size: 18px;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.embed-attribution {
+  font-family: var(--wi-font-heading);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--wi-outline);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.embed-attribution-dot {
+  opacity: 0.6;
+  letter-spacing: 0;
+}
+
+.embed-attribution-arabic {
+  font-family: 'Tajawal', var(--wi-font-body);
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--wi-on-bg);
+}
+
+/* Corps du widget */
+.embed-body {
+  padding: var(--wi-space-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--wi-space-sm);
+}
+
+.embed-widget.chart-only .embed-body {
+  padding: var(--wi-space-xs);
+  gap: var(--wi-space-xs);
+}
+
+/* Méta-row : badge + identifiant */
+.embed-meta-row {
+  display: flex;
+  align-items: center;
+  gap: var(--wi-space-xs);
+  flex-wrap: wrap;
+}
+
+.embed-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: var(--wi-radius-sm);
+  font-family: var(--ms-font-mono);
+  font-size: var(--wi-caption);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   white-space: nowrap;
 }
 
-.embed-pill.status.status-completed {
-  background: rgba(14, 165, 160, 0.15);
-  color: var(--bullish);
+.embed-badge--orange {
+  background: var(--wi-primary-container);
+  color: var(--wi-on-primary-container);
 }
 
-.embed-pill.status.status-running {
-  background: rgba(234, 88, 12, 0.15);
-  color: var(--link-color);
+.embed-badge--mint {
+  background: var(--wi-secondary-container);
+  color: var(--wi-on-secondary-container);
 }
 
-.embed-pill.status.status-failed {
-  background: rgba(240, 120, 103, 0.15);
-  color: var(--bearish);
-}
-
-.embed-pill.quality.quality-excellent {
-  background: rgba(14, 165, 160, 0.15);
-  color: var(--bullish);
-}
-
-.embed-pill.quality.quality-good {
-  background: rgba(234, 179, 8, 0.15);
+.embed-badge--peach {
+  background: var(--ms-peach-soft);
   color: var(--ms-status-warning-text);
 }
 
-.embed-widget.theme-dark .embed-pill.quality.quality-good {
-  color: var(--ms-peach); /* #FFB347 — approximation de #facc15 en thème dark */
+.embed-badge--terracotta {
+  background: var(--wi-error-container);
+  color: var(--wi-on-error-container);
 }
 
-.embed-pill.quality.quality-low {
-  background: rgba(240, 120, 103, 0.15);
-  color: var(--bearish);
-}
-
-.embed-chart-wrap {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-height: 80px;
-}
-
-.embed-chart {
-  flex: 1;
-  width: 100%;
-  height: 100%;
-  border-radius: 4px;
-  background: var(--pill-bg);
-}
-
-.embed-empty-chart {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px dashed var(--border);
-  border-radius: 4px;
-  color: var(--muted);
-  font-size: 11px;
-}
-
-.embed-final-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.final-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 8px;
-  border-radius: 999px;
-  background: var(--pill-bg);
-  color: var(--pill-fg);
-  font-size: 11px;
-  font-weight: 500;
-}
-
-.chip-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-}
-
-.final-chip.bullish .chip-dot { background: var(--bullish); }
-.final-chip.neutral .chip-dot { background: var(--neutral); }
-.final-chip.bearish .chip-dot { background: var(--bearish); }
-
-.embed-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding-top: 6px;
-  border-top: 1px solid var(--border);
-  color: var(--muted);
-  font-size: 11px;
-}
-
-.embed-footer-left {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  min-width: 0;
-}
-
-.embed-consensus {
+.embed-meta-id {
+  font-family: var(--ms-font-mono);
+  font-size: var(--wi-caption);
+  color: var(--wi-outline);
+  letter-spacing: 0.04em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 55ch;
 }
 
-.embed-resolution {
+/* Titre H3 */
+.embed-title {
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-h3-size);
+  font-weight: var(--wi-h3-weight);
+  line-height: var(--wi-h3-leading);
+  letter-spacing: -0.01em;
+  color: var(--wi-on-surface);
+  margin: 0;
+}
+
+.embed-widget.compact .embed-title {
+  font-size: 20px;
+}
+
+/* Carte métrique : valeur + libellé + sparkline */
+.embed-metric-card {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--wi-space-sm);
+  padding: var(--wi-space-sm);
+  background: var(--wi-surface-container-low);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-md);
+}
+
+.embed-metric-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.embed-metric-value {
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-h1-size);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: var(--wi-h1-tracking);
+  color: var(--wi-on-surface);
+}
+
+.embed-widget.compact .embed-metric-value {
+  font-size: 36px;
+}
+
+.embed-metric-label {
+  font-family: var(--wi-font-body);
+  font-size: 13px;
+  color: var(--wi-on-surface-variant);
+  text-transform: capitalize;
+}
+
+.embed-sparkline {
+  flex-shrink: 0;
+  width: 128px;
+  height: 48px;
+}
+
+.embed-widget.compact .embed-sparkline {
+  width: 96px;
+  height: 36px;
+}
+
+.embed-sparkline-empty {
+  flex-shrink: 0;
+  width: 128px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--wi-outline-variant);
+}
+
+.embed-sparkline-empty .material-symbols-outlined {
+  font-size: 32px;
+}
+
+/* Liste key findings */
+.embed-findings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wi-space-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+  color: var(--wi-on-surface);
+}
+
+.embed-finding {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  line-height: 1.5;
+}
+
+.embed-finding-icon {
+  flex-shrink: 0;
+  font-size: 18px;
+  margin-top: 1px;
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.embed-finding--success .embed-finding-icon {
+  color: var(--wi-secondary);
+}
+
+.embed-finding--warning .embed-finding-icon {
+  color: var(--wi-primary);
+}
+
+.embed-finding--info .embed-finding-icon {
+  color: var(--wi-tertiary);
+}
+
+.embed-finding--warning .embed-finding-text {
+  color: var(--wi-on-surface-variant);
+  font-style: italic;
+}
+
+.embed-finding-text {
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+}
+
+/* CTA texte « View full simulation → » */
+.embed-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  font-family: var(--wi-font-body);
+  font-size: 14px;
   font-weight: 600;
-}
-
-.embed-resolution.correct { color: var(--bullish); }
-.embed-resolution.wrong { color: var(--bearish); }
-.embed-resolution.split { color: var(--muted); }
-
-.embed-footer-link {
-  color: var(--link-color);
+  color: var(--wi-on-primary-container);
   text-decoration: none;
-  font-weight: 500;
-  white-space: nowrap;
+  transition: color var(--ms-transition-fast, 150ms ease);
 }
 
-.embed-footer-link:hover {
+.embed-cta:hover,
+.embed-cta:focus-visible {
+  color: var(--wi-primary);
+  outline: none;
+}
+
+.embed-cta .material-symbols-outlined {
+  font-size: 16px;
+  font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+  transition: transform var(--ms-transition-fast, 150ms ease);
+}
+
+.embed-cta:hover .material-symbols-outlined {
+  transform: translateX(2px);
+}
+
+.embed-link {
+  color: var(--wi-on-primary-container);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.embed-link:hover {
   text-decoration: underline;
 }
 
-.embed-footer-link strong {
-  font-weight: 700;
-  letter-spacing: 0.02em;
+/* ── Mode compact (largeur < 480 px) ── */
+.embed-widget.compact .embed-band {
+  padding: 6px var(--wi-space-sm);
+}
+
+.embed-widget.compact .embed-body {
+  padding: var(--wi-space-sm);
+  gap: 12px;
+}
+
+.embed-widget.compact .embed-metric-card {
+  padding: 12px;
+}
+
+/* ── Responsive ≤ 360 px (limite basse iframe) ── */
+@media (max-width: 360px) {
+  .embed-widget {
+    border-radius: 0;
+  }
+
+  .embed-title {
+    font-size: 18px;
+  }
+
+  .embed-metric-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .embed-metric-value {
+    font-size: 36px;
+  }
+
+  .embed-sparkline,
+  .embed-sparkline-empty {
+    width: 100%;
+    height: 36px;
+  }
+}
+
+/* ── RTL : direction inversée pour l'arabe ── */
+:global([lang="ar"]) .embed-cta .material-symbols-outlined {
+  transform: scaleX(-1);
+}
+
+:global([lang="ar"]) .embed-cta:hover .material-symbols-outlined {
+  transform: scaleX(-1) translateX(2px);
+}
+
+/* ── Dark mode (US-027) ──
+   Les tokens --wi-* sont déjà overridés via [data-theme="dark"] dans
+   design-tokens.css ; rien à patcher ici, juste un léger ajustement
+   d'opacité du wordmark pour rester lisible sur le surface sombre. */
+.embed-widget.theme-dark .embed-wordmark {
+  color: var(--wi-on-bg);
 }
 </style>
