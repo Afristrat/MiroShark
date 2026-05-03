@@ -2598,6 +2598,47 @@
                 "test_result": "82 paramétrés PASS sur test_models_pdf.py + 505 PASS pytest complet (vs ~423 baseline annoncée — pas de régression)",
                 "deliverables_for_rdv": "backend/uploads/demo_pdfs/ contient 15 PDFs imprimables A4 (10-11 KB FR/EN, 56-58 KB AR avec fonte embedded)"
             }
+        },
+        {
+            "id": "US-089",
+            "chantier": "L-models-pdf-brief",
+            "title": "Correction DEFCON 1 modèles publics — purge claims factuels non vérifiés",
+            "description": "Audit DEFCON 1 sur les 5 modèles publics livrés en US-086/US-088 : 4 claims factuellement faux (Khalid Bouaza inventé / circulaire BAM 26/G/2006 mal sourcée / fusion BMCI-BNP inexistante / chiffre INSEE 6,8M faux d un facteur 3) et 6 imprécisions (CCC France / crises nominatives Carrefour-Inwi-RAM-Heineken-Boohoo-BrewDog / Maroc loi paiement 2018 / CBN guidelines 2020 / sigle BCB / Maroc Telecom Pension Fund). Purge intégrale et régénération des 15 PDFs publics avec contenu corrigé.",
+            "acceptanceCriteria": [
+                "Aucune occurrence des chaînes interdites dans les 10 fichiers JSON (5 paires frontend+backend)",
+                "Aucune occurrence des chaînes interdites dans les 15 PDFs régénérés (vérifié PyMuPDF)",
+                "Identité frontend/backend préservée pour les 5 modèles (diff vide)",
+                "JSON valides (parsing OK)",
+                "Nouvelles formulations vérifiables présentes : loi 103-12 + Holmarcom + Saham Bank dans fusion-bancaire-mena, 2,2 M + Trajectoires et Origines dans lancement-diaspora-eu, ARCOM dans crisis-drill-24h, CBN+CBRT+103-12 dans stress-test-politique, AVCA + CDG Capital dans allocation-fonds-strategique",
+                "pytest backend complet : 0 régression (>=505 passed)",
+                "frontend npm run build : OK"
+            ],
+            "passes": true,
+            "completedAt": "2026-05-03T15:07:12Z",
+            "dependencies": [
+                "US-086",
+                "US-088"
+            ],
+            "metadata": {
+                "estimated_hours": 1,
+                "priority": "P0-DEFCON1",
+                "claims_corrected": 10,
+                "files_modified": [
+                    "frontend/src/models/fusion-bancaire-mena.json",
+                    "backend/app/models_data/fusion-bancaire-mena.json",
+                    "frontend/src/models/lancement-diaspora-eu.json",
+                    "backend/app/models_data/lancement-diaspora-eu.json",
+                    "frontend/src/models/crisis-drill-24h.json",
+                    "backend/app/models_data/crisis-drill-24h.json",
+                    "frontend/src/models/stress-test-politique.json",
+                    "backend/app/models_data/stress-test-politique.json",
+                    "frontend/src/models/allocation-fonds-strategique.json",
+                    "backend/app/models_data/allocation-fonds-strategique.json"
+                ],
+                "pdfs_regenerated": 15,
+                "tests_passing": 505,
+                "verification": "PyMuPDF check : 0 chaîne interdite dans les 15 PDFs FR/EN/AR"
+            }
         }
     ]
 }
