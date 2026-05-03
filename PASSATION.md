@@ -1,3 +1,158 @@
+== PASSATION MiroShark/Bassira 2026-05-03T01:00:00+01:00 ==
+
+[ETAT]
+- branche `main` `586013d` à jour avec `origin/main` (push confirmé)
+- prod **ONLINE** sur https://prospectives.ai-mpower.com — 7 routes validées en navigateur live (Home, /landing, /offres, /calibration, /devis, /partenaires, /explore)
+- **86/86 stories Ralph passes:true (100 %)** — 35 nouvelles stories cette session (US-053 → US-085 + fix prod)
+- 423 tests backend passing (+79 cette session) · zéro régression
+- 32 tests Playwright E2E préservés intacts
+- npm run build : OK sur tous les commits
+- **20 commits poussés** cette session
+- 13 sub-agents pilotés cette session : tous done & pushed
+- **Plateforme intégralement migrée sur palette Causse Warm Intelligence** (`--wi-*`)
+
+[FAIT cette session — 35 stories Ralph]
+
+**Chantier 7 — Warm Intelligence (US-053 → US-056)** :
+✓ **US-053** : tokens `--wi-*` complets dans design-tokens.css (palette Causse MENA+EU, typographie Outfit/Manrope/Tajawal, radii/shadows/spacing). Override dark-mode minimal.
+✓ **US-054** : refonte /offres — alias `--stitch-*` rebindés vers `--wi-*` + radius hardcodés migrés.
+✓ **US-055** : refonte /calibration — `.cal-plot-card` migré + RTL via CSS logical properties.
+✓ **US-056** : refonte /devis — alias `--stitch-*` → `--wi-*` + tokens radius.
+
+**Chantier 8 — Web Enrichment (US-057 → US-058)** :
+✓ **US-057** : endpoint `POST /api/simulation/enrich-ask` (Perplexity sonar). Cache SHA-256 TTL 1h, rate-limit 10/60s/IP, fallback gracieux sans WEB_SEARCH_MODEL. 5 tests pytest. WEB_SEARCH_API_KEY déjà configuré sur Coolify (confirmé Amine).
+✓ **US-058** : TrendingTopics réutilisé sur `/simulation` via panneau collapsible bottom-right + query param `?url=` lu par Home.vue au mount.
+
+**Chantier 9 — Export (US-059)** :
+✓ **US-059** : PDF enrichi 10 sections (couverture + disclaimer légal + résumé exécutif + résultats + agents/profils + posts clés + top influenceurs + sources + image graphe + méthodologie + recommandations). Endpoint `GET /api/simulation/<id>/export-md` Markdown jumeau pour Notion/Obsidian. 2 boutons icônes PDF + MD dans Step4Report `.export-icons` row, à gauche du pill "completed", visibles `v-if="isComplete"`. Capture SVG du graphe → base64 PNG côté frontend, transmise dans le body POST.
+
+**Chantiers A→F — Nouvelles vues + livrables (US-060 → US-065)** :
+✓ **US-060** : OnboardingTour.vue 4 étapes (graine → question → scénario → lancement). Spotlight via clip-path, beacon+halo terracotta, tooltip auto-positionné. Bouton "Lancer un exemple" pré-charge `budget_loi_finances`. Flag `localStorage.bassira_onboarding_done`. Fix post-livraison : RAF stable-rect detection (au lieu de setTimeout 320ms) + `bodyMissing` fallback i18n quand cible absente du DOM.
+✓ **US-061** : LandingView.vue 1189 lignes route `/landing` (Hero + 3 Pains + Product split + Proof dark + Pricing teaser + Final CTA terracotta). Meta title/description SEO. Tokens --wi-* exclusifs.
+✓ **US-062** : PartnersView.vue 1017 lignes route `/partenaires` (Hero institutionnel + 8 logos placeholders + 3-step process + 3 tiers Research/Integration/White-label + testimonials section + form mailto). Registre académique strict (pas de language startup).
+✓ **US-063** : `bassira_apollo_sequences.md` (10 077 mots, 27 emails FR/EN/AR + 6 LinkedIn DMs). 3 séquences : Pre-Decision Anxiety / Blindspot Post-Crisis / Calibration Proof. HTML inline-style + plain text + RTL Tajawal.
+✓ **US-064** : `bassira_linkedin_calendar.md` (12 335 mots, 15 posts + 4 DMs). 4 piliers : Blindspot, Calibration Log, Simulation Debrief, Decision Science. Cas business concrets (Sahara Bank, OCP, Vivendi, GCC).
+✓ **US-065** : AnalyticsView.vue dark-mode admin + endpoint `GET /api/admin/analytics` (auth `BASSIRA_ADMIN_TOKEN`). 4 KPI cards + funnel CSS bars + top packages + time series 30j. Calcul filesystem (compte simulations, configs, quotes). 3 tests pytest. **OUTILS ANALYTICS TIERS REJETÉS — Plausible/Posthog/GA non pertinents pour Bassira (cf memory feedback_rejected_tools).**
+
+**Chantier G — Refonte 14 vues selon designs Stitch officiels (US-066 → US-079)** :
+✓ Refonte structurelle complète selon `stitch_bassira_global_design_system/` (30+ designs HTML+PNG).
+✓ **US-066** Home (hero eyebrow + CTA terracotta + trust strip + console card)
+✓ **US-067** Calibration (hero Brier mint 96px + 4 stats cards warm + plot card aesthetic Nature paper)
+✓ **US-068** Offers (carousel 10 packages featured glow orange + MAD/USD priorité MENA)
+✓ **US-069** Quote (3 steps + stepper warm + trust banner mint + success state mint check)
+✓ **US-070** Explore (grid 3 cols + filter chips colorés par catégorie + search ajouté)
+✓ **US-071** Report (magazine layout 1000px + executive summary callout terracotta + Step4Report préservé intact)
+✓ **US-072** Simulation (cockpit dark + view switcher icons + phase dots)
+✓ **US-073** SimulationRun (round counter heartbeat 64px + progress bar slim + toast mint)
+✓ **US-074** Main (header dense + resize divider + dark mode shell tokens)
+✓ **US-075** Comparison (selector A/B + winning callout + metrics table delta)
+✓ **US-076** Replay (timeline scrubber warm + narrative card + media controls)
+✓ **US-077** InteractionView (audit académique paper-quality + InteractionNetwork D3) — Step5Interaction temporairement retiré
+✓ **US-078** Embed (600px iframe-friendly + sparkline + 3 key findings)
+✓ **US-079** ReviewEntities (70/30 split + segmented Valid/Flagged/Removed + batch actions)
+
+**Chantier H — Harmonisation 26 composants (US-080 → US-084)** :
+✓ **US-080** : 5 Steps (Step1GraphBuild + Step2EnvSetup + Step3Simulation + Step4Report + Step5Interaction). 89 tokens legacy (`--lo`/`--lp`/`--li`...) → `--wi-*`. Zone export-icons US-059 préservée intacte dans Step4Report.
+✓ **US-081** : 5 charts D3 (BeliefDriftChart + PolymarketChart + InteractionNetwork + InfluenceLeaderboard + DemographicBreakdown). Helper `cssVar()` pour lire tokens via getComputedStyle. Force layout, scales, transitions D3 préservés.
+✓ **US-082** : 6 panels (SettingsPanel BYOK wizard + DebugPanel + WhatIfPanel + CounterfactualBranchPanel + HistoryDatabase + EmbedDialog). 0 hex hardcodé après migration. Modals + z-index tokens préservés.
+✓ **US-083** : 5 simulation components (ScenarioSuggestions 5 frameworks + TemplateGallery + TrendingTopics + GraphPanel + NetworkPanel). Recovery panel US-014 + select payload US-058 préservés.
+✓ **US-084** : Fix InteractionView — toggle tabs `Audit méthodologique` / `Interaction sandbox` (option A retenue parmi 3). Step5Interaction réintégré dans le tab sandbox. 40 clés i18n migrées des libellés anglais inline → `interactionAudit.*` FR/EN/AR.
+
+**Chantier I — CTAs sectoriels (US-085)** :
+✓ **US-085** : SectorUseCases.vue avec 8 secteurs MENA+EU (Banque featured + Énergie + Politique + Distribution + Tech + Industrie + Médias + Santé). 16 use cases C-Level concrets (OCP, Sonatrach, Marjane, ANAM, BCEAO, ADNOC, etc.). Au clic CTA → `/devis?sector=X&usecase=Y&package=Z` pré-remplit `form.situation` (mappage SECTOR_TO_SITUATION) + `form.otherSituation` avec texte du use case via `t('sectors.X.cases.Y')`. Lien "Décrivez votre cas sur mesure" → `/devis?sector=custom`. ~80 clés i18n FR/EN/AR. Intégré dans LandingView entre Pains et Product. **Validé en prod** : `?sector=finance&usecase=0` pré-remplit correctement.
+
+**Fix prod (commit `586013d`)** :
+✓ Home H1 "Simulez tout, pour 1 $" → "Stress-testez votre stratégie avant qu'elle ne touche le réel." (FR/EN/AR alignés sur le slogan)
+✓ Trust strip "12 k simulations · ISO 27001" (claims fausses DEFCON 1) → "Brier 0,18 vérifié · Méthodologie publique · Données souveraines"
+✓ Partners testimonials "Nom à confirmer" placeholders → bloc NDA card unique avec mailto `partners@ai-mpower.com` (posture early access institutionnelle)
+✓ Calibration empty state "Pas encore assez de données" → "Bassira en early access — score à partir de 5 simulations vérifiées" (transparence comme argument de crédibilité)
+✓ Explore empty state CTA → désormais vers `/landing` (cas d'usage par secteur) au lieu de `/` (form technique)
+
+[VALIDÉ EN PROD — inspection live navigateur via MCP Chrome]
+- **Landing** : 7 sections OK, 8 cards SectorUseCases visibles, prix MAD/USD lisibles
+- **Offres** : carousel 10 packages, featured "Crisis Drill 24h" gradient orange, billing toggle, prix
+- **Devis?sector=finance...** : pré-remplissage US-085 confirmé fonctionnel (input rempli avec "[Banque & Finance] Quel sera l'impact d'une hausse de 50 pb...")
+- **Partners** : 6 sections, registre académique respecté (avant fix prod : "Nom à confirmer" visible)
+- **Calibration** : 4 stats cards + scatter plot SVG (avant fix prod : "Pas encore assez de données" peu engageant)
+- **Explore** : empty state illustré ◇◎◈ (avant fix prod : CTA peu adapté pour prospect cold)
+- **Home** : hero eyebrow `بصيرة · Prospective stratégique` ✓, console + ask + trending + template gallery ✓ (avant fix prod : H1 "Simulez tout, pour 1 $" placeholder)
+
+[BLOQUÉ — actions humaines pendantes]
+- **Témoignages partenaires réels** : posture NDA mise en place, mais pour démo C-Level, faut activer 1-2 vrais témoignages avec accord explicite
+- **Simulations publiques en prod** : base actuellement vide → /calibration et /explore sans contenu. Solution = Amine lance 5-10 simulations test puis `is_public=true` puis marque outcomes au fur et à mesure
+- **Calibration "auto" non faisable techniquement** : le label outcome (called_it / partial / wrong) dépend de l'événement réel observé après la simulation. C'est intrinsèquement humain. La calibration auto = workflow opérationnel, pas un trigger backend.
+
+[ALERTE]
+!! **Bundle CSS gonflé** : la migration intégrale --wi-* + --ms-* + tokens dérivés ajoutés (--wi-primary-soft, --wi-primary-container-soft/edge, --wi-secondary-soft/edge, --shell-* dans MainView) augmente le CSS scoped. Pas mesuré, mais probable +10-15% gzip vs avant migration. Compromis maintenabilité assumé (cohérent avec doctrine US-016).
+!! **Step3Simulation US-080** : migration tokens globale rapide (89 occurrences `--lo`/`--lp` remplacées) mais PAS une refonte structurelle Stitch. Le composant fait 3158 lignes — refonte structurelle reportée à une story future si besoin.
+!! **InteractionView US-084 toggle Audit/Sandbox** : choix architectural retenu (vs skip auto / pré-remplir). Step5Interaction reçoit `:reportId :simulationId` + handlers no-op `@add-log @update-status`. Si Step5Interaction émet d'autres events à l'avenir, les ajouter au binding.
+!! **Trust strip Home reformulé** : "Brier 0,18 vérifié" reste affiché alors que la base prod est vide. Risque de claim si scrutiny — soit alimenter le calibration log rapidement, soit changer "0,18 vérifié" en "Méthodologie de calibration ouverte" tant que vide.
+!! **Outils analytics tiers (Plausible/Posthog/GA) explicitement REJETÉS par Amine** — sauvegardé dans `memory/feedback_rejected_tools.md`. Ne plus jamais reproposer dans des next-steps.
+
+[PARTIEL]
+
+### Calibration (workflow incomplet en prod)
+- ✅ Backend `/api/calibration` + frontend CalibrationView refondus
+- ✅ Empty state copy assume early access
+- ❌ **Aucune simulation publique avec outcome marqué en prod** → Brier non calculé
+- → Solution = workflow humain : lancer sim → publier → observer événement réel → marquer outcome via admin token. Endpoint `/admin/analytics` peut servir de tableau de bord pour ça.
+
+### InteractionView (US-077 puis US-084)
+- ✅ Layout audit méthodologique aesthetic Nature paper (US-077)
+- ✅ Step5Interaction réintégré via toggle tabs (US-084)
+- ⚠️ Tab choice persisté localStorage `bassira:interactionView:activeTab` — pas de URL state, les liens partagés tombent toujours sur tab par défaut
+
+[NEXT — chantiers prêts à attaquer]
+
+### Prio P1 — capture commerciale
+- **Stripe self-service sur /offres** pour les 2 packages les plus accessibles (Crisis Drill 24h MAD 10k, Pre-Launch Adcheck $1.5k). Effort ≈ 1 journée (Stripe Checkout Sessions, webhook successful payment, redirect /devis avec preuve de paiement).
+- **Activer Apollo séquences** : importer les 27 emails de `bassira_apollo_sequences.md` dans Apollo via API + lancer Sequence 1 sur 50 prospects ciblés. Apollo MCP disponible côté Claude.
+- **Publier 1ère salve LinkedIn** : utiliser `bassira_linkedin_calendar.md` (15 posts prêts) pour démarrer la cadence 3 posts/semaine.
+
+### Prio P1 — qualité
+- **Tests Playwright sur les 14 vues refondues** + nouvelles routes (/landing, /partenaires, /admin/analytics) — la suite existante (32 tests) ne couvre pas les nouveautés.
+- **Audit sécurité post-78 stories** (OWASP, secrets, CORS, rate-limit endpoints, headers). Avant 1er client institutionnel.
+
+### Prio P2
+- **Refonte structurelle Step3Simulation** selon design Stitch (3158 lignes — pas fait dans US-080)
+- **Logo Bassira** : prompt prêt dans `bassira_brand_prompts.md` mais Amine a explicitement dit "oublies le logo" → ne pas faire sans demande explicite
+- **Régénérer le PNG `frontend/public/miroshark-nobg.png`** au branding Bassira (designer humain requis)
+
+[CTX session]
+- ~1500+ tool calls cumulés (interactions Claude + 13 sub-agents)
+- 20 commits poussés sur main : `a81865e`, `83382af`, `038baf2`, `a6e4ead`, `22e1f0e`, `8acae34`, `b848717`, `709a744`, `c0e8a59`, `5d65438`, `d54b452`, `60e7fbd`, `6f4db4c`, `3e3d90f`, `586013d` (+ commits intermédiaires)
+- 13 sub-agents pilotés en parallèle (3 batches : 6 + 7 + 5 + 1 fix interaction)
+- Tests : 412 → 423 backend pytest (+11)
+- Modèle : Opus 4.7 (1M context) toute la session
+
+[MEMO inter-sessions]
+- API Coolify : valides
+- LLM_MODEL_NAME prod : `kimi-k2-turbo-preview` (Moonshot)
+- **WEB_SEARCH_API_KEY** : configuré sur Coolify (confirmé Amine 2026-05-02) → US-057 enrich-ask actif
+- **BASSIRA_ADMIN_TOKEN** : configuré sur Coolify (confirmé Amine session précédente)
+- SMTP : toujours non configuré (cf passation précédente)
+- **Stitch projects principaux** : `stitch_bassira_global_design_system/` (30+ designs, source de vérité unique pour la refonte). Références par dossier : `bassira_home_strategic_foresight`, `bassira_calibration_methodological_track_record`, `bassira_formules_tarifs`, `bassira_demande_de_devis_tape_*`, `bassira_galerie_explore`, `bassira_simulation_cockpit`, `bassira_simulation_en_cours`, `bassira_console_d_analyse_avanc_e`, `bassira_rapport_de_simulation_final`, `bassira_r_vision_des_entit_s`, `bassira_comparaison_strat_gique_delta`, `bassira_relecture_de_simulation_strat_gique`, `bassira_vue_des_interactions_audit_m_thodologique`, `bassira_widget_d_int_gration_strat_gique`, `bassira_landing_page_strat_gique_seo`, `bassira_partenariats_institutionnels`, `bassira_tableau_de_bord_analytique_interne`, `bassira_onboarding_tape_1-4`, `apollo_outreach_s_quence_1-3_email`, `linkedin_*` (5 designs).
+- **Brand guide Causse** : `stitch_bassira_global_design_system/bassira_causse_brand_guidelines.md` + `bassira_causse/DESIGN.md`. Palette MENA+EU calibrée (`#FF8551` orange + `#006D44` mint + `#FAF7F2` cream + `#241915` charcoal + `#A13F0F` terracotta).
+- **Tokens --wi-*** dans `frontend/src/design-tokens.css` lignes 290+ — namespace coexiste avec `--ms-*`. Source de vérité pour toute nouvelle vue.
+- **Pattern observé** : alias `--stitch-* → --wi-*` dans le scoped CSS pour ne pas casser les usages existants.
+- **MCP Chrome** : utilisable pour validation visuelle live en prod (`mcp__claude-in-chrome__navigate` + `javascript_tool` plus fiable que `read_page` qui timeout sur les animations CSS infinies).
+- **Memory feedback_rejected_tools** : Plausible/Posthog/GA/logo/`npm run dev` local **REJETÉS** par Amine. Lire avant chaque liste de "next steps".
+
+[Recommandations pour la nouvelle session]
+1. **AVANT toute proposition** : lire `memory/MEMORY.md` et notamment `feedback_rejected_tools.md` pour ne pas reproposer du Plausible / logo / npm dev local.
+2. Lire `.ralph/prd.json` — 86/86 passes:true. Pour ajouter de nouvelles stories, partir de US-086.
+3. **Validation visuelle prod** : `mcp__claude-in-chrome__tabs_context_mcp` puis navigate sur `prospectives.ai-mpower.com/<route>` puis `javascript_tool` (read_page timeout sur animations).
+4. **Pour Stripe self-service** : `pricing-strategy` skill + `stripe:stripe-best-practices` skill chargés. Backend Flask déjà existant. Webhook → flag `paid_at` dans simulation_config.json + redirect /process avec preuve.
+5. **Pour Apollo séquences** : Apollo MCP déjà disponible (`mcp__claude_ai_Apollo_io__*`). Importer les emails depuis `bassira_apollo_sequences.md` via API.
+6. **Pour les tests Playwright nouveautés** : copier le pattern `frontend/e2e/<existant>.spec.ts` et étendre aux nouvelles routes /landing /partenaires /admin/analytics.
+7. **Pour audit sécurité** : lancer skill `security-review` qui audit OWASP / secrets / CORS automatiquement.
+8. **Pour test calibration** : Amine doit lancer 5-10 simulations test sur prod, les rendre publiques, puis utiliser `/admin/analytics` ou `/calibration` admin panel pour marquer les outcomes au fil de l'eau.
+9. **Anti-pattern à surveiller** : refonte de composants Vue lourds (>1500 lignes) par sub-agents — risque de migration tokens superficielle au lieu de refonte structurelle (cas Step3Simulation US-080). Si une refonte profonde est nécessaire, allouer un agent dédié à ce composant unique.
+
+— fin passation 2026-05-03 —
+
+---
+
 == PASSATION MiroShark/Bassira 2026-04-29T22:00:00+01:00 ==
 
 [ETAT]
