@@ -14,6 +14,11 @@
         {{ $t('nav.brand') }}
       </router-link>
       <nav class="lp-nav" :aria-label="$t('landing.nav.ariaLabel')">
+        <!-- US-087 — entrée « Modèles » (route /models, US-086) ajoutée
+             en première position pour cohérence avec la nav home. -->
+        <router-link to="/models" class="lp-nav-link lp-nav-link--featured">
+          {{ $t('landing.nav.models') }}
+        </router-link>
         <router-link :to="{ name: 'Calibration' }" class="lp-nav-link">
           {{ $t('landing.nav.calibration') }}
         </router-link>
@@ -384,6 +389,11 @@ function formatNumber (n) {
 .lp-nav-link:hover {
   color: var(--wi-primary);
   background: var(--wi-surface-container-low);
+}
+/* US-087 — entrée « Modèles » mise en avant (priorité commerciale haute). */
+.lp-nav-link--featured {
+  color: var(--wi-primary);
+  font-weight: 600;
 }
 .lp-nav-cta {
   background: var(--wi-primary);

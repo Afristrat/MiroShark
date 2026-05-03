@@ -86,8 +86,12 @@ export const I18N_FIXTURES: Record<Locale, {
 }> = {
   fr: {
     home: {
-      title: 'Simulez tout, pour 1 $',
-      launchCta: 'Lancer la simulation',
+      // US-087 — la home publique ne promeut plus le self-service.
+      // Le hero title est l'accroche prospective ; le CTA principal
+      // route vers /models. Le tunnel /devis est promu via le CTA
+      // secondaire « Commander une analyse ».
+      title: 'Stress-testez votre stratégie',
+      launchCta: 'Voir les modèles',
     },
     offers: {
       crisisDrillName: 'Crisis Drill',
@@ -100,8 +104,8 @@ export const I18N_FIXTURES: Record<Locale, {
   },
   en: {
     home: {
-      title: 'Simulate anything, for $1',
-      launchCta: 'Launch Simulation',
+      title: 'Stress-test your strategy',
+      launchCta: 'Browse our models',
     },
     offers: {
       crisisDrillName: 'Crisis Drill',
@@ -114,8 +118,8 @@ export const I18N_FIXTURES: Record<Locale, {
   },
   ar: {
     home: {
-      title: 'حاكِ أي شيء بدولار واحد',
-      launchCta: 'إطلاق المحاكاة',
+      title: 'اختبر استراتيجيتك',
+      launchCta: 'تصفّح النماذج',
     },
     offers: {
       crisisDrillName: 'Crisis Drill',

@@ -17,7 +17,7 @@ import { gotoLocalized, I18N_FIXTURES } from './helpers'
 const FX = I18N_FIXTURES.en
 
 test.describe('EN — smoke', () => {
-  test('Home / charge avec hero traduit + CTA Launch Simulation', async ({ page }) => {
+  test('Home / loads with translated hero + Browse our models CTA (US-087)', async ({ page }) => {
     const response = await page.goto('/?lang=en', { waitUntil: 'domcontentloaded' })
     expect(response?.status(), 'HTTP status of /').toBeLessThan(400)
 

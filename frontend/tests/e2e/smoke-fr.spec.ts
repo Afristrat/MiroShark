@@ -17,14 +17,16 @@ import { gotoLocalized, I18N_FIXTURES } from './helpers'
 const FX = I18N_FIXTURES.fr
 
 test.describe('FR — smoke', () => {
-  test('Home / charge avec hero traduit + CTA Lancer la simulation', async ({ page }) => {
+  test('Home / charge avec hero traduit + CTA Voir les modèles (US-087)', async ({ page }) => {
     const response = await page.goto('/?lang=fr', { waitUntil: 'domcontentloaded' })
     expect(response?.status(), 'HTTP status of /').toBeLessThan(400)
 
     // Le hero title doit être visible et localisé.
     await expect(page.getByText(FX.home.title, { exact: false })).toBeVisible()
 
-    // Le bouton Lancer la simulation est présent dans la console.
+    // US-087 — le hero CTA principal route vers /models et n'invite plus
+    // au self-service. Le fixture FX.home.launchCta vaut désormais
+    // « Voir les modèles ».
     const launchBtn = page.getByText(FX.home.launchCta, { exact: false })
     await expect(launchBtn.first()).toBeVisible()
 

@@ -10,7 +10,15 @@
     "offersTitle": "See our stress-test packages (3 formats)",
     "scenarios": "Scenarios",
     "scenariosTitle": "See the gallery of ready-to-run scenarios",
-    "calibrationTitle": "See our predictive track record (Brier score)"
+    "calibrationTitle": "See our predictive track record (Brier score)",
+    "home": "Home",
+    "homeTitle": "Back to Bassira home",
+    "models": "Models",
+    "modelsTitle": "Browse our ready-to-order simulation models",
+    "partners": "Partners",
+    "partnersTitle": "Partner programs: think tanks, consultancies, universities",
+    "contact": "Contact",
+    "contactTitle": "Request a custom analysis"
   },
   "common": {
     "loading": "Loading…",
@@ -91,6 +99,12 @@
         "iso": "Sovereign data"
       },
       "scrollDownTitle": "Scroll down"
+    },
+    "heroCta": {
+      "viewModels": "Browse our models",
+      "viewModelsTitle": "Discover our ready-to-order simulation models",
+      "orderAnalysis": "Order an analysis",
+      "orderAnalysisTitle": "Request a quote for a custom strategic analysis"
     },
     "panel": {
       "systemStatus": "System Status",
@@ -239,6 +253,12 @@
     "subtitle": "Every sector has its own tensions, its own actors, its own scenarios. Bassira models yours — not an average.",
     "cta": {
       "test": "Test this case"
+    },
+    "cardCta": {
+      "viewModel": "View the model",
+      "viewModelTitle": "See the simulation model preconfigured for this sector",
+      "requestCustom": "Request a custom analysis",
+      "requestCustomTitle": "Submit a custom-fit quote request for this sector"
     },
     "featuredBadge": "Most requested",
     "footerNote": "Your industry isn't on this list?",
@@ -1770,7 +1790,8 @@
       "ariaLabel": "Primary navigation",
       "calibration": "Brier score",
       "pricing": "Pricing",
-      "demo": "Request a demo"
+      "demo": "Request a demo",
+      "models": "Models"
     },
     "hero": {
       "ariaLabel": "Hero section",

@@ -10,7 +10,15 @@
     "offersTitle": "Voir nos packages de stress-test (3 formats)",
     "scenarios": "Scénarios",
     "scenariosTitle": "Voir la galerie de scénarios prêts à lancer",
-    "calibrationTitle": "Voir notre track-record prédictif (Brier score)"
+    "calibrationTitle": "Voir notre track-record prédictif (Brier score)",
+    "home": "Accueil",
+    "homeTitle": "Retour à l'accueil Bassira",
+    "models": "Modèles",
+    "modelsTitle": "Voir nos modèles de simulation prêts à commander",
+    "partners": "Partenaires",
+    "partnersTitle": "Programmes partenaires : think tanks, cabinets, universités",
+    "contact": "Contact",
+    "contactTitle": "Demander une analyse personnalisée"
   },
   "common": {
     "loading": "Chargement…",
@@ -91,6 +99,12 @@
         "iso": "Données souveraines"
       },
       "scrollDownTitle": "Aller plus bas"
+    },
+    "heroCta": {
+      "viewModels": "Voir les modèles",
+      "viewModelsTitle": "Découvrir nos modèles de simulation prêts à commander",
+      "orderAnalysis": "Commander une analyse",
+      "orderAnalysisTitle": "Demander un devis pour une analyse stratégique sur mesure"
     },
     "panel": {
       "systemStatus": "Statut du système",
@@ -239,6 +253,12 @@
     "subtitle": "Chaque secteur a ses propres tensions, ses propres acteurs et ses propres scénarios. Bassira modélise les vôtres, pas une moyenne.",
     "cta": {
       "test": "Tester ce cas"
+    },
+    "cardCta": {
+      "viewModel": "Voir le modèle",
+      "viewModelTitle": "Découvrir le modèle de simulation préconfiguré pour ce secteur",
+      "requestCustom": "Demander une analyse personnalisée",
+      "requestCustomTitle": "Soumettre une demande de devis sur mesure pour ce secteur"
     },
     "featuredBadge": "Le plus demandé",
     "footerNote": "Votre métier ne figure pas dans cette liste ?",
@@ -1770,7 +1790,8 @@
       "ariaLabel": "Navigation principale",
       "calibration": "Brier score",
       "pricing": "Tarifs",
-      "demo": "Demander une démo"
+      "demo": "Demander une démo",
+      "models": "Modèles"
     },
     "hero": {
       "ariaLabel": "Section principale",

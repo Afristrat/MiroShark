@@ -33,7 +33,9 @@ test.describe('AR — smoke + RTL', () => {
     // Le hero AR doit être présent (texte arabe).
     await expect(page.getByText(FX.home.title, { exact: false })).toBeVisible()
 
-    // Le CTA "إطلاق المحاكاة" est présent.
+    // US-087 — le CTA hero principal route vers /models et n'invite plus
+    // au self-service. Le fixture FX.home.launchCta vaut désormais
+    // « تصفّح النماذج » (« Voir les modèles » en arabe).
     const launchBtn = page.getByText(FX.home.launchCta, { exact: false })
     await expect(launchBtn.first()).toBeVisible()
 

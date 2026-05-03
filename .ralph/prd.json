@@ -2515,6 +2515,44 @@
                     "frontend/src/locales/{fr,en,ar}.json"
                 ]
             }
+        },
+        {
+            "id": "US-087",
+            "chantier": "J-pivot-models",
+            "title": "Masquage CTA self-service home + nav Modèles + SectorUseCases relink",
+            "description": "Pivot stratégique : la home publique ne promeut plus le self-service Step1-5 auprès des visiteurs cold, elle les oriente vers /models (US-086) et /devis. Hero CTA principal devient « Voir les modèles » + secondary « Commander une analyse ». Console upload, TemplateGallery et HistoryDatabase masqués via flag showSelfServiceConsole=false (DOM préservé pour réactivation auth admin/client US-088). Nav header gagne une entrée « Modèles » en position 2 + Accueil/Partenaires/Contact. SectorUseCases (US-085) gagne un double CTA card (« Voir le modèle » /models?sector=X / « Demander une analyse personnalisée » /devis pré-rempli).",
+            "acceptanceCriteria": [
+                "Home.vue : hero CTA primaire route vers /models (« Voir les modèles ») + secondary vers /devis (« Commander une analyse »)",
+                "Home.vue : console upload + TemplateGallery + HistoryDatabase masqués pour visiteurs cold via v-if=showSelfServiceConsole (préservés en DOM pour US-088)",
+                "Nav header Home.vue : Accueil · Modèles · Calibration · Offres · Partenaires · Contact (Modèles en position 2, classe nav-link--featured)",
+                "Nav header LandingView.vue : entrée « Modèles » ajoutée en première position",
+                "SectorUseCases.vue : double CTA card (Voir le modèle / Demander une analyse personnalisée), mécanique SECTOR_TO_SITUATION préservée pour /devis",
+                "i18n FR/EN/AR : nav.{home,homeTitle,models,modelsTitle,partners,partnersTitle,contact,contactTitle}, home.heroCta.{viewModels,viewModelsTitle,orderAnalysis,orderAnalysisTitle}, sectors.cardCta.{viewModel,viewModelTitle,requestCustom,requestCustomTitle}, landing.nav.models",
+                "Tokens --wi-* exclusifs (zéro hex hardcodé dans les nouveaux styles)",
+                "Tests Playwright : fixtures FX.home.{title,launchCta} mises à jour pour les nouveaux CTAs (Voir les modèles / Browse our models / تصفّح النماذج)",
+                "Self-service technique préservé : URLs directes /process/new, /simulation/:id, /review-entities/:id toujours accessibles",
+                "npm run build passe (pas de typecheck/lint configurés sur frontend Vue 3)",
+                "Aucun namespace models.* (top-level) touché (réservé US-086 en parallèle)"
+            ],
+            "passes": true,
+            "completedAt": "2026-05-03",
+            "dependencies": [
+                "US-085"
+            ],
+            "metadata": {
+                "estimated_hours": 2,
+                "priority": "P0",
+                "files_touched": [
+                    "frontend/src/views/Home.vue",
+                    "frontend/src/views/LandingView.vue",
+                    "frontend/src/components/SectorUseCases.vue",
+                    "frontend/src/locales/{fr,en,ar}.json",
+                    "frontend/tests/e2e/helpers.ts",
+                    "frontend/tests/e2e/smoke-fr.spec.ts",
+                    "frontend/tests/e2e/smoke-en.spec.ts",
+                    "frontend/tests/e2e/smoke-ar.spec.ts"
+                ]
+            }
         }
     ]
 }

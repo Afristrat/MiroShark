@@ -43,14 +43,27 @@
           </li>
         </ul>
 
+        <!-- US-087 — Double CTA card : « Voir le modèle » route vers
+             /models?sector=X (US-086 gère le query param), « Demander une
+             analyse personnalisée » conserve le tunnel commercial /devis
+             avec pré-remplissage SECTOR_TO_SITUATION (mécanique US-085). -->
         <div class="suc-card-cta-row">
           <button
             type="button"
-            class="suc-cta"
-            @click="onSectorCta(s.id, 0)"
+            class="suc-cta suc-cta--primary"
+            :title="$t('sectors.cardCta.viewModelTitle')"
+            @click="onViewModelCta(s.id)"
           >
-            <span>{{ $t('sectors.cta.test') }}</span>
+            <span>{{ $t('sectors.cardCta.viewModel') }}</span>
             <span class="suc-cta-arrow" aria-hidden="true">→</span>
+          </button>
+          <button
+            type="button"
+            class="suc-cta suc-cta--ghost"
+            :title="$t('sectors.cardCta.requestCustomTitle')"
+            @click="onRequestCustomCta(s.id, 0)"
+          >
+            <span>{{ $t('sectors.cardCta.requestCustom') }}</span>
           </button>
           <span v-if="s.featured" class="suc-featured-badge">{{ $t('sectors.featuredBadge') }}</span>
         </div>
@@ -105,7 +118,20 @@ const sectorPackageMap = {
   healthcare: 'policy_brief_stress',
 }
 
-const onSectorCta = (sectorId, caseIdx) => {
+// US-087 — CTA principal de chaque card : route vers /models?sector=<id>.
+// La route /models (US-086, en parallèle) consomme ce query param pour
+// filtrer la liste de modèles publics par secteur.
+const onViewModelCta = (sectorId) => {
+  router.push({
+    path: '/models',
+    query: { sector: sectorId },
+  })
+}
+
+// US-087 — CTA secondaire : tunnel commercial /devis avec sector + usecase
+// + package. Conserve la mécanique US-085 (SECTOR_TO_SITUATION dans QuoteView)
+// pour pré-remplir le formulaire de devis personnalisé.
+const onRequestCustomCta = (sectorId, caseIdx) => {
   router.push({
     name: 'Quote',
     query: {
@@ -264,8 +290,9 @@ const onCustomCta = () => {
 
 .suc-card-cta-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: var(--wi-space-sm, 16px);
 }
 
@@ -274,20 +301,36 @@ const onCustomCta = () => {
   align-items: center;
   gap: 8px;
   padding: 10px 18px;
-  background: var(--wi-on-primary-container);
-  color: var(--wi-bg);
-  border: none;
   border-radius: var(--wi-radius-interactive, 12px);
   font-family: var(--wi-font-heading);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 150ms var(--ms-ease, ease), transform 150ms var(--ms-ease, ease);
+  transition: background 150ms var(--ms-ease, ease), transform 150ms var(--ms-ease, ease), color 150ms var(--ms-ease, ease), border-color 150ms var(--ms-ease, ease);
 }
 
-.suc-cta:hover {
+/* US-087 — Variante primaire : « Voir le modèle » (terracotta plein) */
+.suc-cta--primary {
+  background: var(--wi-on-primary-container);
+  color: var(--wi-bg);
+  border: 2px solid var(--wi-on-primary-container);
+}
+.suc-cta--primary:hover {
   background: var(--wi-primary);
+  border-color: var(--wi-primary);
   transform: translateX(2px);
+}
+
+/* US-087 — Variante ghost : « Demander une analyse personnalisée » (outlined) */
+.suc-cta--ghost {
+  background: transparent;
+  color: var(--wi-on-primary-container);
+  border: 2px solid var(--wi-outline-variant);
+}
+.suc-cta--ghost:hover {
+  background: var(--wi-primary-soft);
+  border-color: var(--wi-primary);
+  color: var(--wi-primary);
 }
 
 .suc-cta-arrow {

@@ -1,23 +1,31 @@
 <template>
   <div class="home-container">
-    <!-- Top Navigation Bar — refonte Playful & Soft (US-044b) -->
+    <!-- Top Navigation Bar — US-087 : pivot orienté modèles publics
+         Ordre : Accueil · Modèles · Calibration · Offres · Partenaires · Contact
+         "Modèles" en position 2 (priorité commerciale haute, route /models US-086).
+         "Scénarios" (scroll vers TemplateGallery) retiré ici car la galerie est
+         masquée pour les visiteurs cold sur la home (cf. v-if plus bas). -->
     <nav class="navbar">
       <router-link to="/" class="nav-brand">{{ $t('nav.brand') }}</router-link>
       <div class="nav-links">
+        <router-link to="/" class="nav-link" :title="$t('nav.homeTitle')">
+          {{ $t('nav.home') }}
+        </router-link>
+        <router-link to="/models" class="nav-link nav-link--featured" :title="$t('nav.modelsTitle')">
+          {{ $t('nav.models') }}
+        </router-link>
         <router-link to="/calibration" class="nav-link" :title="$t('nav.calibrationTitle')">
           {{ $t('nav.calibration') }}
         </router-link>
         <router-link to="/offres" class="nav-link" :title="$t('nav.offersTitle')">
           {{ $t('nav.offers') }}
         </router-link>
-        <button
-          class="nav-link nav-link-action"
-          type="button"
-          @click="scrollToTemplates"
-          :title="$t('nav.scenariosTitle')"
-        >
-          {{ $t('nav.scenarios') }}
-        </button>
+        <router-link to="/partenaires" class="nav-link" :title="$t('nav.partnersTitle')">
+          {{ $t('nav.partners') }}
+        </router-link>
+        <router-link to="/devis" class="nav-link" :title="$t('nav.contactTitle')">
+          {{ $t('nav.contact') }}
+        </router-link>
         <button class="settings-btn" @click="settingsOpen = true" :title="$t('home.nav.settingsTitle')" aria-label="Paramètres">
           <span aria-hidden="true">⚙</span>
         </button>
@@ -62,15 +70,29 @@
 
         <p class="hero-subtitle">{{ $t('home.hero.subtitle') }}</p>
 
-        <button
-          class="hero-cta"
-          type="button"
-          @click="scrollToConsole"
-          :title="$t('home.hero.cta')"
-        >
-          <span>{{ $t('home.hero.cta') }}</span>
-          <span class="hero-cta-arrow" aria-hidden="true">→</span>
-        </button>
+        <!-- US-087 — CTAs orientés modèles publics + commande.
+             Le self-service Step1-5 reste accessible techniquement (URLs
+             directes /process, /simulation), mais on ne le promeut plus
+             auprès des visiteurs cold : on les oriente vers les modèles
+             publics ou la prise de contact commerciale. -->
+        <div class="hero-cta-row">
+          <router-link
+            to="/models"
+            class="hero-cta hero-cta--primary"
+            :title="$t('home.heroCta.viewModelsTitle')"
+          >
+            <span>{{ $t('home.heroCta.viewModels') }}</span>
+            <span class="hero-cta-arrow" aria-hidden="true">→</span>
+          </router-link>
+          <router-link
+            to="/devis"
+            class="hero-cta hero-cta--secondary"
+            :title="$t('home.heroCta.orderAnalysisTitle')"
+          >
+            <span>{{ $t('home.heroCta.orderAnalysis') }}</span>
+            <span class="hero-cta-arrow" aria-hidden="true">→</span>
+          </router-link>
+        </div>
 
         <!-- Trust strip : signaux Brier / sims / ISO -->
         <div class="hero-trust" role="list" :aria-label="$t('home.panel.systemStatus')">
@@ -105,14 +127,18 @@
         </button>
       </section>
 
+      <!-- US-087 : console self-service masquée pour visiteurs cold,
+           accès admin/client à venir US-088. Le bloc DOM est préservé
+           intégralement (logique upload, ScenarioSuggestions, runAskMode,
+           startSimulation) pour réactivation derrière un guard auth. -->
       <!-- Console Header : « Graines de réalité » (Stitch design) -->
-      <header id="reality-seeds-console" class="console-intro">
+      <header v-if="showSelfServiceConsole" id="reality-seeds-console" class="console-intro">
         <h2 class="console-intro-title">{{ $t('home.panel.consoleTitle') }}</h2>
         <p class="console-intro-subtitle">{{ $t('home.panel.consoleSubtitle') }}</p>
       </header>
 
       <!-- Lower Section: Two-Column Layout -->
-      <section class="dashboard-section">
+      <section v-if="showSelfServiceConsole" class="dashboard-section">
         <!-- Left Column: Status & Steps -->
         <div class="left-panel">
           <div class="panel-header">
@@ -361,13 +387,17 @@
         </div>
       </section>
 
+      <!-- US-087 : TemplateGallery + HistoryDatabase masqués pour les visiteurs
+           cold. Les templates correspondent au self-service Step1-5 (clic « Lancer »
+           → /process), promotion stoppée sur la home publique au profit de /models.
+           Réactivation derrière un guard auth admin/client à venir (US-088). -->
       <!-- Quick Start Templates -->
-      <div id="templates-gallery">
+      <div v-if="showSelfServiceConsole" id="templates-gallery">
         <TemplateGallery />
       </div>
 
       <!-- History Project Database -->
-      <HistoryDatabase />
+      <HistoryDatabase v-if="showSelfServiceConsole" />
 
     </div>
 
@@ -403,6 +433,13 @@ const { t } = useI18n()
 const settingsOpen = ref(false)
 const previewDoc = ref(null)
 
+// US-087 — La console self-service (upload + Ask + URL + textarea + Lancer)
+// et la galerie de templates ne sont plus promues sur la home publique.
+// Tant qu'aucun système d'auth admin/client n'est en place (US-088 à venir),
+// on garde ce flag à `false` pour les visiteurs cold. Le code DOM est préservé
+// intégralement et restera atteignable via URL directe (/process/new, /simulation).
+const showSelfServiceConsole = ref(false)
+
 // US-060 — Onboarding solo 4 étapes : visible uniquement au premier visit.
 // Le flag `bassira_onboarding_done` est posé par OnboardingTour quand
 // l'utilisateur clique Skip / Suivant final / Lancer un exemple.
@@ -422,23 +459,10 @@ onMounted(() => {
   }
 })
 
-// US-044b — bouton « Scénarios » dans la navbar : scroll smooth vers
-// la galerie de templates plus bas dans la page (pas de route séparée).
-function scrollToTemplates() {
-  const el = document.getElementById('templates-gallery')
-  if (el) {
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
-}
-
-// CTA Hero « Lancer une simulation » — scroll smooth vers la console
-// « Graines de réalité » plus bas dans la page (pas de navigation).
-function scrollToConsole() {
-  const el = document.getElementById('reality-seeds-console')
-  if (el) {
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
-}
+// US-087 — `scrollToTemplates` (US-044b) et `scrollToConsole` retirés :
+// la galerie de templates et la console self-service ne sont plus exposées
+// sur la home publique (cf. v-if="showSelfServiceConsole"). Le hero CTA
+// route désormais vers /models et /devis.
 
 // Form data
 const formData = ref({
@@ -812,7 +836,21 @@ const startSimulation = () => {
   background: var(--ms-bg-muted, var(--ms-bg-muted));
 }
 .nav-link.router-link-active {
-  color: var(--ms-orange, var(--ms-orange));
+  color: var(--wi-primary, var(--ms-orange));
+  font-weight: 600;
+}
+
+/* US-087 — entrée « Modèles » mise en avant (priorité commerciale haute).
+   Couleur warm primary terracotta sans pill plein, juste un weight et
+   une teinte. Le highlight router-link-active reprend automatiquement le
+   token --wi-primary sur toutes les entrées. */
+.nav-link--featured {
+  color: var(--wi-primary, var(--ms-orange));
+  font-weight: 600;
+}
+.nav-link--featured:hover {
+  color: var(--wi-on-primary-container, var(--ms-orange));
+  background: var(--wi-primary-soft, var(--ms-bg-muted));
 }
 
 .nav-link-action {
@@ -948,32 +986,62 @@ const startSimulation = () => {
   margin: 0 0 var(--ms-space-6) 0;
 }
 
-/* CTA primaire « Lancer une simulation » */
+/* US-087 — Rangée de CTAs hero (primaire + secondaire) orientés modèles
+   publics + commande. Empilés en colonne sur mobile (< 640 px). */
+.hero-cta-row {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ms-space-3);
+  margin-bottom: var(--ms-space-6);
+}
+
+/* CTA hero — base (utilisé par primary + secondary).
+   Variante primaire : terracotta plein. Variante secondaire : ghost outlined. */
 .hero-cta {
   display: inline-flex;
   align-items: center;
   gap: var(--ms-space-2);
-  background: var(--wi-primary);
-  color: var(--wi-on-primary);
-  border: none;
-  padding: 16px 32px;
   border-radius: var(--wi-radius-pill);
+  padding: 16px 32px;
   font-family: var(--wi-font-heading);
   font-size: 18px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: var(--wi-shadow-md);
-  transition: opacity var(--ms-transition), transform var(--ms-transition), box-shadow var(--ms-transition);
-  margin-bottom: var(--ms-space-6);
+  text-decoration: none;
+  transition: opacity var(--ms-transition), transform var(--ms-transition), box-shadow var(--ms-transition), background var(--ms-transition), color var(--ms-transition);
 }
-.hero-cta:hover {
+
+.hero-cta--primary {
+  background: var(--wi-primary);
+  color: var(--wi-on-primary);
+  border: 2px solid var(--wi-primary);
+  box-shadow: var(--wi-shadow-md);
+}
+.hero-cta--primary:hover {
   opacity: 0.92;
   background: var(--wi-primary-container);
+  border-color: var(--wi-primary-container);
   color: var(--wi-on-primary-container);
   box-shadow: var(--wi-shadow-lg);
   transform: translateY(-1px);
 }
-.hero-cta:active { transform: translateY(0); }
+.hero-cta--primary:active { transform: translateY(0); }
+
+.hero-cta--secondary {
+  background: transparent;
+  color: var(--wi-primary);
+  border: 2px solid var(--wi-outline-variant);
+}
+.hero-cta--secondary:hover {
+  background: var(--wi-primary-soft);
+  border-color: var(--wi-primary);
+  color: var(--wi-on-primary-container);
+  transform: translateY(-1px);
+}
+.hero-cta--secondary:active { transform: translateY(0); }
+
 .hero-cta-arrow {
   font-family: sans-serif;
   font-size: 18px;
