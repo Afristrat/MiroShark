@@ -40,6 +40,9 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "pydantic>=2.0.0",
     "reportlab>=4.5.0",
+    # US-088: Arabic shaping for branded PDF briefs (RTL + glyph contextual forms)
+    "arabic-reshaper>=3.0.0",
+    "python-bidi>=0.4.2",
 ]
 
 [project.optional-dependencies]

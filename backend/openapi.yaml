@@ -84,6 +84,8 @@ tags:
     description: Public commercial tunnel — quote requests from the /devis form.
   - name: Admin
     description: Internal operator dashboard — gated on `BASSIRA_ADMIN_TOKEN`. Never expose to unauthenticated clients.
+  - name: Models
+    description: Public branded brief PDFs for pre-calibrated models (US-088).
   - name: Documentation
     description: This OpenAPI spec and Swagger UI.
 
@@ -2200,6 +2202,64 @@ paths:
                 properties:
                   status: { type: string, example: ok }
                   service: { type: string, example: MiroShark Backend }
+
+  # ────────────────────────────────────────────────────────────────────
+  # Models — public pre-calibrated model briefs (US-088)
+  # ────────────────────────────────────────────────────────────────────
+
+  /api/models/{slug}/pdf-brief:
+    get:
+      tags: [Models]
+      summary: Download a Bassira-branded brief PDF for a pre-calibrated model.
+      description: |
+        Returns a 4-6 page A4 portrait PDF describing the pre-calibrated
+        model identified by `slug`, in one of the supported languages
+        (fr / en / ar). The brief includes the decision question, the
+        strategic context, simulated agents, methodology, key insights,
+        decision-maker use cases, a methodological note and a CTA.
+
+        The endpoint is public and cacheable (`max-age=3600`). The PDF is
+        designed for printing on A4 portrait — useful for C-level
+        meetings or as a quote attachment.
+      parameters:
+        - in: path
+          name: slug
+          required: true
+          schema:
+            type: string
+            pattern: "^[a-z0-9][a-z0-9\\-]{0,80}$"
+          description: Model slug, e.g. `fusion-bancaire-mena`.
+        - in: query
+          name: lang
+          required: false
+          schema:
+            type: string
+            enum: [fr, en, ar]
+            default: fr
+          description: Target language for the rendered brief.
+      responses:
+        "200":
+          description: PDF stream (A4 portrait, 4-6 pages).
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: |
+            Validation error. `error_code` is `INVALID_LANG` when `lang`
+            is not in (fr, en, ar) or `INVALID_SLUG` when the slug shape
+            is rejected.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+        "404":
+          description: |
+            No model JSON exists at `backend/app/models_data/<slug>.json`.
+            `error_code` is `MODEL_NOT_FOUND`.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorEnvelope" }
 
 components:
 

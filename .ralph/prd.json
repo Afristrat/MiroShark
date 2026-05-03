@@ -2553,6 +2553,51 @@
                     "frontend/tests/e2e/smoke-ar.spec.ts"
                 ]
             }
+        },
+        {
+            "id": "US-088",
+            "chantier": "L-models-pdf-brief",
+            "title": "Backend endpoint /api/models/<slug>/pdf-brief — 5 modèles × 3 langues",
+            "description": "Endpoint Flask public exposant un brief PDF de 4-6 pages brandé Bassira (palette Causse Warm Intelligence) par modèle pré-calibré. 5 slugs × 3 langues (fr/en/ar). Source de vérité backend/app/models_data/<slug>.json (mirroir frontend US-086). Génération via reportlab (cohérence pdf_export US-024) + arabic-reshaper + python-bidi pour le RTL. Tests pytest, script de génération des 15 PDFs prêts pour le RDV C-level d'Amine.",
+            "acceptanceCriteria": [
+                "Endpoint GET /api/models/<slug>/pdf-brief?lang=<fr|en|ar> retourne 200 + application/pdf pour les 5 slugs × 3 langues",
+                "Endpoint retourne 404 MODEL_NOT_FOUND pour slug inconnu, 400 INVALID_LANG pour lang invalide, 400 INVALID_SLUG pour slug malformé",
+                "Header Cache-Control: public, max-age=3600 + Content-Disposition: attachment; filename=bassira-modele-<slug>-<lang>.pdf",
+                "PDF 4-6 pages A4 portrait : couverture (logo Bassira + titre + pills sector/Brier) + decision question (encadré terracotta) + contexte + agents simulés + méthodologie (encadré mint) + insights (bullets check) + use cases (cards) + disclaimer + CTA",
+                "Polices arabe shaping (arabic-reshaper + python-bidi) avec détection runtime de la fonte (Tahoma Windows / Noto-Arabic ou DejaVuSans Linux / fonts bundlés app/static/fonts)",
+                "5 fichiers JSON backend/app/models_data/*.json + 5 copies frontend/src/models/*.json créés selon schéma US-086",
+                "Script backend/scripts/generate_demo_pdfs.py génère 15 PDFs dans backend/uploads/demo_pdfs/",
+                "test_models_pdf.py couvre la matrice 5×3 + 404 + 400 + content-type + magic bytes + size > 5kB + cache header + brand + RTL no-crash",
+                "OpenAPI spec /api/models/{slug}/pdf-brief documentée (tag Models) + bp prefix dans test_unit_openapi.py",
+                "pytest backend/tests/test_models_pdf.py tous PASS (82 tests paramétrés)",
+                "Régression nulle : pytest backend complet PASS"
+            ],
+            "passes": true,
+            "completedAt": "2026-05-03",
+            "dependencies": [
+                "US-024"
+            ],
+            "metadata": {
+                "estimated_hours": 4,
+                "priority": "P0",
+                "files_touched": [
+                    "backend/app/api/models.py",
+                    "backend/app/__init__.py",
+                    "backend/app/models_data/fusion-bancaire-mena.json",
+                    "backend/app/models_data/crisis-drill-24h.json",
+                    "backend/app/models_data/allocation-fonds-strategique.json",
+                    "backend/app/models_data/stress-test-politique.json",
+                    "backend/app/models_data/lancement-diaspora-eu.json",
+                    "frontend/src/models/*.json (5 mirroirs)",
+                    "backend/scripts/generate_demo_pdfs.py",
+                    "backend/tests/test_models_pdf.py",
+                    "backend/tests/test_unit_openapi.py",
+                    "backend/openapi.yaml",
+                    "backend/pyproject.toml"
+                ],
+                "test_result": "82 paramétrés PASS sur test_models_pdf.py + 505 PASS pytest complet (vs ~423 baseline annoncée — pas de régression)",
+                "deliverables_for_rdv": "backend/uploads/demo_pdfs/ contient 15 PDFs imprimables A4 (10-11 KB FR/EN, 56-58 KB AR avec fonte embedded)"
+            }
         }
     ]
 }

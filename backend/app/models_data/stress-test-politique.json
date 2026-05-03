@@ -1,0 +1,135 @@
+{
+  "slug": "stress-test-politique",
+  "sector": "politique-publique",
+  "preset_source": "policy_brief_stress",
+  "title": {
+    "fr": "Stress test politique — Loi fintech mobile P2P avant audition",
+    "en": "Policy Stress Test — Mobile P2P Fintech Law Ahead of Hearing",
+    "ar": "اختبار إجهادي سياسي — قانون التكنولوجيا المالية للأقران المحمول قبل جلسة الاستماع"
+  },
+  "subtitle": {
+    "fr": "Modèle pré-calibré : 8 jours avant audition Commission Finances, 50 agents, 5 jours ouvrés simulés (10 rounds × 4 h)",
+    "en": "Pre-calibrated model: 8 days before the Finance Commission hearing, 50 agents, 5 simulated working days (10 rounds × 4 h)",
+    "ar": "نموذج معاير مسبقاً: 8 أيام قبل جلسة الاستماع أمام لجنة المالية، 50 وكيلاً، 5 أيام عمل مُحاكاة (10 جولات × 4 ساعات)"
+  },
+  "summary_short": {
+    "fr": "Simulation 5 jours ouvrés du stress test d'un projet de loi fintech mobile P2P contre opposition parlementaire, banques classiques et autorité monétaire (BCEAO en zone UEMOA, équivalents Bank Al-Maghrib/CBRT/BCB ailleurs). 50 agents : 10 supporters gouvernement, 8 opposition, 5 régulateurs banque centrale, 7 industrie fintech, 8 banques traditionnelles, 6 société civile, 6 journalistes. Sortie : survives_yes / no / with_major_amendment + top 3 amendements de compromis + qui flippe contre + top 3 arguments du brief qui ne tiennent pas en réel.",
+    "en": "5-working-day simulation of a stress test on a mobile P2P fintech bill against parliamentary opposition, traditional banks, and monetary authority (BCEAO in WAEMU zone; Bank Al-Maghrib / CBRT / BCB elsewhere). 50 agents: 10 government supporters, 8 opposition, 5 central-bank regulators, 7 fintech industry, 8 traditional banks, 6 civil society, 6 journalists. Output: survives_yes / no / with_major_amendment + top 3 compromise amendments + who flips against + top 3 brief arguments that fail under real-world stress.",
+    "ar": "محاكاة 5 أيام عمل لاختبار إجهادي لمشروع قانون التكنولوجيا المالية للأقران المحمول في مواجهة المعارضة البرلمانية والبنوك التقليدية والسلطة النقدية (البنك المركزي لدول غرب أفريقيا في منطقة الاتحاد الاقتصادي والنقدي لغرب أفريقيا، نظائرها بنك المغرب وغيره). 50 وكيلاً: 10 مؤيدون للحكومة، 8 معارضون، 5 مُنظّمون من البنك المركزي، 7 صناعة تكنولوجيا مالية، 8 بنوك تقليدية، 6 مجتمع مدني، 6 صحفيون. المخرجات: ينجو نعم / لا / مع تعديل جوهري + أفضل 3 تعديلات توافقية + من ينقلب ضدّ القانون + أفضل 3 حجج في الموجز لن تصمد أمام الواقع."
+  },
+  "context_long": {
+    "fr": "Le scénario de référence est cadré par un brief de conseiller du cabinet du ministre des Finances à 8 jours d'une audition publique en commission. Le projet de loi cherche à encadrer les paiements pair-à-pair sur mobile, sujet sensible où s'opposent l'industrie fintech (acteurs type Wave en zone UEMOA, M-Pesa en Afrique de l'Est, Inwi Money / Cash Plus dans le contexte marocain) et les banques classiques qui craignent une perte de marges sur les transferts. La banque centrale souhaite encadrer le risque systémique sans bloquer l'inclusion financière. Cinq director events simulent une trajectoire stress : fuite presse d'un amendement controversé (round 2), warning public BCEAO sur les risques de stabilité (round 3), audition publique convoquée (round 5), sondage IPSOS sur l'opinion (round 6), version compromis qui circule en backroom (round 9). Le modèle est calibré sur les dynamiques observées dans les débats publics réels autour des lois fintech UEMOA 2018, Maroc loi paiement 2018, Nigeria CBN guidelines 2020, Tunisie loi crowdfunding 2020 [sources : journaux officiels nationaux, communiqués BCEAO et BCT, archives presse Africa Report et TelQuel].",
+    "en": "The reference scenario frames a Finance Minister cabinet advisor's brief 8 days before a public hearing in committee. The bill aims to regulate mobile peer-to-peer payments — a sensitive issue pitting the fintech industry (Wave-like players in WAEMU, M-Pesa in East Africa, Inwi Money / Cash Plus in the Moroccan context) against traditional banks fearing margin loss on transfers. The central bank seeks to contain systemic risk without blocking financial inclusion. Five director events drive a stress trajectory: press leak of a controversial amendment (round 2), public BCEAO warning on stability risks (round 3), public hearing scheduled (round 5), IPSOS opinion poll (round 6), backroom compromise version (round 9). The model is calibrated on dynamics observed in real public debates around the WAEMU fintech laws 2018, Morocco payments law 2018, Nigeria CBN guidelines 2020, Tunisia crowdfunding law 2020 [sources: national official journals, BCEAO and BCT communiqués, Africa Report and TelQuel press archives].",
+    "ar": "يُؤطّر السيناريو المرجعي موجز مستشار في ديوان وزير المالية قبل 8 أيام من جلسة استماع علنية في اللجنة. يسعى مشروع القانون إلى تأطير المدفوعات بين الأقران عبر الهاتف المحمول، وهو موضوع حسّاس تتقاطع فيه مصالح صناعة التكنولوجيا المالية (لاعبون مثل ويف في منطقة غرب أفريقيا، إم-بيسا في شرق أفريقيا، إنوي ماني وكاش بلوس في السياق المغربي) والبنوك التقليدية التي تخشى تآكل هوامشها على التحويلات. يرغب البنك المركزي في تأطير الخطر النظامي دون تعطيل الإدماج المالي. تقود خمسة أحداث مسار الإجهاد: تسرّب صحفي لتعديل مثير للجدل (الجولة 2)، تحذير علني من البنك المركزي بشأن مخاطر الاستقرار (الجولة 3)، استدعاء جلسة استماع علنية (الجولة 5)، استطلاع IPSOS للرأي (الجولة 6)، نسخة توافقية تدور في الكواليس (الجولة 9). النموذج معاير على الديناميكيات المرصودة في النقاشات العمومية الفعلية حول قوانين التكنولوجيا المالية بمنطقة غرب أفريقيا 2018، قانون المدفوعات بالمغرب 2018، إرشادات البنك المركزي النيجيري 2020، قانون التمويل الجماعي بتونس 2020 [مصادر: الجرائد الرسمية الوطنية، بلاغات البنك المركزي لدول غرب أفريقيا والبنك المركزي التونسي، أرشيفات صحافة Africa Report وTelQuel]."
+  },
+  "decision_question": {
+    "fr": "Le projet de loi survit-il au stress test des 5 jours sans amendement majeur, ou doit-il être retravaillé avant l'audition Commission Finances ? Quelles concessions stratégiques préserveraient l'intention du texte tout en désamorçant les oppositions critiques ?",
+    "en": "Does the bill survive the 5-day stress test without a major amendment, or should it be reworked before the Finance Commission hearing? Which strategic concessions would preserve the text's intent while defusing critical opposition?",
+    "ar": "هل ينجو مشروع القانون من اختبار الإجهاد لمدة 5 أيام دون تعديل جوهري، أم يجب إعادة صياغته قبل جلسة الاستماع أمام لجنة المالية؟ ما التنازلات الاستراتيجية التي تُحافظ على مقصد النص وتُهدّئ المعارضات الحرجة؟"
+  },
+  "agents_simulated": [
+    {
+      "role_key": "supporter_government",
+      "profile": {
+        "fr": "Supporters gouvernement — 10 agents — défendent le texte en commission, gèrent les arbitrages avec le ministère des Finances et la primature.",
+        "en": "Government supporters — 10 agents — defend the bill in committee, handle arbitrations with the Finance Ministry and the PM's office.",
+        "ar": "مؤيدو الحكومة — 10 وكلاء — يُدافعون عن النص في اللجنة، يديرون المفاضلات مع وزارة المالية والوزارة الأولى."
+      }
+    },
+    {
+      "role_key": "opposition_politicians",
+      "profile": {
+        "fr": "Opposition parlementaire — 8 agents — déposent amendements, exploitent fuite presse, alimentent ligne de fracture sur souveraineté monétaire.",
+        "en": "Parliamentary opposition — 8 agents — file amendments, exploit press leaks, fuel a fault line on monetary sovereignty.",
+        "ar": "المعارضة البرلمانية — 8 وكلاء — يُودعون التعديلات، يستثمرون التسريب الصحفي، يُذكّون خط الانقسام حول السيادة النقدية."
+      }
+    },
+    {
+      "role_key": "central_bank_regulator",
+      "profile": {
+        "fr": "Régulateurs banque centrale — 5 agents — émettent warning public + propositions techniques, arbitrent inclusion vs stabilité.",
+        "en": "Central-bank regulators — 5 agents — issue a public warning + technical proposals, arbitrate inclusion vs stability.",
+        "ar": "مُنظّمو البنك المركزي — 5 وكلاء — يُصدرون تحذيراً علنياً + مقترحات تقنية، يُوازنون بين الإدماج والاستقرار."
+      }
+    },
+    {
+      "role_key": "fintech_industry",
+      "profile": {
+        "fr": "Industrie fintech — 7 agents — lobby PDG fintech + association sectorielle, défendent l'innovation et les seuils favorables.",
+        "en": "Fintech industry — 7 agents — fintech CEO lobby + sector association, defend innovation and favourable thresholds.",
+        "ar": "صناعة التكنولوجيا المالية — 7 وكلاء — لوبي رؤساء تنفيذيين للشركات الفينتك + جمعية قطاعية، يُدافعون عن الابتكار والعتبات الملائمة."
+      }
+    },
+    {
+      "role_key": "traditional_bank",
+      "profile": {
+        "fr": "Banques traditionnelles — 8 agents — APBEF / GPBM, font remonter le risque AML et défendent le maintien de leurs marges sur transferts.",
+        "en": "Traditional banks — 8 agents — APBEF / GPBM-like associations, raise the AML risk and defend their transfer margins.",
+        "ar": "البنوك التقليدية — 8 وكلاء — جمعيات على غرار APBEF أو المجموعة المهنية لبنوك المغرب، يُبرزون مخاطر مكافحة غسل الأموال ويُدافعون عن هوامشهم على التحويلات."
+      }
+    },
+    {
+      "role_key": "civil_society_consumer",
+      "profile": {
+        "fr": "Société civile et associations consommateurs — 6 agents — exigent transparence des frais et protection contre la sur-endettement.",
+        "en": "Civil society and consumer groups — 6 agents — demand fee transparency and protection against over-indebtedness.",
+        "ar": "المجتمع المدني وجمعيات حماية المستهلك — 6 وكلاء — يطالبون بشفافية الرسوم والحماية من المديونية المُفرطة."
+      }
+    },
+    {
+      "role_key": "journalist_observer",
+      "profile": {
+        "fr": "Journalistes observateurs — 6 agents — TelQuel / Africa Report / presse économique régionale, distinguent le texte du récit.",
+        "en": "Observing journalists — 6 agents — TelQuel / Africa Report / regional financial press, separate the text from the narrative.",
+        "ar": "صحفيون مراقبون — 6 وكلاء — TelQuel / Africa Report / الصحافة الاقتصادية الإقليمية، يُميّزون النص عن السرد."
+      }
+    }
+  ],
+  "key_insights": {
+    "fr": [
+      "L'amendement le plus fréquemment proposé en compromis dans les trajectoires simulées est le plafond de transaction P2P quotidien — il préserve l'intention du texte tout en répondant à l'objection AML des banques traditionnelles.",
+      "Le warning public de la banque centrale en round 3 fait basculer dans la majorité des trajectoires un sous-groupe de députés majoritaires modérés vers une demande de retravail — toute trajectoire qui n'anticipe pas ce warning surestime la solidité du texte.",
+      "Les 3 arguments du brief original les plus fragiles dans les trajectoires simulées sont : (i) sous-estimation du risque AML, (ii) confusion entre licence émission de monnaie électronique et licence agent payeur, (iii) absence de mécanisme de gestion du défaut sur P2P transfrontalier.",
+      "L'opinion publique mesurée par le sondage IPSOS round 6 a un effet faible sur le vote en commission mais structurant sur la communication post-audition — la stratégie média gagnante est de préparer la réponse au sondage avant son sortie."
+    ],
+    "en": [
+      "The most frequent compromise amendment proposed across simulated trajectories is the daily P2P transaction cap — it preserves the bill's intent while addressing traditional banks' AML objection.",
+      "The central bank's public warning at round 3 swings, in most trajectories, a sub-group of moderate majority MPs towards a request for rework — any trajectory that fails to anticipate this warning overstates the bill's robustness.",
+      "The three most fragile arguments of the original brief across simulated trajectories are: (i) AML risk underestimation, (ii) confusion between e-money licence and payment-agent licence, (iii) absence of a default-management mechanism for cross-border P2P.",
+      "Public opinion measured by the IPSOS poll at round 6 has a weak effect on the committee vote but a structuring effect on post-hearing communication — the winning media strategy is to prepare the response before the poll lands."
+    ],
+    "ar": [
+      "أكثر تعديل توافقي مُقترح تكراراً عبر المسارات المُحاكاة هو سقف يومي للمعاملات بين الأقران — يُحافظ على مقصد النص مع الردّ على اعتراض البنوك التقليدية حول مكافحة غسل الأموال.",
+      "يُحوّل تحذير البنك المركزي العلني في الجولة 3 في معظم المسارات مجموعة فرعية من نواب الأغلبية المعتدلين نحو طلب إعادة الصياغة — أي مسار لا يستبق هذا التحذير يُفرط في تقدير متانة النص.",
+      "أكثر ثلاث حجج هشاشة من الموجز الأصلي في المسارات المُحاكاة هي: (1) تقليل من خطر غسل الأموال، (2) خلط بين ترخيص إصدار النقود الإلكترونية وترخيص الوكيل الدافع، (3) غياب آلية لإدارة التخلّف عن السداد في المعاملات بين الأقران العابرة للحدود.",
+      "للرأي العام المُقاس باستطلاع IPSOS في الجولة 6 أثر ضعيف على التصويت في اللجنة لكنه هيكلي على الاتصال بعد جلسة الاستماع — الاستراتيجية الإعلامية الفائزة هي تحضير الردّ قبل صدور الاستطلاع."
+    ]
+  },
+  "brier_illustrative": 0.22,
+  "tags": ["politique-publique", "régulation", "fintech", "stress-test", "Afrique", "MENA", "UEMOA", "banque-centrale"],
+  "cta_label": {
+    "fr": "Commander un stress test pour votre projet de loi ou réglementation",
+    "en": "Order a stress test for your bill or regulation",
+    "ar": "طلب اختبار إجهادي لمشروع قانونكم أو تنظيمكم"
+  },
+  "use_cases_decisionmakers": {
+    "fr": [
+      "Cabinet ministériel préparant une audition parlementaire ou un Conseil de gouvernement sur un texte sensible (fintech, énergie, foncier, code du travail).",
+      "Think tank ou cabinet conseil en politique publique cherchant à anticiper les amendements et les acteurs qui basculeront contre lors du parcours législatif.",
+      "Direction des affaires publiques d'un grand groupe défendant ou contestant un projet de réglementation qui impacte son secteur.",
+      "Conseiller stratégique d'un parti politique structurant la riposte argumentaire avant un débat de plénière à fort enjeu."
+    ],
+    "en": [
+      "Ministerial cabinet preparing a parliamentary hearing or government council on a sensitive bill (fintech, energy, land, labour code).",
+      "Public-policy think tank or consulting firm anticipating amendments and the actors who will flip against during the legislative path.",
+      "Public-affairs leadership of a large group defending or opposing a regulation that impacts its sector.",
+      "Strategic advisor of a political party structuring the argument response before a high-stakes plenary debate."
+    ],
+    "ar": [
+      "ديوان وزاري يُعدّ لجلسة استماع برلمانية أو مجلس حكومي حول نصّ حسّاس (تكنولوجيا مالية، طاقة، عقار، قانون شغل).",
+      "مركز فكر أو مكتب استشارات في السياسات العمومية يسعى إلى استباق التعديلات والفاعلين الذين سينقلبون ضدّ النص خلال المسار التشريعي.",
+      "إدارة الشؤون العمومية في مجموعة كبرى تُدافع عن مشروع تنظيمي يُؤثّر على قطاعها أو تُعارضه.",
+      "مستشار استراتيجي لحزب سياسي يُهيكل الردّ الحجاجي قبل نقاش جلسة عامة عالي الرهان."
+    ]
+  }
+}

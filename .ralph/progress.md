@@ -47,6 +47,43 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 
 ## Log d'itérations
 
+### 2026-05-03 — US-088 Backend `/api/models/<slug>/pdf-brief` (5 modèles × 3 langues)
+- **Statut** : passes: true (chantier L-models-pdf-brief). Endpoint public, 4-6 pages A4 portrait, brandé Bassira qualité cabinet conseil, 15 PDFs prêts à imprimer pour le RDV C-level d'Amine cette semaine.
+- **Fichiers** :
+  - `backend/app/api/models.py` (+475 l) : blueprint `models_bp`, helpers `_load_model`/`_pick`/`_fmt_brier`/`_xml_safe`/`_shape_arabic`/`_ensure_arabic_font` + `_build_pdf` reportlab. Détection runtime fonte arabe (Tahoma Windows / NotoSansArabic / DejaVuSans Linux / `app/static/fonts/` bundlés) + shaping `arabic_reshaper` + bidi `python-bidi`.
+  - `backend/app/__init__.py` : enregistrement `models_bp` à `/api/models` (3 lignes).
+  - `backend/app/models_data/{fusion-bancaire-mena, crisis-drill-24h, allocation-fonds-strategique, stress-test-politique, lancement-diaspora-eu}.json` : 5 sources de vérité backend, schéma US-086 (slug, sector, preset_source, title fr/en/ar, subtitle, summary_short, context_long, decision_question, agents_simulated, key_insights, brier_illustrative, tags, cta_label, use_cases_decisionmakers).
+  - `frontend/src/models/*.json` : 5 mirroirs identiques (sub-agent US-086 n'avait pas encore mergé sa worktree au moment du run, j'ai créé les JSON depuis les preset_templates et les ai partagés).
+  - `backend/scripts/generate_demo_pdfs.py` : script standalone qui réutilise le test client Flask pour produire les 15 PDFs dans `backend/uploads/demo_pdfs/` (FR + EN ≈ 10-11 KB, AR ≈ 57 KB avec Tahoma embedded).
+  - `backend/tests/test_models_pdf.py` (+220 l) : 82 tests paramétrés (matrice 5×3 sur status/content-type/disposition/magic bytes/size + 404/400/cache/RTL no-crash + brand string + page count 4-6 via PyMuPDF).
+  - `backend/tests/test_unit_openapi.py` : ajout `models_bp → /api/models` dans `_BLUEPRINT_PREFIXES`.
+  - `backend/openapi.yaml` : tag `Models` + path `/api/models/{slug}/pdf-brief` documenté complet (params slug + lang, 200/400/404).
+  - `backend/pyproject.toml` : +`arabic-reshaper>=3.0.0` + `python-bidi>=0.4.2` (justification : sans shaping arabe le PDF AR est inutilisable — caractères non contextuels et ordre logique au lieu de visuel ; ces deux libs sont les standards pour reportlab + arabe).
+- **Quality gates** :
+  - `cd backend && uv run pytest tests/test_models_pdf.py -v` → **82 PASS** en 10.55 s.
+  - `cd backend && uv run pytest tests/` (régression complète) → **505 passed, 17 skipped, 0 régression**.
+  - 15 PDFs générés sans erreur via `uv run python scripts/generate_demo_pdfs.py`.
+- **Décisions techniques** :
+  - **reportlab plutôt que weasyprint+Jinja** : la spec brief mentionnait un template HTML mais l'instruction Étape 3 ordonnait explicitement la cohérence avec `pdf_export.py` US-024 et l'absence de nouvelle dépendance lourde. reportlab est déjà installé et utilisé pour le PDF de simulation — réutiliser le même mécanisme garantit (a) la cohérence visuelle de la stack PDF, (b) l'absence de régression sur le déploiement Coolify (weasyprint nécessite des libs système — pango/cairo/gdk-pixbuf — qu'on n'a pas voulu introduire pour un endpoint d'appoint).
+  - **Détection runtime de la fonte arabe** : impossible de bundler Tahoma (license MS non redistribuable). Le code essaie 9 paths candidats (bundles internes en priorité, puis Linux, puis Windows, puis macOS). En prod Coolify il faudra `apt install fonts-noto-arabic` ou `fonts-dejavu` au runtime sur l'image Docker — TODO documenté dans le code mais non bloquant pour le RDV (Amine génère depuis Windows local).
+  - **Shaping arabe explicite** : reportlab ne fait aucun shape RTL ni reordering bidi. `arabic_reshaper.reshape()` produit les formes contextuelles (ﺑ ﺒ ﺐ ﺑ), `bidi.algorithm.get_display()` réordonne logique→visuel. L'absence de l'une ou l'autre dégrade gracieusement (le texte reste lisible mais non shapé).
+  - **Schéma JSON multilingue uniforme** : tous les champs textuels (title, subtitle, summary_short, context_long, decision_question, key_insights, cta_label, use_cases_decisionmakers, agents[].profile) sont des dicts `{fr, en, ar}`. Helper `_pick(field, lang)` extrait avec fallback FR puis EN puis "". Cela permet l'extension future (ajout d'une 4ème langue) sans toucher au PDF generator.
+  - **Branding qualité cabinet** : palette Causse Warm Intelligence stricte (#FF8551 orange / #006D44 mint / #FAF7F2 cream / #241915 charcoal / #A13F0F terracotta), top accent bar 4mm orange, footer 1.5mm terracotta + ribbon « Document confidentiel · Usage professionnel » + texte localisé « Page X / Bassira · بصيرة ». Encadrés couleur : decision question (terracotta soft #FFF3EE), méthodologie (mint soft #E8F4EF), CTA (terracotta soft + center-aligned).
+  - **Pages 4-6** : couverture + decision/contexte + agents/méthodologie + insights/use cases + disclaimer/CTA = 5 pages effectives (vérifié par PyMuPDF dans `test_pdf_contains_bassira_brand`).
+  - **DEFCON 1 chiffres** : aucun chiffre Brier réel inventé. Les 5 modèles ont des `brier_illustrative` documentés comme tels, et la méthodologie dans le PDF mentionne explicitement « calibration en cours de constitution sur les modèles publiés en 2026 ». Les sources citées (Bank Al-Maghrib, BCEAO, INSEE, NielsenIQ, AVCA, GPBM, LSA, Linéaires, Africa Report, TelQuel, FoodService Vision, IRESEN, OCP) sont toutes des institutions ou publications publiques réelles — aucune affirmation factuelle nouvelle n'est faite à leur sujet, juste qu'elles sont des sources publiques de calibration.
+- **Ce qui a basculé en cours de route** :
+  - Première version sans shaping arabe : PDFs AR 9 KB avec caractères non shapés et ordre logique → inutilisable. Détecté en inspectant un PDF avec PyMuPDF. Ajout `arabic-reshaper` + `python-bidi` + détection fonte → PDFs AR 57 KB avec rendu correct (vérifié visuellement sur l'extraction PyMuPDF : `Bassira · ﺑﺼﻴﺮﺓ ﺻﻔﺤﺔ 1` rend bien).
+  - Test test_unit_openapi `test_flask_routes_are_documented_or_allowlisted` ne plantait pas avec un blueprint inconnu (il skip silencieusement les bps non mappés) — mais pour propreté j'ai ajouté `models_bp → /api/models` dans `_BLUEPRINT_PREFIXES` ET la spec dans `openapi.yaml` (tag Models complet avec params + responses). Cela garantit que les futurs endpoints `/api/models/...` ne dérivent pas silencieusement.
+- **Pour Amine — récupération immédiate des PDFs RDV** :
+  - Chemin : `C:/Users/amans/OneDrive/Projets/MiroShark/backend/uploads/demo_pdfs/`
+  - 15 fichiers : `bassira-modele-<slug>-<lang>.pdf` (5 slugs × 3 langues)
+  - Slugs : `fusion-bancaire-mena` · `crisis-drill-24h` · `allocation-fonds-strategique` · `stress-test-politique` · `lancement-diaspora-eu`
+  - Régénération en 1 commande : `cd backend && uv run python scripts/generate_demo_pdfs.py`
+- **Apprentissages pour futures sessions** :
+  - reportlab + arabe = piège silencieux. Toujours tester l'extraction PyMuPDF pour vérifier le rendu visuel, pas juste `len(resp.data) > N`.
+  - Pour un endpoint qui ressemble à un duplicate (deux générateurs PDF dans la même app), valoriser la cohérence en réutilisant les mêmes helpers/styles plutôt que dupliquer reportlab boilerplate. Les `_COLOR_*` du brief sont identiques aux constantes US-024.
+  - Le pattern `_pick(field, lang)` + `_xml_safe(_localise(text))` est généralisable à tout futur endpoint qui doit produire du contenu multilingue avec shaping conditionnel.
+
 ### 2026-04-29 — Batch robustesse erreurs : US-047 + US-039 + US-040 + US-007
 - **Statut** : passes: true sur les 4 stories — clôt le chantier 9-simulation-quality + le chantier 6-i18n-erreurs.
 - **Déclencheur** : incident sim_cc793c9c99b5 où l'utilisateur voyait « Request failed with status code 400 » au lieu d'un message localisé au Step 03 « Génération de la configuration ». Le diagnostic a révélé une cause racine multi-étapes : graph Neo4j vide → /prepare échoue silencieusement → user clique Retry → POST 400 → frontend affiche err.message axios brut + un hint legacy mentionnant à tort OpenRouter (la prod tourne sur Moonshot kimi-k2 depuis la migration).

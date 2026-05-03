@@ -122,6 +122,10 @@ def create_app(config_class=Config):
     # (US-025) — public, rate-limited, fires a notification email.
     from .api.quote import quote_bp
     app.register_blueprint(quote_bp, url_prefix='/api/quote')
+    # models_bp serves the public branded-brief PDF endpoint at
+    # GET /api/models/<slug>/pdf-brief?lang=<fr|en|ar> (US-088).
+    from .api.models import models_bp
+    app.register_blueprint(models_bp, url_prefix='/api/models')
     
     # Health check
     @app.route('/health')

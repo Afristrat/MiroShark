@@ -105,6 +105,8 @@ _BLUEPRINT_PREFIXES = {
     "quote_bp":          "/api/quote",
     # admin_bp serves the gated ops analytics dashboard (US-065).
     "admin_bp":          "/api/admin",
+    # models_bp serves the public branded-brief PDF endpoint (US-088).
+    "models_bp":         "/api/models",
 }
 
 

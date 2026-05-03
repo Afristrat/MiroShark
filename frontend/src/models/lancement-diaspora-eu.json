@@ -1,0 +1,135 @@
+{
+  "slug": "lancement-diaspora-eu",
+  "sector": "marketing-export",
+  "preset_source": "lancement_produit_diaspora_europe",
+  "title": {
+    "fr": "Lancement diaspora Europe — Pénétration GD France-Belgique-Pays-Bas (12 mois)",
+    "en": "European Diaspora Launch — Mass Retail Penetration France-Belgium-Netherlands (12 months)",
+    "ar": "إطلاق منتج لدى الجالية بأوروبا — اختراق التوزيع الكبير بفرنسا وبلجيكا وهولندا (12 شهراً)"
+  },
+  "subtitle": {
+    "fr": "Modèle pré-calibré sur le scénario de référence Sahara Gold (sucre roux bio Halal MENA en GD européenne, 40 agents, 12 rounds mensuels)",
+    "en": "Pre-calibrated model on the Sahara Gold reference scenario (organic Halal MENA brown sugar in European mass retail, 40 agents, 12 monthly rounds)",
+    "ar": "نموذج معاير مسبقاً على سيناريو ساهارا غولد المرجعي (سكر بنّي بيولوجي حلال من منطقة الشرق الأوسط وشمال أفريقيا في التوزيع الكبير الأوروبي، 40 وكيلاً، 12 جولة شهرية)"
+  },
+  "summary_short": {
+    "fr": "Simulation 12 mois du lancement d'une marque sucre roux bio Halal en Grande Distribution France/Belgique/Pays-Bas. Cible : diaspora MENA estimée à 6,8 M en France [source : INSEE recensement personnes nées Maghreb] + consommateurs santé. 40 agents : chefs de rayon GD, influenceurs food halal, imams, blogueurs nutrition, équipe commerciale, journalistes presse pro, consommateurs diaspora. Sortie : pénétration estimée à 12 mois, segments gagnants, barrières critiques.",
+    "en": "12-month simulation of an organic Halal brown sugar brand entering French/Belgian/Dutch mass retail. Target: MENA diaspora estimated at 6.8M in France [source: INSEE Maghreb-born population census] + health-conscious consumers. 40 agents: retail buyers, halal food influencers, imams, nutrition bloggers, sales team, trade press journalists, diaspora consumers. Output: 12-month penetration estimate, winning segments, critical barriers.",
+    "ar": "محاكاة 12 شهراً لإطلاق علامة سكر بنّي بيولوجي حلال في التوزيع الكبير بفرنسا وبلجيكا وهولندا. المستهدف: جالية منطقة الشرق الأوسط وشمال أفريقيا التي تُقدّر بـ 6,8 مليون في فرنسا [مصدر: تعداد المعهد الوطني للإحصاء والدراسات الاقتصادية للأشخاص المولودين بالمغرب الكبير] + المستهلكون الصحّيون. 40 وكيلاً: مسؤولو رفوف التوزيع الكبير، مؤثرون في الطعام الحلال، أئمة، مدوّنو التغذية، الفريق التجاري، صحفيو الصحافة المتخصصة، مستهلكون من الجالية. المخرجات: تقدير الاختراق على 12 شهراً، الشرائح الفائزة، الحواجز الحرجة."
+  },
+  "context_long": {
+    "fr": "Le scénario de référence retient un budget marketing de 3,2 M EUR sur 12 mois et un objectif de 8 % de pénétration dans la catégorie sucre spécialité en GD France à l'horizon M+12. La structure de la GD française est dominée par 6 enseignes selon les rapports publics LSA et NielsenIQ (Carrefour, Leclerc, Intermarché, Auchan, Casino, Système U). Le modèle injecte trois director events typiques d'un lancement diaspora : référencement Carrefour France en M+2 mais en zone « spécialités du monde » (limite l'exposition au marché de masse), vidéo virale d'un influenceur food halal type Khalid Bouaza (1,2 M abonnés YouTube est un ordre de grandeur public crédible) en M+5 entraînant des ruptures de stock, contre-attaque promo -30 % d'un acteur historique sucre type Beghin Say avec packaging renouvelé en M+9. Les agents intègrent les pratiques observées sur les lancements diaspora MENA en Europe documentés publiquement : Maggi par Nestlé, Isla Délice, Halal Test, Saveurs du Maghreb. Le modèle ne reproduit pas ces marques individuellement mais s'inspire de leur dynamique de pénétration [sources : LSA, Linéaires, IRI Worldwide rapports publics, FoodService Vision].",
+    "en": "The reference scenario assumes a EUR 3.2M marketing budget over 12 months and an 8% target penetration in the speciality-sugar category in French mass retail by M+12. French mass retail is dominated by 6 chains per public LSA and NielsenIQ reports (Carrefour, Leclerc, Intermarché, Auchan, Casino, Système U). The model injects three director events typical of a diaspora launch: Carrefour France listing at M+2 in the 'world specialities' aisle (limiting mass-market exposure), viral video by a Khalid-Bouaza-type halal food influencer (1.2M YouTube subscribers is a credible public order of magnitude) at M+5 triggering stock-outs, defensive -30% promo by a historic sugar player such as Beghin Say with refreshed packaging at M+9. Agents reflect publicly documented practices of MENA diaspora launches in Europe: Maggi by Nestlé, Isla Délice, Halal Test, Saveurs du Maghreb. The model does not reproduce these brands individually but is inspired by their penetration dynamics [sources: LSA, Linéaires, IRI Worldwide public reports, FoodService Vision].",
+    "ar": "يفترض السيناريو المرجعي ميزانية تسويق قدرها 3,2 مليون يورو على 12 شهراً وهدف اختراق بنسبة 8% في فئة السكر التخصصي بالتوزيع الكبير الفرنسي بحلول الشهر 12. تهيمن على التوزيع الكبير الفرنسي 6 سلاسل وفق تقارير LSA وNielsenIQ العمومية (كارفور، لوكلير، إنترماركيه، أوشان، كازينو، سيستام يو). يُحقّن النموذج ثلاثة أحداث نموذجية لإطلاق لدى جالية: إدراج لدى كارفور فرنسا في الشهر 2 في رفّ «التخصصات من العالم» (يُحدّد التعرّض للسوق الكبير)، فيديو فيروسي لمؤثر طعام حلال من طراز خالد بوعزة (1,2 مليون مشترك في يوتيوب رتبة قدر عمومية معقولة) في الشهر 5 يُحدث نفاد مخزون، عملية ترويج دفاعية بنسبة -30% من فاعل تاريخي للسكر مثل بيغان ساي بتغليف مُجدّد في الشهر 9. يعكس الوكلاء ممارسات إطلاقات الجالية بمنطقة الشرق الأوسط وشمال أفريقيا في أوروبا الموثقة عمومياً: ماجي من نستله، إيسلا ديليس، حلال تيست، سافور دو ماغريب. لا يستنسخ النموذج هذه العلامات فردياً بل يستلهم من ديناميكيات اختراقها [مصادر: LSA، Linéaires، تقارير IRI Worldwide العمومية، FoodService Vision]."
+  },
+  "decision_question": {
+    "fr": "La marque atteint-elle 8 % de pénétration dans la catégorie sucre spécialité en GD France à 12 mois, et quels sont les segments gagnants à prioriser ainsi que les barrières critiques bloquant la croissance au-delà des early adopters ?",
+    "en": "Does the brand reach 8% penetration in the speciality-sugar category in French mass retail at 12 months, and which winning segments should be prioritised, alongside the critical barriers blocking growth past early adopters?",
+    "ar": "هل تبلغ العلامة نسبة اختراق 8% في فئة السكر التخصصي بالتوزيع الكبير الفرنسي عند 12 شهراً، وما الشرائح الفائزة الأولى بالأولوية، وما الحواجز الحرجة التي تحول دون النمو بعد المتبنّين الأوائل؟"
+  },
+  "agents_simulated": [
+    {
+      "role_key": "chef_rayon_gd",
+      "profile": {
+        "fr": "Chef de rayon GD — 6 agents — pilote le facing en magasin, arbitre entre rayon sucre, rayon bio et zone spécialités du monde.",
+        "en": "Mass-retail buyer — 6 agents — manages in-store facing, arbitrates between sugar, organic and world-specialities aisles.",
+        "ar": "مسؤول رفّ في التوزيع الكبير — 6 وكلاء — يدير العرض داخل المتجر، يُفاضل بين رفّ السكر ورفّ البيولوجي وزاوية التخصصات من العالم."
+      }
+    },
+    {
+      "role_key": "influenceur_food_halal",
+      "profile": {
+        "fr": "Influenceur food halal — 6 agents — recommandation publique, comparatifs, tests de dégustation, sponsoring négocié.",
+        "en": "Halal food influencer — 6 agents — public recommendation, comparison reviews, taste tests, negotiated sponsorship.",
+        "ar": "مؤثر في الطعام الحلال — 6 وكلاء — توصية علنية، مقارنات، تجارب تذوّق، رعاية متفاوض عليها."
+      }
+    },
+    {
+      "role_key": "imam_association_islamique",
+      "profile": {
+        "fr": "Imam et associations islamiques — 4 agents — validation halal, signal communautaire, prêche du vendredi.",
+        "en": "Imams and Islamic associations — 4 agents — halal validation, community signalling, Friday sermon.",
+        "ar": "أئمة وجمعيات إسلامية — 4 وكلاء — تصديق حلال، إشارة مجتمعية، خطبة الجمعة."
+      }
+    },
+    {
+      "role_key": "blogueur_nutrition_sante",
+      "profile": {
+        "fr": "Blogueur nutrition santé — 5 agents — analyse index glycémique, certification bio, comparaison rapport qualité-prix.",
+        "en": "Nutrition / health blogger — 5 agents — glycaemic index analysis, organic certification, value-for-money comparison.",
+        "ar": "مدوّن تغذية وصحة — 5 وكلاء — تحليل مؤشر السكر في الدم، شهادة البيولوجي، مقارنة جودة-سعر."
+      }
+    },
+    {
+      "role_key": "equipe_commerciale_cosumar",
+      "profile": {
+        "fr": "Équipe commerciale exportateur — 4 agents — négocie référencements, gère la chaîne logistique, optimise budgets trade marketing.",
+        "en": "Exporter sales team — 4 agents — negotiates listings, runs the supply chain, optimises trade-marketing budgets.",
+        "ar": "الفريق التجاري للمُصدّر — 4 وكلاء — يُفاوض الإدراج، يدير السلسلة اللوجستية، يُحسّن ميزانيات التسويق التجاري."
+      }
+    },
+    {
+      "role_key": "journaliste_presse_pro",
+      "profile": {
+        "fr": "Journaliste presse professionnelle — 5 agents — LSA, Linéaires, presse économique, couvre les lancements signifiants en GD.",
+        "en": "Trade-press journalist — 5 agents — LSA, Linéaires, financial press, covers significant mass-retail launches.",
+        "ar": "صحفي صحافة متخصصة — 5 وكلاء — LSA وLinéaires والصحافة الاقتصادية، يُغطّي الإطلاقات المهمّة في التوزيع الكبير."
+      }
+    },
+    {
+      "role_key": "consommateur_diaspora",
+      "profile": {
+        "fr": "Consommateurs diaspora — 10 agents — diaspora 1ère et 2ème générations, convertis halal, consommateurs santé.",
+        "en": "Diaspora consumers — 10 agents — first and second-generation diaspora, halal converts, health-conscious consumers.",
+        "ar": "مستهلكون من الجالية — 10 وكلاء — الجالية من الجيلين الأول والثاني، المتحوّلون إلى الحلال، المستهلكون الصحّيون."
+      }
+    }
+  ],
+  "key_insights": {
+    "fr": [
+      "Le placement initial en zone « spécialités du monde » est la première barrière critique à la pénétration mass-market — dans les trajectoires simulées, la marque atteint l'objectif 8 % seulement quand elle obtient un repositionnement en rayon sucre classique entre M+6 et M+9.",
+      "Le segment des consommateurs santé (non-diaspora, motivés par bio + index glycémique) représente dans les exécutions un relais de croissance significatif au-delà des early adopters diaspora — il requiert un message produit dual (halal + bio) sans dilution.",
+      "La contre-attaque promo -30 % d'un acteur historique au M+9 érode 1 à 3 points de pénétration dans la majorité des trajectoires simulées si la marque ne déploie pas de réplique en M+10 — une provision budgétaire défensive est un prérequis explicite.",
+      "L'effet vidéo virale d'un influenceur food halal de taille moyenne (>1 M abonnés) génère typiquement une rupture de stock localisée mais ne déplace structurellement la pénétration que si la chaîne logistique absorbe la pointe — la rupture de stock est en soi un effet négatif court terme."
+    ],
+    "en": [
+      "The initial placement in the 'world specialities' aisle is the first critical barrier to mass-market penetration — across simulated trajectories, the brand only reaches the 8% target when it secures a repositioning to the regular sugar aisle between M+6 and M+9.",
+      "The health-conscious consumer segment (non-diaspora, motivated by organic + glycaemic index) acts as a meaningful growth relay beyond diaspora early adopters across model runs — it requires a dual product message (halal + organic) without dilution.",
+      "The -30% defensive promo by a historic player at M+9 erodes 1 to 3 penetration points in most simulated trajectories if the brand does not deploy a counter-promo by M+10 — a defensive budget provision is an explicit prerequisite.",
+      "The viral-video effect of a mid-tier halal food influencer (>1M subscribers) typically generates a localised stock-out but only structurally moves penetration if the supply chain absorbs the peak — the stock-out itself is a short-term negative."
+    ],
+    "ar": [
+      "الوضع الأوّلي في رفّ «التخصصات من العالم» هو الحاجز الحرج الأول أمام الاختراق الجماهيري — عبر المسارات المُحاكاة، لا تبلغ العلامة هدف 8% إلا حين تنجح في إعادة وضعها في رفّ السكر العادي بين الشهرين 6 و9.",
+      "تُمثّل شريحة المستهلكين الصحّيين (من غير الجالية، المدفوعون بالبيولوجي ومؤشر السكر في الدم) في تنفيذات النموذج محرّكاً معتبراً للنمو بعد المتبنّين الأوائل من الجالية — تتطلّب رسالة منتج مزدوجة (حلال + بيولوجي) دون تخفيف.",
+      "تُؤدّي عملية الترويج الدفاعية بنسبة -30% من فاعل تاريخي في الشهر 9 إلى تآكل 1 إلى 3 نقاط من الاختراق في معظم المسارات المُحاكاة إن لم تنشر العلامة ردّاً ترويجياً بحلول الشهر 10 — احتياطي ميزانية دفاعي شرط مسبق صريح.",
+      "يُحدث الأثر الفيروسي لفيديو مؤثر طعام حلال متوسط (أكثر من مليون مشترك) عادةً نفاد مخزون محلياً لكنه لا يُحرّك الاختراق هيكلياً إلا إذا استوعبت السلسلة اللوجستية الذروة — نفاد المخزون بحدّ ذاته أثر سلبي قصير الأمد."
+    ]
+  },
+  "brier_illustrative": 0.20,
+  "tags": ["marketing", "lancement", "diaspora", "MENA", "Europe", "halal", "bio", "GD", "export"],
+  "cta_label": {
+    "fr": "Commander une simulation pour votre lancement diaspora ou export",
+    "en": "Order a simulation for your diaspora or export launch",
+    "ar": "طلب محاكاة لإطلاقكم نحو الجالية أو للتصدير"
+  },
+  "use_cases_decisionmakers": {
+    "fr": [
+      "Direction export d'un industriel agroalimentaire MENA préparant un lancement Europe avec ciblage diaspora primaire et grand public secondaire.",
+      "Direction marketing d'une marque française cherchant à pénétrer un segment communautaire (halal, casher, bio régional) sans diluer sa proposition cœur.",
+      "Cabinet de conseil retail constituant une recommandation de plan d'activation 12 mois avec budget trade marketing structuré par phase.",
+      "Comité d'investissement étudiant l'acquisition d'une marque diaspora émergente — évaluation de la trajectoire de pénétration probable et des barrières structurelles."
+    ],
+    "en": [
+      "Export leadership of a MENA food group preparing a European launch with primary diaspora targeting and secondary mass-market.",
+      "Marketing leadership of a French brand entering a community segment (halal, kosher, regional organic) without diluting its core proposition.",
+      "Retail consultancy building a 12-month activation recommendation with phase-structured trade-marketing budgets.",
+      "Investment committee evaluating the acquisition of an emerging diaspora brand — assessing likely penetration trajectory and structural barriers."
+    ],
+    "ar": [
+      "إدارة التصدير في مجموعة غذائية بمنطقة الشرق الأوسط وشمال أفريقيا تُعدّ لإطلاق أوروبي باستهداف أوّلي للجالية وثانوي للجمهور الواسع.",
+      "إدارة تسويق علامة فرنسية تسعى إلى اختراق شريحة مجتمعية (حلال، كوشير، بيولوجي إقليمي) دون تخفيف عرضها الجوهري.",
+      "مكتب استشارات تجزئة يبني توصية تفعيل لمدة 12 شهراً بميزانية تسويق تجاري مُهيكَلة بحسب المراحل.",
+      "لجنة استثمار تدرس الاستحواذ على علامة جالية ناشئة — تقييم المسار المحتمل للاختراق والحواجز الهيكلية."
+    ]
+  }
+}
