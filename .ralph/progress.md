@@ -49,6 +49,40 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 
 ## Log d'itérations
 
+### 2026-05-03 — US-092 Backend Flask : middleware JWT Supabase + extension ownership multitenant
+
+- **Statut** : passes:true (chantier M-multitenant-supabase, follow-up US-091).
+- **Modules créés** :
+  - `backend/app/auth/jwt_verifier.py` — `verify_supabase_jwt(token)` HS256 + cache LRU TTL 5min (256 entrées, TTL borné par exp). Lève `InvalidTokenError` (exception spécifique au module pour ne pas leak les internals PyJWT).
+  - `backend/app/auth/supabase_client.py` — singleton `get_supabase_admin()` (service_role) + helpers `get_user_orgs`, `get_user_role_in_org`, `record_simulation_ownership`, `get_simulation_owner`, `mark_outcome`, `publish_simulation`, `get_public_calibration_aggregates`. Hiérarchie `ROLE_RANK = {viewer:1, member:2, admin:3, owner:4}` + `role_meets_minimum()`.
+  - `backend/app/auth/decorators.py` — `@require_auth`, `@require_org_membership(role_min)`, `@require_owner_or_admin` (alias). Multi-org : sélection via `X-Org-Id` header ou `?org_id=` query param ; auto-select si 1 seule org. Codes d'erreur API : 401 MISSING_AUTH/INVALID_TOKEN, 403 NOT_A_MEMBER/ROLE_TOO_LOW/FORBIDDEN_ORG, 404 ORG_NOT_FOUND_FOR_USER, 400 ORG_ID_REQUIRED, 503 SUPABASE_NOT_CONFIGURED/AUTH_NOT_CONFIGURED.
+  - `backend/app/api/client.py` — 5 endpoints `/api/client/*` (auth/me, simulations GET/POST, outcome, publish).
+- **Modules modifiés** :
+  - `backend/app/services/simulation_manager.py` — `create_simulation(org_id?, created_by?, package_id?)` (rétro-compat : sans `org_id`, aucun appel Supabase) + `list_simulations_for_org(org_id)` (hydratation filesystem défensive — `status="missing"` si dossier absent) + `is_user_authorized_to_read(simulation_id, user_id)` (sim sans ownership = publique legacy ; sinon membership requis ; fail-closed sur erreur Supabase).
+  - `backend/app/api/calibration.py` — endpoint public `GET /api/calibration/aggregates` lit la VIEW k-anonymity n>=5.
+  - `backend/app/__init__.py` — register `client_bp` au prefix `/api/client`.
+  - `backend/pyproject.toml` — ajout `pyjwt[crypto]>=2.10.0` (déjà dans uv.lock via dépendance transitive) et `supabase>=2.7.0` (nouvelle dep).
+- **Tests créés (63 nouveaux)** :
+  - `tests/test_unit_auth_jwt.py` (33 tests) : `verify_supabase_jwt` valide / expiré / signature KO / malformé / sub manquant / secret backend manquant / cache hit / cache purge expiré ; `@require_auth` no-token / malformed-header / invalid / valid / cookie fallback / secret unset 503 ; `@require_org_membership` no-orgs / single-auto-select / multi-no-hint / X-Org-Id / ?org_id= / unknown-org / role-too-low / supabase-config-missing ; `@require_owner_or_admin` member-rejected / admin-passes / owner-passes ; `role_meets_minimum` hiérarchie complète.
+  - `tests/test_unit_client_simulations.py` (19 tests) : 5 endpoints client × scénarios (no-token, missing-fields, member-rejected, invalid-label/brier, not-owned-404, wrong-org-403, admin-marks-OK, owner-publishes-OK, etc.) + `/api/calibration/aggregates` no-auth + supabase-misconfigured-fail-soft.
+  - `tests/test_unit_simulation_manager_ownership.py` (11 tests) : rétro-compat sans org_id (pas d'appel Supabase, vérifié par `MagicMock.side_effect=AssertionError`) ; org_id triggers ownership recording ; supabase-failure-doesnt-break-creation (fail-soft) ; `is_user_authorized_to_read` 5 cas (unowned-public, in-org-OK, not-in-org-rejected, supabase-error-fail-closed, missing-org_id-rejected) ; `list_simulations_for_org` (missing-filesystem, hydratation-OK, empty-org).
+- **Quality gates** :
+  - `cd backend && uv run pytest tests/test_unit_auth_jwt.py` → **33 PASS** en 15,08 s.
+  - `cd backend && uv run pytest tests/test_unit_simulation_manager_ownership.py` → **11 PASS** en 12,33 s.
+  - `cd backend && uv run pytest tests/test_unit_client_simulations.py` → **19 PASS** en 3,37 s.
+  - `cd backend && uv run pytest -q` → **763 passed, 17 skipped, 0 régression** (vs 700 baseline US-090, +63 nouveaux).
+- **Décisions architecturales notables** :
+  - **HS256 par défaut** pour Supabase Auth (la clé `SUPABASE_JWT_SECRET` est le secret partagé HS256 visible dans le dashboard Supabase Settings → API → JWT Settings). On accepte l'absence de claim `aud` pour rester compatible avec d'éventuels tokens custom.
+  - **Cache JWT TTL borné par `exp`** : on ne risque jamais de servir un token plus longtemps que sa durée de vie effective (TTL plafonné à `min(now+5min, exp-5s)`).
+  - **Politique de log** : aucun JWT, aucun header `Authorization` jamais loggué (cf rules/supabase.md). Les exceptions PyJWT sont catégorisées par classe (`exc.__class__.__name__`) sans payload.
+  - **Singleton Supabase admin** : protégé par lock (multi-thread Flask). Helper `reset_supabase_admin()` exposé pour les tests.
+  - **Rétro-compatibilité forte** : `create_simulation()` sans `org_id` reste strictement filesystem-only — pas d'écriture Supabase. Vital pour les modèles publics `/models/<slug>` et `/explore` qui n'ont pas d'org propriétaire.
+  - **Fail-soft sur /api/calibration/aggregates** : si Supabase est misconfiguré (dev local sans secret), retour `200 {data: []}` au lieu de 503. La page calibration v2 s'affichera vide, mais ne brique pas le frontend en environnement de développement.
+  - **Fail-closed sur is_user_authorized_to_read** : toute erreur Supabase = `False` (jamais d'autorisation accidentelle).
+  - **Idempotence ownership** : `record_simulation_ownership` swallow l'erreur duplicate-key (23505) — la sim peut déjà avoir une ligne ownership sans que cela soit une erreur.
+  - **Mocks pytest** : aucune dépendance live à Supabase. Les helpers prennent un `client=` injectable, et les tests monkeypatchent soit `app.auth.supabase_client.<helper>` soit le module `app.api.client.<helper>` selon la cible (les imports `from … import` créent des aliases locaux qui doivent être patchés au point d'usage). C'est le pattern standard de monkeypatching pour les modules Python — à reproduire pour US-093+.
+- **Apprentissage clé** : le pattern « décorateur factory + alias » (`require_org_membership(role_min)` + `require_owner_or_admin = require_org_membership(role_min="admin")`) garde l'extension future ouverte (on pourra ajouter `require_owner_only` sans toucher la base) tout en exposant des alias lisibles dans les routes. La hiérarchie de rôles est isolée dans `supabase_client.role_meets_minimum()` pour pouvoir être testée en pur Python sans dépendance Flask, et réutilisée par `is_user_authorized_to_read`.
+
 ### 2026-05-03 — US-090 Vitrine /models — productivisation des 13 templates restants
 - **Statut** : passes: true (chantier L-models-pdf-brief, follow-up US-086 + US-088 + US-089). 18 modèles publiés au total, 54 PDFs générés en FR/EN/AR.
 - **13 templates productivisés** : adcheck-pre-launch, budget-loi-finances, campus-controversy, implantation-startup, corporate-crisis, crypto-launch, historical-whatif, pmf-startup-tech, political-debate, primaires-parti-politique, product-announcement, product-launch, she-start-cohort.

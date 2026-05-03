@@ -126,6 +126,11 @@ def create_app(config_class=Config):
     # GET /api/models/<slug>/pdf-brief?lang=<fr|en|ar> (US-088).
     from .api.models import models_bp
     app.register_blueprint(models_bp, url_prefix='/api/models')
+    # client_bp expose les endpoints multitenant authentifiés Supabase
+    # (US-092) : /api/client/auth/me, /api/client/simulations[+outcome+publish].
+    # Tous les endpoints sont protégés par JWT Supabase et rôle org.
+    from .api.client import client_bp
+    app.register_blueprint(client_bp, url_prefix='/api/client')
     
     # Health check
     @app.route('/health')

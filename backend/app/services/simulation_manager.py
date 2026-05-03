@@ -254,9 +254,21 @@ class SimulationManager:
         enable_reddit: bool = True,
         enable_polymarket: bool = False,
         polymarket_market_count: int = 1,
+        org_id: Optional[str] = None,
+        created_by: Optional[str] = None,
+        package_id: Optional[str] = None,
     ) -> SimulationState:
         """
-        Create a new simulation
+        Create a new simulation.
+
+        US-092 — extension multitenant :
+            Si ``org_id`` est fourni (mode client authentifié via le
+            décorateur ``@require_org_membership``), on enregistre la
+            simulation dans la table Supabase ``simulation_ownership``.
+            Sans ``org_id`` (mode public legacy : modèles statiques,
+            /explore, simulation anonyme), le comportement reste
+            strictement identique à l'avant-US-092 — aucune écriture
+            Supabase n'a lieu, garantissant la rétro-compatibilité.
 
         Args:
             project_id: Project ID
@@ -264,13 +276,19 @@ class SimulationManager:
             enable_twitter: Whether to enable Twitter simulation
             enable_reddit: Whether to enable Reddit simulation
             enable_polymarket: Whether to enable Polymarket simulation
+            polymarket_market_count: Number of Polymarket markets to generate
+            org_id: Organisation propriétaire (UUID Supabase). Optionnel.
+            created_by: Utilisateur ayant créé la sim (UUID Supabase auth).
+                Optionnel ; n'est utilisé que si ``org_id`` est fourni.
+            package_id: Slug du package commandé (ex. ``crisis-drill-24h``).
+                Optionnel ; n'est utilisé que si ``org_id`` est fourni.
 
         Returns:
             SimulationState
         """
         import uuid
         simulation_id = f"sim_{uuid.uuid4().hex[:12]}"
-        
+
         state = SimulationState(
             simulation_id=simulation_id,
             project_id=project_id,
@@ -281,10 +299,33 @@ class SimulationManager:
             polymarket_market_count=max(1, min(5, int(polymarket_market_count or 1))),
             status=SimulationStatus.CREATED,
         )
-        
+
         self._save_simulation_state(state)
         logger.info(f"Created simulation: {simulation_id}, project={project_id}, graph={graph_id}")
-        
+
+        # Attribution multitenant — opportuniste : si l'enregistrement
+        # Supabase échoue (erreur réseau / config manquante), la sim
+        # filesystem reste créée et utilisable. On loggue l'erreur sans
+        # propager pour ne pas casser la création utilisateur.
+        if org_id:
+            try:
+                from ..auth.supabase_client import record_simulation_ownership
+                record_simulation_ownership(
+                    simulation_id=simulation_id,
+                    org_id=org_id,
+                    user_id=created_by,
+                    package_id=package_id,
+                )
+                logger.info(
+                    "simulation_ownership recorded: %s -> org=%s, user=%s, package=%s",
+                    simulation_id, org_id, created_by, package_id,
+                )
+            except Exception as exc:  # noqa: BLE001 — défense en profondeur
+                logger.error(
+                    "Failed to record ownership for %s (org=%s): %s — sim still created on disk.",
+                    simulation_id, org_id, exc.__class__.__name__,
+                )
+
         return state
     
     def prepare_simulation(
@@ -840,3 +881,123 @@ class SimulationManager:
                 f"   - Run both platforms in parallel: python {scripts_dir}/run_parallel_simulation.py --config {config_path}"
             )
         }
+
+    # ───────────────────────────────────────────────────────────────────────
+    # US-092 — extensions multitenant ownership
+    # ───────────────────────────────────────────────────────────────────────
+
+    def list_simulations_for_org(self, org_id: str) -> List[Dict[str, Any]]:
+        """Liste les simulations d'une organisation (US-092).
+
+        Lit la table Supabase ``simulation_ownership`` filtrée par
+        ``org_id`` puis hydrate chaque entrée avec les métadonnées
+        filesystem disponibles (status, config) afin que le frontend
+        client puisse afficher un dashboard riche en un seul appel.
+
+        Si une simulation est référencée dans Supabase mais absente du
+        filesystem (cas de bascule entre environnements), on la retourne
+        quand même avec ``status="missing"`` pour que l'opérateur voie
+        l'écart au lieu de croire à une perte silencieuse.
+
+        Returns:
+            Liste de dicts ``{simulation_id, package_id, created_at,
+            status, is_published, outcome, brier_score, locale,
+            entities_count, profiles_count, config_generated}``.
+        """
+        from ..auth.supabase_client import get_supabase_admin
+
+        client = get_supabase_admin()
+        response = (
+            client.table("simulation_ownership")
+            .select(
+                "simulation_id, package_id, created_at, is_published, "
+                "outcome, brier_score, created_by"
+            )
+            .eq("org_id", org_id)
+            .order("created_at", desc=True)
+            .execute()
+        )
+        rows = getattr(response, "data", None) or []
+
+        out: List[Dict[str, Any]] = []
+        for row in rows:
+            sim_id = row.get("simulation_id")
+            if not sim_id:
+                continue
+            entry: Dict[str, Any] = {
+                "simulation_id": sim_id,
+                "package_id": row.get("package_id"),
+                "created_at": row.get("created_at"),
+                "is_published": bool(row.get("is_published")),
+                "outcome": row.get("outcome"),
+                "brier_score": row.get("brier_score"),
+                "created_by": row.get("created_by"),
+            }
+
+            # Hydratation filesystem — défensive : un fichier corrompu ne
+            # doit jamais brique la liste entière.
+            try:
+                state = self._load_simulation_state(sim_id)
+            except Exception as exc:  # noqa: BLE001
+                logger.warning(
+                    "Could not load filesystem state for %s: %s",
+                    sim_id, exc.__class__.__name__,
+                )
+                state = None
+
+            if state is None:
+                entry["status"] = "missing"
+                entry["entities_count"] = 0
+                entry["profiles_count"] = 0
+                entry["config_generated"] = False
+                entry["locale"] = "fr"
+            else:
+                entry["status"] = state.status.value
+                entry["entities_count"] = state.entities_count
+                entry["profiles_count"] = state.profiles_count
+                entry["config_generated"] = state.config_generated
+                entry["locale"] = state.locale
+
+            out.append(entry)
+        return out
+
+    def is_user_authorized_to_read(self, simulation_id: str, user_id: str) -> bool:
+        """Vérifie qu'un utilisateur a le droit de lire une simulation (US-092).
+
+        Règles :
+            1. Si la sim n'a aucune entrée dans ``simulation_ownership``
+               → considérée comme publique (legacy / modèle public),
+               accès autorisé pour tout user authentifié.
+            2. Sinon, l'user doit appartenir à l'org propriétaire (any role).
+
+        Args:
+            simulation_id : id Bassira filesystem (sim_xxxxxxxxxxxx).
+            user_id : UUID Supabase auth de l'utilisateur courant.
+
+        Returns:
+            True si autorisé, False sinon. Renvoie False également en
+            cas d'erreur Supabase (fail-closed).
+        """
+        try:
+            from ..auth.supabase_client import (
+                get_simulation_owner,
+                get_user_role_in_org,
+            )
+
+            owner = get_simulation_owner(simulation_id)
+            if owner is None:
+                # Sim non trackée = legacy publique.
+                return True
+
+            org_id = owner.get("org_id")
+            if not org_id:
+                return False
+
+            role = get_user_role_in_org(user_id, org_id)
+            return bool(role)
+        except Exception as exc:  # noqa: BLE001 — fail-closed
+            logger.error(
+                "is_user_authorized_to_read failed for sim=%s user=%s: %s",
+                simulation_id, user_id, exc.__class__.__name__,
+            )
+            return False

@@ -788,3 +788,55 @@ def list_calibration_simulations():
             "error": str(exc),
             "traceback": traceback.format_exc(),
         }), 500
+
+
+# ─── /aggregates (public, k-anonymity n>=5) ─────────────────────────────────
+#
+# US-092 — lit la VIEW Postgres ``public.public_calibration_aggregates``
+# définie en migration 002. La VIEW garantit déjà la k-anonymity n>=5
+# côté base ; aucune ligne avec moins de 5 simulations publiées par
+# secteur n'est exposée. Cet endpoint est strictement public et constitue
+# l'argument commercial principal du site Bassira.
+
+@calibration_bp.route('/aggregates', methods=['GET'])
+def get_calibration_aggregates():
+    """Retourne les aggregates publics par secteur (k-anonymity n>=5).
+
+    Pas d'auth — la VIEW Supabase filtre déjà toute donnée sensible.
+    Cache court (60 s) car les marquages d'outcomes peuvent ajouter une
+    nouvelle ligne ou faire passer un secteur sous le seuil n=5.
+
+    Si Supabase n'est pas configuré (déploiement local sans secrets),
+    on retourne un payload vide avec ``data: []`` plutôt que 503 — la
+    page calibration v2 doit pouvoir s'afficher (vide) en environnement
+    de développement sans clé Supabase.
+    """
+    try:
+        from ..auth.supabase_client import (
+            SupabaseConfigError,
+            get_public_calibration_aggregates,
+        )
+
+        try:
+            rows = get_public_calibration_aggregates()
+        except SupabaseConfigError as exc:
+            logger.warning(
+                "Supabase not configured for /aggregates — returning empty: %s",
+                exc.__class__.__name__,
+            )
+            rows = []
+
+        response = jsonify({
+            "success": True,
+            "data": rows,
+        })
+        response.headers["Cache-Control"] = "public, max-age=60"
+        return response, 200
+
+    except Exception as exc:  # noqa: BLE001
+        logger.error("calibration aggregates failed: %s", exc.__class__.__name__)
+        return jsonify({
+            "success": False,
+            "error_code": "AGGREGATES_FAILED",
+            "error": "Could not fetch public calibration aggregates.",
+        }), 500
