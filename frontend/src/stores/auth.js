@@ -28,7 +28,13 @@ export const useAuthStore = defineStore('auth', {
     currentOrgId: null,   // string | null
     profileLoaded: false, // true après un fetchProfile() réussi
     initializing: true,   // true tant que la 1ère récupération de session n'est pas faite
-    error: null           // dernier message d'erreur (login/signup/fetchProfile)
+    error: null,          // dernier message d'erreur (login/signup/fetchProfile)
+    // US-095 — flag super-admin Bassira (founders only). Chargé via
+    // fetchSuperStatus() après login. Reste null tant que la requête
+    // n'a pas répondu (permet au frontend de distinguer « pas chargé »
+    // de « définitivement false »).
+    superAdminLoaded: false,
+    isSuperAdminFlag: false
   }),
 
   getters: {
@@ -50,6 +56,14 @@ export const useAuthStore = defineStore('auth', {
     canWrite() {
       const role = this.currentRole
       return role === 'owner' || role === 'admin'
+    },
+    /**
+     * US-095 — true si l'user est super-admin Bassira (whitelist email
+     * côté backend). Toujours false tant que fetchSuperStatus() n'a pas
+     * répondu — la décision d'autorisation reste côté serveur.
+     */
+    isSuperAdmin(state) {
+      return Boolean(state.isSuperAdminFlag)
     }
   },
 
@@ -78,6 +92,9 @@ export const useAuthStore = defineStore('auth', {
             this.orgs = []
             this.currentOrgId = null
             this.profileLoaded = false
+            // US-095 — purge le flag super-admin au sign-out
+            this.isSuperAdminFlag = false
+            this.superAdminLoaded = false
           }
         })
 
@@ -86,6 +103,10 @@ export const useAuthStore = defineStore('auth', {
           this.fetchProfile().catch(() => {
             // Erreur silencieuse — la dashboard view re-tentera et
             // affichera le message d'erreur à l'utilisateur.
+          })
+          // US-095 — charge aussi le flag super-admin au boot
+          this.fetchSuperStatus().catch(() => {
+            /* fail-soft : false par défaut */
           })
         }
       } finally {
@@ -117,6 +138,13 @@ export const useAuthStore = defineStore('auth', {
         await this.fetchProfile()
       } catch (err) {
         console.warn('[Bassira auth] fetchProfile after login failed:', err.message)
+      }
+      // US-095 — charge le flag super-admin (parallèle au profil mais
+      // sans bloquer la promesse de login en cas d'échec).
+      try {
+        await this.fetchSuperStatus()
+      } catch (err) {
+        console.warn('[Bassira auth] fetchSuperStatus after login failed:', err.message)
       }
       return { error: null }
     },
@@ -165,6 +193,9 @@ export const useAuthStore = defineStore('auth', {
       this.currentOrgId = null
       this.profileLoaded = false
       this.error = null
+      // US-095 — purge le flag super-admin
+      this.isSuperAdminFlag = false
+      this.superAdminLoaded = false
     },
 
     /**
@@ -211,6 +242,49 @@ export const useAuthStore = defineStore('auth', {
     setCurrentOrg(orgId) {
       if (this.orgs.some((o) => o.id === orgId)) {
         this.currentOrgId = orgId
+      }
+    },
+
+    /**
+     * US-095 — Récupère le flag super-admin depuis le backend.
+     * Réinitialise à false en cas d'erreur (zero-trust côté frontend).
+     * À appeler après init() / login() / fetchProfile() — la décision
+     * d'autorisation reste 100 % côté serveur (whitelist email env var).
+     */
+    async fetchSuperStatus() {
+      if (!this.session?.access_token) {
+        this.isSuperAdminFlag = false
+        this.superAdminLoaded = false
+        return false
+      }
+      try {
+        const res = await fetch('/api/admin/me/super-status', {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${this.session.access_token}`,
+            'Content-Type': 'application/json'
+          },
+          credentials: 'same-origin'
+        })
+        if (!res.ok) {
+          // 401 / 5xx — on retombe à false plutôt que de fail bruyamment.
+          // Le backend reste seul juge ; le frontend ne fait que cacher
+          // l'entrée nav s'il ne peut pas confirmer le flag.
+          this.isSuperAdminFlag = false
+          this.superAdminLoaded = true
+          return false
+        }
+        const data = await res.json()
+        const payload = data?.data || data
+        this.isSuperAdminFlag = Boolean(payload?.is_super_admin)
+        this.superAdminLoaded = true
+        return this.isSuperAdminFlag
+      } catch (err) {
+        // Réseau down → false par défaut, on retentera au prochain login.
+        console.warn('[Bassira auth] fetchSuperStatus failed:', err.message)
+        this.isSuperAdminFlag = false
+        this.superAdminLoaded = false
+        return false
       }
     }
   }

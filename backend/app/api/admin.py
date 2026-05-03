@@ -41,8 +41,17 @@ from collections import Counter
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, g, jsonify
 
+from ..auth.decorators import (
+    is_super_admin_email,
+    require_auth,
+    require_super_admin,
+)
+from ..auth.supabase_client import (
+    SupabaseConfigError,
+    get_supabase_admin,
+)
 from ..config import Config
 from ..utils.logger import get_logger
 
@@ -274,3 +283,354 @@ def get_admin_analytics():
             "error_code": "ADMIN_ANALYTICS_FAILED",
             "error": "Could not compute analytics.",
         }), 500
+
+
+# ─── Super-admin Bassira (US-095) ────────────────────────────────────────────
+#
+# Endpoints réservés aux founders Bassira (whitelist email via env var
+# BASSIRA_SUPER_ADMIN_EMAILS). Permettent de voir TOUTES les organisations
+# (cross-tenant) sans avoir à invoquer la console SQL Supabase.
+#
+# Sécurité :
+#   - JWT Supabase valide obligatoire (require_super_admin compose require_auth).
+#   - Email vérifié contre la whitelist côté backend uniquement.
+#   - service_role bypass RLS — JAMAIS exposé au frontend.
+#   - Aucun email logué en clair (hash sha256 court pour audit).
+
+
+def _err_admin(code: str, message: str, status: int):
+    """Réponse d'erreur API standard (cohérent avec le reste du backend)."""
+    return jsonify({
+        "success": False,
+        "error_code": code,
+        "error": message,
+    }), status
+
+
+def _aggregate_org_stats(client: Any, org_id: str) -> Dict[str, Any]:
+    """Calcule les stats agrégées pour une organisation depuis simulation_ownership.
+
+    Stats :
+      - simulations_count : total des sims rattachées
+      - published_count   : sims avec is_published = true
+      - avg_brier         : moyenne des brier_score non-null (ou None)
+
+    Robustesse : toute erreur Supabase → stats à None pour ne pas brique
+    le tableau global (l'opérateur préfère voir « — » qu'un 500).
+    """
+    try:
+        response = (
+            client.table("simulation_ownership")
+            .select("simulation_id, is_published, brier_score")
+            .eq("org_id", org_id)
+            .execute()
+        )
+        rows = getattr(response, "data", None) or []
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(
+            "_aggregate_org_stats failed for org_id=%s: %s",
+            org_id, exc.__class__.__name__,
+        )
+        return {
+            "simulations_count": None,
+            "published_count": None,
+            "avg_brier": None,
+        }
+
+    sims_count = len(rows)
+    published = sum(1 for r in rows if r.get("is_published") is True)
+    briers = [
+        float(r["brier_score"])
+        for r in rows
+        if r.get("brier_score") is not None
+    ]
+    avg_brier = (sum(briers) / len(briers)) if briers else None
+    return {
+        "simulations_count": sims_count,
+        "published_count": published,
+        "avg_brier": round(avg_brier, 4) if avg_brier is not None else None,
+    }
+
+
+def _count_org_members(client: Any, org_id: str) -> Optional[int]:
+    """Compte les membres d'une organisation (ou None si erreur Supabase)."""
+    try:
+        response = (
+            client.table("org_members")
+            .select("id", count="exact")
+            .eq("org_id", org_id)
+            .execute()
+        )
+        # Le SDK supabase-py expose `count` quand `count="exact"`.
+        count = getattr(response, "count", None)
+        if count is None:
+            # Fallback : compter les lignes retournées si le SDK ne remonte
+            # pas le `count` (variante de version).
+            rows = getattr(response, "data", None) or []
+            count = len(rows)
+        return int(count)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(
+            "_count_org_members failed for org_id=%s: %s",
+            org_id, exc.__class__.__name__,
+        )
+        return None
+
+
+@admin_bp.route("/me/super-status", methods=["GET"])
+@require_auth
+def get_super_status():
+    """Indique si l'utilisateur authentifié est super-admin Bassira.
+
+    Endpoint léger appelé par le frontend (AppHeader.vue + AnalyticsView)
+    pour conditionner l'affichage de l'entrée nav « Admin » et la section
+    « Toutes les organisations ». Ne nécessite pas le rôle super-admin
+    lui-même (un user normal reçoit `is_super_admin: false`).
+
+    Response::
+
+        { "success": true, "data": { "is_super_admin": bool, "email": str } }
+    """
+    user = getattr(g, "current_user", None) or {}
+    email = user.get("email")
+    is_super = is_super_admin_email(email)
+    return jsonify({
+        "success": True,
+        "data": {
+            "is_super_admin": bool(is_super),
+            "email": email,
+        },
+    }), 200
+
+
+@admin_bp.route("/organizations", methods=["GET"])
+@require_super_admin
+def list_all_organizations():
+    """Liste TOUTES les organisations Bassira (super-admin only).
+
+    Utilise `get_supabase_admin()` (service_role bypass RLS) pour lire
+    `public.organizations` + agréger les stats par org.
+
+    Response::
+
+        {
+          "success": true,
+          "data": {
+            "organizations": [
+              {
+                "id": "uuid",
+                "slug": "...",
+                "name": "...",
+                "sector": "...",
+                "country_code": "...",
+                "status": "active|suspended|trial",
+                "created_at": "...",
+                "members_count": int|null,
+                "simulations_count": int|null,
+                "published_count": int|null,
+                "avg_brier": float|null
+              }
+            ]
+          }
+        }
+    """
+    try:
+        cli = get_supabase_admin()
+    except SupabaseConfigError as exc:
+        logger.error("Supabase admin config missing: %s", exc)
+        return _err_admin(
+            "SUPABASE_NOT_CONFIGURED",
+            "Backend Supabase admin client is not configured.",
+            503,
+        )
+
+    try:
+        response = (
+            cli.table("organizations")
+            .select(
+                "id, slug, name, sector, country_code, status, created_at"
+            )
+            .order("created_at", desc=True)
+            .execute()
+        )
+        orgs = getattr(response, "data", None) or []
+    except Exception as exc:  # noqa: BLE001
+        logger.error(
+            "list_all_organizations select failed: %s",
+            exc.__class__.__name__,
+        )
+        return _err_admin(
+            "ADMIN_ORGS_FAILED",
+            "Could not list organizations.",
+            500,
+        )
+
+    enriched: List[Dict[str, Any]] = []
+    for org in orgs:
+        org_id = org.get("id")
+        if not org_id:
+            continue
+        stats = _aggregate_org_stats(cli, org_id)
+        members_count = _count_org_members(cli, org_id)
+        enriched.append({
+            "id": org_id,
+            "slug": org.get("slug"),
+            "name": org.get("name"),
+            "sector": org.get("sector"),
+            "country_code": org.get("country_code"),
+            "status": org.get("status"),
+            "created_at": org.get("created_at"),
+            "members_count": members_count,
+            **stats,
+        })
+
+    return jsonify({
+        "success": True,
+        "data": {
+            "organizations": enriched,
+        },
+    }), 200
+
+
+@admin_bp.route("/organizations/<org_id>", methods=["GET"])
+@require_super_admin
+def get_organization_detail(org_id: str):
+    """Détail d'une organisation : metadata + members + simulations.
+
+    Response::
+
+        {
+          "success": true,
+          "data": {
+            "organization": { id, slug, name, sector, country_code, status, created_at, metadata },
+            "members": [{ user_id, email, role, created_at }, ...],
+            "simulations": [{
+              simulation_id, package_id, is_published, outcome, brier_score, created_at
+            }, ...]
+          }
+        }
+    """
+    if not org_id or not isinstance(org_id, str):
+        return _err_admin("INVALID_ORG_ID", "org_id is required.", 400)
+
+    try:
+        cli = get_supabase_admin()
+    except SupabaseConfigError as exc:
+        logger.error("Supabase admin config missing: %s", exc)
+        return _err_admin(
+            "SUPABASE_NOT_CONFIGURED",
+            "Backend Supabase admin client is not configured.",
+            503,
+        )
+
+    # 1. Organisation
+    try:
+        org_resp = (
+            cli.table("organizations")
+            .select("id, slug, name, sector, country_code, status, created_at, metadata")
+            .eq("id", org_id)
+            .limit(1)
+            .execute()
+        )
+        org_rows = getattr(org_resp, "data", None) or []
+    except Exception as exc:  # noqa: BLE001
+        logger.error(
+            "get_organization_detail org select failed: %s",
+            exc.__class__.__name__,
+        )
+        return _err_admin("ADMIN_ORG_FAILED", "Could not load organization.", 500)
+
+    if not org_rows:
+        return _err_admin("ORG_NOT_FOUND", "Organization not found.", 404)
+    organization = org_rows[0]
+
+    # 2. Members — JOIN logique sur auth.users via user_id (l'email vit
+    # dans auth.users, le SDK ne fait pas de JOIN cross-schema natif, on
+    # le résout en deux étapes : lire org_members puis appeler
+    # auth.admin.get_user_by_id si dispo, sinon retourner uniquement le
+    # user_id. Pour rester fail-soft, on tente l'enrichissement et on
+    # retombe gracieusement en `email: None` en cas d'erreur).
+    members: List[Dict[str, Any]] = []
+    try:
+        members_resp = (
+            cli.table("org_members")
+            .select("user_id, role, created_at")
+            .eq("org_id", org_id)
+            .execute()
+        )
+        member_rows = getattr(members_resp, "data", None) or []
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(
+            "get_organization_detail members select failed: %s",
+            exc.__class__.__name__,
+        )
+        member_rows = []
+
+    for row in member_rows:
+        user_id = row.get("user_id")
+        email: Optional[str] = None
+        if user_id:
+            try:
+                # supabase-py expose `auth.admin.get_user_by_id` quand le
+                # client est initialisé avec service_role.
+                admin_auth = getattr(cli, "auth", None)
+                admin_api = getattr(admin_auth, "admin", None) if admin_auth else None
+                if admin_api and hasattr(admin_api, "get_user_by_id"):
+                    user_resp = admin_api.get_user_by_id(user_id)
+                    user_obj = getattr(user_resp, "user", None) or user_resp
+                    email = getattr(user_obj, "email", None) or (
+                        user_obj.get("email") if isinstance(user_obj, dict) else None
+                    )
+            except Exception as exc:  # noqa: BLE001
+                logger.debug(
+                    "get_user_by_id failed for member %s: %s",
+                    user_id, exc.__class__.__name__,
+                )
+        members.append({
+            "user_id": user_id,
+            "email": email,
+            "role": row.get("role"),
+            "created_at": row.get("created_at"),
+        })
+
+    # 3. Simulations
+    try:
+        sims_resp = (
+            cli.table("simulation_ownership")
+            .select(
+                "simulation_id, package_id, is_published, outcome, "
+                "brier_score, created_at, created_by"
+            )
+            .eq("org_id", org_id)
+            .order("created_at", desc=True)
+            .execute()
+        )
+        sim_rows = getattr(sims_resp, "data", None) or []
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(
+            "get_organization_detail sims select failed: %s",
+            exc.__class__.__name__,
+        )
+        sim_rows = []
+
+    simulations = [
+        {
+            "simulation_id": s.get("simulation_id"),
+            "package_id": s.get("package_id"),
+            "is_published": bool(s.get("is_published")),
+            "outcome": s.get("outcome"),
+            "brier_score": s.get("brier_score"),
+            "created_at": s.get("created_at"),
+            "created_by": s.get("created_by"),
+        }
+        for s in sim_rows
+    ]
+
+    return jsonify({
+        "success": True,
+        "data": {
+            "organization": organization,
+            "members": members,
+            "simulations": simulations,
+        },
+    }), 200

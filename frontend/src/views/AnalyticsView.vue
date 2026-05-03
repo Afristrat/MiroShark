@@ -182,6 +182,143 @@
           </article>
         </section>
 
+        <!-- ─────────── US-095 — Toutes les organisations (super-admin) ─────────── -->
+        <section
+          v-if="isSuperAdmin"
+          class="analytics-card analytics-superadmin"
+          aria-label="All organizations"
+        >
+          <header class="analytics-card-header">
+            <h2 class="analytics-card-title">{{ $t('analytics.superAdmin.sectionTitle') }}</h2>
+            <span class="analytics-card-help">{{ $t('analytics.superAdmin.sectionHelp') }}</span>
+          </header>
+
+          <div v-if="orgsLoading" class="analytics-empty">
+            {{ $t('analytics.superAdmin.loading') }}
+          </div>
+          <div v-else-if="orgsError" class="analytics-empty" role="alert">
+            {{ orgsError }}
+          </div>
+          <div v-else-if="organizations.length === 0" class="analytics-empty">
+            {{ $t('analytics.superAdmin.empty') }}
+          </div>
+          <div v-else class="analytics-orgs-table-wrap">
+            <table class="analytics-orgs-table">
+              <thead>
+                <tr>
+                  <th>{{ $t('analytics.superAdmin.table.slug') }}</th>
+                  <th>{{ $t('analytics.superAdmin.table.name') }}</th>
+                  <th>{{ $t('analytics.superAdmin.table.sector') }}</th>
+                  <th>{{ $t('analytics.superAdmin.table.country') }}</th>
+                  <th>{{ $t('analytics.superAdmin.table.status') }}</th>
+                  <th class="analytics-orgs-num">{{ $t('analytics.superAdmin.table.members') }}</th>
+                  <th class="analytics-orgs-num">{{ $t('analytics.superAdmin.table.sims') }}</th>
+                  <th class="analytics-orgs-num">{{ $t('analytics.superAdmin.table.published') }}</th>
+                  <th class="analytics-orgs-num">{{ $t('analytics.superAdmin.table.avgBrier') }}</th>
+                  <th>{{ $t('analytics.superAdmin.table.createdAt') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="org in organizations"
+                  :key="org.id"
+                  class="analytics-orgs-row"
+                  @click="openOrgDetail(org)"
+                  :title="org.id"
+                >
+                  <td><span class="analytics-orgs-slug">{{ org.slug || '—' }}</span></td>
+                  <td>{{ org.name || '—' }}</td>
+                  <td>{{ org.sector || '—' }}</td>
+                  <td>{{ org.country_code || '—' }}</td>
+                  <td>
+                    <span class="analytics-orgs-status" :class="`analytics-orgs-status--${org.status || 'unknown'}`">
+                      {{ org.status || '—' }}
+                    </span>
+                  </td>
+                  <td class="analytics-orgs-num">{{ org.members_count ?? '—' }}</td>
+                  <td class="analytics-orgs-num">{{ org.simulations_count ?? '—' }}</td>
+                  <td class="analytics-orgs-num">{{ org.published_count ?? '—' }}</td>
+                  <td class="analytics-orgs-num">{{ formatBrier(org.avg_brier) }}</td>
+                  <td>{{ formatDate(org.created_at) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ─────────── Modal détail organisation ─────────── -->
+        <div
+          v-if="selectedOrg"
+          class="analytics-org-modal"
+          role="dialog"
+          aria-modal="true"
+          @click.self="closeOrgDetail"
+        >
+          <div class="analytics-org-modal-card">
+            <header class="analytics-org-modal-header">
+              <h3 class="analytics-org-modal-title">
+                {{ selectedOrg.name || selectedOrg.slug || '—' }}
+                <span class="analytics-org-modal-slug">{{ selectedOrg.slug }}</span>
+              </h3>
+              <button
+                type="button"
+                class="analytics-org-modal-close"
+                :title="$t('analytics.superAdmin.detail.close')"
+                @click="closeOrgDetail"
+              >
+                ×
+              </button>
+            </header>
+
+            <div v-if="orgDetailLoading" class="analytics-empty">
+              {{ $t('analytics.superAdmin.detail.loading') }}
+            </div>
+            <div v-else-if="orgDetailError" class="analytics-empty" role="alert">
+              {{ orgDetailError }}
+            </div>
+            <div v-else class="analytics-org-modal-body">
+              <!-- Members -->
+              <section class="analytics-org-modal-section">
+                <h4 class="analytics-org-modal-section-title">
+                  {{ $t('analytics.superAdmin.detail.members') }}
+                  <span class="analytics-org-modal-count">({{ orgDetail.members?.length ?? 0 }})</span>
+                </h4>
+                <div v-if="!orgDetail.members?.length" class="analytics-empty">
+                  {{ $t('analytics.superAdmin.detail.noMembers') }}
+                </div>
+                <ul v-else class="analytics-org-modal-list">
+                  <li v-for="m in orgDetail.members" :key="m.user_id">
+                    <span class="analytics-org-modal-mono">{{ m.email || m.user_id }}</span>
+                    <span class="analytics-org-modal-role">{{ m.role }}</span>
+                  </li>
+                </ul>
+              </section>
+
+              <!-- Simulations -->
+              <section class="analytics-org-modal-section">
+                <h4 class="analytics-org-modal-section-title">
+                  {{ $t('analytics.superAdmin.detail.simulations') }}
+                  <span class="analytics-org-modal-count">({{ orgDetail.simulations?.length ?? 0 }})</span>
+                </h4>
+                <div v-if="!orgDetail.simulations?.length" class="analytics-empty">
+                  {{ $t('analytics.superAdmin.detail.noSims') }}
+                </div>
+                <ul v-else class="analytics-org-modal-list">
+                  <li v-for="s in orgDetail.simulations" :key="s.simulation_id">
+                    <span class="analytics-org-modal-mono">{{ s.simulation_id }}</span>
+                    <span v-if="s.package_id" class="analytics-org-modal-pkg">{{ s.package_id }}</span>
+                    <span v-if="s.is_published" class="analytics-org-modal-published">·published</span>
+                    <span v-if="s.outcome?.label" class="analytics-org-modal-outcome">{{ s.outcome.label }}</span>
+                    <span v-if="s.brier_score !== null && s.brier_score !== undefined" class="analytics-org-modal-brier">
+                      Brier {{ Number(s.brier_score).toFixed(3) }}
+                    </span>
+                  </li>
+                </ul>
+              </section>
+            </div>
+          </div>
+        </div>
+
         <p class="analytics-footer">
           {{ $t('analytics.footer', { date: lastFetchedLabel }) }}
         </p>
@@ -216,8 +353,14 @@ import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import api from '../api/index.js'
 import { formatApiError } from '../utils/error-handler'
+import { useAuthStore } from '../stores/auth'
+import {
+  fetchAllOrganizations,
+  fetchOrganizationDetail,
+} from '../api/client.js'
 
 const { t } = useI18n()
+const authStore = useAuthStore()
 
 // ─── Auth state ────────────────────────────────────────────────────────────
 const TOKEN_KEY = 'bassira_admin_token'
@@ -283,8 +426,96 @@ const fetchData = async (silent = false) => {
   }
 }
 
-onMounted(() => {
+// ─── US-095 — Super-admin (toutes les organisations) ───────────────────────
+const isSuperAdmin = computed(() => authStore.isSuperAdmin)
+const organizations = ref([])
+const orgsLoading = ref(false)
+const orgsError = ref('')
+const selectedOrg = ref(null)
+const orgDetail = ref({ organization: null, members: [], simulations: [] })
+const orgDetailLoading = ref(false)
+const orgDetailError = ref('')
+
+const loadAllOrganizations = async () => {
+  orgsLoading.value = true
+  orgsError.value = ''
+  try {
+    const res = await fetchAllOrganizations()
+    // L'interceptor axios unwrappe déjà response.data → res est { success, data }.
+    const payload = res?.data || res
+    organizations.value = Array.isArray(payload?.organizations)
+      ? payload.organizations
+      : []
+  } catch (err) {
+    organizations.value = []
+    orgsError.value = formatApiError(err) || t('analytics.superAdmin.error')
+  } finally {
+    orgsLoading.value = false
+  }
+}
+
+const openOrgDetail = async (org) => {
+  selectedOrg.value = org
+  orgDetailLoading.value = true
+  orgDetailError.value = ''
+  orgDetail.value = { organization: null, members: [], simulations: [] }
+  try {
+    const res = await fetchOrganizationDetail(org.id)
+    const payload = res?.data || res
+    orgDetail.value = {
+      organization: payload?.organization || null,
+      members: Array.isArray(payload?.members) ? payload.members : [],
+      simulations: Array.isArray(payload?.simulations) ? payload.simulations : [],
+    }
+  } catch (err) {
+    orgDetailError.value =
+      formatApiError(err) || t('analytics.superAdmin.detail.error')
+  } finally {
+    orgDetailLoading.value = false
+  }
+}
+
+const closeOrgDetail = () => {
+  selectedOrg.value = null
+  orgDetail.value = { organization: null, members: [], simulations: [] }
+  orgDetailError.value = ''
+}
+
+const formatBrier = (b) => {
+  if (b === null || b === undefined) return '—'
+  const n = Number(b)
+  if (!Number.isFinite(n)) return '—'
+  return n.toFixed(3)
+}
+
+const formatDate = (iso) => {
+  if (!iso) return '—'
+  try {
+    const d = new Date(iso)
+    if (Number.isNaN(d.getTime())) return '—'
+    return d.toISOString().slice(0, 10)
+  } catch {
+    return '—'
+  }
+}
+
+onMounted(async () => {
   if (authed.value) fetchData()
+  // US-095 — si l'user est authentifié Supabase ET super-admin Bassira,
+  // charger la liste cross-tenant. Le check côté serveur reste source
+  // de vérité — un user qui force le flag côté client recevra 403.
+  if (authStore.isAuthenticated) {
+    if (!authStore.superAdminLoaded) {
+      try {
+        await authStore.fetchSuperStatus()
+      } catch {
+        /* fail-soft */
+      }
+    }
+    if (authStore.isSuperAdmin) {
+      await loadAllOrganizations()
+    }
+  }
 })
 
 // ─── KPI cards ─────────────────────────────────────────────────────────────
@@ -881,6 +1112,228 @@ const lastFetchedLabel = computed(() => {
   font-size: var(--wi-caption);
   color: var(--wi-on-surface-variant);
   text-align: right;
+}
+
+/* ── US-095 — Super-admin section : « Toutes les organisations » ────────── */
+.analytics-superadmin {
+  /* La carte hérite de .analytics-card — on rajoute juste un petit
+     liseré chaud pour signaler qu'il s'agit d'une vue privilégiée. */
+  border-color: rgba(255, 133, 81, 0.30);
+  box-shadow: 0 0 0 1px rgba(255, 133, 81, 0.06);
+}
+.analytics-orgs-table-wrap {
+  overflow-x: auto;
+  margin-block-start: var(--wi-space-xs);
+}
+.analytics-orgs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
+  color: var(--wi-on-surface-variant);
+}
+.analytics-orgs-table thead th {
+  text-align: start;
+  padding: 8px 10px;
+  font-size: var(--wi-caption);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--wi-on-surface-variant);
+  border-block-end: 1px solid var(--wi-outline-variant);
+  background: rgba(255, 255, 255, 0.02);
+  white-space: nowrap;
+}
+.analytics-orgs-table tbody td {
+  padding: 10px;
+  border-block-end: 1px solid rgba(255, 255, 255, 0.04);
+  color: var(--wi-on-bg);
+  white-space: nowrap;
+}
+.analytics-orgs-num {
+  text-align: end;
+  font-family: var(--ms-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.analytics-orgs-row {
+  cursor: pointer;
+  transition: background 0.18s ease;
+}
+.analytics-orgs-row:hover {
+  background: rgba(255, 133, 81, 0.08);
+}
+.analytics-orgs-slug {
+  font-family: var(--ms-font-mono);
+  font-size: var(--wi-caption);
+  color: var(--ms-orange);
+  background: rgba(255, 133, 81, 0.10);
+  padding: 2px 8px;
+  border-radius: var(--wi-radius-pill);
+}
+.analytics-orgs-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: var(--wi-radius-pill);
+  font-size: var(--wi-caption);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.analytics-orgs-status--active {
+  color: var(--ms-mint);
+  background: rgba(127, 216, 166, 0.12);
+}
+.analytics-orgs-status--trial {
+  color: #f0c674;
+  background: rgba(240, 198, 116, 0.12);
+}
+.analytics-orgs-status--suspended {
+  color: var(--ms-rose);
+  background: rgba(244, 132, 122, 0.12);
+}
+.analytics-orgs-status--unknown {
+  color: var(--wi-on-surface-variant);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ── Modal détail organisation ───────────────────────────────────────────── */
+.analytics-org-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(7, 9, 14, 0.78);
+  backdrop-filter: blur(4px);
+  display: grid;
+  place-items: center;
+  z-index: 1500;
+  padding: var(--wi-space-md);
+  animation: analyticsModalFadeIn 0.18s ease-out;
+}
+@keyframes analyticsModalFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.analytics-org-modal-card {
+  background: #1a1d27;
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-card);
+  width: 100%;
+  max-width: 720px;
+  max-height: calc(100vh - 4rem);
+  overflow-y: auto;
+  padding: var(--wi-space-md);
+  box-shadow: var(--wi-shadow-lg);
+}
+.analytics-org-modal-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--wi-space-sm);
+  margin-block-end: var(--wi-space-sm);
+  padding-block-end: var(--wi-space-xs);
+  border-block-end: 1px solid var(--wi-outline-variant);
+}
+.analytics-org-modal-title {
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-h3-size);
+  font-weight: var(--wi-h3-weight);
+  margin: 0;
+  color: var(--wi-on-bg);
+}
+.analytics-org-modal-slug {
+  font-family: var(--ms-font-mono);
+  font-size: var(--wi-caption);
+  color: var(--ms-orange);
+  margin-inline-start: 8px;
+}
+.analytics-org-modal-close {
+  background: transparent;
+  border: 1px solid var(--wi-outline-variant);
+  color: var(--wi-on-surface-variant);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--wi-radius-md);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.analytics-org-modal-close:hover {
+  border-color: var(--ms-rose);
+  color: var(--ms-rose);
+}
+.analytics-org-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wi-space-md);
+}
+.analytics-org-modal-section-title {
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-body-md);
+  font-weight: 600;
+  margin: 0 0 var(--wi-space-xs);
+  color: var(--wi-on-bg);
+}
+.analytics-org-modal-count {
+  font-family: var(--ms-font-mono);
+  font-size: var(--wi-caption);
+  color: var(--wi-on-surface-variant);
+  font-weight: 400;
+  margin-inline-start: 6px;
+}
+.analytics-org-modal-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: var(--wi-caption);
+}
+.analytics-org-modal-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: var(--wi-radius-sm);
+}
+.analytics-org-modal-mono {
+  font-family: var(--ms-font-mono);
+  color: var(--wi-on-bg);
+}
+.analytics-org-modal-role {
+  padding: 2px 8px;
+  border-radius: var(--wi-radius-pill);
+  background: rgba(255, 133, 81, 0.10);
+  color: var(--ms-orange);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.analytics-org-modal-pkg {
+  padding: 2px 8px;
+  border-radius: var(--wi-radius-pill);
+  background: rgba(127, 216, 166, 0.08);
+  color: var(--ms-mint);
+  font-size: 10px;
+  font-family: var(--ms-font-mono);
+}
+.analytics-org-modal-published {
+  color: var(--ms-mint);
+  font-size: 10px;
+  font-weight: 600;
+}
+.analytics-org-modal-outcome {
+  color: var(--wi-on-surface-variant);
+  font-size: var(--wi-caption);
+}
+.analytics-org-modal-brier {
+  color: var(--wi-on-surface-variant);
+  font-family: var(--ms-font-mono);
+  font-size: var(--wi-caption);
 }
 
 /* ── RTL support ─────────────────────────────────────────────────────────── */

@@ -39,6 +39,17 @@
       </div>
 
       <div class="app-header__actions">
+        <!-- US-095 — entrée Admin réservée aux super-admins Bassira.
+             Visibilité conditionnée par le flag store.isSuperAdmin
+             (chargé via fetchSuperStatus côté backend, whitelist email). -->
+        <router-link
+          v-if="isAuthenticated && isSuperAdmin"
+          to="/admin/analytics"
+          class="app-header__link app-header__link--auth app-header__link--admin"
+          :title="$t('nav.adminTitle')"
+        >
+          {{ $t('nav.admin') }}
+        </router-link>
         <router-link
           v-if="!isAuthenticated"
           to="/login"
@@ -84,7 +95,7 @@ const router = useRouter()
 const route = useRoute()
 const { locale } = useI18n()
 const authStore = useAuthStore()
-const { isAuthenticated } = storeToRefs(authStore)
+const { isAuthenticated, isSuperAdmin } = storeToRefs(authStore)
 
 // Libellé du bouton « Relancer la visite guidée » localisé sans dépendre
 // d'une nouvelle clé i18n (étend le pattern App.vue d'origine — US-094).
@@ -228,6 +239,23 @@ const restartTour = async () => {
 }
 .app-header__link--auth.app-header__link--featured {
   background: var(--wi-primary-soft, rgba(161, 63, 15, 0.08));
+}
+
+/* US-095 — entrée Admin (super-admin Bassira) : pastille discrète qui
+   signale le pouvoir cross-tenant sans crier. */
+.app-header__link--admin {
+  color: var(--wi-on-bg, #241915);
+  background: var(--wi-surface-container-low, rgba(255, 241, 236, 0.6));
+  border-color: var(--wi-outline-variant, rgba(36, 25, 21, 0.18));
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+.app-header__link--admin:hover {
+  background: var(--wi-primary, #a13f0f);
+  color: var(--wi-on-primary, #ffffff);
+  border-color: var(--wi-primary, #a13f0f);
 }
 
 /* ── Actions group (right) ── */

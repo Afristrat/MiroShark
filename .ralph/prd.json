@@ -2900,6 +2900,61 @@
         "i18n_keys_added": "0 (réutilisation namespace nav.* US-087/US-093)",
         "routes_now_with_nav": 17
       }
+    },
+    {
+      "id": "US-095",
+      "chantier": "M-multitenant-supabase",
+      "title": "Super-admin Bassira : voir toutes les organisations + interface admin",
+      "description": "Rôle super-admin Bassira via env var backend BASSIRA_SUPER_ADMIN_EMAILS (whitelist emails séparés par virgules — lecture au démarrage Flask). Décorateur @require_super_admin (composé de @require_auth + check email whitelist). 3 endpoints admin : GET /api/admin/me/super-status (révèle is_super_admin, auth requise), GET /api/admin/organizations (liste cross-tenant via service_role bypass RLS, agrège members_count + simulations_count + published_count + avg_brier), GET /api/admin/organizations/<org_id> (détail metadata + members + sims). Frontend : store auth Pinia étendu avec getter isSuperAdmin (chargé via fetchSuperStatus après login) ; AppHeader entrée nav 'Admin' conditionnelle ; AnalyticsView section 'Toutes les organisations' avec tableau + drill-down modal. RTL préservé, tokens --wi-* exclusifs, zéro secret hardcodé.",
+      "acceptanceCriteria": [
+        "backend/app/auth/decorators.py : @require_super_admin + helper is_super_admin_email",
+        "backend/app/api/admin.py : 3 nouveaux endpoints (me/super-status, organizations, organizations/<id>)",
+        "frontend/src/stores/auth.js : getter isSuperAdmin + action fetchSuperStatus",
+        "frontend/src/api/client.js : 3 méthodes (fetchSuperStatus, fetchAllOrganizations, fetchOrganizationDetail)",
+        "frontend/src/components/AppHeader.vue : entrée nav 'Admin' conditionnelle (super-admin only)",
+        "frontend/src/views/AnalyticsView.vue : section 'Toutes les organisations' + modal détail",
+        "i18n FR/EN/AR : namespaces nav.admin* + analytics.superAdmin.*",
+        "Aucun secret hardcodé : email super-admin lu de BASSIRA_SUPER_ADMIN_EMAILS via os.getenv",
+        "Service_role bypass RLS uniquement côté backend (jamais exposé au frontend)",
+        "Tests : 28 nouveaux tests pytest (test_unit_admin_organizations.py)",
+        "Aucune régression : pytest backend complet 791 passed (vs 763 baseline US-092, +28 nouveaux)",
+        "Build Vite OK"
+      ],
+      "passes": true,
+      "completedAt": "2026-05-03T23:00:00Z",
+      "dependencies": [
+        "US-092",
+        "US-093",
+        "US-094"
+      ],
+      "metadata": {
+        "estimated_hours": 3,
+        "priority": "P0",
+        "files_created": [
+          "backend/tests/test_unit_admin_organizations.py"
+        ],
+        "files_modified": [
+          "backend/app/auth/decorators.py",
+          "backend/app/auth/__init__.py",
+          "backend/app/api/admin.py",
+          "backend/tests/test_unit_openapi.py",
+          "frontend/src/stores/auth.js",
+          "frontend/src/api/client.js",
+          "frontend/src/components/AppHeader.vue",
+          "frontend/src/views/AnalyticsView.vue",
+          "frontend/src/locales/fr.json",
+          "frontend/src/locales/en.json",
+          "frontend/src/locales/ar.json"
+        ],
+        "tests_passing": "791 passed, 17 skipped (vs 763 baseline US-092, +28 nouveaux)",
+        "build_vite": "OK",
+        "endpoints_added": [
+          "GET /api/admin/me/super-status",
+          "GET /api/admin/organizations",
+          "GET /api/admin/organizations/<org_id>"
+        ],
+        "coolify_action_required": "BASSIRA_SUPER_ADMIN_EMAILS=<email_signup_supabase> sur le service bassira-backend"
+      }
     }
   ]
 }

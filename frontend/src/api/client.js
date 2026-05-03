@@ -122,4 +122,50 @@ export function fetchPublicCalibrationAggregates() {
   return client.get('/api/calibration/aggregates')
 }
 
+// ───── Super-admin Bassira (US-095) ──────────────────────────────────
+//
+// Ces endpoints exigent un JWT Supabase ET un email figurant dans la
+// whitelist backend `BASSIRA_SUPER_ADMIN_EMAILS`. Le frontend ne dispose
+// d'AUCUN secret super-admin — la décision d'autorisation reste
+// 100 % côté backend (zero-trust côté navigateur).
+
+/**
+ * GET /api/admin/me/super-status — révèle si l'user est super-admin.
+ *
+ * Auth requise (JWT Supabase) mais pas le rôle super-admin lui-même.
+ * Permet au frontend de conditionner l'affichage de l'entrée nav
+ * « Admin » et de la section « Toutes les organisations ».
+ *
+ * Returns: `{ is_super_admin: boolean, email: string }`
+ */
+export function fetchSuperStatus() {
+  return client.get('/api/admin/me/super-status')
+}
+
+/**
+ * GET /api/admin/organizations — liste TOUTES les organisations Bassira.
+ *
+ * Reservé aux super-admins. Si l'user n'est pas whitelist : 403 NOT_SUPER_ADMIN.
+ *
+ * Returns: `{ organizations: [{id, slug, name, sector, country_code,
+ *   status, created_at, members_count, simulations_count, published_count,
+ *   avg_brier}, ...] }`
+ */
+export function fetchAllOrganizations() {
+  return client.get('/api/admin/organizations')
+}
+
+/**
+ * GET /api/admin/organizations/<orgId> — détail d'une organisation.
+ *
+ * Reservé aux super-admins. Retourne metadata + members + simulations.
+ *
+ * Returns: `{ organization: {...}, members: [...], simulations: [...] }`
+ */
+export function fetchOrganizationDetail(orgId) {
+  return client.get(
+    `/api/admin/organizations/${encodeURIComponent(orgId)}`
+  )
+}
+
 export default client

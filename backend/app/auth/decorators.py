@@ -1,6 +1,6 @@
-"""Décorateurs Flask pour l'authentification multitenant Bassira (US-092).
+"""Décorateurs Flask pour l'authentification multitenant Bassira (US-092 + US-095).
 
-Trois décorateurs sont exposés :
+Quatre décorateurs sont exposés :
 
 * `@require_auth` — exige un JWT Supabase valide. Pose
   `g.current_user = {"id": uuid, "email": str, "claims": {...}}`. Sinon 401.
@@ -11,18 +11,24 @@ Trois décorateurs sont exposés :
   `g.current_org = {"id": uuid, "slug": str, "sector": str|None,
   "country_code": str|None, "role": str, "name": str}`.
 * `@require_owner_or_admin` — alias de `@require_org_membership("admin")`.
+* `@require_super_admin` — exige `@require_auth` puis vérifie que l'email
+  de l'utilisateur figure dans la whitelist `BASSIRA_SUPER_ADMIN_EMAILS`
+  (env var, liste séparée par virgules). Pose `g.is_super_admin = True`.
+  Sinon 403 `NOT_SUPER_ADMIN`. Permet aux founders Bassira de voir
+  TOUTES les organisations dans l'admin (cf. /api/admin/organizations).
 
 Toutes les erreurs sont retournées au format API standard du backend
 (`{"success": False, "error_code": "...", "error": "..."}`) avec un
 status HTTP cohérent : 401 (auth manquante), 403 (membership / rôle
-insuffisant), 404 (org_id explicite mais l'utilisateur n'y appartient
-pas), 503 (config backend manquante).
+insuffisant / non super-admin), 404 (org_id explicite mais l'utilisateur
+n'y appartient pas), 503 (config backend manquante).
 """
 
 from __future__ import annotations
 
+import os
 from functools import wraps
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Set
 
 from flask import g, jsonify, request
 
@@ -253,3 +259,97 @@ def require_org_membership(role_min: str = "member") -> Callable:
 def require_owner_or_admin(view_func: Callable) -> Callable:
     """Alias : exige role >= admin (admin ou owner)."""
     return require_org_membership(role_min="admin")(view_func)
+
+
+# ─── Super-admin Bassira (US-095) ───────────────────────────────────────────
+
+def _super_admin_emails() -> Set[str]:
+    """Lit la whitelist `BASSIRA_SUPER_ADMIN_EMAILS` depuis l'environnement.
+
+    Format : liste d'emails séparés par virgules (espaces tolérés).
+    Comparaison case-insensitive (lowercase strip). Vide = personne n'est
+    super-admin (le décorateur retournera 403 pour tout user).
+
+    On lit l'env à chaque appel (et non au démarrage) pour permettre :
+    1. Aux tests de monkeypatcher `BASSIRA_SUPER_ADMIN_EMAILS` à la volée.
+    2. À l'opérateur de mettre à jour la liste sur Coolify sans redémarrer
+       le process Flask (le prochain request prend la nouvelle valeur).
+    """
+    raw = os.getenv("BASSIRA_SUPER_ADMIN_EMAILS", "") or ""
+    if not raw.strip():
+        return set()
+    return {
+        item.strip().lower()
+        for item in raw.split(",")
+        if item.strip()
+    }
+
+
+def is_super_admin_email(email: Optional[str]) -> bool:
+    """Retourne True si `email` figure dans la whitelist super-admin.
+
+    Fonction libre (testable en isolation, réutilisable par
+    `/api/admin/me/super-status` qui ne pose pas g.is_super_admin).
+    """
+    if not email or not isinstance(email, str):
+        return False
+    return email.strip().lower() in _super_admin_emails()
+
+
+def require_super_admin(view_func: Callable) -> Callable:
+    """Décorateur : exige un JWT valide ET un email super-admin whitelist.
+
+    Compose `@require_auth` (pose `g.current_user`) puis vérifie que
+    `g.current_user['email']` est listé dans la variable d'environnement
+    `BASSIRA_SUPER_ADMIN_EMAILS`. Si match : pose `g.is_super_admin = True`.
+
+    Codes d'erreur :
+        - 401 MISSING_AUTH / INVALID_TOKEN (via require_auth)
+        - 403 NOT_SUPER_ADMIN (email non whitelist)
+        - 503 SUPER_ADMIN_NOT_CONFIGURED (env var vide ou absente)
+
+    Ne JAMAIS logguer l'email rejeté en clair — on log seulement le hash
+    court pour audit sans fuite de PII.
+    """
+
+    @wraps(view_func)
+    @require_auth
+    def _wrapper(*args, **kwargs):
+        whitelist = _super_admin_emails()
+        if not whitelist:
+            # Pas de super-admin configuré côté serveur → 503 explicite
+            # pour différencier d'un cas « email pas listé » (403).
+            return _err(
+                "SUPER_ADMIN_NOT_CONFIGURED",
+                "Backend super-admin whitelist is empty. "
+                "Set BASSIRA_SUPER_ADMIN_EMAILS in Coolify environment variables.",
+                503,
+            )
+
+        user = getattr(g, "current_user", None) or {}
+        email = user.get("email")
+        if not email or not isinstance(email, str):
+            return _err(
+                "INVALID_TOKEN",
+                "Token missing 'email' claim.",
+                401,
+            )
+
+        if email.strip().lower() not in whitelist:
+            # Log d'audit minimal (hash 8 char, pas l'email en clair).
+            import hashlib
+            digest = hashlib.sha256(email.strip().lower().encode("utf-8")).hexdigest()[:8]
+            logger.warning(
+                "super-admin denied for email_hash=%s (not in whitelist)",
+                digest,
+            )
+            return _err(
+                "NOT_SUPER_ADMIN",
+                "Authenticated user is not a Bassira super-admin.",
+                403,
+            )
+
+        g.is_super_admin = True
+        return view_func(*args, **kwargs)
+
+    return _wrapper

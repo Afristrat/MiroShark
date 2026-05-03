@@ -135,6 +135,12 @@ _UNDOCUMENTED_ALLOWLIST: set[str] = {
     "/api/report/check/<simulation_id>",
     "/api/report/tools/search",
     "/api/report/tools/statistics",
+    # Super-admin Bassira (US-095) — internal-only, gated by the email
+    # whitelist BASSIRA_SUPER_ADMIN_EMAILS. Not part of any public API
+    # surface; the spec deliberately excludes them.
+    "/api/admin/me/super-status",
+    "/api/admin/organizations",
+    "/api/admin/organizations/<org_id>",
 }
 
 

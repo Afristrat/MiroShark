@@ -49,6 +49,56 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 
 ## Log d'itérations
 
+### 2026-05-03 — US-095 Super-admin Bassira : voir toutes les organisations + interface admin
+
+- **Statut** : passes:true (chantier M-multitenant-supabase, follow-up US-092 + US-093 + US-094).
+- **Problème** : Amine est founder Bassira et doit pouvoir auditer TOUTES les organisations clientes (cross-tenant) sans avoir à ouvrir la console SQL Supabase à chaque inspection. RLS Postgres l'empêche par construction de voir hors de ses orgs côté frontend (et c'est volontaire — la sécurité multitenant ne dépend pas de la confiance dans le code Vue). Solution : exposer côté backend des endpoints `/api/admin/organizations*` gardés par un décorateur `@require_super_admin` + un flag frontend conditionnel pour révéler une entrée nav « Admin » et une section « Toutes les organisations » dans `AnalyticsView`.
+- **Architecture** :
+  - **Identification du super-admin** : variable d'environnement backend `BASSIRA_SUPER_ADMIN_EMAILS` (liste d'emails séparés par virgules, ex. `amine@ai-mpower.com,partner@ai-mpower.com`). Lue par le backend à chaque requête (pas au démarrage) pour permettre :
+    1. Le monkeypatching pytest sans relancer Flask.
+    2. La mise à jour live sur Coolify sans redémarrer le process.
+  - **Pas de table DB** pour le MVP : 0 migration, 0 seed à maintenir, juste une env var Coolify modifiable en 30 secondes. Un scaling futur (multiples founders par groupe) se fera via une table `super_admins` dédiée — non bloquant aujourd'hui (Bassira a 1 founder).
+  - **Service_role bypass RLS uniquement côté backend** : les endpoints super-admin utilisent `get_supabase_admin()` (singleton US-092) pour requêter les tables sans filtre RLS. La clé `SUPABASE_SERVICE_ROLE_KEY` reste strictement côté serveur — jamais exposée au frontend, jamais loggée.
+  - **Zero-trust côté frontend** : le store Pinia `auth.js` charge `is_super_admin` via `/api/admin/me/super-status`, MAIS la décision d'autorisation reste 100 % côté serveur. Un user qui forcerait `isSuperAdminFlag = true` côté JavaScript verrait la nav « Admin », clickerait sur `/admin/analytics`, mais recevrait 403 `NOT_SUPER_ADMIN` à chaque tentative de fetch. Pas de leak — le frontend ne fait que cacher l'UI inutile.
+- **Modules backend créés/modifiés** :
+  - `backend/app/auth/decorators.py` : ajout helper `_super_admin_emails()` (parse env), `is_super_admin_email(email)` (testable en isolation), décorateur `@require_super_admin` (compose `@require_auth` + check whitelist + log audit hash sha256 court — JAMAIS l'email en clair). Codes d'erreur : 401 MISSING_AUTH/INVALID_TOKEN, 403 NOT_SUPER_ADMIN, 503 SUPER_ADMIN_NOT_CONFIGURED (whitelist vide ou absente).
+  - `backend/app/auth/__init__.py` : exporte `require_super_admin` + `is_super_admin_email`.
+  - `backend/app/api/admin.py` : import des décorateurs auth + `get_supabase_admin`. 3 nouveaux endpoints :
+    - `GET /api/admin/me/super-status` (`@require_auth` seulement — un user normal reçoit `{is_super_admin: false}`, pas une 403).
+    - `GET /api/admin/organizations` (`@require_super_admin`). Lit `public.organizations` ordonnée par `created_at DESC`, puis enrichit chaque org avec `_aggregate_org_stats()` (simulations_count + published_count + avg_brier depuis `simulation_ownership`) et `_count_org_members()` (count exact sur `org_members`). Robustesse : toute erreur Supabase per-org → stats à `None` plutôt que 500 (l'opérateur préfère `—` à un brick).
+    - `GET /api/admin/organizations/<org_id>` (`@require_super_admin`). Retourne `{organization, members, simulations}`. Pour les emails des members : on tente `cli.auth.admin.get_user_by_id(user_id)` sur le client supabase-py, et on retombe à `email: null` si l'API admin n'est pas dispo (variation SDK). 404 si org_id inconnu.
+  - `backend/tests/test_unit_openapi.py` : ajout des 3 routes super-admin à `_UNDOCUMENTED_ALLOWLIST` (elles sont internes-only, pas dans le contrat OpenAPI public).
+- **Modules frontend créés/modifiés** :
+  - `frontend/src/api/client.js` : ajout 3 méthodes `fetchSuperStatus()`, `fetchAllOrganizations()`, `fetchOrganizationDetail(orgId)` qui réutilisent l'axios bearer-injecté.
+  - `frontend/src/stores/auth.js` : ajout state `isSuperAdminFlag` + `superAdminLoaded`, getter `isSuperAdmin`, action `fetchSuperStatus()` (fail-soft : 401/5xx/network → `false`, jamais d'exception bubble). Hook dans `init()` (boot avec session existante), `login()` (après fetchProfile), `logout()` (purge), et listener `SIGNED_OUT` (purge).
+  - `frontend/src/components/AppHeader.vue` : ajout entrée nav `<router-link to="/admin/analytics">` avec class `app-header__link--admin` conditionnelle sur `isAuthenticated && isSuperAdmin`. Style : pastille discrète qui passe en `--wi-primary` au hover (signal de pouvoir cross-tenant sans crier).
+  - `frontend/src/views/AnalyticsView.vue` : ajout section `analytics-superadmin` (table 10 colonnes : slug · name · sector · country · status · members · sims · published · avgBrier · createdAt) + modal `analytics-org-modal` (drill-down détail au click sur une row). Au mount, si `authStore.isAuthenticated`, on appelle `fetchSuperStatus()` puis `loadAllOrganizations()` si super-admin. Format Brier : `Number(b).toFixed(3)`. Format date : `iso.slice(0, 10)` UTC. Click outside modal → close.
+  - `frontend/src/locales/{fr,en,ar}.json` : ajout `nav.admin` + `nav.adminTitle` + namespace complet `analytics.superAdmin.{sectionTitle, sectionHelp, loading, error, empty, table.*, detail.*}`. Trad arabe formelle (وحدة تحكم المشرف الرئيسي لبصيرة).
+- **Tests créés (28 nouveaux)** : `backend/tests/test_unit_admin_organizations.py` :
+  - `TestIsSuperAdminEmail` (8 tests) : whitelist vide / unset / présent / absent / case-insensitive / strip whitespace / None / non-string.
+  - `TestRequireSuperAdmin` (6 tests via `/api/admin/organizations`) : no-token 401 / invalid-token 401 / email-not-whitelist 403 / whitelist-unset 503 / whitelist-empty 503 / super-admin-allowed 200.
+  - `TestSuperStatusEndpoint` (4 tests) : no-token 401 / not-whitelist false / whitelist true / no-whitelist false (sans erreur).
+  - `TestListAllOrganizations` (5 tests) : empty / single-org-with-stats (vérifie members_count, sims_count, published_count, avg_brier=0.25 ignoré-None) / supabase-misconfigured 503 / select-failure 500 / normal-user 403.
+  - `TestGetOrganizationDetail` (5 tests) : no-token 401 / normal-user 403 / org-not-found 404 / detail-with-members-and-sims (verifie email=None quand auth.admin pas dispo) / supabase-config 503.
+- **Quality gates** :
+  - `cd backend && uv run pytest tests/test_unit_admin_organizations.py -v` → **28 PASS** en 2,52 s.
+  - `cd backend && uv run pytest -q` → **791 passed, 17 skipped, 0 régression** (vs 763 baseline US-092, +28 nouveaux).
+  - `cd frontend && npm run build` → **OK**, 836+ modules. Aucune erreur, aucun warning nouveau (1 warning chunk size pré-existant).
+- **Décisions architecturales notables** :
+  - **Lecture de l'env var à chaque requête** (pas au démarrage Flask) : permet à Amine de modifier la liste sur Coolify et de voir l'effet au prochain request — sans `restart` du service. Coût négligeable (un `os.getenv` + un `split`).
+  - **Composition de décorateurs `@require_super_admin` = `@require_auth` + check email** : on n'expose pas un super-admin sans JWT valide. L'attaquant qui poserait un email super-admin dans un faux header `X-Email` ne passerait pas — le décorateur lit `g.current_user['email']` issu des claims JWT vérifiés par `verify_supabase_jwt`.
+  - **Log d'audit minimal sur denial** : on log `email_hash=<sha256[:8]>` au lieu de l'email en clair. Permet à un opérateur de corréler des tentatives répétées (même hash = même attaquant) sans fuiter la PII dans les logs Coolify.
+  - **Fail-soft sur le frontend `fetchSuperStatus`** : 401 / 5xx / network → `isSuperAdminFlag=false`. Pas d'exception bubble qui briquerait la session. L'utilisateur verra simplement l'app comme s'il n'était pas super-admin (les endpoints renverront 403 si quelqu'un force).
+  - **Modal détail vs nouvelle vue** : on a choisi un modal in-place plutôt qu'une route dédiée `/admin/organizations/<id>` côté frontend pour réduire la complexité (aucune nouvelle route Vue Router à enregistrer, drill-down expand/collapse familier). Le backend expose bien une route REST `<org_id>` standard, c'est juste l'UX frontend qui a choisi un modal.
+  - **Stats agrégées calculées côté backend** : `simulations_count`, `published_count`, `avg_brier` sont calculées en Python à partir d'un SELECT sur `simulation_ownership`. Pour 100 orgs avec 1000 sims chacune (100k rows), c'est encore acceptable (~200ms). Au-delà, on basculera sur des SQL `count(*) FILTER (WHERE is_published)` agrégés ou une VIEW matérialisée. Pas de prematurè optimization.
+  - **Routes super-admin dans l'allowlist OpenAPI** : ce ne sont pas des endpoints publics tiers, ils sont gardés par une whitelist email côté serveur. L'OpenAPI spec ne les documente pas — elles sont volontairement opaques pour des consommateurs externes (Cursor, Claude Desktop, partenaires API). Le test `test_unit_openapi.py` les passe en allowlist pour ne pas régresser.
+- **Action Coolify (à faire par Amine)** :
+  ```
+  BASSIRA_SUPER_ADMIN_EMAILS=<email_signup_supabase>
+  ```
+  À poser sur le service `bassira-backend` (anciennement `miro-shark`) avec l'email exact qu'il a utilisé pour signup côté Supabase Auth. Tant que l'env var est vide / absente, **aucun super-admin n'existe** (tout `/api/admin/organizations` retourne 503 SUPER_ADMIN_NOT_CONFIGURED, et `/me/super-status` retourne `is_super_admin=false`). Stratégie « safe-by-default » : pas de super-admin par accident en dev local.
+- **Apprentissage clé** : le pattern « super-admin via env var + helper testable + décorateur composé » permet à un projet multitenant qui n'a pas encore besoin d'une UI gestion-des-rôles complète d'avoir un super-admin opérationnel en 200 lignes de code (backend + frontend) avec coverage tests proche de 100 %. La mise à l'échelle (passage env-var → table DB) est triviale plus tard car le seul point d'extension est `_super_admin_emails()` qui peut faire un `cli.table('super_admins').select(...)` quand le besoin se présente.
+
 ### 2026-05-03 — US-094 AppHeader.vue partagé sur toutes les pages
 - **Statut** : passes:true (chantier N-nav-globale, follow-up US-087 + US-093).
 - **Problème** : la nav header n'existait que dans `Home.vue` (`.navbar`) et `LandingView.vue` (`.lp-topbar`). Les 14+ autres routes (`/models`, `/calibration`, `/offres`, `/devis`, `/partenaires`, `/explore`, `/verified`, `/models/:slug`, `/login`, `/signup`, `/client/dashboard`, `/process/:id`, `/simulation/:id`, `/report/:id`, `/interaction/:id`, `/replay/:id`, `/compare`, `/embed/:id`, `/admin/analytics`) tombaient sur un écran sans nav, sans logo Bassira, sans accès aux Modèles/Offres/Login. Amine demande explicitement « Menu qui doit être dans toutes les pages ».
