@@ -2702,6 +2702,97 @@
                 "verification": "Scan DEFCON 1 sur 36 fichiers (18 JSON × 2 + 54 PDFs) : 0 chaîne interdite",
                 "defcon1_check": "Aucun nom propre d'individu, aucune référence légale numérotée non vérifiée, aucun chiffre précis sans source publique, aucun événement nominatif. Patterns Khalid Bouaza, BMCI-BNP, 6,8 M, 26/G/2006, CCC France, Carrefour Maroc 2018, Inwi 2021, Royal Air Maroc 2023, Heineken, Boohoo, BrewDog, Maroc Telecom Pension Fund, BCB, DataVault, Whitfield, NeuralCoin, NRAL, OmniTech, Aria, BioSynth, Diagno AI, Yasmine Kaddouri, Rachid Habboubi, Karim Slaoui, Rachida Ouahabi, Nizar El Fassi, Mokhtar Tiliouine, Chakib Laaroui, Hind Chokairi, Khalid Benali, Nadia Chraibi, Hassan Benjelloun, Youssef Belmahi, Sigma Conseil, Leonov, Cohen Milstein tous absents."
             }
+        },
+        {
+            "id": "US-091",
+            "chantier": "M-multitenant-supabase",
+            "title": "Schéma multitenant Supabase Cloud + RLS + VIEW agrégée k-anonymity",
+            "description": "Schéma Supabase Cloud Bassira : tables public.organizations, public.org_members, public.simulation_ownership avec RLS strict (un user voit uniquement les ressources de son org ; seuls owner/admin peuvent marquer outcomes / publier ; lecture publique via VIEW agrégée k-anonymity n>=5). Création de l'org aimpower-bassira avec Amine en owner. Hiérarchie de rôles owner > admin > member > viewer.",
+            "acceptanceCriteria": [
+                "supabase/migrations/20260503_001_init_multitenant.sql appliquée",
+                "supabase/migrations/20260503_002_public_calibration_view.sql appliquée (VIEW publique k-anonymity n>=5)",
+                "RLS activé sur les 3 tables avec policies SELECT/INSERT/UPDATE/DELETE",
+                "Org aimpower-bassira créée avec Amine owner",
+                "Helper SQL public.user_orgs() pour les RLS policies"
+            ],
+            "passes": true,
+            "completedAt": "2026-05-03T19:30:00Z",
+            "dependencies": [],
+            "metadata": {
+                "estimated_hours": 2,
+                "priority": "P0",
+                "files_touched": [
+                    "supabase/migrations/20260503_001_init_multitenant.sql",
+                    "supabase/migrations/20260503_002_public_calibration_view.sql",
+                    "supabase/README.md"
+                ]
+            }
+        },
+        {
+            "id": "US-092",
+            "chantier": "M-multitenant-supabase",
+            "title": "Backend Flask : middleware JWT Supabase + extension SimulationManager pour ownership",
+            "description": "Implémentation backend Flask de l'auth multitenant Supabase. Module app/auth/ avec verify_supabase_jwt (HS256, cache LRU TTL 5min, 256 entrées max), client admin Supabase singleton (service_role key), helpers métier (get_user_orgs, get_user_role_in_org, record_simulation_ownership, get_simulation_owner, mark_outcome, publish_simulation, get_public_calibration_aggregates). Décorateurs @require_auth, @require_org_membership(role_min), @require_owner_or_admin avec hiérarchie owner>admin>member>viewer. Extension SimulationManager : create_simulation accepte org_id, created_by, package_id (rétro-compat préservée — sans org_id le comportement legacy public est inchangé) ; nouvelles méthodes list_simulations_for_org et is_user_authorized_to_read. 5 endpoints client : /api/client/auth/me, /api/client/simulations (GET/POST), /api/client/simulations/<id>/outcome, /api/client/simulations/<id>/publish + endpoint public /api/calibration/aggregates lisant la VIEW k-anonymity.",
+            "acceptanceCriteria": [
+                "backend/app/auth/{__init__,jwt_verifier,supabase_client,decorators}.py créés",
+                "backend/app/api/client.py : 5 endpoints multitenant créés",
+                "/api/calibration/aggregates ajouté au calibration_bp existant",
+                "SimulationManager.create_simulation rétro-compatible (sans org_id : pas d'écriture Supabase)",
+                "SimulationManager.list_simulations_for_org + is_user_authorized_to_read implémentées",
+                "63 nouveaux tests pytest avec mocks Supabase (33 jwt + 19 client + 11 ownership)",
+                "Aucune régression : pytest backend complet 763 passed (vs 700 baseline)",
+                "Aucun secret hardcodé : tout via os.getenv (SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_JWT_SECRET)",
+                "PyJWT et supabase ajoutés au pyproject.toml"
+            ],
+            "passes": true,
+            "completedAt": "2026-05-03T20:30:00Z",
+            "dependencies": [
+                "US-091"
+            ],
+            "metadata": {
+                "estimated_hours": 4,
+                "priority": "P0",
+                "files_created": [
+                    "backend/app/auth/__init__.py",
+                    "backend/app/auth/jwt_verifier.py",
+                    "backend/app/auth/supabase_client.py",
+                    "backend/app/auth/decorators.py",
+                    "backend/app/api/client.py",
+                    "backend/tests/test_unit_auth_jwt.py",
+                    "backend/tests/test_unit_client_simulations.py",
+                    "backend/tests/test_unit_simulation_manager_ownership.py"
+                ],
+                "files_modified": [
+                    "backend/app/__init__.py",
+                    "backend/app/api/calibration.py",
+                    "backend/app/services/simulation_manager.py",
+                    "backend/pyproject.toml",
+                    "backend/uv.lock"
+                ],
+                "endpoints_added": [
+                    "GET  /api/client/auth/me",
+                    "GET  /api/client/simulations",
+                    "POST /api/client/simulations",
+                    "POST /api/client/simulations/<id>/outcome",
+                    "POST /api/client/simulations/<id>/publish",
+                    "GET  /api/calibration/aggregates"
+                ],
+                "tests_passing": 763,
+                "tests_added": 63,
+                "tests_breakdown": "33 test_unit_auth_jwt + 19 test_unit_client_simulations + 11 test_unit_simulation_manager_ownership",
+                "deps_added": ["pyjwt[crypto]>=2.10.0", "supabase>=2.7.0"],
+                "architectural_decisions": [
+                    "JWT HS256 (default Supabase Auth) — secret backend-only via SUPABASE_JWT_SECRET",
+                    "Cache LRU TTL 5min sur verify_supabase_jwt (256 entrées max, TTL borné par exp)",
+                    "Singleton Supabase admin (service_role) — bypass RLS côté backend, jamais exposé au frontend",
+                    "Décorateur factory @require_org_membership(role_min) + alias @require_owner_or_admin",
+                    "Multi-org : sélection via X-Org-Id header ou ?org_id= query param ; auto-select si 1 seule org",
+                    "Rétro-compatibilité forte : create_simulation() sans org_id reste 100 % filesystem-only",
+                    "Fail-closed : SUPABASE_JWT_SECRET unset = 503 explicite (pas de fallback no-auth)",
+                    "Fail-soft : /api/calibration/aggregates retourne data:[] si Supabase non configuré (UI dev OK)",
+                    "Aucun log de JWT/header Authorization (rules/supabase.md)"
+                ]
+            }
         }
     ]
 }

@@ -43,6 +43,12 @@ dependencies = [
     # US-088: Arabic shaping for branded PDF briefs (RTL + glyph contextual forms)
     "arabic-reshaper>=3.0.0",
     "python-bidi>=0.4.2",
+    # US-092: middleware JWT Supabase + extension ownership multitenant.
+    # PyJWT (avec extra `crypto`) gère la vérification HS256 par défaut côté
+    # Supabase Auth ; le SDK supabase-py officiel fournit le client admin
+    # (clé service_role) qui contourne RLS pour les opérations backend.
+    "pyjwt[crypto]>=2.10.0",
+    "supabase>=2.7.0",
 ]
 
 [project.optional-dependencies]
