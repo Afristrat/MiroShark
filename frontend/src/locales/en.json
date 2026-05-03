@@ -44,7 +44,7 @@
     "switch": "Switch language"
   },
   "onboarding": {
-    "ariaLabel": "Guided tour — first steps with Bassira",
+    "ariaLabel": "Guided tour · first steps with Bassira",
     "stepLabel": "STEP",
     "skip": "Skip",
     "next": "Next",
@@ -54,7 +54,7 @@
     "startExampleLoading": "Preparing example…",
     "step1": {
       "title": "Drop your first seed",
-      "body": "Upload an article, a report or a PDF — it's the starting point of your simulation. Bassira extracts actors, tensions and variables from it.",
+      "body": "Upload an article, a report or a PDF · it's the starting point of your simulation. Bassira extracts actors, tensions and variables from it.",
       "bodyMissing": "The upload zone isn't visible on this page yet. Scroll down to the simulation console to find it, then come back here.",
       "hint": "No document handy? Click \"Run an example\" to explore a pre-configured Finance Bill simulation."
     },
@@ -66,13 +66,13 @@
     },
     "step3": {
       "title": "Pick a suggested scenario or write your own",
-      "body": "Bassira reads your seed and proposes 3 framed scenarios (growth, risk, opportunity). Pick one — you can always tweak it.",
+      "body": "Bassira reads your seed and proposes 3 framed scenarios (growth, risk, opportunity). Pick one · you can always tweak it.",
       "bodyMissing": "Suggested scenarios will appear here once you've added a document or written your question. Move to the next step to see the launch button.",
-      "hint": "Scenarios are generated from your document — they reflect its real tensions, not a generic template."
+      "hint": "Scenarios are generated from your document · they reflect its real tensions, not a generic template."
     },
     "step4": {
-      "title": "You're ready — launch your simulation",
-      "body": "The multi-agent system is primed to deliberate. The first run takes about 3 minutes — you'll watch the rounds unfold live.",
+      "title": "You're ready · launch your simulation",
+      "body": "The multi-agent system is primed to deliberate. The first run takes about 3 minutes · you'll watch the rounds unfold live.",
       "bodyMissing": "The launch button appears once your seed and question are set. Prepare your inputs, then come back to start your first simulation.",
       "hint": "You'll be able to replay, compare variants and export the final report as PDF."
     }
@@ -90,8 +90,8 @@
       "tag": "Universal Swarm Intelligence Engine",
       "eyebrow": "بصيرة · Strategic Foresight",
       "title": "Stress-test your strategy before it touches reality.",
-      "subtitle": "The augmented foresight platform for MENA and European decision-makers.",
-      "descriptionPart1": "Drop in anything — a press release, a news headline, a policy draft, a question you can't answer, a historical what-if — and",
+      "subtitle": "The augmented foresight platform for MENA, Europe and Africaan decision-makers.",
+      "descriptionPart1": "Drop in anything · a press release, a news headline, a policy draft, a question you can't answer, a historical what-if · and",
       "brand": "Bassira",
       "descriptionPart2": "spawns",
       "agents": "hundreds of agents",
@@ -122,7 +122,7 @@
       "title": "What it does",
       "s1": {
         "title": "You bring a scenario",
-        "desc": "Bassira builds the world around it — extracts actors, stakes, and open questions from your input."
+        "desc": "Bassira builds the world around it · extracts actors, stakes, and open questions from your input."
       },
       "s2": {
         "title": "Hundreds of grounded agents",
@@ -146,7 +146,7 @@
       "askMeta": "No document? Type a question, we synthesize a briefing.",
       "askPlaceholder": "e.g. Will the EU AI Act's biometrics clause survive the final trilogue?",
       "researchBtn": "Research →",
-      "researchBusy": "Synthesizing briefing — this uses the Smart model and takes ~20–30s.",
+      "researchBusy": "Synthesizing briefing · this uses the Smart model and takes ~20–30s.",
       "enriching": "Searching the web…",
       "askDocTitle": "Click to preview the generated briefing",
       "urlLabel": "01b / URL Import",
@@ -201,7 +201,7 @@
   },
   "analytics": {
     "title": "Bassira Analytics",
-    "subtitle": "Platform overview — real-time operational state.",
+    "subtitle": "Platform overview · real-time operational state.",
     "opsBadge": "Ops console",
     "logout": "Sign out",
     "footer": "Last refreshed: {date}",
@@ -243,7 +243,7 @@
       "empty": "No package detected yet."
     },
     "timeSeries": {
-      "title": "Activity — last 30 days",
+      "title": "Activity · last 30 days",
       "help": "Completions per day (UTC)"
     },
     "error": {
@@ -255,7 +255,7 @@
   "sectors": {
     "eyebrow": "USE CASES BY INDUSTRY",
     "title": "Strategic simulation that speaks your industry",
-    "subtitle": "Every sector has its own tensions, its own actors, its own scenarios. Bassira models yours — not an average.",
+    "subtitle": "Every sector has its own tensions, its own actors, its own scenarios. Bassira models yours · not an average.",
     "cta": {
       "test": "Test this case"
     },
@@ -288,7 +288,7 @@
       "name": "Politics & Diplomacy",
       "tagline": "Elections, reforms, international negotiations, parliamentary lobbying.",
       "cases": [
-        "Which factions will emerge from party X primaries in 18 months — and what's the surprise coalition probability?",
+        "Which factions will emerge from party X primaries in 18 months · and what's the surprise coalition probability?",
         "Will our digital tax proposal pass the Moroccan Parliament against CGEM opposition?"
       ]
     },
@@ -378,11 +378,11 @@
     },
     "sheStart": {
       "variantA": "Replay",
-      "variantATitle": "Variant A — Ground Truth Replay (1 run, 10 weeks, 50 agents): compares the MiroShark trajectory to the real She Start cohort.",
+      "variantATitle": "Variant A · Ground Truth Replay (1 run, 10 weeks, 50 agents): compares the MiroShark trajectory to the real She Start cohort.",
       "variantB": "Twin",
-      "variantBTitle": "Variant B — Cohort Twin (5 parallel runs, 10 weeks): measures the statistical stability of the predictions.",
+      "variantBTitle": "Variant B · Cohort Twin (5 parallel runs, 10 weeks): measures the statistical stability of the predictions.",
       "variantC": "Blind Spot",
-      "variantCTitle": "Variant C — Blind Spot Hunt (1 run, 5 real leaders removed): exposes the model’s blind spots."
+      "variantCTitle": "Variant C · Blind Spot Hunt (1 run, 5 real leaders removed): exposes the model’s blind spots."
     }
   },
   "report": {
@@ -437,13 +437,13 @@
         "createFailed": "Failed to create simulation: {error}",
         "createError": "Simulation creation error: {error}",
         "unknownError": "Unknown error",
-        "disabledEmptyGraph": "No entities extracted — click 'Add entities manually' below or go back.",
+        "disabledEmptyGraph": "No entities extracted · click 'Add entities manually' below or go back.",
         "emptyGraph": {
-          "title": "Empty graph — no entities extracted",
+          "title": "Empty graph · no entities extracted",
           "desc": "The knowledge graph contains no actors. The simulation cannot start without agents.",
-          "cause1": "Scanned or image-only PDF — no extractable text layer",
-          "cause2": "Document too short or too generic — the LLM found no entities",
-          "cause3": "LLM key not configured — ontology generation failed silently",
+          "cause1": "Scanned or image-only PDF · no extractable text layer",
+          "cause2": "Document too short or too generic · the LLM found no entities",
+          "cause3": "LLM key not configured · ontology generation failed silently",
           "ctaReview": "Add entities manually (Step 1.5)",
           "ctaBack": "Go back and use another document"
         }
@@ -510,7 +510,7 @@
         "backTitle": "Return to the project workbench"
       },
       "banner": {
-        "title": "Step 1.5 — Review your entities",
+        "title": "Step 1.5 · Review your entities",
         "description": "Before generating agents, inspect the graph: rename, merge, delete duplicates, or add a missing actor.",
         "cta": "Review entities"
       },
@@ -525,7 +525,7 @@
         "mergePlaceholder": "— Merge into… —",
         "delete": "Delete",
         "undo": "Undo",
-        "skip": "Looks good — skip",
+        "skip": "Looks good · skip",
         "saveAndContinue": "Apply changes",
         "saving": "Applying…",
         "launch": "Approve & Launch Simulation",
@@ -585,7 +585,7 @@
       },
       "footer": {
         "pending": "{count} pending change(s)",
-        "noChanges": "No pending changes — feel free to skip."
+        "noChanges": "No pending changes · feel free to skip."
       },
       "validation": {
         "invalidType": "Type must contain at least one letter, digit, or underscore."
@@ -598,7 +598,7 @@
         "projectNotFound": "Project not found.",
         "graphNotBuilt": "Graph not built yet for this project."
       },
-      "empty": "No entities have been extracted yet. The graph build may have produced an empty result — go back and rebuild from your documents.",
+      "empty": "No entities have been extracted yet. The graph build may have produced an empty result · go back and rebuild from your documents.",
       "misc": {
         "untyped": "Untyped"
       }
@@ -645,7 +645,7 @@
         "errorTitle": "Config Generation Failed",
         "errorHint": "Unexpected error. Check backend logs or contact support.",
         "hintEntities": "The Neo4j graph contains no usable entities. Go back to step 1 to rebuild the graph from the document, then restart the simulation.",
-        "hintProfiles": "Agent profiles have not been generated. The retry button requires a successful /prepare first — recreate the simulation from scratch.",
+        "hintProfiles": "Agent profiles have not been generated. The retry button requires a successful /prepare first · recreate the simulation from scratch.",
         "hintTimeout": "The LLM did not respond within the timeout (90 s). Check the provider's availability (Moonshot Kimi) and retry.",
         "hintLLM": "LLM issue: invalid API key, quota exceeded, or model not found. Check backend environment variables (LLM_API_KEY, LLM_MODEL_NAME, LLM_BASE_URL).",
         "retrying": "Retrying...",
@@ -750,10 +750,10 @@
         "markets": "Markets",
         "marketsTitle": "Live prediction market price chart",
         "whatIf": "◐ What If?",
-        "whatIfTitle": "What If? — remove agents and recompute belief drift from existing trajectory",
+        "whatIfTitle": "What If? · remove agents and recompute belief drift from existing trajectory",
         "director": "⚡ Director",
-        "directorMaxTitle": "Director Mode — max events reached",
-        "directorTitle": "Director Mode — inject a breaking event into the simulation",
+        "directorMaxTitle": "Director Mode · max events reached",
+        "directorTitle": "Director Mode · inject a breaking event into the simulation",
         "branch": "⤷ Branch",
         "branchTitle": "Fork this simulation with a narrative injection scheduled for a specific round",
         "resuming": "Resuming...",
@@ -937,7 +937,7 @@
   "settings": {
     "byok": {
       "title": "Your API Key (BYOK)",
-      "intro": "Paste your key — Bassira auto-detects the provider and suggests the best models.",
+      "intro": "Paste your key · Bassira auto-detects the provider and suggests the best models.",
       "keyLabel": "API Key",
       "keyPlaceholder": "sk-or-v1-... or any format",
       "detected": "auto-detected",
@@ -972,15 +972,15 @@
     "preset": {
       "title": "Preset",
       "label": "Config template",
-      "custom": "Custom — leave fields as they are",
+      "custom": "Custom · leave fields as they are",
       "keyLabel": "OpenRouter API key"
     },
     "advanced": {
       "title": "Advanced slot overrides",
       "hint": "Each slot falls back to the default LLM config when left empty.",
-      "smart": "Smart — report generation",
-      "ner": "NER — entity extraction",
-      "wonderwall": "Wonderwall — simulation loop",
+      "smart": "Smart · report generation",
+      "ner": "NER · entity extraction",
+      "wonderwall": "Wonderwall · simulation loop",
       "embeddings": "Embeddings",
       "webSearch": "Web search (URL import + enrichment)"
     },
@@ -1181,7 +1181,7 @@
     "eyebrow": "Verified track record",
     "hero": {
       "headline": "We score every prediction. Here's how we're doing.",
-      "sub": "Brier score across all simulations marked verified — lower is better. Updated continuously.",
+      "sub": "Brier score across all simulations marked verified · lower is better. Updated continuously.",
       "label": "Brier score",
       "help": "0 = perfect, 0.25 = coin flip",
       "brierTitle": "Average Brier score over verified simulations"
@@ -1199,7 +1199,7 @@
     },
     "plot": {
       "title": "Predicted vs observed",
-      "explainer": "Each dot is one probability bucket. The dotted diagonal is perfect calibration — points above it mean we under-shot, points below mean we over-shot.",
+      "explainer": "Each dot is one probability bucket. The dotted diagonal is perfect calibration · points above it mean we under-shot, points below mean we over-shot.",
       "xAxis": "Predicted probability",
       "yAxis": "Observed frequency"
     },
@@ -1229,8 +1229,8 @@
     "methodology": {
       "title": "How we count it",
       "p1": "The Brier score measures the mean squared distance between the probability we announced and the actual outcome we observed. Concretely: we take the share of agents that ended up bullish in the final round of a simulation, compare it to 1 if the real event happened or 0 otherwise, and average the squared error across every verified simulation. Lower is closer to reality; 0.25 is the baseline of an unbiased coin flip.",
-      "p2": "Each outcome is hand-annotated into one of three buckets: called it, partial, or wrong. Called it means reality matched the prediction tightly, partial means we caught the direction but missed magnitude or timing, and wrong covers the cases where reality diverged sharply from the simulation's consensus. Every annotation ships with a public evidence URL — nothing enters this dashboard without a verifiable source.",
-      "p3": "To count, a simulation must be public (visible in /verified), have a complete trajectory we can extract a final probability from, and have received an outcome annotation. Private or unfinished simulations are ignored: they never sway the public number. This page is recomputed fresh on every visit — no static cache hiding a bad run."
+      "p2": "Each outcome is hand-annotated into one of three buckets: called it, partial, or wrong. Called it means reality matched the prediction tightly, partial means we caught the direction but missed magnitude or timing, and wrong covers the cases where reality diverged sharply from the simulation's consensus. Every annotation ships with a public evidence URL · nothing enters this dashboard without a verifiable source.",
+      "p3": "To count, a simulation must be public (visible in /verified), have a complete trajectory we can extract a final probability from, and have received an outcome annotation. Private or unfinished simulations are ignored: they never sway the public number. This page is recomputed fresh on every visit · no static cache hiding a bad run."
     },
     "cta": {
       "title": "Want to bet against us?",
@@ -1256,14 +1256,14 @@
       "previous": "Previous",
       "next": "Next",
       "toastSuccess": "Verdict saved.",
-      "toastError": "Failed — verdict not saved.",
+      "toastError": "Failed · verdict not saved.",
       "relativeTimeJustNow": "just now",
       "relativeTimeMinutesAgo": "{count} min ago",
       "relativeTimeHoursAgo": "{count} h ago",
       "relativeTimeDaysAgo": "{count} d ago",
       "loading": "Loading…",
       "savingNotice": "Saving…",
-      "invalidUrl": "Invalid URL — use http(s)://"
+      "invalidUrl": "Invalid URL · use http(s)://"
     },
     "howto": {
       "title": "How the Calibration page works",
@@ -1356,7 +1356,7 @@
     "eyebrow": "Predict before it happens",
     "hero": {
       "title": "Strategic intelligence protocols for decision-makers.",
-      "subtitle": "Ten engagement formats — from rapid resilience tests to digital twin simulations. MAD / USD, delivered in 24 h to 4 weeks."
+      "subtitle": "Ten engagement formats · from rapid resilience tests to digital twin simulations. MAD / USD, delivered in 24 h to 4 weeks."
     },
     "featuredBadge": "Most chosen",
     "filters": {
@@ -1489,7 +1489,7 @@
         "delay": "10 weeks",
         "description": "Scientific replication of a real cohort (incubator, programme, accelerator) over 10 weeks with 3 A/B/C variants to measure predictive fidelity.",
         "cta": "Reserve a cohort",
-        "fineprint": "B2B/B2G sales — incubators, donors, funds",
+        "fineprint": "B2B/B2G sales · incubators, donors, funds",
         "variantsLabel": "Cohort size",
         "variantsOptions": {
           "50": "50 agents",
@@ -1498,9 +1498,9 @@
         },
         "bullets": {
           "b1": "50 agents grounded on a real cohort",
-          "b2": "Variant A — Ground Truth Replay (1 run)",
-          "b3": "Variant B — Cohort Twin (5 parallel runs)",
-          "b4": "Variant C — Blind Spot Hunt (5 leaders removed)",
+          "b2": "Variant A · Ground Truth Replay (1 run)",
+          "b3": "Variant B · Cohort Twin (5 parallel runs)",
+          "b4": "Variant C · Blind Spot Hunt (5 leaders removed)",
           "b5": "Scientific calibration certificate",
           "b6": "Publishable report (track-record /verified)"
         }
@@ -1674,7 +1674,7 @@
       }
     },
     "step3": {
-      "successTitle": "Thanks — we've received your case.",
+      "successTitle": "Thanks · we've received your case.",
       "successSubtitle": "We'll get back to you within 48 business hours with a scoped proposal.",
       "quoteIdLabel": "Reference",
       "errorTitle": "Submission failed",
@@ -1710,7 +1710,7 @@
     "hero": {
       "eyebrow": "Partner programme",
       "title": "Strengthen your scenarios with computational simulation",
-      "subtitle": "Bassira complements your methodologies — it does not replace them. Bring your clients the quantitative rigour that consolidates your qualitative scenarios.",
+      "subtitle": "Bassira complements your methodologies · it does not replace them. Bring your clients the quantitative rigour that consolidates your qualitative scenarios.",
       "cta": "Initiate a strategic partnership"
     },
     "logos": {
@@ -1766,7 +1766,7 @@
       }
     },
     "testimonials": {
-      "title": "Partner program — first circle",
+      "title": "Partner program · first circle",
       "subtitle": "Bassira is in institutional early access. Our first partners operate under confidentiality agreements; their testimonials are available on request during a qualified discussion.",
       "ndaNotice": "Detailed references available on request, under NDA.",
       "ndaCta": "Request references"
@@ -1801,8 +1801,8 @@
     "hero": {
       "ariaLabel": "Hero section",
       "eyebrow": "Strategic Foresight",
-      "title": "Stress-test your strategy in 48 hours — without a consulting firm or another Excel guesswork.",
-      "subtitle": "Bassira simulates thousands of agents calibrated for MENA and European markets to surface your blind spots before the next crisis.",
+      "title": "Stress-test your strategy in 48 hours · without a consulting firm or another Excel guesswork.",
+      "subtitle": "Bassira simulates thousands of agents calibrated for MENA, Europe and Africaan markets to surface your blind spots before the next crisis.",
       "ctaPrimary": "Request a demo",
       "ctaSecondary": "See an example",
       "trust": "Used by strategy leaders across Africa, the Middle East and Europe"
@@ -1817,7 +1817,7 @@
       },
       "blindspot": {
         "quote": "We are flying blind on geopolitical shocks and supply-chain disruptions.",
-        "solution": "Stress-test your plan against 50+ exogenous variables — FX, sanctions, climate, social — calibrated for MENA."
+        "solution": "Stress-test your plan against 50+ exogenous variables · FX, sanctions, climate, social · calibrated for MENA."
       },
       "cost": {
         "quote": "Consulting firms charge six figures for slides full of unverifiable assumptions.",
@@ -1830,11 +1830,11 @@
       "lead": "Bassira combines 5,000+ distinct cognitive profiles, MENA + Europe specific calibration and an air-gapped mode for your most sensitive data.",
       "agents": {
         "title": "Multi-agent intelligence",
-        "desc": "5,000+ distinct cognitive profiles — decision-makers, operators, regulators, crowds — calibrated on decades of observed behavior."
+        "desc": "5,000+ distinct cognitive profiles · decision-makers, operators, regulators, crowds · calibrated on decades of observed behavior."
       },
       "calibrated": {
         "title": "MENA + Europe calibration",
-        "desc": "Models tuned for Morocco, GCC, France and the UK. No Silicon-Valley bias — your assumptions hold against local reality."
+        "desc": "Models tuned for Morocco, GCC, France and the UK. No Silicon-Valley bias · your assumptions hold against local reality."
       },
       "sovereign": {
         "title": "Air-gapped privacy",
@@ -1843,16 +1843,16 @@
     },
     "proof": {
       "kicker": "Proof, not promise",
-      "title": "Brier score 0.18 — verified, time-stamped, public.",
+      "title": "Brier score 0.18 · verified, time-stamped, public.",
       "metric": "Average Brier score",
       "context": "94 time-stamped predictions · 2024-2026",
-      "body": "The Brier score measures the probabilistic calibration of a forecasting model. The lower, the better. 0.18 puts us ahead of most traditional consulting firms — and we prove it publicly, one prediction at a time.",
+      "body": "The Brier score measures the probabilistic calibration of a forecasting model. The lower, the better. 0.18 puts us ahead of most traditional consulting firms · and we prove it publicly, one prediction at a time.",
       "cta": "See the full track record"
     },
     "pricing": {
       "kicker": "Pricing",
       "title": "Three formats. Zero hidden assumptions.",
-      "subtitle": "From a discovery sprint to a permanent strategic twin — pick the engagement that fits your decision horizon.",
+      "subtitle": "From a discovery sprint to a permanent strategic twin · pick the engagement that fits your decision horizon.",
       "from": "Starting at",
       "featuredFlag": "Most popular",
       "cta": "See all 10 packages",
@@ -1949,7 +1949,7 @@
     "list": {
       "hero": {
         "eyebrow": "PRE-CALIBRATED STRATEGIC MODELS",
-        "title": "Five concrete cases for MENA and European decision-makers",
+        "title": "Five concrete cases for MENA, Europe and Africaan decision-makers",
         "subtitle": "Each model exposes an executive decision question, an ecosystem of simulated stakeholders, and the key insights that emerge. Read in 4 minutes, order in one click.",
         "meta": "Public methodology · Verified calibration · Sovereign data"
       },
@@ -2000,12 +2000,12 @@
         "insights": {
           "kicker": "KEY INSIGHTS",
           "title": "What the model reveals beyond internal analyses",
-          "subtitle": "Five robust findings that classical internal models do not capture — the result of aggregating multi-agent trajectories."
+          "subtitle": "Five robust findings that classical internal models do not capture · the result of aggregating multi-agent trajectories."
         },
         "useCases": {
           "kicker": "USE CASES",
           "title": "Which decision-makers this model is built for",
-          "subtitle": "Four institutional profiles in MENA and Europe for whom this model has direct operational utility."
+          "subtitle": "Four institutional profiles in MENA, Europe and Africa for whom this model has direct operational utility."
         },
         "cta": {
           "title": "Put this model to work on your decision",

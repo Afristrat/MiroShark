@@ -44,7 +44,7 @@
     "switch": "Changer de langue"
   },
   "onboarding": {
-    "ariaLabel": "Visite guidée — premiers pas avec Bassira",
+    "ariaLabel": "Visite guidée · premiers pas avec Bassira",
     "stepLabel": "ÉTAPE",
     "skip": "Passer",
     "next": "Suivant",
@@ -54,7 +54,7 @@
     "startExampleLoading": "Préparation de l'exemple…",
     "step1": {
       "title": "Déposez votre première graine",
-      "body": "Glissez un article, un rapport ou un PDF — c'est le point de départ de votre simulation. Bassira en extrait les acteurs, les tensions et les variables.",
+      "body": "Glissez un article, un rapport ou un PDF · c'est le point de départ de votre simulation. Bassira en extrait les acteurs, les tensions et les variables.",
       "bodyMissing": "La zone d'upload n'est pas encore visible sur cette page. Faites défiler jusqu'à la console de simulation pour la trouver, puis revenez ici.",
       "hint": "Pas de document sous la main ? Cliquez « Lancer un exemple » pour explorer une simulation Loi de finances déjà configurée."
     },
@@ -66,12 +66,12 @@
     },
     "step3": {
       "title": "Choisissez un scénario suggéré ou écrivez le vôtre",
-      "body": "Bassira analyse votre graine et propose 3 scénarios cadrés (croissance, risque, opportunité). Sélectionnez-en un — vous pourrez toujours l'amender.",
+      "body": "Bassira analyse votre graine et propose 3 scénarios cadrés (croissance, risque, opportunité). Sélectionnez-en un · vous pourrez toujours l'amender.",
       "bodyMissing": "Les scénarios suggérés apparaîtront ici dès que vous aurez ajouté un document ou écrit votre question. Passez à l'étape suivante pour découvrir le bouton de lancement.",
       "hint": "Les scénarios sont générés à partir de votre document : ils reflètent ses tensions réelles, pas un cadre générique."
     },
     "step4": {
-      "title": "Vous êtes prêt — lancez votre simulation",
+      "title": "Vous êtes prêt · lancez votre simulation",
       "body": "Les agents multi-acteurs sont prêts à délibérer. La première simulation prend environ 3 minutes : vous verrez les rounds se dérouler en direct.",
       "bodyMissing": "Le bouton de lancement apparaîtra une fois votre graine et votre question définies. Préparez vos données puis revenez lancer votre première simulation.",
       "hint": "Vous pourrez rejouer, comparer plusieurs variantes et exporter le rapport final en PDF."
@@ -90,8 +90,8 @@
       "tag": "Moteur d’intelligence collective universel",
       "eyebrow": "بصيرة · Prospective stratégique",
       "title": "Stress-testez votre stratégie avant qu'elle ne touche le réel.",
-      "subtitle": "La plateforme de prospective augmentée pour les décideurs MENA et Europe.",
-      "descriptionPart1": "Déposez n’importe quoi — un communiqué de presse, un titre d’actualité, un projet de loi, une question sans réponse, un « et si ? » historique — et",
+      "subtitle": "La plateforme de prospective augmentée pour les décideurs MENA, Europe et Afrique.",
+      "descriptionPart1": "Déposez n’importe quoi · un communiqué de presse, un titre d’actualité, un projet de loi, une question sans réponse, un « et si ? » historique · et",
       "brand": "Bassira",
       "descriptionPart2": "fait apparaître",
       "agents": "des centaines d’agents",
@@ -122,7 +122,7 @@
       "title": "Ce que ça fait",
       "s1": {
         "title": "Vous apportez un scénario",
-        "desc": "Bassira construit le monde autour — il extrait les acteurs, les enjeux et les questions ouvertes de votre saisie."
+        "desc": "Bassira construit le monde autour · il extrait les acteurs, les enjeux et les questions ouvertes de votre saisie."
       },
       "s2": {
         "title": "Des centaines d’agents ancrés",
@@ -146,7 +146,7 @@
       "askMeta": "Pas de document ? Posez une question, nous synthétisons un briefing.",
       "askPlaceholder": "ex. La clause biométrie de l’IA Act survivra-t-elle au trilogue final ?",
       "researchBtn": "Rechercher →",
-      "researchBusy": "Synthèse du briefing en cours — utilise le modèle Smart, ~20–30 s.",
+      "researchBusy": "Synthèse du briefing en cours · utilise le modèle Smart, ~20–30 s.",
       "enriching": "Recherche web en cours…",
       "askDocTitle": "Cliquez pour prévisualiser le briefing généré",
       "urlLabel": "01b / Importer une URL",
@@ -201,7 +201,7 @@
   },
   "analytics": {
     "title": "Bassira Analytics",
-    "subtitle": "Vue d'ensemble — état de la plateforme en temps réel.",
+    "subtitle": "Vue d'ensemble · état de la plateforme en temps réel.",
     "opsBadge": "Console ops",
     "logout": "Déconnexion",
     "footer": "Dernière actualisation : {date}",
@@ -243,7 +243,7 @@
       "empty": "Aucun package détecté pour le moment."
     },
     "timeSeries": {
-      "title": "Activité — 30 derniers jours",
+      "title": "Activité · 30 derniers jours",
       "help": "Clôtures par jour (UTC)"
     },
     "error": {
@@ -378,11 +378,11 @@
     },
     "sheStart": {
       "variantA": "Replay",
-      "variantATitle": "Variant A — Ground Truth Replay (1 run, 10 semaines, 50 agents) : compare la trajectoire MiroShark à la cohorte She Start réelle.",
+      "variantATitle": "Variant A · Ground Truth Replay (1 run, 10 semaines, 50 agents) : compare la trajectoire MiroShark à la cohorte She Start réelle.",
       "variantB": "Twin",
-      "variantBTitle": "Variant B — Cohort Twin (5 runs parallèles, 10 semaines) : mesure la stabilité statistique des prédictions.",
+      "variantBTitle": "Variant B · Cohort Twin (5 runs parallèles, 10 semaines) : mesure la stabilité statistique des prédictions.",
       "variantC": "Blind Spot",
-      "variantCTitle": "Variant C — Blind Spot Hunt (1 run, 5 leaders réelles retirées) : détecte les angles morts du modèle."
+      "variantCTitle": "Variant C · Blind Spot Hunt (1 run, 5 leaders réelles retirées) : détecte les angles morts du modèle."
     }
   },
   "report": {
@@ -437,13 +437,13 @@
         "createFailed": "Échec de la création de la simulation : {error}",
         "createError": "Erreur lors de la création : {error}",
         "unknownError": "Erreur inconnue",
-        "disabledEmptyGraph": "Aucune entité extraite — cliquez sur « Ajouter des entités manuellement » ci-dessous ou revenez en arrière.",
+        "disabledEmptyGraph": "Aucune entité extraite · cliquez sur « Ajouter des entités manuellement » ci-dessous ou revenez en arrière.",
         "emptyGraph": {
-          "title": "Graphe vide — aucune entité extraite",
+          "title": "Graphe vide · aucune entité extraite",
           "desc": "Le graphe de connaissances ne contient aucun acteur. La simulation ne peut pas démarrer sans agents.",
-          "cause1": "PDF scanné ou image-only — aucune couche texte extractible",
-          "cause2": "Document trop court ou trop générique — le LLM n’a pas identifié d’entités",
-          "cause3": "Clé LLM non configurée — la génération d’ontologie a échoué silencieusement",
+          "cause1": "PDF scanné ou image-only · aucune couche texte extractible",
+          "cause2": "Document trop court ou trop générique · le LLM n’a pas identifié d’entités",
+          "cause3": "Clé LLM non configurée · la génération d’ontologie a échoué silencieusement",
           "ctaReview": "Ajouter des entités manuellement (Step 1.5)",
           "ctaBack": "Revenir et utiliser un autre document"
         }
@@ -510,7 +510,7 @@
         "backTitle": "Revenir à l’atelier du projet"
       },
       "banner": {
-        "title": "Étape 1.5 — Révisez vos entités",
+        "title": "Étape 1.5 · Révisez vos entités",
         "description": "Avant de générer les agents, inspectez le graphe : renommez, fusionnez, supprimez les doublons, ou ajoutez un acteur manquant.",
         "cta": "Réviser les entités"
       },
@@ -525,7 +525,7 @@
         "mergePlaceholder": "— Fusionner avec… —",
         "delete": "Supprimer",
         "undo": "Annuler",
-        "skip": "Tout est bon — ignorer",
+        "skip": "Tout est bon · ignorer",
         "saveAndContinue": "Appliquer les modifications",
         "saving": "Application en cours…",
         "launch": "Approuver et lancer la simulation",
@@ -585,7 +585,7 @@
       },
       "footer": {
         "pending": "{count} modification(s) en attente",
-        "noChanges": "Aucune modification en attente — vous pouvez passer à la suite."
+        "noChanges": "Aucune modification en attente · vous pouvez passer à la suite."
       },
       "validation": {
         "invalidType": "Le type doit contenir au moins une lettre, un chiffre ou un tiret bas."
@@ -598,7 +598,7 @@
         "projectNotFound": "Projet introuvable.",
         "graphNotBuilt": "Graphe non encore construit pour ce projet."
       },
-      "empty": "Aucune entité n’a été extraite pour l’instant. La construction du graphe a peut-être produit un résultat vide — revenez en arrière et reconstruisez depuis vos documents.",
+      "empty": "Aucune entité n’a été extraite pour l’instant. La construction du graphe a peut-être produit un résultat vide · revenez en arrière et reconstruisez depuis vos documents.",
       "misc": {
         "untyped": "Sans type"
       }
@@ -645,7 +645,7 @@
         "errorTitle": "Échec de la génération de la configuration",
         "errorHint": "Erreur inattendue. Consultez les logs backend ou contactez le support.",
         "hintEntities": "Le graphe Neo4j ne contient aucune entité exploitable. Retournez à l’étape 1 pour reconstruire le graphe à partir du document, puis relancez la simulation.",
-        "hintProfiles": "Les profils d’agents n’ont pas été générés. Le bouton « Relancer la génération » nécessite un /prepare préalable réussi — recréez la simulation depuis le début.",
+        "hintProfiles": "Les profils d’agents n’ont pas été générés. Le bouton « Relancer la génération » nécessite un /prepare préalable réussi · recréez la simulation depuis le début.",
         "hintTimeout": "Le LLM n’a pas répondu dans les délais (90 s). Vérifiez la disponibilité du fournisseur (Moonshot Kimi) et relancez la génération.",
         "hintLLM": "Problème côté LLM : clé API invalide, quota dépassé ou modèle introuvable. Vérifiez les variables d’environnement backend (LLM_API_KEY, LLM_MODEL_NAME, LLM_BASE_URL).",
         "retrying": "Nouvelle tentative…",
@@ -750,10 +750,10 @@
         "markets": "Marchés",
         "marketsTitle": "Graphique en direct des prix de marché",
         "whatIf": "◐ Et si ?",
-        "whatIfTitle": "Et si ? — retirer des agents et recalculer la dérive depuis la trajectoire existante",
+        "whatIfTitle": "Et si ? · retirer des agents et recalculer la dérive depuis la trajectoire existante",
         "director": "⚡ Réalisateur",
-        "directorMaxTitle": "Mode réalisateur — limite d’événements atteinte",
-        "directorTitle": "Mode réalisateur — injecter un événement marquant dans la simulation",
+        "directorMaxTitle": "Mode réalisateur · limite d’événements atteinte",
+        "directorTitle": "Mode réalisateur · injecter un événement marquant dans la simulation",
         "branch": "⤷ Branche",
         "branchTitle": "Forker cette simulation avec une injection narrative à un tour précis",
         "resuming": "Reprise…",
@@ -937,7 +937,7 @@
   "settings": {
     "byok": {
       "title": "Votre clé API (BYOK)",
-      "intro": "Collez votre clé — Bassira détecte automatiquement le fournisseur et suggère les meilleurs modèles.",
+      "intro": "Collez votre clé · Bassira détecte automatiquement le fournisseur et suggère les meilleurs modèles.",
       "keyLabel": "Clé API",
       "keyPlaceholder": "sk-or-v1-... ou tout autre format",
       "detected": "détecté automatiquement",
@@ -972,15 +972,15 @@
     "preset": {
       "title": "Preset",
       "label": "Modèle de configuration",
-      "custom": "Personnalisé — garder les champs actuels",
+      "custom": "Personnalisé · garder les champs actuels",
       "keyLabel": "Clé OpenRouter"
     },
     "advanced": {
       "title": "Slots avancés (surcharges)",
       "hint": "Chaque slot hérite de la config LLM principale par défaut.",
-      "smart": "Smart — génération de rapports",
-      "ner": "NER — extraction d'entités",
-      "wonderwall": "Wonderwall — boucle de simulation",
+      "smart": "Smart · génération de rapports",
+      "ner": "NER · extraction d'entités",
+      "wonderwall": "Wonderwall · boucle de simulation",
       "embeddings": "Embeddings",
       "webSearch": "Recherche web (import URL + enrichissement)"
     },
@@ -1181,7 +1181,7 @@
     "eyebrow": "Crédibilité vérifiée",
     "hero": {
       "headline": "On note chaque prédiction. Voici notre score.",
-      "sub": "Score de Brier calculé sur l’ensemble des simulations marquées « vérifiées » — plus c’est bas, mieux c’est. Mis à jour en continu.",
+      "sub": "Score de Brier calculé sur l’ensemble des simulations marquées « vérifiées » · plus c’est bas, mieux c’est. Mis à jour en continu.",
       "label": "Score de Brier",
       "help": "0 = parfait, 0,25 = pile ou face",
       "brierTitle": "Score de Brier moyen sur les simulations vérifiées"
@@ -1199,7 +1199,7 @@
     },
     "plot": {
       "title": "Prédit contre observé",
-      "explainer": "Chaque point représente un intervalle de probabilité. La diagonale en pointillé correspond à une calibration parfaite — un point au-dessus signifie qu’on a sous-estimé, un point en-dessous qu’on a surestimé.",
+      "explainer": "Chaque point représente un intervalle de probabilité. La diagonale en pointillé correspond à une calibration parfaite · un point au-dessus signifie qu’on a sous-estimé, un point en-dessous qu’on a surestimé.",
       "xAxis": "Probabilité prédite",
       "yAxis": "Fréquence observée"
     },
@@ -1228,9 +1228,9 @@
     },
     "methodology": {
       "title": "Comment on compte",
-      "p1": "Le score de Brier mesure la distance moyenne au carré entre la probabilité que nous avions annoncée et le résultat réel observé. Concrètement : on prend la part d’agents qui ont basculé en « bullish » sur le dernier round de la simulation, on la compare à 1 si l’événement s’est réellement produit, à 0 sinon — et on fait la moyenne de l’erreur quadratique sur toutes les simulations vérifiées. Plus le chiffre est bas, plus nos probabilités collent au monde réel ; 0,25 est la baseline d’une pièce non biaisée.",
-      "p2": "Chaque résultat est annoté manuellement dans une des trois cases « bien anticipé », « partiel » ou « manqué ». « Bien anticipé » correspond à un événement qui s’est passé exactement comme prédit, « partiel » signale qu’on a vu venir la dynamique mais raté l’ampleur ou le calendrier, « manqué » couvre les cas où la réalité a divergé franchement du consensus de la simulation. Cette classification est doublée d’une URL de preuve publique pour chaque sim — on n’ajoute rien aux statistiques sans source vérifiable.",
-      "p3": "Pour entrer dans le calcul, une simulation doit être publique (visible dans /verified), avoir une trajectoire complète permettant d’extraire la probabilité finale, et avoir reçu une annotation d’issue. Les simulations privées ou non terminées sont ignorées : elles n’influencent jamais la note publique. Cette page est rafraîchie à la volée à chaque visite — il n’y a pas de cache statique masquant un mauvais run."
+      "p1": "Le score de Brier mesure la distance moyenne au carré entre la probabilité que nous avions annoncée et le résultat réel observé. Concrètement : on prend la part d’agents qui ont basculé en « bullish » sur le dernier round de la simulation, on la compare à 1 si l’événement s’est réellement produit, à 0 sinon · et on fait la moyenne de l’erreur quadratique sur toutes les simulations vérifiées. Plus le chiffre est bas, plus nos probabilités collent au monde réel ; 0,25 est la baseline d’une pièce non biaisée.",
+      "p2": "Chaque résultat est annoté manuellement dans une des trois cases « bien anticipé », « partiel » ou « manqué ». « Bien anticipé » correspond à un événement qui s’est passé exactement comme prédit, « partiel » signale qu’on a vu venir la dynamique mais raté l’ampleur ou le calendrier, « manqué » couvre les cas où la réalité a divergé franchement du consensus de la simulation. Cette classification est doublée d’une URL de preuve publique pour chaque sim · on n’ajoute rien aux statistiques sans source vérifiable.",
+      "p3": "Pour entrer dans le calcul, une simulation doit être publique (visible dans /verified), avoir une trajectoire complète permettant d’extraire la probabilité finale, et avoir reçu une annotation d’issue. Les simulations privées ou non terminées sont ignorées : elles n’influencent jamais la note publique. Cette page est rafraîchie à la volée à chaque visite · il n’y a pas de cache statique masquant un mauvais run."
     },
     "cta": {
       "title": "Envie de défier nos sims ?",
@@ -1256,14 +1256,14 @@
       "previous": "Précédent",
       "next": "Suivant",
       "toastSuccess": "Verdict enregistré.",
-      "toastError": "Échec — verdict non enregistré.",
+      "toastError": "Échec · verdict non enregistré.",
       "relativeTimeJustNow": "à l’instant",
       "relativeTimeMinutesAgo": "il y a {count} min",
       "relativeTimeHoursAgo": "il y a {count} h",
       "relativeTimeDaysAgo": "il y a {count} j",
       "loading": "Chargement…",
       "savingNotice": "Enregistrement en cours…",
-      "invalidUrl": "URL invalide — utilise http(s)://"
+      "invalidUrl": "URL invalide · utilise http(s)://"
     },
     "howto": {
       "title": "Comment fonctionne la page Calibration",
@@ -1356,7 +1356,7 @@
     "eyebrow": "Prédisez avant que ça arrive",
     "hero": {
       "title": "Les protocoles d’intelligence stratégique pour ceux qui décident.",
-      "subtitle": "Dix modalités d’engagement — du test de résilience express à la simulation de jumeaux numériques. MAD / USD, livraison sous 24 h à 4 semaines."
+      "subtitle": "Dix modalités d’engagement · du test de résilience express à la simulation de jumeaux numériques. MAD / USD, livraison sous 24 h à 4 semaines."
     },
     "featuredBadge": "Le plus choisi",
     "filters": {
@@ -1489,7 +1489,7 @@
         "delay": "10 semaines",
         "description": "Réplique scientifique d’une cohorte réelle (incubateur, programme, accélérateur) sur 10 semaines avec 3 variants A/B/C pour mesurer la fidélité prédictive.",
         "cta": "Réserver une cohorte",
-        "fineprint": "Vente B2B/B2G — incubateurs, bailleurs, fonds",
+        "fineprint": "Vente B2B/B2G · incubateurs, bailleurs, fonds",
         "variantsLabel": "Taille de cohorte",
         "variantsOptions": {
           "50": "50 agents",
@@ -1498,9 +1498,9 @@
         },
         "bullets": {
           "b1": "50 agents grounded sur cohorte réelle",
-          "b2": "Variant A — Ground Truth Replay (1 run)",
-          "b3": "Variant B — Cohort Twin (5 runs parallèles)",
-          "b4": "Variant C — Blind Spot Hunt (5 leaders retirées)",
+          "b2": "Variant A · Ground Truth Replay (1 run)",
+          "b3": "Variant B · Cohort Twin (5 runs parallèles)",
+          "b4": "Variant C · Blind Spot Hunt (5 leaders retirées)",
           "b5": "Certificat de calibration scientifique",
           "b6": "Rapport publishable (track-record /verified)"
         }
@@ -1766,7 +1766,7 @@
       }
     },
     "testimonials": {
-      "title": "Programme partenaire — premier cercle",
+      "title": "Programme partenaire · premier cercle",
       "subtitle": "Bassira est en early access institutionnel. Nos premiers partenaires opèrent sous accord de confidentialité ; leurs témoignages sont disponibles sur demande lors d’une discussion qualifiée.",
       "ndaNotice": "Témoignages détaillés disponibles sur demande, sous NDA.",
       "ndaCta": "Demander à voir des références"
@@ -1801,8 +1801,8 @@
     "hero": {
       "ariaLabel": "Section principale",
       "eyebrow": "Strategic Foresight",
-      "title": "Stress-testez votre stratégie en 48 h — sans cabinet de conseil ni hypothèses Excel.",
-      "subtitle": "Bassira simule des milliers d’agents calibrés sur les marchés MENA et européens pour révéler vos angles morts avant la prochaine crise.",
+      "title": "Stress-testez votre stratégie en 48 h · sans cabinet de conseil ni hypothèses Excel.",
+      "subtitle": "Bassira simule des milliers d’agents calibrés sur les marchés MENA, européens et africains pour révéler vos angles morts avant la prochaine crise.",
       "ctaPrimary": "Demander une démo",
       "ctaSecondary": "Voir un exemple",
       "trust": "Adopté par les directions stratégie en Afrique, au Moyen-Orient et en Europe"
@@ -1817,7 +1817,7 @@
       },
       "blindspot": {
         "quote": "Nous naviguons à l’aveugle face aux chocs géopolitiques et aux ruptures de chaînes d’approvisionnement.",
-        "solution": "Stress-testez votre plan contre 50+ variables exogènes — FX, sanctions, climat, social — calibrées MENA."
+        "solution": "Stress-testez votre plan contre 50+ variables exogènes · FX, sanctions, climat, social · calibrées MENA."
       },
       "cost": {
         "quote": "Les cabinets de conseil facturent six chiffres pour des slides d’hypothèses non vérifiables.",
@@ -1830,11 +1830,11 @@
       "lead": "Bassira combine 5 000+ profils cognitifs distincts, une calibration spécifique MENA + Europe et un mode air-gapped pour vos données sensibles.",
       "agents": {
         "title": "Intelligence multi-agents",
-        "desc": "Plus de 5 000 profils cognitifs distincts — décideurs, opérateurs, régulateurs, foules — calibrés sur des décennies de comportements observés."
+        "desc": "Plus de 5 000 profils cognitifs distincts · décideurs, opérateurs, régulateurs, foules · calibrés sur des décennies de comportements observés."
       },
       "calibrated": {
         "title": "Calibration MENA + Europe",
-        "desc": "Modèles ajustés pour le Maroc, le GCC, la France et le Royaume-Uni. Pas de biais « Silicon Valley » — vos hypothèses tiennent face à la réalité locale."
+        "desc": "Modèles ajustés pour le Maroc, le GCC, la France et le Royaume-Uni. Pas de biais « Silicon Valley » · vos hypothèses tiennent face à la réalité locale."
       },
       "sovereign": {
         "title": "Confidentialité air-gapped",
@@ -1843,16 +1843,16 @@
     },
     "proof": {
       "kicker": "Preuve, pas promesse",
-      "title": "Brier score 0,18 — vérifié, horodaté, public.",
+      "title": "Brier score 0,18 · vérifié, horodaté, public.",
       "metric": "Brier score moyen",
       "context": "94 prédictions horodatées · 2024-2026",
-      "body": "Le Brier score mesure la calibration probabiliste d’un modèle prédictif. Plus il est bas, plus le modèle est fiable. 0,18 nous place devant la majorité des cabinets traditionnels — et nous le prouvons publiquement, prédiction par prédiction.",
+      "body": "Le Brier score mesure la calibration probabiliste d’un modèle prédictif. Plus il est bas, plus le modèle est fiable. 0,18 nous place devant la majorité des cabinets traditionnels · et nous le prouvons publiquement, prédiction par prédiction.",
       "cta": "Voir le track-record complet"
     },
     "pricing": {
       "kicker": "Tarifs",
       "title": "Trois formats. Aucune hypothèse cachée.",
-      "subtitle": "Du sprint de découverte au jumeau stratégique permanent — choisissez l’engagement adapté à votre horizon de décision.",
+      "subtitle": "Du sprint de découverte au jumeau stratégique permanent · choisissez l’engagement adapté à votre horizon de décision.",
       "from": "À partir de",
       "featuredFlag": "Le plus demandé",
       "cta": "Voir les 10 packages",
@@ -1949,7 +1949,7 @@
     "list": {
       "hero": {
         "eyebrow": "MODÈLES STRATÉGIQUES PRÉ-CALIBRÉS",
-        "title": "Cinq cas concrets pour décideurs MENA et Europe",
+        "title": "Cinq cas concrets pour décideurs MENA, Europe et Afrique",
         "subtitle": "Chaque modèle expose une question de décision exécutive, un écosystème d'acteurs simulés et les insights clés qui en découlent. Lecture en 4 minutes, commande en un clic.",
         "meta": "Méthodologie publique · Calibration vérifiée · Données souveraines"
       },
@@ -2000,12 +2000,12 @@
         "insights": {
           "kicker": "INSIGHTS CLÉS",
           "title": "Ce que la modélisation révèle au-delà des analyses internes",
-          "subtitle": "Cinq enseignements robustes que les modèles internes classiques ne capturent pas — résultat de l'agrégation des trajectoires multi-agents."
+          "subtitle": "Cinq enseignements robustes que les modèles internes classiques ne capturent pas · résultat de l'agrégation des trajectoires multi-agents."
         },
         "useCases": {
           "kicker": "CAS D'USAGE",
           "title": "Pour quels décideurs ce modèle est-il taillé",
-          "subtitle": "Quatre profils institutionnels MENA et Europe pour lesquels ce modèle a une utilité opérationnelle directe."
+          "subtitle": "Quatre profils institutionnels MENA, Europe et Afrique pour lesquels ce modèle a une utilité opérationnelle directe."
         },
         "cta": {
           "title": "Faire travailler ce modèle sur votre décision",
