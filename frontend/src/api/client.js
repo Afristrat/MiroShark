@@ -74,9 +74,11 @@ client.interceptors.response.use(
 
 // ───── Méthodes typées ───────────────────────────────────────────────
 
-/** GET /api/auth/me — retourne le profil multitenant de l'user courant. */
+/** GET /api/client/auth/me — retourne le profil multitenant de l'user courant.
+ *  Le blueprint backend client_bp est monté au préfixe /api/client/, donc le
+ *  chemin effectif inclut /client/ (cf. US-092 backend/app/__init__.py). */
 export function fetchMe() {
-  return client.get('/api/auth/me')
+  return client.get('/api/client/auth/me')
 }
 
 /** GET /api/client/simulations — liste les simulations de l'org courante. */
