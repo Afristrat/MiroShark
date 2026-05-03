@@ -1939,5 +1939,130 @@
   "theme": {
     "switchToDark": "Switch to dark mode",
     "switchToLight": "Switch to light mode"
+  },
+  "models": {
+    "list": {
+      "hero": {
+        "eyebrow": "PRE-CALIBRATED STRATEGIC MODELS",
+        "title": "Five concrete cases for MENA and European decision-makers",
+        "subtitle": "Each model exposes an executive decision question, an ecosystem of simulated stakeholders, and the key insights that emerge. Read in 4 minutes, order in one click.",
+        "meta": "Public methodology · Verified calibration · Sovereign data"
+      },
+      "gridHeading": "List of strategic models",
+      "brierShort": "Brier",
+      "brierTooltip": "Illustrative Brier score of the model's predictive accuracy (lower = better calibrated).",
+      "brierAriaLabel": "Illustrative Brier score: {value}",
+      "cta": {
+        "viewModel": "View model",
+        "viewModelAria": "View model: {title}"
+      },
+      "trust": {
+        "title": "A showcase, not a black box",
+        "methodology": "Public methodology",
+        "calibration": "Verified calibration",
+        "sovereign": "Sovereign data",
+        "calibrationLink": "View global Brier score",
+        "customLink": "Request a custom model"
+      },
+      "footer": {
+        "tagline": "Strategic foresight for institutional C-levels."
+      },
+      "nav": {
+        "ariaLabel": "Bassira main navigation",
+        "calibration": "Calibration",
+        "pricing": "Pricing",
+        "quote": "Request a quote"
+      }
+    },
+    "detail": {
+      "nav": {
+        "backToList": "All models"
+      },
+      "section": {
+        "decision": {
+          "kicker": "DECISION QUESTION",
+          "title": "The verdict this model is designed to produce"
+        },
+        "context": {
+          "kicker": "CONTEXT",
+          "title": "The simulated strategic terrain"
+        },
+        "agents": {
+          "kicker": "SIMULATED AGENTS",
+          "title": "Six nominal archetypes that structure the ecosystem",
+          "subtitle": "Each role corresponds to an autonomous agent with its own motivations, channels of authority, and action calendar."
+        },
+        "insights": {
+          "kicker": "KEY INSIGHTS",
+          "title": "What the model reveals beyond internal analyses",
+          "subtitle": "Five robust findings that classical internal models do not capture — the result of aggregating multi-agent trajectories."
+        },
+        "useCases": {
+          "kicker": "USE CASES",
+          "title": "Which decision-makers this model is built for",
+          "subtitle": "Four institutional profiles in MENA and Europe for whom this model has direct operational utility."
+        },
+        "cta": {
+          "title": "Put this model to work on your decision",
+          "subtitle": "Either order the pre-calibrated analysis as is, or request a similar model customized to your exact perimeter.",
+          "customRequest": "Request a similar custom model"
+        },
+        "methodology": {
+          "kicker": "METHODOLOGY",
+          "title": "How this model is calibrated and audited",
+          "body": "Each model exposes its agents, injected director events, and expected verdict shape. The platform's global Brier score is published unfiltered, updated with every resolved public simulation. Data used under a client mandate remains sovereign, hosted under reinforced NDA.",
+          "calibrationLink": "View global Brier score",
+          "allModelsLink": "Back to the list of models"
+        }
+      },
+      "agents": {
+        "roles": {
+          "investment_director": "Investment director",
+          "union_delegate": "Union delegate",
+          "rating_analyst": "Rating agency analyst",
+          "supervisor": "Banking supervision",
+          "rival_bidder": "Rival bidder",
+          "financial_journalist": "M&A journalist",
+          "tier1_journalist": "Tier-1 pan-African journalist",
+          "rights_activist": "Human rights activist",
+          "dakar_influencer": "Dakar food-lifestyle influencer",
+          "loyalist_employee": "Loyalist employee",
+          "middleclass_mother": "Middle-class customer",
+          "lagos_blogger": "Lagos economy blogger",
+          "buyside_analyst": "International buy-side analyst",
+          "ifi_partner": "International financial institution officer",
+          "agritech_expert": "Sub-Saharan agritech expert",
+          "domestic_partner": "Local lead shareholder investment management",
+          "energy_research_institute": "Solar energy research institute",
+          "africa_business_press": "African business press journalist",
+          "cabinet_advisor": "Cabinet technical advisor",
+          "opposition_lead": "Senior opposition deputy",
+          "central_bank_economist": "Senior central bank economist",
+          "fintech_ceo": "Pan-African fintech president",
+          "financial_lawyer": "Financial counsel lawyer",
+          "investigative_journalist": "Economic investigative journalist",
+          "category_buyer": "Category buyer",
+          "halal_influencer": "Halal food influencer",
+          "religious_authority": "European federation imam",
+          "tv_nutritionist": "TV nutritionist columnist",
+          "diaspora_customer": "Second-generation diaspora customer",
+          "lsa_journalist": "Distribution professional press journalist"
+        }
+      },
+      "notFound": {
+        "title": "Model not found",
+        "subtitle": "The requested slug does not match any of our five published models. The showcase is at /models.",
+        "backCta": "Back to the list of models"
+      }
+    },
+    "cards": {
+      "sector": {
+        "banque": "Banking & M&A",
+        "crisis": "Crisis & Communications",
+        "investissement": "Investment",
+        "politique": "Public policy",
+        "distribution": "Distribution"
+      }
+    }
   }
 }

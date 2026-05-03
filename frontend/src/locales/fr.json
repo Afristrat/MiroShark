@@ -1939,5 +1939,130 @@
   "theme": {
     "switchToDark": "Passer en mode sombre",
     "switchToLight": "Passer en mode clair"
+  },
+  "models": {
+    "list": {
+      "hero": {
+        "eyebrow": "MODÈLES STRATÉGIQUES PRÉ-CALIBRÉS",
+        "title": "Cinq cas concrets pour décideurs MENA et Europe",
+        "subtitle": "Chaque modèle expose une question de décision exécutive, un écosystème d'acteurs simulés et les insights clés qui en découlent. Lecture en 4 minutes, commande en un clic.",
+        "meta": "Méthodologie publique · Calibration vérifiée · Données souveraines"
+      },
+      "gridHeading": "Liste des modèles stratégiques",
+      "brierShort": "Brier",
+      "brierTooltip": "Score de Brier illustratif de la précision prédictive du modèle (plus bas = mieux calibré).",
+      "brierAriaLabel": "Score de Brier illustratif : {value}",
+      "cta": {
+        "viewModel": "Voir le modèle",
+        "viewModelAria": "Voir le modèle : {title}"
+      },
+      "trust": {
+        "title": "Une vitrine, pas une boîte noire",
+        "methodology": "Méthodologie publique",
+        "calibration": "Calibration vérifiée",
+        "sovereign": "Données souveraines",
+        "calibrationLink": "Consulter le score de Brier global",
+        "customLink": "Demander un modèle sur mesure"
+      },
+      "footer": {
+        "tagline": "Prospective stratégique pour C-levels institutionnels."
+      },
+      "nav": {
+        "ariaLabel": "Navigation principale Bassira",
+        "calibration": "Calibration",
+        "pricing": "Tarifs",
+        "quote": "Demander un devis"
+      }
+    },
+    "detail": {
+      "nav": {
+        "backToList": "Tous les modèles"
+      },
+      "section": {
+        "decision": {
+          "kicker": "QUESTION DE DÉCISION",
+          "title": "Le verdict que ce modèle est conçu pour produire"
+        },
+        "context": {
+          "kicker": "CONTEXTE",
+          "title": "Le terrain stratégique simulé"
+        },
+        "agents": {
+          "kicker": "AGENTS SIMULÉS",
+          "title": "Six archétypes nominaux qui structurent l'écosystème",
+          "subtitle": "Chaque rôle correspond à un agent autonome, doté de motivations, de canaux d'autorité et d'un calendrier d'action propres."
+        },
+        "insights": {
+          "kicker": "INSIGHTS CLÉS",
+          "title": "Ce que la modélisation révèle au-delà des analyses internes",
+          "subtitle": "Cinq enseignements robustes que les modèles internes classiques ne capturent pas — résultat de l'agrégation des trajectoires multi-agents."
+        },
+        "useCases": {
+          "kicker": "CAS D'USAGE",
+          "title": "Pour quels décideurs ce modèle est-il taillé",
+          "subtitle": "Quatre profils institutionnels MENA et Europe pour lesquels ce modèle a une utilité opérationnelle directe."
+        },
+        "cta": {
+          "title": "Faire travailler ce modèle sur votre décision",
+          "subtitle": "Vous commandez l'analyse pré-calibrée telle qu'elle, ou vous demandez un modèle similaire personnalisé sur votre périmètre exact.",
+          "customRequest": "Demander un modèle similaire personnalisé"
+        },
+        "methodology": {
+          "kicker": "MÉTHODOLOGIE",
+          "title": "Comment ce modèle est calibré et audité",
+          "body": "Chaque modèle expose ses agents, ses director events injectés et son verdict shape attendu. Le score de Brier global de la plateforme est publié sans filtre, mis à jour à chaque simulation publique résolue. Les données utilisées dans le cadre d'un mandat client restent souveraines, hébergées sous NDA renforcé.",
+          "calibrationLink": "Consulter le score de Brier global",
+          "allModelsLink": "Revenir à la liste des modèles"
+        }
+      },
+      "agents": {
+        "roles": {
+          "investment_director": "Directeur des investissements",
+          "union_delegate": "Délégué syndical",
+          "rating_analyst": "Analyste agence de notation",
+          "supervisor": "Supervision bancaire",
+          "rival_bidder": "Acquéreur concurrent",
+          "financial_journalist": "Journaliste M&A",
+          "tier1_journalist": "Journaliste tier-1 panafricain",
+          "rights_activist": "Militante droits humains",
+          "dakar_influencer": "Influenceuse food-lifestyle Dakar",
+          "loyalist_employee": "Employé loyaliste",
+          "middleclass_mother": "Cliente classe moyenne",
+          "lagos_blogger": "Blogueur économie Lagos",
+          "buyside_analyst": "Analyste buy-side international",
+          "ifi_partner": "Officier institution financière internationale",
+          "agritech_expert": "Expert agritech sub-Saharan",
+          "domestic_partner": "Direction des investissements actionnaire local",
+          "energy_research_institute": "Institut de recherche en énergie solaire",
+          "africa_business_press": "Journaliste presse économique africaine",
+          "cabinet_advisor": "Conseiller technique de cabinet",
+          "opposition_lead": "Député opposition senior",
+          "central_bank_economist": "Économiste senior banque centrale",
+          "fintech_ceo": "Présidente fintech panafricaine",
+          "financial_lawyer": "Avocate financière conseil",
+          "investigative_journalist": "Journaliste d'investigation économique",
+          "category_buyer": "Chef de rayon catégorie",
+          "halal_influencer": "Influenceur food halal",
+          "religious_authority": "Imam fédération européenne",
+          "tv_nutritionist": "Nutritionniste chroniqueuse TV",
+          "diaspora_customer": "Cliente diaspora 2ème génération",
+          "lsa_journalist": "Journaliste presse pro distribution"
+        }
+      },
+      "notFound": {
+        "title": "Modèle introuvable",
+        "subtitle": "Le slug demandé ne correspond à aucun de nos cinq modèles publiés. La vitrine se trouve à /models.",
+        "backCta": "Revenir à la liste des modèles"
+      }
+    },
+    "cards": {
+      "sector": {
+        "banque": "Banque & M&A",
+        "crisis": "Crise & Communication",
+        "investissement": "Investissement",
+        "politique": "Politique publique",
+        "distribution": "Distribution"
+      }
+    }
   }
 }

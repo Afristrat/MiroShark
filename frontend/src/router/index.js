@@ -126,6 +126,22 @@ const routes = [
     name: 'AdminAnalytics',
     component: () => import('../views/AnalyticsView.vue'),
     meta: { requiresAdmin: true }
+  },
+  {
+    // Vitrine /models publique (US-086) — 5 modèles stratégiques
+    // pré-calibrés productivisés. Cible C-level institutionnel.
+    path: '/models',
+    name: 'ModelsList',
+    component: () => import('../views/ModelsListView.vue'),
+    meta: { title: 'Modèles stratégiques · Bassira' }
+  },
+  {
+    // Détail d'un modèle stratégique (US-086) — 7 sections narratives.
+    path: '/models/:slug',
+    name: 'ModelDetail',
+    component: () => import('../views/ModelDetailView.vue'),
+    props: true,
+    meta: { title: 'Modèle · Bassira' }
   }
 ]
 
