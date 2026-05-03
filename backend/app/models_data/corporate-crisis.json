@@ -1,0 +1,143 @@
+{
+  "slug": "corporate-crisis",
+  "sector": "communication",
+  "preset_source": "corporate_crisis",
+  "title": {
+    "fr": "Crise corporate — Fuite tardive d'une violation de données chez une scale-up tech",
+    "en": "Corporate Crisis — Late Disclosure of a Data Breach at a Tech Scale-up",
+    "ar": "أزمة مؤسسية — كشف متأخّر لخرق بيانات في شركة تقنية متوسعة"
+  },
+  "subtitle": {
+    "fr": "Modèle pré-calibré sur la propagation 72 heures d'une révélation journalistique de divulgation tardive de breach de données (30 agents, 72 rounds horaires)",
+    "en": "Pre-calibrated model on the 72-hour spread of a journalistic revelation of a late-disclosed data breach (30 agents, 72 hourly rounds)",
+    "ar": "نموذج معاير مسبقاً على انتشار كشف صحفي على مدى 72 ساعة لخرق بيانات تأخّر الإعلان عنه (30 وكيلاً، 72 جولة بالساعة)"
+  },
+  "summary_short": {
+    "fr": "Simulation horaire (H+0 à H+72) de la dérive corporate après publication par un grand média d'investigation d'un retard de divulgation de breach de données concernant des millions d'utilisateurs : 30 agents (utilisateurs affectés, défenseurs de la vie privée, employés, analystes secteur, journalistes follow-up, concurrents opportunistes, élus exigeant une audition), output : trajectoire d'attention médiatique cumulée, identification de la fenêtre où un appel au boycott prend de l'ampleur, identification de la fenêtre où la trajectoire bascule en class-action probable.",
+    "en": "Hourly simulation (H+0 to H+72) of the corporate drift after a major investigative outlet reveals a late-disclosed data breach affecting millions of users: 30 agents (affected users, privacy advocates, employees, sector analysts, follow-up journalists, opportunistic competitors, elected officials calling for hearings), output: cumulative media-attention trajectory, identification of the window where a boycott call gains traction, identification of the window where the trajectory shifts to a likely class-action.",
+    "ar": "محاكاة بالساعة (من H+0 إلى H+72) للانجراف المؤسسي بعد نشر وسيلة إعلام استقصائية كبرى لتأخُّر الإعلان عن خرق بيانات يطال ملايين المستخدمين: 30 وكيلاً (مستخدمون متضرّرون، مدافعون عن الخصوصية، موظفون، محللو القطاع، صحفيون يُتابعون الموضوع، منافسون انتهازيون، منتخبون يُطالبون بالاستماع)، المخرجات: مسار تراكمي للانتباه الإعلامي، تحديد النافذة التي تكتسب فيها دعوة المقاطعة زخماً، تحديد النافذة التي يَنزلق فيها المسار نحو دعوى جماعية محتملة."
+  },
+  "context_long": {
+    "fr": "La révélation par un grand média d'investigation d'une violation de données affectant plusieurs millions d'utilisateurs et caractérisée par une divulgation tardive constitue l'une des crises corporate les plus difficiles à traiter : le récit dominant intègre simultanément un volet sécurité (la cause technique de la brèche), un volet conformité (le délai de notification au regard du cadre RGPD ou du cadre national applicable selon la juridiction), un volet gouvernance (les arbitrages internes documentés par les fuites journalistiques) et un volet financier (action en bourse, classes-actions potentielles). Le modèle simule une scale-up cloud archétypale ayant fait son entrée en bourse récemment, sans reproduire un acteur spécifique. Trois branches contrefactuelles sont injectables comme director events : démission du CEO à H+24, dépôt d'une class-action de très grand montant à H+36, divulgation par un concurrent direct d'un breach plus large à H+48. Le modèle s'appuie sur les dynamiques de crises documentées par la presse économique et technologique [sources : presse économique et technologique publique, publications d'autorités de protection des données comme la CNIL France ou la CNDP Maroc, rapports d'observatoires de cybersécurité].",
+    "en": "A revelation by a major investigative outlet of a data breach affecting several million users and characterised by late disclosure is one of the toughest corporate crises to manage: the dominant narrative simultaneously bundles a security thread (the technical cause), a compliance thread (the notification delay under GDPR or applicable national frameworks), a governance thread (internal arbitrations documented by journalistic leaks) and a financial thread (share-price reaction, potential class-actions). The model simulates an archetypal recently IPO'd cloud scale-up, without reproducing any specific player. Three counterfactual branches are injectable as director events: CEO resignation at H+24, very large class-action filing at H+36, disclosure by a direct competitor of a larger breach at H+48. The model draws on the crisis dynamics documented by the business and tech press [sources: public business and tech press, publications from data-protection authorities such as France's CNIL or Morocco's CNDP, cybersecurity-observatory reports].",
+    "ar": "يُمثّل كشف وسيلة إعلام استقصائية كبرى عن خرق بيانات يُصيب عدّة ملايين من المستخدمين ويتميّز بتأخُّر الإعلان واحدةً من أصعب الأزمات المؤسسية في المعالجة: يحوي السرد المهيمن في آنٍ واحد محوراً أمنياً (السبب التقني للخرق)، ومحوراً امتثالياً (مهلة الإخطار وفق الإطار العام لحماية البيانات أو الإطار الوطني المطبَّق بحسب الاختصاص)، ومحوراً حوكمياً (التحكيمات الداخلية الموثَّقة بتسريبات صحفية)، ومحوراً مالياً (تحرّك سعر السهم، الدعاوى الجماعية المحتملة). يُحاكي النموذج شركةً متوسعة في الحوسبة السحابية أُدرجت حديثاً في البورصة، دون استنساخ فاعل بعينه. ثلاثة فروع افتراضية قابلة للحقن كأحداث مخرجية: استقالة الرئيس التنفيذي عند H+24، رفع دعوى جماعية بمبلغ كبير عند H+36، كشف منافس مباشر عن خرق أوسع عند H+48. يستند النموذج إلى ديناميكيات الأزمات الموثَّقة في الصحافة الاقتصادية والتقنية [مصادر: الصحافة الاقتصادية والتقنية العمومية، منشورات سلطات حماية البيانات مثل CNIL بفرنسا أو اللجنة الوطنية لحماية المعطيات بالمغرب، تقارير مراصد الأمن السيبراني]."
+  },
+  "decision_question": {
+    "fr": "Sur quelle fenêtre 12 heures la trajectoire de la crise bascule-t-elle vers le scénario class-action ou audition parlementaire, quels sont les leviers de communication les plus efficaces pour amortir la trajectoire avant cette bascule, et quel est le séquençage CEO/CTO/Board recommandé sur 72 heures ?",
+    "en": "Within which 12-hour window does the crisis trajectory tilt towards a class-action or parliamentary-hearing scenario, which communication levers most effectively dampen the trajectory before that tilt, and what is the recommended CEO/CTO/Board sequencing over 72 hours?",
+    "ar": "في أيّ نافذة من 12 ساعة يَنزلق مسار الأزمة نحو سيناريو الدعوى الجماعية أو الاستماع البرلماني، وما الروافع التواصلية الأكثر فعالية لتخفيف المسار قبل هذا الانزلاق، وما التسلسل الموصى به للرئيس التنفيذي والمدير التقني والمجلس على مدى 72 ساعة؟"
+  },
+  "agents_simulated": [
+    {
+      "role_key": "utilisateurs_affectes",
+      "profile": {
+        "fr": "Utilisateurs affectés — 6 agents — découvrent la fuite par voie de presse plutôt que par notification entreprise, alimentent un sentiment de trahison.",
+        "en": "Affected users — 6 agents — discover the breach through the press rather than via company notification, feeding a sense of betrayal.",
+        "ar": "مستخدمون متضرّرون — 6 وكلاء — يكتشفون الخرق من خلال الصحافة لا من خلال إخطار الشركة، ممّا يُغذّي شعوراً بالخيانة."
+      }
+    },
+    {
+      "role_key": "defenseurs_vie_privee",
+      "profile": {
+        "fr": "Défenseurs de la vie privée — 4 agents — ONG type EFF ou Privacy International, pratiquent une lecture juridique stricte de la conformité notification.",
+        "en": "Privacy advocates — 4 agents — NGOs such as EFF or Privacy International, apply a strict legal reading of notification compliance.",
+        "ar": "مدافعون عن الخصوصية — 4 وكلاء — منظمات غير حكومية من قبيل EFF أو Privacy International، يُطبّقون قراءة قانونية صارمة لامتثال الإخطار."
+      }
+    },
+    {
+      "role_key": "employes_internes",
+      "profile": {
+        "fr": "Employés internes — 5 agents — partagés entre défense de leur entreprise et expression anonyme de leur frustration sur les arbitrages tardifs.",
+        "en": "Internal employees — 5 agents — split between defending their company and voicing anonymous frustration about late arbitrations.",
+        "ar": "موظفون داخليون — 5 وكلاء — يتأرجحون بين الدفاع عن شركتهم والتعبير المجهول عن إحباطهم من التحكيمات المتأخرة."
+      }
+    },
+    {
+      "role_key": "analystes_secteur",
+      "profile": {
+        "fr": "Analystes secteur — 4 agents — divisés sur la sévérité (crise existentielle vs revers temporaire), suivent action en bourse et concurrents.",
+        "en": "Sector analysts — 4 agents — divided on severity (existential vs temporary setback), track share price and competitors.",
+        "ar": "محللو القطاع — 4 وكلاء — منقسمون بشأن الجسامة (أزمة وجودية مقابل انتكاسة مؤقتة)، يتتبّعون سعر السهم والمنافسين."
+      }
+    },
+    {
+      "role_key": "journalistes_followup",
+      "profile": {
+        "fr": "Journalistes follow-up — 4 agents — multiplient les angles (gouvernance, conformité, victimes, concurrents) jusqu'à H+48.",
+        "en": "Follow-up journalists — 4 agents — multiply angles (governance, compliance, victims, competitors) up to H+48.",
+        "ar": "صحفيون يُتابعون الموضوع — 4 وكلاء — يُكثّرون الزوايا (الحوكمة، الامتثال، الضحايا، المنافسون) حتى H+48."
+      }
+    },
+    {
+      "role_key": "concurrents_opportunistes",
+      "profile": {
+        "fr": "Concurrents opportunistes — 3 agents — diffusent campagnes ciblées sur leurs propres standards de sécurité, sans attaque frontale.",
+        "en": "Opportunistic competitors — 3 agents — push targeted campaigns on their own security standards, without direct attacks.",
+        "ar": "منافسون انتهازيون — 3 وكلاء — يُطلقون حملات مستهدَفة على معاييرهم الأمنية الخاصة، دون هجوم مباشر."
+      }
+    },
+    {
+      "role_key": "elus_audition",
+      "profile": {
+        "fr": "Élus exigeant une audition — 4 agents — sénateurs, députés ou commissaires, modulent leur appel selon couverture médiatique cumulée.",
+        "en": "Elected officials calling for hearings — 4 agents — senators, MPs or commissioners, modulate their call based on cumulative media coverage.",
+        "ar": "منتخبون يُطالبون بالاستماع — 4 وكلاء — أعضاء مجلس الشيوخ، نواب أو مفوّضون، يُكيّفون نداءاتهم وفق التغطية الإعلامية التراكمية."
+      }
+    }
+  ],
+  "key_insights": {
+    "fr": [
+      "La fenêtre de bascule vers le scénario class-action se situe le plus souvent entre H+30 et H+44 dans les exécutions du modèle : c'est dans cet intervalle qu'un cabinet d'avocats spécialisé constate une masse critique de plaintes individuelles consolidables.",
+      "Une déclaration CEO assumant explicitement le délai de notification dans les 6 premières heures réduit la probabilité d'audition parlementaire de l'ordre de 30 à 50 % dans les trajectoires simulées — au contraire, une réponse purement technique du CTO sans portage CEO l'augmente.",
+      "Le boycott prend de l'ampleur seulement si une coalition utilisateurs + concurrents direct se forme avant H+24 : passé ce point, les concurrents qui n'ont pas pris position s'abstiennent généralement pour ne pas être suspects d'opportunisme.",
+      "Une transparence proactive sur les détails techniques (cause racine, périmètre exact des données, calendrier de remédiation) absorbe le récit gouvernance dans la majorité des trajectoires — la dette de transparence accumule un coût exponentiel passé H+48."
+    ],
+    "en": [
+      "The tilt window towards a class-action most often falls between H+30 and H+44 in model runs: this is when a specialised law firm consolidates a critical mass of individual complaints.",
+      "A CEO statement explicitly owning the notification delay within the first 6 hours reduces the probability of a parliamentary hearing by roughly 30-50% in simulated trajectories — conversely, a purely technical CTO response without CEO sponsorship increases it.",
+      "Boycotts gain traction only if a users + direct-competitor coalition forms before H+24: past that point, competitors that have not taken a stance usually abstain to avoid looking opportunistic.",
+      "Proactive transparency on technical details (root cause, exact data scope, remediation timeline) absorbs the governance narrative in most trajectories — the transparency debt compounds at an exponential cost beyond H+48."
+    ],
+    "ar": [
+      "تقع نافذة الانزلاق نحو سيناريو الدعوى الجماعية في الأغلب بين H+30 وH+44 في تنفيذات النموذج: في هذا الفاصل يُكثّف مكتب محاماة متخصّص كتلة حرجة من الشكاوى الفردية القابلة للتجميع.",
+      "يُخفّض تصريح من الرئيس التنفيذي يَتحمّل صراحةً مهلة الإخطار خلال الساعات الست الأولى احتمال جلسة استماع برلمانية بنحو 30 إلى 50 % في المسارات المُحاكاة — في المقابل، يَزيده ردٌّ تقني محض من المدير التقني دون تَبنٍّ من الرئيس التنفيذي.",
+      "لا تكتسب المقاطعة زخماً إلا إذا تشكّل تحالف مستخدمين + منافس مباشر قبل H+24: بعد هذه النقطة، يَمتنع المنافسون الذين لم يتّخذوا موقفاً عن ذلك عادةً تجنُّباً لشُبهة الانتهازية.",
+      "تَستوعب الشفافية الاستباقية عن التفاصيل التقنية (السبب الجذري، النطاق الدقيق للبيانات، الجدول الزمني للمعالجة) سرد الحوكمة في أغلب المسارات — يَتراكم دَين الشفافية بكلفة أُسّية بعد H+48."
+    ]
+  },
+  "brier_illustrative": 0.21,
+  "tags": [
+    "communication",
+    "crise",
+    "data-breach",
+    "scale-up",
+    "RGPD",
+    "réputation",
+    "class-action"
+  ],
+  "cta_label": {
+    "fr": "Commander un drill personnalisé pour votre scale-up",
+    "en": "Order a tailored drill for your scale-up",
+    "ar": "طلب تمرين مخصَّص لشركتكم المتوسعة"
+  },
+  "use_cases_decisionmakers": {
+    "fr": [
+      "Direction générale d'une scale-up tech préparant son protocole de communication post-IPO sur les incidents critiques.",
+      "Comité de risques d'une entreprise traitant un volume élevé de données personnelles (cloud, fintech, healthtech) souhaitant simuler un scénario worst-case.",
+      "Cabinet de conseil en gestion de crise structurant un playbook 72 heures pour ses clients du secteur tech.",
+      "Conseil d'administration auditant la maturité crisis-comms d'une filiale ou d'une cible d'acquisition tech."
+    ],
+    "en": [
+      "C-suite of a tech scale-up preparing its post-IPO communication protocol for critical incidents.",
+      "Risk committee of a company handling large volumes of personal data (cloud, fintech, healthtech) wishing to simulate a worst-case scenario.",
+      "Crisis-management consultancy structuring a 72-hour playbook for tech clients.",
+      "Board auditing the crisis-comms maturity of a subsidiary or a tech-acquisition target."
+    ],
+    "ar": [
+      "الإدارة العامة لشركة تقنية متوسعة تُعدّ بروتوكول تواصلها ما بعد الإدراج في البورصة بشأن الحوادث الحرجة.",
+      "لجنة المخاطر لشركة تُعالج حجماً كبيراً من البيانات الشخصية (سحابة، تقنية مالية، تقنية صحية) ترغب في محاكاة سيناريو الأسوأ.",
+      "مكتب استشارات في إدارة الأزمات يُهيكل دليل 72 ساعة لزبائنه من القطاع التقني.",
+      "مجلس إدارة يُدقّق نضج التواصل في الأزمات لشركة تابعة أو هدف استحواذ تقني."
+    ]
+  }
+}

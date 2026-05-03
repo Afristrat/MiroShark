@@ -1,0 +1,142 @@
+{
+  "slug": "historical-whatif",
+  "sector": "histoire-contrefactuel",
+  "preset_source": "historical_whatif",
+  "title": {
+    "fr": "What-if historique — Simulation contrefactuelle d'un point de bifurcation politique majeur",
+    "en": "Historical What-If — Counterfactual Simulation of a Major Political Bifurcation",
+    "ar": "افتراض تاريخي — محاكاة افتراضية لنقطة تَفرُّع سياسية كبرى"
+  },
+  "subtitle": {
+    "fr": "Modèle pré-calibré sur la trajectoire alternative qu'aurait pu prendre une décision géopolitique majeure si une variable décisive avait basculé (22 agents, 48 rounds)",
+    "en": "Pre-calibrated model on the alternative trajectory a major geopolitical decision could have taken had a decisive variable flipped (22 agents, 48 rounds)",
+    "ar": "نموذج معاير مسبقاً على المسار البديل الذي كان من الممكن أن يَسلكه قرار جيوسياسي كبير لو تَبدَّل متغيِّر حاسم (22 وكيلاً، 48 جولة)"
+  },
+  "summary_short": {
+    "fr": "Simulation multi-agents d'une discussion structurée sur un scénario contrefactuel historique de premier plan : 22 agents (historiens spécialistes, politologues, communicateurs scientifiques, enthousiastes, journalistes culture, observateurs internationaux, analystes guerre froide), 48 rounds. Sortie : émergence ou non d'un consensus sur la trajectoire alternative la plus probable, identification des chaînes causales les plus solides, signalement des points où la projection contrefactuelle franchit le seuil de spéculation faible.",
+    "en": "Multi-agent simulation of a structured discussion on a major historical counterfactual: 22 agents (historian specialists, political scientists, science communicators, enthusiasts, culture journalists, international observers, Cold War analysts), 48 rounds. Output: emergence or not of a consensus on the most likely alternative trajectory, identification of the strongest causal chains, flagging of points where the counterfactual projection crosses the weak-speculation threshold.",
+    "ar": "محاكاة متعددة الوكلاء لنقاش مُهَيكل حول افتراض تاريخي كبير: 22 وكيلاً (مؤرّخون متخصّصون، علماء سياسة، مبلِّغون علميون، هواة، صحفيون ثقافيون، مراقبون دوليون، محللون للحرب الباردة)، 48 جولة. المخرجات: ظهور توافق أم لا حول المسار البديل الأكثر احتمالاً، تحديد السلاسل السببية الأكثر صلابة، الإشارة إلى النقاط التي يتجاوز فيها الإسقاط الافتراضي عتبة التكهُّن الواهي."
+  },
+  "context_long": {
+    "fr": "Le what-if historique structuré est un exercice analytique exigeant : il s'agit d'évaluer la plausibilité d'une trajectoire alternative à partir d'un point de bifurcation documenté, sans tomber dans la simple spéculation, ni dans la téléologie inverse. Le modèle organise une discussion académique-analytique entre 22 agents archétypaux représentant les communautés intellectuelles habituelles d'un débat contrefactuel : historiens spécialistes du domaine, politologues, communicateurs scientifiques, journalistes culture, enthousiastes éclairés, observateurs internationaux, analystes spécialisés guerre froide. Le scénario archétypal pris pour référence est celui d'un point de bifurcation géopolitique majeur du XXᵉ siècle dans lequel une variable décisive (capacité industrielle, succession dans une chaîne de commandement, fenêtre météo, allocation budgétaire) aurait basculé dans l'autre sens. Le modèle ne reproduit aucune affirmation historique non vérifiée et procède explicitement par chaînes causales argumentées. Toute conclusion narrative est explicitement marquée comme « projection contrefactuelle dans les exécutions du modèle », jamais comme un fait historique [sources : littérature académique en histoire contrefactuelle, archives publiques nationales, publications de centres de recherche en relations internationales].",
+    "en": "Structured historical what-if is a demanding analytical exercise: it requires assessing the plausibility of an alternative trajectory from a documented bifurcation point, without sliding into mere speculation or reverse teleology. The model organises an academic-analytical discussion between 22 archetypal agents representing the intellectual communities habitually involved in counterfactual debate: domain-specialist historians, political scientists, science communicators, culture journalists, informed enthusiasts, international observers, Cold War specialists. The archetypal reference scenario is a major 20th-century geopolitical bifurcation point in which a decisive variable (industrial capacity, succession in a chain of command, weather window, budget allocation) could have flipped the other way. The model does not replicate any unverified historical claim and explicitly proceeds through argued causal chains. Any narrative conclusion is explicitly tagged as 'counterfactual projection in model runs', never as a historical fact [sources: academic literature in counterfactual history, public national archives, publications of international-relations research centres].",
+    "ar": "يُعدّ الافتراض التاريخي المُهَيكل تمريناً تحليلياً عسيراً: يَستدعي تقدير معقولية مسار بديل انطلاقاً من نقطة تَفرُّع موثَّقة، دون السقوط في مجرد التكهُّن أو في الغائية المعكوسة. يُنظّم النموذج نقاشاً أكاديمياً-تحليلياً بين 22 وكيلاً نمطياً يُمثّلون المجتمعات الفكرية المعتادة في نقاش الافتراضات: مؤرّخون متخصّصون في المجال، علماء سياسة، مبلِّغون علميون، صحفيون ثقافيون، هواة مستنيرون، مراقبون دوليون، متخصّصون في الحرب الباردة. السيناريو النمطي المرجعي هو نقطة تَفرُّع جيوسياسية كبرى من القرن العشرين كان يُمكن لمتغيِّر حاسم فيها (طاقة صناعية، توريث في سلسلة قيادة، نافذة طقس، تخصيص ميزانياتي) أن يَتبدَّل في الاتجاه الآخر. لا يستنسخ النموذج أيَّ ادّعاء تاريخي غير مُتحقَّق ويَمضي صراحةً عبر سلاسل سببية مُبَرهَنة. كلُّ خلاصة سردية تُعَلَّم صراحةً بوصفها «إسقاطاً افتراضياً في تنفيذات النموذج»، لا حقيقةً تاريخية [مصادر: الأدبيات الأكاديمية في التاريخ الافتراضي، الأرشيف الوطني العمومي، منشورات مراكز أبحاث العلاقات الدولية]."
+  },
+  "decision_question": {
+    "fr": "Sur 48 rounds de débat structuré, un consensus disciplinaire émerge-t-il sur la trajectoire alternative la plus probable, et quelles sont les trois chaînes causales jugées les plus solides versus les chaînes spéculatives à écarter ?",
+    "en": "Over 48 rounds of structured debate, does a disciplinary consensus emerge on the most likely alternative trajectory, and which three causal chains are deemed the strongest versus the speculative chains to discard?",
+    "ar": "على مدى 48 جولة من النقاش المُهَيكل، هل يَنبثق توافق تخصُّصي حول المسار البديل الأكثر احتمالاً، وما السلاسل السببية الثلاث الأكثر صلابة مقابل السلاسل التكهُّنية الواجب استبعادها؟"
+  },
+  "agents_simulated": [
+    {
+      "role_key": "historiens_specialistes",
+      "profile": {
+        "fr": "Historiens spécialistes — 5 agents — exigent des sources primaires, distinguent ce qui est documenté de ce qui est inférence, encadrent les chaînes causales.",
+        "en": "Specialist historians — 5 agents — demand primary sources, distinguish documented evidence from inference, frame causal chains.",
+        "ar": "مؤرّخون متخصّصون — 5 وكلاء — يَشترطون مصادر أوّلية، يُفرّقون بين الموثَّق والاستدلال، يُؤطّرون السلاسل السببية."
+      }
+    },
+    {
+      "role_key": "politologues",
+      "profile": {
+        "fr": "Politologues — 4 agents — modélisent les conséquences institutionnelles, raisonnent en termes de coalitions et d'incitations gouvernementales.",
+        "en": "Political scientists — 4 agents — model institutional consequences, reason in terms of coalitions and governmental incentives.",
+        "ar": "علماء سياسة — 4 وكلاء — يُنمذِجون التبعات المؤسسية، يَعقلون بمنطق التحالفات والحوافز الحكومية."
+      }
+    },
+    {
+      "role_key": "communicateurs_scientifiques",
+      "profile": {
+        "fr": "Communicateurs scientifiques — 3 agents — vulgarisent l'argumentation, traduisent les chaînes causales pour un public élargi, attentifs aux raccourcis.",
+        "en": "Science communicators — 3 agents — popularise the argumentation, translate causal chains for a broader audience, watch for shortcuts.",
+        "ar": "مبلِّغون علميون — 3 وكلاء — يُيسّرون الحجج، يُترجمون السلاسل السببية لجمهور أوسع، متيقّظون للاختصارات المُخلّة."
+      }
+    },
+    {
+      "role_key": "enthousiastes",
+      "profile": {
+        "fr": "Enthousiastes — 3 agents — apportent énergie narrative et hypothèses audacieuses, parfois bridées par les historiens spécialistes.",
+        "en": "Enthusiasts — 3 agents — bring narrative energy and bold hypotheses, sometimes reined in by specialist historians.",
+        "ar": "هواة — 3 وكلاء — يُضفون طاقة سردية وفرضيات جريئة، يُكبَحون أحياناً من قِبل المؤرّخين المتخصّصين."
+      }
+    },
+    {
+      "role_key": "journalistes_culture",
+      "profile": {
+        "fr": "Journalistes culture — 2 agents — cadrent l'enjeu pour le public général, comparent à la fiction historique populaire, sensibles aux risques de simplification.",
+        "en": "Culture journalists — 2 agents — frame the issue for the general public, compare to popular historical fiction, sensitive to oversimplification risks.",
+        "ar": "صحفيون ثقافيون — 2 وكيل — يُؤطّرون الموضوع للجمهور العام، يُقارنون بالخيال التاريخي الشعبي، حساسون لمخاطر التبسيط."
+      }
+    },
+    {
+      "role_key": "observateurs_internationaux",
+      "profile": {
+        "fr": "Observateurs internationaux — 3 agents — apportent angles non occidentaux, multiplient les variables géopolitiques considérées.",
+        "en": "International observers — 3 agents — bring non-Western angles, multiply the geopolitical variables considered.",
+        "ar": "مراقبون دوليون — 3 وكلاء — يُحضرون زوايا غير غربية، يُكثّرون المتغيّرات الجيوسياسية موضع الاعتبار."
+      }
+    },
+    {
+      "role_key": "analystes_guerre_froide",
+      "profile": {
+        "fr": "Analystes spécialisés guerre froide — 2 agents — convoquent archives déclassifiées, modélisent les alliances et la course aux capacités.",
+        "en": "Cold War specialists — 2 agents — invoke declassified archives, model alliances and capability races.",
+        "ar": "محللون متخصّصون في الحرب الباردة — 2 وكيل — يَستدعون الأرشيفات المرفوعة عنها السرية، يُنمذِجون التحالفات وسباق القدرات."
+      }
+    }
+  ],
+  "key_insights": {
+    "fr": [
+      "Un consensus partiel émerge dans la majorité des trajectoires simulées sur la chaîne causale dominante des 12 mois suivant la bifurcation, mais le consensus se dissout passé un horizon de 5 à 7 ans : l'incertitude croît exponentiellement avec la profondeur projetée.",
+      "Les chaînes causales jugées les plus solides reposent sur des contraintes matérielles documentées (capacités industrielles, ressources énergétiques, démographie) ; les chaînes les plus spéculatives reposent sur des changements d'opinion publique non testables.",
+      "L'introduction d'un communicateur scientifique pédagogue dans la discussion modifie la qualité des conclusions sans modifier leur direction : le consensus reste le même mais les bullets « speculative » sont écartés plus systématiquement.",
+      "L'emploi d'une typologie explicite (« hypothèse forte / inférence raisonnable / spéculation faible ») améliore la lisibilité du verdict pour le commanditaire — c'est l'apport principal du modèle face à un débat libre sur les mêmes prémisses."
+    ],
+    "en": [
+      "A partial consensus emerges in most simulated trajectories on the dominant causal chain for the 12 months following the bifurcation, but consensus dissolves past a 5-7 year horizon: uncertainty grows exponentially with projected depth.",
+      "The strongest causal chains rest on documented material constraints (industrial capacity, energy resources, demography); the most speculative chains rest on untestable public-opinion shifts.",
+      "Introducing a pedagogical science communicator into the discussion improves conclusion quality without altering its direction: consensus stays the same but 'speculative' bullets are more systematically discarded.",
+      "Using an explicit typology ('strong hypothesis / reasonable inference / weak speculation') improves verdict legibility for the commissioning party — that is the model's main contribution versus a free-form debate on the same premises."
+    ],
+    "ar": [
+      "يَنبثق توافق جزئي في أغلب المسارات المُحاكاة حول السلسلة السببية المهيمنة للأشهر الاثني عشر التالية لنقطة التَفرُّع، لكن التوافق يَتلاشى بعد أُفق من 5 إلى 7 سنوات: يَتنامى الغموض أُسّياً مع عمق الإسقاط.",
+      "تَستند السلاسل السببية الأكثر صلابة إلى قيود مادية موثَّقة (القدرة الصناعية، الموارد الطاقية، الديمغرافيا)؛ بينما تَستند السلاسل الأكثر تكهُّناً إلى تحوّلات في الرأي العام لا يمكن اختبارها.",
+      "يُحسّن إدخال مُبلِّغ علمي بيداغوجي في النقاش جودةَ الخلاصات دون تَغيير اتجاهها: يبقى التوافق هو نفسه لكن النقاط «التكهُّنية» تُستَبعَد على نحوٍ أكثر مُمَنهَجاً.",
+      "يُحسّن اعتمادُ تصنيف صريح («فرضية قوية / استدلال معقول / تكهُّن واهٍ») وضوحَ الحكم لدى الجهة المُكلِّفة — وهذه هي المساهمة الرئيسية للنموذج مقابل نقاش حُرّ على الافتراضات نفسها."
+    ]
+  },
+  "brier_illustrative": 0.25,
+  "tags": [
+    "histoire",
+    "contrefactuel",
+    "what-if",
+    "géopolitique",
+    "guerre-froide",
+    "analyse"
+  ],
+  "cta_label": {
+    "fr": "Commander une analyse contrefactuelle pour votre décision stratégique",
+    "en": "Order a counterfactual analysis for your strategic decision",
+    "ar": "طلب تحليل افتراضي لقراركم الاستراتيجي"
+  },
+  "use_cases_decisionmakers": {
+    "fr": [
+      "Direction d'un institut de recherche en relations internationales souhaitant tester la robustesse de plusieurs scénarios contrefactuels avant publication.",
+      "Cabinet conseil en intelligence stratégique préparant un dossier prospectif pour un client gouvernemental.",
+      "Commission de risques d'une grande entreprise souhaitant évaluer l'exposition à des scénarios géopolitiques contrefactuels.",
+      "Direction éditoriale d'un média de référence préparant une enquête approfondie sur un point de bifurcation historique."
+    ],
+    "en": [
+      "Leadership of an international-relations research institute wishing to stress-test several counterfactual scenarios before publication.",
+      "Strategic-intelligence consultancy preparing a prospective brief for a government client.",
+      "Risk committee of a large company wishing to assess exposure to counterfactual geopolitical scenarios.",
+      "Editorial leadership of a reference media outlet preparing an in-depth investigation on a historical bifurcation point."
+    ],
+    "ar": [
+      "إدارة معهد أبحاث في العلاقات الدولية ترغب في اختبار صلابة عدّة سيناريوهات افتراضية قبل النشر.",
+      "مكتب استشارات في الذكاء الاستراتيجي يُعدّ ملفّاً استشرافياً لعميل حكومي.",
+      "لجنة مخاطر شركة كبرى ترغب في تقدير تعرُّضها لسيناريوهات جيوسياسية افتراضية.",
+      "إدارة تحرير وسيلة إعلام مرجعية تُعدّ تحقيقاً معمَّقاً حول نقطة تَفرُّع تاريخية."
+    ]
+  }
+}

@@ -1,0 +1,143 @@
+{
+  "slug": "crypto-launch",
+  "sector": "crypto",
+  "preset_source": "crypto_launch",
+  "title": {
+    "fr": "Lancement crypto — Token IA en pleine cascade hype-FUD-régulation sur 36 heures",
+    "en": "Crypto Launch — AI Token amid a 36-Hour Hype-FUD-Regulation Cascade",
+    "ar": "إطلاق عملة رقمية — رمز ذكاء اصطناعي في موجة حماس-تشكيك-تنظيم على مدى 36 ساعة"
+  },
+  "subtitle": {
+    "fr": "Modèle pré-calibré sur la dynamique post-listing d'un token IA sur exchange décentralisé (20 agents, 36 rounds horaires)",
+    "en": "Pre-calibrated model on the post-listing dynamic of an AI token on a decentralised exchange (20 agents, 36 hourly rounds)",
+    "ar": "نموذج معاير مسبقاً على الدينامية ما بعد الإدراج لرمز رقمي ذكاء اصطناعي على بورصة لا مركزية (20 وكيلاً، 36 جولة بالساعة)"
+  },
+  "summary_short": {
+    "fr": "Simulation horaire (H+0 à H+36) du parcours sentiment-prix d'un token IA après listing initial sur exchange décentralisé : 20 agents (influenceurs crypto, day traders, holders long terme, sceptiques, retail nouveaux entrants, analystes on-chain, observateurs réglementaires), 36 rounds horaires, sortie : trajectoire prix probabilisée en trois branches (rugpull, listing CEX tier 1, signal régulateur de type Wells notice) et identification des fenêtres de bascule entre cycles hype et FUD.",
+    "en": "Hourly simulation (H+0 to H+36) of the sentiment-price journey of an AI token following initial listing on a decentralised exchange: 20 agents (crypto influencers, day traders, long-term holders, sceptics, retail newcomers, on-chain analysts, regulatory observers), 36 hourly rounds, output: probabilistic price trajectory in three branches (rugpull, tier-1 CEX listing, Wells-notice-style regulatory signal) and identification of tilt windows between hype and FUD cycles.",
+    "ar": "محاكاة بالساعة (من H+0 إلى H+36) لمسار المشاعر والسعر لرمز ذكاء اصطناعي بعد الإدراج الأوّلي على بورصة لا مركزية: 20 وكيلاً (مؤثّرو العملات الرقمية، متداولو اليوم الواحد، حاملو المدى الطويل، مشكّكون، تجزئة قادمون جدد، محللو السلاسل، مراقبو التنظيم)، 36 جولة بالساعة، المخرجات: مسار سعر احتمالي في ثلاثة فروع (سحب السيولة، إدراج على بورصة مركزية من المرتبة الأولى، إشارة تنظيمية من نوع إخطار Wells) وتحديد نوافذ الانزلاق بين دورات الحماس والتشكيك."
+  },
+  "context_long": {
+    "fr": "Le lancement d'un token cryptographique sur exchange décentralisé concentre en quelques heures plusieurs régimes de discours simultanés : hype technologique sur la promesse IA-on-chain, due diligence on-chain par les analystes spécialisés, scrutin réglementaire en arrière-plan (notamment côté SEC pour les marchés américains, AMF pour la France, AMMC pour le Maroc, VARA pour Dubaï), et arbitrages comportementaux des retail entre FOMO et prudence. Le modèle simule un token IA archétypal lancé avec une capitalisation initiale modérée, un whitepaper documenté, une équipe partiellement publique et une liquidité bloquée 1 an, sans reproduire un projet existant. Trois branches contrefactuelles sont injectables : drainage de liquidité par un wallet d'équipe (rugpull) à H+12, annonce de listing sur un CEX de premier rang à H+18, émission d'une Wells notice par un régulateur valeurs mobilières à H+24. Le modèle s'appuie sur les comportements de marché documentés par les agrégateurs publics et la presse spécialisée crypto [sources : agrégateurs publics tels CoinGecko, CoinMarketCap, presse crypto spécialisée, publications publiques SEC, AMF, AMMC, VARA, FATF Travel Rule].",
+    "en": "Launching a crypto token on a decentralised exchange concentrates several simultaneous discourse regimes within hours: tech hype around the AI-on-chain promise, on-chain due diligence by specialised analysts, background regulatory scrutiny (especially from the SEC for US markets, AMF for France, AMMC for Morocco, VARA for Dubai), and retail behavioural arbitrations between FOMO and caution. The model simulates an archetypal AI token launched with moderate initial market cap, a documented whitepaper, a partially public team and 1-year-locked liquidity, without reproducing any existing project. Three counterfactual branches are injectable: team-wallet liquidity drain (rugpull) at H+12, tier-1 CEX listing announcement at H+18, Wells-notice issuance by a securities regulator at H+24. The model draws on market behaviours documented by public aggregators and the specialised crypto press [sources: public aggregators such as CoinGecko, CoinMarketCap, specialised crypto press, public SEC, AMF, AMMC, VARA, FATF Travel Rule publications].",
+    "ar": "يَجمع إطلاق رمز رقمي على بورصة لا مركزية في بضع ساعات عدّة أنظمة خطاب متزامنة: حماس تقني حول وعد الذكاء الاصطناعي على السلسلة، عناية واجبة على السلسلة من محللين متخصّصين، رقابة تنظيمية في الخلفية (خصوصاً من هيئة الأوراق المالية الأمريكية للأسواق الأمريكية، وهيئة الأسواق المالية الفرنسية، وهيئة الأسواق المالية المغربية، وهيئة تنظيم الأصول الافتراضية بدبي)، وتحكيمات سلوكية للتجزئة بين الخوف من الفوات والحذر. يُحاكي النموذج رمزاً نمطياً للذكاء الاصطناعي يُطلَق برسملة أوّلية معتدلة، وورقة بيضاء موثَّقة، وفريق علني جزئياً، وسيولة مغلقة لمدة سنة، دون استنساخ مشروع قائم. ثلاثة فروع افتراضية قابلة للحقن: استنزاف السيولة من محفظة الفريق (سحب سيولة) عند H+12، إعلان إدراج على بورصة مركزية من المرتبة الأولى عند H+18، إصدار إخطار من نوع Wells من جهة تنظيم أوراق مالية عند H+24. يستند النموذج إلى السلوكيات السوقية الموثَّقة في المُجمِّعات العمومية والصحافة المتخصّصة [مصادر: مُجمِّعات عمومية مثل CoinGecko وCoinMarketCap، الصحافة الكريبتو المتخصّصة، منشورات عمومية للهيئات SEC وAMF وAMMC وVARA وقاعدة Travel Rule لمجموعة العمل المالي]."
+  },
+  "decision_question": {
+    "fr": "Sur 36 heures, quelle est la trajectoire prix la plus probable parmi les trois branches (rugpull, listing CEX, Wells notice), à quelle heure se situe le pic de hype et le pic de FUD, et quels sont les signaux on-chain à monitorer en priorité pour déclencher un airbag réglementaire et communicationnel ?",
+    "en": "Across 36 hours, what is the most likely price trajectory among the three branches (rugpull, CEX listing, Wells notice), when do the hype and FUD peaks fall, and which on-chain signals should be monitored in priority to trigger a regulatory and communication airbag?",
+    "ar": "على مدى 36 ساعة، ما المسار الأكثر احتمالاً للسعر بين الفروع الثلاثة (سحب السيولة، إدراج على بورصة مركزية، إخطار Wells)، ومتى تَقع ذروة الحماس وذروة التشكيك، وما الإشارات على السلسلة التي يجب رصدها أولاً لتفعيل وسادة هواء تنظيمية وتواصلية؟"
+  },
+  "agents_simulated": [
+    {
+      "role_key": "influenceurs_crypto",
+      "profile": {
+        "fr": "Influenceurs crypto — 4 agents — comptes de l'ordre du million d'abonnés cumulés, modulent leur posture entre shilling, due diligence et avertissement.",
+        "en": "Crypto influencers — 4 agents — accounts in the order of a million combined followers, modulate their stance between shilling, due diligence and warning.",
+        "ar": "مؤثّرو العملات الرقمية — 4 وكلاء — حسابات بنحو مليون متابع تراكمي، يُكيّفون مواقفهم بين الترويج والعناية الواجبة والتحذير."
+      }
+    },
+    {
+      "role_key": "day_traders",
+      "profile": {
+        "fr": "Day traders — 4 agents — agissent sur signaux on-chain, exploitent volatilité courte, particulièrement réactifs aux annonces CEX et aux mouvements de whales.",
+        "en": "Day traders — 4 agents — act on on-chain signals, exploit short-term volatility, particularly reactive to CEX announcements and whale moves.",
+        "ar": "متداولو اليوم الواحد — 4 وكلاء — يتحرّكون وفق الإشارات على السلسلة، يَستغلّون التقلُّب القصير، تفاعليون بشكل خاص مع إعلانات البورصات المركزية وتحرّكات الحيتان."
+      }
+    },
+    {
+      "role_key": "holders_long_terme",
+      "profile": {
+        "fr": "Holders long terme — 3 agents — privilégient la lecture whitepaper et l'analyse fondamentale, calmes face aux pics court terme.",
+        "en": "Long-term holders — 3 agents — prioritise whitepaper reading and fundamental analysis, calm in the face of short-term spikes.",
+        "ar": "حاملو المدى الطويل — 3 وكلاء — يُفضّلون قراءة الورقة البيضاء والتحليل الجوهري، هادئون أمام القمم القصيرة."
+      }
+    },
+    {
+      "role_key": "sceptiques",
+      "profile": {
+        "fr": "Sceptiques — 3 agents — produisent threads critiques, détectent les drapeaux rouges (concentration tokenomics, lock liquidité, audit smart contract), peuvent déclencher cycle FUD.",
+        "en": "Sceptics — 3 agents — publish critical threads, detect red flags (tokenomics concentration, liquidity lock, smart-contract audit), may trigger FUD cycles.",
+        "ar": "مشكّكون — 3 وكلاء — يُنتجون مواضيع نقدية، يَرصدون الأعلام الحمراء (تركُّز التوكنوميكس، قفل السيولة، تدقيق العقد الذكي)، وقد يُطلقون دورات تشكيك."
+      }
+    },
+    {
+      "role_key": "retail_nouveaux",
+      "profile": {
+        "fr": "Retail nouveaux entrants — 3 agents — découvrent le projet via influenceurs, susceptibles de FOMO, source d'asymétrie information sur le marché.",
+        "en": "Retail newcomers — 3 agents — discover the project via influencers, prone to FOMO, source of information asymmetry on the market.",
+        "ar": "تجزئة قادمون جدد — 3 وكلاء — يَكتشفون المشروع عبر المؤثّرين، عُرضة للخوف من الفوات، مصدر لعدم تماثُل المعلومة في السوق."
+      }
+    },
+    {
+      "role_key": "analystes_onchain",
+      "profile": {
+        "fr": "Analystes on-chain — 2 agents — surveillent flux portefeuilles équipe, contracts multi-sig, mouvements MEV, signalent toute anomalie en temps réel.",
+        "en": "On-chain analysts — 2 agents — monitor team-wallet flows, multi-sig contracts, MEV moves, flag any anomaly in real time.",
+        "ar": "محللون على السلسلة — 2 وكيل — يُراقبون تدفقات محافظ الفريق، عقود التوقيع المتعدّد، تحرّكات MEV، يُشيرون إلى أيّ شذوذ في الزمن الحقيقي."
+      }
+    },
+    {
+      "role_key": "observateurs_regulateurs",
+      "profile": {
+        "fr": "Observateurs réglementaires — 1 agent — équipes des autorités de marché (SEC, AMF, AMMC, VARA), scrutent applicabilité du qualificatif security/utility token.",
+        "en": "Regulatory observers — 1 agent — staff of market authorities (SEC, AMF, AMMC, VARA), scrutinise applicability of the security/utility token qualification.",
+        "ar": "مراقبو التنظيم — 1 وكيل — موظفو سلطات السوق (SEC، AMF، AMMC، VARA)، يُدقّقون انطباق وصف الورقة المالية أو الرمز الاستعمالي."
+      }
+    }
+  ],
+  "key_insights": {
+    "fr": [
+      "Le pic de hype se situe généralement entre H+4 et H+10 dans les exécutions du modèle, suivi d'un creux FUD entre H+18 et H+24 si les analystes on-chain ne valident pas les claims du whitepaper — la qualité de la communication équipe pendant cette fenêtre est le levier décisif.",
+      "Une annonce de listing CEX tier 1 à H+18 multiplie typiquement le volume par un facteur 2 à 4 dans les trajectoires simulées, mais ne sauve pas un projet déjà signalé sur des concentrations tokenomics anormales.",
+      "Une Wells notice à H+24 ne provoque pas une chute brutale immédiate dans tous les cas : les trajectoires simulées montrent un effet retardé de 6 à 18 heures pendant lequel l'équipe peut ouvrir un dialogue régulatoire actif, ce qui réduit le drawdown final dans la majorité des trajectoires.",
+      "La probabilité de rugpull est indexée presque entièrement aux signaux on-chain dès les 6 premières heures (concentration des wallets équipe, absence de lock liquidity vérifiable, transactions MEV anormales) : un airbag de communication réactif sur ces signaux réduit la base de holders piégés mais ne change pas le verdict de fond."
+    ],
+    "en": [
+      "The hype peak typically falls between H+4 and H+10 in model runs, followed by an FUD trough between H+18 and H+24 if on-chain analysts cannot validate the whitepaper's claims — the quality of team communication in that window is the decisive lever.",
+      "A tier-1 CEX listing announcement at H+18 typically multiplies volume by a factor of 2-4 in simulated trajectories, but does not rescue a project already flagged for abnormal tokenomics concentrations.",
+      "A Wells notice at H+24 does not always trigger an immediate sharp drop: simulated trajectories show a 6-18 hour lagged effect, during which the team can open an active regulatory dialogue, reducing the final drawdown in most trajectories.",
+      "Rugpull probability is almost entirely indexed on on-chain signals from the first 6 hours (team-wallet concentration, no verifiable liquidity lock, abnormal MEV transactions): a reactive communication airbag on these signals reduces the base of trapped holders but does not change the underlying verdict."
+    ],
+    "ar": [
+      "تقع ذروة الحماس عادةً بين H+4 وH+10 في تنفيذات النموذج، يَتبعها قاع تشكيك بين H+18 وH+24 إذا لم يُصادق المحللون على السلسلة على ادّعاءات الورقة البيضاء — جودة تواصل الفريق في هذه النافذة هي الرافعة الحاسمة.",
+      "يُضاعف إعلان إدراج على بورصة مركزية من المرتبة الأولى عند H+18 الحجم بمعامل 2 إلى 4 في المسارات المُحاكاة، لكنه لا يُنقذ مشروعاً سبق الإشارة إلى تركُّزات توكنوميكس شاذة فيه.",
+      "لا يُحدِث إخطار Wells عند H+24 سقوطاً حادّاً فورياً في كل الحالات: تُظهر المسارات المُحاكاة أثراً مؤجَّلاً يتراوح بين 6 و18 ساعة، يستطيع الفريق خلاله فتح حوار تنظيمي نشط، ممّا يُخفّض الانخفاض النهائي في أغلب المسارات.",
+      "يَرتبط احتمال سحب السيولة ارتباطاً شبه كامل بالإشارات على السلسلة منذ الساعات الست الأولى (تركُّز محافظ الفريق، غياب قفل سيولة قابل للتحقق، معاملات MEV شاذة): تُخفّض وسادة تواصل تفاعلية على هذه الإشارات قاعدة الحاملين المحاصرين، لكنها لا تُغيّر الحكم الجوهري."
+    ]
+  },
+  "brier_illustrative": 0.24,
+  "tags": [
+    "crypto",
+    "token",
+    "launch",
+    "DEX",
+    "régulation",
+    "on-chain",
+    "DeFi"
+  ],
+  "cta_label": {
+    "fr": "Commander une simulation pré-listing pour votre projet token",
+    "en": "Order a pre-listing simulation for your token project",
+    "ar": "طلب محاكاة ما قبل الإدراج لمشروع الرمز الرقمي الخاص بكم"
+  },
+  "use_cases_decisionmakers": {
+    "fr": [
+      "Direction d'une fondation crypto préparant le lancement d'un token utility ou IA-on-chain dans les 4 à 8 semaines.",
+      "Comité de risques d'un protocole DeFi cherchant à anticiper les cycles hype-FUD et l'impact d'une notice régulateur.",
+      "Avocat conseil spécialisé crypto-actifs aidant un client à structurer la communication post-listing dans plusieurs juridictions.",
+      "Investisseur institutionnel évaluant la fenêtre de risque d'un investissement participation au tour de seed d'un projet token."
+    ],
+    "en": [
+      "Crypto-foundation leadership preparing the launch of a utility or AI-on-chain token in the next 4-8 weeks.",
+      "Risk committee of a DeFi protocol seeking to anticipate hype-FUD cycles and the impact of a regulatory notice.",
+      "Crypto-asset specialist counsel helping a client structure post-listing communication across multiple jurisdictions.",
+      "Institutional investor evaluating the risk window of a seed-round equity in a token project."
+    ],
+    "ar": [
+      "إدارة مؤسسة عملات رقمية تُعدّ إطلاق رمز استعمالي أو ذكاء اصطناعي على السلسلة خلال 4 إلى 8 أسابيع.",
+      "لجنة مخاطر بروتوكول تمويل لا مركزي تسعى إلى توقُّع دورات الحماس والتشكيك وأثر إخطار تنظيمي.",
+      "محامٍ مستشار متخصّص في الأصول الرقمية يُساعد زبوناً على هيكلة التواصل ما بعد الإدراج في عدّة اختصاصات قضائية.",
+      "مستثمر مؤسسي يُقيّم نافذة مخاطر مساهمة في جولة بَذرية لمشروع رمز رقمي."
+    ]
+  }
+}

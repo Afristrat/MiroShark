@@ -2059,9 +2059,17 @@
       "sector": {
         "banque": "الصيرفة والاندماج والاستحواذ",
         "crisis": "الأزمات والتواصل",
+        "communication": "التواصل والأزمات",
         "investissement": "الاستثمار",
         "politique": "السياسة العمومية",
-        "distribution": "التوزيع"
+        "politique-publique": "السياسة العمومية",
+        "distribution": "التوزيع",
+        "marketing-export": "التسويق والتصدير",
+        "startup-tech": "الشركات الناشئة والتقنية",
+        "crypto": "العملات الرقمية والتمويل اللامركزي",
+        "histoire-contrefactuel": "التاريخ والافتراضات",
+        "education": "التعليم والبحث",
+        "programme-entrepreneurial": "برنامج ريادي"
       }
     }
   }

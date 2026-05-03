@@ -1,0 +1,128 @@
+{
+  "slug": "pmf-startup-tech",
+  "sector": "startup-tech",
+  "preset_source": "pmf_startup_tech",
+  "title": {
+    "fr": "PMF startup tech B2B — Validation produit-marché sur 50 prospects pan-Afrique en 10 semaines",
+    "en": "Tech B2B PMF — Product-Market Fit Validation on 50 Pan-African Prospects in 10 Weeks",
+    "ar": "ملاءمة المنتج للسوق لشركة ناشئة بين الأعمال — تحقّق المنتج والسوق على 50 مترشِّحاً بانإفريقياً في 10 أسابيع"
+  },
+  "subtitle": {
+    "fr": "Modèle pré-calibré sur la validation PMF d'un SaaS B2B en avant-Série A face à une cohorte synthétique de 50 prospects pan-Afrique (50 agents, 10 rounds hebdomadaires)",
+    "en": "Pre-calibrated model on the pre-Series A PMF validation of a B2B SaaS against a 50-prospect pan-African synthetic cohort (50 agents, 10 weekly rounds)",
+    "ar": "نموذج معاير مسبقاً على تحقّق ملاءمة المنتج للسوق لخدمة برمجية بين الأعمال قبل جولة المرتبة الأولى أمام فوج تركيبي من 50 مترشِّحاً بانإفريقياً (50 وكيلاً، 10 جولات أسبوعية)"
+  },
+  "summary_short": {
+    "fr": "Simulation hebdomadaire (S1 à S10) du parcours de validation produit-marché d'un SaaS B2B pan-Afrique : 50 agents (cible idéale ICP, décideurs, influenceurs techniques, analystes concurrentiels, sceptiques initiaux), 5 director events injectables (interview client perdu, levée concurrent, demande de pivot par advisor, feature critique non-roadmap, deal pré-payé en bascule), verdict probabiliste en trois branches (PMF viable, PMF borderline, PMF non atteint) avec confiance, top 3 segments à prioriser et top 3 frictions d'achat.",
+    "en": "Weekly simulation (W1 to W10) of the product-market validation journey of a pan-African B2B SaaS: 50 agents (ideal customer profile, decision-makers, technical influencers, competitive analysts, initial sceptics), 5 injectable director events (lost-customer interview, competitor fundraising, advisor-driven pivot request, off-roadmap critical feature, prepaid deal in tilt), probabilistic verdict in three branches (PMF viable, PMF borderline, PMF unmet) with confidence, top 3 segments to prioritise and top 3 purchase frictions.",
+    "ar": "محاكاة أسبوعية (من S1 إلى S10) لمسار تَحقُّق المنتج والسوق لخدمة برمجية بين الأعمال بانإفريقية: 50 وكيلاً (المترشِّح المثالي ICP، صنّاع القرار، المؤثرون التقنيون، محللو المنافسة، المشكِّكون الأوليون)، 5 أحداث مخرجية قابلة للحقن (مقابلة زبون مفقود، جولة تمويل لمنافس، طلب تحوُّل من مستشار، ميزة حرجة خارج خارطة الطريق، صفقة مسبقة الدفع على المحكّ)، حكم احتمالي في ثلاثة فروع (ملاءمة قابلة للحياة، ملاءمة على الحدود، ملاءمة غير محقَّقة) مع درجة ثقة، أهم 3 شرائح للأولوية وأهم 3 احتكاكات شراء."
+  },
+  "context_long": {
+    "fr": "La validation du Product-Market Fit avant une première levée Série A constitue le verrou existentiel d'une startup tech B2B : la fenêtre disponible est courte (8 à 14 semaines typiquement entre la fin du seed et le début du process de levée), les ressources d'attention founder sont limitées, et le verdict détermine non seulement la levée mais le pivot ou l'arrêt. Le modèle simule la confrontation d'un SaaS B2B à une cohorte synthétique de 50 prospects pan-Afrique structurée selon les bonnes pratiques de discovery marketing : 30 ICP cœur, 10 décideurs achat-IT, 5 influenceurs techniques, 3 analystes concurrentiels, 2 sceptiques initiaux. Le critère PMF observable retenu est le seuil canonique de 30 % des prospects exprimant une intention d'achat ferme à la valeur tarifaire proposée à S10. Cinq director events sont injectés à des moments clés sur 10 semaines pour tester la résistance du founder aux perturbations habituelles : interview avec un prospect perdu argumentant « trop cher pour ce que c'est », levée d'un concurrent direct, advisor poussant à pivoter vers un segment niche, prospect VIP exigeant une feature hors roadmap, deal pré-payé menacé selon réponse founder. Le modèle ne s'attache à aucun secteur vertical particulier mais à la dynamique transverse SaaS B2B [sources : littérature publique sur le PMF (essais Y Combinator, Lean Startup, Crossing the Chasm), benchmarks publics venture-capital, presse économique pan-africaine].",
+    "en": "Validating Product-Market Fit before a first Series A is the existential gate of a B2B tech startup: the available window is short (typically 8-14 weeks between the end of seed and the start of fundraising), founder attention is limited, and the verdict drives not only the raise but also pivot-or-stop. The model simulates the confrontation of a B2B SaaS with a synthetic cohort of 50 pan-African prospects structured along discovery best practices: 30 core ICP, 10 IT-purchase decision-makers, 5 technical influencers, 3 competitive analysts, 2 initial sceptics. The observable PMF criterion retained is the canonical threshold of 30% of prospects expressing firm purchase intent at the proposed pricing by W10. Five director events are injected at key moments over 10 weeks to test founder resilience to standard disturbances: interview with a lost prospect arguing 'too expensive for what it is', direct competitor fundraising, advisor pushing for a niche-segment pivot, VIP prospect demanding an off-roadmap feature, prepaid deal threatened by the founder's reply. The model is not tied to any specific vertical but to the transverse B2B SaaS dynamic [sources: public PMF literature (Y Combinator essays, Lean Startup, Crossing the Chasm), public venture-capital benchmarks, pan-African business press].",
+    "ar": "يُمثّل تَحقُّق ملاءمة المنتج للسوق قبل أوّل جولة تمويل من المرتبة الأولى البوابةَ الوجودية لشركة ناشئة تقنية بين الأعمال: النافذة المتاحة قصيرة (عادةً بين 8 و14 أسبوعاً بين نهاية الجولة البَذرية وبدء مسار التمويل)، وموارد انتباه المؤسس محدودة، والحكم يُحدّد لا الجولة فحسب بل التحوُّل أو التوقف. يُحاكي النموذج مواجهة خدمة برمجية بين الأعمال بفوج تركيبي من 50 مترشِّحاً بانإفريقياً مُنظَّم وفق ممارسات الاستكشاف المثلى: 30 من المترشِّح المثالي الأساسي، 10 من صنّاع قرار شراء تكنولوجيا المعلومات، 5 مؤثّرون تقنيون، 3 محللو منافسة، 2 مشكِّكون أوليون. المعيار القابل للملاحظة لتَحقُّق الملاءمة هو العتبة المعيارية البالغة 30 % من المترشِّحين يُعبّرون عن نية شراء حازمة بالسعر المقترَح في الأسبوع العاشر. تُحقَن خمسة أحداث مخرجية في لحظات مفتاح على مدى 10 أسابيع لاختبار صلابة المؤسس إزاء الاضطرابات المعتادة: مقابلة مع مترشِّح ضائع يَحتجّ «غالٍ مقابل ما يُقدَّم»، جولة تمويل لمنافس مباشر، مستشار يَدفع نحو تحوُّل إلى شريحة متخصّصة، مترشِّح بارز يَطلب ميزة خارج خارطة الطريق، صفقة مسبقة الدفع مُهدَّدة بحسب ردّ المؤسس. لا يَرتبط النموذج بأيّ قطاع عمودي بعينه بل بالدينامية المستعرَضة للبرمجيات بين الأعمال [مصادر: الأدبيات العمومية حول ملاءمة المنتج للسوق (مقالات Y Combinator، Lean Startup، Crossing the Chasm)، معايير عمومية لرأس المال المخاطر، الصحافة الاقتصادية البانإفريقية]."
+  },
+  "decision_question": {
+    "fr": "À S10, le SaaS atteint-il le seuil de 30 % de prospects exprimant une intention d'achat ferme, et si non, faut-il pivoter, raffiner le ciblage ou retravailler la proposition de valeur — avec quel niveau de confiance ?",
+    "en": "By W10, does the SaaS reach the 30% threshold of prospects expressing firm purchase intent, and if not, should the team pivot, refine targeting or rework the value proposition — at what confidence level?",
+    "ar": "في الأسبوع العاشر، هل تَبلغ الخدمة البرمجية عتبة 30 % من المترشِّحين يُعبّرون عن نية شراء حازمة، وإن لم تَبلغها، هل ينبغي التحوُّل، أو تدقيق الاستهداف، أو إعادة هندسة عرض القيمة — وبأيّ درجة ثقة؟"
+  },
+  "agents_simulated": [
+    {
+      "role_key": "icp_coeur",
+      "profile": {
+        "fr": "ICP cœur — 30 agents — profils prospects-cible répartis pan-Afrique, segmentés par taille d'entreprise, secteur et maturité technologique.",
+        "en": "Core ICP — 30 agents — target-prospect profiles spread pan-Africa, segmented by company size, sector and technological maturity.",
+        "ar": "المترشِّح المثالي الأساسي — 30 وكيلاً — ملامح المترشِّحين المستهدَفين موزَّعون بانإفريقياً، مُجَزَّئون بحسب حجم الشركة والقطاع والنضج التقني."
+      }
+    },
+    {
+      "role_key": "decideurs_achat",
+      "profile": {
+        "fr": "Décideurs achat-IT — 10 agents — DSI, directeurs achats, signent les contrats au-delà de seuils budgétaires définis, exigent compliance et SLA.",
+        "en": "IT-purchase decision-makers — 10 agents — CIOs, procurement directors, sign contracts above defined budget thresholds, require compliance and SLAs.",
+        "ar": "صنّاع قرار شراء تكنولوجيا المعلومات — 10 وكلاء — مديرو نُظم المعلومات، مديرو المشتريات، يُوقّعون العقود فوق عتبات ميزانياتية محدَّدة، يَشترطون الامتثال واتفاقيات مستوى الخدمة."
+      }
+    },
+    {
+      "role_key": "influenceurs_techniques",
+      "profile": {
+        "fr": "Influenceurs techniques — 5 agents — architectes, lead engineers, jouent un rôle de bouche-à-oreille interne et externe via communautés tech.",
+        "en": "Technical influencers — 5 agents — architects, lead engineers, drive internal and external word-of-mouth via tech communities.",
+        "ar": "مؤثّرون تقنيون — 5 وكلاء — مهندسو معمارية، قادة هندسة، يَلعبون دور التداول الشفهي داخلياً وخارجياً عبر المجتمعات التقنية."
+      }
+    },
+    {
+      "role_key": "analystes_concurrence",
+      "profile": {
+        "fr": "Analystes concurrentiels — 3 agents — comparent benchmarks, alertent en cas de levée concurrent, alimentent le narratif différenciation.",
+        "en": "Competitive analysts — 3 agents — compare benchmarks, alert on competitor fundraising, feed the differentiation narrative.",
+        "ar": "محللو المنافسة — 3 وكلاء — يُقارنون المعايير، يُنبّهون عند جولة تمويل منافس، يُغذّون سرد التفرُّد."
+      }
+    },
+    {
+      "role_key": "sceptiques_initiaux",
+      "profile": {
+        "fr": "Sceptiques initiaux — 2 agents — refusent l'achat lors du premier contact, peuvent reconsidérer après preuve de cas client similaire ou social proof.",
+        "en": "Initial sceptics — 2 agents — decline purchase at first contact, may reconsider after a similar customer-case proof or social proof.",
+        "ar": "مشكِّكون أوليون — 2 وكيل — يَرفضون الشراء عند التواصل الأول، قد يُعيدون النظر بعد إثبات حالة زبون مماثلة أو دليل اجتماعي."
+      }
+    }
+  ],
+  "key_insights": {
+    "fr": [
+      "Le seuil de 30 % d'intention d'achat ferme à S10 est rarement atteint d'emblée dans les exécutions du modèle : la majorité des trajectoires PMF viable s'établissent autour de 22 à 28 % à S10, avec une trajectoire ascendante non saturée — c'est ce gradient plus que la valeur absolue qui est le signal le plus prédictif.",
+      "L'interview avec un prospect perdu en S2 argumentant « trop cher pour ce que c'est » est un signal parmi d'autres : isolé il n'est pas décisif, mais combiné à un taux de transformation < 10 % sur les 10 premiers contacts, il indique un mismatch positionnement-prix qui appelle un raffinement avant pivot complet.",
+      "La levée Série A d'un concurrent direct annoncée à S4 a deux effets opposés selon la maturité narrative du founder : stress fragilisant si la différenciation n'est pas claire, ou accélérateur de décision côté prospects qui valident la catégorie — l'effet net dépend de la qualité du positionnement plus que de l'événement lui-même.",
+      "La décision rationnelle face à un deal pré-payé menacé en S9 est plus souvent de défendre la roadmap publique que d'accepter une feature spéciale : dans les trajectoires simulées, les founders qui acceptent une exception perdent en moyenne 2 à 3 points de PMF cumulé sur les 4 prospects suivants par diffusion d'attentes incohérentes."
+    ],
+    "en": [
+      "The 30% firm-purchase-intent threshold at W10 is rarely reached outright in model runs: most viable-PMF trajectories settle around 22-28% at W10 on a non-saturated upward path — that gradient, more than the absolute value, is the most predictive signal.",
+      "A W2 interview with a lost prospect arguing 'too expensive for what it is' is one signal among many: isolated, it is not decisive, but combined with a < 10% conversion rate on the first 10 contacts, it indicates a positioning-pricing mismatch calling for refinement before a full pivot.",
+      "A direct competitor's W4 Series A announcement has two opposite effects depending on the founder's narrative maturity: stress-inducing if differentiation is unclear, or decision-accelerating on the prospect side as the category gets validated — net effect depends more on positioning quality than on the event itself.",
+      "The rational call when facing a W9 prepaid deal at risk is more often to defend the public roadmap than to grant a special feature: in simulated trajectories, founders who grant exceptions lose, on average, 2-3 cumulative PMF points across the next 4 prospects through inconsistent expectation diffusion."
+    ],
+    "ar": [
+      "نادراً ما تُبلَغ عتبة 30 % من نية الشراء الحازمة في الأسبوع العاشر دفعةً واحدة في تنفيذات النموذج: تَستقرّ أغلب مسارات الملاءمة القابلة للحياة بين 22 و28 % في الأسبوع العاشر على مسار تصاعدي غير مُشبَع — هذا التدرُّج، أكثر من القيمة المُطلَقة، هو الإشارة الأكثر تنبُّؤاً.",
+      "مقابلة في الأسبوع الثاني مع مترشِّح ضائع يَحتجّ بأنه «غالٍ مقابل ما يُقدَّم» إشارة بين إشارات أخرى: مُعزَّلةً ليست حاسمة، لكنها مقترنةً بمعدّل تحويل أقلّ من 10 % في أوّل 10 تواصلات، تَدلّ على عدم تطابُق الموضعة-السعر يَستدعي تدقيقاً قبل تحوُّل كامل.",
+      "إعلان جولة تمويل من المرتبة الأولى لمنافس مباشر في الأسبوع الرابع له أثران متعاكسان بحسب نضج السرد لدى المؤسس: ضغط مُضعِف إذا لم يكن التَفَرُّد واضحاً، أو مُسرِّع للقرار لدى المترشِّحين عبر مصادقة الفئة — الأثر الصافي يَعتمد على جودة الموضعة أكثر من الحدث ذاته.",
+      "القرار العقلاني أمام صفقة مسبقة الدفع مُهدَّدة في الأسبوع التاسع يكون في الأغلب الدفاع عن خارطة الطريق العمومية لا قبول ميزة خاصة: في المسارات المُحاكاة، يَخسر المؤسسون الذين يَمنحون استثناءات في المتوسط 2 إلى 3 نقاط ملاءمة تراكمية عبر المترشِّحين الأربعة التالين بسبب انتشار توقُّعات متناقضة."
+    ]
+  },
+  "brier_illustrative": 0.21,
+  "tags": [
+    "PMF",
+    "startup",
+    "B2B",
+    "SaaS",
+    "Série A",
+    "founder",
+    "pan-Afrique",
+    "validation"
+  ],
+  "cta_label": {
+    "fr": "Commander une validation PMF pour votre SaaS B2B",
+    "en": "Order a PMF validation for your B2B SaaS",
+    "ar": "طلب تحقُّق ملاءمة المنتج للسوق لخدمتكم البرمجية بين الأعمال"
+  },
+  "use_cases_decisionmakers": {
+    "fr": [
+      "Founder solo ou cofondateurs préparant une levée Série A dans les 8 à 16 semaines suivantes.",
+      "Comité d'investissement seed-stage évaluant la maturité PMF avant accompagnement renforcé.",
+      "Direction d'un programme accélérateur souhaitant chiffrer la maturité PMF de plusieurs cohorts en parallèle.",
+      "Direction d'une corporate venture cherchant à objectiver son investissement dans une scale-up tech B2B."
+    ],
+    "en": [
+      "Solo founder or co-founders preparing a Series A in the next 8-16 weeks.",
+      "Seed-stage investment committee assessing PMF maturity before deeper engagement.",
+      "Accelerator-programme leadership wanting to size PMF maturity across multiple cohorts in parallel.",
+      "Corporate-venture leadership seeking to objectivise its investment in a B2B tech scale-up."
+    ],
+    "ar": [
+      "مؤسس وحيد أو مؤسسون مشارِكون يُعدّون جولة تمويل من المرتبة الأولى في 8 إلى 16 أسبوعاً.",
+      "لجنة استثمار في المرحلة البَذرية تُقيّم نضج ملاءمة المنتج للسوق قبل مرافقة معمَّقة.",
+      "إدارة برنامج مُسرّعة ترغب في قياس نضج الملاءمة لعدّة أفواج بالتوازي.",
+      "إدارة استثمار شركاتي تسعى إلى موضعة موضوعية لاستثمارها في شركة تقنية متوسعة بين الأعمال."
+    ]
+  }
+}

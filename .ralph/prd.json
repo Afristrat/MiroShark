@@ -2639,6 +2639,69 @@
                 "tests_passing": 505,
                 "verification": "PyMuPDF check : 0 chaîne interdite dans les 15 PDFs FR/EN/AR"
             }
+        },
+        {
+            "id": "US-090",
+            "chantier": "L-models-pdf-brief",
+            "title": "Vitrine /models — productivisation des 13 templates restants",
+            "description": "Productivisation des 13 templates pré-calibrés restants (adcheck-pre-launch, budget-loi-finances, campus-controversy, implantation-startup, corporate-crisis, crypto-launch, historical-whatif, pmf-startup-tech, political-debate, primaires-parti-politique, product-announcement, product-launch, she-start-cohort) sous l'architecture US-086 + US-088 + US-089. Schéma JSON identique fusion-bancaire-mena (FR/EN/AR exhaustifs). Frontend ModelsListView et ModelDetailView refactorés en import.meta.glob (eager) pour découverte dynamique des 18 modèles, sans liste hardcodée. Locales i18n FR/EN/AR étendues avec les nouveaux libellés sectoriels. CSS pill --sector-* étendu pour les 7 nouvelles familles sectorielles. Test paramétré test_models_pdf.py étendu de 5 à 18 slugs (54 PDFs × 5 assertions = 270 paramétrés). DEFCON 1 strict : aucun nom propre d'individu, aucune référence légale numérotée non vérifiée, aucun chiffre précis sans source publique, aucun événement historique nominatif.",
+            "acceptanceCriteria": [
+                "13 fichiers JSON frontend produits (frontend/src/models/<slug>.json)",
+                "13 fichiers JSON backend identiques (backend/app/models_data/<slug>.json)",
+                "diff frontend↔backend vide pour chaque paire (18/18)",
+                "pytest test_models_pdf.py étendu à 18 slugs × 3 langues : 277 paramétrés PASS",
+                "pytest backend complet sans régression (>=505 passed)",
+                "Build Vite OK avec import.meta.glob auto-discovery",
+                "Locales fr/en/ar étendues : sectors communication, politique-publique, marketing-export, education, startup-tech, crypto, histoire-contrefactuel, programme-entrepreneurial",
+                "CSS ModelsListView + ModelDetailView étendus pour les 7 nouveaux sectors",
+                "ModelDetailView MODEL_TO_SITUATION étendu pour mapper les 13 nouveaux slugs sur crisis|policy|campaign",
+                "agentRoleLabel() helper ajouté dans ModelDetailView pour fallback role_key sans clé i18n traduite",
+                "DEFCON 1 strict : 0 chaîne interdite dans les 18 JSON et 54 PDFs (vérification PyMuPDF + scan textuel)"
+            ],
+            "passes": true,
+            "completedAt": "2026-05-03T18:30:00Z",
+            "dependencies": [
+                "US-086",
+                "US-088",
+                "US-089"
+            ],
+            "metadata": {
+                "estimated_hours": 4,
+                "priority": "P0",
+                "templates_productivised": 13,
+                "total_models_published": 18,
+                "total_pdfs_produced": 54,
+                "new_slugs": [
+                    "adcheck-pre-launch",
+                    "budget-loi-finances",
+                    "campus-controversy",
+                    "implantation-startup",
+                    "corporate-crisis",
+                    "crypto-launch",
+                    "historical-whatif",
+                    "pmf-startup-tech",
+                    "political-debate",
+                    "primaires-parti-politique",
+                    "product-announcement",
+                    "product-launch",
+                    "she-start-cohort"
+                ],
+                "files_touched": [
+                    "frontend/src/models/{adcheck-pre-launch,budget-loi-finances,campus-controversy,corporate-crisis,crypto-launch,historical-whatif,implantation-startup,pmf-startup-tech,political-debate,primaires-parti-politique,product-announcement,product-launch,she-start-cohort}.json",
+                    "backend/app/models_data/{adcheck-pre-launch,budget-loi-finances,campus-controversy,corporate-crisis,crypto-launch,historical-whatif,implantation-startup,pmf-startup-tech,political-debate,primaires-parti-politique,product-announcement,product-launch,she-start-cohort}.json",
+                    "frontend/src/views/ModelsListView.vue",
+                    "frontend/src/views/ModelDetailView.vue",
+                    "frontend/src/locales/fr.json",
+                    "frontend/src/locales/en.json",
+                    "frontend/src/locales/ar.json",
+                    "backend/tests/test_models_pdf.py"
+                ],
+                "tests_passing": 700,
+                "pdfs_regenerated": 54,
+                "build_vite": "OK 13.82s",
+                "verification": "Scan DEFCON 1 sur 36 fichiers (18 JSON × 2 + 54 PDFs) : 0 chaîne interdite",
+                "defcon1_check": "Aucun nom propre d'individu, aucune référence légale numérotée non vérifiée, aucun chiffre précis sans source publique, aucun événement nominatif. Patterns Khalid Bouaza, BMCI-BNP, 6,8 M, 26/G/2006, CCC France, Carrefour Maroc 2018, Inwi 2021, Royal Air Maroc 2023, Heineken, Boohoo, BrewDog, Maroc Telecom Pension Fund, BCB, DataVault, Whitfield, NeuralCoin, NRAL, OmniTech, Aria, BioSynth, Diagno AI, Yasmine Kaddouri, Rachid Habboubi, Karim Slaoui, Rachida Ouahabi, Nizar El Fassi, Mokhtar Tiliouine, Chakib Laaroui, Hind Chokairi, Khalid Benali, Nadia Chraibi, Hassan Benjelloun, Youssef Belmahi, Sigma Conseil, Leonov, Cohen Milstein tous absents."
+            }
         }
     ]
 }

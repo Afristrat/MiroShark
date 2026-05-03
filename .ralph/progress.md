@@ -47,6 +47,42 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 
 ## Log d'itérations
 
+### 2026-05-03 — US-090 Vitrine /models — productivisation des 13 templates restants
+- **Statut** : passes: true (chantier L-models-pdf-brief, follow-up US-086 + US-088 + US-089). 18 modèles publiés au total, 54 PDFs générés en FR/EN/AR.
+- **13 templates productivisés** : adcheck-pre-launch, budget-loi-finances, campus-controversy, implantation-startup, corporate-crisis, crypto-launch, historical-whatif, pmf-startup-tech, political-debate, primaires-parti-politique, product-announcement, product-launch, she-start-cohort.
+- **Schéma JSON** : strictement identique à fusion-bancaire-mena (slug, sector, preset_source, title fr/en/ar, subtitle, summary_short, context_long, decision_question, agents_simulated [role_key + profile fr/en/ar], key_insights, brier_illustrative entre 0,20 et 0,24, tags, cta_label, use_cases_decisionmakers).
+- **Frontend** :
+  - `ModelsListView.vue` et `ModelDetailView.vue` refactorés en `import.meta.glob('../models/*.json', { eager: true })` avec tri par priorité sectorielle. Les 18 fichiers JSON sont découverts à build-time sans liste hardcodée à maintenir.
+  - `ModelDetailView.vue` : ajout de `agentRoleLabel(roleKey)` qui fait fallback en libellé snake_case→CapitalizedWords si la clé i18n est absente. Ce comportement préserve la lisibilité utilisateur quand on ajoute un nouveau modèle dont les agents ont des role_key inédits.
+  - `MODEL_TO_SITUATION` étendu pour mapper les 13 nouveaux slugs sur crisis|policy|campaign (cohérent avec les 3 radios de QuoteView).
+  - CSS `--ml-sector-pill` et `--md-sector-pill` étendu pour 7 nouvelles familles (communication, politique-publique, marketing-export, startup-tech, crypto, histoire-contrefactuel, education) et 1 famille additionnelle (programme-entrepreneurial pour future extension). Toutes dérivent des tokens `--wi-*` existants pour conserver la palette Causse Warm Intelligence.
+  - Locales `fr.json`, `en.json`, `ar.json` étendues sur `models.cards.sector.*` avec libellés institutionnels (FR : « Marketing & Export », « Startup & Tech », « Histoire & Contrefactuel », « Éducation & Recherche »…). En arabe : terminologie standard MENA, registre formel.
+- **Backend** :
+  - `backend/app/models_data/` synchronisé strictement : 13 nouveaux JSON identiques à frontend (vérifié `diff` vide × 18 paires).
+  - `backend/tests/test_models_pdf.py` : `_SLUGS` étendu de 5 à 18. Le test paramétré matrice 18×3 = 54 entrées × 5 assertions chacune (status / content-type / disposition / magic-bytes / size) génère 270 paramétrés ; total 277 paramétrés PASS.
+- **DEFCON 1 strict** :
+  - Aucun nom propre d'individu réel dans les 13 nouveaux JSON. Influenceurs, dirigeants, journalistes, candidats sont tous formulés génériquement (ex : « influenceur food halal francophone de l'ordre du million d'abonnés », « parlementaire de l'opposition », « directrice de campagne »).
+  - Aucun nom de produit ou société fictif présenté comme acteur du scénario (DataVault, NeuralCoin, Whitfield, OmniTech Aria, BioSynth AI, Diagno AI…) — uniquement archétypes (« scale-up cloud archétypale », « token IA archétypal », « université privée de premier rang », « grand groupe technologique »).
+  - Aucune référence légale numérotée non vérifiée. Quand pertinent : « loi bancaire 103-12 » (déjà DEFCON 1 OK US-089), « cadre RGPD » générique, « PSD2 ou équivalents régionaux ».
+  - Aucun chiffre précis non sourcé. Quand pertinent, plages réalistes (« 25 à 35 % », « 4 à 8 points », « 25 % des trajectoires ») sans valeur ponctuelle inventée.
+  - Sources publiques institutionnelles citées : Bank Al-Maghrib, AMMC, GPBM, CGEM, UMT, AFEM, AMDIE, DIFC Authority, Kenya Investment Authority, AVCA, Partech Africa, ARCOM, HACA, CNIL, CNDP, GSMA, Inside Higher Ed, Chronicle of Higher Education, Times Higher Education, CASE, NACAC, CoinGecko, CoinMarketCap, SEC, ESMA, AMF, FINMA, VARA, FATF Travel Rule, ANAPEC, GEM Morocco, CSA Research, NielsenIQ Tech, Counterpoint Research, TelQuel, Hespress, Le360, Africa Report, Jeune Afrique. Toutes sont des institutions / publications publiques réelles.
+- **Fichiers** : 26 JSON nouveaux ou réécrits (13 paires frontend+backend) + 4 fichiers infra (ModelsListView.vue, ModelDetailView.vue, 3 locales i18n, test_models_pdf.py).
+- **Quality gates** :
+  - `diff frontend/src/models/<slug>.json backend/app/models_data/<slug>.json` → vide pour les 18 paires.
+  - `cd backend && uv run pytest tests/test_models_pdf.py -v` → **277 paramétrés PASS** en 20,8 s.
+  - `cd backend && uv run pytest tests/` → **700 passed, 17 skipped, 0 régression** (vs 505 baseline US-088, +195 = 13 nouveaux slugs × 3 langues × 5 assertions).
+  - `cd frontend && npm run build` → OK en 13,82 s (1 warning chunk size pré-existant).
+  - **Vérification DEFCON 1 textuelle** (scan Python sur 36 fichiers : 18 JSON × 2 + scan automatisé) : 0 chaîne interdite parmi 35+ patterns interdits.
+  - **Vérification DEFCON 1 PyMuPDF** sur les 54 PDFs régénérés : 0 chaîne interdite.
+  - 54 PDFs régénérés via `uv run python scripts/generate_demo_pdfs.py` (FR ≈ 10,7-11,9 KB, EN ≈ 10,4-11,3 KB, AR ≈ 56,3-58,0 KB avec fonte arabe Tahoma embedded).
+- **Pattern de génération neutre — règles appliquées systématiquement aux 13 modèles** :
+  - **Aucun nom propre individuel** : les agents ont un `role_key` descriptif (ex : `core_audience_persona`, `crypto_influencer`, `regional_activist`) et un `profile` qui décrit la fonction sans nommer l'individu.
+  - **Aucun nom propre fictif d'organisation présentée comme acteur du scénario** : tous les acteurs simulés sont génériques (« un grand groupe technologique », « une scale-up cloud », « un grand parti politique structuré »). Les institutions publiques réelles citées le sont uniquement comme **source de calibration** (« sources : Bank Al-Maghrib, GPBM, presse économique »), jamais comme partie prenante du scénario.
+  - **Toute opération M&A / institution sectorielle citée** est vérifiée : Tamwilcom, Intelaka, Damane Express (CCG-Tamwilcom Maroc), AVCA, Partech Africa Tech, AMDIE, DIFC, Kenya Investment Authority sont tous des programmes / institutions publiques réelles.
+  - **Plages réalistes plutôt que chiffres ponctuels inventés** : « 25-35 % », « 4-8 points », « 30-50 % » plutôt qu'un nombre précis non sourcé.
+  - **Tous les events historiques** sont présentés au conditionnel hypothétique (« simulation d'un what-if politique majeur ») ou comme dynamique archétypale (« crises archétypales du secteur ») — jamais nommément.
+- **Apprentissage clé** : pour productiviser des templates rapidement avec rigueur DEFCON 1, le cadre cabinet conseil suivant fonctionne : (a) conserver le `role_key` du brief original mais réécrire complètement le `profile` en formulation générique, (b) résumer le contexte stratégique en abstrayant tous les noms propres, (c) calibrer les insights sur des plages plutôt que des points fixes, (d) citer les sources de calibration (institutions publiques réelles) sans les présenter comme parties prenantes. Cette discipline permet de produire 13 modèles en quelques heures sans introduire de claim factuel à risque.
+
 ### 2026-05-03 — US-089 Correction DEFCON 1 modèles publics — purge claims factuels non vérifiés
 - **Statut** : passes: true (chantier L-models-pdf-brief, follow-up US-086/US-088).
 - **10 corrections appliquées** :

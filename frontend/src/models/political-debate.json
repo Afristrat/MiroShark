@@ -1,0 +1,126 @@
+{
+  "slug": "political-debate",
+  "sector": "politique-publique",
+  "preset_source": "political_debate",
+  "title": {
+    "fr": "Débat politique — Bascule de l'opinion publique sur 48 heures après un débat majeur",
+    "en": "Political Debate — 48-Hour Public Opinion Tilt after a Major Debate",
+    "ar": "نقاش سياسي — انعطاف الرأي العام على مدى 48 ساعة بعد نقاش كبير"
+  },
+  "subtitle": {
+    "fr": "Modèle pré-calibré sur la trajectoire d'opinion publique post-débat télévisé entre deux candidats à une élection présidentielle (25 agents, 48 rounds horaires)",
+    "en": "Pre-calibrated model on the post-debate public-opinion trajectory between two presidential candidates (25 agents, 48 hourly rounds)",
+    "ar": "نموذج معاير مسبقاً على مسار الرأي العام بعد نقاش تلفزيوني بين مرشَّحَين لانتخابات رئاسية (25 وكيلاً، 48 جولة بالساعة)"
+  },
+  "summary_short": {
+    "fr": "Simulation horaire (H+0 à H+48) de la trajectoire d'opinion publique après un débat télévisé entre deux candidats à une élection présidentielle de premier plan : 25 agents (jeunes électeurs, parents de banlieue, commentateurs politiques, journalistes, électeurs indécis), output : trajectoire de sentiment heure par heure, identification de la fenêtre où le récit dominant se cristallise, repérage des moments viraux qui basculent l'opinion et des chambres d'écho qui amplifient ou modèrent.",
+    "en": "Hourly simulation (H+0 to H+48) of the public-opinion trajectory after a televised debate between two leading presidential candidates: 25 agents (young voters, suburban parents, political commentators, journalists, undecided voters), output: hourly sentiment trajectory, identification of when the dominant narrative crystallises, mapping of viral moments tipping opinion and of echo chambers amplifying or moderating.",
+    "ar": "محاكاة بالساعة (من H+0 إلى H+48) لمسار الرأي العام بعد نقاش تلفزيوني بين مرشَّحَين رئاسيَّين بارزَين: 25 وكيلاً (الناخبون الشباب، آباء الضواحي، المعلِّقون السياسيون، الصحفيون، الناخبون المتردّدون)، المخرجات: مسار المشاعر ساعة بساعة، تحديد لحظة تبلور السرد المهيمن، رسم اللحظات الفيروسية التي تَقلب الرأي وغرف الصدى التي تُضخّم أو تُعدِّل."
+  },
+  "context_long": {
+    "fr": "Un débat télévisé de premier plan dans une élection présidentielle déclenche une cascade d'opinion en deux temps : une réaction immédiate (premières 12 heures) dominée par les segments politiquement engagés, puis une seconde vague (12 à 48 heures) où les chambres d'écho médiatiques fixent le récit dominant pour les électeurs moyennement informés. Le modèle simule cette dynamique sur cinq grands thèmes archétypaux d'un débat présidentiel (économie, immigration, santé, politique étrangère, climat) sans s'attacher à une élection spécifique. Les 25 agents répartissent l'audience en cinq démographies clés : jeunes électeurs très actifs sur les réseaux sociaux, électeurs de banlieue à arbitrage économique-santé, commentateurs politiques alignés ou en transversalité partisane, journalistes en quête d'angle dominant, électeurs indécis attentifs à l'authenticité et aux spécificités. Le modèle ne reproduit aucun débat historique précis et n'attribue aucune déclaration à un candidat réel : il évalue les dynamiques génériques d'un événement politique majeur [sources : littérature publique en science politique sur l'effet débat, instituts de sondage publics tels que IFOP, Ipsos, Pew, Gallup, archives publiques de débats présidentiels].",
+    "en": "A televised debate of presidential significance triggers a two-phase opinion cascade: an immediate reaction (first 12 hours) dominated by politically engaged segments, then a second wave (12-48 hours) in which media echo chambers fix the dominant narrative for moderately informed voters. The model simulates this dynamic across five archetypal themes of a presidential debate (economy, immigration, health, foreign policy, climate) without tying to a specific election. The 25 agents allocate the audience across five key demographics: young voters highly active on social media, suburban voters arbitrating between economy and health, partisan or cross-cutting political commentators, journalists hunting the dominant angle, undecided voters attentive to authenticity and specifics. The model does not reproduce any historical debate and attributes no statement to a real candidate: it evaluates generic dynamics of a major political event [sources: public political-science literature on the debate effect, public polling institutes such as IFOP, Ipsos, Pew, Gallup, public archives of presidential debates].",
+    "ar": "يُطلق نقاش تلفزيوني ذو أهمية رئاسية تتاليَ رأيٍ على مرحلتين: ردّ فعل فوري (الساعات الـ 12 الأولى) تَهيمن عليه الشرائح المُلتزِمة سياسياً، ثمّ موجة ثانية (12 إلى 48 ساعة) تُثبِّت فيها غرف الصدى الإعلامية السرد المهيمن لدى الناخبين متوسطي الاطّلاع. يُحاكي النموذج هذه الدينامية عبر خمسة محاور نمطية لنقاش رئاسي (الاقتصاد، الهجرة، الصحة، السياسة الخارجية، المناخ) دون الارتباط بانتخابات بعينها. يُوزّع الوكلاء الـ 25 الجمهور على خمس فئات ديمغرافية مفتاح: ناخبون شباب نشطون جداً على وسائل التواصل، ناخبون من الضواحي يُحكِّمون بين الاقتصاد والصحة، مُعلّقون سياسيون منحازون أو متجاوزون للحزبية، صحفيون يَبحثون عن الزاوية المهيمنة، ناخبون متردّدون يقظون للأصالة والتفاصيل. لا يستنسخ النموذج أيّ نقاش تاريخي محدَّد ولا يُنسب أيّ تصريح إلى مرشَّح حقيقي: يُقيّم الديناميكيات العامة لحدث سياسي كبير [مصادر: الأدبيات العمومية في علم السياسة حول أثر النقاش، معاهد سبر الآراء العمومية مثل IFOP وIpsos وPew وGallup، الأرشيفات العمومية للنقاشات الرئاسية]."
+  },
+  "decision_question": {
+    "fr": "À quelle heure le récit post-débat se cristallise-t-il, lequel des deux récits concurrents s'impose à H+48, et quels sont les moments viraux qui pèsent le plus dans la bascule des indécis ?",
+    "en": "At what hour does the post-debate narrative crystallise, which of the two competing narratives prevails at H+48, and which viral moments weigh most in tilting undecided voters?",
+    "ar": "في أيّ ساعة يَتبلور السرد ما بعد النقاش، وأيُّ السردَين المتنافسَين يَتفوّق عند H+48، وما اللحظات الفيروسية الأثقل في انعطاف المتردّدين؟"
+  },
+  "agents_simulated": [
+    {
+      "role_key": "jeunes_electeurs",
+      "profile": {
+        "fr": "Jeunes électeurs (18-29 ans) — 6 agents — très actifs sur réseaux sociaux, mobilisés par certains thèmes sociétaux, attention courte mais effet viral important.",
+        "en": "Young voters (18-29) — 6 agents — very active on social media, mobilised by certain societal themes, short attention span but high viral impact.",
+        "ar": "ناخبون شباب (18-29 سنة) — 6 وكلاء — نشطون جداً على وسائل التواصل، يُعبَّأون عبر مواضيع مجتمعية معيّنة، انتباه قصير لكن أثر فيروسي كبير."
+      }
+    },
+    {
+      "role_key": "parents_banlieue",
+      "profile": {
+        "fr": "Parents de banlieue — 5 agents — démographie pivot, arbitrent entre économie, santé et sécurité, sensibles à la cohérence des chiffrages.",
+        "en": "Suburban parents — 5 agents — pivotal demographic, arbitrate between economy, health and security, sensitive to costing coherence.",
+        "ar": "آباء الضواحي — 5 وكلاء — فئة ديمغرافية محورية، يُحكِّمون بين الاقتصاد والصحة والأمن، حساسون لاتّساق الأرقام."
+      }
+    },
+    {
+      "role_key": "commentateurs_politiques",
+      "profile": {
+        "fr": "Commentateurs politiques — 5 agents — alignés partisanement avec quelques voix transverses, fixent le cadre interprétatif initial dans les 12 premières heures.",
+        "en": "Political commentators — 5 agents — partisanly aligned with some cross-cutting voices, set the initial interpretive frame within the first 12 hours.",
+        "ar": "مُعلِّقون سياسيون — 5 وكلاء — منحازون حزبياً مع بعض الأصوات المتجاوزة، يُثبّتون الإطار التفسيري الأوّلي خلال الساعات الـ 12 الأولى."
+      }
+    },
+    {
+      "role_key": "journalistes",
+      "profile": {
+        "fr": "Journalistes — 4 agents — chassent l'angle dominant, comparent aux sondages flash, alimentent la deuxième vague de récit.",
+        "en": "Journalists — 4 agents — chase the dominant angle, benchmark against flash polls, feed the second narrative wave.",
+        "ar": "صحفيون — 4 وكلاء — يُطاردون الزاوية المهيمنة، يُقارنون بسبر الآراء السريع، يُغذّون الموجة السردية الثانية."
+      }
+    },
+    {
+      "role_key": "electeurs_indecis",
+      "profile": {
+        "fr": "Électeurs indécis — 5 agents — cherchent l'authenticité, attentifs aux moments d'hésitation, basculent typiquement entre H+24 et H+48 selon récit dominant.",
+        "en": "Undecided voters — 5 agents — seek authenticity, watch hesitation moments, typically tilt between H+24 and H+48 depending on the dominant narrative.",
+        "ar": "ناخبون متردّدون — 5 وكلاء — يَسعون إلى الأصالة، يقظون للحظات التردّد، يَنعطفون عادةً بين H+24 وH+48 وفق السرد المهيمن."
+      }
+    }
+  ],
+  "key_insights": {
+    "fr": [
+      "Le récit dominant se cristallise généralement entre H+18 et H+30 dans les exécutions du modèle : la deuxième vague médiatique (H+12 à H+24) pèse plus que la première sur la perception des indécis, parce qu'elle structure l'angle interprétatif autour de quelques moments viraux.",
+      "Un moment d'hésitation visible (silence prolongé, redirection maladroite) pèse en moyenne 3 à 6 points sur l'image d'authenticité d'un candidat dans les trajectoires simulées — c'est le signal le plus prédictif chez les indécis.",
+      "Une émotion partagée perçue comme authentique (récit personnel ou récit incarné) génère un effet positif soutenu jusqu'à H+48 chez la démographie pivot, à condition de ne pas être suivie d'un cadre interprétatif partisan trop rapide qui le neutralise.",
+      "Les chambres d'écho amplifient les positions initiales davantage qu'elles ne les retournent : un candidat déjà perçu défavorable par 50 % au pré-débat ne renverse l'opinion à 48 heures que dans une trajectoire sur cinq dans les exécutions du modèle, confirmant l'inertie typique observée par la littérature en science politique."
+    ],
+    "en": [
+      "The dominant narrative typically crystallises between H+18 and H+30 in model runs: the second media wave (H+12 to H+24) weighs more than the first on undecided perception, because it structures the interpretive angle around a few viral moments.",
+      "A visible hesitation moment (prolonged silence, awkward redirection) weighs an average 3-6 points on a candidate's authenticity image in simulated trajectories — the most predictive signal among undecideds.",
+      "A perceived authentic shared emotion (personal or embodied narrative) generates a sustained positive effect to H+48 among the pivotal demographic, provided it is not followed by a too-rapid partisan interpretive frame that neutralises it.",
+      "Echo chambers amplify initial positions more than they reverse them: a candidate already perceived unfavourably by 50% pre-debate reverses opinion at 48 hours in only one in five trajectories in model runs, confirming the inertia typically observed in political-science literature."
+    ],
+    "ar": [
+      "يَتبلور السرد المهيمن عادةً بين H+18 وH+30 في تنفيذات النموذج: تَزن الموجة الإعلامية الثانية (H+12 إلى H+24) أكثر من الأولى على تصوُّر المتردّدين، لأنها تُهيكل الزاوية التفسيرية حول بضع لحظات فيروسية.",
+      "تَزن لحظة تردُّد ظاهرة (صمت ممتدّ، تحويل أخرق للموضوع) في المتوسط 3 إلى 6 نقاط على صورة أصالة المرشَّح في المسارات المُحاكاة — وهي الإشارة الأكثر تنبُّؤاً لدى المتردّدين.",
+      "يُولّد تَشارك انفعال يُدرَك أصيلاً (سرد شخصي أو سرد مُجسَّد) أثراً إيجابياً ممتدّاً حتى H+48 لدى الفئة المحورية، شرط ألّا يُتبَع بإطار تفسيري حزبي سريع جداً يُلغيه.",
+      "تُضخّم غرف الصدى المواقف الأوّلية أكثر ممّا تَقلبها: لا يَقلب مرشَّحٌ يُدرَك سلبياً بنسبة 50 % قبل النقاش الرأيَ بعد 48 ساعة إلا في واحدٍ من كلّ خمسة مسارات في تنفيذات النموذج، ممّا يؤكّد القصور الذاتي الذي تَرصده عادةً أدبيات علم السياسة."
+    ]
+  },
+  "brier_illustrative": 0.22,
+  "tags": [
+    "politique",
+    "débat",
+    "élection",
+    "opinion-publique",
+    "présidentielle",
+    "indécis"
+  ],
+  "cta_label": {
+    "fr": "Commander une analyse pour votre débat ou prise de parole publique",
+    "en": "Order an analysis for your debate or public address",
+    "ar": "طلب تحليل لنقاشكم أو خطابكم العمومي"
+  },
+  "use_cases_decisionmakers": {
+    "fr": [
+      "Direction de campagne préparant une candidate ou un candidat à un débat majeur dans les 4 à 8 semaines à venir.",
+      "Cabinet conseil en communication politique structurant un protocole pré-débat et post-débat pour son client.",
+      "Direction de la rédaction politique d'un grand média souhaitant pré-tester son cadre éditorial post-débat.",
+      "Institut de sondage cherchant à confronter ses prévisions à un modèle d'agents indépendant."
+    ],
+    "en": [
+      "Campaign leadership preparing a candidate for a major debate in the next 4-8 weeks.",
+      "Political-communications consultancy structuring a pre- and post-debate protocol for its client.",
+      "Political-news editorial leadership wishing to pre-test its post-debate editorial frame.",
+      "Polling institute looking to confront its forecasts with an independent agent-based model."
+    ],
+    "ar": [
+      "إدارة حملة تُعدّ مرشَّحة أو مرشَّحاً لنقاش كبير خلال 4 إلى 8 أسابيع.",
+      "مكتب استشارات في التواصل السياسي يُهيكل بروتوكولاً قبل النقاش وبعده لزبونه.",
+      "إدارة تحرير سياسية لوسيلة إعلام كبرى ترغب في اختبار إطارها التحريري ما بعد النقاش.",
+      "معهد سبر آراء يسعى إلى مقارنة توقُّعاته بنموذج وكلاء مستقل."
+    ]
+  }
+}

@@ -1,0 +1,135 @@
+{
+  "slug": "she-start-cohort",
+  "sector": "education",
+  "preset_source": "she_start_cohort_replay",
+  "title": {
+    "fr": "Cohorte She Start — Validation prédictive d'un programme d'accompagnement entrepreneurial féminin",
+    "en": "She Start Cohort — Predictive Validation of a Women's Entrepreneurial Programme",
+    "ar": "مجموعة She Start — تحقّق تنبّؤي من برنامج مرافقة لريادة الأعمال النسائية"
+  },
+  "subtitle": {
+    "fr": "Modèle pré-calibré sur la trajectoire 10 semaines d'une cohorte d'incubateur féminin pour mesurer la fidélité prédictive du modèle, sa stabilité statistique et ses angles morts en matière de détection de leadership (50 agents, 10 rounds d'une semaine).",
+    "en": "Pre-calibrated model on the 10-week trajectory of a women's incubator cohort to measure the predictive fidelity of the model, its statistical stability and its blind spots on leadership detection (50 agents, 10 one-week rounds).",
+    "ar": "نموذج معاير مسبقاً على مسار 10 أسابيع لمجموعة حاضنة نسائية لقياس الوفاء التنبّؤي للنموذج، واستقراره الإحصائي، ومناطقه العمياء في رصد القيادة (50 وكيلاً، 10 جولات من أسبوع واحد)."
+  },
+  "summary_short": {
+    "fr": "Simulation multi-agents sur 10 semaines de la trajectoire d'une cohorte d'incubateur féminin marocain (35 candidates accompagnées dans un parcours pré-amorçage) avec instrumentation tri-variant : un run de référence pour comparer à la vérité-terrain, cinq runs parallèles pour mesurer la stabilité statistique, un run en aveugle pour tester la détection de leaders réels masqués. 50 agents (35 candidates, cinq mentors archétypaux, trois jurés institutionnels, deux banquiers PME, cinq observateurs presse). Trois director events injectés aux semaines 3, 5 et 7. Verdict : score de validation PMF par candidate selon trois critères (clients payants, utilisateurs actifs, score jury), distribution inter-runs, et précision sur la détection de leaders non-évidents.",
+    "en": "Ten-week multi-agent simulation of the trajectory of a Moroccan women's incubator cohort (35 candidates supported through a pre-seed programme), with tri-variant instrumentation: one reference run to compare against ground truth, five parallel runs to measure statistical stability, one blind run to test detection of masked real leaders. 50 agents (35 candidates, five archetypal mentors, three institutional jurors, two SME bankers, five press observers). Three director events injected at weeks 3, 5 and 7. Verdict: PMF validation score per candidate against three criteria (paying customers, active users, jury score), inter-run distribution, and accuracy on the detection of non-obvious leaders.",
+    "ar": "محاكاة متعددة الوكلاء على مدى 10 أسابيع لمسار مجموعة حاضنة نسائية مغربية (35 مرشّحة مرافَقة في برنامج ما قبل البَذرية)، مع تَجهيز ثلاثيّ المتغيرات: تنفيذ مرجعي للمقارنة بالحقيقة الميدانية، خمسة تنفيذات متوازية لقياس الاستقرار الإحصائي، تنفيذ مُعمّى لاختبار رصد قياديّات حقيقيات مُخفيّات. 50 وكيلاً (35 مرشّحة، خمسة موجِّهين نمطيين، ثلاثة محكِّمين مؤسسيّين، اثنان من المصرفيّين للمقاولات الصغرى والمتوسطة، خمسة مراقبين من الصحافة). ثلاثة أحداث إخراجية مُحقَنة في الأسابيع 3 و5 و7. الحُكم: درجة تحقّق ملاءمة المنتج للسوق لكل مرشّحة وفق ثلاثة معايير (عملاء يدفعون، مستخدمون نشطون، درجة لجنة التحكيم)، التوزيع بين التنفيذات، ودقّة رصد القياديّات غير الواضحات."
+  },
+  "context_long": {
+    "fr": "La validation scientifique d'un programme d'accompagnement entrepreneurial féminin combine deux exigences distinctes : produire un score de progrès lisible pour les bailleurs et les institutions partenaires, et détecter de manière différentielle les profils de leadership émergents qui ne se signalent pas par les variables habituelles (volubilité publique, antécédent diplômant, capital social initial). Le modèle simule une cohorte archétypale de 35 candidates dans un programme pré-amorçage marocain de 10 semaines, sans reproduire de candidate ou de mentor réel. Aucune donnée nominative n'est utilisée. Trois variants instrumentent la simulation : un run de référence pour comparer la trajectoire simulée à une vérité-terrain anonymisée, cinq runs parallèles pour mesurer la stabilité statistique inter-runs, un run en aveugle où cinq candidates identifiées comme leaders réelles sont masquées avant simulation pour tester la capacité du modèle à les redécouvrir. Les agents intègrent les comportements observables des écosystèmes d'accompagnement entrepreneurial féminin documentés en sources publiques : associations professionnelles (AFEM au Maroc, structures équivalentes régionales), structures publiques d'appui aux PME (Tamwilcom, Intelaka, Damane Express), banques engagées sur le segment féminin, presse économique régionale. Trois director events réalistes peuvent être injectés en cours de programme (perturbation pédagogique, choc externe sectoriel, événement à fort effet de levier). La calibration s'appuie sur la dynamique observable des cohortes documentées en source publique [sources : rapports publics AFEM, ministère de l'Industrie et du Commerce du Maroc, ANAPEC, GEM Morocco, presse économique régionale].",
+    "en": "Scientific validation of a women's entrepreneurial programme combines two distinct demands: producing a progress score legible to funders and institutional partners, and differentially detecting emerging leadership profiles that do not surface through usual variables (public volubility, prior diploma, initial social capital). The model simulates an archetypal cohort of 35 candidates in a Moroccan 10-week pre-seed programme, without reproducing any real candidate or mentor. No nominative data is used. Three variants instrument the simulation: one reference run comparing the simulated trajectory to an anonymised ground truth, five parallel runs measuring inter-run statistical stability, one blind run where five candidates identified as real leaders are masked before simulation to test the model's ability to rediscover them. Agents draw on observable women's entrepreneurial-support ecosystem behaviours documented in public sources: professional associations (AFEM in Morocco, regional equivalents), public SME-support structures (Tamwilcom, Intelaka, Damane Express), banks engaged on the women's segment, regional business press. Three realistic director events can be injected during the programme (pedagogical disruption, external sectoral shock, high-leverage event). Calibration draws on the observable dynamics of cohorts documented in public sources [sources: AFEM public reports, Moroccan Ministry of Industry and Trade, ANAPEC, GEM Morocco, regional business press].",
+    "ar": "يَجمع التحقّق العلمي من برنامج مرافقة لريادة الأعمال النسائية مطلبَين مُتمايزَين: إنتاج درجة تقدُّم مقروءة للمموّلين والشركاء المؤسسيّين، وَرصد متباين لمَلامح القيادة الناشئة التي لا تَظهر بالمتغيرات المعتادة (الحضور العلني، الشهادة السابقة، الرأسمال الاجتماعي الأوّلي). يُحاكي النموذج مجموعةً نمطية من 35 مرشّحة في برنامج مغربي ما قبل بَذري مدّته 10 أسابيع، دون استنساخ أيّ مرشّحة أو موجِّه حقيقي. لا تُستعمل أيّ معطيات اسمية. ثلاثة متغيرات تُجهّز المحاكاة: تنفيذ مرجعي يُقارن المسار المُحاكى بحقيقة ميدانية مَجهولة الهوية، خمسة تنفيذات متوازية تقيس الاستقرار الإحصائي بين التنفيذات، وتنفيذ مُعمّى يُخفي خمس مرشّحات مُحدَّدات كقياديّات حقيقيات قبل المحاكاة لاختبار قدرة النموذج على إعادة اكتشافهن. يستند الوكلاء إلى السلوكيات القابلة للملاحظة في منظومة مرافقة ريادة الأعمال النسائية الموثَّقة في مصادر عمومية: جمعيات مهنية (AFEM بالمغرب، نظيرات إقليميات)، هياكل عمومية لدعم المقاولات الصغرى والمتوسطة (تمويلكم، انطلاقة، ضمان إكسبريس)، بنوك ملتزمة بالشريحة النسائية، الصحافة الاقتصادية الإقليمية. يمكن حقن ثلاثة أحداث إخراجية واقعية أثناء البرنامج (اضطراب بيداغوجي، صدمة قطاعية خارجية، حدث ذو رافعة قوية). تستند المعايرة إلى الديناميكية القابلة للملاحظة لمجموعات موثَّقة في مصادر عمومية [مصادر: تقارير AFEM العمومية، وزارة الصناعة والتجارة بالمغرب، الوكالة الوطنية لإنعاش التشغيل والكفاءات، GEM Morocco، الصحافة الاقتصادية الإقليمية]."
+  },
+  "decision_question": {
+    "fr": "À l'issue de 10 semaines, quel pourcentage de la cohorte valide le PMF (au moins deux des trois critères : clients payants, utilisateurs actifs, score jury), quelle est la stabilité statistique inter-runs de ce score, et quelles candidates leaders émergent dans le run en aveugle qui ne s'auraient pas signalées par les variables habituelles ?",
+    "en": "At the end of 10 weeks, what proportion of the cohort validates PMF (at least two of three criteria: paying customers, active users, jury score), what is the inter-run statistical stability of this score, and which leader candidates emerge in the blind run that would not have been spotted via usual variables?",
+    "ar": "في نهاية 10 أسابيع، ما النسبة المئوية للمجموعة التي تُحقّق ملاءمة المنتج للسوق (معياران على الأقلّ من ثلاثة: عملاء يدفعون، مستخدمون نشطون، درجة لجنة التحكيم)، وما الاستقرار الإحصائي بين التنفيذات لهذه الدرجة، وأيُّ مرشّحات قياديّات تَنبثق في التنفيذ المُعمّى لم تكن لتظهر بالمتغيرات المعتادة؟"
+  },
+  "agents_simulated": [
+    {
+      "role_key": "candidate_entrepreneur",
+      "profile": {
+        "fr": "Candidate accompagnée — entrepreneure pré-amorçage dans un secteur ciblé (services digitaux, agroalimentaire, économie circulaire), construit progressivement traction commerciale et gouvernance interne sur 10 semaines.",
+        "en": "Supported candidate — pre-seed entrepreneur in a targeted sector (digital services, agri-food, circular economy), builds commercial traction and internal governance progressively over 10 weeks.",
+        "ar": "مرشّحة مرافَقة — مقاوِلة في طور ما قبل البَذرية في قطاع مستهدَف (الخدمات الرقمية، الصناعة الغذائية، الاقتصاد الدائري)، تبني الجذب التجاري والحوكمة الداخلية تدريجياً على مدى 10 أسابيع."
+      }
+    },
+    {
+      "role_key": "mentor",
+      "profile": {
+        "fr": "Mentor archétypal — entrepreneure expérimentée ou cadre senior, fournit feedback structuré sur le business model, le pricing et la gestion d'équipe, attentive à la robustesse des fondamentaux.",
+        "en": "Archetypal mentor — experienced entrepreneur or senior executive, provides structured feedback on the business model, pricing and team management, attentive to fundamentals robustness.",
+        "ar": "موجِّهة نمطية — مقاوِلة ذات خبرة أو إطار كبير، تُقدّم تَغذية راجعة مُهيكَلة على نموذج الأعمال، والتسعير، وإدارة الفريق، يقظة لمَتانة الأساسيات."
+      }
+    },
+    {
+      "role_key": "institutional_juror",
+      "profile": {
+        "fr": "Jurée institutionnelle — représentante d'une fondation, d'une entreprise mécène ou d'une institution publique d'appui, applique une grille de notation alignée sur les standards bailleurs.",
+        "en": "Institutional juror — representative of a foundation, sponsor corporation or public support institution, applies a scoring grid aligned with funder standards.",
+        "ar": "محكِّمة مؤسسية — ممثّلة عن مؤسسة، أو شركة راعية، أو مؤسسة عمومية للدعم، تُطبّق شبكة تنقيط مُنسَّقة مع معايير المموّلين."
+      }
+    },
+    {
+      "role_key": "sme_banker",
+      "profile": {
+        "fr": "Banquière PME — analyse risque crédit, conditions d'éligibilité aux instruments publics (Tamwilcom, Intelaka, Damane Express), arbitre la maturité du dossier pour un financement post-incubation.",
+        "en": "SME banker — analyses credit risk, public-instrument eligibility (Tamwilcom, Intelaka, Damane Express), arbitrates dossier maturity for post-incubation financing.",
+        "ar": "مصرفية للمقاولات الصغرى والمتوسطة — تُحلّل مخاطر الائتمان، وشروط الأهلية للأدوات العمومية (تمويلكم، انطلاقة، ضمان إكسبريس)، تُحكّم نضج الملف لتمويل ما بعد الحاضنة."
+      }
+    },
+    {
+      "role_key": "press_observer",
+      "profile": {
+        "fr": "Observatrice presse économique régionale — couvre l'écosystème entrepreneurial féminin, distingue les programmes à fort impact des effets de communication, valorise les réussites mesurables.",
+        "en": "Regional business-press observer — covers the women's entrepreneurial ecosystem, distinguishes high-impact programmes from communication effects, values measurable successes.",
+        "ar": "مراقبة من الصحافة الاقتصادية الإقليمية — تُغطّي منظومة ريادة الأعمال النسائية، تُميّز البرامج العالية الأثر عن الأثر التواصلي، تُثمّن الإنجازات القابلة للقياس."
+      }
+    },
+    {
+      "role_key": "afem_program_lead",
+      "profile": {
+        "fr": "Responsable programme côté association d'accompagnement — pilote la cohorte au quotidien, ajuste les modules selon les écarts observés, restitue aux bailleurs avec une exigence d'objectivité.",
+        "en": "Programme lead at the supporting association — runs the cohort day-to-day, adjusts modules based on observed gaps, reports to funders with an objectivity requirement.",
+        "ar": "مسؤولة البرنامج على مستوى جمعية المرافقة — تُدير المجموعة يومياً، تُعدّل الوحدات وفق الفجوات المرصودة، ترفع التقرير للمموّلين بمتطلَّب الموضوعية."
+      }
+    }
+  ],
+  "key_insights": {
+    "fr": [
+      "Le score PMF moyen converge entre 25 et 35 % de la cohorte dans la majorité des trajectoires simulées — l'écart-type inter-runs est de l'ordre de 4 points, ce qui valide la stabilité statistique du modèle pour un usage en pilotage de programme et reporting bailleur.",
+      "Le run en aveugle redécouvre en moyenne trois des cinq leaders masqués : les deux profils les plus difficiles à détecter sont une candidate très introvertie sur les variables publiques mais avec une traction commerciale silencieuse, et une candidate à background atypique dont le réseau de mentors initial est peu structurant.",
+      "Le critère le plus prédictif de la validation PMF est le score moyen jury, devant les utilisateurs actifs et les clients payants : la corrélation suggère que la qualité de la restitution structurée est un meilleur signal que la métrique commerciale brute à 10 semaines.",
+      "Une perturbation pédagogique au milieu du programme (semaine 5) impacte de manière différentielle les profils : les candidates fortement structurées progressent plus vite, les candidates fragiles décrochent — l'effet net sur le score de cohorte global est faible mais l'effet sur la dispersion est significatif."
+    ],
+    "en": [
+      "The average PMF score converges between 25% and 35% of the cohort in most simulated trajectories — inter-run standard deviation is around 4 points, validating model statistical stability for programme management and funder reporting.",
+      "The blind run rediscovers on average three of the five masked leaders: the two hardest profiles to detect are a candidate highly introverted on public variables but with silent commercial traction, and a candidate with an atypical background whose initial mentor network is weakly structured.",
+      "The most predictive criterion of PMF validation is the average jury score, ahead of active users and paying customers: the correlation suggests that structured-feedback quality is a better signal than raw commercial metrics at 10 weeks.",
+      "A mid-programme pedagogical disruption (week 5) impacts profiles differentially: highly structured candidates progress faster, fragile ones fall behind — the net effect on the overall cohort score is small but the effect on dispersion is significant."
+    ],
+    "ar": [
+      "تَتقارب درجة ملاءمة المنتج للسوق المتوسّطة بين 25 و35 % من المجموعة في أغلب المسارات المُحاكاة — يقارب الانحراف المعياري بين التنفيذات 4 نقاط، ممّا يُثبت الاستقرار الإحصائي للنموذج لأغراض إدارة البرنامج وتقرير المموّلين.",
+      "يُعيد التنفيذ المُعمّى اكتشافَ ثلاث من أصل خمس قياديّات مُخفيّات في المتوسّط: المَلامح الأصعب رصداً هما مرشّحة شديدة الانطواء على المتغيرات العلنية لكن بجذب تجاري صامت، ومرشّحة بخلفية غير نمطية تكون شبكتها الأوّلية من الموجِّهين ضعيفة البِنية.",
+      "المعيار الأكثر تنبّؤاً بتحقّق ملاءمة المنتج للسوق هو الدرجة المتوسّطة للجنة التحكيم، يَسبق المستخدمين النشطين والعملاء الذين يدفعون: يَدلّ الترابط على أن جودة العَرض المُهيكَل إشارةٌ أفضل من المؤشّرات التجارية الخامّ عند 10 أسابيع.",
+      "يُؤثّر اضطراب بيداغوجي في منتصف البرنامج (الأسبوع 5) بشكل متباين على المَلامح: تَتقدّم المرشّحات شديدة البِنية بسرعة، وتَرتدّ المرشّحات الهشّات — الأثر الصافي على درجة المجموعة العامّة ضعيف لكن الأثر على التشتُّت كبير."
+    ]
+  },
+  "brier_illustrative": 0.20,
+  "tags": [
+    "incubateur",
+    "entrepreneuriat-féminin",
+    "She-Start",
+    "AFEM",
+    "PMF",
+    "Maroc",
+    "leadership"
+  ],
+  "cta_label": {
+    "fr": "Commander une analyse personnalisée pour votre cohorte d'accompagnement",
+    "en": "Order a personalised analysis for your support cohort",
+    "ar": "طلب تحليل مخصّص لمجموعتكم في المرافقة"
+  },
+  "use_cases_decisionmakers": {
+    "fr": [
+      "Direction d'une association d'accompagnement entrepreneurial souhaitant valider scientifiquement la trajectoire de sa cohorte avant restitution aux bailleurs.",
+      "Fondation ou bailleur public-privé voulant comparer plusieurs programmes d'accompagnement sur des critères standardisés et stables.",
+      "Direction d'une grande entreprise mécène évaluant l'impact réel d'un programme qu'elle finance avant renouvellement.",
+      "Direction d'un institut de recherche en sciences de gestion ou en économie travaillant sur la détection de leadership non-évident."
+    ],
+    "en": [
+      "Leadership of an entrepreneurial-support association seeking to scientifically validate its cohort trajectory before reporting to funders.",
+      "Foundation or public-private funder wishing to compare several support programmes on standardised, stable criteria.",
+      "Sponsor-corporation leadership assessing the real impact of a programme it funds before renewal.",
+      "Leadership of a management or economics research institute working on non-obvious leadership detection."
+    ],
+    "ar": [
+      "إدارة جمعية مرافقة لريادة الأعمال تسعى إلى التحقّق العلمي من مسار مجموعتها قبل التقرير للمموّلين.",
+      "مؤسسة أو ممَوّل عمومي-خاصّ يَرغب في مقارنة عدّة برامج مرافقة وفق معايير مُوحَّدة ومستقرّة.",
+      "إدارة شركة كبيرة راعية تُقيّم الأثر الفعلي لبرنامج تُموّله قبل التجديد.",
+      "إدارة معهد بحث في علوم التدبير أو الاقتصاد يَعمل على رصد القيادة غير الواضحة."
+    ]
+  }
+}

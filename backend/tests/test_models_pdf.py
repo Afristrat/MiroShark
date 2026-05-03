@@ -68,11 +68,26 @@ def client(app):
 # ── Constants ────────────────────────────────────────────────────────────────
 
 _SLUGS = (
+    # 5 modèles US-086 originaux
     "fusion-bancaire-mena",
     "crisis-drill-24h",
     "allocation-fonds-strategique",
     "stress-test-politique",
     "lancement-diaspora-eu",
+    # 13 modèles US-090 (productivisation des templates restants)
+    "adcheck-pre-launch",
+    "budget-loi-finances",
+    "campus-controversy",
+    "implantation-startup",
+    "corporate-crisis",
+    "crypto-launch",
+    "historical-whatif",
+    "pmf-startup-tech",
+    "political-debate",
+    "primaires-parti-politique",
+    "product-announcement",
+    "product-launch",
+    "she-start-cohort",
 )
 _LANGS = ("fr", "en", "ar")
 

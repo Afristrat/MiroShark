@@ -2059,9 +2059,17 @@
       "sector": {
         "banque": "Banking & M&A",
         "crisis": "Crisis & Communications",
+        "communication": "Communications & Crisis",
         "investissement": "Investment",
         "politique": "Public policy",
-        "distribution": "Distribution"
+        "politique-publique": "Public policy",
+        "distribution": "Distribution",
+        "marketing-export": "Marketing & Export",
+        "startup-tech": "Startup & Tech",
+        "crypto": "Crypto & DeFi",
+        "histoire-contrefactuel": "History & Counterfactual",
+        "education": "Education & Research",
+        "programme-entrepreneurial": "Entrepreneurial programme"
       }
     }
   }

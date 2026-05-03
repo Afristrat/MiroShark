@@ -110,7 +110,7 @@
               {{ String(idx + 1).padStart(2, '0') }}
             </span>
             <h3 class="md-agent-role">
-              {{ $t(`models.detail.agents.roles.${agent.role_key}`) }}
+              {{ agentRoleLabel(agent.role_key) }}
             </h3>
             <p class="md-agent-profile">
               {{ agent.profile[locale] || agent.profile.fr }}
@@ -258,26 +258,22 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
-import fusionBancaireMena from '../models/fusion-bancaire-mena.json'
-import crisisDrill24h from '../models/crisis-drill-24h.json'
-import allocationFondsStrategique from '../models/allocation-fonds-strategique.json'
-import stressTestPolitique from '../models/stress-test-politique.json'
-import lancementDiasporaEu from '../models/lancement-diaspora-eu.json'
-
 const props = defineProps({
   slug: { type: String, required: true },
 })
 
-// Registry statique : 5 modèles, importés à build-time.
-// Pas d'import() dynamique runtime — l'imbrication des i18n+JSON est suffisamment
-// petite (~80kB total) pour être chargée upfront sans pénalité.
-const REGISTRY = {
-  'fusion-bancaire-mena': fusionBancaireMena,
-  'crisis-drill-24h': crisisDrill24h,
-  'allocation-fonds-strategique': allocationFondsStrategique,
-  'stress-test-politique': stressTestPolitique,
-  'lancement-diaspora-eu': lancementDiasporaEu,
-}
+// US-090 — Registry étendu via import.meta.glob (build-time, eager). Prend
+// en charge les 18 modèles de la vitrine sans liste hardcodée à maintenir.
+// L'eager glob est équivalent en performance à des imports nommés statiques :
+// Vite tree-shake et bundle les JSON dans le chunk de la vue.
+const _modulesGlob = import.meta.glob('../models/*.json', { eager: true })
+const REGISTRY = Object.entries(_modulesGlob).reduce((acc, [path, mod]) => {
+  const data = mod.default || mod
+  if (data && typeof data.slug === 'string') {
+    acc[data.slug] = data
+  }
+  return acc
+}, {})
 
 const { locale: i18nLocale, t } = useI18n()
 const router = useRouter()
@@ -340,18 +336,32 @@ const brierLabel = computed(() => {
 })
 
 // Mapping modèle → situation radio QuoteView (réutilise la mécanique US-085).
-// fusion-bancaire-mena (banque/M&A institutionnel)  → 'crisis' (pas de catégorie M&A — la crise
-//   prudentielle est l'analogue le plus proche dans le formulaire actuel).
-// crisis-drill-24h (crise marque)                    → 'crisis'.
-// allocation-fonds-strategique (fonds souverain)     → 'crisis' (allocation = arbitrage exécutif).
-// stress-test-politique (loi/parlement)              → 'policy'.
-// lancement-diaspora-eu (distribution / GD)          → 'campaign'.
+// US-090 — étendu aux 18 modèles. Le formulaire QuoteView expose trois
+// situations : 'crisis' (arbitrage exécutif sous tension), 'policy' (parcours
+// législatif ou réglementaire), 'campaign' (lancement, communication,
+// adoption marché). On retombe sur la plus pertinente quand la sémantique
+// du modèle est ambiguë.
 const MODEL_TO_SITUATION = {
+  // 5 modèles US-086 originaux
   'fusion-bancaire-mena': 'crisis',
   'crisis-drill-24h': 'crisis',
   'allocation-fonds-strategique': 'crisis',
   'stress-test-politique': 'policy',
   'lancement-diaspora-eu': 'campaign',
+  // 13 modèles US-090
+  'adcheck-pre-launch': 'campaign',
+  'budget-loi-finances': 'policy',
+  'campus-controversy': 'crisis',
+  'implantation-startup': 'crisis',
+  'corporate-crisis': 'crisis',
+  'crypto-launch': 'campaign',
+  'historical-whatif': 'policy',
+  'pmf-startup-tech': 'campaign',
+  'political-debate': 'policy',
+  'primaires-parti-politique': 'policy',
+  'product-announcement': 'campaign',
+  'product-launch': 'campaign',
+  'she-start-cohort': 'campaign',
 }
 
 function onOrderModel () {
@@ -380,11 +390,26 @@ function onCustomRequest () {
 }
 
 // Note : l'i18n key d'un agent est stockée sous models.detail.agents.roles.<role_key>.
-// Si une clé est absente, vue-i18n renvoie la key littérale — on accepte ce fallback
-// silencieux pour ne pas planter si un nouveau role_key est ajouté avant la traduction.
-// Ne pas confondre avec model.agents_simulated[i].profile qui est un objet { fr, en, ar }
-// stocké directement dans le JSON du modèle (pas dans les locales).
-void t
+// US-090 — Pour les 13 nouveaux modèles, les role_key ne sont pas tous présents
+// dans les locales (la traduction des rôles spécifiques sera ajoutée au fil de
+// l'exposition des modèles). Quand la clé n'existe pas, on retombe sur une
+// transformation lisible du role_key lui-même (snake_case → mots capitalisés)
+// pour ne jamais afficher une clé i18n brute à l'utilisateur final.
+function agentRoleLabel (roleKey) {
+  if (!roleKey) return ''
+  const i18nKey = `models.detail.agents.roles.${roleKey}`
+  const translated = t(i18nKey)
+  // vue-i18n renvoie la clé littérale quand la traduction est manquante ;
+  // dans ce cas on convertit le role_key en libellé lisible pour fallback.
+  if (translated === i18nKey) {
+    return roleKey
+      .split(/[_\-]/)
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ')
+  }
+  return translated
+}
 </script>
 
 <style scoped>
@@ -541,6 +566,40 @@ void t
 .md-sector-pill--distribution {
   background: color-mix(in srgb, var(--wi-primary-container) 25%, var(--wi-surface));
   color: var(--wi-on-primary-container);
+}
+/* US-090 — secteurs étendus pour les 13 nouveaux modèles. Cohérent avec
+   les classes de ModelsListView pour conserver la même grammaire visuelle. */
+.md-sector-pill--communication {
+  background: var(--wi-error-container);
+  color: var(--wi-on-error-container);
+}
+.md-sector-pill--politique-publique {
+  background: var(--wi-tertiary-container);
+  color: var(--wi-on-tertiary-container);
+}
+.md-sector-pill--marketing-export {
+  background: color-mix(in srgb, var(--wi-primary-container) 25%, var(--wi-surface));
+  color: var(--wi-on-primary-container);
+}
+.md-sector-pill--startup-tech {
+  background: var(--wi-secondary-container);
+  color: var(--wi-on-secondary-container);
+}
+.md-sector-pill--crypto {
+  background: color-mix(in srgb, var(--wi-secondary-container) 60%, var(--wi-surface));
+  color: var(--wi-on-secondary-container);
+}
+.md-sector-pill--histoire-contrefactuel {
+  background: color-mix(in srgb, var(--wi-tertiary-container) 60%, var(--wi-surface));
+  color: var(--wi-on-tertiary-container);
+}
+.md-sector-pill--education {
+  background: color-mix(in srgb, var(--wi-error-container) 50%, var(--wi-surface));
+  color: var(--wi-on-error-container);
+}
+.md-sector-pill--programme-entrepreneurial {
+  background: color-mix(in srgb, var(--wi-secondary-container) 40%, var(--wi-surface));
+  color: var(--wi-on-secondary-container);
 }
 .md-brier-pill {
   display: inline-flex;

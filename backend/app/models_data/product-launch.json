@@ -1,0 +1,135 @@
+{
+  "slug": "product-launch",
+  "sector": "marketing-export",
+  "preset_source": "product_launch_v2",
+  "title": {
+    "fr": "Lancement produit B2C — Trajectoire d'adoption et pic de churn early-adopters sur 7 jours",
+    "en": "B2C Product Launch — Adoption Trajectory and Early-Adopter Churn Peak over 7 Days",
+    "ar": "إطلاق منتج موجَّه للعموم — مسار التَبنّي وذروة هجرة المتبنّين الأوائل على مدى 7 أيام"
+  },
+  "subtitle": {
+    "fr": "Modèle pré-calibré sur la trajectoire d'adoption d'un produit B2C pan-Afrique, du Day 1 au Day 7, avec pic de churn early-adopters au Day 5 (60 agents, 28 rounds de 6 heures)",
+    "en": "Pre-calibrated model on the adoption trajectory of a pan-African B2C product, from Day 1 to Day 7, with an early-adopter churn peak at Day 5 (60 agents, 28 six-hour rounds)",
+    "ar": "نموذج معاير مسبقاً على مسار تَبنّي منتج موجَّه للعموم بانإفريقي، من اليوم الأول إلى اليوم السابع، مع ذروة هجرة المتبنّين الأوائل في اليوم الخامس (60 وكيلاً، 28 جولة مدة كل منها 6 ساعات)"
+  },
+  "summary_short": {
+    "fr": "Simulation toutes-les-6-heures (J1 à J7) du parcours d'un lancement produit B2C pan-Afrique : 60 agents (early adopters, majorité pragmatique, late adopters sceptiques, créatrices de contenu, support utilisateur, observateurs concurrents), 28 rounds de 6 heures, 5 director events injectables (bug de scaling J1, article positif TechAfrica J2, tutoriel viral J3, contre-pub concurrent J5, promo flash J6), sortie : courbe d'adoption cumulée jour par jour, jour-pic de churn et amplitude, top 5 influenceurs prioritaires à mobiliser, top 3 signaux faibles à monitorer.",
+    "en": "Six-hour simulation (D1 to D7) of a pan-African B2C product launch: 60 agents (early adopters, pragmatic majority, sceptical late adopters, content creators, user support, competitor observers), 28 six-hour rounds, 5 injectable director events (D1 scaling bug, D2 positive TechAfrica article, D3 viral tutorial, D5 competitor counter-ad, D6 flash promo), output: cumulative adoption curve by day, churn peak day and amplitude, top 5 priority influencers to mobilise, top 3 weak signals to monitor.",
+    "ar": "محاكاة كل 6 ساعات (من اليوم الأول إلى اليوم السابع) لمسار إطلاق منتج موجَّه للعموم بانإفريقي: 60 وكيلاً (متبنّون مبكرون، الأغلبية البراغماتية، متبنّون متأخّرون مشكِّكون، مُنشِئو محتوى، دعم مستخدم، مراقبون منافسون)، 28 جولة مدة كل منها 6 ساعات، 5 أحداث مخرجية قابلة للحقن (خطأ مقياس في اليوم الأول، مقال إيجابي من TechAfrica في اليوم الثاني، شرح فيروسي في اليوم الثالث، إعلان مضاد من منافس في اليوم الخامس، عرض سريع في اليوم السادس)، المخرجات: منحنى التَبنّي التراكمي يوماً بيوم، يوم ذروة الهجرة وسعتها، أهم 5 مؤثّرين للأولوية، أهم 3 إشارات ضعيفة للرصد."
+  },
+  "context_long": {
+    "fr": "Le lancement d'un produit B2C en pan-Afrique sur 7 jours combine plusieurs régimes de risque : pic d'attention concentré, infrastructure technique mise sous tension immédiate, dynamique communautaire (créatrices de contenu et power users) cruciale pour le bouche-à-oreille, et fenêtre récurrente de pic de churn early-adopters typiquement au Day 5 (après le pic d'enthousiasme initial et l'épuisement des promesses immédiates). Le modèle simule un produit B2C archétypal lancé un lundi, avec acquisition organique combinée à une amorce campagne payante, sans reproduire un produit existant. Les 60 agents répartissent les communautés selon le modèle de diffusion d'innovation : 8 early adopters (J1-J3), 30 pragmatic majority (J3-J7), 10 sceptical late adopters, 6 créatrices de contenu (rôle multiplicateur), 3 support utilisateur (rôle amortisseur), 3 observateurs concurrents (rôle réactif). Cinq director events sont injectés pour stresser la trajectoire : bug de scaling visible à J1-PM (signaux 30 % de timeout), article positif TechAfrica à J2-AM, tutoriel viral créé par un power user à J3-PM, contre-publicité aggressive d'un concurrent direct à J5-AM (jour pic churn), promotion flash de la marque à J6-PM. Le modèle ne reproduit aucun cas individuel et s'appuie sur les dynamiques de lancement publiques [sources : presse tech pan-africaine, observatoires d'usage public, agrégateurs téléchargement Google Play/App Store, publications académiques sur la diffusion d'innovation].",
+    "en": "Launching a B2C product in pan-Africa over 7 days combines several risk regimes: concentrated attention peak, immediate technical-infrastructure strain, critical community dynamic (content creators and power users) for word-of-mouth, and a recurring early-adopter churn-peak window typically at Day 5 (after the initial enthusiasm peak and the exhaustion of immediate promises). The model simulates an archetypal B2C product launched on a Monday, with organic acquisition combined with a paid-campaign primer, without reproducing any existing product. The 60 agents allocate communities along the diffusion-of-innovation model: 8 early adopters (D1-D3), 30 pragmatic majority (D3-D7), 10 sceptical late adopters, 6 content creators (multiplier role), 3 user support (cushion role), 3 competitor observers (reactive role). Five director events are injected to stress-test the trajectory: visible scaling bug on D1-PM (30% timeout signals), positive TechAfrica article on D2-AM, viral tutorial by a power user on D3-PM, aggressive competitor counter-ad on D5-AM (peak churn day), brand flash promotion on D6-PM. The model does not replicate any individual case and draws on public launch dynamics [sources: pan-African tech press, public usage observatories, Google Play/App Store download aggregators, academic literature on diffusion of innovation].",
+    "ar": "يَجمع إطلاق منتج موجَّه للعموم في عموم أفريقيا على مدى 7 أيام بين عدّة أنظمة مخاطر: ذروة انتباه مُركَّزة، إجهاد فوري للبنية التحتية التقنية، دينامية مجتمعية حاسمة (مُنشِئو المحتوى والمستخدمون النشطون) من أجل التداول الشفهي، ونافذة متكرّرة لذروة هجرة المتبنّين الأوائل عادةً في اليوم الخامس (بعد ذروة الحماس الأولية واستنفاد الوعود الفورية). يُحاكي النموذج منتجاً موجَّهاً للعموم نمطياً يُطلَق يوم الإثنين، مع اقتناء عضوي مُقترن بتمهيد حملة مدفوعة، دون استنساخ منتج قائم. يُوزّع الوكلاء الـ 60 المجتمعات وفق نموذج انتشار الابتكار: 8 متبنّون مبكرون (من اليوم الأول إلى الثالث)، 30 أغلبية براغماتية (من الثالث إلى السابع)، 10 متبنّون متأخّرون مشكِّكون، 6 مُنشِئو محتوى (دور مُضاعِف)، 3 دعم مستخدم (دور وسادي)، 3 مراقبون منافسون (دور تفاعلي). تُحقَن خمسة أحداث مخرجية لاختبار صلابة المسار: خطأ مقياس مرئي في فترة بعد الزوال من اليوم الأول (إشارات بنسبة 30 % من حالات الفترة الزمنية المنتهية)، مقال إيجابي من TechAfrica في فترة قبل الزوال من اليوم الثاني، شرح فيروسي يَنشئه مستخدم نشط في فترة بعد الزوال من اليوم الثالث، إعلان مضاد عدواني من منافس في فترة قبل الزوال من اليوم الخامس (يوم ذروة الهجرة)، عرض سريع للعلامة التجارية في فترة بعد الزوال من اليوم السادس. لا يستنسخ النموذج أيّ حالة فردية ويَستند إلى ديناميكيات إطلاق عمومية [مصادر: الصحافة التقنية البانإفريقية، مراصد الاستخدام العمومية، مُجمِّعات تنزيلات Google Play وApp Store، الأدبيات الأكاديمية حول انتشار الابتكار]."
+  },
+  "decision_question": {
+    "fr": "Sur 7 jours, le produit atteint-il un taux d'adoption cumulé supérieur à 8 % à J7, survit-il au pic de churn de J5 avec rétention supérieure à 70 %, et quels sont les 5 influenceurs prioritaires à mobiliser early et les 3 signaux faibles à monitorer pour anticiper la trajectoire ?",
+    "en": "Over 7 days, does the product reach a cumulative adoption rate above 8% by D7, does it survive the D5 churn peak with retention above 70%, and which 5 priority influencers should be mobilised early and which 3 weak signals should be monitored to anticipate the trajectory?",
+    "ar": "على مدى 7 أيام، هل يَبلغ المنتج معدّل تَبنٍّ تراكمي يَفوق 8 % في اليوم السابع، وهل يَنجو من ذروة الهجرة في اليوم الخامس مع احتفاظ يَفوق 70 %، وما الـ 5 مؤثّرون للأولوية الواجب تعبئتهم مبكراً والـ 3 إشارات ضعيفة الواجب رصدها لتوقُّع المسار؟"
+  },
+  "agents_simulated": [
+    {
+      "role_key": "early_adopters",
+      "profile": {
+        "fr": "Early adopters — 8 agents — adoptent J1-J3, génèrent les premiers retours, multiplicateurs sociaux mais à risque de churn rapide si la promesse n'est pas tenue.",
+        "en": "Early adopters — 8 agents — adopt D1-D3, generate the first feedback, social multipliers but at risk of fast churn if the promise is unmet.",
+        "ar": "متبنّون مبكرون — 8 وكلاء — يَتبنّون من اليوم الأول إلى الثالث، يُولّدون أوّل التعليقات، مُضاعِفون اجتماعياً لكن عُرضة لهجرة سريعة إن لم يُنجَز الوعد."
+      }
+    },
+    {
+      "role_key": "pragmatic_majority",
+      "profile": {
+        "fr": "Majorité pragmatique — 30 agents — adoptent J3-J7 selon retours visibles et rapport qualité-prix, déclencheurs principaux du volume cumulé.",
+        "en": "Pragmatic majority — 30 agents — adopt D3-D7 based on visible feedback and value-for-money, principal drivers of cumulative volume.",
+        "ar": "الأغلبية البراغماتية — 30 وكيلاً — يَتبنّون من اليوم الثالث إلى السابع وفق التعليقات المرئية والقيمة مقابل السعر، المُحرِّكون الرئيسيون للحجم التراكمي."
+      }
+    },
+    {
+      "role_key": "sceptical_late",
+      "profile": {
+        "fr": "Late adopters sceptiques — 10 agents — adoptent au-delà de J7, exigent preuve sociale renforcée et stabilité technique avérée.",
+        "en": "Sceptical late adopters — 10 agents — adopt past D7, require strong social proof and proven technical stability.",
+        "ar": "متبنّون متأخّرون مشكِّكون — 10 وكلاء — يَتبنّون بعد اليوم السابع، يَشترطون دليلاً اجتماعياً قوياً واستقراراً تقنياً مُثبَتاً."
+      }
+    },
+    {
+      "role_key": "createurs_contenu",
+      "profile": {
+        "fr": "Créatrices et créateurs de contenu — 6 agents — multiplicateurs si convaincus, génèrent tutoriels et vidéos qui font basculer la majorité pragmatique.",
+        "en": "Content creators — 6 agents — multipliers when convinced, generate tutorials and videos that tip the pragmatic majority.",
+        "ar": "مُنشِئو محتوى — 6 وكلاء — مُضاعِفون عند الاقتناع، يُولّدون شروحات وفيديوهات تَقلب الأغلبية البراغماتية."
+      }
+    },
+    {
+      "role_key": "support_users",
+      "profile": {
+        "fr": "Support utilisateur — 3 agents — gèrent les premiers tickets, leur réactivité est un facteur clé de rétention au pic de churn J5.",
+        "en": "User support — 3 agents — handle first tickets, their responsiveness is a key retention factor at the D5 churn peak.",
+        "ar": "دعم المستخدم — 3 وكلاء — يَتعاملون مع التذاكر الأولى، تفاعليتهم عامل أساسي للاحتفاظ عند ذروة الهجرة في اليوم الخامس."
+      }
+    },
+    {
+      "role_key": "competitor_observers",
+      "profile": {
+        "fr": "Observateurs concurrents — 3 agents — préparent une riposte ciblée, généralement déclenchée à J5 sous forme de contre-pub agressive.",
+        "en": "Competitor observers — 3 agents — prepare a targeted retort, typically triggered on D5 in the form of an aggressive counter-ad.",
+        "ar": "مراقبون منافسون — 3 وكلاء — يُعدّون رداً مستهدَفاً، يُطلَق عادةً في اليوم الخامس على شكل إعلان مضاد عدواني."
+      }
+    }
+  ],
+  "key_insights": {
+    "fr": [
+      "Le pic de churn early-adopters tombe en J5 dans la majorité des trajectoires simulées : c'est un effet structurel lié à l'épuisement de la promesse initiale et au délai d'apparition des frustrations sur les fonctionnalités secondaires — anticiper avec contenu pédagogique et améliorations visibles entre J3 et J5 est le levier dominant.",
+      "Un bug de scaling à J1-PM (timeouts visibles) ne tue pas la trajectoire si la communication transparente intervient dans les 6 heures : dans les exécutions du modèle, l'amplitude du churn est divisée par deux quand l'équipe communique honnêtement le périmètre et le délai de remédiation.",
+      "Un tutoriel viral créé par un power user à J3-PM change la trajectoire d'environ 1,5 à 3 points d'adoption cumulée à J7 dans les trajectoires simulées — d'où l'intérêt d'identifier ces 5 power users en amont du lancement et de leur fournir des accès anticipés pour cultiver le contenu.",
+      "La promotion flash de J6 est efficace en valeur absolue (volume J6-J7) mais peut détériorer la rétention long terme si elle communique implicitement que le prix initial était trop élevé — recommander de la formuler comme « bonus de première semaine » plutôt que comme rabais ciblé."
+    ],
+    "en": [
+      "The early-adopter churn peak lands on D5 in most simulated trajectories: a structural effect tied to the exhaustion of the initial promise and the lag in surfacing frustrations on secondary features — anticipating with pedagogical content and visible improvements between D3 and D5 is the dominant lever.",
+      "A D1-PM scaling bug (visible timeouts) does not kill the trajectory if transparent communication occurs within 6 hours: in model runs, the churn amplitude is halved when the team honestly communicates scope and remediation timeline.",
+      "A D3-PM viral tutorial by a power user shifts the trajectory by roughly 1.5 to 3 cumulative adoption points by D7 in simulated trajectories — hence the value of identifying these 5 power users ahead of launch and giving them early access to cultivate content.",
+      "The D6 flash promotion is effective in absolute terms (D6-D7 volume) but can damage long-term retention if it implicitly communicates that the initial price was too high — recommend framing it as 'first-week bonus' rather than a targeted rebate."
+    ],
+    "ar": [
+      "تَقع ذروة هجرة المتبنّين الأوائل في اليوم الخامس في أغلب المسارات المُحاكاة: أثرٌ بنيوي مرتبط باستنفاد الوعد الأوّلي وتأخُّر ظهور الإحباطات على الميزات الثانوية — يُعدّ التوقُّع بمحتوى بيداغوجي وتحسينات مرئية بين اليومَين الثالث والخامس الرافعة المهيمنة.",
+      "لا يَقتل خطأ مقياس في فترة بعد الزوال من اليوم الأول (حالات الفترة الزمنية المنتهية المرئية) المسارَ إذا حصل تواصل شفّاف في 6 ساعات: في تنفيذات النموذج، يُقَسَّم سَعَة الهجرة على اثنَين حين يَتواصل الفريق بصدق حول النطاق والمهلة العلاجية.",
+      "يُحرّك شرح فيروسي من مستخدم نشط في فترة بعد الزوال من اليوم الثالث المسارَ بنحو 1,5 إلى 3 نقاط تَبنٍّ تراكمية في اليوم السابع في المسارات المُحاكاة — ومن ثمّ تأتي قيمة تحديد هؤلاء الـ 5 مستخدمين النشطين قبل الإطلاق ومَنْحِهم وصولاً مبكراً لرعاية المحتوى.",
+      "العرض السريع في اليوم السادس فعّال من حيث القيمة المُطلَقة (حجم اليومَين السادس والسابع) لكنه قد يُضعِف الاحتفاظ على المدى الطويل إذا أوحى ضمنياً بأنّ السعر الأوّلي كان مرتفعاً جداً — يُوصى بصياغته بوصفه «مكافأة الأسبوع الأول» لا تخفيضاً مستهدَفاً."
+    ]
+  },
+  "brier_illustrative": 0.20,
+  "tags": [
+    "marketing",
+    "lancement",
+    "B2C",
+    "GTM",
+    "adoption",
+    "churn",
+    "Afrique"
+  ],
+  "cta_label": {
+    "fr": "Commander une simulation pour votre lancement produit B2C",
+    "en": "Order a simulation for your B2C product launch",
+    "ar": "طلب محاكاة لإطلاقكم المنتجي الموجَّه للعموم"
+  },
+  "use_cases_decisionmakers": {
+    "fr": [
+      "Direction product ou GTM lead d'une scale-up tech préparant un lancement B2C en pan-Afrique dans les 4 à 8 semaines suivantes.",
+      "Direction marketing d'un grand acteur retail ou télécom souhaitant pré-tester sa séquence de lancement multi-pays.",
+      "Cabinet conseil en growth structurant un playbook pour un client en post-Série B engagé sur un lancement multi-marchés.",
+      "Comité d'investissement scale-up évaluant la robustesse du plan launch d'une portefolio company avant injection de capital additionnel."
+    ],
+    "en": [
+      "Product or GTM-lead leadership of a tech scale-up preparing a pan-African B2C launch in the next 4-8 weeks.",
+      "Marketing leadership of a large retail or telecom player wishing to pre-test its multi-country launch sequence.",
+      "Growth consultancy structuring a playbook for a post-Series B client committed to a multi-market launch.",
+      "Scale-up investment committee assessing the robustness of a portfolio company's launch plan before additional capital injection."
+    ],
+    "ar": [
+      "إدارة المنتج أو قائد الانطلاق إلى السوق لشركة تقنية متوسعة تُعدّ إطلاقاً موجَّهاً للعموم في عموم أفريقيا في 4 إلى 8 أسابيع.",
+      "إدارة التسويق لفاعل تجزئة أو اتصالات كبير ترغب في اختبار قَبْلي لتَتاليها التوسُّعي متعدّد البلدان.",
+      "مكتب استشارات في النمو يُهيكل دليلاً لزبون ما بعد جولة المرتبة الثانية مُلتزم بإطلاق متعدّد الأسواق.",
+      "لجنة استثمار في الشركات المتوسعة تُقيّم صلابة خطة إطلاق إحدى شركات حافظتها قبل ضخّ رأس مال إضافي."
+    ]
+  }
+}

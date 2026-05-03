@@ -1,0 +1,152 @@
+{
+  "slug": "budget-loi-finances",
+  "sector": "politique-publique",
+  "preset_source": "budget_loi_finances",
+  "title": {
+    "fr": "PLF MENA — Stress test parlementaire d'un projet de loi de finances sensible",
+    "en": "MENA Finance Bill — Parliamentary Stress Test on a Sensitive Budget Law",
+    "ar": "مشروع قانون مالية إقليمي — اختبار ضغط برلماني لقانون مالية حسّاس"
+  },
+  "subtitle": {
+    "fr": "Modèle pré-calibré sur le parcours législatif d'un PLF marocain comportant trois mesures controversées (50 agents, 10 rounds de 3 jours)",
+    "en": "Pre-calibrated model on the legislative path of a Moroccan finance bill carrying three controversial measures (50 agents, 10 three-day rounds)",
+    "ar": "نموذج معاير مسبقاً على المسار التشريعي لمشروع قانون مالية مغربي يتضمّن ثلاثة إجراءات مثيرة للجدل (50 وكيلاً، 10 جولات مدة كل منها 3 أيام)"
+  },
+  "summary_short": {
+    "fr": "Simulation multi-agents sur 30 jours du parcours d'un projet de loi de finances comportant trois mesures sensibles (hausse TVA des services financiers, suppression progressive de subventions carburant, taxe sur bénéfices exceptionnels du secteur bancaire) : 50 agents (parlementaires majorité, parlementaires opposition, syndicats UMT-CDT-UGTM, patronat CGEM-GPBM, journalistes économiques, économistes indépendants, représentants PME, régulateurs Bank Al-Maghrib et AMMC), 10 rounds de 3 jours, verdict probabiliste en trois branches (PLF adopté intact, PLF adopté avec amendements majeurs, PLF bloqué en commission).",
+    "en": "Thirty-day multi-agent simulation of a finance bill containing three sensitive measures (financial-services VAT increase, gradual withdrawal of fuel subsidies, levy on banking exceptional profits): 50 agents (majority MPs, opposition MPs, UMT-CDT-UGTM unions, CGEM-GPBM employers, economic press, independent economists, SME representatives, Bank Al-Maghrib and AMMC regulators), 10 three-day rounds, probabilistic verdict in three branches (bill enacted intact, enacted with major amendments, blocked in committee).",
+    "ar": "محاكاة متعددة الوكلاء لمدة 30 يوماً لمسار مشروع قانون مالية يتضمّن ثلاثة إجراءات حسّاسة (رفع الضريبة على القيمة المضافة على الخدمات المالية، السحب التدريجي لدعم المحروقات، ضريبة على الأرباح الاستثنائية للقطاع البنكي): 50 وكيلاً (نواب الأغلبية، نواب المعارضة، نقابات الاتحاد المغربي للشغل والاتحاد العام والكونفدرالية الديمقراطية، أرباب العمل بالاتحاد العام لمقاولات المغرب والمجموعة المهنية لبنوك المغرب، الصحافة الاقتصادية، اقتصاديون مستقلون، ممثّلو المقاولات الصغيرة والمتوسطة، الجهات الرقابية بنك المغرب وهيئة الأسواق المالية)، 10 جولات مدة كل منها 3 أيام، حكم احتمالي في ثلاثة فروع (اعتماد المشروع كاملاً، اعتماده مع تعديلات جوهرية، حجبه في اللجنة)."
+  },
+  "context_long": {
+    "fr": "Un projet de loi de finances comportant simultanément trois mesures à fort coût politique constitue l'un des terrains les plus complexes de la politique publique : chaque mesure mobilise une coalition différente, et les marchandages internes à la majorité comme les ruptures avec les corps intermédiaires modifient le rapport de force d'un round à l'autre. Le modèle simule l'instruction parlementaire d'un PLF marocain archétypal sur 30 jours, en s'appuyant sur la structure institutionnelle réelle du Royaume (deux chambres, commissions des finances, conseil constitutionnel) et sur les acteurs habituels du débat budgétaire (centrales syndicales, organisations patronales, presse économique, régulateurs sectoriels). Trois director events sont injectés à des moments clés : dépôt officiel du texte, publication d'une note d'analyse macroéconomique de Bank Al-Maghrib, vote en commission des finances. Le modèle ne reproduit aucun PLF historique précis : il intègre la dynamique parlementaire observable telle qu'elle apparaît dans les bulletins officiels du Parlement et dans la presse économique régionale [sources : bulletins officiels du Parlement marocain, publications Bank Al-Maghrib, GPBM, presse économique de la place de Casablanca].",
+    "en": "A finance bill simultaneously carrying three high-political-cost measures is one of the most complex terrains in public policy: each measure mobilises a different coalition, and bargaining inside the majority and ruptures with intermediate bodies shift the balance of forces from one round to the next. The model simulates the parliamentary review of an archetypal Moroccan finance bill over 30 days, drawing on the country's actual institutional structure (two chambers, finance committees, constitutional council) and the usual budget-debate actors (union confederations, employer organisations, economic press, sectoral regulators). Three director events are injected at key moments: official tabling of the text, publication of a Bank Al-Maghrib macroeconomic note, vote in the finance committee. The model does not replicate any historical bill: it captures the parliamentary dynamic observable in the official parliamentary bulletins and the regional business press [sources: official Moroccan Parliament bulletins, Bank Al-Maghrib publications, GPBM, Casablanca business press].",
+    "ar": "يُعدّ مشروع قانون مالية يحمل في آنٍ معاً ثلاثة إجراءات ذات كلفة سياسية مرتفعة من أكثر مجالات السياسة العمومية تعقيداً: كل إجراء يُعبّئ تحالفاً مختلفاً، والمساومات داخل الأغلبية والقطائع مع الأجسام الوسيطة تُعدّل موازين القوى من جولة إلى أخرى. يُحاكي النموذج المسطرة البرلمانية لمشروع قانون مالية مغربي نمطي على مدى 30 يوماً، مستنداً إلى البنية المؤسسية الفعلية للمملكة (غرفتان، لجان المالية، المجلس الدستوري) وإلى الفاعلين المعتادين في النقاش الميزانياتي (المركزيات النقابية، منظمات أرباب العمل، الصحافة الاقتصادية، الجهات الرقابية القطاعية). تُحقَن ثلاثة أحداث مخرجية في لحظات مفتاح: الإيداع الرسمي للنصّ، نشر مذكرة تحليل ماكرو-اقتصادي من بنك المغرب، التصويت في لجنة المالية. لا يستنسخ النموذج أيّ قانون مالية تاريخي محدّد: يلتقط الدينامية البرلمانية القابلة للملاحظة كما تظهر في النشرات الرسمية للبرلمان والصحافة الاقتصادية الإقليمية [مصادر: النشرات الرسمية للبرلمان المغربي، منشورات بنك المغرب، المجموعة المهنية لبنوك المغرب، الصحافة الاقتصادية بالدار البيضاء]."
+  },
+  "decision_question": {
+    "fr": "Le projet de loi de finances est-il adopté avant la date constitutionnelle limite, et sous quelle des trois branches (intact, avec amendements majeurs, ou bloqué en commission) ?",
+    "en": "Will the finance bill be enacted before the constitutional deadline, and under which of the three branches (intact, with major amendments, or blocked in committee)?",
+    "ar": "هل يُعتمد مشروع قانون المالية قبل الأجل الدستوري، وتحت أيّ من الفروع الثلاثة (كاملاً، مع تعديلات جوهرية، أم محجوباً في اللجنة)؟"
+  },
+  "agents_simulated": [
+    {
+      "role_key": "parlementaires_majorite",
+      "profile": {
+        "fr": "Parlementaires de la majorité gouvernementale — 6 agents — gèrent la discipline de groupe, négocient les concessions ciblées et les amendements de compromis.",
+        "en": "Government-majority MPs — 6 agents — enforce party discipline, negotiate targeted concessions and compromise amendments.",
+        "ar": "نواب الأغلبية الحكومية — 6 وكلاء — يضبطون الانضباط الحزبي، ويتفاوضون على التنازلات المستهدفة وتعديلات التسوية."
+      }
+    },
+    {
+      "role_key": "parlementaires_opposition",
+      "profile": {
+        "fr": "Parlementaires de l'opposition — 6 agents — coordonnent les amendements obstructifs, les motions de procédure et la communication publique sur les trois mesures sensibles.",
+        "en": "Opposition MPs — 6 agents — coordinate obstructive amendments, procedural motions and public messaging on the three sensitive measures.",
+        "ar": "نواب المعارضة — 6 وكلاء — يُنسِّقون التعديلات المعرقِلة، والملتمسات الإجرائية، والتواصل العمومي حول الإجراءات الحسّاسة الثلاثة."
+      }
+    },
+    {
+      "role_key": "centrales_syndicales",
+      "profile": {
+        "fr": "Centrales syndicales (UMT, CDT, UGTM) — 6 agents — coordonnent la mobilisation sociale, négocient les contreparties pour les ménages et le pouvoir d'achat.",
+        "en": "Union confederations (UMT, CDT, UGTM) — 6 agents — coordinate social mobilisation, negotiate offsets for households and purchasing power.",
+        "ar": "المركزيات النقابية (الاتحاد المغربي للشغل، الكونفدرالية الديمقراطية للشغل، الاتحاد العام للشغالين) — 6 وكلاء — يُنسِّقون التعبئة الاجتماعية ويتفاوضون على التعويضات للأسر والقدرة الشرائية."
+      }
+    },
+    {
+      "role_key": "patronat_cgem_gpbm",
+      "profile": {
+        "fr": "Patronat (CGEM, GPBM) — 6 agents — défendent la prévisibilité fiscale, modulent l'argumentaire selon les sous-secteurs (banques, services, industrie).",
+        "en": "Employer organisations (CGEM, GPBM) — 6 agents — defend fiscal predictability, modulate the argument across sub-sectors (banks, services, industry).",
+        "ar": "منظمات أرباب العمل (الاتحاد العام لمقاولات المغرب، المجموعة المهنية لبنوك المغرب) — 6 وكلاء — يدافعون عن القابلية للتنبؤ الضريبي ويُكيّفون الخطاب حسب القطاعات الفرعية (بنوك، خدمات، صناعة)."
+      }
+    },
+    {
+      "role_key": "presse_economique",
+      "profile": {
+        "fr": "Presse économique de place — 6 agents — décrypte les chiffrages, met en débat les hypothèses du projet, suit les arbitrages internes.",
+        "en": "Local financial press — 6 agents — decode the costings, debate the bill's assumptions, track internal arbitrations.",
+        "ar": "الصحافة الاقتصادية المحلية — 6 وكلاء — تُفكّك الكلفات، وتُناقش فرضيات المشروع، وتتابع التحكيمات الداخلية."
+      }
+    },
+    {
+      "role_key": "economistes_independants",
+      "profile": {
+        "fr": "Économistes indépendants — 5 agents — produisent des notes critiques, alimentent les commissions, signalent les effets de bord macroéconomiques.",
+        "en": "Independent economists — 5 agents — issue critical notes, feed the committees, flag macroeconomic side-effects.",
+        "ar": "اقتصاديون مستقلون — 5 وكلاء — يُصدرون مذكرات نقدية، ويُغذّون اللجان، ويُشيرون إلى الآثار الجانبية الماكرو-اقتصادية."
+      }
+    },
+    {
+      "role_key": "representants_pme",
+      "profile": {
+        "fr": "Représentants des PME et de l'économie sociale — 8 agents — signalent les effets différenciés sur les TPE-PME et les territoires non-métropolitains.",
+        "en": "SME and social-economy representatives — 8 agents — flag the differentiated effects on small businesses and non-metropolitan regions.",
+        "ar": "ممثّلو المقاولات الصغيرة والمتوسطة والاقتصاد الاجتماعي — 8 وكلاء — يُشيرون إلى التأثيرات المتباينة على المقاولات الصغرى وعلى الجهات غير الحضرية الكبرى."
+      }
+    },
+    {
+      "role_key": "regulateurs_bam_ammc",
+      "profile": {
+        "fr": "Régulateurs Bank Al-Maghrib et AMMC — 7 agents — alimentent le débat technique sur les ratios prudentiels, les effets de marché et la stabilité financière.",
+        "en": "Bank Al-Maghrib and AMMC regulators — 7 agents — feed the technical debate on prudential ratios, market effects and financial stability.",
+        "ar": "الجهات الرقابية بنك المغرب وهيئة الأسواق المالية — 7 وكلاء — يُغذّون النقاش التقني حول نسب الحيطة، وتأثيرات السوق، والاستقرار المالي."
+      }
+    }
+  ],
+  "key_insights": {
+    "fr": [
+      "La taxe sur les bénéfices exceptionnels du secteur bancaire concentre l'essentiel des amendements de compromis dans les exécutions du modèle : son périmètre, son taux et sa temporalité sont les variables d'ajustement les plus utilisées avant le vote final.",
+      "La suppression progressive des subventions carburant déclenche systématiquement une coalition syndicats-PME : un calendrier d'extinction allongé et des contreparties ciblées pouvoir d'achat sont la condition usuelle d'apaisement dans les trajectoires simulées.",
+      "Une note d'analyse macroéconomique du régulateur central publiée au round 5 modifie la trajectoire des amendements bancaires en deux directions selon son ton : conclusion alarmante orientée stabilité financière → renvoi en commission probable, conclusion équilibrée → adoption avec amendements de périmètre.",
+      "Le PLF est rarement bloqué intégralement : la branche « bloqué en commission » apparaît surtout lorsque les trois mesures controversées sont défendues simultanément sans préparation des coalitions intermédiaires."
+    ],
+    "en": [
+      "The levy on banking exceptional profits concentrates most compromise amendments in model runs: its scope, rate and timing are the most-used adjustment variables before the final vote.",
+      "Gradual withdrawal of fuel subsidies systematically triggers a unions-SME coalition: a longer phase-out schedule plus targeted purchasing-power offsets are the usual condition for de-escalation in simulated trajectories.",
+      "A macroeconomic note from the central regulator at round 5 reshapes the trajectory of banking amendments in two directions depending on its tone: an alarmist conclusion oriented towards financial stability → likely referral back to committee; a balanced conclusion → enactment with scope amendments.",
+      "The bill is rarely blocked outright: the 'blocked in committee' branch mostly appears when the three controversial measures are defended simultaneously without prior preparation of intermediate coalitions."
+    ],
+    "ar": [
+      "تستحوذ ضريبة الأرباح الاستثنائية للقطاع البنكي على معظم تعديلات التسوية في تنفيذات النموذج: نطاقها، ومعدّلها، وتوقيتها هي متغيّرات الضبط الأكثر استخداماً قبل التصويت النهائي.",
+      "يُشعل السحب التدريجي لدعم المحروقات على نحوٍ مُمَنهَج تحالفاً نقابياً-مقاولاتياً صغيراً ومتوسطاً: تمديد جدول الإلغاء التدريجي مع تعويضات مستهدَفة للقدرة الشرائية هما الشرط المعتاد لخفض التصعيد في المسارات المُحاكاة.",
+      "تُعيد مذكرة تحليل ماكرو-اقتصادي من السلطة الرقابية المركزية في الجولة 5 رسم مسار التعديلات البنكية في اتجاهين بحسب نبرتها: استنتاج مُنذِر موجَّه نحو الاستقرار المالي → إعادة محتملة إلى اللجنة، استنتاج متوازن → اعتماد مع تعديلات نطاق.",
+      "نادراً ما يُحجَب المشروع برمّته: يظهر فرع «المحجوب في اللجنة» أساساً حين يُدافَع عن الإجراءات الثلاثة المثيرة للجدل في آنٍ معاً دون تحضير مسبق للتحالفات الوسيطة."
+    ]
+  },
+  "brier_illustrative": 0.20,
+  "tags": [
+    "politique-publique",
+    "loi-de-finances",
+    "parlement",
+    "fiscalité",
+    "MENA",
+    "Maroc",
+    "budget",
+    "PLF"
+  ],
+  "cta_label": {
+    "fr": "Commander un stress test pour votre PLF ou votre note d'amendement",
+    "en": "Order a stress test for your finance bill or amendment brief",
+    "ar": "طلب اختبار ضغط لمشروع قانون ماليتكم أو لمذكرة التعديل الخاصة بكم"
+  },
+  "use_cases_decisionmakers": {
+    "fr": [
+      "Direction du budget d'un ministère des finances préparant un projet de loi avec mesures à fort impact distributif.",
+      "Cabinet conseil en politique publique appuyant un parlementaire ou un groupe sur une proposition d'amendement majeur.",
+      "Think-tank économique souhaitant chiffrer la probabilité d'adoption de scénarios fiscaux alternatifs avant publication.",
+      "Direction des affaires publiques d'une fédération professionnelle évaluant la trajectoire probable d'un texte ayant un impact sectoriel important."
+    ],
+    "en": [
+      "Budget directorate of a finance ministry preparing a bill with high distributive impact.",
+      "Public-policy consultancy supporting an MP or caucus on a major amendment proposal.",
+      "Economic think-tank sizing the probability of enactment of alternative fiscal scenarios before publication.",
+      "Public-affairs leadership of a trade federation gauging the likely trajectory of a sectorally significant bill."
+    ],
+    "ar": [
+      "إدارة الميزانية في وزارة المالية تُعدّ مشروع قانون له أثر توزيعي قوي.",
+      "مكتب استشارات في السياسة العمومية يُساند نائباً أو فريقاً نيابياً في اقتراح تعديل كبير.",
+      "مركز فكر اقتصادي يقيس احتمال اعتماد سيناريوهات ضريبية بديلة قبل النشر.",
+      "إدارة الشؤون العمومية لاتحاد مهني تُقدّر المسار المحتمل لنصّ ذي أثر قطاعي مهم."
+    ]
+  }
+}

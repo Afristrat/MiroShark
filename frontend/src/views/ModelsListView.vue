@@ -156,23 +156,45 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import fusionBancaireMena from '../models/fusion-bancaire-mena.json'
-import crisisDrill24h from '../models/crisis-drill-24h.json'
-import allocationFondsStrategique from '../models/allocation-fonds-strategique.json'
-import stressTestPolitique from '../models/stress-test-politique.json'
-import lancementDiasporaEu from '../models/lancement-diaspora-eu.json'
+// US-090 — Vitrine étendue à 18 modèles : auto-discovery de tous les JSON
+// présents dans frontend/src/models/. import.meta.glob (eager) charge les
+// fichiers à build-time, sans appel runtime — équivalent en performance à
+// 18 imports nommés mais sans fragilité de maintenance.
+const _modulesGlob = import.meta.glob('../models/*.json', { eager: true })
 
-// Ordre sectoriel : finance institutionnelle → crise → fonds → politique → distribution.
-// L'ordre est intentionnel : il guide un C-level depuis la régulation lourde (banque)
-// vers les leviers opérationnels (lancement diaspora) en passant par les sujets de
-// décision exécutive immédiate (crise, allocation, politique).
-const models = [
-  fusionBancaireMena,
-  crisisDrill24h,
-  allocationFondsStrategique,
-  stressTestPolitique,
-  lancementDiasporaEu,
+// Ordre sectoriel canonique : finance institutionnelle → crise → fonds →
+// politique → distribution → startup → marketing → autres. Slugs déterminés
+// pour conserver la lecture stratégique côté C-level (US-086 fixait l'ordre
+// initial des 5 modèles ; US-090 étend en respectant la même logique).
+const _SECTOR_PRIORITY = [
+  'banque',
+  'communication',
+  'investissement',
+  'politique-publique',
+  'politique',
+  'distribution',
+  'marketing-export',
+  'startup-tech',
+  'crypto',
+  'histoire-contrefactuel',
+  'education',
+  'programme-entrepreneurial',
+  'crisis',
 ]
+function _sectorRank (sector) {
+  const idx = _SECTOR_PRIORITY.indexOf(sector)
+  return idx === -1 ? _SECTOR_PRIORITY.length : idx
+}
+
+const models = Object.values(_modulesGlob)
+  .map((m) => m.default || m)
+  .filter((m) => m && typeof m.slug === 'string')
+  .sort((a, b) => {
+    const ra = _sectorRank(a.sector)
+    const rb = _sectorRank(b.sector)
+    if (ra !== rb) return ra - rb
+    return a.slug.localeCompare(b.slug)
+  })
 
 const { locale: i18nLocale } = useI18n()
 const locale = computed(() => {
@@ -452,6 +474,41 @@ function brierLabel (value) {
 .ml-sector-pill--distribution {
   background: color-mix(in srgb, var(--wi-primary-container) 25%, var(--wi-surface));
   color: var(--wi-on-primary-container);
+}
+/* US-090 — secteurs étendus pour les 13 nouveaux modèles. Chaque tonalité
+   dérive d'un token --wi-* existant pour rester cohérente avec la palette
+   Causse Warm Intelligence et flipper proprement en mode RTL. */
+.ml-sector-pill--communication {
+  background: var(--wi-error-container);
+  color: var(--wi-on-error-container);
+}
+.ml-sector-pill--politique-publique {
+  background: var(--wi-tertiary-container);
+  color: var(--wi-on-tertiary-container);
+}
+.ml-sector-pill--marketing-export {
+  background: color-mix(in srgb, var(--wi-primary-container) 25%, var(--wi-surface));
+  color: var(--wi-on-primary-container);
+}
+.ml-sector-pill--startup-tech {
+  background: var(--wi-secondary-container);
+  color: var(--wi-on-secondary-container);
+}
+.ml-sector-pill--crypto {
+  background: color-mix(in srgb, var(--wi-secondary-container) 60%, var(--wi-surface));
+  color: var(--wi-on-secondary-container);
+}
+.ml-sector-pill--histoire-contrefactuel {
+  background: color-mix(in srgb, var(--wi-tertiary-container) 60%, var(--wi-surface));
+  color: var(--wi-on-tertiary-container);
+}
+.ml-sector-pill--education {
+  background: color-mix(in srgb, var(--wi-error-container) 50%, var(--wi-surface));
+  color: var(--wi-on-error-container);
+}
+.ml-sector-pill--programme-entrepreneurial {
+  background: color-mix(in srgb, var(--wi-secondary-container) 40%, var(--wi-surface));
+  color: var(--wi-on-secondary-container);
 }
 
 .ml-brier-pill {

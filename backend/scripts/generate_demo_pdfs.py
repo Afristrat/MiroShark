@@ -1,4 +1,4 @@
-"""Generate the 15 demo PDF briefs (5 slugs × 3 langs) for upcoming RDV.
+"""Generate the 54 demo PDF briefs (18 slugs × 3 langs) — US-090.
 
 Outputs to backend/uploads/demo_pdfs/. Run from the backend root:
     uv run python scripts/generate_demo_pdfs.py
@@ -52,11 +52,26 @@ def _build_test_app():
 
 
 SLUGS = (
+    # 5 modèles US-086 / US-088
     "fusion-bancaire-mena",
     "crisis-drill-24h",
     "allocation-fonds-strategique",
     "stress-test-politique",
     "lancement-diaspora-eu",
+    # 13 modèles US-090
+    "adcheck-pre-launch",
+    "budget-loi-finances",
+    "campus-controversy",
+    "implantation-startup",
+    "corporate-crisis",
+    "crypto-launch",
+    "historical-whatif",
+    "pmf-startup-tech",
+    "political-debate",
+    "primaires-parti-politique",
+    "product-announcement",
+    "product-launch",
+    "she-start-cohort",
 )
 LANGS = ("fr", "en", "ar")
 
@@ -102,7 +117,7 @@ def main() -> int:
         for f in failures:
             print(f"  {f}")
         return 1
-    print("All 15 PDFs generated successfully.")
+    print(f"All {len(SLUGS) * len(LANGS)} PDFs generated successfully.")
     return 0
 
 

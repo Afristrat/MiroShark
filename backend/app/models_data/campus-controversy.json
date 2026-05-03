@@ -1,0 +1,134 @@
+{
+  "slug": "campus-controversy",
+  "sector": "education",
+  "preset_source": "campus_controversy",
+  "title": {
+    "fr": "Controverse universitaire — Onde de choc d'une réforme d'admissions",
+    "en": "Campus Controversy — Shockwave of an Admissions Reform",
+    "ar": "جدل جامعي — موجة صدمة من إصلاح القبول"
+  },
+  "subtitle": {
+    "fr": "Modèle pré-calibré sur la trajectoire médiatique d'une réforme d'admissions sensible dans une université privée de premier rang sur 48 heures (25 agents, 48 rounds d'une heure).",
+    "en": "Pre-calibrated model on the media trajectory of a sensitive admissions reform at a top-ranked private university over 48 hours (25 agents, 48 one-hour rounds).",
+    "ar": "نموذج معاير مسبقاً على المسار الإعلامي لإصلاح قبول حساس في جامعة خاصة من المرتبة الأولى على مدى 48 ساعة (25 وكيلاً، 48 جولة من ساعة واحدة)."
+  },
+  "summary_short": {
+    "fr": "Simulation multi-agents sur 48 heures de la dynamique réputationnelle déclenchée par l'annonce d'une réforme d'admissions controversée (suppression d'une préférence héritée et passage à un système d'admissions à l'aveugle des revenus) : 25 agents (étudiants actuels, candidats potentiels, alumni favorables, alumni opposés, corps enseignant, journalistes presse éducation, conseillers d'admission, fondations advocacy), 48 rounds d'une heure, verdict probabilisé sur la trajectoire médiatique et l'impact sur la générosité alumni à 12 mois.",
+    "en": "Forty-eight-hour multi-agent simulation of the reputational dynamic triggered by the announcement of a controversial admissions reform (removal of a legacy preference and shift to income-blind admissions): 25 agents (current students, prospective applicants, supportive alumni, opposed alumni, faculty, education-press journalists, admissions consultants, advocacy think-tanks), 48 one-hour rounds, probabilistic verdict on the media trajectory and the 12-month impact on alumni giving.",
+    "ar": "محاكاة متعددة الوكلاء على مدى 48 ساعة للديناميكية السمعية التي يُطلقها إعلان إصلاح قبول مثير للجدل (إلغاء تفضيل تاريخي والانتقال إلى قبول مُحايد إزاء الدخل): 25 وكيلاً (الطلبة الحاليون، المرشّحون المحتملون، الخريجون المؤيّدون، الخريجون المعارضون، هيئة التدريس، صحفيو صحافة التعليم، مستشارو القبول، مراكز الفكر الناشطة)، 48 جولة من ساعة واحدة، حكم احتمالي على المسار الإعلامي وأثره خلال 12 شهراً على عطاء الخريجين."
+  },
+  "context_long": {
+    "fr": "Une réforme d'admissions touchant à la fois aux préférences héritées et à la prise en compte des revenus dans un établissement de premier rang concentre toutes les variables d'une crise réputationnelle universitaire : tension intergénérationnelle, défi adressé au modèle économique fondé sur les dons d'alumni, polarisation médiatique sur le mérite et l'égalité des chances, et risque de cascade dans les institutions pairs. Le modèle simule la dynamique des 48 heures suivant l'annonce, sur la base de l'écosystème typique d'une grande université privée (10 000 à 15 000 étudiants, 150 000 à 200 000 alumni vivants, taux de générosité historique élevé). Les acteurs simulés couvrent l'ensemble du champ : étudiants actuels structurés par origine (boursiers, héritiers, premier-cycle universitaire dans la famille), alumni clivés sur la mesure, corps enseignant, journalistes spécialisés enseignement supérieur, conseillers d'admissions privés, fondations advocacy. Aucun établissement réel n'est modélisé : le modèle reproduit la dynamique archétypale observable dans les établissements américains et européens ayant publié de tels changements ces dix dernières années [sources : presse spécialisée enseignement supérieur (Inside Higher Ed, Chronicle of Higher Education, Times Higher Education), rapports publics CASE et NACAC sur la générosité alumni].",
+    "en": "An admissions reform touching both legacy preferences and income-aware admissions at a top-ranked institution concentrates every variable of a campus reputational crisis: intergenerational tension, a challenge to the alumni-giving economic model, media polarisation on merit and equality of opportunity, and contagion risk to peer institutions. The model simulates the 48-hour dynamic following the announcement, based on the typical ecosystem of a large private university (10,000-15,000 students, 150,000-200,000 living alumni, historically high giving rate). Simulated actors span the full field: current students structured by origin (financial-aid, legacy, first-generation), alumni split on the measure, faculty, higher-education journalists, private admissions consultants, advocacy think-tanks. No real institution is modelled: the model captures the archetypal dynamic observable in US and European institutions that have made similar moves over the past decade [sources: higher-education press (Inside Higher Ed, Chronicle of Higher Education, Times Higher Education), CASE and NACAC public reports on alumni giving].",
+    "ar": "يجمع إصلاحٌ للقبول يمسّ في آنٍ معاً التفضيلات التاريخية ومراعاة الدخل في مؤسسة من المرتبة الأولى كلَّ متغيرات أزمة سمعية جامعية: توتر بين الأجيال، وتحدٍّ موجَّه للنموذج الاقتصادي القائم على هبات الخريجين، واستقطاب إعلامي على الجدارة وتكافؤ الفرص، وخطر انتقال العدوى إلى المؤسسات النظيرة. يُحاكي النموذج الديناميكية على مدى 48 ساعة عقب الإعلان، استناداً إلى المنظومة النمطية لجامعة خاصة كبرى (من 10000 إلى 15000 طالب، ومن 150000 إلى 200000 خرّيج على قيد الحياة، ومعدّل عطاء تاريخياً مرتفع). يغطّي الفاعلون المُحاكاة كامل الميدان: طلبة حاليون مُهيكَلون حسب الأصل (المُستفيدون من المنح، الخريجون الوريثون، الجيل الأول في الأسرة)، خريجون مُنقسمون حول الإجراء، هيئة التدريس، صحفيو التعليم العالي، مستشارو قبول من القطاع الخاص، مراكز الفكر الناشطة. لا تُحاكى أيّ مؤسسة حقيقية: يلتقط النموذج الديناميكية النمطية القابلة للملاحظة في المؤسسات الأمريكية والأوروبية التي أعلنت تغييرات مماثلة خلال العقد الأخير [مصادر: الصحافة المتخصصة في التعليم العالي (Inside Higher Ed، Chronicle of Higher Education، Times Higher Education)، تقارير CASE وNACAC العمومية حول عطاء الخريجين]."
+  },
+  "decision_question": {
+    "fr": "À 48 heures, la trajectoire médiatique converge-t-elle vers un soutien dominant à la réforme, vers un blocage interne (recul du conseil d'administration), ou vers une crise réputationnelle persistante affectant la générosité alumni à 12 mois ?",
+    "en": "At 48 hours, will the media trajectory converge towards dominant support for the reform, towards an internal blockage (board reversal), or towards a persistent reputational crisis affecting 12-month alumni giving?",
+    "ar": "خلال 48 ساعة، هل يتقارب المسار الإعلامي نحو دعم مهيمن للإصلاح، أم نحو انسداد داخلي (تراجع مجلس الإدارة)، أم نحو أزمة سمعية مستمرّة تؤثر على عطاء الخريجين خلال 12 شهراً؟"
+  },
+  "agents_simulated": [
+    {
+      "role_key": "student_government",
+      "profile": {
+        "fr": "Représentation étudiante du campus — leaderships diversifiés, articulent un soutien public à la réforme tout en gérant les frictions internes avec les héritiers et les bénéficiaires de bourses.",
+        "en": "Campus student government — diverse leadership, articulates public support for the reform while managing internal frictions between legacy and financial-aid students.",
+        "ar": "تمثيل الطلبة في الحرم الجامعي — قيادة متنوعة تُعبّر عن دعم علني للإصلاح مع إدارة الاحتكاكات الداخلية بين الطلبة الوريثين والمستفيدين من المنح."
+      }
+    },
+    {
+      "role_key": "alumni_donor_opposed",
+      "profile": {
+        "fr": "Coordinateur d'un collectif d'alumni donateurs opposé — utilise les canaux de communication des associations d'anciens élèves, agite la menace d'une baisse organisée des dons.",
+        "en": "Coordinator of an opposed alumni-donor collective — uses alumni-association channels, raises the threat of an organised giving slowdown.",
+        "ar": "مُنسِّق تجمّع خريجين مانحين معارضين — يستعمل قنوات اتصال جمعيات الخريجين، يلوّح بتهديد تخفيض منظَّم للهبات."
+      }
+    },
+    {
+      "role_key": "faculty_senate_member",
+      "profile": {
+        "fr": "Membre du sénat académique — voix institutionnelle interne, équilibre entre soutien à la réforme et préoccupations financières remontées par la direction.",
+        "en": "Faculty senate member — internal institutional voice, balances support for the reform with financial concerns raised by the administration.",
+        "ar": "عضو في مجلس هيئة التدريس — صوت مؤسسي داخلي، يُوازن بين دعم الإصلاح والقلق المالي الذي تُثيره الإدارة."
+      }
+    },
+    {
+      "role_key": "education_journalist",
+      "profile": {
+        "fr": "Journaliste senior presse spécialisée enseignement supérieur — couvre les réformes d'admissions depuis dix ans, capable de contextualiser avec les précédents pairs.",
+        "en": "Senior higher-education press journalist — has covered admissions reforms for a decade, able to contextualise with peer precedents.",
+        "ar": "صحفي كبير في الصحافة المتخصصة في التعليم العالي — يُغطّي إصلاحات القبول منذ عقد، قادر على التأطير بسوابق المؤسسات النظيرة."
+      }
+    },
+    {
+      "role_key": "admissions_consultant",
+      "profile": {
+        "fr": "Consultant privé en admissions — conseille des familles aisées, défend une lecture critique de la réforme du point de vue des candidats premium.",
+        "en": "Private admissions consultant — advises affluent families, defends a critical reading of the reform from a premium-applicant viewpoint.",
+        "ar": "مستشار قبول من القطاع الخاص — يُسدي المشورة لأسر ميسورة، يُدافع عن قراءة نقدية للإصلاح من زاوية المرشّحين المتميّزين."
+      }
+    },
+    {
+      "role_key": "policy_advocate",
+      "profile": {
+        "fr": "Représentant d'un think-tank d'advocacy sur l'égalité des chances — produit une analyse rapide saluant la réforme, propose un benchmark des effets observés ailleurs.",
+        "en": "Equality-of-opportunity advocacy think-tank representative — produces a rapid analysis praising the reform, offers a benchmark of effects observed elsewhere.",
+        "ar": "ممثّل عن مركز فكر مدافع عن تكافؤ الفرص — يُصدر تحليلاً سريعاً يُشيد بالإصلاح، ويعرض مقارنة معيارية للتأثيرات المرصودة في أماكن أخرى."
+      }
+    }
+  ],
+  "key_insights": {
+    "fr": [
+      "Le pic de polarisation est concentré sur les 6-12 premières heures : passé ce délai, la conversation se segmente en sous-débats parallèles (équité, financement, mobilité sociale) qui réduisent fortement le risque de cascade nationale.",
+      "La menace organisée d'une baisse des dons par les alumni opposés est rarement exécutée à hauteur des annonces : la modélisation suggère un effet réel sur la générosité 12 mois inférieur de moitié à la perte annoncée publiquement les premières heures.",
+      "Le soutien explicite d'établissements pairs est le levier le plus efficace pour stabiliser la trajectoire — bien davantage que la communication de la direction de l'établissement concerné.",
+      "Une absence de réponse publique sous 12 heures de la direction laisse l'espace aux conseillers d'admissions privés pour structurer un récit alternatif et pèse durablement sur la perception de pilotage."
+    ],
+    "en": [
+      "The polarisation peak concentrates in the first 6-12 hours: beyond that, the conversation segments into parallel sub-debates (equity, funding, social mobility) which significantly reduce the risk of a national cascade.",
+      "Organised threats of giving reductions from opposed alumni are rarely executed at the scale announced: the model suggests an actual 12-month giving impact roughly half the loss publicly threatened in the first hours.",
+      "Explicit support from peer institutions is the most effective lever to stabilise the trajectory — far more so than the institution's own internal communication.",
+      "An absence of public leadership response within 12 hours leaves room for private admissions consultants to structure an alternative narrative and durably weighs on the perception of governance."
+    ],
+    "ar": [
+      "تتركّز ذروة الاستقطاب في أول 6 إلى 12 ساعة: بعدها، تنقسم المحادثة إلى نقاشات فرعية متوازية (الإنصاف، التمويل، الحراك الاجتماعي) تُقلِّص بشكل كبير خطر التتالي الوطني.",
+      "نادراً ما تُنفَّذ تهديدات منظَّمة بتخفيض الهبات من خريجين معارضين بالحجم المُعلَن: تُشير المُحاكاة إلى أثر فعلي على عطاء 12 شهراً يقارب نصف الخسارة المُهدَّد بها علناً في الساعات الأولى.",
+      "الدعم الصريح من مؤسسات نظيرة هو الرافعة الأكثر فاعلية لاستقرار المسار — أكثر بكثير من تواصل إدارة المؤسسة المعنية ذاتها.",
+      "غياب ردّ علني من الإدارة خلال 12 ساعة يترك المجال لمستشاري القبول من القطاع الخاص لبناء سردية بديلة، ويُثقِل بشكل دائم تصوُّر القيادة."
+    ]
+  },
+  "brier_illustrative": 0.22,
+  "tags": [
+    "université",
+    "réputation",
+    "admissions",
+    "alumni",
+    "communication",
+    "enseignement-supérieur"
+  ],
+  "cta_label": {
+    "fr": "Commander une analyse personnalisée pour votre annonce sensible",
+    "en": "Order a personalised analysis for your sensitive announcement",
+    "ar": "طلب تحليل مخصّص لإعلانكم الحساس"
+  },
+  "use_cases_decisionmakers": {
+    "fr": [
+      "Présidence d'une université privée préparant l'annonce d'une réforme structurelle d'admissions ou de bourses.",
+      "Direction de la communication d'un établissement d'enseignement supérieur arbitrant le séquençage et le calendrier d'une décision potentiellement clivante.",
+      "Conseil d'administration souhaitant chiffrer le risque réel sur la générosité alumni avant validation d'une réforme.",
+      "Cabinet conseil en stratégie institutionnelle accompagnant un établissement dans une transformation à fort enjeu réputationnel."
+    ],
+    "en": [
+      "President's office of a private university preparing the announcement of a structural admissions or financial-aid reform.",
+      "Communication leadership of a higher-education institution arbitrating the sequencing and timing of a potentially divisive decision.",
+      "Board of trustees seeking to size the real risk on alumni giving before approving a reform.",
+      "Institutional-strategy consultancy supporting an institution through a high-stakes reputational transformation."
+    ],
+    "ar": [
+      "رئاسة جامعة خاصة تُعدّ إعلان إصلاح هيكلي للقبول أو للمنح.",
+      "إدارة الاتصال في مؤسسة للتعليم العالي تُحكِّم تسلسل وتوقيت قرار قد يكون مُسبِّباً للانقسام.",
+      "مجلس إدارة يرغب في قياس الخطر الفعلي على عطاء الخريجين قبل المصادقة على إصلاح.",
+      "مكتب استشارات في الاستراتيجية المؤسسية يُرافق مؤسسة في تحوّل ذي رهان سمعي مرتفع."
+    ]
+  }
+}
