@@ -8,45 +8,8 @@
          RTL : CSS logical properties (margin-inline, padding-inline).
          ═══════════════════════════════════════════════════════════ -->
 
-    <!-- ───────────── Top bar minimaliste ───────────── -->
-    <header class="lp-topbar">
-      <router-link to="/" class="lp-brand" :title="$t('nav.brand')">
-        {{ $t('nav.brand') }}
-      </router-link>
-      <nav class="lp-nav" :aria-label="$t('landing.nav.ariaLabel')">
-        <!-- US-087 — entrée « Modèles » (route /models, US-086) ajoutée
-             en première position pour cohérence avec la nav home. -->
-        <router-link to="/models" class="lp-nav-link lp-nav-link--featured">
-          {{ $t('landing.nav.models') }}
-        </router-link>
-        <router-link :to="{ name: 'Calibration' }" class="lp-nav-link">
-          {{ $t('landing.nav.calibration') }}
-        </router-link>
-        <router-link :to="{ name: 'Offers' }" class="lp-nav-link">
-          {{ $t('landing.nav.pricing') }}
-        </router-link>
-        <router-link :to="{ name: 'Quote' }" class="lp-nav-cta">
-          {{ $t('landing.nav.demo') }}
-        </router-link>
-        <!-- US-093 — entrée auth adaptative -->
-        <router-link
-          v-if="!isAuthenticated"
-          :to="{ name: 'Login' }"
-          class="lp-nav-link"
-          :title="$t('nav.login')"
-        >
-          {{ $t('nav.login') }}
-        </router-link>
-        <router-link
-          v-else
-          :to="{ name: 'ClientDashboard' }"
-          class="lp-nav-link lp-nav-link--featured"
-          :title="$t('nav.dashboard')"
-        >
-          {{ $t('nav.dashboard') }}
-        </router-link>
-      </nav>
-    </header>
+    <!-- US-094 — La top bar minimaliste a été remplacée par AppHeader.vue
+         (App.vue), désormais commune à toutes les routes. -->
 
     <main class="lp-main">
       <!-- ═══════════════════════════════════════════════════════
@@ -307,14 +270,10 @@
 
 <script setup>
 import { computed } from 'vue'
-import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import SectorUseCases from '../components/SectorUseCases.vue'
-// US-093 — entrée auth adaptative dans la nav
-import { useAuthStore } from '../stores/auth'
-
-const authStore = useAuthStore()
-const { isAuthenticated } = storeToRefs(authStore)
+// US-094 — la nav adaptative (login / dashboard) vit désormais dans
+// AppHeader.vue ; LandingView.vue n'a plus besoin du store auth.
 
 // ════════════════════════════════════════════════════════════════════
 // Static data — IDs côté JS, copy côté i18n.
@@ -372,78 +331,9 @@ function formatNumber (n) {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ───── Topbar ───── */
-.lp-topbar {
-  position: sticky;
-  top: 0;
-  z-index: var(--ms-z-sticky);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-block: var(--wi-space-sm);
-  padding-inline: var(--wi-space-lg);
-  background: color-mix(in srgb, var(--wi-bg) 88%, transparent);
-  backdrop-filter: blur(12px);
-  border-block-end: 1px solid var(--wi-outline-variant);
-}
-.lp-brand {
-  font-family: var(--wi-font-heading);
-  font-weight: 700;
-  font-size: var(--wi-h3-size);
-  color: var(--wi-on-bg);
-  text-decoration: none;
-  letter-spacing: -0.02em;
-}
-.lp-nav {
-  display: flex;
-  align-items: center;
-  gap: var(--wi-space-md);
-}
-.lp-nav-link {
-  color: var(--wi-on-surface-variant);
-  text-decoration: none;
-  font-size: var(--wi-body-md);
-  font-weight: 500;
-  padding-inline: var(--wi-space-xs);
-  padding-block: 6px;
-  border-radius: var(--wi-radius-sm);
-  transition: color var(--ms-transition), background var(--ms-transition);
-}
-.lp-nav-link:hover {
-  color: var(--wi-primary);
-  background: var(--wi-surface-container-low);
-}
-/* US-087 — entrée « Modèles » mise en avant (priorité commerciale haute). */
-.lp-nav-link--featured {
-  color: var(--wi-primary);
-  font-weight: 600;
-}
-.lp-nav-cta {
-  background: var(--wi-primary);
-  color: var(--wi-on-primary);
-  padding-inline: var(--wi-space-sm);
-  padding-block: 10px;
-  border-radius: var(--wi-radius-interactive);
-  font-weight: 600;
-  font-size: var(--wi-body-md);
-  text-decoration: none;
-  transition: background var(--ms-transition), transform var(--ms-transition);
-  box-shadow: var(--wi-shadow-sm);
-}
-.lp-nav-cta:hover {
-  background: var(--ms-orange-strong);
-  transform: translateY(-1px);
-}
-
-/* Mobile : nav simplifiée */
-@media (max-width: 720px) {
-  .lp-topbar {
-    padding-inline: var(--wi-space-sm);
-  }
-  .lp-nav-link {
-    display: none;
-  }
-}
+/* US-094 — Anciens styles `.lp-topbar / .lp-brand / .lp-nav / .lp-nav-link /
+   .lp-nav-link--featured / .lp-nav-cta` retirés : la nav vient désormais
+   d'AppHeader.vue (App.vue) commune à toutes les routes. */
 
 /* ───── Main wrapper ───── */
 .lp-main {

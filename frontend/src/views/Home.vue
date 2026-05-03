@@ -1,55 +1,23 @@
 <template>
   <div class="home-container">
-    <!-- Top Navigation Bar — US-087 : pivot orienté modèles publics
-         Ordre : Accueil · Modèles · Calibration · Offres · Partenaires · Contact
-         "Modèles" en position 2 (priorité commerciale haute, route /models US-086).
-         "Scénarios" (scroll vers TemplateGallery) retiré ici car la galerie est
-         masquée pour les visiteurs cold sur la home (cf. v-if plus bas). -->
-    <nav class="navbar">
-      <router-link to="/" class="nav-brand">{{ $t('nav.brand') }}</router-link>
-      <div class="nav-links">
-        <router-link to="/" class="nav-link" :title="$t('nav.homeTitle')">
-          {{ $t('nav.home') }}
-        </router-link>
-        <router-link to="/models" class="nav-link nav-link--featured" :title="$t('nav.modelsTitle')">
-          {{ $t('nav.models') }}
-        </router-link>
-        <router-link to="/calibration" class="nav-link" :title="$t('nav.calibrationTitle')">
-          {{ $t('nav.calibration') }}
-        </router-link>
-        <router-link to="/offres" class="nav-link" :title="$t('nav.offersTitle')">
-          {{ $t('nav.offers') }}
-        </router-link>
-        <router-link to="/partenaires" class="nav-link" :title="$t('nav.partnersTitle')">
-          {{ $t('nav.partners') }}
-        </router-link>
-        <router-link to="/devis" class="nav-link" :title="$t('nav.contactTitle')">
-          {{ $t('nav.contact') }}
-        </router-link>
-        <!-- US-093 — entrée auth adaptative -->
-        <router-link
-          v-if="!isAuthenticated"
-          to="/login"
-          class="nav-link nav-link--auth"
-          :title="$t('nav.login')"
-        >
-          {{ $t('nav.login') }}
-        </router-link>
-        <router-link
-          v-else
-          to="/client/dashboard"
-          class="nav-link nav-link--auth nav-link--featured"
-          :title="$t('nav.dashboard')"
-        >
-          {{ $t('nav.dashboard') }}
-        </router-link>
-        <button class="settings-btn" @click="settingsOpen = true" :title="$t('home.nav.settingsTitle')" aria-label="Paramètres">
-          <span aria-hidden="true">⚙</span>
-        </button>
-      </div>
-    </nav>
-
+    <!-- US-094 — La nav globale est désormais dans AppHeader.vue (App.vue),
+         présente sur toutes les routes. Le bouton ⚙ Paramètres (admin/dev,
+         config LLM) reste dans Home.vue mais à un emplacement discret pour
+         ne pas polluer la nav publique : intégré au panneau console
+         self-service masqué (cf. v-if showSelfServiceConsole). -->
     <SettingsPanel :open="settingsOpen" @close="settingsOpen = false" />
+    <!-- Floating settings trigger — accessible via raccourci pour les admins
+         qui ouvrent la home en mode dev. Caché aux visiteurs cold (opacité 0
+         + pointer-events:none tant que l'utilisateur ne survole pas le bord
+         bas-gauche de la viewport, cf. .home-settings-trigger). -->
+    <button
+      class="home-settings-trigger"
+      @click="settingsOpen = true"
+      :title="$t('home.nav.settingsTitle')"
+      aria-label="Paramètres"
+    >
+      <span aria-hidden="true">⚙</span>
+    </button>
 
     <!-- Document preview modal (URL fetches + Ask-mode generations) -->
     <Teleport to="body">
@@ -442,12 +410,8 @@ import SectorUseCases from '../components/SectorUseCases.vue'
 import { fetchUrl } from '../api/graph'
 import { askMode, enrichAsk } from '../api/simulation'
 import { useScrollFadeIn } from '../composables/useScrollFadeIn'
-// US-093 — entrée auth adaptative dans la nav
-import { useAuthStore } from '../stores/auth'
-import { storeToRefs } from 'pinia'
-
-const authStore = useAuthStore()
-const { isAuthenticated } = storeToRefs(authStore)
+// US-094 — l'entrée auth adaptative (login / dashboard) est désormais
+// portée par AppHeader.vue ; Home.vue n'a plus besoin du store auth.
 
 // Refs for the 4 workflow step cards — populated via :ref callback in the
 // template so the IntersectionObserver picks each one up individually.
@@ -811,124 +775,49 @@ const startSimulation = () => {
   color: var(--wi-on-bg);
 }
 
-/* ── Top Navigation ── */
-.navbar {
-  height: 56px;
-  background: var(--ms-bg, var(--ms-bg));
-  color: var(--ms-text, var(--ms-text));
-  border-bottom: 1px solid var(--ms-border, rgba(42, 42, 53, 0.08));
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 var(--ms-space-6, 24px);
-  /* Réserve la place pour le LanguageSwitcher floating top-right
-     (z-index 1500, top:12px right:12px). On laisse 96px en bout
-     de navbar pour ne pas l'écraser visuellement. */
-  padding-inline-end: 110px;
-}
-
-.nav-brand {
-  font-family: var(--ms-font-display, 'Outfit'), sans-serif;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  font-size: 16px;
-  text-transform: uppercase;
-  color: var(--ms-text, var(--ms-text));
-  text-decoration: none;
-  transition: color 200ms;
-}
-.nav-brand:hover { color: var(--ms-orange, var(--ms-orange)); }
-
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: var(--ms-space-3, 12px);
-}
-
-.nav-link {
-  color: var(--ms-text-muted, var(--ms-text-muted));
-  text-decoration: none;
-  font-family: var(--ms-font-body, 'Manrope'), sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  padding: 6px 12px;
-  border-radius: var(--ms-radius-pill, 999px);
-  transition: color 200ms, background 200ms;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  line-height: 1.4;
-}
-.nav-link:hover {
-  color: var(--ms-text, var(--ms-text));
-  background: var(--ms-bg-muted, var(--ms-bg-muted));
-}
-.nav-link.router-link-active {
-  color: var(--wi-primary, var(--ms-orange));
-  font-weight: 600;
-}
-
-/* US-087 — entrée « Modèles » mise en avant (priorité commerciale haute).
-   Couleur warm primary terracotta sans pill plein, juste un weight et
-   une teinte. Le highlight router-link-active reprend automatiquement le
-   token --wi-primary sur toutes les entrées. */
-.nav-link--featured {
-  color: var(--wi-primary, var(--ms-orange));
-  font-weight: 600;
-}
-.nav-link--featured:hover {
-  color: var(--wi-on-primary-container, var(--ms-orange));
-  background: var(--wi-primary-soft, var(--ms-bg-muted));
-}
-
-.nav-link-action {
-  /* Bouton (Scénarios) — typo identique aux router-link pour cohérence */
-  font: inherit;
-}
-
-/* Anciennes classes du fork upstream conservées pour les rares
-   réutilisations dans le template (qu'on a remplacées plus haut),
-   mais on supprime explicitement les styles obsolètes. */
-.legacy-explore-link-removed {
-  /* (kept as anchor for grep — class supprimée du template) */
-  display: none;
-  transition: var(--ms-transition-fast);
-  opacity: 0.6;
-}
-
-/* (legacy explore-link styles removed — replaced by .nav-link) */
-.compass { font-size: 15px; line-height: 1; }
-
-.legacy-github-link-removed {
-  display: none;
-  transition: var(--ms-transition-fast);
-  opacity: 0.6;
-}
-
-.arrow { font-family: sans-serif; }
-
-.settings-btn {
-  background: var(--ms-bg-muted, var(--ms-bg-muted));
-  border: 1px solid var(--ms-border, rgba(42, 42, 53, 0.08));
-  color: var(--ms-text-muted, var(--ms-text-muted));
-  font-size: 16px;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
+/* US-094 — Trigger discret pour ouvrir SettingsPanel (admin/dev only).
+   Bord bas-gauche, faible opacité au repos, opacité 1 au hover/focus.
+   N'apparaît PAS dans la nav publique (cf. AppHeader). */
+.home-settings-trigger {
+  position: fixed;
+  inset-block-end: 12px;
+  inset-inline-start: 12px;
+  z-index: var(--ms-z-toast, 1400);
+  width: 32px;
+  height: 32px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  background: var(--wi-surface, #ffffff);
+  color: var(--wi-on-surface-variant, #57423a);
+  border: 1px solid var(--wi-outline-variant, rgba(36, 25, 21, 0.12));
+  border-radius: 50%;
+  font-size: 14px;
   cursor: pointer;
-  margin-inline-start: var(--ms-space-2, 8px);
-  transition: color 200ms, background 200ms, border-color 200ms, transform 200ms;
+  opacity: 0.25;
+  transition:
+    opacity var(--ms-transition, 200ms),
+    color var(--ms-transition, 200ms),
+    background var(--ms-transition, 200ms),
+    transform var(--ms-transition, 200ms);
 }
-.settings-btn:hover {
-  color: var(--ms-orange, var(--ms-orange));
-  background: var(--ms-orange-soft, rgba(255, 133, 81, 0.12));
-  border-color: var(--ms-orange, var(--ms-orange));
+.home-settings-trigger:hover,
+.home-settings-trigger:focus-visible {
+  opacity: 1;
+  color: var(--wi-primary, #a13f0f);
+  background: var(--wi-primary-soft, rgba(161, 63, 15, 0.08));
   transform: rotate(40deg);
+  outline: none;
 }
+.home-settings-trigger:focus-visible {
+  outline: 2px solid var(--wi-primary, #a13f0f);
+  outline-offset: 2px;
+}
+
+/* Anciens styles `.navbar / .nav-brand / .nav-links / .nav-link /
+   .nav-link--featured / .nav-link-action / .settings-btn / .compass /
+   .arrow` retirés — la nav globale vit désormais dans AppHeader.vue (US-094).
+   Le bouton ⚙ (admin) est remplacé par `.home-settings-trigger` plus haut. */
 
 /* ── Main Content ── */
 .main-content {

@@ -2858,6 +2858,48 @@
           "nav.{login,dashboard,logout}"
         ]
       }
+    },
+    {
+      "id": "US-094",
+      "chantier": "N-nav-globale",
+      "title": "AppHeader.vue partagé sur toutes les pages",
+      "description": "Extraction de la nav header (Brand + 6 entrées Accueil/Modèles/Calibration/Offres/Partenaires/Contact + auth adaptative + ThemeSwitcher + LanguageSwitcher + bouton Relancer la visite guidée) dans un composant frontend/src/components/AppHeader.vue inclus globalement via App.vue. Présent sur toutes les routes (~17 routes) là où Home.vue et LandingView.vue étaient les seules à porter une nav. RTL via CSS logical properties, tokens --wi-* exclusifs, sticky top + backdrop blur.",
+      "acceptanceCriteria": [
+        "frontend/src/components/AppHeader.vue créé",
+        "App.vue rend <AppHeader /> avant <router-view /> + DebugPanel",
+        "Brand BASSIRA → router-link to=/",
+        "Nav 6 entrées : Accueil · Modèles (featured) · Calibration · Offres · Partenaires · Contact (devis)",
+        "Login adaptatif via Pinia store auth (Se connecter / Mon espace)",
+        "Bouton Relancer la visite guidée dispatche CustomEvent bassira:reopen-tour",
+        "ThemeSwitcher + LanguageSwitcher intégrés à droite, repositionnés en flux normal",
+        "RTL : CSS logical properties (inset-inline-*, padding-inline-*) — jamais left/right",
+        "Tokens --wi-* exclusifs, palette Causse Warm Intelligence",
+        "Home.vue : .navbar retirée, bouton ⚙ SettingsPanel déplacé en trigger discret bottom-left",
+        "LandingView.vue : .lp-topbar retirée, hero positionné sous header sticky",
+        "App.vue : ThemeSwitcher / LanguageSwitcher / restart-tour floatants supprimés (intégrés dans AppHeader)",
+        "Build Vite OK"
+      ],
+      "passes": true,
+      "completedAt": "2026-05-03T22:00:00Z",
+      "dependencies": [
+        "US-087",
+        "US-093"
+      ],
+      "metadata": {
+        "estimated_hours": 2,
+        "priority": "P0",
+        "files_created": [
+          "frontend/src/components/AppHeader.vue"
+        ],
+        "files_modified": [
+          "frontend/src/App.vue",
+          "frontend/src/views/Home.vue",
+          "frontend/src/views/LandingView.vue"
+        ],
+        "build_vite": "OK 8.70s",
+        "i18n_keys_added": "0 (réutilisation namespace nav.* US-087/US-093)",
+        "routes_now_with_nav": 17
+      }
     }
   ]
 }

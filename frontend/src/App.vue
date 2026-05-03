@@ -1,52 +1,15 @@
 <template>
+  <!-- US-094 — AppHeader partagé sur toutes les routes (Accueil, Modèles,
+       Calibration, Offres, Partenaires, Contact + auth + ThemeSwitcher +
+       LanguageSwitcher + bouton « Relancer la visite guidée »). -->
+  <AppHeader />
   <router-view />
-  <ThemeSwitcher />
-  <button
-    type="button"
-    class="restart-tour-btn"
-    :title="restartLabel"
-    :aria-label="restartLabel"
-    @click="restartTour"
-  >
-    <span aria-hidden="true">▶</span>
-  </button>
-  <LanguageSwitcher class="lang-switcher--floating" />
   <DebugPanel />
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { useI18n } from 'vue-i18n'
+import AppHeader from './components/AppHeader.vue'
 import DebugPanel from './components/DebugPanel.vue'
-import LanguageSwitcher from './components/LanguageSwitcher.vue'
-import ThemeSwitcher from './components/ThemeSwitcher.vue'
-
-const router = useRouter()
-const route = useRoute()
-const { locale } = useI18n()
-
-const restartLabel = computed(() => {
-  const labels = {
-    fr: 'Relancer la visite guidée',
-    en: 'Restart guided tour',
-    ar: 'إعادة تشغيل الجولة الإرشادية',
-  }
-  return labels[locale.value] || labels.fr
-})
-
-// Bouton "Relancer le tour" : ouvre l'OnboardingTour quel que soit la
-// page actuelle. Si on n'est pas sur "/", on y navigue d'abord (le tour
-// est instancié dans Home.vue), puis on déclenche l'évènement global.
-const restartTour = async () => {
-  if (route.path !== '/') {
-    await router.push('/')
-  }
-  // Laisser le temps à Home.vue + OnboardingTour de monter avant de fire
-  setTimeout(() => {
-    window.dispatchEvent(new CustomEvent('bassira:reopen-tour'))
-  }, 120)
-}
 </script>
 
 <style>
@@ -197,80 +160,7 @@ button {
 .animate-shimmer { animation: shimmer 2s ease-in-out infinite; }
 .animate-pulse-border { animation: pulse-border 2s ease-in-out infinite; }
 
-/* Floating LanguageSwitcher — visible on every route, RTL-flipped.
-   Le composant LanguageSwitcher pose `.lang-switcher { position: relative }`
-   en <style scoped> avec un attribut `[data-v-*]` (spécificité 0,1,1).
-   Pour battre cette spécificité SANS `!important` (US-016), on compose ici
-   avec `body` → 0,1,1 + ordre dans le head ; les blocs non-scoped sont
-   injectés après les blocs scoped au runtime, donc le nôtre l'emporte.
-
-   Top: 12px (plus proche du bord pour visibilité maximale top-of-page).
-   z-index utilise --ms-z-floating-lang (1500) pour passer au-dessus de tous
-   les overlays Bassira (modals, panels, dropdowns à ~1000-1200) — le
-   switcher doit rester accessible même quand un modal est ouvert. */
-body .lang-switcher--floating {
-  position: fixed;
-  top: 12px;
-  inset-inline-end: 12px;
-  z-index: var(--ms-z-floating-lang);
-  /* Animation d'apparition discrète à l'arrivée sur la page */
-  animation: lang-switcher-fadein 600ms var(--ms-ease, cubic-bezier(0.4, 0, 0.2, 1)) both;
-}
-
-@keyframes lang-switcher-fadein {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .lang-switcher--floating {
-    animation: none;
-  }
-}
-
-/* ── Bouton "Relancer la visite guidée" — flottant top-right, à côté du
-   sélecteur de langue. Visible sur toutes les routes. */
-.restart-tour-btn {
-  position: fixed;
-  top: 12px;
-  inset-inline-end: 116px; /* à gauche du LanguageSwitcher (qui fait ~85px + 12px de marge) */
-  z-index: var(--ms-z-floating-lang);
-  width: 38px;
-  height: 38px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--wi-surface, #FAF7F2);
-  color: var(--wi-primary, #FF8551);
-  border: 1px solid var(--wi-border, rgba(36, 25, 21, 0.12));
-  border-radius: 10px;
-  font-size: 14px;
-  font-family: var(--font-mono);
-  cursor: pointer;
-  transition: var(--transition-fast, all 0.15s ease);
-  animation: lang-switcher-fadein 600ms var(--ms-ease, cubic-bezier(0.4, 0, 0.2, 1)) both;
-}
-
-.restart-tour-btn:hover {
-  background: var(--wi-primary, #FF8551);
-  color: var(--wi-on-primary, #FFFFFF);
-  border-color: var(--wi-primary, #FF8551);
-  transform: translateY(-1px);
-}
-
-.restart-tour-btn:focus-visible {
-  outline: 2px solid var(--wi-primary, #FF8551);
-  outline-offset: 2px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .restart-tour-btn { animation: none; }
-  .restart-tour-btn:hover { transform: none; }
-}
+/* US-094 — les blocs `.lang-switcher--floating` et `.restart-tour-btn`
+   ont été retirés : ces éléments vivent désormais dans AppHeader.vue,
+   intégrés au header sticky global présent sur toutes les routes. */
 </style>
