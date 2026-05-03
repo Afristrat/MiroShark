@@ -2702,6 +2702,88 @@
                 "verification": "Scan DEFCON 1 sur 36 fichiers (18 JSON × 2 + 54 PDFs) : 0 chaîne interdite",
                 "defcon1_check": "Aucun nom propre d'individu, aucune référence légale numérotée non vérifiée, aucun chiffre précis sans source publique, aucun événement nominatif. Patterns Khalid Bouaza, BMCI-BNP, 6,8 M, 26/G/2006, CCC France, Carrefour Maroc 2018, Inwi 2021, Royal Air Maroc 2023, Heineken, Boohoo, BrewDog, Maroc Telecom Pension Fund, BCB, DataVault, Whitfield, NeuralCoin, NRAL, OmniTech, Aria, BioSynth, Diagno AI, Yasmine Kaddouri, Rachid Habboubi, Karim Slaoui, Rachida Ouahabi, Nizar El Fassi, Mokhtar Tiliouine, Chakib Laaroui, Hind Chokairi, Khalid Benali, Nadia Chraibi, Hassan Benjelloun, Youssef Belmahi, Sigma Conseil, Leonov, Cohen Milstein tous absents."
             }
+        },
+        {
+            "id": "US-091",
+            "chantier": "M-multitenant-supabase",
+            "title": "Migrations + seed Supabase multitenant Bassira",
+            "description": "Schéma multitenant Supabase Cloud : tables organizations, org_members, simulation_ownership avec RLS. Helper function user_orgs() pour scoper les requêtes. Migration 002 : view publique k-anonymity n≥5 pour /api/calibration/aggregates. Seed.sql d'exemple avec 1 org factice + commentaires de procédure d'invitation manuelle.",
+            "acceptanceCriteria": [
+                "Migration 001 init_multitenant.sql crée 3 tables + RLS + helper user_orgs()",
+                "Migration 002 public_calibration_view.sql crée la VIEW agrégée k-anonymity",
+                "seed.sql contient au moins une org factice + procédure d'invitation manuelle documentée",
+                "RLS policies couvrent SELECT/INSERT/UPDATE/DELETE pour membres avec rôle approprié"
+            ],
+            "passes": true,
+            "completedAt": "2026-05-03T19:00:00Z",
+            "dependencies": [],
+            "metadata": {
+                "estimated_hours": 4,
+                "priority": "P0",
+                "files_touched": [
+                    "supabase/migrations/20260503_001_init_multitenant.sql",
+                    "supabase/migrations/20260503_002_public_calibration_view.sql",
+                    "supabase/seed.sql",
+                    "supabase/README.md"
+                ]
+            }
+        },
+        {
+            "id": "US-093",
+            "chantier": "M-multitenant-supabase",
+            "title": "Frontend Vue : auth Supabase + ClientDashboardView privatif",
+            "description": "Auth multitenant côté Vue 3 : intégration @supabase/supabase-js (client anon), store Pinia auth (user, session, orgs, currentOrg, role), helper API axios qui injecte le bearer token Supabase sur /api/auth/me et /api/client/*. 3 vues : LoginView, SignupView, ClientDashboardView (route protégée par guard router beforeEach sur meta.requiresAuth). Nav adaptative dans Home.vue et LandingView.vue (« Se connecter » / « Mon espace »). i18n FR/EN/AR sur namespaces auth.* et client.*. RTL préservé via CSS logical properties. Tokens --wi-* exclusifs. Tests Playwright smoke (auth-flow.spec.ts).",
+            "acceptanceCriteria": [
+                "frontend/src/lib/supabase.js singleton client anon créé",
+                "frontend/src/stores/auth.js Pinia store avec init/login/signup/logout/fetchProfile",
+                "frontend/src/api/client.js axios wrapper avec bearer auto sur /api/client/*",
+                "3 vues créées : LoginView, SignupView, ClientDashboardView",
+                "Routes ajoutées : /login, /signup, /client/dashboard (meta.requiresAuth)",
+                "Router beforeEach guard redirige vers /login?redirect=… si non auth",
+                "Home.vue et LandingView.vue : nav adaptative login/dashboard selon état auth",
+                "i18n FR/EN/AR : namespaces auth.* + client.* + nav.{login,dashboard,logout}",
+                "RTL préservé pour AR (CSS logical properties uniquement)",
+                "Tokens --wi-* exclusifs (zéro hex hardcodé dans les nouvelles vues)",
+                "tests/e2e/auth-flow.spec.ts ajouté : 4 tests smoke (login/signup/redirect/RTL)",
+                "Build Vite OK avec placeholders Supabase"
+            ],
+            "passes": true,
+            "completedAt": "2026-05-03T20:30:00Z",
+            "dependencies": [
+                "US-091"
+            ],
+            "metadata": {
+                "estimated_hours": 5,
+                "priority": "P0",
+                "files_created": [
+                    "frontend/src/lib/supabase.js",
+                    "frontend/src/stores/auth.js",
+                    "frontend/src/api/client.js",
+                    "frontend/src/views/LoginView.vue",
+                    "frontend/src/views/SignupView.vue",
+                    "frontend/src/views/ClientDashboardView.vue",
+                    "frontend/tests/e2e/auth-flow.spec.ts",
+                    "frontend/.env.local"
+                ],
+                "files_modified": [
+                    "frontend/src/main.js",
+                    "frontend/src/router/index.js",
+                    "frontend/src/views/Home.vue",
+                    "frontend/src/views/LandingView.vue",
+                    "frontend/src/locales/fr.json",
+                    "frontend/src/locales/en.json",
+                    "frontend/src/locales/ar.json",
+                    "frontend/package.json",
+                    "frontend/package-lock.json"
+                ],
+                "deps_added": [
+                    "@supabase/supabase-js",
+                    "pinia"
+                ],
+                "build_vite": "OK 13.36s, 838 modules",
+                "playwright_tests_added": 4,
+                "i18n_namespaces_added": ["auth.login", "auth.signup", "client.dashboard", "nav.{login,dashboard,logout}"]
+            }
         }
     ]
 }

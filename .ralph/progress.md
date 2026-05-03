@@ -8,6 +8,8 @@
 - **baseURL axios** dans `frontend/src/api/index.js` doit rester relative (`''`) en prod pour passer par le reverse-proxy. La worktree dev utilise `.env.development` avec `VITE_API_TARGET` pointant vers la prod.
 - **Compose détourné** : le service Vite dev tourne sur 0.0.0.0:3000 (`host: true` dans `vite.config.js`) avec `allowedHosts: true` pour accepter le hostname Cloudflare tunnel.
 - **Design tokens** : `frontend/src/design-tokens.css` est la source de vérité unique des couleurs/spacing/radius. Le rebind legacy (`--color-orange` → `--ms-orange`) permet la migration progressive.
+- **Auth Supabase + Pinia (US-093)** : `frontend/src/stores/auth.js` (Pinia store), `frontend/src/lib/supabase.js` (singleton anon), `frontend/src/api/client.js` (axios + bearer auto). Init du store en IIFE async dans `main.js` AVANT `app.mount()` pour que `router.beforeEach` voie l'état auth réel. Routes protégées via `meta.requiresAuth` + redirect `/login?redirect=<path>`. **Piège vue-i18n** : le caractère `@` est interprété comme syntaxe `@:link` → escape obligatoire dans les placeholders email avec `{'@'}` sinon erreur de compilation `error code: 10` au build.
+- **Classes scoped Vue** : les classes définies en `<style scoped>` ne sont pas accessibles depuis un autre composant (attribut `[data-v-*]` unique). Pour partager des styles d'inputs/cards entre vues, soit dupliquer (préfixe distinct par composant), soit déplacer dans `styles/components.css` global.
 
 ### Backend
 - **Vue Compose Coolify** : les env vars de l'app Coolify sont **injectées dans tous les services du compose**, ce qui peut casser des images strict-validate (Neo4j 5 par défaut). Always validate `NEO4J_server_config_strict__validation_enabled=false` est en place.
@@ -431,3 +433,20 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
   - Le repo avait déjà `conftest.py` avec markers + skip auto des integration. Bonne hygiène.
   - 17 fichiers `test_unit_*.py` déjà présents : le projet est plus mature qu'attendu côté tests.
   - Smoke tests minimaux (create_app, blueprints, Config.validate) suffisent pour US-000 car le reste de la suite valide déjà la majorité des composants.
+
+### 2026-05-03 — US-093 Frontend Vue auth Supabase + ClientDashboardView privatif
+- **Statut** : passes: true
+- **Fichiers créés** : frontend/src/lib/supabase.js, frontend/src/stores/auth.js, frontend/src/api/client.js, frontend/src/views/{LoginView,SignupView,ClientDashboardView}.vue, frontend/tests/e2e/auth-flow.spec.ts, frontend/.env.local
+- **Fichiers modifiés** : frontend/src/main.js (Pinia + auth.init), frontend/src/router/index.js (3 routes + beforeEach), frontend/src/views/{Home,LandingView}.vue (nav adaptative), frontend/src/locales/{fr,en,ar}.json (nav.login/dashboard/logout + auth.* + client.*)
+- **Dépendances ajoutées** : `@supabase/supabase-js`, `pinia`
+- **Durée** : ~50 min
+- **Quality gates** : npm run build ✓ (838 modules, 13.36 s) ; playwright list ✓ (4 nouveaux tests détectés)
+- **Learnings** :
+  - vue-i18n traite `@` comme syntaxe de message lié (`@:link`) → escape obligatoire avec `{'@'}` dans les placeholders email. Sinon erreur de compilation au build (`error code: 10`).
+  - storeToRefs(authStore) côté template/setup pour préserver la réactivité des getters Pinia (`isAuthenticated`).
+  - Init du store auth en IIFE async dans main.js AVANT app.mount() pour que le router beforeEach voie l'état auth réel dès la première navigation.
+  - Le fichier .env.local est gitignoré via `*.local` (déjà dans .gitignore frontend) → safe d'y poser les placeholders Supabase pour le build local.
+  - Les classes scoped Vue ne se partagent pas entre composants : il a fallu redéfinir `.dash-field` / `.dash-input` dans ClientDashboardView au lieu de réutiliser `.auth-field` / `.auth-input` qui sont scoped à LoginView.
+  - Pour respecter la rétrocompatibilité, les routes publiques (/, /models, /calibration, /offres, /devis, /landing, /partenaires, /explore) sont restées intactes ; seuls /login, /signup, /client/dashboard ont été ajoutés.
+  - Tokens `--wi-*` exclusifs : zéro hex hardcodé dans les 3 nouvelles vues + RTL via CSS logical properties (margin-inline-*, padding-inline-*, inset-inline-end).
+  - L'attribution org reste manuelle pour le MVP (cf. supabase/seed.sql) : le SignupView affiche un message d'attente d'invitation 24 h.

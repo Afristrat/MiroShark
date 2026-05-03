@@ -18,7 +18,12 @@
     "partners": "Partenaires",
     "partnersTitle": "Programmes partenaires : think tanks, cabinets, universités",
     "contact": "Contact",
-    "contactTitle": "Demander une analyse personnalisée"
+    "contactTitle": "Demander une analyse personnalisée",
+    "login": "Se connecter",
+    "loginTitle": "Accéder à mon espace client Bassira",
+    "dashboard": "Mon espace",
+    "dashboardTitle": "Tableau de bord client privatif",
+    "logout": "Se déconnecter"
   },
   "common": {
     "loading": "Chargement…",
@@ -2070,6 +2075,134 @@
         "histoire-contrefactuel": "Histoire & Contrefactuel",
         "education": "Éducation & Recherche",
         "programme-entrepreneurial": "Programme entrepreneurial"
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "eyebrow": "Espace client",
+      "title": "Connexion à votre espace Bassira",
+      "subtitle": "Accédez à vos simulations privatives, à votre score Brier interne et à vos rapports stratégiques.",
+      "emailLabel": "Adresse email professionnelle",
+      "emailPlaceholder": "vous{'@'}organisation.com",
+      "passwordLabel": "Mot de passe",
+      "passwordPlaceholder": "Au moins 8 caractères",
+      "submit": "Se connecter",
+      "submitting": "Connexion en cours…",
+      "signupHint": "Pas encore de compte ?",
+      "signupLink": "Créer un compte",
+      "errors": {
+        "generic": "Connexion impossible. Vérifiez vos identifiants ou réessayez.",
+        "invalidCredentials": "Email ou mot de passe incorrect.",
+        "emailNotConfirmed": "Votre email n'a pas encore été confirmé. Consultez votre boîte de réception.",
+        "network": "Erreur réseau. Vérifiez votre connexion et réessayez."
+      }
+    },
+    "signup": {
+      "eyebrow": "Création de compte",
+      "title": "Créer votre compte Bassira",
+      "subtitle": "Votre compte sera rattaché à une organisation par notre équipe sous 24 h ouvrées. Vous accéderez ensuite à votre espace privatif.",
+      "fullNameLabel": "Nom complet",
+      "fullNamePlaceholder": "Jane Dupont",
+      "organizationLabel": "Nom de votre organisation",
+      "organizationPlaceholder": "Banque, cabinet, ministère, fonds…",
+      "emailLabel": "Adresse email professionnelle",
+      "emailPlaceholder": "vous{'@'}organisation.com",
+      "passwordLabel": "Mot de passe",
+      "passwordPlaceholder": "Au moins 8 caractères",
+      "passwordHint": "Minimum 8 caractères. Mélangez lettres, chiffres et symboles.",
+      "confirmLabel": "Confirmer le mot de passe",
+      "confirmPlaceholder": "Retapez votre mot de passe",
+      "submit": "Créer mon compte",
+      "submitting": "Création en cours…",
+      "successTitle": "Compte créé avec succès",
+      "successBodyConfirm": "Un email de confirmation vient de vous être envoyé. Cliquez sur le lien pour activer votre compte. Notre équipe vous rattachera ensuite à votre organisation sous 24 h ouvrées.",
+      "successBodyPending": "Votre compte est actif. Notre équipe vous rattachera à votre organisation sous 24 h ouvrées. Vous recevrez un email de confirmation à ce moment-là.",
+      "backToLogin": "Aller à la connexion",
+      "loginHint": "Vous avez déjà un compte ?",
+      "loginLink": "Se connecter",
+      "errors": {
+        "generic": "Impossible de créer le compte. Réessayez ou contactez notre équipe.",
+        "alreadyRegistered": "Cet email est déjà enregistré. Connectez-vous ou utilisez « mot de passe oublié ».",
+        "weakPassword": "Mot de passe trop faible. Choisissez au moins 8 caractères avec lettres et chiffres.",
+        "invalidEmail": "Adresse email invalide.",
+        "passwordsMismatch": "Les deux mots de passe ne correspondent pas.",
+        "network": "Erreur réseau. Vérifiez votre connexion et réessayez."
+      }
+    }
+  },
+  "client": {
+    "dashboard": {
+      "eyebrow": "Espace client",
+      "heroTitle": "Mon espace stratégique",
+      "heroFallback": "Votre espace Bassira",
+      "noOrgYet": "Votre rattachement à une organisation est en attente.",
+      "pendingTitle": "Compte en attente d'attribution",
+      "pendingBody": "Votre compte est actif côté authentification. Notre équipe vous rattachera à votre organisation sous 24 heures ouvrées. Vous recevrez alors un email de confirmation et l'accès à vos simulations privatives.",
+      "simulationsTitle": "Mes simulations",
+      "orderCta": "Commander une nouvelle analyse",
+      "orderTitle": "Lancer un nouveau devis pour mon organisation",
+      "statsAriaLabel": "Indicateurs clés",
+      "stats": {
+        "total": "Simulations totales",
+        "published": "Publications publiques",
+        "brierAvg": "Brier moyen (privé)"
+      },
+      "table": {
+        "id": "Identifiant",
+        "package": "Package",
+        "created": "Créée le",
+        "status": "Statut",
+        "published": "Publication",
+        "outcome": "Issue",
+        "brier": "Brier",
+        "actions": "Actions"
+      },
+      "publishedYes": "Publique",
+      "publishedNo": "Privée",
+      "empty": "Aucune simulation enregistrée pour le moment. Commandez une analyse depuis le bouton ci-dessus.",
+      "actions": {
+        "view": "Voir le rapport",
+        "viewTitle": "Ouvrir le rapport détaillé",
+        "outcome": "Marquer l'issue",
+        "outcomeTitle": "Renseigner l'issue observée pour calculer le Brier",
+        "publish": "Publier",
+        "unpublish": "Dépublier",
+        "publishTitle": "Bascule la visibilité publique agrégée"
+      },
+      "statusLabels": {
+        "pending": "En attente",
+        "running": "En cours",
+        "in_progress": "En cours",
+        "completed": "Terminée",
+        "failed": "Échec",
+        "error": "Erreur"
+      },
+      "outcomeLabels": {
+        "called_it": "Appel correct",
+        "partial": "Partielle",
+        "wrong": "Incorrecte"
+      },
+      "roles": {
+        "owner": "Propriétaire",
+        "admin": "Administrateur",
+        "member": "Membre",
+        "viewer": "Observateur"
+      },
+      "outcomeModal": {
+        "title": "Marquer l'issue de la simulation",
+        "labelField": "Issue observée",
+        "observedAt": "Date d'observation",
+        "sourceUrl": "Source publique (URL)",
+        "notes": "Notes complémentaires",
+        "submit": "Enregistrer l'issue",
+        "submitting": "Enregistrement…"
+      },
+      "errors": {
+        "fetchFailed": "Impossible de récupérer vos simulations. Réessayez ou contactez le support.",
+        "publishFailed": "Impossible de modifier la publication. Réessayez.",
+        "outcomeFailed": "Impossible d'enregistrer l'issue. Réessayez.",
+        "profileFailed": "Profil indisponible. Réessayez ou contactez le support."
       }
     }
   }

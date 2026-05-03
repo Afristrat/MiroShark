@@ -26,6 +26,23 @@
         <router-link to="/devis" class="nav-link" :title="$t('nav.contactTitle')">
           {{ $t('nav.contact') }}
         </router-link>
+        <!-- US-093 — entrée auth adaptative -->
+        <router-link
+          v-if="!isAuthenticated"
+          to="/login"
+          class="nav-link nav-link--auth"
+          :title="$t('nav.login')"
+        >
+          {{ $t('nav.login') }}
+        </router-link>
+        <router-link
+          v-else
+          to="/client/dashboard"
+          class="nav-link nav-link--auth nav-link--featured"
+          :title="$t('nav.dashboard')"
+        >
+          {{ $t('nav.dashboard') }}
+        </router-link>
         <button class="settings-btn" @click="settingsOpen = true" :title="$t('home.nav.settingsTitle')" aria-label="Paramètres">
           <span aria-hidden="true">⚙</span>
         </button>
@@ -425,6 +442,12 @@ import SectorUseCases from '../components/SectorUseCases.vue'
 import { fetchUrl } from '../api/graph'
 import { askMode, enrichAsk } from '../api/simulation'
 import { useScrollFadeIn } from '../composables/useScrollFadeIn'
+// US-093 — entrée auth adaptative dans la nav
+import { useAuthStore } from '../stores/auth'
+import { storeToRefs } from 'pinia'
+
+const authStore = useAuthStore()
+const { isAuthenticated } = storeToRefs(authStore)
 
 // Refs for the 4 workflow step cards — populated via :ref callback in the
 // template so the IntersectionObserver picks each one up individually.

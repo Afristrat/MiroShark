@@ -18,7 +18,12 @@
     "partners": "Partners",
     "partnersTitle": "Partner programs: think tanks, consultancies, universities",
     "contact": "Contact",
-    "contactTitle": "Request a custom analysis"
+    "contactTitle": "Request a custom analysis",
+    "login": "Sign in",
+    "loginTitle": "Access my Bassira client workspace",
+    "dashboard": "My workspace",
+    "dashboardTitle": "Private client dashboard",
+    "logout": "Sign out"
   },
   "common": {
     "loading": "Loading…",
@@ -2070,6 +2075,134 @@
         "histoire-contrefactuel": "History & Counterfactual",
         "education": "Education & Research",
         "programme-entrepreneurial": "Entrepreneurial programme"
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "eyebrow": "Client workspace",
+      "title": "Sign in to your Bassira workspace",
+      "subtitle": "Access your private simulations, your internal Brier score and your strategic reports.",
+      "emailLabel": "Work email address",
+      "emailPlaceholder": "you{'@'}organization.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "At least 8 characters",
+      "submit": "Sign in",
+      "submitting": "Signing in…",
+      "signupHint": "No account yet?",
+      "signupLink": "Create an account",
+      "errors": {
+        "generic": "Sign in failed. Check your credentials and try again.",
+        "invalidCredentials": "Incorrect email or password.",
+        "emailNotConfirmed": "Your email is not yet confirmed. Check your inbox.",
+        "network": "Network error. Check your connection and try again."
+      }
+    },
+    "signup": {
+      "eyebrow": "Account creation",
+      "title": "Create your Bassira account",
+      "subtitle": "Your account will be linked to an organization by our team within 24 business hours. You will then access your private workspace.",
+      "fullNameLabel": "Full name",
+      "fullNamePlaceholder": "Jane Doe",
+      "organizationLabel": "Organization name",
+      "organizationPlaceholder": "Bank, consultancy, ministry, fund…",
+      "emailLabel": "Work email address",
+      "emailPlaceholder": "you{'@'}organization.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "At least 8 characters",
+      "passwordHint": "Minimum 8 characters. Mix letters, numbers and symbols.",
+      "confirmLabel": "Confirm password",
+      "confirmPlaceholder": "Type your password again",
+      "submit": "Create my account",
+      "submitting": "Creating…",
+      "successTitle": "Account created successfully",
+      "successBodyConfirm": "A confirmation email was just sent to you. Click the link to activate your account. Our team will then link you to your organization within 24 business hours.",
+      "successBodyPending": "Your account is active. Our team will link you to your organization within 24 business hours. You will receive a confirmation email at that point.",
+      "backToLogin": "Go to sign in",
+      "loginHint": "Already have an account?",
+      "loginLink": "Sign in",
+      "errors": {
+        "generic": "Could not create the account. Try again or contact our team.",
+        "alreadyRegistered": "This email is already registered. Sign in or use \"forgot password\".",
+        "weakPassword": "Password too weak. Use at least 8 characters with letters and numbers.",
+        "invalidEmail": "Invalid email address.",
+        "passwordsMismatch": "The two passwords don't match.",
+        "network": "Network error. Check your connection and try again."
+      }
+    }
+  },
+  "client": {
+    "dashboard": {
+      "eyebrow": "Client workspace",
+      "heroTitle": "My strategic workspace",
+      "heroFallback": "Your Bassira workspace",
+      "noOrgYet": "Your link to an organization is pending.",
+      "pendingTitle": "Account pending assignment",
+      "pendingBody": "Your account is active on the authentication side. Our team will link you to your organization within 24 business hours. You will then receive a confirmation email and access to your private simulations.",
+      "simulationsTitle": "My simulations",
+      "orderCta": "Order a new analysis",
+      "orderTitle": "Open a new quote for my organization",
+      "statsAriaLabel": "Key indicators",
+      "stats": {
+        "total": "Total simulations",
+        "published": "Public publications",
+        "brierAvg": "Average Brier (private)"
+      },
+      "table": {
+        "id": "Identifier",
+        "package": "Package",
+        "created": "Created on",
+        "status": "Status",
+        "published": "Publication",
+        "outcome": "Outcome",
+        "brier": "Brier",
+        "actions": "Actions"
+      },
+      "publishedYes": "Public",
+      "publishedNo": "Private",
+      "empty": "No simulation recorded yet. Order an analysis from the button above.",
+      "actions": {
+        "view": "View report",
+        "viewTitle": "Open the detailed report",
+        "outcome": "Mark outcome",
+        "outcomeTitle": "Record the observed outcome to compute Brier",
+        "publish": "Publish",
+        "unpublish": "Unpublish",
+        "publishTitle": "Toggle aggregated public visibility"
+      },
+      "statusLabels": {
+        "pending": "Pending",
+        "running": "Running",
+        "in_progress": "Running",
+        "completed": "Completed",
+        "failed": "Failed",
+        "error": "Error"
+      },
+      "outcomeLabels": {
+        "called_it": "Called it",
+        "partial": "Partial",
+        "wrong": "Wrong"
+      },
+      "roles": {
+        "owner": "Owner",
+        "admin": "Admin",
+        "member": "Member",
+        "viewer": "Viewer"
+      },
+      "outcomeModal": {
+        "title": "Mark simulation outcome",
+        "labelField": "Observed outcome",
+        "observedAt": "Observation date",
+        "sourceUrl": "Public source (URL)",
+        "notes": "Additional notes",
+        "submit": "Save outcome",
+        "submitting": "Saving…"
+      },
+      "errors": {
+        "fetchFailed": "Could not retrieve your simulations. Try again or contact support.",
+        "publishFailed": "Could not change publication. Try again.",
+        "outcomeFailed": "Could not save outcome. Try again.",
+        "profileFailed": "Profile unavailable. Try again or contact support."
       }
     }
   }

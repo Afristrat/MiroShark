@@ -1,0 +1,123 @@
+/**
+ * Bassira — API client privatif (US-093)
+ * ─────────────────────────────────────────────────────────────────────
+ * Wrapper axios qui injecte automatiquement `Authorization: Bearer
+ * <session.access_token>` sur les requêtes vers /api/auth/* et
+ * /api/client/*. Lit le token depuis le store Pinia auth.
+ *
+ * Endpoints visés (contrat US-092) :
+ *   - GET    /api/auth/me
+ *   - GET    /api/client/simulations
+ *   - POST   /api/client/simulations
+ *   - POST   /api/client/simulations/:id/outcome
+ *   - POST   /api/client/simulations/:id/publish
+ *   - GET    /api/calibration/aggregates  (public, sans bearer)
+ *
+ * NB : on réutilise pas l'axios de api/index.js car ce dernier a une
+ * logique d'interceptor d'erreur qui rejette quand `success: false`,
+ * incompatible avec les nouvelles réponses qui peuvent être un objet
+ * direct. On garde un axios séparé, plus simple, pour les endpoints
+ * privatifs.
+ */
+
+import axios from 'axios'
+import i18nInstance from '../i18n'
+import { useAuthStore } from '../stores/auth'
+
+const client = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || '',
+  timeout: 60000,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+})
+
+// Interceptor request : Bearer token + locale.
+client.interceptors.request.use(
+  (config) => {
+    try {
+      const auth = useAuthStore()
+      const token = auth.session?.access_token
+      if (token) {
+        config.headers = config.headers || {}
+        config.headers['Authorization'] = `Bearer ${token}`
+      }
+    } catch (_) {
+      // Pinia pas encore initialisé (rarissime au boot) — on continue
+      // sans bearer ; le backend renverra 401 et l'UI redirigera.
+    }
+    try {
+      const locale = i18nInstance.global?.locale?.value || 'fr'
+      config.headers = config.headers || {}
+      config.headers['X-Bassira-Locale'] = locale
+    } catch (_) {
+      /* i18n pas prêt — backend défaut fr */
+    }
+    return config
+  },
+  (error) => Promise.reject(error)
+)
+
+// Interceptor response : extrait .data ou propage erreur HTTP.
+client.interceptors.response.use(
+  (response) => response.data,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token expiré ou invalide — l'app devrait rediriger vers /login.
+      // On ne fait pas la redirection ici (séparation des responsabilités) :
+      // les vues capturent l'erreur et déclenchent le flow approprié.
+      console.warn('[Bassira client] 401 unauthorized')
+    }
+    return Promise.reject(error)
+  }
+)
+
+// ───── Méthodes typées ───────────────────────────────────────────────
+
+/** GET /api/auth/me — retourne le profil multitenant de l'user courant. */
+export function fetchMe() {
+  return client.get('/api/auth/me')
+}
+
+/** GET /api/client/simulations — liste les simulations de l'org courante. */
+export function listClientSimulations(params = {}) {
+  return client.get('/api/client/simulations', { params })
+}
+
+/** POST /api/client/simulations — crée une simulation (commande). */
+export function createClientSimulation(payload) {
+  return client.post('/api/client/simulations', payload)
+}
+
+/**
+ * POST /api/client/simulations/:id/outcome — marque l'issue d'une sim.
+ * payload: { label: 'called_it'|'partial'|'wrong', observed_at, source_url, notes }
+ */
+export function markOutcome(simulationId, payload) {
+  return client.post(
+    `/api/client/simulations/${encodeURIComponent(simulationId)}/outcome`,
+    payload
+  )
+}
+
+/**
+ * POST /api/client/simulations/:id/publish — bascule is_published.
+ * payload: { is_published: boolean }
+ */
+export function publishSimulation(simulationId, payload = { is_published: true }) {
+  return client.post(
+    `/api/client/simulations/${encodeURIComponent(simulationId)}/publish`,
+    payload
+  )
+}
+
+/**
+ * GET /api/calibration/aggregates — vue publique k-anonymity n≥5.
+ * Pas de bearer requis (route publique). On utilise le même client
+ * pour cohérence (l'interceptor n'ajoute le token que s'il existe).
+ */
+export function fetchPublicCalibrationAggregates() {
+  return client.get('/api/calibration/aggregates')
+}
+
+export default client

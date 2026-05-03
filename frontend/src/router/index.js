@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
+import { useAuthStore } from '../stores/auth'
 
 const routes = [
   {
@@ -142,12 +143,52 @@ const routes = [
     component: () => import('../views/ModelDetailView.vue'),
     props: true,
     meta: { title: 'Modèle · Bassira' }
+  },
+  {
+    // Auth (US-093) — login Supabase pour comptes clients.
+    path: '/login',
+    name: 'Login',
+    component: () => import('../views/LoginView.vue'),
+    meta: { title: 'Se connecter · Bassira' }
+  },
+  {
+    // Auth (US-093) — création de compte. L'attribution à une org se fait
+    // manuellement par l'équipe Bassira (cf. supabase/seed.sql) tant que
+    // le flow d'invitation auto n'est pas en place.
+    path: '/signup',
+    name: 'Signup',
+    component: () => import('../views/SignupView.vue'),
+    meta: { title: 'Créer un compte · Bassira' }
+  },
+  {
+    // Espace privatif client (US-093) — table des simulations + outcomes
+    // + publish, scopée à l'org courante via RLS Supabase.
+    path: '/client/dashboard',
+    name: 'ClientDashboard',
+    component: () => import('../views/ClientDashboardView.vue'),
+    meta: { requiresAuth: true, title: 'Mon espace · Bassira' }
   }
 ]
 
 const router = createRouter({
   history: createWebHistory(),
   routes
+})
+
+// US-093 — guard global : protège les routes meta.requiresAuth.
+// Si non authentifié → redirection vers /login avec ?redirect=<path>.
+// On lit l'auth store (Pinia) ; init() est appelé en amont depuis main.js
+// donc l'état de session persisté est déjà chargé au moment des nav.
+router.beforeEach(async (to) => {
+  if (!to.meta?.requiresAuth) return true
+  const auth = useAuthStore()
+  if (!auth.isAuthenticated) {
+    return {
+      name: 'Login',
+      query: { redirect: to.fullPath }
+    }
+  }
+  return true
 })
 
 export default router

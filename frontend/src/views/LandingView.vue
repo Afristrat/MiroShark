@@ -28,6 +28,23 @@
         <router-link :to="{ name: 'Quote' }" class="lp-nav-cta">
           {{ $t('landing.nav.demo') }}
         </router-link>
+        <!-- US-093 — entrée auth adaptative -->
+        <router-link
+          v-if="!isAuthenticated"
+          :to="{ name: 'Login' }"
+          class="lp-nav-link"
+          :title="$t('nav.login')"
+        >
+          {{ $t('nav.login') }}
+        </router-link>
+        <router-link
+          v-else
+          :to="{ name: 'ClientDashboard' }"
+          class="lp-nav-link lp-nav-link--featured"
+          :title="$t('nav.dashboard')"
+        >
+          {{ $t('nav.dashboard') }}
+        </router-link>
       </nav>
     </header>
 
@@ -290,8 +307,14 @@
 
 <script setup>
 import { computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import SectorUseCases from '../components/SectorUseCases.vue'
+// US-093 — entrée auth adaptative dans la nav
+import { useAuthStore } from '../stores/auth'
+
+const authStore = useAuthStore()
+const { isAuthenticated } = storeToRefs(authStore)
 
 // ════════════════════════════════════════════════════════════════════
 // Static data — IDs côté JS, copy côté i18n.
