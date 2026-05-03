@@ -23,7 +23,9 @@
     "loginTitle": "Access my Bassira client workspace",
     "dashboard": "My workspace",
     "dashboardTitle": "Private client dashboard",
-    "logout": "Sign out"
+    "logout": "Sign out",
+    "admin": "Admin",
+    "adminTitle": "Bassira super-admin console (all organizations)"
   },
   "common": {
     "loading": "Loading…",
@@ -250,6 +252,36 @@
       "title": "Could not load analytics",
       "retry": "Retry",
       "generic": "Network error. Check the connection or the admin token."
+    },
+    "superAdmin": {
+      "sectionTitle": "All organizations",
+      "sectionHelp": "Cross-tenant view — Bassira super-admins only.",
+      "loading": "Loading organizations…",
+      "error": "Could not load organizations.",
+      "empty": "No organization registered yet.",
+      "table": {
+        "slug": "Slug",
+        "name": "Name",
+        "sector": "Sector",
+        "country": "Country",
+        "status": "Status",
+        "members": "Members",
+        "sims": "Sims",
+        "published": "Published",
+        "avgBrier": "Avg Brier",
+        "createdAt": "Created at"
+      },
+      "detail": {
+        "title": "Organization detail",
+        "close": "Close",
+        "metadata": "Metadata",
+        "members": "Members",
+        "simulations": "Simulations",
+        "noMembers": "No member.",
+        "noSims": "No simulation.",
+        "loading": "Loading detail…",
+        "error": "Could not load detail."
+      }
     }
   },
   "sectors": {
@@ -2095,7 +2127,16 @@
         "generic": "Sign in failed. Check your credentials and try again.",
         "invalidCredentials": "Incorrect email or password.",
         "emailNotConfirmed": "Your email is not yet confirmed. Check your inbox.",
-        "network": "Network error. Check your connection and try again."
+        "network": "Network error. Check your connection and try again.",
+        "unknownEmail": "No account matches this email. Please create an account first."
+      },
+      "orSeparator": "Or",
+      "providers": {
+        "google": "Continue with Google",
+        "googleLoading": "Redirecting to Google...",
+        "magic": "Send me a magic link",
+        "magicLoading": "Sending link...",
+        "magicSent": "Link sent to {email}. Please check your inbox (and spam folder)."
       }
     },
     "signup": {

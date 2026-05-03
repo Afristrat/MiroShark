@@ -23,7 +23,9 @@
     "loginTitle": "Accéder à mon espace client Bassira",
     "dashboard": "Mon espace",
     "dashboardTitle": "Tableau de bord client privatif",
-    "logout": "Se déconnecter"
+    "logout": "Se déconnecter",
+    "admin": "Admin",
+    "adminTitle": "Console super-admin Bassira (toutes les organisations)"
   },
   "common": {
     "loading": "Chargement…",
@@ -250,6 +252,36 @@
       "title": "Impossible de charger les analytics",
       "retry": "Réessayer",
       "generic": "Erreur réseau. Vérifiez la connexion ou le token administrateur."
+    },
+    "superAdmin": {
+      "sectionTitle": "Toutes les organisations",
+      "sectionHelp": "Vue cross-tenant — réservée aux super-admins Bassira.",
+      "loading": "Chargement des organisations…",
+      "error": "Impossible de charger les organisations.",
+      "empty": "Aucune organisation enregistrée pour le moment.",
+      "table": {
+        "slug": "Slug",
+        "name": "Nom",
+        "sector": "Secteur",
+        "country": "Pays",
+        "status": "Statut",
+        "members": "Membres",
+        "sims": "Sims",
+        "published": "Publiées",
+        "avgBrier": "Brier moyen",
+        "createdAt": "Créée le"
+      },
+      "detail": {
+        "title": "Détail de l'organisation",
+        "close": "Fermer",
+        "metadata": "Métadonnées",
+        "members": "Membres",
+        "simulations": "Simulations",
+        "noMembers": "Aucun membre.",
+        "noSims": "Aucune simulation.",
+        "loading": "Chargement du détail…",
+        "error": "Impossible de charger le détail."
+      }
     }
   },
   "sectors": {
@@ -2095,7 +2127,16 @@
         "generic": "Connexion impossible. Vérifiez vos identifiants ou réessayez.",
         "invalidCredentials": "Email ou mot de passe incorrect.",
         "emailNotConfirmed": "Votre email n'a pas encore été confirmé. Consultez votre boîte de réception.",
-        "network": "Erreur réseau. Vérifiez votre connexion et réessayez."
+        "network": "Erreur réseau. Vérifiez votre connexion et réessayez.",
+        "unknownEmail": "Aucun compte ne correspond à cet email. Créez un compte d'abord."
+      },
+      "orSeparator": "Ou",
+      "providers": {
+        "google": "Continuer avec Google",
+        "googleLoading": "Redirection vers Google...",
+        "magic": "Recevoir un lien magique",
+        "magicLoading": "Envoi du lien...",
+        "magicSent": "Lien envoyé à {email}. Vérifiez votre boîte de réception (et vos spams)."
       }
     },
     "signup": {
