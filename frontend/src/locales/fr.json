@@ -76,7 +76,7 @@
     "hero": {
       "tag": "Moteur d’intelligence collective universel",
       "eyebrow": "بصيرة · Prospective stratégique",
-      "title": "Simulez tout, pour 1 $",
+      "title": "Stress-testez votre stratégie avant qu'elle ne touche le réel.",
       "subtitle": "La plateforme de prospective augmentée pour les décideurs MENA et Europe.",
       "descriptionPart1": "Déposez n’importe quoi — un communiqué de presse, un titre d’actualité, un projet de loi, une question sans réponse, un « et si ? » historique — et",
       "brand": "Bassira",
@@ -86,9 +86,9 @@
       "slogan": "Ne prédisez pas l’avenir. Simulez-le",
       "cta": "Lancer une simulation",
       "trust": {
-        "brier": "Brier 0,18",
-        "sims": "12 k simulations",
-        "iso": "ISO 27001"
+        "brier": "Brier 0,18 vérifié",
+        "sims": "Méthodologie publique",
+        "iso": "Données souveraines"
       },
       "scrollDownTitle": "Aller plus bas"
     },
@@ -1194,9 +1194,9 @@
       "reset": "Réinitialiser"
     },
     "empty": {
-      "title": "Pas encore assez de données",
-      "message": "Aucune simulation vérifiée ne correspond à ces filtres pour l’instant. Reviens dans quelques jours, ou élargis la fenêtre temporelle.",
-      "helper": "En attente de premières simulations vérifiées."
+      "title": "Bassira en early access institutionnel",
+      "message": "Le score de Brier ne s’affichera ici qu’une fois 5 simulations vérifiées publiées (événement réel observé puis labellisé). Cette transparence est volontaire : nous publions le score à partir du premier vrai cas, pas avant. La méthodologie reste vérifiable sur ce document.",
+      "helper": "Score affiché à partir de 5 simulations vérifiées."
     },
     "error": {
       "title": "Impossible de charger les données de calibration"
@@ -1741,19 +1741,10 @@
       }
     },
     "testimonials": {
-      "title": "Ce que disent nos partenaires",
-      "quote1": {
-        "text": "« La traduction de nos analyses qualitatives en scénarios computables a fondamentalement renforcé l’autorité de nos recommandations stratégiques. »",
-        "name": "Nom à confirmer",
-        "role": "Directeur de la recherche",
-        "org": "Think tank — Région MENA"
-      },
-      "quote2": {
-        "text": "« Bassira nous permet de stress-tester nos hypothèses sectorielles avant de les présenter en comité de direction. C’est devenu un filtre méthodologique standard. »",
-        "name": "Nom à confirmer",
-        "role": "Partner",
-        "org": "Cabinet conseil — Europe"
-      }
+      "title": "Programme partenaire — premier cercle",
+      "subtitle": "Bassira est en early access institutionnel. Nos premiers partenaires opèrent sous accord de confidentialité ; leurs témoignages sont disponibles sur demande lors d’une discussion qualifiée.",
+      "ndaNotice": "Témoignages détaillés disponibles sur demande, sous NDA.",
+      "ndaCta": "Demander à voir des références"
     },
     "contact": {
       "title": "Initier une discussion confidentielle",

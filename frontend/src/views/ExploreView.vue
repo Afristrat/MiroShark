@@ -182,17 +182,19 @@
             <router-link to="/explore" class="inline-link">/explore</router-link>.
           </template>
           <template v-else>
-            La vôtre pourrait être la première. Lancez une simulation,
-            ouvrez la fenêtre d'intégration sur la page de résultat,
-            activez « Public » — elle apparaîtra ici en moins de 30 secondes.
+            Bassira est en early access institutionnel. Les simulations
+            publiques apparaîtront ici à mesure que nos partenaires acceptent
+            de les rendre visibles. En attendant, parcourez nos cas d'usage
+            par secteur ou demandez une démonstration ciblée sur votre
+            scénario.
           </template>
         </div>
         <router-link
           v-if="!searchQuery && !categoryFilter"
-          :to="verifiedFilter ? '/explore' : '/'"
+          :to="verifiedFilter ? '/explore' : '/landing'"
           class="empty-cta"
         >
-          {{ verifiedFilter ? 'Voir toutes les simulations →' : 'Lancer une simulation →' }}
+          {{ verifiedFilter ? 'Voir toutes les simulations →' : 'Voir les cas d\'usage par secteur →' }}
         </router-link>
         <button
           v-else

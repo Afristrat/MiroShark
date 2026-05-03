@@ -175,7 +175,11 @@
         </div>
       </section>
 
-      <!-- ───────── Témoignages ───────── -->
+      <!-- ───────── Programme partenaire — early access NDA ─────────
+           Pas de testimonials inventés (DEFCON 1 — tolérance zéro données erronées).
+           Bassira est en early access institutionnel ; les références sont
+           disponibles sur demande sous NDA. Cette posture est plus crédible
+           pour une audience C-Level que des placeholders « Nom à confirmer ». -->
       <section
         class="partners-testimonials"
         aria-labelledby="partners-testimonials-title"
@@ -183,49 +187,24 @@
         <h2 id="partners-testimonials-title" class="partners-section-title">
           {{ $t('partners.testimonials.title') }}
         </h2>
+        <p class="partners-section-sub">
+          {{ $t('partners.testimonials.subtitle') }}
+        </p>
 
-        <div class="partners-testimonials-grid">
-          <figure class="partners-testimonial">
-            <span
-              class="partners-quote-icon material-symbols-outlined"
-              aria-hidden="true"
-            >format_quote</span>
-            <blockquote class="partners-testimonial-text">
-              {{ $t('partners.testimonials.quote1.text') }}
-            </blockquote>
-            <figcaption class="partners-testimonial-author">
-              <span class="partners-testimonial-name">
-                {{ $t('partners.testimonials.quote1.name') }}
-              </span>
-              <span class="partners-testimonial-role">
-                {{ $t('partners.testimonials.quote1.role') }}
-              </span>
-              <span class="partners-testimonial-org">
-                {{ $t('partners.testimonials.quote1.org') }}
-              </span>
-            </figcaption>
-          </figure>
-
-          <figure class="partners-testimonial">
-            <span
-              class="partners-quote-icon material-symbols-outlined"
-              aria-hidden="true"
-            >format_quote</span>
-            <blockquote class="partners-testimonial-text">
-              {{ $t('partners.testimonials.quote2.text') }}
-            </blockquote>
-            <figcaption class="partners-testimonial-author">
-              <span class="partners-testimonial-name">
-                {{ $t('partners.testimonials.quote2.name') }}
-              </span>
-              <span class="partners-testimonial-role">
-                {{ $t('partners.testimonials.quote2.role') }}
-              </span>
-              <span class="partners-testimonial-org">
-                {{ $t('partners.testimonials.quote2.org') }}
-              </span>
-            </figcaption>
-          </figure>
+        <div class="partners-nda-card">
+          <span
+            class="partners-nda-icon material-symbols-outlined"
+            aria-hidden="true"
+          >verified_user</span>
+          <p class="partners-nda-text">
+            {{ $t('partners.testimonials.ndaNotice') }}
+          </p>
+          <a
+            class="partners-nda-cta"
+            :href="`mailto:partners@ai-mpower.com?subject=${encodeURIComponent($t('partners.testimonials.ndaCta'))}`"
+          >
+            {{ $t('partners.testimonials.ndaCta') }} →
+          </a>
         </div>
       </section>
 
@@ -801,9 +780,58 @@ function onSubmit() {
   color: var(--wi-on-primary);
 }
 
-/* ── Témoignages ──────────────────────────────────── */
+/* ── Programme partenaire — NDA card ──────────────── */
 .partners-testimonials {
   padding: var(--wi-space-xl) var(--wi-space-lg);
+  text-align: center;
+}
+
+.partners-nda-card {
+  max-width: 720px;
+  margin: var(--wi-space-lg) auto 0;
+  background: var(--wi-surface);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-card);
+  box-shadow: var(--wi-shadow-ambient);
+  padding: var(--wi-space-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--wi-space-sm);
+}
+
+.partners-nda-icon {
+  font-size: 40px;
+  color: var(--wi-secondary);
+  font-variation-settings: 'FILL' 1;
+}
+
+.partners-nda-text {
+  font-family: var(--wi-font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--wi-on-surface);
+  margin: 0;
+  max-width: 540px;
+}
+
+.partners-nda-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: var(--wi-on-primary-container);
+  color: var(--wi-bg);
+  border-radius: var(--wi-radius-interactive);
+  font-family: var(--wi-font-heading);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 150ms var(--ms-ease, ease);
+}
+
+.partners-nda-cta:hover {
+  background: var(--wi-primary);
 }
 
 .partners-testimonials-grid {
