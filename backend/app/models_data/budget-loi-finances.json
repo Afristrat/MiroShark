@@ -3,9 +3,9 @@
   "sector": "politique-publique",
   "preset_source": "budget_loi_finances",
   "title": {
-    "fr": "PLF MENA — Stress test parlementaire d'un projet de loi de finances sensible",
-    "en": "MENA Finance Bill — Parliamentary Stress Test on a Sensitive Budget Law",
-    "ar": "مشروع قانون مالية إقليمي — اختبار ضغط برلماني لقانون مالية حسّاس"
+    "fr": "PLF MENA · Stress test parlementaire d'un projet de loi de finances sensible",
+    "en": "MENA Finance Bill · Parliamentary Stress Test on a Sensitive Budget Law",
+    "ar": "مشروع قانون مالية إقليمي · اختبار ضغط برلماني لقانون مالية حسّاس"
   },
   "subtitle": {
     "fr": "Modèle pré-calibré sur le parcours législatif d'un PLF marocain comportant trois mesures controversées (50 agents, 10 rounds de 3 jours)",
@@ -31,65 +31,65 @@
     {
       "role_key": "parlementaires_majorite",
       "profile": {
-        "fr": "Parlementaires de la majorité gouvernementale — 6 agents — gèrent la discipline de groupe, négocient les concessions ciblées et les amendements de compromis.",
-        "en": "Government-majority MPs — 6 agents — enforce party discipline, negotiate targeted concessions and compromise amendments.",
-        "ar": "نواب الأغلبية الحكومية — 6 وكلاء — يضبطون الانضباط الحزبي، ويتفاوضون على التنازلات المستهدفة وتعديلات التسوية."
+        "fr": "Parlementaires de la majorité gouvernementale · 6 agents · gèrent la discipline de groupe, négocient les concessions ciblées et les amendements de compromis.",
+        "en": "Government-majority MPs · 6 agents · enforce party discipline, negotiate targeted concessions and compromise amendments.",
+        "ar": "نواب الأغلبية الحكومية · 6 وكلاء · يضبطون الانضباط الحزبي، ويتفاوضون على التنازلات المستهدفة وتعديلات التسوية."
       }
     },
     {
       "role_key": "parlementaires_opposition",
       "profile": {
-        "fr": "Parlementaires de l'opposition — 6 agents — coordonnent les amendements obstructifs, les motions de procédure et la communication publique sur les trois mesures sensibles.",
-        "en": "Opposition MPs — 6 agents — coordinate obstructive amendments, procedural motions and public messaging on the three sensitive measures.",
-        "ar": "نواب المعارضة — 6 وكلاء — يُنسِّقون التعديلات المعرقِلة، والملتمسات الإجرائية، والتواصل العمومي حول الإجراءات الحسّاسة الثلاثة."
+        "fr": "Parlementaires de l'opposition · 6 agents · coordonnent les amendements obstructifs, les motions de procédure et la communication publique sur les trois mesures sensibles.",
+        "en": "Opposition MPs · 6 agents · coordinate obstructive amendments, procedural motions and public messaging on the three sensitive measures.",
+        "ar": "نواب المعارضة · 6 وكلاء · يُنسِّقون التعديلات المعرقِلة، والملتمسات الإجرائية، والتواصل العمومي حول الإجراءات الحسّاسة الثلاثة."
       }
     },
     {
       "role_key": "centrales_syndicales",
       "profile": {
-        "fr": "Centrales syndicales (UMT, CDT, UGTM) — 6 agents — coordonnent la mobilisation sociale, négocient les contreparties pour les ménages et le pouvoir d'achat.",
-        "en": "Union confederations (UMT, CDT, UGTM) — 6 agents — coordinate social mobilisation, negotiate offsets for households and purchasing power.",
-        "ar": "المركزيات النقابية (الاتحاد المغربي للشغل، الكونفدرالية الديمقراطية للشغل، الاتحاد العام للشغالين) — 6 وكلاء — يُنسِّقون التعبئة الاجتماعية ويتفاوضون على التعويضات للأسر والقدرة الشرائية."
+        "fr": "Centrales syndicales (UMT, CDT, UGTM) · 6 agents · coordonnent la mobilisation sociale, négocient les contreparties pour les ménages et le pouvoir d'achat.",
+        "en": "Union confederations (UMT, CDT, UGTM) · 6 agents · coordinate social mobilisation, negotiate offsets for households and purchasing power.",
+        "ar": "المركزيات النقابية (الاتحاد المغربي للشغل، الكونفدرالية الديمقراطية للشغل، الاتحاد العام للشغالين) · 6 وكلاء · يُنسِّقون التعبئة الاجتماعية ويتفاوضون على التعويضات للأسر والقدرة الشرائية."
       }
     },
     {
       "role_key": "patronat_cgem_gpbm",
       "profile": {
-        "fr": "Patronat (CGEM, GPBM) — 6 agents — défendent la prévisibilité fiscale, modulent l'argumentaire selon les sous-secteurs (banques, services, industrie).",
-        "en": "Employer organisations (CGEM, GPBM) — 6 agents — defend fiscal predictability, modulate the argument across sub-sectors (banks, services, industry).",
-        "ar": "منظمات أرباب العمل (الاتحاد العام لمقاولات المغرب، المجموعة المهنية لبنوك المغرب) — 6 وكلاء — يدافعون عن القابلية للتنبؤ الضريبي ويُكيّفون الخطاب حسب القطاعات الفرعية (بنوك، خدمات، صناعة)."
+        "fr": "Patronat (CGEM, GPBM) · 6 agents · défendent la prévisibilité fiscale, modulent l'argumentaire selon les sous-secteurs (banques, services, industrie).",
+        "en": "Employer organisations (CGEM, GPBM) · 6 agents · defend fiscal predictability, modulate the argument across sub-sectors (banks, services, industry).",
+        "ar": "منظمات أرباب العمل (الاتحاد العام لمقاولات المغرب، المجموعة المهنية لبنوك المغرب) · 6 وكلاء · يدافعون عن القابلية للتنبؤ الضريبي ويُكيّفون الخطاب حسب القطاعات الفرعية (بنوك، خدمات، صناعة)."
       }
     },
     {
       "role_key": "presse_economique",
       "profile": {
-        "fr": "Presse économique de place — 6 agents — décrypte les chiffrages, met en débat les hypothèses du projet, suit les arbitrages internes.",
-        "en": "Local financial press — 6 agents — decode the costings, debate the bill's assumptions, track internal arbitrations.",
-        "ar": "الصحافة الاقتصادية المحلية — 6 وكلاء — تُفكّك الكلفات، وتُناقش فرضيات المشروع، وتتابع التحكيمات الداخلية."
+        "fr": "Presse économique de place · 6 agents · décrypte les chiffrages, met en débat les hypothèses du projet, suit les arbitrages internes.",
+        "en": "Local financial press · 6 agents · decode the costings, debate the bill's assumptions, track internal arbitrations.",
+        "ar": "الصحافة الاقتصادية المحلية · 6 وكلاء · تُفكّك الكلفات، وتُناقش فرضيات المشروع، وتتابع التحكيمات الداخلية."
       }
     },
     {
       "role_key": "economistes_independants",
       "profile": {
-        "fr": "Économistes indépendants — 5 agents — produisent des notes critiques, alimentent les commissions, signalent les effets de bord macroéconomiques.",
-        "en": "Independent economists — 5 agents — issue critical notes, feed the committees, flag macroeconomic side-effects.",
-        "ar": "اقتصاديون مستقلون — 5 وكلاء — يُصدرون مذكرات نقدية، ويُغذّون اللجان، ويُشيرون إلى الآثار الجانبية الماكرو-اقتصادية."
+        "fr": "Économistes indépendants · 5 agents · produisent des notes critiques, alimentent les commissions, signalent les effets de bord macroéconomiques.",
+        "en": "Independent economists · 5 agents · issue critical notes, feed the committees, flag macroeconomic side-effects.",
+        "ar": "اقتصاديون مستقلون · 5 وكلاء · يُصدرون مذكرات نقدية، ويُغذّون اللجان، ويُشيرون إلى الآثار الجانبية الماكرو-اقتصادية."
       }
     },
     {
       "role_key": "representants_pme",
       "profile": {
-        "fr": "Représentants des PME et de l'économie sociale — 8 agents — signalent les effets différenciés sur les TPE-PME et les territoires non-métropolitains.",
-        "en": "SME and social-economy representatives — 8 agents — flag the differentiated effects on small businesses and non-metropolitan regions.",
-        "ar": "ممثّلو المقاولات الصغيرة والمتوسطة والاقتصاد الاجتماعي — 8 وكلاء — يُشيرون إلى التأثيرات المتباينة على المقاولات الصغرى وعلى الجهات غير الحضرية الكبرى."
+        "fr": "Représentants des PME et de l'économie sociale · 8 agents · signalent les effets différenciés sur les TPE-PME et les territoires non-métropolitains.",
+        "en": "SME and social-economy representatives · 8 agents · flag the differentiated effects on small businesses and non-metropolitan regions.",
+        "ar": "ممثّلو المقاولات الصغيرة والمتوسطة والاقتصاد الاجتماعي · 8 وكلاء · يُشيرون إلى التأثيرات المتباينة على المقاولات الصغرى وعلى الجهات غير الحضرية الكبرى."
       }
     },
     {
       "role_key": "regulateurs_bam_ammc",
       "profile": {
-        "fr": "Régulateurs Bank Al-Maghrib et AMMC — 7 agents — alimentent le débat technique sur les ratios prudentiels, les effets de marché et la stabilité financière.",
-        "en": "Bank Al-Maghrib and AMMC regulators — 7 agents — feed the technical debate on prudential ratios, market effects and financial stability.",
-        "ar": "الجهات الرقابية بنك المغرب وهيئة الأسواق المالية — 7 وكلاء — يُغذّون النقاش التقني حول نسب الحيطة، وتأثيرات السوق، والاستقرار المالي."
+        "fr": "Régulateurs Bank Al-Maghrib et AMMC · 7 agents · alimentent le débat technique sur les ratios prudentiels, les effets de marché et la stabilité financière.",
+        "en": "Bank Al-Maghrib and AMMC regulators · 7 agents · feed the technical debate on prudential ratios, market effects and financial stability.",
+        "ar": "الجهات الرقابية بنك المغرب وهيئة الأسواق المالية · 7 وكلاء · يُغذّون النقاش التقني حول نسب الحيطة، وتأثيرات السوق، والاستقرار المالي."
       }
     }
   ],

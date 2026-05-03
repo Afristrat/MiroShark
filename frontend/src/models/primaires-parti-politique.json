@@ -3,9 +3,9 @@
   "sector": "politique-publique",
   "preset_source": "primaires_parti_politique",
   "title": {
-    "fr": "Primaires d'un parti politique — Désignation d'une tête de liste nationale",
-    "en": "Political-Party Primary — National Lead-of-List Designation",
-    "ar": "انتخابات تمهيدية لحزب سياسي — تعيين رأس لائحة وطنية"
+    "fr": "Primaires d'un parti politique · Désignation d'une tête de liste nationale",
+    "en": "Political-Party Primary · National Lead-of-List Designation",
+    "ar": "انتخابات تمهيدية لحزب سياسي · تعيين رأس لائحة وطنية"
   },
   "subtitle": {
     "fr": "Modèle pré-calibré sur la campagne interne de 24 jours d'un grand parti politique pour désigner sa tête de liste nationale parmi trois candidats internes (50 agents, 8 rounds de 3 jours).",
@@ -23,75 +23,75 @@
     "ar": "يَجمع تعيين رأس لائحة وطنية في حزب سياسي كبير مُهيكَل ثلاثة رهانات متزامنة: التنافس على القيادة بين النماذج الإيديولوجية الداخلية (الجناح التقنوقراطي الليبرالي، الجناح الشعبوي الميداني، الجناح الإصلاحي الرقمي)، وإدارة التوازنات الجهوية بين الفدراليات، والوقاية من الانشقاقات قبل الموعد الانتخابي العام. يُحاكي النموذج حملة داخلية نمطية مدّتها 24 يوماً في حزب مُهيكَل عبر عدّة جهات، بثلاثة مرشّحين داخليّين متباينين. لا يُحاكى أيّ حزب أو شخص حقيقي. يستند الوكلاء إلى السلوكيات القابلة للملاحظة في المنظومات الحزبية الموثَّقة في مصادر عمومية: مناضلو الفدراليات الجهوية، منتخَبون محليّون يَحوزون تَزكيات سابقة، الصحافة السياسية الوطنية، شبيبة الحزب المُهيكَلة في جناح شبابي، مراقبون مؤسسيون (أكاديميون، مؤسسات سياسية، ملحقيات دبلوماسية). تُحقَن ثلاثة أحداث إخراجية: مناظرة داخلية تُبَثّ علناً، نشر استطلاع داخلي من مكتب أبحاث، والكشف من قِبَل وسيلة إعلام كبرى عن اتفاق تفاوُضي بين مرشّحَين. تستند المعايرة إلى الديناميكية القابلة للملاحظة للانتخابات التمهيدية الحزبية الموثَّقة في الصحافة السياسية الإقليمية [مصادر: الصحافة السياسية TelQuel، Hespress، Le360، Africa Report، Jeune Afrique؛ النشرات الرسمية للأحزاب السياسية المغربية ونظيراتها الإقليمية]."
   },
   "decision_question": {
-    "fr": "Au terme des 24 jours de campagne interne, quel candidat est désigné, avec ou sans second tour, et selon quelle ventilation régionale — et quelles fractures internes risquent d'entraîner des dissidences mesurables aux législatives suivantes ?",
-    "en": "At the end of the 24-day internal campaign, which candidate is designated, with or without a second round, and along what regional split — and which internal fractures risk producing measurable dissidence in the subsequent general election?",
-    "ar": "في نهاية 24 يوماً من الحملة الداخلية، أيّ مرشّح يَجري تعيينه، مع أو دون دورة ثانية، ووفق أيّ توزيع جهوي — وما الانقسامات الداخلية التي قد تُنتج انشقاقات قابلة للقياس في الانتخابات التشريعية الموالية؟"
+    "fr": "Au terme des 24 jours de campagne interne, quel candidat est désigné, avec ou sans second tour, et selon quelle ventilation régionale · et quelles fractures internes risquent d'entraîner des dissidences mesurables aux législatives suivantes ?",
+    "en": "At the end of the 24-day internal campaign, which candidate is designated, with or without a second round, and along what regional split · and which internal fractures risk producing measurable dissidence in the subsequent general election?",
+    "ar": "في نهاية 24 يوماً من الحملة الداخلية، أيّ مرشّح يَجري تعيينه، مع أو دون دورة ثانية، ووفق أيّ توزيع جهوي · وما الانقسامات الداخلية التي قد تُنتج انشقاقات قابلة للقياس في الانتخابات التشريعية الموالية؟"
   },
   "agents_simulated": [
     {
       "role_key": "regional_activist",
       "profile": {
-        "fr": "Militante d'une fédération régionale — voix structurante des sections locales, arbitre entre fidélité historique au parti et adhésion à un candidat précis, sensible au rapport au terrain.",
-        "en": "Regional-federation activist — structuring voice of local chapters, arbitrates between historical party loyalty and adhesion to a specific candidate, sensitive to ground proximity.",
-        "ar": "مناضلة في فدرالية جهوية — صوت بنيوي للفروع المحلية، تُحكّم بين الولاء التاريخي للحزب والانحياز لمرشّح بعينه، حساسة للقرب الميداني."
+        "fr": "Militante d'une fédération régionale · voix structurante des sections locales, arbitre entre fidélité historique au parti et adhésion à un candidat précis, sensible au rapport au terrain.",
+        "en": "Regional-federation activist · structuring voice of local chapters, arbitrates between historical party loyalty and adhesion to a specific candidate, sensitive to ground proximity.",
+        "ar": "مناضلة في فدرالية جهوية · صوت بنيوي للفروع المحلية، تُحكّم بين الولاء التاريخي للحزب والانحياز لمرشّح بعينه، حساسة للقرب الميداني."
       }
     },
     {
       "role_key": "local_elected_official",
       "profile": {
-        "fr": "Élu local d'un grand axe urbain — attentif aux retombées de la désignation sur sa propre investiture aux législatives, sait basculer son réseau militant en quelques jours.",
-        "en": "Local elected official from a major urban hub — attentive to the impact of the designation on his/her own general-election endorsement, can flip activist networks within days.",
-        "ar": "منتخَب محلي من محور حضري كبير — يقظ لانعكاسات التعيين على تَزكيته في الانتخابات التشريعية، قادر على قَلب شبكات المناضلين في أيام."
+        "fr": "Élu local d'un grand axe urbain · attentif aux retombées de la désignation sur sa propre investiture aux législatives, sait basculer son réseau militant en quelques jours.",
+        "en": "Local elected official from a major urban hub · attentive to the impact of the designation on his/her own general-election endorsement, can flip activist networks within days.",
+        "ar": "منتخَب محلي من محور حضري كبير · يقظ لانعكاسات التعيين على تَزكيته في الانتخابات التشريعية، قادر على قَلب شبكات المناضلين في أيام."
       }
     },
     {
       "role_key": "political_press",
       "profile": {
-        "fr": "Journaliste politique senior — couvre la primaire avec des sources internes, distingue les déclarations publiques des arbitrages de couloir, capable de révéler un accord transactionnel.",
-        "en": "Senior political journalist — covers the primary with internal sources, distinguishes public statements from corridor arbitrations, able to break a transactional deal.",
-        "ar": "صحفي سياسي كبير — يُغطّي الانتخابات التمهيدية بمصادر داخلية، يُميّز التصريحات العلنية عن تحكيمات الكواليس، قادر على كشف اتفاق تَوافُقي."
+        "fr": "Journaliste politique senior · couvre la primaire avec des sources internes, distingue les déclarations publiques des arbitrages de couloir, capable de révéler un accord transactionnel.",
+        "en": "Senior political journalist · covers the primary with internal sources, distinguishes public statements from corridor arbitrations, able to break a transactional deal.",
+        "ar": "صحفي سياسي كبير · يُغطّي الانتخابات التمهيدية بمصادر داخلية، يُميّز التصريحات العلنية عن تحكيمات الكواليس، قادر على كشف اتفاق تَوافُقي."
       }
     },
     {
       "role_key": "young_member",
       "profile": {
-        "fr": "Jeune adhérente engagée — voix des sections jeunesse, lecture digitale-native du parti, sensible au candidat entrepreneur tech mais critique sur l'absence d'ancrage militant.",
-        "en": "Engaged young member — voice of the youth chapters, digital-native reading of the party, drawn to the tech-entrepreneur candidate but critical of his/her lack of activist anchoring.",
-        "ar": "شابة منخرطة في الحزب — صوت فروع الشبيبة، قراءة رقمية للحزب، مَجذوبة لمرشّح ريادة الأعمال التقنية لكنها نقدية لغياب جذوره النضالية."
+        "fr": "Jeune adhérente engagée · voix des sections jeunesse, lecture digitale-native du parti, sensible au candidat entrepreneur tech mais critique sur l'absence d'ancrage militant.",
+        "en": "Engaged young member · voice of the youth chapters, digital-native reading of the party, drawn to the tech-entrepreneur candidate but critical of his/her lack of activist anchoring.",
+        "ar": "شابة منخرطة في الحزب · صوت فروع الشبيبة، قراءة رقمية للحزب، مَجذوبة لمرشّح ريادة الأعمال التقنية لكنها نقدية لغياب جذوره النضالية."
       }
     },
     {
       "role_key": "political_analyst",
       "profile": {
-        "fr": "Analyste politique senior — chercheur en science politique ou éditorialiste, contextualise la primaire par rapport aux échéances générales, identifie les coalitions internes structurantes.",
-        "en": "Senior political analyst — political-science researcher or editorialist, contextualises the primary against general-election timelines, identifies structuring internal coalitions.",
-        "ar": "محلل سياسي كبير — باحث في العلوم السياسية أو معلِّق، يَضع الانتخابات التمهيدية في سياق المواعيد الانتخابية العامة، يُحدّد التحالفات الداخلية البنيوية."
+        "fr": "Analyste politique senior · chercheur en science politique ou éditorialiste, contextualise la primaire par rapport aux échéances générales, identifie les coalitions internes structurantes.",
+        "en": "Senior political analyst · political-science researcher or editorialist, contextualises the primary against general-election timelines, identifies structuring internal coalitions.",
+        "ar": "محلل سياسي كبير · باحث في العلوم السياسية أو معلِّق، يَضع الانتخابات التمهيدية في سياق المواعيد الانتخابية العامة، يُحدّد التحالفات الداخلية البنيوية."
       }
     },
     {
       "role_key": "institutional_observer",
       "profile": {
-        "fr": "Observateur institutionnel — fondation politique européenne ou maghrébine, attaché diplomatique, suit la primaire sans positionnement public mais influe sur les anticipations internationales.",
-        "en": "Institutional observer — European or Maghreb political foundation, diplomatic attaché, follows the primary without public positioning but shapes international expectations.",
-        "ar": "مراقب مؤسسي — مؤسسة سياسية أوروبية أو مغاربية، ملحق دبلوماسي، يُتابع الانتخابات التمهيدية دون موقف علني لكنه يُؤثّر على التوقّعات الدولية."
+        "fr": "Observateur institutionnel · fondation politique européenne ou maghrébine, attaché diplomatique, suit la primaire sans positionnement public mais influe sur les anticipations internationales.",
+        "en": "Institutional observer · European or Maghreb political foundation, diplomatic attaché, follows the primary without public positioning but shapes international expectations.",
+        "ar": "مراقب مؤسسي · مؤسسة سياسية أوروبية أو مغاربية، ملحق دبلوماسي، يُتابع الانتخابات التمهيدية دون موقف علني لكنه يُؤثّر على التوقّعات الدولية."
       }
     }
   ],
   "key_insights": {
     "fr": [
-      "La désignation au premier tour suppose qu'au moins un des trois candidats consolide une coalition de fédérations régionales représentant plus de 45 % du collège électoral interne dès la première semaine — sinon le second tour est quasi-certain dans les exécutions du modèle.",
+      "La désignation au premier tour suppose qu'au moins un des trois candidats consolide une coalition de fédérations régionales représentant plus de 45 % du collège électoral interne dès la première semaine · sinon le second tour est quasi-certain dans les exécutions du modèle.",
       "Le débat interne retransmis publiquement augmente la base militante du candidat moins ancré régionalement (typiquement le profil entrepreneur tech) de l'ordre de 4 à 6 points dans les trajectoires simulées, mais cet effet s'érode avant le vote final si l'organisation territoriale ne suit pas.",
       "La révélation d'un accord transactionnel (retrait conditionné d'un candidat contre une fonction interne) ne provoque pas mécaniquement la rupture de l'aile concernée : la dissidence aux législatives suivantes est conditionnée par la capacité du parti à offrir des contreparties d'investiture mesurables dans les deux semaines suivant la désignation.",
       "La fracture la plus durable, dans la majorité des trajectoires simulées, n'est pas idéologique mais générationnelle : la perte de la jeunesse organisée du parti aux profits d'un acteur tiers est le risque structurel le plus difficile à corriger après désignation."
     ],
     "en": [
-      "First-round designation requires that at least one of the three candidates consolidate a coalition of regional federations representing more than 45% of the internal electoral college within the first week — otherwise a second round is near-certain in model runs.",
+      "First-round designation requires that at least one of the three candidates consolidate a coalition of regional federations representing more than 45% of the internal electoral college within the first week · otherwise a second round is near-certain in model runs.",
       "A publicly broadcast internal debate boosts the activist base of the candidate less regionally anchored (typically the tech-entrepreneur profile) by roughly 4-6 points in simulated trajectories, but the effect erodes before the final vote if the territorial organisation does not follow.",
       "The revelation of a transactional deal (conditional withdrawal of a candidate against an internal position) does not mechanically break the affected wing: dissidence in the subsequent general election is conditioned by the party's ability to offer measurable endorsement counterparts within the two weeks following designation.",
       "The most durable fracture in most simulated trajectories is not ideological but generational: losing the party's organised youth to a third-party actor is the hardest structural risk to mitigate post-designation."
     ],
     "ar": [
-      "يَتطلّب التعيين في الدورة الأولى أن يُجمّع أحد المرشّحين الثلاثة على الأقلّ تحالفاً من فدراليات جهوية تُمثّل أكثر من 45 % من الكتلة الانتخابية الداخلية منذ الأسبوع الأول — وإلا فإن الدورة الثانية شبه مؤكَّدة في تنفيذات النموذج.",
+      "يَتطلّب التعيين في الدورة الأولى أن يُجمّع أحد المرشّحين الثلاثة على الأقلّ تحالفاً من فدراليات جهوية تُمثّل أكثر من 45 % من الكتلة الانتخابية الداخلية منذ الأسبوع الأول · وإلا فإن الدورة الثانية شبه مؤكَّدة في تنفيذات النموذج.",
       "تَرفع المناظرة الداخلية المبثوثة علناً قاعدة المناضلين للمرشّح الأقلّ ارتكازاً جهوياً (عادةً مَلامح رائد الأعمال التقني) بنحو 4 إلى 6 نقاط في المسارات المُحاكاة، لكن الأثر يَتآكل قبل التصويت النهائي إذا لم يُتابع التنظيم الترابي.",
       "لا يُحدِث الكشف عن اتفاق تَوافُقي (انسحاب مشروط لمرشّح مقابل مهمّة داخلية) قطيعة آلية في الجناح المعني: الانشقاق في الانتخابات التشريعية الموالية مشروطٌ بقدرة الحزب على تقديم مقابلات تَزكية قابلة للقياس خلال أسبوعَين بعد التعيين.",
       "الانقسام الأكثر استدامة في أغلب المسارات المُحاكاة ليس إيديولوجياً بل جيلياً: فقدان شبيبة الحزب المُنظَّمة لصالح فاعل ثالث هو المخاطر الهيكلية الأصعب علاجاً بعد التعيين."

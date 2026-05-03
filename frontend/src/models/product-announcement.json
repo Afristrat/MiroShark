@@ -3,9 +3,9 @@
   "sector": "marketing-export",
   "preset_source": "product_announcement",
   "title": {
-    "fr": "Annonce produit B2C — Réception 24 heures d'un device IA grand public",
-    "en": "B2C Product Announcement — 24-Hour Reception of a Consumer AI Device",
-    "ar": "إعلان منتج موجَّه للعموم — تَلقّي 24 ساعة لجهاز ذكاء اصطناعي استهلاكي"
+    "fr": "Annonce produit B2C · Réception 24 heures d'un device IA grand public",
+    "en": "B2C Product Announcement · 24-Hour Reception of a Consumer AI Device",
+    "ar": "إعلان منتج موجَّه للعموم · تَلقّي 24 ساعة لجهاز ذكاء اصطناعي استهلاكي"
   },
   "subtitle": {
     "fr": "Modèle pré-calibré sur la réception 24 heures d'une annonce produit IA grand public par un acteur tech majeur (20 agents, 24 rounds horaires)",
@@ -31,70 +31,70 @@
     {
       "role_key": "journalistes_tech",
       "profile": {
-        "fr": "Journalistes tech — 4 agents — premier hands-on, fixent l'angle dominant initial, sensibles aux comparaisons concurrentielles et aux promesses non tenues.",
-        "en": "Tech journalists — 4 agents — first hands-on, set the initial dominant angle, sensitive to competitive comparisons and unmet promises.",
-        "ar": "صحفيون تقنيون — 4 وكلاء — أوّل من يُجرّب، يُثبّتون الزاوية المهيمنة الأوّلية، حساسون للمقارنات التنافسية والوعود غير المتحقّقة."
+        "fr": "Journalistes tech · 4 agents · premier hands-on, fixent l'angle dominant initial, sensibles aux comparaisons concurrentielles et aux promesses non tenues.",
+        "en": "Tech journalists · 4 agents · first hands-on, set the initial dominant angle, sensitive to competitive comparisons and unmet promises.",
+        "ar": "صحفيون تقنيون · 4 وكلاء · أوّل من يُجرّب، يُثبّتون الزاوية المهيمنة الأوّلية، حساسون للمقارنات التنافسية والوعود غير المتحقّقة."
       }
     },
     {
       "role_key": "developpeurs",
       "profile": {
-        "fr": "Développeurs — 3 agents — explorent SDK, dissèquent les specs techniques, jugent la viabilité d'un écosystème tiers.",
-        "en": "Developers — 3 agents — explore SDKs, dissect technical specs, judge third-party-ecosystem viability.",
-        "ar": "مطوّرون — 3 وكلاء — يَستكشفون أدوات التطوير، يُشرّحون المواصفات التقنية، يُقيّمون قابلية منظومة الأطراف الثالثة للحياة."
+        "fr": "Développeurs · 3 agents · explorent SDK, dissèquent les specs techniques, jugent la viabilité d'un écosystème tiers.",
+        "en": "Developers · 3 agents · explore SDKs, dissect technical specs, judge third-party-ecosystem viability.",
+        "ar": "مطوّرون · 3 وكلاء · يَستكشفون أدوات التطوير، يُشرّحون المواصفات التقنية، يُقيّمون قابلية منظومة الأطراف الثالثة للحياة."
       }
     },
     {
       "role_key": "early_adopters",
       "profile": {
-        "fr": "Early adopters — 3 agents — précommandent dans les premières heures, prêts à payer un premium pour la nouveauté, multiplicateurs sociaux.",
-        "en": "Early adopters — 3 agents — pre-order in the first hours, ready to pay a premium for novelty, social multipliers.",
-        "ar": "متبنّون مبكرون — 3 وكلاء — يَطلبون مُسبقاً في الساعات الأولى، مستعدّون لدفع علاوة من أجل الجدّة، مُضاعِفون اجتماعياً."
+        "fr": "Early adopters · 3 agents · précommandent dans les premières heures, prêts à payer un premium pour la nouveauté, multiplicateurs sociaux.",
+        "en": "Early adopters · 3 agents · pre-order in the first hours, ready to pay a premium for novelty, social multipliers.",
+        "ar": "متبنّون مبكرون · 3 وكلاء · يَطلبون مُسبقاً في الساعات الأولى، مستعدّون لدفع علاوة من أجل الجدّة، مُضاعِفون اجتماعياً."
       }
     },
     {
       "role_key": "sceptiques",
       "profile": {
-        "fr": "Sceptiques — 3 agents — scrutent la cohérence pricing-spec, alertent sur les angles vie privée et batterie, déclenchent la deuxième vague de débat.",
-        "en": "Sceptics — 3 agents — scrutinise pricing-spec coherence, raise privacy and battery angles, trigger the second debate wave.",
-        "ar": "مشكِّكون — 3 وكلاء — يُدقّقون اتّساق السعر مع المواصفات، يُنبّهون لزوايا الخصوصية والبطارية، يُطلقون الموجة الثانية من النقاش."
+        "fr": "Sceptiques · 3 agents · scrutent la cohérence pricing-spec, alertent sur les angles vie privée et batterie, déclenchent la deuxième vague de débat.",
+        "en": "Sceptics · 3 agents · scrutinise pricing-spec coherence, raise privacy and battery angles, trigger the second debate wave.",
+        "ar": "مشكِّكون · 3 وكلاء · يُدقّقون اتّساق السعر مع المواصفات، يُنبّهون لزوايا الخصوصية والبطارية، يُطلقون الموجة الثانية من النقاش."
       }
     },
     {
       "role_key": "employes_concurrents",
       "profile": {
-        "fr": "Employés de concurrents — 2 agents — comparent leurs propres specs, peuvent lancer une campagne ciblée différenciation à H+12.",
-        "en": "Competitor employees — 2 agents — benchmark their own specs, may launch a targeted differentiation campaign at H+12.",
-        "ar": "موظفو منافسين — 2 وكيل — يُقارنون مواصفاتهم، قد يُطلقون حملة مستهدَفة للتفرُّد عند H+12."
+        "fr": "Employés de concurrents · 2 agents · comparent leurs propres specs, peuvent lancer une campagne ciblée différenciation à H+12.",
+        "en": "Competitor employees · 2 agents · benchmark their own specs, may launch a targeted differentiation campaign at H+12.",
+        "ar": "موظفو منافسين · 2 وكيل · يُقارنون مواصفاتهم، قد يُطلقون حملة مستهدَفة للتفرُّد عند H+12."
       }
     },
     {
       "role_key": "consommateurs_courants",
       "profile": {
-        "fr": "Consommateurs courants — 5 agents — décident plus tardivement (H+12 à H+24), sensibles aux retours hands-on et au rapport qualité-prix observé.",
-        "en": "Everyday consumers — 5 agents — decide later (H+12 to H+24), sensitive to hands-on feedback and observed value-for-money.",
-        "ar": "مستهلكون عاديون — 5 وكلاء — يُقرّرون لاحقاً (بين H+12 وH+24)، حساسون لتجارب الاستخدام المباشرة وللعلاقة بين الجودة والسعر المرصودة."
+        "fr": "Consommateurs courants · 5 agents · décident plus tardivement (H+12 à H+24), sensibles aux retours hands-on et au rapport qualité-prix observé.",
+        "en": "Everyday consumers · 5 agents · decide later (H+12 to H+24), sensitive to hands-on feedback and observed value-for-money.",
+        "ar": "مستهلكون عاديون · 5 وكلاء · يُقرّرون لاحقاً (بين H+12 وH+24)، حساسون لتجارب الاستخدام المباشرة وللعلاقة بين الجودة والسعر المرصودة."
       }
     }
   ],
   "key_insights": {
     "fr": [
-      "Le pic d'enthousiasme se situe le plus souvent entre H+2 et H+5 dans les exécutions du modèle — c'est la fenêtre où précommandes et trending hashtag culminent ; le creux de doute survient typiquement entre H+8 et H+14 quand les premières analyses techniques approfondies sont publiées.",
+      "Le pic d'enthousiasme se situe le plus souvent entre H+2 et H+5 dans les exécutions du modèle · c'est la fenêtre où précommandes et trending hashtag culminent ; le creux de doute survient typiquement entre H+8 et H+14 quand les premières analyses techniques approfondies sont publiées.",
       "Le facteur de bascule à 24 heures est rarement le prix isolé : c'est la combinaison vie privée + autonomie batterie + comparaison concurrentielle qui retourne typiquement les consommateurs courants. Une réponse claire des constructeurs sur deux des trois facteurs avant H+12 stabilise la traction.",
       "L'annonce d'un SDK ouvert et de partenaires développeurs au moment de la communication initiale apporte un soutien structurel : dans les trajectoires où ce SDK est annoncé, l'enthousiasme tient mieux entre H+12 et H+24 grâce au relais des communautés tech.",
-      "La traction post-annonce est durable au-delà de H+24 dans la majorité des trajectoires simulées seulement si une couverture média de seconde génération (long-form, podcasts, vidéos détaillées) confirme le narratif de la première vague — sinon le pic s'efface en moins de 72 heures."
+      "La traction post-annonce est durable au-delà de H+24 dans la majorité des trajectoires simulées seulement si une couverture média de seconde génération (long-form, podcasts, vidéos détaillées) confirme le narratif de la première vague · sinon le pic s'efface en moins de 72 heures."
     ],
     "en": [
-      "The enthusiasm peak most often falls between H+2 and H+5 in model runs — when pre-orders and trending hashtags culminate; the doubt trough typically lands between H+8 and H+14, when the first in-depth technical analyses come out.",
+      "The enthusiasm peak most often falls between H+2 and H+5 in model runs · when pre-orders and trending hashtags culminate; the doubt trough typically lands between H+8 and H+14, when the first in-depth technical analyses come out.",
       "The 24-hour tilt factor is rarely price alone: it is the combination of privacy + battery + competitive benchmark that typically flips everyday consumers. A clear manufacturer response on two of the three factors before H+12 stabilises traction.",
       "Announcing an open SDK and developer partners at initial communication provides structural support: in trajectories where the SDK is announced, enthusiasm holds up better between H+12 and H+24 thanks to tech-community relay.",
-      "Post-announcement traction is durable beyond H+24 in most simulated trajectories only if second-generation media coverage (long-form, podcasts, detailed videos) confirms the first-wave narrative — otherwise the peak fades within 72 hours."
+      "Post-announcement traction is durable beyond H+24 in most simulated trajectories only if second-generation media coverage (long-form, podcasts, detailed videos) confirms the first-wave narrative · otherwise the peak fades within 72 hours."
     ],
     "ar": [
-      "تَقع ذروة الحماس في الأغلب بين H+2 وH+5 في تنفيذات النموذج — حيث تَبلغ الطلبات المسبقة والوسوم الرائجة أوجها؛ ويَقع قاع الشكّ عادةً بين H+8 وH+14 حين تَصدر أوّل التحليلات التقنية المعمَّقة.",
+      "تَقع ذروة الحماس في الأغلب بين H+2 وH+5 في تنفيذات النموذج · حيث تَبلغ الطلبات المسبقة والوسوم الرائجة أوجها؛ ويَقع قاع الشكّ عادةً بين H+8 وH+14 حين تَصدر أوّل التحليلات التقنية المعمَّقة.",
       "نادراً ما يكون عامل الانعطاف على مدى 24 ساعة هو السعر وحده: تَتلاقى الخصوصية + عمر البطارية + المقارنة التنافسية لتَقلب المستهلكين العاديين عادةً. ردٌّ واضح من الصانع على اثنَين من العوامل الثلاثة قبل H+12 يُثبِّت الجاذبية.",
       "يُوفّر إعلانُ أدوات تطوير مفتوحة وشركاء مطوّرين في لحظة التواصل الأوّلية دعماً بنيوياً: في المسارات التي تُعلَن فيها هذه الأدوات، يَصمد الحماس بصورة أفضل بين H+12 وH+24 بفضل ترحيل المجتمعات التقنية.",
-      "تكون الجاذبية ما بعد الإعلان مستدامةً بعد H+24 في أغلب المسارات المُحاكاة فقط إذا أكّدت تغطية إعلامية من جيل ثانٍ (تنسيق مطوَّل، نَدْوات صوتية، فيديوهات مُفصَّلة) سرد الموجة الأولى — وإلا تَخفت الذروة في أقلّ من 72 ساعة."
+      "تكون الجاذبية ما بعد الإعلان مستدامةً بعد H+24 في أغلب المسارات المُحاكاة فقط إذا أكّدت تغطية إعلامية من جيل ثانٍ (تنسيق مطوَّل، نَدْوات صوتية، فيديوهات مُفصَّلة) سرد الموجة الأولى · وإلا تَخفت الذروة في أقلّ من 72 ساعة."
     ]
   },
   "brier_illustrative": 0.20,

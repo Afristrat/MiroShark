@@ -3,9 +3,9 @@
   "sector": "histoire-contrefactuel",
   "preset_source": "historical_whatif",
   "title": {
-    "fr": "What-if historique — Simulation contrefactuelle d'un point de bifurcation politique majeur",
-    "en": "Historical What-If — Counterfactual Simulation of a Major Political Bifurcation",
-    "ar": "افتراض تاريخي — محاكاة افتراضية لنقطة تَفرُّع سياسية كبرى"
+    "fr": "What-if historique · Simulation contrefactuelle d'un point de bifurcation politique majeur",
+    "en": "Historical What-If · Counterfactual Simulation of a Major Political Bifurcation",
+    "ar": "افتراض تاريخي · محاكاة افتراضية لنقطة تَفرُّع سياسية كبرى"
   },
   "subtitle": {
     "fr": "Modèle pré-calibré sur la trajectoire alternative qu'aurait pu prendre une décision géopolitique majeure si une variable décisive avait basculé (22 agents, 48 rounds)",
@@ -31,57 +31,57 @@
     {
       "role_key": "historiens_specialistes",
       "profile": {
-        "fr": "Historiens spécialistes — 5 agents — exigent des sources primaires, distinguent ce qui est documenté de ce qui est inférence, encadrent les chaînes causales.",
-        "en": "Specialist historians — 5 agents — demand primary sources, distinguish documented evidence from inference, frame causal chains.",
-        "ar": "مؤرّخون متخصّصون — 5 وكلاء — يَشترطون مصادر أوّلية، يُفرّقون بين الموثَّق والاستدلال، يُؤطّرون السلاسل السببية."
+        "fr": "Historiens spécialistes · 5 agents · exigent des sources primaires, distinguent ce qui est documenté de ce qui est inférence, encadrent les chaînes causales.",
+        "en": "Specialist historians · 5 agents · demand primary sources, distinguish documented evidence from inference, frame causal chains.",
+        "ar": "مؤرّخون متخصّصون · 5 وكلاء · يَشترطون مصادر أوّلية، يُفرّقون بين الموثَّق والاستدلال، يُؤطّرون السلاسل السببية."
       }
     },
     {
       "role_key": "politologues",
       "profile": {
-        "fr": "Politologues — 4 agents — modélisent les conséquences institutionnelles, raisonnent en termes de coalitions et d'incitations gouvernementales.",
-        "en": "Political scientists — 4 agents — model institutional consequences, reason in terms of coalitions and governmental incentives.",
-        "ar": "علماء سياسة — 4 وكلاء — يُنمذِجون التبعات المؤسسية، يَعقلون بمنطق التحالفات والحوافز الحكومية."
+        "fr": "Politologues · 4 agents · modélisent les conséquences institutionnelles, raisonnent en termes de coalitions et d'incitations gouvernementales.",
+        "en": "Political scientists · 4 agents · model institutional consequences, reason in terms of coalitions and governmental incentives.",
+        "ar": "علماء سياسة · 4 وكلاء · يُنمذِجون التبعات المؤسسية، يَعقلون بمنطق التحالفات والحوافز الحكومية."
       }
     },
     {
       "role_key": "communicateurs_scientifiques",
       "profile": {
-        "fr": "Communicateurs scientifiques — 3 agents — vulgarisent l'argumentation, traduisent les chaînes causales pour un public élargi, attentifs aux raccourcis.",
-        "en": "Science communicators — 3 agents — popularise the argumentation, translate causal chains for a broader audience, watch for shortcuts.",
-        "ar": "مبلِّغون علميون — 3 وكلاء — يُيسّرون الحجج، يُترجمون السلاسل السببية لجمهور أوسع، متيقّظون للاختصارات المُخلّة."
+        "fr": "Communicateurs scientifiques · 3 agents · vulgarisent l'argumentation, traduisent les chaînes causales pour un public élargi, attentifs aux raccourcis.",
+        "en": "Science communicators · 3 agents · popularise the argumentation, translate causal chains for a broader audience, watch for shortcuts.",
+        "ar": "مبلِّغون علميون · 3 وكلاء · يُيسّرون الحجج، يُترجمون السلاسل السببية لجمهور أوسع، متيقّظون للاختصارات المُخلّة."
       }
     },
     {
       "role_key": "enthousiastes",
       "profile": {
-        "fr": "Enthousiastes — 3 agents — apportent énergie narrative et hypothèses audacieuses, parfois bridées par les historiens spécialistes.",
-        "en": "Enthusiasts — 3 agents — bring narrative energy and bold hypotheses, sometimes reined in by specialist historians.",
-        "ar": "هواة — 3 وكلاء — يُضفون طاقة سردية وفرضيات جريئة، يُكبَحون أحياناً من قِبل المؤرّخين المتخصّصين."
+        "fr": "Enthousiastes · 3 agents · apportent énergie narrative et hypothèses audacieuses, parfois bridées par les historiens spécialistes.",
+        "en": "Enthusiasts · 3 agents · bring narrative energy and bold hypotheses, sometimes reined in by specialist historians.",
+        "ar": "هواة · 3 وكلاء · يُضفون طاقة سردية وفرضيات جريئة، يُكبَحون أحياناً من قِبل المؤرّخين المتخصّصين."
       }
     },
     {
       "role_key": "journalistes_culture",
       "profile": {
-        "fr": "Journalistes culture — 2 agents — cadrent l'enjeu pour le public général, comparent à la fiction historique populaire, sensibles aux risques de simplification.",
-        "en": "Culture journalists — 2 agents — frame the issue for the general public, compare to popular historical fiction, sensitive to oversimplification risks.",
-        "ar": "صحفيون ثقافيون — 2 وكيل — يُؤطّرون الموضوع للجمهور العام، يُقارنون بالخيال التاريخي الشعبي، حساسون لمخاطر التبسيط."
+        "fr": "Journalistes culture · 2 agents · cadrent l'enjeu pour le public général, comparent à la fiction historique populaire, sensibles aux risques de simplification.",
+        "en": "Culture journalists · 2 agents · frame the issue for the general public, compare to popular historical fiction, sensitive to oversimplification risks.",
+        "ar": "صحفيون ثقافيون · 2 وكيل · يُؤطّرون الموضوع للجمهور العام، يُقارنون بالخيال التاريخي الشعبي، حساسون لمخاطر التبسيط."
       }
     },
     {
       "role_key": "observateurs_internationaux",
       "profile": {
-        "fr": "Observateurs internationaux — 3 agents — apportent angles non occidentaux, multiplient les variables géopolitiques considérées.",
-        "en": "International observers — 3 agents — bring non-Western angles, multiply the geopolitical variables considered.",
-        "ar": "مراقبون دوليون — 3 وكلاء — يُحضرون زوايا غير غربية، يُكثّرون المتغيّرات الجيوسياسية موضع الاعتبار."
+        "fr": "Observateurs internationaux · 3 agents · apportent angles non occidentaux, multiplient les variables géopolitiques considérées.",
+        "en": "International observers · 3 agents · bring non-Western angles, multiply the geopolitical variables considered.",
+        "ar": "مراقبون دوليون · 3 وكلاء · يُحضرون زوايا غير غربية، يُكثّرون المتغيّرات الجيوسياسية موضع الاعتبار."
       }
     },
     {
       "role_key": "analystes_guerre_froide",
       "profile": {
-        "fr": "Analystes spécialisés guerre froide — 2 agents — convoquent archives déclassifiées, modélisent les alliances et la course aux capacités.",
-        "en": "Cold War specialists — 2 agents — invoke declassified archives, model alliances and capability races.",
-        "ar": "محللون متخصّصون في الحرب الباردة — 2 وكيل — يَستدعون الأرشيفات المرفوعة عنها السرية، يُنمذِجون التحالفات وسباق القدرات."
+        "fr": "Analystes spécialisés guerre froide · 2 agents · convoquent archives déclassifiées, modélisent les alliances et la course aux capacités.",
+        "en": "Cold War specialists · 2 agents · invoke declassified archives, model alliances and capability races.",
+        "ar": "محللون متخصّصون في الحرب الباردة · 2 وكيل · يَستدعون الأرشيفات المرفوعة عنها السرية، يُنمذِجون التحالفات وسباق القدرات."
       }
     }
   ],
@@ -90,19 +90,19 @@
       "Un consensus partiel émerge dans la majorité des trajectoires simulées sur la chaîne causale dominante des 12 mois suivant la bifurcation, mais le consensus se dissout passé un horizon de 5 à 7 ans : l'incertitude croît exponentiellement avec la profondeur projetée.",
       "Les chaînes causales jugées les plus solides reposent sur des contraintes matérielles documentées (capacités industrielles, ressources énergétiques, démographie) ; les chaînes les plus spéculatives reposent sur des changements d'opinion publique non testables.",
       "L'introduction d'un communicateur scientifique pédagogue dans la discussion modifie la qualité des conclusions sans modifier leur direction : le consensus reste le même mais les bullets « speculative » sont écartés plus systématiquement.",
-      "L'emploi d'une typologie explicite (« hypothèse forte / inférence raisonnable / spéculation faible ») améliore la lisibilité du verdict pour le commanditaire — c'est l'apport principal du modèle face à un débat libre sur les mêmes prémisses."
+      "L'emploi d'une typologie explicite (« hypothèse forte / inférence raisonnable / spéculation faible ») améliore la lisibilité du verdict pour le commanditaire · c'est l'apport principal du modèle face à un débat libre sur les mêmes prémisses."
     ],
     "en": [
       "A partial consensus emerges in most simulated trajectories on the dominant causal chain for the 12 months following the bifurcation, but consensus dissolves past a 5-7 year horizon: uncertainty grows exponentially with projected depth.",
       "The strongest causal chains rest on documented material constraints (industrial capacity, energy resources, demography); the most speculative chains rest on untestable public-opinion shifts.",
       "Introducing a pedagogical science communicator into the discussion improves conclusion quality without altering its direction: consensus stays the same but 'speculative' bullets are more systematically discarded.",
-      "Using an explicit typology ('strong hypothesis / reasonable inference / weak speculation') improves verdict legibility for the commissioning party — that is the model's main contribution versus a free-form debate on the same premises."
+      "Using an explicit typology ('strong hypothesis / reasonable inference / weak speculation') improves verdict legibility for the commissioning party · that is the model's main contribution versus a free-form debate on the same premises."
     ],
     "ar": [
       "يَنبثق توافق جزئي في أغلب المسارات المُحاكاة حول السلسلة السببية المهيمنة للأشهر الاثني عشر التالية لنقطة التَفرُّع، لكن التوافق يَتلاشى بعد أُفق من 5 إلى 7 سنوات: يَتنامى الغموض أُسّياً مع عمق الإسقاط.",
       "تَستند السلاسل السببية الأكثر صلابة إلى قيود مادية موثَّقة (القدرة الصناعية، الموارد الطاقية، الديمغرافيا)؛ بينما تَستند السلاسل الأكثر تكهُّناً إلى تحوّلات في الرأي العام لا يمكن اختبارها.",
       "يُحسّن إدخال مُبلِّغ علمي بيداغوجي في النقاش جودةَ الخلاصات دون تَغيير اتجاهها: يبقى التوافق هو نفسه لكن النقاط «التكهُّنية» تُستَبعَد على نحوٍ أكثر مُمَنهَجاً.",
-      "يُحسّن اعتمادُ تصنيف صريح («فرضية قوية / استدلال معقول / تكهُّن واهٍ») وضوحَ الحكم لدى الجهة المُكلِّفة — وهذه هي المساهمة الرئيسية للنموذج مقابل نقاش حُرّ على الافتراضات نفسها."
+      "يُحسّن اعتمادُ تصنيف صريح («فرضية قوية / استدلال معقول / تكهُّن واهٍ») وضوحَ الحكم لدى الجهة المُكلِّفة · وهذه هي المساهمة الرئيسية للنموذج مقابل نقاش حُرّ على الافتراضات نفسها."
     ]
   },
   "brier_illustrative": 0.25,

@@ -3,9 +3,9 @@
   "sector": "communication",
   "preset_source": "corporate_crisis",
   "title": {
-    "fr": "Crise corporate — Fuite tardive d'une violation de données chez une scale-up tech",
-    "en": "Corporate Crisis — Late Disclosure of a Data Breach at a Tech Scale-up",
-    "ar": "أزمة مؤسسية — كشف متأخّر لخرق بيانات في شركة تقنية متوسعة"
+    "fr": "Crise corporate · Fuite tardive d'une violation de données chez une scale-up tech",
+    "en": "Corporate Crisis · Late Disclosure of a Data Breach at a Tech Scale-up",
+    "ar": "أزمة مؤسسية · كشف متأخّر لخرق بيانات في شركة تقنية متوسعة"
   },
   "subtitle": {
     "fr": "Modèle pré-calibré sur la propagation 72 heures d'une révélation journalistique de divulgation tardive de breach de données (30 agents, 72 rounds horaires)",
@@ -31,78 +31,78 @@
     {
       "role_key": "utilisateurs_affectes",
       "profile": {
-        "fr": "Utilisateurs affectés — 6 agents — découvrent la fuite par voie de presse plutôt que par notification entreprise, alimentent un sentiment de trahison.",
-        "en": "Affected users — 6 agents — discover the breach through the press rather than via company notification, feeding a sense of betrayal.",
-        "ar": "مستخدمون متضرّرون — 6 وكلاء — يكتشفون الخرق من خلال الصحافة لا من خلال إخطار الشركة، ممّا يُغذّي شعوراً بالخيانة."
+        "fr": "Utilisateurs affectés · 6 agents · découvrent la fuite par voie de presse plutôt que par notification entreprise, alimentent un sentiment de trahison.",
+        "en": "Affected users · 6 agents · discover the breach through the press rather than via company notification, feeding a sense of betrayal.",
+        "ar": "مستخدمون متضرّرون · 6 وكلاء · يكتشفون الخرق من خلال الصحافة لا من خلال إخطار الشركة، ممّا يُغذّي شعوراً بالخيانة."
       }
     },
     {
       "role_key": "defenseurs_vie_privee",
       "profile": {
-        "fr": "Défenseurs de la vie privée — 4 agents — ONG type EFF ou Privacy International, pratiquent une lecture juridique stricte de la conformité notification.",
-        "en": "Privacy advocates — 4 agents — NGOs such as EFF or Privacy International, apply a strict legal reading of notification compliance.",
-        "ar": "مدافعون عن الخصوصية — 4 وكلاء — منظمات غير حكومية من قبيل EFF أو Privacy International، يُطبّقون قراءة قانونية صارمة لامتثال الإخطار."
+        "fr": "Défenseurs de la vie privée · 4 agents · ONG type EFF ou Privacy International, pratiquent une lecture juridique stricte de la conformité notification.",
+        "en": "Privacy advocates · 4 agents · NGOs such as EFF or Privacy International, apply a strict legal reading of notification compliance.",
+        "ar": "مدافعون عن الخصوصية · 4 وكلاء · منظمات غير حكومية من قبيل EFF أو Privacy International، يُطبّقون قراءة قانونية صارمة لامتثال الإخطار."
       }
     },
     {
       "role_key": "employes_internes",
       "profile": {
-        "fr": "Employés internes — 5 agents — partagés entre défense de leur entreprise et expression anonyme de leur frustration sur les arbitrages tardifs.",
-        "en": "Internal employees — 5 agents — split between defending their company and voicing anonymous frustration about late arbitrations.",
-        "ar": "موظفون داخليون — 5 وكلاء — يتأرجحون بين الدفاع عن شركتهم والتعبير المجهول عن إحباطهم من التحكيمات المتأخرة."
+        "fr": "Employés internes · 5 agents · partagés entre défense de leur entreprise et expression anonyme de leur frustration sur les arbitrages tardifs.",
+        "en": "Internal employees · 5 agents · split between defending their company and voicing anonymous frustration about late arbitrations.",
+        "ar": "موظفون داخليون · 5 وكلاء · يتأرجحون بين الدفاع عن شركتهم والتعبير المجهول عن إحباطهم من التحكيمات المتأخرة."
       }
     },
     {
       "role_key": "analystes_secteur",
       "profile": {
-        "fr": "Analystes secteur — 4 agents — divisés sur la sévérité (crise existentielle vs revers temporaire), suivent action en bourse et concurrents.",
-        "en": "Sector analysts — 4 agents — divided on severity (existential vs temporary setback), track share price and competitors.",
-        "ar": "محللو القطاع — 4 وكلاء — منقسمون بشأن الجسامة (أزمة وجودية مقابل انتكاسة مؤقتة)، يتتبّعون سعر السهم والمنافسين."
+        "fr": "Analystes secteur · 4 agents · divisés sur la sévérité (crise existentielle vs revers temporaire), suivent action en bourse et concurrents.",
+        "en": "Sector analysts · 4 agents · divided on severity (existential vs temporary setback), track share price and competitors.",
+        "ar": "محللو القطاع · 4 وكلاء · منقسمون بشأن الجسامة (أزمة وجودية مقابل انتكاسة مؤقتة)، يتتبّعون سعر السهم والمنافسين."
       }
     },
     {
       "role_key": "journalistes_followup",
       "profile": {
-        "fr": "Journalistes follow-up — 4 agents — multiplient les angles (gouvernance, conformité, victimes, concurrents) jusqu'à H+48.",
-        "en": "Follow-up journalists — 4 agents — multiply angles (governance, compliance, victims, competitors) up to H+48.",
-        "ar": "صحفيون يُتابعون الموضوع — 4 وكلاء — يُكثّرون الزوايا (الحوكمة، الامتثال، الضحايا، المنافسون) حتى H+48."
+        "fr": "Journalistes follow-up · 4 agents · multiplient les angles (gouvernance, conformité, victimes, concurrents) jusqu'à H+48.",
+        "en": "Follow-up journalists · 4 agents · multiply angles (governance, compliance, victims, competitors) up to H+48.",
+        "ar": "صحفيون يُتابعون الموضوع · 4 وكلاء · يُكثّرون الزوايا (الحوكمة، الامتثال، الضحايا، المنافسون) حتى H+48."
       }
     },
     {
       "role_key": "concurrents_opportunistes",
       "profile": {
-        "fr": "Concurrents opportunistes — 3 agents — diffusent campagnes ciblées sur leurs propres standards de sécurité, sans attaque frontale.",
-        "en": "Opportunistic competitors — 3 agents — push targeted campaigns on their own security standards, without direct attacks.",
-        "ar": "منافسون انتهازيون — 3 وكلاء — يُطلقون حملات مستهدَفة على معاييرهم الأمنية الخاصة، دون هجوم مباشر."
+        "fr": "Concurrents opportunistes · 3 agents · diffusent campagnes ciblées sur leurs propres standards de sécurité, sans attaque frontale.",
+        "en": "Opportunistic competitors · 3 agents · push targeted campaigns on their own security standards, without direct attacks.",
+        "ar": "منافسون انتهازيون · 3 وكلاء · يُطلقون حملات مستهدَفة على معاييرهم الأمنية الخاصة، دون هجوم مباشر."
       }
     },
     {
       "role_key": "elus_audition",
       "profile": {
-        "fr": "Élus exigeant une audition — 4 agents — sénateurs, députés ou commissaires, modulent leur appel selon couverture médiatique cumulée.",
-        "en": "Elected officials calling for hearings — 4 agents — senators, MPs or commissioners, modulate their call based on cumulative media coverage.",
-        "ar": "منتخبون يُطالبون بالاستماع — 4 وكلاء — أعضاء مجلس الشيوخ، نواب أو مفوّضون، يُكيّفون نداءاتهم وفق التغطية الإعلامية التراكمية."
+        "fr": "Élus exigeant une audition · 4 agents · sénateurs, députés ou commissaires, modulent leur appel selon couverture médiatique cumulée.",
+        "en": "Elected officials calling for hearings · 4 agents · senators, MPs or commissioners, modulate their call based on cumulative media coverage.",
+        "ar": "منتخبون يُطالبون بالاستماع · 4 وكلاء · أعضاء مجلس الشيوخ، نواب أو مفوّضون، يُكيّفون نداءاتهم وفق التغطية الإعلامية التراكمية."
       }
     }
   ],
   "key_insights": {
     "fr": [
       "La fenêtre de bascule vers le scénario class-action se situe le plus souvent entre H+30 et H+44 dans les exécutions du modèle : c'est dans cet intervalle qu'un cabinet d'avocats spécialisé constate une masse critique de plaintes individuelles consolidables.",
-      "Une déclaration CEO assumant explicitement le délai de notification dans les 6 premières heures réduit la probabilité d'audition parlementaire de l'ordre de 30 à 50 % dans les trajectoires simulées — au contraire, une réponse purement technique du CTO sans portage CEO l'augmente.",
+      "Une déclaration CEO assumant explicitement le délai de notification dans les 6 premières heures réduit la probabilité d'audition parlementaire de l'ordre de 30 à 50 % dans les trajectoires simulées · au contraire, une réponse purement technique du CTO sans portage CEO l'augmente.",
       "Le boycott prend de l'ampleur seulement si une coalition utilisateurs + concurrents direct se forme avant H+24 : passé ce point, les concurrents qui n'ont pas pris position s'abstiennent généralement pour ne pas être suspects d'opportunisme.",
-      "Une transparence proactive sur les détails techniques (cause racine, périmètre exact des données, calendrier de remédiation) absorbe le récit gouvernance dans la majorité des trajectoires — la dette de transparence accumule un coût exponentiel passé H+48."
+      "Une transparence proactive sur les détails techniques (cause racine, périmètre exact des données, calendrier de remédiation) absorbe le récit gouvernance dans la majorité des trajectoires · la dette de transparence accumule un coût exponentiel passé H+48."
     ],
     "en": [
       "The tilt window towards a class-action most often falls between H+30 and H+44 in model runs: this is when a specialised law firm consolidates a critical mass of individual complaints.",
-      "A CEO statement explicitly owning the notification delay within the first 6 hours reduces the probability of a parliamentary hearing by roughly 30-50% in simulated trajectories — conversely, a purely technical CTO response without CEO sponsorship increases it.",
+      "A CEO statement explicitly owning the notification delay within the first 6 hours reduces the probability of a parliamentary hearing by roughly 30-50% in simulated trajectories · conversely, a purely technical CTO response without CEO sponsorship increases it.",
       "Boycotts gain traction only if a users + direct-competitor coalition forms before H+24: past that point, competitors that have not taken a stance usually abstain to avoid looking opportunistic.",
-      "Proactive transparency on technical details (root cause, exact data scope, remediation timeline) absorbs the governance narrative in most trajectories — the transparency debt compounds at an exponential cost beyond H+48."
+      "Proactive transparency on technical details (root cause, exact data scope, remediation timeline) absorbs the governance narrative in most trajectories · the transparency debt compounds at an exponential cost beyond H+48."
     ],
     "ar": [
       "تقع نافذة الانزلاق نحو سيناريو الدعوى الجماعية في الأغلب بين H+30 وH+44 في تنفيذات النموذج: في هذا الفاصل يُكثّف مكتب محاماة متخصّص كتلة حرجة من الشكاوى الفردية القابلة للتجميع.",
-      "يُخفّض تصريح من الرئيس التنفيذي يَتحمّل صراحةً مهلة الإخطار خلال الساعات الست الأولى احتمال جلسة استماع برلمانية بنحو 30 إلى 50 % في المسارات المُحاكاة — في المقابل، يَزيده ردٌّ تقني محض من المدير التقني دون تَبنٍّ من الرئيس التنفيذي.",
+      "يُخفّض تصريح من الرئيس التنفيذي يَتحمّل صراحةً مهلة الإخطار خلال الساعات الست الأولى احتمال جلسة استماع برلمانية بنحو 30 إلى 50 % في المسارات المُحاكاة · في المقابل، يَزيده ردٌّ تقني محض من المدير التقني دون تَبنٍّ من الرئيس التنفيذي.",
       "لا تكتسب المقاطعة زخماً إلا إذا تشكّل تحالف مستخدمين + منافس مباشر قبل H+24: بعد هذه النقطة، يَمتنع المنافسون الذين لم يتّخذوا موقفاً عن ذلك عادةً تجنُّباً لشُبهة الانتهازية.",
-      "تَستوعب الشفافية الاستباقية عن التفاصيل التقنية (السبب الجذري، النطاق الدقيق للبيانات، الجدول الزمني للمعالجة) سرد الحوكمة في أغلب المسارات — يَتراكم دَين الشفافية بكلفة أُسّية بعد H+48."
+      "تَستوعب الشفافية الاستباقية عن التفاصيل التقنية (السبب الجذري، النطاق الدقيق للبيانات، الجدول الزمني للمعالجة) سرد الحوكمة في أغلب المسارات · يَتراكم دَين الشفافية بكلفة أُسّية بعد H+48."
     ]
   },
   "brier_illustrative": 0.21,

@@ -3,14 +3,14 @@
   "sector": "investissement",
   "preset_source": "allocation_fonds_strategique",
   "title": {
-    "fr": "Allocation 400 M USD — Comité d'investissement panafricain",
-    "en": "USD 400M Allocation — Pan-African Investment Committee",
-    "ar": "تخصيص 400 مليون دولار — لجنة استثمار بانإفريقية"
+    "fr": "Allocation 400 M USD · Comité d'investissement panafricain",
+    "en": "USD 400M Allocation · Pan-African Investment Committee",
+    "ar": "تخصيص 400 مليون دولار · لجنة استثمار بانإفريقية"
   },
   "subtitle": {
-    "fr": "Modèle pré-calibré sur l'arbitrage 4 options exclusives (engrais Brésil, AgriTech IA Afrique, infrastructure portuaire Atlantique Maroc, hydrogène vert) — 30 agents, 10 semaines",
-    "en": "Pre-calibrated model on 4 mutually exclusive options (Brazilian fertiliser producer, sub-Saharan AI AgriTech, Moroccan Atlantic port infrastructure, green hydrogen) — 30 agents, 10 weeks",
-    "ar": "نموذج معاير مسبقاً على المفاضلة بين 4 خيارات حصرية (منتج أسمدة بالبرازيل، تكنولوجيا زراعية بالذكاء الاصطناعي بأفريقيا، بنية ميناء أطلسية بالمغرب، الهيدروجين الأخضر) — 30 وكيلاً، 10 أسابيع"
+    "fr": "Modèle pré-calibré sur l'arbitrage 4 options exclusives (engrais Brésil, AgriTech IA Afrique, infrastructure portuaire Atlantique Maroc, hydrogène vert) · 30 agents, 10 semaines",
+    "en": "Pre-calibrated model on 4 mutually exclusive options (Brazilian fertiliser producer, sub-Saharan AI AgriTech, Moroccan Atlantic port infrastructure, green hydrogen) · 30 agents, 10 weeks",
+    "ar": "نموذج معاير مسبقاً على المفاضلة بين 4 خيارات حصرية (منتج أسمدة بالبرازيل، تكنولوجيا زراعية بالذكاء الاصطناعي بأفريقيا، بنية ميناء أطلسية بالمغرب، الهيدروجين الأخضر) · 30 وكيلاً، 10 أسابيع"
   },
   "summary_short": {
     "fr": "Simulation 10 semaines d'un comité d'investissement (2,4 Mds USD sous gestion, Casablanca) qui doit allouer 400 M USD entre 4 options exclusives. 30 agents : analystes buy-side, investisseurs institutionnels, experts sectoriels, AMMC, journalistes financiers, membres du comité. Verdict : option recommandée + IRR projeté + risques bloquants.",
@@ -18,9 +18,9 @@
     "ar": "محاكاة 10 أسابيع للجنة استثمار (2,4 مليار دولار تحت الإدارة، الدار البيضاء) عليها تخصيص 400 مليون دولار على 4 خيارات حصرية. 30 وكيلاً: محللون من جانب الشراء، مستثمرون مؤسساتيون، خبراء قطاعيون، الهيئة المغربية لسوق الرساميل، صحفيون ماليون، أعضاء اللجنة. الحكم: الخيار الموصى به + معدل العائد الداخلي المُتوقّع + المخاطر المعطّلة."
   },
   "context_long": {
-    "fr": "Le scénario de référence place le comité face à 4 options industriellement et financièrement crédibles, sélectionnées pour offrir des profils de risque-rendement très différents : (A) acquisition d'un producteur d'engrais brésilien (intégration verticale matières premières, dépendance phosphates), (B) AgriTech IA Afrique subsaharienne (capital-risque early-stage, multiple potentiel élevé), (C) infrastructure portuaire Atlantique Maroc (rendement régulé long terme, intensité capitalistique), (D) hydrogène vert (option à 10 ans, alignée stratégie de décarbonation IRESEN). Trois director events structurent la trajectoire : rapport de due diligence préliminaire au round 2 (surprises positives sur D, négatives sur A : passifs environnementaux Brésil), choc macro phosphates -12 % au round 5 (OCP révise à la baisse — érode l'attractivité de A), offre concurrente d'un consortium asiatique sur l'option C au round 8 (impose un calendrier accéléré). Les agents intègrent les pratiques observées dans les comités d'investissement institutionnels MENA et africains tels que documentés dans les benchmarks publics AVCA (African Private Capital Association) et la doctrine d'investissement publique de gestionnaires institutionnels comme CDG Capital.",
-    "en": "The reference scenario faces the committee with 4 industrially and financially credible options, picked to span very different risk-return profiles: (A) acquisition of a Brazilian fertiliser producer (vertical integration of raw materials, phosphate dependency), (B) sub-Saharan AI AgriTech (early-stage venture, high multiple potential), (C) Moroccan Atlantic port infrastructure (regulated long-term yield, capital intensity), (D) green hydrogen (10-year option, aligned with IRESEN decarbonation strategy). Three director events shape the trajectory: preliminary due-diligence report at round 2 (upside surprise on D, downside on A: Brazilian environmental liabilities), macro shock phosphates -12% at round 5 (OCP revises down — erodes A's attractiveness), Asian consortium counter-offer on option C at round 8 (forces an accelerated calendar). Agents reflect practices observed in MENA and African institutional investment committees as documented in public AVCA (African Private Capital Association) benchmarks and the public investment doctrine of institutional managers such as CDG Capital.",
-    "ar": "يُضع السيناريو المرجعي اللجنة أمام 4 خيارات ذات مصداقية صناعية ومالية، مختارة لتُغطّي ملفات مخاطر-عوائد مختلفة جداً: (أ) استحواذ على منتج أسمدة برازيلي (تكامل عمودي للمواد الأولية، تبعية للفوسفات)، (ب) تكنولوجيا زراعية بالذكاء الاصطناعي بأفريقيا جنوب الصحراء (رأس مال مخاطر ناشئ، إمكانية مضاعفات عالية)، (ج) بنية تحتية مينائية أطلسية بالمغرب (مردود طويل الأمد منظَّم، كثافة رأسمالية)، (د) الهيدروجين الأخضر (خيار على 10 سنوات، يتوافق مع استراتيجية إيريسن لإزالة الكربون). تُهيكل ثلاثة أحداث المسار: تقرير العناية الواجبة الأولي في الجولة 2 (مفاجأة إيجابية للخيار د، سلبية للخيار أ بسبب التزامات بيئية بالبرازيل)، صدمة كلية بانخفاض الفوسفات 12% في الجولة 5 (المكتب الشريف للفوسفاط يُراجع توقعاته — يُضعف جاذبية أ)، عرض مضاد من تكتّل آسيوي على الخيار ج في الجولة 8 (يفرض تقويماً مُسرّعاً). يعكس الوكلاء ممارسات لجان الاستثمار المؤسساتية بمنطقة الشرق الأوسط وشمال أفريقيا وأفريقيا الموثقة في معايير AVCA (African Private Capital Association) العمومية وفي العقيدة الاستثمارية العمومية لمدراء مؤسساتيين مثل CDG Capital."
+    "fr": "Le scénario de référence place le comité face à 4 options industriellement et financièrement crédibles, sélectionnées pour offrir des profils de risque-rendement très différents : (A) acquisition d'un producteur d'engrais brésilien (intégration verticale matières premières, dépendance phosphates), (B) AgriTech IA Afrique subsaharienne (capital-risque early-stage, multiple potentiel élevé), (C) infrastructure portuaire Atlantique Maroc (rendement régulé long terme, intensité capitalistique), (D) hydrogène vert (option à 10 ans, alignée stratégie de décarbonation IRESEN). Trois director events structurent la trajectoire : rapport de due diligence préliminaire au round 2 (surprises positives sur D, négatives sur A : passifs environnementaux Brésil), choc macro phosphates -12 % au round 5 (OCP révise à la baisse · érode l'attractivité de A), offre concurrente d'un consortium asiatique sur l'option C au round 8 (impose un calendrier accéléré). Les agents intègrent les pratiques observées dans les comités d'investissement institutionnels MENA et africains tels que documentés dans les benchmarks publics AVCA (African Private Capital Association) et la doctrine d'investissement publique de gestionnaires institutionnels comme CDG Capital.",
+    "en": "The reference scenario faces the committee with 4 industrially and financially credible options, picked to span very different risk-return profiles: (A) acquisition of a Brazilian fertiliser producer (vertical integration of raw materials, phosphate dependency), (B) sub-Saharan AI AgriTech (early-stage venture, high multiple potential), (C) Moroccan Atlantic port infrastructure (regulated long-term yield, capital intensity), (D) green hydrogen (10-year option, aligned with IRESEN decarbonation strategy). Three director events shape the trajectory: preliminary due-diligence report at round 2 (upside surprise on D, downside on A: Brazilian environmental liabilities), macro shock phosphates -12% at round 5 (OCP revises down · erodes A's attractiveness), Asian consortium counter-offer on option C at round 8 (forces an accelerated calendar). Agents reflect practices observed in MENA and African institutional investment committees as documented in public AVCA (African Private Capital Association) benchmarks and the public investment doctrine of institutional managers such as CDG Capital.",
+    "ar": "يُضع السيناريو المرجعي اللجنة أمام 4 خيارات ذات مصداقية صناعية ومالية، مختارة لتُغطّي ملفات مخاطر-عوائد مختلفة جداً: (أ) استحواذ على منتج أسمدة برازيلي (تكامل عمودي للمواد الأولية، تبعية للفوسفات)، (ب) تكنولوجيا زراعية بالذكاء الاصطناعي بأفريقيا جنوب الصحراء (رأس مال مخاطر ناشئ، إمكانية مضاعفات عالية)، (ج) بنية تحتية مينائية أطلسية بالمغرب (مردود طويل الأمد منظَّم، كثافة رأسمالية)، (د) الهيدروجين الأخضر (خيار على 10 سنوات، يتوافق مع استراتيجية إيريسن لإزالة الكربون). تُهيكل ثلاثة أحداث المسار: تقرير العناية الواجبة الأولي في الجولة 2 (مفاجأة إيجابية للخيار د، سلبية للخيار أ بسبب التزامات بيئية بالبرازيل)، صدمة كلية بانخفاض الفوسفات 12% في الجولة 5 (المكتب الشريف للفوسفاط يُراجع توقعاته · يُضعف جاذبية أ)، عرض مضاد من تكتّل آسيوي على الخيار ج في الجولة 8 (يفرض تقويماً مُسرّعاً). يعكس الوكلاء ممارسات لجان الاستثمار المؤسساتية بمنطقة الشرق الأوسط وشمال أفريقيا وأفريقيا الموثقة في معايير AVCA (African Private Capital Association) العمومية وفي العقيدة الاستثمارية العمومية لمدراء مؤسساتيين مثل CDG Capital."
   },
   "decision_question": {
     "fr": "Quelle option génère un IRR projeté supérieur à 15 % à 7 ans tout en respectant la politique de risque du comité, et quels sont les risques bloquants prioritaires à mitiger avant exécution ?",
@@ -31,69 +31,69 @@
     {
       "role_key": "analyste_buy_side",
       "profile": {
-        "fr": "Analyste buy-side — 6 agents — produit les modèles DCF, multiples comparables, sensibilités prix matières premières.",
-        "en": "Buy-side analyst — 6 agents — runs DCF models, comparable multiples, commodity-price sensitivities.",
-        "ar": "محلل من جانب الشراء — 6 وكلاء — يُنتج نماذج التدفقات النقدية المخصومة، المضاعفات المقارنة، حساسيات أسعار المواد الأولية."
+        "fr": "Analyste buy-side · 6 agents · produit les modèles DCF, multiples comparables, sensibilités prix matières premières.",
+        "en": "Buy-side analyst · 6 agents · runs DCF models, comparable multiples, commodity-price sensitivities.",
+        "ar": "محلل من جانب الشراء · 6 وكلاء · يُنتج نماذج التدفقات النقدية المخصومة، المضاعفات المقارنة، حساسيات أسعار المواد الأولية."
       }
     },
     {
       "role_key": "investisseur_institutionnel",
       "profile": {
-        "fr": "Investisseur institutionnel — 6 agents — apporte la perspective LP, exige la cohérence avec le mandat de gestion et les ratios prudentiels.",
-        "en": "Institutional investor — 6 agents — brings the LP perspective, requires consistency with the investment mandate and prudential ratios.",
-        "ar": "مستثمر مؤسساتي — 6 وكلاء — يُقدّم منظور الشريك الممول، يشترط الاتساق مع تفويض الإدارة ونسب الحيطة."
+        "fr": "Investisseur institutionnel · 6 agents · apporte la perspective LP, exige la cohérence avec le mandat de gestion et les ratios prudentiels.",
+        "en": "Institutional investor · 6 agents · brings the LP perspective, requires consistency with the investment mandate and prudential ratios.",
+        "ar": "مستثمر مؤسساتي · 6 وكلاء · يُقدّم منظور الشريك الممول، يشترط الاتساق مع تفويض الإدارة ونسب الحيطة."
       }
     },
     {
       "role_key": "expert_sectoriel",
       "profile": {
-        "fr": "Expert sectoriel — 6 agents — couvre engrais/AgriTech/infrastructure portuaire/hydrogène, signale les risques techniques et réglementaires.",
-        "en": "Sector expert — 6 agents — covers fertiliser/AgriTech/port infrastructure/hydrogen, flags technical and regulatory risks.",
-        "ar": "خبير قطاعي — 6 وكلاء — يُغطّي الأسمدة/التكنولوجيا الزراعية/البنية المينائية/الهيدروجين، يُشير إلى المخاطر التقنية والتنظيمية."
+        "fr": "Expert sectoriel · 6 agents · couvre engrais/AgriTech/infrastructure portuaire/hydrogène, signale les risques techniques et réglementaires.",
+        "en": "Sector expert · 6 agents · covers fertiliser/AgriTech/port infrastructure/hydrogen, flags technical and regulatory risks.",
+        "ar": "خبير قطاعي · 6 وكلاء · يُغطّي الأسمدة/التكنولوجيا الزراعية/البنية المينائية/الهيدروجين، يُشير إلى المخاطر التقنية والتنظيمية."
       }
     },
     {
       "role_key": "regulateur_ammc",
       "profile": {
-        "fr": "Régulateur AMMC — 3 agents — vérifie conformité aux règles d'investissement, contrôle des informations privilégiées, transparence comité.",
-        "en": "AMMC regulator — 3 agents — checks investment-rule compliance, insider-information controls, committee transparency.",
-        "ar": "السلطة التنظيمية AMMC — 3 وكلاء — تتحقق من امتثال قواعد الاستثمار، ضوابط المعلومات الامتيازية، شفافية اللجنة."
+        "fr": "Régulateur AMMC · 3 agents · vérifie conformité aux règles d'investissement, contrôle des informations privilégiées, transparence comité.",
+        "en": "AMMC regulator · 3 agents · checks investment-rule compliance, insider-information controls, committee transparency.",
+        "ar": "السلطة التنظيمية AMMC · 3 وكلاء · تتحقق من امتثال قواعد الاستثمار، ضوابط المعلومات الامتيازية، شفافية اللجنة."
       }
     },
     {
       "role_key": "journaliste_financier",
       "profile": {
-        "fr": "Journaliste financier — 5 agents — couvre les fuites stratégiques, mesure l'effet réputationnel d'un choix mal expliqué.",
-        "en": "Financial journalist — 5 agents — covers strategic leaks, gauges the reputational impact of a poorly justified pick.",
-        "ar": "صحفي مالي — 5 وكلاء — يُغطّي التسريبات الاستراتيجية، يقيس الأثر السمعي لاختيار سيّئ التبرير."
+        "fr": "Journaliste financier · 5 agents · couvre les fuites stratégiques, mesure l'effet réputationnel d'un choix mal expliqué.",
+        "en": "Financial journalist · 5 agents · covers strategic leaks, gauges the reputational impact of a poorly justified pick.",
+        "ar": "صحفي مالي · 5 وكلاء · يُغطّي التسريبات الاستراتيجية، يقيس الأثر السمعي لاختيار سيّئ التبرير."
       }
     },
     {
       "role_key": "membre_comite",
       "profile": {
-        "fr": "Membre du comité d'investissement — 4 agents — vote final, intègre les arguments analytiques + politiques + image institutionnelle.",
-        "en": "Investment-committee member — 4 agents — final vote, integrates analytical + political + institutional-image arguments.",
-        "ar": "عضو لجنة الاستثمار — 4 وكلاء — التصويت النهائي، يجمع الحجج التحليلية والسياسية وصورة المؤسسة."
+        "fr": "Membre du comité d'investissement · 4 agents · vote final, intègre les arguments analytiques + politiques + image institutionnelle.",
+        "en": "Investment-committee member · 4 agents · final vote, integrates analytical + political + institutional-image arguments.",
+        "ar": "عضو لجنة الاستثمار · 4 وكلاء · التصويت النهائي، يجمع الحجج التحليلية والسياسية وصورة المؤسسة."
       }
     }
   ],
   "key_insights": {
     "fr": [
       "Le choc phosphates au round 5 fait basculer la majorité des trajectoires simulées de l'option A (engrais Brésil) vers l'option C (port Atlantique) ou D (hydrogène vert), même quand les modèles DCF initiaux donnaient A en tête.",
-      "L'offre concurrente asiatique sur l'option C au round 8 se traduit dans le modèle par une décision committee accélérée — les comités qui maintiennent leur calendrier original perdent l'option dans 2 trajectoires sur 3.",
-      "L'option B (AgriTech IA Afrique) reste sous-pondérée par rapport à son IRR projeté car le mandat institutionnel limite l'allocation early-stage à un pourcentage plafond — un assouplissement explicite du mandat est un prérequis pour la sélectionner.",
+      "L'offre concurrente asiatique sur l'option C au round 8 se traduit dans le modèle par une décision committee accélérée · les comités qui maintiennent leur calendrier original perdent l'option dans 2 trajectoires sur 3.",
+      "L'option B (AgriTech IA Afrique) reste sous-pondérée par rapport à son IRR projeté car le mandat institutionnel limite l'allocation early-stage à un pourcentage plafond · un assouplissement explicite du mandat est un prérequis pour la sélectionner.",
       "Les votes finaux du comité dans les trajectoires simulées convergent rarement sur une seule option : un schéma fréquent est l'allocation 60-40 entre l'option dominante et un investissement minoritaire de diversification."
     ],
     "en": [
       "The phosphate shock at round 5 swings most simulated trajectories from option A (Brazilian fertiliser) towards option C (Atlantic port) or D (green hydrogen), even when initial DCF models had A leading.",
-      "The Asian counter-offer on option C at round 8 forces an accelerated committee decision in the model — committees that stick to the original calendar lose the option in 2 out of 3 trajectories.",
-      "Option B (sub-Saharan AI AgriTech) stays underweighted relative to its projected IRR because the institutional mandate caps early-stage allocation — an explicit mandate relaxation is a prerequisite for selection.",
+      "The Asian counter-offer on option C at round 8 forces an accelerated committee decision in the model · committees that stick to the original calendar lose the option in 2 out of 3 trajectories.",
+      "Option B (sub-Saharan AI AgriTech) stays underweighted relative to its projected IRR because the institutional mandate caps early-stage allocation · an explicit mandate relaxation is a prerequisite for selection.",
       "Final committee votes in simulated trajectories rarely converge on a single option: a frequent pattern is a 60-40 allocation between the dominant option and a minority diversification investment."
     ],
     "ar": [
       "تُحوّل صدمة الفوسفات في الجولة 5 معظم المسارات المُحاكاة من الخيار أ (أسمدة البرازيل) نحو الخيار ج (ميناء أطلسي) أو د (هيدروجين أخضر)، حتى حين تكون نماذج التدفقات النقدية الأولية تُرجّح أ.",
-      "يفرض العرض الآسيوي المضاد على الخيار ج في الجولة 8 قراراً مُسرّعاً للجنة في النموذج — اللجان التي تتمسّك بالتقويم الأصلي تفقد الخيار في 2 من كل 3 مسارات.",
-      "يبقى الخيار ب (تكنولوجيا زراعية بالذكاء الاصطناعي بأفريقيا) أقل وزناً مقارنة بمعدل عائده المُتوقّع لأن التفويض المؤسساتي يضع سقفاً للمشاركة في المراحل المبكّرة — رفع هذا السقف صراحة شرط مسبق لاختياره.",
+      "يفرض العرض الآسيوي المضاد على الخيار ج في الجولة 8 قراراً مُسرّعاً للجنة في النموذج · اللجان التي تتمسّك بالتقويم الأصلي تفقد الخيار في 2 من كل 3 مسارات.",
+      "يبقى الخيار ب (تكنولوجيا زراعية بالذكاء الاصطناعي بأفريقيا) أقل وزناً مقارنة بمعدل عائده المُتوقّع لأن التفويض المؤسساتي يضع سقفاً للمشاركة في المراحل المبكّرة · رفع هذا السقف صراحة شرط مسبق لاختياره.",
       "نادراً ما تتقارب أصوات اللجنة النهائية في المسارات المُحاكاة على خيار واحد: نمط شائع هو تخصيص 60-40 بين الخيار المهيمن واستثمار تنويعي أقلّي."
     ]
   },

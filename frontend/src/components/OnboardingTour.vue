@@ -364,6 +364,19 @@ const finish = () => {
   visible.value = false
   emit('finished')
 }
+// Réouverture explicite du tour via événement global (App.vue → bouton).
+// Réinitialise étape 1 + efface le flag localStorage pour permettre la relance.
+const reopenFromEvent = () => {
+  try {
+    localStorage.removeItem(props.storageKey)
+  } catch (_) { /* ignore */ }
+  step.value = 1
+  exampleLoading.value = false
+  visible.value = true
+  emit('update:modelValue', true)
+  nextTick(() => measureTarget())
+}
+
 const markDone = () => {
   try {
     localStorage.setItem(props.storageKey, '1')
@@ -372,28 +385,16 @@ const markDone = () => {
   }
 }
 
-// "Lancer un exemple" — pré-charge le template budget_loi_finances et navigue
+// "Lancer un exemple" : redirige directement vers un modèle pré-calibré
+// avec résultat narratif fini, sans jamais lancer de simulation.
+// Le visiteur cold voit immédiatement la valeur livrée, pas l'outil interne.
 const loadExample = async () => {
   if (exampleLoading.value) return
   exampleLoading.value = true
   try {
-    const res = await getTemplate(props.exampleTemplateId)
-    if (res?.success && res.data) {
-      setPendingTemplate(
-        res.data.simulation_requirement,
-        res.data.seed_document,
-        res.data.name
-      )
-      markDone()
-      visible.value = false
-      router.push({ name: 'Process', params: { projectId: 'new' } })
-      return
-    }
-    // Échec backend → on n'avance pas, on log silencieusement
-    // (bouton "Suivant" reste accessible)
-    console.warn('[OnboardingTour] template fetch failed', res?.error)
-  } catch (err) {
-    console.warn('[OnboardingTour] template fetch error', err?.message)
+    markDone()
+    visible.value = false
+    router.push('/models/crisis-drill-24h')
   } finally {
     exampleLoading.value = false
   }
@@ -425,11 +426,13 @@ onMounted(() => {
   }
   window.addEventListener('resize', onReposition, { passive: true })
   window.addEventListener('scroll', onReposition, { passive: true, capture: true })
+  window.addEventListener('bassira:reopen-tour', reopenFromEvent)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', onReposition)
   window.removeEventListener('scroll', onReposition, { capture: true })
+  window.removeEventListener('bassira:reopen-tour', reopenFromEvent)
   if (rafId) cancelAnimationFrame(rafId)
 })
 

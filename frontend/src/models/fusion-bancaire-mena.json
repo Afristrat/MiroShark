@@ -3,14 +3,14 @@
   "sector": "banque",
   "preset_source": "fusion_bancaire_maroc",
   "title": {
-    "fr": "Fusion bancaire MENA — Probabilité d'approbation régulateur",
-    "en": "MENA Banking Merger — Regulator Approval Probability",
-    "ar": "اندماج مصرفي في منطقة الشرق الأوسط وشمال أفريقيا — احتمال الموافقة التنظيمية"
+    "fr": "Fusion bancaire MENA · Probabilité d'approbation régulateur",
+    "en": "MENA Banking Merger · Regulator Approval Probability",
+    "ar": "اندماج مصرفي في منطقة الشرق الأوسط وشمال أفريقيا · احتمال الموافقة التنظيمية"
   },
   "subtitle": {
-    "fr": "Modèle pré-calibré sur le scénario d'OPA bancaire de référence (scénario archétypal MENA — banque universelle cotée × filiale financière d'opérateur postal, 20 semaines)",
-    "en": "Pre-calibrated model on the reference banking takeover scenario (MENA archetypal scenario — listed universal bank × postal-operator financial subsidiary, 20 weeks)",
-    "ar": "نموذج معاير مسبقاً على سيناريو الاستحواذ المصرفي المرجعي (سيناريو نمطي بمنطقة الشرق الأوسط وشمال أفريقيا — بنك تجاري شامل مدرج × فرع مالي لمشغّل البريد، 20 أسبوعاً)"
+    "fr": "Modèle pré-calibré sur le scénario d'OPA bancaire de référence (scénario archétypal MENA · banque universelle cotée × filiale financière d'opérateur postal, 20 semaines)",
+    "en": "Pre-calibrated model on the reference banking takeover scenario (MENA archetypal scenario · listed universal bank × postal-operator financial subsidiary, 20 weeks)",
+    "ar": "نموذج معاير مسبقاً على سيناريو الاستحواذ المصرفي المرجعي (سيناريو نمطي بمنطقة الشرق الأوسط وشمال أفريقيا · بنك تجاري شامل مدرج × فرع مالي لمشغّل البريد، 20 أسبوعاً)"
   },
   "summary_short": {
     "fr": "Simulation multi-agents de l'instruction d'une OPA amicale soumise à Bank Al-Maghrib : 35 agents (actionnaires CDG, syndicats, analystes Fitch et S&P, superviseur, journalistes, concurrent), 10 rounds de 2 semaines, verdict probabilisé en trois branches (approuvée sans condition, approuvée avec cessions, bloquée).",
@@ -31,70 +31,70 @@
     {
       "role_key": "directeur_ma_cdg",
       "profile": {
-        "fr": "Directeur M&A de l'actionnaire de référence — porte le dossier, gère la dynamique syndicale, prépare la riposte à la contre-offre.",
-        "en": "M&A director of the reference shareholder — sponsors the deal, manages union dynamics, prepares the counter-bid response.",
-        "ar": "مدير عمليات الاندماج والاستحواذ لدى المساهم المرجعي — يحمل الملف، يدير الديناميكية النقابية، ويُعدّ الرد على العرض المنافس."
+        "fr": "Directeur M&A de l'actionnaire de référence · porte le dossier, gère la dynamique syndicale, prépare la riposte à la contre-offre.",
+        "en": "M&A director of the reference shareholder · sponsors the deal, manages union dynamics, prepares the counter-bid response.",
+        "ar": "مدير عمليات الاندماج والاستحواذ لدى المساهم المرجعي · يحمل الملف، يدير الديناميكية النقابية، ويُعدّ الرد على العرض المنافس."
       }
     },
     {
       "role_key": "delegue_syndical_bamf",
       "profile": {
-        "fr": "Délégué syndical FDT — exige zéro licenciement économique 5 ans, maintien des avantages statutaires, plan de reconversion.",
-        "en": "FDT union delegate — demands no economic layoffs for 5 years, preservation of statutory benefits, reskilling plan.",
-        "ar": "ممثل نقابي للفدرالية الديمقراطية للشغل — يطالب بصفر تسريح اقتصادي لخمس سنوات، الحفاظ على الامتيازات النظامية، وخطة إعادة التأهيل."
+        "fr": "Délégué syndical FDT · exige zéro licenciement économique 5 ans, maintien des avantages statutaires, plan de reconversion.",
+        "en": "FDT union delegate · demands no economic layoffs for 5 years, preservation of statutory benefits, reskilling plan.",
+        "ar": "ممثل نقابي للفدرالية الديمقراطية للشغل · يطالب بصفر تسريح اقتصادي لخمس سنوات، الحفاظ على الامتيازات النظامية، وخطة إعادة التأهيل."
       }
     },
     {
       "role_key": "analyste_fitch_maghreb",
       "profile": {
-        "fr": "Analyste crédit Fitch Maghreb — applique la méthodologie sans exception, signale avant dégrader, observe le renforcement de fonds propres.",
-        "en": "Fitch Maghreb credit analyst — applies the methodology without exception, signals before downgrading, monitors capital reinforcement.",
-        "ar": "محلل ائتمان فيتش المغرب الكبير — يطبّق المنهجية دون استثناء، يُنبّه قبل التخفيض، ويراقب تعزيز الأموال الذاتية."
+        "fr": "Analyste crédit Fitch Maghreb · applique la méthodologie sans exception, signale avant dégrader, observe le renforcement de fonds propres.",
+        "en": "Fitch Maghreb credit analyst · applies the methodology without exception, signals before downgrading, monitors capital reinforcement.",
+        "ar": "محلل ائتمان فيتش المغرب الكبير · يطبّق المنهجية دون استثناء، يُنبّه قبل التخفيض، ويراقب تعزيز الأموال الذاتية."
       }
     },
     {
       "role_key": "superviseur_bam",
       "profile": {
-        "fr": "Directrice supervision bancaire — méthodique, intègre stabilité financière + inclusion, peut conditionner l'approbation à des cessions ciblées.",
-        "en": "Banking supervision director — methodical, weighs financial stability and inclusion, may condition approval on targeted divestitures.",
-        "ar": "مديرة الإشراف المصرفي — منهجية، تجمع بين الاستقرار المالي والإدماج، قد تشترط الموافقة بتنازلات محددة."
+        "fr": "Directrice supervision bancaire · méthodique, intègre stabilité financière + inclusion, peut conditionner l'approbation à des cessions ciblées.",
+        "en": "Banking supervision director · methodical, weighs financial stability and inclusion, may condition approval on targeted divestitures.",
+        "ar": "مديرة الإشراف المصرفي · منهجية، تجمع بين الاستقرار المالي والإدماج، قد تشترط الموافقة بتنازلات محددة."
       }
     },
     {
       "role_key": "concurrent_panafricain",
       "profile": {
-        "fr": "Directeur stratégie d'un acquéreur concurrent panafricain — dépose une contre-offre à prime supérieure, vise au minimum à arracher un actif de consolation.",
-        "en": "Pan-African rival bidder strategy director — files a higher-premium counter-bid, aiming at least to wrest a consolation asset.",
-        "ar": "مدير استراتيجية مستحوذ منافس بانإفريقي — يُقدّم عرضاً مضاداً بعلاوة أعلى، ساعياً على الأقل إلى انتزاع أصل تعويضي."
+        "fr": "Directeur stratégie d'un acquéreur concurrent panafricain · dépose une contre-offre à prime supérieure, vise au minimum à arracher un actif de consolation.",
+        "en": "Pan-African rival bidder strategy director · files a higher-premium counter-bid, aiming at least to wrest a consolation asset.",
+        "ar": "مدير استراتيجية مستحوذ منافس بانإفريقي · يُقدّم عرضاً مضاداً بعلاوة أعلى، ساعياً على الأقل إلى انتزاع أصل تعويضي."
       }
     },
     {
       "role_key": "journaliste_eco",
       "profile": {
-        "fr": "Journaliste senior place financière — sourcé chez le superviseur, distingue les signaux réels des déclarations officielles.",
-        "en": "Senior financial-press reporter — sourced inside the supervisor, separates real signals from official statements.",
-        "ar": "صحفي اقتصادي متمرّس — لديه مصادر داخل السلطة الرقابية، يميّز الإشارات الحقيقية عن التصريحات الرسمية."
+        "fr": "Journaliste senior place financière · sourcé chez le superviseur, distingue les signaux réels des déclarations officielles.",
+        "en": "Senior financial-press reporter · sourced inside the supervisor, separates real signals from official statements.",
+        "ar": "صحفي اقتصادي متمرّس · لديه مصادر داخل السلطة الرقابية، يميّز الإشارات الحقيقية عن التصريحات الرسمية."
       }
     }
   ],
   "key_insights": {
     "fr": [
       "Le verdict converge en trois branches dans les exécutions du modèle : approbation sans condition, approbation avec cessions ciblées (typiquement zones de chevauchement géographique limitées), et blocage temporaire conditionné à un renforcement des fonds propres.",
-      "La contre-offre concurrente change davantage le rapport de force avec les actionnaires de la cible qu'avec le superviseur — la décision réglementaire reste indexée sur les ratios prudentiels post-opération.",
+      "La contre-offre concurrente change davantage le rapport de force avec les actionnaires de la cible qu'avec le superviseur · la décision réglementaire reste indexée sur les ratios prudentiels post-opération.",
       "L'accord social binding obtenu en parallèle de l'instruction réglementaire désamorce la branche « blocage politique » dans la majorité des trajectoires simulées.",
-      "Une dégradation d'outlook de l'agence de notation accélère la mise en place d'une augmentation de capital plutôt qu'elle ne provoque un blocage — à condition qu'elle survienne avant la décision finale du superviseur."
+      "Une dégradation d'outlook de l'agence de notation accélère la mise en place d'une augmentation de capital plutôt qu'elle ne provoque un blocage · à condition qu'elle survienne avant la décision finale du superviseur."
     ],
     "en": [
       "Across model runs, the verdict converges in three branches: clearance with no conditions, clearance with targeted divestitures (typically narrow geographic overlap), and temporary blockage conditioned on capital reinforcement.",
-      "The competing counter-bid shifts the balance with the target's shareholders more than with the supervisor — regulatory decision remains indexed on post-deal prudential ratios.",
+      "The competing counter-bid shifts the balance with the target's shareholders more than with the supervisor · regulatory decision remains indexed on post-deal prudential ratios.",
       "A binding social agreement reached in parallel with the regulatory review defuses the 'political blockage' branch in most simulated trajectories.",
-      "A rating-agency outlook downgrade accelerates a capital increase rather than triggering an outright blockage — provided it lands before the supervisor's final decision."
+      "A rating-agency outlook downgrade accelerates a capital increase rather than triggering an outright blockage · provided it lands before the supervisor's final decision."
     ],
     "ar": [
       "يتقارب الحكم في ثلاثة فروع عبر تنفيذات النموذج: موافقة بلا شروط، موافقة مع تنازلات محددة (غالباً مناطق تداخل جغرافي محدودة)، وحجب مؤقت مشروط بتعزيز الأموال الذاتية.",
-      "يُغيّر العرض المنافس موازين القوى مع مساهمي الهدف أكثر مما يُغيّرها مع السلطة الرقابية — يظل القرار التنظيمي مرتبطاً بنسب الحيطة بعد العملية.",
+      "يُغيّر العرض المنافس موازين القوى مع مساهمي الهدف أكثر مما يُغيّرها مع السلطة الرقابية · يظل القرار التنظيمي مرتبطاً بنسب الحيطة بعد العملية.",
       "يُعطّل الاتفاق الاجتماعي الملزم المُبرم بالتوازي مع الدراسة التنظيمية فرع «الحجب السياسي» في أغلب المسارات المُحاكاة.",
-      "يُعجّل تخفيض الآفاق من قِبل وكالة التصنيف تنفيذ زيادة في رأس المال بدلاً من أن يُسبّب حجباً صريحاً — شرط أن يحصل قبل القرار النهائي للسلطة الرقابية."
+      "يُعجّل تخفيض الآفاق من قِبل وكالة التصنيف تنفيذ زيادة في رأس المال بدلاً من أن يُسبّب حجباً صريحاً · شرط أن يحصل قبل القرار النهائي للسلطة الرقابية."
     ]
   },
   "brier_illustrative": 0.18,

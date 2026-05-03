@@ -3,9 +3,9 @@
   "sector": "politique-publique",
   "preset_source": "political_debate",
   "title": {
-    "fr": "Débat politique — Bascule de l'opinion publique sur 48 heures après un débat majeur",
-    "en": "Political Debate — 48-Hour Public Opinion Tilt after a Major Debate",
-    "ar": "نقاش سياسي — انعطاف الرأي العام على مدى 48 ساعة بعد نقاش كبير"
+    "fr": "Débat politique · Bascule de l'opinion publique sur 48 heures après un débat majeur",
+    "en": "Political Debate · 48-Hour Public Opinion Tilt after a Major Debate",
+    "ar": "نقاش سياسي · انعطاف الرأي العام على مدى 48 ساعة بعد نقاش كبير"
   },
   "subtitle": {
     "fr": "Modèle pré-calibré sur la trajectoire d'opinion publique post-débat télévisé entre deux candidats à une élection présidentielle (25 agents, 48 rounds horaires)",
@@ -31,60 +31,60 @@
     {
       "role_key": "jeunes_electeurs",
       "profile": {
-        "fr": "Jeunes électeurs (18-29 ans) — 6 agents — très actifs sur réseaux sociaux, mobilisés par certains thèmes sociétaux, attention courte mais effet viral important.",
-        "en": "Young voters (18-29) — 6 agents — very active on social media, mobilised by certain societal themes, short attention span but high viral impact.",
-        "ar": "ناخبون شباب (18-29 سنة) — 6 وكلاء — نشطون جداً على وسائل التواصل، يُعبَّأون عبر مواضيع مجتمعية معيّنة، انتباه قصير لكن أثر فيروسي كبير."
+        "fr": "Jeunes électeurs (18-29 ans) · 6 agents · très actifs sur réseaux sociaux, mobilisés par certains thèmes sociétaux, attention courte mais effet viral important.",
+        "en": "Young voters (18-29) · 6 agents · very active on social media, mobilised by certain societal themes, short attention span but high viral impact.",
+        "ar": "ناخبون شباب (18-29 سنة) · 6 وكلاء · نشطون جداً على وسائل التواصل، يُعبَّأون عبر مواضيع مجتمعية معيّنة، انتباه قصير لكن أثر فيروسي كبير."
       }
     },
     {
       "role_key": "parents_banlieue",
       "profile": {
-        "fr": "Parents de banlieue — 5 agents — démographie pivot, arbitrent entre économie, santé et sécurité, sensibles à la cohérence des chiffrages.",
-        "en": "Suburban parents — 5 agents — pivotal demographic, arbitrate between economy, health and security, sensitive to costing coherence.",
-        "ar": "آباء الضواحي — 5 وكلاء — فئة ديمغرافية محورية، يُحكِّمون بين الاقتصاد والصحة والأمن، حساسون لاتّساق الأرقام."
+        "fr": "Parents de banlieue · 5 agents · démographie pivot, arbitrent entre économie, santé et sécurité, sensibles à la cohérence des chiffrages.",
+        "en": "Suburban parents · 5 agents · pivotal demographic, arbitrate between economy, health and security, sensitive to costing coherence.",
+        "ar": "آباء الضواحي · 5 وكلاء · فئة ديمغرافية محورية، يُحكِّمون بين الاقتصاد والصحة والأمن، حساسون لاتّساق الأرقام."
       }
     },
     {
       "role_key": "commentateurs_politiques",
       "profile": {
-        "fr": "Commentateurs politiques — 5 agents — alignés partisanement avec quelques voix transverses, fixent le cadre interprétatif initial dans les 12 premières heures.",
-        "en": "Political commentators — 5 agents — partisanly aligned with some cross-cutting voices, set the initial interpretive frame within the first 12 hours.",
-        "ar": "مُعلِّقون سياسيون — 5 وكلاء — منحازون حزبياً مع بعض الأصوات المتجاوزة، يُثبّتون الإطار التفسيري الأوّلي خلال الساعات الـ 12 الأولى."
+        "fr": "Commentateurs politiques · 5 agents · alignés partisanement avec quelques voix transverses, fixent le cadre interprétatif initial dans les 12 premières heures.",
+        "en": "Political commentators · 5 agents · partisanly aligned with some cross-cutting voices, set the initial interpretive frame within the first 12 hours.",
+        "ar": "مُعلِّقون سياسيون · 5 وكلاء · منحازون حزبياً مع بعض الأصوات المتجاوزة، يُثبّتون الإطار التفسيري الأوّلي خلال الساعات الـ 12 الأولى."
       }
     },
     {
       "role_key": "journalistes",
       "profile": {
-        "fr": "Journalistes — 4 agents — chassent l'angle dominant, comparent aux sondages flash, alimentent la deuxième vague de récit.",
-        "en": "Journalists — 4 agents — chase the dominant angle, benchmark against flash polls, feed the second narrative wave.",
-        "ar": "صحفيون — 4 وكلاء — يُطاردون الزاوية المهيمنة، يُقارنون بسبر الآراء السريع، يُغذّون الموجة السردية الثانية."
+        "fr": "Journalistes · 4 agents · chassent l'angle dominant, comparent aux sondages flash, alimentent la deuxième vague de récit.",
+        "en": "Journalists · 4 agents · chase the dominant angle, benchmark against flash polls, feed the second narrative wave.",
+        "ar": "صحفيون · 4 وكلاء · يُطاردون الزاوية المهيمنة، يُقارنون بسبر الآراء السريع، يُغذّون الموجة السردية الثانية."
       }
     },
     {
       "role_key": "electeurs_indecis",
       "profile": {
-        "fr": "Électeurs indécis — 5 agents — cherchent l'authenticité, attentifs aux moments d'hésitation, basculent typiquement entre H+24 et H+48 selon récit dominant.",
-        "en": "Undecided voters — 5 agents — seek authenticity, watch hesitation moments, typically tilt between H+24 and H+48 depending on the dominant narrative.",
-        "ar": "ناخبون متردّدون — 5 وكلاء — يَسعون إلى الأصالة، يقظون للحظات التردّد، يَنعطفون عادةً بين H+24 وH+48 وفق السرد المهيمن."
+        "fr": "Électeurs indécis · 5 agents · cherchent l'authenticité, attentifs aux moments d'hésitation, basculent typiquement entre H+24 et H+48 selon récit dominant.",
+        "en": "Undecided voters · 5 agents · seek authenticity, watch hesitation moments, typically tilt between H+24 and H+48 depending on the dominant narrative.",
+        "ar": "ناخبون متردّدون · 5 وكلاء · يَسعون إلى الأصالة، يقظون للحظات التردّد، يَنعطفون عادةً بين H+24 وH+48 وفق السرد المهيمن."
       }
     }
   ],
   "key_insights": {
     "fr": [
       "Le récit dominant se cristallise généralement entre H+18 et H+30 dans les exécutions du modèle : la deuxième vague médiatique (H+12 à H+24) pèse plus que la première sur la perception des indécis, parce qu'elle structure l'angle interprétatif autour de quelques moments viraux.",
-      "Un moment d'hésitation visible (silence prolongé, redirection maladroite) pèse en moyenne 3 à 6 points sur l'image d'authenticité d'un candidat dans les trajectoires simulées — c'est le signal le plus prédictif chez les indécis.",
+      "Un moment d'hésitation visible (silence prolongé, redirection maladroite) pèse en moyenne 3 à 6 points sur l'image d'authenticité d'un candidat dans les trajectoires simulées · c'est le signal le plus prédictif chez les indécis.",
       "Une émotion partagée perçue comme authentique (récit personnel ou récit incarné) génère un effet positif soutenu jusqu'à H+48 chez la démographie pivot, à condition de ne pas être suivie d'un cadre interprétatif partisan trop rapide qui le neutralise.",
       "Les chambres d'écho amplifient les positions initiales davantage qu'elles ne les retournent : un candidat déjà perçu défavorable par 50 % au pré-débat ne renverse l'opinion à 48 heures que dans une trajectoire sur cinq dans les exécutions du modèle, confirmant l'inertie typique observée par la littérature en science politique."
     ],
     "en": [
       "The dominant narrative typically crystallises between H+18 and H+30 in model runs: the second media wave (H+12 to H+24) weighs more than the first on undecided perception, because it structures the interpretive angle around a few viral moments.",
-      "A visible hesitation moment (prolonged silence, awkward redirection) weighs an average 3-6 points on a candidate's authenticity image in simulated trajectories — the most predictive signal among undecideds.",
+      "A visible hesitation moment (prolonged silence, awkward redirection) weighs an average 3-6 points on a candidate's authenticity image in simulated trajectories · the most predictive signal among undecideds.",
       "A perceived authentic shared emotion (personal or embodied narrative) generates a sustained positive effect to H+48 among the pivotal demographic, provided it is not followed by a too-rapid partisan interpretive frame that neutralises it.",
       "Echo chambers amplify initial positions more than they reverse them: a candidate already perceived unfavourably by 50% pre-debate reverses opinion at 48 hours in only one in five trajectories in model runs, confirming the inertia typically observed in political-science literature."
     ],
     "ar": [
       "يَتبلور السرد المهيمن عادةً بين H+18 وH+30 في تنفيذات النموذج: تَزن الموجة الإعلامية الثانية (H+12 إلى H+24) أكثر من الأولى على تصوُّر المتردّدين، لأنها تُهيكل الزاوية التفسيرية حول بضع لحظات فيروسية.",
-      "تَزن لحظة تردُّد ظاهرة (صمت ممتدّ، تحويل أخرق للموضوع) في المتوسط 3 إلى 6 نقاط على صورة أصالة المرشَّح في المسارات المُحاكاة — وهي الإشارة الأكثر تنبُّؤاً لدى المتردّدين.",
+      "تَزن لحظة تردُّد ظاهرة (صمت ممتدّ، تحويل أخرق للموضوع) في المتوسط 3 إلى 6 نقاط على صورة أصالة المرشَّح في المسارات المُحاكاة · وهي الإشارة الأكثر تنبُّؤاً لدى المتردّدين.",
       "يُولّد تَشارك انفعال يُدرَك أصيلاً (سرد شخصي أو سرد مُجسَّد) أثراً إيجابياً ممتدّاً حتى H+48 لدى الفئة المحورية، شرط ألّا يُتبَع بإطار تفسيري حزبي سريع جداً يُلغيه.",
       "تُضخّم غرف الصدى المواقف الأوّلية أكثر ممّا تَقلبها: لا يَقلب مرشَّحٌ يُدرَك سلبياً بنسبة 50 % قبل النقاش الرأيَ بعد 48 ساعة إلا في واحدٍ من كلّ خمسة مسارات في تنفيذات النموذج، ممّا يؤكّد القصور الذاتي الذي تَرصده عادةً أدبيات علم السياسة."
     ]

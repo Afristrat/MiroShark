@@ -3,9 +3,9 @@
   "sector": "marketing-export",
   "preset_source": "adcheck_pre_launch",
   "title": {
-    "fr": "Adcheck Ramadan — 3 concepts publicitaires testés sur 72 heures",
-    "en": "Ramadan Adcheck — 3 Ad Concepts Tested over 72 Hours",
-    "ar": "اختبار الإعلانات في رمضان — 3 مفاهيم إعلانية على مدى 72 ساعة"
+    "fr": "Adcheck Ramadan · 3 concepts publicitaires testés sur 72 heures",
+    "en": "Ramadan Adcheck · 3 Ad Concepts Tested over 72 Hours",
+    "ar": "اختبار الإعلانات في رمضان · 3 مفاهيم إعلانية على مدى 72 ساعة"
   },
   "subtitle": {
     "fr": "Modèle pré-calibré sur le pré-test créatif Ramadan d'une audience marocaine 25-45 ans étendue Maghreb-Afrique de l'Ouest (60 agents, 18 rounds de 4 heures)",
@@ -31,70 +31,70 @@
     {
       "role_key": "audience_coeur_25_45",
       "profile": {
-        "fr": "Audience cœur 25-45 ans urbaine — 35 agents — répartis Casablanca, Rabat, Marrakech, Tanger, Dakar, Abidjan, profils familiaux, professionnels, étudiants et jeunes parents.",
-        "en": "Urban 25-45 core audience — 35 agents — spread across Casablanca, Rabat, Marrakech, Tangier, Dakar, Abidjan, with family, professional, student and young-parent profiles.",
-        "ar": "الجمهور الأساسي الحضري بين 25 و45 سنة — 35 وكيلاً — موزعون بين الدار البيضاء والرباط ومراكش وطنجة وداكار وأبيدجان، بملامح عائلية ومهنية وطلابية وآباء شباب."
+        "fr": "Audience cœur 25-45 ans urbaine · 35 agents · répartis Casablanca, Rabat, Marrakech, Tanger, Dakar, Abidjan, profils familiaux, professionnels, étudiants et jeunes parents.",
+        "en": "Urban 25-45 core audience · 35 agents · spread across Casablanca, Rabat, Marrakech, Tangier, Dakar, Abidjan, with family, professional, student and young-parent profiles.",
+        "ar": "الجمهور الأساسي الحضري بين 25 و45 سنة · 35 وكيلاً · موزعون بين الدار البيضاء والرباط ومراكش وطنجة وداكار وأبيدجان، بملامح عائلية ومهنية وطلابية وآباء شباب."
       }
     },
     {
       "role_key": "segment_religieux_traditionnel",
       "profile": {
-        "fr": "Segment religieux traditionnel — 8 agents — vigilants sur le respect des codes Ramadan, susceptibles de déclencher une controverse organisée si un concept est jugé déplacé.",
-        "en": "Religious-traditional segment — 8 agents — vigilant on Ramadan-code compliance, prone to triggering an organised controversy if a concept is deemed inappropriate.",
-        "ar": "الشريحة الدينية التقليدية — 8 وكلاء — متيقّظون لاحترام رموز رمضان، قابلون لإشعال جدل منظَّم إذا اعتُبر أحد المفاهيم غير لائق."
+        "fr": "Segment religieux traditionnel · 8 agents · vigilants sur le respect des codes Ramadan, susceptibles de déclencher une controverse organisée si un concept est jugé déplacé.",
+        "en": "Religious-traditional segment · 8 agents · vigilant on Ramadan-code compliance, prone to triggering an organised controversy if a concept is deemed inappropriate.",
+        "ar": "الشريحة الدينية التقليدية · 8 وكلاء · متيقّظون لاحترام رموز رمضان، قابلون لإشعال جدل منظَّم إذا اعتُبر أحد المفاهيم غير لائق."
       }
     },
     {
       "role_key": "segment_seculier_moderne",
       "profile": {
-        "fr": "Segment séculier moderne — 7 agents — défendent un registre publicitaire libéral, mais sont attentifs aux tons paternalistes ou condescendants.",
-        "en": "Secular-modern segment — 7 agents — defend a liberal advertising register but watch for paternalistic or condescending tones.",
-        "ar": "الشريحة العلمانية الحديثة — 7 وكلاء — يدافعون عن سجلّ إعلاني ليبرالي، لكنهم يقظون للنبرات الأبوية أو المتعالية."
+        "fr": "Segment séculier moderne · 7 agents · défendent un registre publicitaire libéral, mais sont attentifs aux tons paternalistes ou condescendants.",
+        "en": "Secular-modern segment · 7 agents · defend a liberal advertising register but watch for paternalistic or condescending tones.",
+        "ar": "الشريحة العلمانية الحديثة · 7 وكلاء · يدافعون عن سجلّ إعلاني ليبرالي، لكنهم يقظون للنبرات الأبوية أو المتعالية."
       }
     },
     {
       "role_key": "diaspora_critique",
       "profile": {
-        "fr": "Diaspora critique — 4 agents — résident en Europe ou Amérique du Nord, comparent au standard publicitaire international, sensibles aux clichés.",
-        "en": "Critical diaspora — 4 agents — based in Europe or North America, benchmark against international advertising standards, sensitive to clichés.",
-        "ar": "الجالية الناقدة — 4 وكلاء — مقيمون في أوروبا أو أمريكا الشمالية، يقارنون بالمعيار الإعلاني الدولي، حساسون تجاه الصور النمطية."
+        "fr": "Diaspora critique · 4 agents · résident en Europe ou Amérique du Nord, comparent au standard publicitaire international, sensibles aux clichés.",
+        "en": "Critical diaspora · 4 agents · based in Europe or North America, benchmark against international advertising standards, sensitive to clichés.",
+        "ar": "الجالية الناقدة · 4 وكلاء · مقيمون في أوروبا أو أمريكا الشمالية، يقارنون بالمعيار الإعلاني الدولي، حساسون تجاه الصور النمطية."
       }
     },
     {
       "role_key": "observateurs_trade",
       "profile": {
-        "fr": "Observateurs trade — 3 agents — pros du retail, jugent l'efficacité commerciale (rappel produit, intention d'achat, transferts en linéaire).",
-        "en": "Trade observers — 3 agents — retail professionals scoring commercial effectiveness (product recall, purchase intent, shelf transfer).",
-        "ar": "مراقبو التجارة — 3 وكلاء — مهنيو التجزئة، يقيّمون الفاعلية التجارية (تذكُّر المنتج، نية الشراء، التحوُّل على الرفوف)."
+        "fr": "Observateurs trade · 3 agents · pros du retail, jugent l'efficacité commerciale (rappel produit, intention d'achat, transferts en linéaire).",
+        "en": "Trade observers · 3 agents · retail professionals scoring commercial effectiveness (product recall, purchase intent, shelf transfer).",
+        "ar": "مراقبو التجارة · 3 وكلاء · مهنيو التجزئة، يقيّمون الفاعلية التجارية (تذكُّر المنتج، نية الشراء، التحوُّل على الرفوف)."
       }
     },
     {
       "role_key": "analystes_concurrents",
       "profile": {
-        "fr": "Analystes concurrents — 3 agents — équipes marketing rivales en veille, signalent les coups attendus, modélisent la réplique probable de leur marque.",
-        "en": "Competitor analysts — 3 agents — rival marketing teams on the lookout, flag expected moves, model their own brand's likely counter-play.",
-        "ar": "محللو المنافسين — 3 وكلاء — فرق تسويق منافسة في حالة رصد، يُشيرون إلى الخطوات المتوقعة ويُحاكون الردّ المحتمل لعلامتهم."
+        "fr": "Analystes concurrents · 3 agents · équipes marketing rivales en veille, signalent les coups attendus, modélisent la réplique probable de leur marque.",
+        "en": "Competitor analysts · 3 agents · rival marketing teams on the lookout, flag expected moves, model their own brand's likely counter-play.",
+        "ar": "محللو المنافسين · 3 وكلاء · فرق تسويق منافسة في حالة رصد، يُشيرون إلى الخطوات المتوقعة ويُحاكون الردّ المحتمل لعلامتهم."
       }
     }
   ],
   "key_insights": {
     "fr": [
-      "Le concept registre familial-traditionnel converge vers la première place dans la majorité des trajectoires simulées, mais avec un avantage de 4 à 8 points seulement sur le concept humour-générationnel — l'écart se referme nettement chez les agents séculiers et la diaspora.",
+      "Le concept registre familial-traditionnel converge vers la première place dans la majorité des trajectoires simulées, mais avec un avantage de 4 à 8 points seulement sur le concept humour-générationnel · l'écart se referme nettement chez les agents séculiers et la diaspora.",
       "Le concept à risque de backfire est très souvent le registre humour-générationnel : dans les exécutions du modèle, une controverse religieuse organisée à H+20 retourne le sentiment net d'environ 12 à 18 points en moins de 12 heures.",
-      "Le concept solidarité-engagement obtient un sentiment positif solide mais souffre d'un déficit de mémorabilité — les analystes trade signalent un rappel produit inférieur de 15 à 25 % par rapport aux deux autres registres.",
-      "L'amplification organique par un compte d'influence audience moyenne (de l'ordre du million d'abonnés cumulés) suffit à générer un effet de halo positif sur l'ensemble du portefeuille, mais ne sauve pas un concept déjà en backfire — la séquence de réponse publique en 6 heures est le levier déterminant."
+      "Le concept solidarité-engagement obtient un sentiment positif solide mais souffre d'un déficit de mémorabilité · les analystes trade signalent un rappel produit inférieur de 15 à 25 % par rapport aux deux autres registres.",
+      "L'amplification organique par un compte d'influence audience moyenne (de l'ordre du million d'abonnés cumulés) suffit à générer un effet de halo positif sur l'ensemble du portefeuille, mais ne sauve pas un concept déjà en backfire · la séquence de réponse publique en 6 heures est le levier déterminant."
     ],
     "en": [
-      "The family-traditional concept converges to first place in most simulated trajectories, but only with a 4-8 point lead over the humour-generational concept — the gap narrows materially among secular agents and the diaspora.",
+      "The family-traditional concept converges to first place in most simulated trajectories, but only with a 4-8 point lead over the humour-generational concept · the gap narrows materially among secular agents and the diaspora.",
       "The backfire-risk concept is very often the humour-generational register: in model runs, an organised religious controversy at H+20 flips net sentiment by roughly 12-18 points within 12 hours.",
-      "The solidarity-engagement concept earns solid positive sentiment but suffers from a memorability gap — trade observers flag product recall 15-25% below the other two registers.",
-      "Organic amplification by a mid-tier influencer account (around one million combined followers) is enough to generate a halo effect across the portfolio, but it does not rescue a concept already in backfire — the 6-hour public response sequence is the decisive lever."
+      "The solidarity-engagement concept earns solid positive sentiment but suffers from a memorability gap · trade observers flag product recall 15-25% below the other two registers.",
+      "Organic amplification by a mid-tier influencer account (around one million combined followers) is enough to generate a halo effect across the portfolio, but it does not rescue a concept already in backfire · the 6-hour public response sequence is the decisive lever."
     ],
     "ar": [
-      "يتقارب المفهوم العائلي-التقليدي نحو المرتبة الأولى في معظم المسارات المُحاكاة، لكن بفارق من 4 إلى 8 نقاط فقط على المفهوم الفكاهي-الجيلي — يضيق الفارق بوضوح لدى الوكلاء العلمانيين والجالية.",
+      "يتقارب المفهوم العائلي-التقليدي نحو المرتبة الأولى في معظم المسارات المُحاكاة، لكن بفارق من 4 إلى 8 نقاط فقط على المفهوم الفكاهي-الجيلي · يضيق الفارق بوضوح لدى الوكلاء العلمانيين والجالية.",
       "غالباً ما يكون المفهوم المعرَّض لخطر الارتداد العكسي هو السجلّ الفكاهي-الجيلي: في تنفيذات النموذج، يُقلب جدل ديني منظَّم عند H+20 صافي المشاعر بنحو 12 إلى 18 نقطة خلال أقل من 12 ساعة.",
-      "يحقّق مفهوم التضامن-الالتزام مشاعر إيجابية متينة لكنه يعاني من نقص في الذاكرة الإعلانية — يُشير مراقبو التجارة إلى تذكُّر منتج أدنى بنسبة 15 إلى 25 % مقارنةً بالسجلَّين الآخرين.",
-      "يكفي التضخيم العضوي من حساب مؤثر متوسط (بنحو مليون متابع تراكمي) لتوليد أثر هالة إيجابي على المحفظة، لكنه لا يُنقذ مفهوماً بدأ ارتداده العكسي — سلسلة الردّ العلني في 6 ساعات هي الرافعة الحاسمة."
+      "يحقّق مفهوم التضامن-الالتزام مشاعر إيجابية متينة لكنه يعاني من نقص في الذاكرة الإعلانية · يُشير مراقبو التجارة إلى تذكُّر منتج أدنى بنسبة 15 إلى 25 % مقارنةً بالسجلَّين الآخرين.",
+      "يكفي التضخيم العضوي من حساب مؤثر متوسط (بنحو مليون متابع تراكمي) لتوليد أثر هالة إيجابي على المحفظة، لكنه لا يُنقذ مفهوماً بدأ ارتداده العكسي · سلسلة الردّ العلني في 6 ساعات هي الرافعة الحاسمة."
     ]
   },
   "brier_illustrative": 0.22,

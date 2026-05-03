@@ -3,9 +3,9 @@
   "sector": "startup-tech",
   "preset_source": "choix_implantation_startup",
   "title": {
-    "fr": "Implantation startup deeptech — Casablanca, Dubaï ou Nairobi en hub MENA-Afrique",
-    "en": "Deeptech Startup Hub — Casablanca, Dubai or Nairobi for MENA-Africa Headquarters",
-    "ar": "احتضان شركة ناشئة في التقنية العميقة — الدار البيضاء أو دبي أو نيروبي مركزاً للشرق الأوسط وشمال أفريقيا"
+    "fr": "Implantation startup deeptech · Casablanca, Dubaï ou Nairobi en hub MENA-Afrique",
+    "en": "Deeptech Startup Hub · Casablanca, Dubai or Nairobi for MENA-Africa Headquarters",
+    "ar": "احتضان شركة ناشئة في التقنية العميقة · الدار البيضاء أو دبي أو نيروبي مركزاً للشرق الأوسط وشمال أفريقيا"
   },
   "subtitle": {
     "fr": "Modèle pré-calibré sur le choix de hub régional d'une startup deeptech santé après une Série A (35 agents, 8 rounds hebdomadaires)",
@@ -13,9 +13,9 @@
     "ar": "نموذج معاير مسبقاً على اختيار المركز الإقليمي لشركة ناشئة في التقنية الصحية بعد جولة تمويل من المرتبة الأولى (35 وكيلاً، 8 جولات أسبوعية)"
   },
   "summary_short": {
-    "fr": "Simulation multi-agents sur 8 semaines de l'arbitrage stratégique d'une startup deeptech santé (Série A de l'ordre de 18 millions de dollars) entre trois hubs candidats — Casablanca (Casablanca Finance City), Dubaï (programme D33), Nairobi : 35 agents (VC régionaux, régulateurs santé, directeurs d'hôpitaux universitaires, talents tech locaux, consultants en implantation, concurrents établis, représentants d'écosystème), 8 rounds de 1 semaine, sortie : ville recommandée avec score multicritère, top 5 facteurs déterminants pondérés, risques de migration future et triggers de réversion.",
-    "en": "Eight-week multi-agent simulation of the strategic arbitration of a health-deeptech Series A startup (around USD 18 million) between three candidate hubs — Casablanca (Casablanca Finance City), Dubai (D33 programme), Nairobi: 35 agents (regional VCs, health regulators, university-hospital directors, local tech talent, location consultants, established competitors, ecosystem representatives), 8 one-week rounds, output: recommended city with multi-criteria score, top 5 weighted determining factors, future migration risks and reversal triggers.",
-    "ar": "محاكاة متعددة الوكلاء لمدة 8 أسابيع للتحكيم الاستراتيجي لشركة ناشئة في التقنية الصحية العميقة بعد جولة تمويل من المرتبة الأولى بحوالي 18 مليون دولار بين ثلاثة مراكز مرشَّحة — الدار البيضاء (مدينة الدار البيضاء المالية)، دبي (برنامج D33)، نيروبي: 35 وكيلاً (مستثمرون إقليميون في رأس مال المخاطر، جهات تنظيمية صحية، مديرو مستشفيات جامعية، مواهب تقنية محلية، مستشارو احتضان، منافسون مستقرون، ممثّلو منظومة)، 8 جولات أسبوعية، المخرجات: المدينة الموصى بها مع درجة متعدّدة المعايير، أهم 5 عوامل حاسمة موزونة، مخاطر هجرة مستقبلية ومحفّزات الانعكاس."
+    "fr": "Simulation multi-agents sur 8 semaines de l'arbitrage stratégique d'une startup deeptech santé (Série A de l'ordre de 18 millions de dollars) entre trois hubs candidats · Casablanca (Casablanca Finance City), Dubaï (programme D33), Nairobi : 35 agents (VC régionaux, régulateurs santé, directeurs d'hôpitaux universitaires, talents tech locaux, consultants en implantation, concurrents établis, représentants d'écosystème), 8 rounds de 1 semaine, sortie : ville recommandée avec score multicritère, top 5 facteurs déterminants pondérés, risques de migration future et triggers de réversion.",
+    "en": "Eight-week multi-agent simulation of the strategic arbitration of a health-deeptech Series A startup (around USD 18 million) between three candidate hubs · Casablanca (Casablanca Finance City), Dubai (D33 programme), Nairobi: 35 agents (regional VCs, health regulators, university-hospital directors, local tech talent, location consultants, established competitors, ecosystem representatives), 8 one-week rounds, output: recommended city with multi-criteria score, top 5 weighted determining factors, future migration risks and reversal triggers.",
+    "ar": "محاكاة متعددة الوكلاء لمدة 8 أسابيع للتحكيم الاستراتيجي لشركة ناشئة في التقنية الصحية العميقة بعد جولة تمويل من المرتبة الأولى بحوالي 18 مليون دولار بين ثلاثة مراكز مرشَّحة · الدار البيضاء (مدينة الدار البيضاء المالية)، دبي (برنامج D33)، نيروبي: 35 وكيلاً (مستثمرون إقليميون في رأس مال المخاطر، جهات تنظيمية صحية، مديرو مستشفيات جامعية، مواهب تقنية محلية، مستشارو احتضان، منافسون مستقرون، ممثّلو منظومة)، 8 جولات أسبوعية، المخرجات: المدينة الموصى بها مع درجة متعدّدة المعايير، أهم 5 عوامل حاسمة موزونة، مخاطر هجرة مستقبلية ومحفّزات الانعكاس."
   },
   "context_long": {
     "fr": "Le choix d'un hub régional après une Série A de l'ordre de 18 millions de dollars constitue un point de bifurcation difficilement réversible : il oriente l'accès aux talents, aux capitaux locaux, aux essais cliniques pour une startup santé, ainsi que la trajectoire fiscale et la perception investisseur internationale. Le modèle simule l'arbitrage archétypal entre Casablanca (Casablanca Finance City, hub francophone Afrique du Nord-Ouest avec passerelle UE-Maghreb), Dubaï (programme D33 de digitalisation et incitations dédiées, accès Golfe et Asie du Sud), et Nairobi (écosystème Silicon Savannah, accès Afrique de l'Est, dynamique mobile-money). Les agents intègrent les caractéristiques publiques de ces écosystèmes : régulation des essais cliniques en Afrique (Agence Marocaine des Médicaments, Dubai Health Authority, Pharmacy and Poisons Board du Kenya), profondeur des fonds VC régionaux (membres AVCA), tissu hospitalier universitaire, disponibilité talents tech bilingues. Trois director events sont injectés à des moments clés : annonce d'un package d'incitation D33 spécifique à la HealthTech IA, signature d'un protocole d'accord régulateur santé local-CFC pour faciliter les essais cliniques, levée Série B d'un concurrent direct ancré dans un hub rival. Le modèle ne reproduit aucun cas startup individuel [sources : sites institutionnels CFC, D33, Konza Technopolis, AVCA benchmarks publics, presse économique régionale].",
@@ -31,78 +31,78 @@
     {
       "role_key": "vc_regionaux",
       "profile": {
-        "fr": "VC régionaux — 6 agents — fonds africains et MENA membres AVCA, scrutent gouvernance, due diligence santé, alignement ticket Série B.",
-        "en": "Regional VCs — 6 agents — African and MENA AVCA-member funds, scrutinise governance, health due diligence, alignment with future Series B ticket.",
-        "ar": "مستثمرون إقليميون في رأس المال المخاطر — 6 وكلاء — صناديق أفريقية وشرق أوسطية أعضاء في الجمعية الأفريقية لرأس المال الخاص، يفحصون الحوكمة والعناية الواجبة الصحية والمواءمة مع تذكرة جولة المرتبة الثانية."
+        "fr": "VC régionaux · 6 agents · fonds africains et MENA membres AVCA, scrutent gouvernance, due diligence santé, alignement ticket Série B.",
+        "en": "Regional VCs · 6 agents · African and MENA AVCA-member funds, scrutinise governance, health due diligence, alignment with future Series B ticket.",
+        "ar": "مستثمرون إقليميون في رأس المال المخاطر · 6 وكلاء · صناديق أفريقية وشرق أوسطية أعضاء في الجمعية الأفريقية لرأس المال الخاص، يفحصون الحوكمة والعناية الواجبة الصحية والمواءمة مع تذكرة جولة المرتبة الثانية."
       }
     },
     {
       "role_key": "regulateurs_sante",
       "profile": {
-        "fr": "Régulateurs santé — 5 agents — agences nationales (AMM Maroc, Dubai Health Authority, PPB Kenya), évaluent la voie d'autorisation des essais cliniques IA-santé.",
-        "en": "Health regulators — 5 agents — national agencies (Moroccan Medicines Agency, Dubai Health Authority, Kenya PPB), assess the approval pathway for AI health clinical trials.",
-        "ar": "الجهات التنظيمية الصحية — 5 وكلاء — هيئات وطنية (الوكالة المغربية للأدوية، هيئة الصحة بدبي، مجلس الصيدلة والسموم بكينيا)، تُقيّم مسار الترخيص للتجارب السريرية الصحية بالذكاء الاصطناعي."
+        "fr": "Régulateurs santé · 5 agents · agences nationales (AMM Maroc, Dubai Health Authority, PPB Kenya), évaluent la voie d'autorisation des essais cliniques IA-santé.",
+        "en": "Health regulators · 5 agents · national agencies (Moroccan Medicines Agency, Dubai Health Authority, Kenya PPB), assess the approval pathway for AI health clinical trials.",
+        "ar": "الجهات التنظيمية الصحية · 5 وكلاء · هيئات وطنية (الوكالة المغربية للأدوية، هيئة الصحة بدبي، مجلس الصيدلة والسموم بكينيا)، تُقيّم مسار الترخيص للتجارب السريرية الصحية بالذكاء الاصطناعي."
       }
     },
     {
       "role_key": "directeurs_hopitaux",
       "profile": {
-        "fr": "Directeurs d'hôpitaux universitaires — 5 agents — discutent partenariats data, conditions de validation clinique, intégration dans le SI hospitalier.",
-        "en": "University-hospital directors — 5 agents — discuss data partnerships, clinical validation conditions, integration in hospital IT systems.",
-        "ar": "مديرو مستشفيات جامعية — 5 وكلاء — يُناقشون شراكات البيانات، وشروط الإقرار السريري، والإدماج في نظام المعلومات الاستشفائي."
+        "fr": "Directeurs d'hôpitaux universitaires · 5 agents · discutent partenariats data, conditions de validation clinique, intégration dans le SI hospitalier.",
+        "en": "University-hospital directors · 5 agents · discuss data partnerships, clinical validation conditions, integration in hospital IT systems.",
+        "ar": "مديرو مستشفيات جامعية · 5 وكلاء · يُناقشون شراكات البيانات، وشروط الإقرار السريري، والإدماج في نظام المعلومات الاستشفائي."
       }
     },
     {
       "role_key": "talents_tech_locaux",
       "profile": {
-        "fr": "Talents tech locaux — 6 agents — ingénieurs ML, data scientists, biostatisticiens, comparent grilles salariales, fiscalité personnelle, climat de mobilité.",
-        "en": "Local tech talent — 6 agents — ML engineers, data scientists, biostatisticians, compare salary grids, personal tax, mobility climate.",
-        "ar": "مواهب تقنية محلية — 6 وكلاء — مهندسو تعلُّم آلي، علماء بيانات، إحصائيون حيويون، يُقارنون شبكات الأجور، والضريبة الشخصية، ومناخ التنقُّل."
+        "fr": "Talents tech locaux · 6 agents · ingénieurs ML, data scientists, biostatisticiens, comparent grilles salariales, fiscalité personnelle, climat de mobilité.",
+        "en": "Local tech talent · 6 agents · ML engineers, data scientists, biostatisticians, compare salary grids, personal tax, mobility climate.",
+        "ar": "مواهب تقنية محلية · 6 وكلاء · مهندسو تعلُّم آلي، علماء بيانات، إحصائيون حيويون، يُقارنون شبكات الأجور، والضريبة الشخصية، ومناخ التنقُّل."
       }
     },
     {
       "role_key": "consultants_implantation",
       "profile": {
-        "fr": "Consultants en implantation — 5 agents — chiffrent les coûts d'installation, les exonérations fiscales et la gestion de visa founder dans chaque hub.",
-        "en": "Location consultants — 5 agents — cost out setup, tax exemptions and founder-visa pathways in each hub.",
-        "ar": "مستشارو احتضان — 5 وكلاء — يُقدّرون تكاليف التأسيس، والإعفاءات الضريبية، ومسار تأشيرة المؤسس في كل مركز."
+        "fr": "Consultants en implantation · 5 agents · chiffrent les coûts d'installation, les exonérations fiscales et la gestion de visa founder dans chaque hub.",
+        "en": "Location consultants · 5 agents · cost out setup, tax exemptions and founder-visa pathways in each hub.",
+        "ar": "مستشارو احتضان · 5 وكلاء · يُقدّرون تكاليف التأسيس، والإعفاءات الضريبية، ومسار تأشيرة المؤسس في كل مركز."
       }
     },
     {
       "role_key": "concurrents_etablis",
       "profile": {
-        "fr": "Concurrents établis — 4 agents — startups HealthTech déjà ancrées dans la région, anticipent la pression talents et le partage des partenariats hospitaliers.",
-        "en": "Established competitors — 4 agents — HealthTech startups already anchored in the region, anticipate talent pressure and the splitting of hospital partnerships.",
-        "ar": "منافسون مستقرون — 4 وكلاء — شركات ناشئة في التقنية الصحية مرتكزة سلفاً في المنطقة، تتوقّع الضغط على المواهب وتقاسم الشراكات الاستشفائية."
+        "fr": "Concurrents établis · 4 agents · startups HealthTech déjà ancrées dans la région, anticipent la pression talents et le partage des partenariats hospitaliers.",
+        "en": "Established competitors · 4 agents · HealthTech startups already anchored in the region, anticipate talent pressure and the splitting of hospital partnerships.",
+        "ar": "منافسون مستقرون · 4 وكلاء · شركات ناشئة في التقنية الصحية مرتكزة سلفاً في المنطقة، تتوقّع الضغط على المواهب وتقاسم الشراكات الاستشفائية."
       }
     },
     {
       "role_key": "representants_ecosysteme",
       "profile": {
-        "fr": "Représentants d'écosystème — 4 agents — accélérateurs, clusters, ambassades économiques, défendent l'attractivité comparée de leur ville.",
-        "en": "Ecosystem representatives — 4 agents — accelerators, clusters, economic embassies, defend the comparative attractiveness of their city.",
-        "ar": "ممثّلو منظومة — 4 وكلاء — مسرّعات، تجمّعات، ملحقيات اقتصادية، يُدافعون عن الجاذبية المقارَنة لمدينتهم."
+        "fr": "Représentants d'écosystème · 4 agents · accélérateurs, clusters, ambassades économiques, défendent l'attractivité comparée de leur ville.",
+        "en": "Ecosystem representatives · 4 agents · accelerators, clusters, economic embassies, defend the comparative attractiveness of their city.",
+        "ar": "ممثّلو منظومة · 4 وكلاء · مسرّعات، تجمّعات، ملحقيات اقتصادية، يُدافعون عن الجاذبية المقارَنة لمدينتهم."
       }
     }
   ],
   "key_insights": {
     "fr": [
       "Casablanca émerge favori dans les exécutions du modèle quand la startup priorise l'accès essais cliniques en Afrique francophone et la passerelle UE-Maghreb : un protocole d'accord régulateur-CFC sur les autorisations rapides d'essais cliniques fait basculer le score multicritère d'environ 8 à 12 points en sa faveur.",
-      "Dubaï s'impose dans les trajectoires où la startup vise une expansion Golfe-Asie du Sud et une fiscalité corporate très basse, surtout après l'annonce d'un package D33 ciblé HealthTech IA — son point faible reste la profondeur du tissu hospitalier universitaire francophone et arabophone du Maghreb.",
+      "Dubaï s'impose dans les trajectoires où la startup vise une expansion Golfe-Asie du Sud et une fiscalité corporate très basse, surtout après l'annonce d'un package D33 ciblé HealthTech IA · son point faible reste la profondeur du tissu hospitalier universitaire francophone et arabophone du Maghreb.",
       "Nairobi ne s'impose en première position que dans les trajectoires Afrique de l'Est centrée mobile-health et avec un Lead VC régional spécialisé Silicon Savannah ; sa force est la rapidité de déploiement clinique mais son risque est la dépendance à un nombre limité de fonds.",
-      "Le risque de migration à 24 mois est dominé par deux triggers : l'arrivée d'un Lead Series B exigeant un changement de juridiction, et un durcissement réglementaire local sur les données de santé — préparer dès le choix initial une architecture data-residency multi-juridictions réduit ce risque dans la majorité des trajectoires simulées."
+      "Le risque de migration à 24 mois est dominé par deux triggers : l'arrivée d'un Lead Series B exigeant un changement de juridiction, et un durcissement réglementaire local sur les données de santé · préparer dès le choix initial une architecture data-residency multi-juridictions réduit ce risque dans la majorité des trajectoires simulées."
     ],
     "en": [
       "Casablanca emerges as the favourite in model runs when the startup prioritises clinical-trial access in francophone Africa and the EU-Maghreb gateway: a fast-track clinical-trial protocol between the local regulator and CFC swings the multi-criteria score by roughly 8-12 points in its favour.",
-      "Dubai prevails in trajectories where the startup targets Gulf-South Asia expansion and very low corporate taxation, especially after the announcement of a D33 package targeted at AI HealthTech — its weak spot remains the depth of francophone/arabophone Maghreb university-hospital fabric.",
+      "Dubai prevails in trajectories where the startup targets Gulf-South Asia expansion and very low corporate taxation, especially after the announcement of a D33 package targeted at AI HealthTech · its weak spot remains the depth of francophone/arabophone Maghreb university-hospital fabric.",
       "Nairobi only ranks first in East-Africa trajectories centred on mobile-health with a Lead VC specialised in Silicon Savannah; its strength is clinical-deployment speed, its risk is reliance on a limited number of funds.",
-      "Migration risk over 24 months is dominated by two triggers: arrival of a Lead Series B requiring a change of jurisdiction, and a local tightening on health-data regulations — preparing a multi-jurisdiction data-residency architecture from the initial choice mitigates this risk in most simulated trajectories."
+      "Migration risk over 24 months is dominated by two triggers: arrival of a Lead Series B requiring a change of jurisdiction, and a local tightening on health-data regulations · preparing a multi-jurisdiction data-residency architecture from the initial choice mitigates this risk in most simulated trajectories."
     ],
     "ar": [
       "تَبرز الدار البيضاء بوصفها المفضَّل في تنفيذات النموذج عندما تُعطي الشركة الأولوية للوصول إلى التجارب السريرية في أفريقيا الفرنكوفونية ولجسر الاتحاد الأوروبي-المغرب الكبير: تُحرِّك مذكرة تفاهم بين الجهة التنظيمية ومدينة الدار البيضاء المالية للترخيص السريع للتجارب الدرجةَ متعدّدة المعايير بنحو 8 إلى 12 نقطة لصالحها.",
-      "تَتفوّق دبي في المسارات التي تستهدف فيها الشركة التوسُّع نحو الخليج وجنوب آسيا مع ضريبة شركات منخفضة جداً، لا سيّما بعد الإعلان عن حزمة D33 موجَّهة للتقنية الصحية الذكية — نقطة ضعفها هي عمق النسيج الاستشفائي الجامعي الفرنكوفوني والعربي بالمغرب الكبير.",
+      "تَتفوّق دبي في المسارات التي تستهدف فيها الشركة التوسُّع نحو الخليج وجنوب آسيا مع ضريبة شركات منخفضة جداً، لا سيّما بعد الإعلان عن حزمة D33 موجَّهة للتقنية الصحية الذكية · نقطة ضعفها هي عمق النسيج الاستشفائي الجامعي الفرنكوفوني والعربي بالمغرب الكبير.",
       "لا تتصدّر نيروبي إلا في مسارات شرق أفريقيا المرتكزة على الصحة عبر الهاتف، مع مستثمر قائد متخصّص في Silicon Savannah؛ قوّتها هي سرعة النشر السريري، ومخاطرها هي الاعتماد على عدد محدود من الصناديق.",
-      "يُهيمن على خطر الهجرة في أفق 24 شهراً محفّزان: قدوم مستثمر قائد للجولة من المرتبة الثانية يَفرض تغيير الاختصاص القضائي، وتشديد تنظيمي محلي على بيانات الصحة — التحضير منذ الاختيار الأوّلي لبنية إقامة بيانات متعدّدة الاختصاصات يُخفّف هذا الخطر في أغلب المسارات المُحاكاة."
+      "يُهيمن على خطر الهجرة في أفق 24 شهراً محفّزان: قدوم مستثمر قائد للجولة من المرتبة الثانية يَفرض تغيير الاختصاص القضائي، وتشديد تنظيمي محلي على بيانات الصحة · التحضير منذ الاختيار الأوّلي لبنية إقامة بيانات متعدّدة الاختصاصات يُخفّف هذا الخطر في أغلب المسارات المُحاكاة."
     ]
   },
   "brier_illustrative": 0.21,

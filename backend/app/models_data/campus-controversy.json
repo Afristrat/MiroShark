@@ -3,9 +3,9 @@
   "sector": "education",
   "preset_source": "campus_controversy",
   "title": {
-    "fr": "Controverse universitaire — Onde de choc d'une réforme d'admissions",
-    "en": "Campus Controversy — Shockwave of an Admissions Reform",
-    "ar": "جدل جامعي — موجة صدمة من إصلاح القبول"
+    "fr": "Controverse universitaire · Onde de choc d'une réforme d'admissions",
+    "en": "Campus Controversy · Shockwave of an Admissions Reform",
+    "ar": "جدل جامعي · موجة صدمة من إصلاح القبول"
   },
   "subtitle": {
     "fr": "Modèle pré-calibré sur la trajectoire médiatique d'une réforme d'admissions sensible dans une université privée de premier rang sur 48 heures (25 agents, 48 rounds d'une heure).",
@@ -31,49 +31,49 @@
     {
       "role_key": "student_government",
       "profile": {
-        "fr": "Représentation étudiante du campus — leaderships diversifiés, articulent un soutien public à la réforme tout en gérant les frictions internes avec les héritiers et les bénéficiaires de bourses.",
-        "en": "Campus student government — diverse leadership, articulates public support for the reform while managing internal frictions between legacy and financial-aid students.",
-        "ar": "تمثيل الطلبة في الحرم الجامعي — قيادة متنوعة تُعبّر عن دعم علني للإصلاح مع إدارة الاحتكاكات الداخلية بين الطلبة الوريثين والمستفيدين من المنح."
+        "fr": "Représentation étudiante du campus · leaderships diversifiés, articulent un soutien public à la réforme tout en gérant les frictions internes avec les héritiers et les bénéficiaires de bourses.",
+        "en": "Campus student government · diverse leadership, articulates public support for the reform while managing internal frictions between legacy and financial-aid students.",
+        "ar": "تمثيل الطلبة في الحرم الجامعي · قيادة متنوعة تُعبّر عن دعم علني للإصلاح مع إدارة الاحتكاكات الداخلية بين الطلبة الوريثين والمستفيدين من المنح."
       }
     },
     {
       "role_key": "alumni_donor_opposed",
       "profile": {
-        "fr": "Coordinateur d'un collectif d'alumni donateurs opposé — utilise les canaux de communication des associations d'anciens élèves, agite la menace d'une baisse organisée des dons.",
-        "en": "Coordinator of an opposed alumni-donor collective — uses alumni-association channels, raises the threat of an organised giving slowdown.",
-        "ar": "مُنسِّق تجمّع خريجين مانحين معارضين — يستعمل قنوات اتصال جمعيات الخريجين، يلوّح بتهديد تخفيض منظَّم للهبات."
+        "fr": "Coordinateur d'un collectif d'alumni donateurs opposé · utilise les canaux de communication des associations d'anciens élèves, agite la menace d'une baisse organisée des dons.",
+        "en": "Coordinator of an opposed alumni-donor collective · uses alumni-association channels, raises the threat of an organised giving slowdown.",
+        "ar": "مُنسِّق تجمّع خريجين مانحين معارضين · يستعمل قنوات اتصال جمعيات الخريجين، يلوّح بتهديد تخفيض منظَّم للهبات."
       }
     },
     {
       "role_key": "faculty_senate_member",
       "profile": {
-        "fr": "Membre du sénat académique — voix institutionnelle interne, équilibre entre soutien à la réforme et préoccupations financières remontées par la direction.",
-        "en": "Faculty senate member — internal institutional voice, balances support for the reform with financial concerns raised by the administration.",
-        "ar": "عضو في مجلس هيئة التدريس — صوت مؤسسي داخلي، يُوازن بين دعم الإصلاح والقلق المالي الذي تُثيره الإدارة."
+        "fr": "Membre du sénat académique · voix institutionnelle interne, équilibre entre soutien à la réforme et préoccupations financières remontées par la direction.",
+        "en": "Faculty senate member · internal institutional voice, balances support for the reform with financial concerns raised by the administration.",
+        "ar": "عضو في مجلس هيئة التدريس · صوت مؤسسي داخلي، يُوازن بين دعم الإصلاح والقلق المالي الذي تُثيره الإدارة."
       }
     },
     {
       "role_key": "education_journalist",
       "profile": {
-        "fr": "Journaliste senior presse spécialisée enseignement supérieur — couvre les réformes d'admissions depuis dix ans, capable de contextualiser avec les précédents pairs.",
-        "en": "Senior higher-education press journalist — has covered admissions reforms for a decade, able to contextualise with peer precedents.",
-        "ar": "صحفي كبير في الصحافة المتخصصة في التعليم العالي — يُغطّي إصلاحات القبول منذ عقد، قادر على التأطير بسوابق المؤسسات النظيرة."
+        "fr": "Journaliste senior presse spécialisée enseignement supérieur · couvre les réformes d'admissions depuis dix ans, capable de contextualiser avec les précédents pairs.",
+        "en": "Senior higher-education press journalist · has covered admissions reforms for a decade, able to contextualise with peer precedents.",
+        "ar": "صحفي كبير في الصحافة المتخصصة في التعليم العالي · يُغطّي إصلاحات القبول منذ عقد، قادر على التأطير بسوابق المؤسسات النظيرة."
       }
     },
     {
       "role_key": "admissions_consultant",
       "profile": {
-        "fr": "Consultant privé en admissions — conseille des familles aisées, défend une lecture critique de la réforme du point de vue des candidats premium.",
-        "en": "Private admissions consultant — advises affluent families, defends a critical reading of the reform from a premium-applicant viewpoint.",
-        "ar": "مستشار قبول من القطاع الخاص — يُسدي المشورة لأسر ميسورة، يُدافع عن قراءة نقدية للإصلاح من زاوية المرشّحين المتميّزين."
+        "fr": "Consultant privé en admissions · conseille des familles aisées, défend une lecture critique de la réforme du point de vue des candidats premium.",
+        "en": "Private admissions consultant · advises affluent families, defends a critical reading of the reform from a premium-applicant viewpoint.",
+        "ar": "مستشار قبول من القطاع الخاص · يُسدي المشورة لأسر ميسورة، يُدافع عن قراءة نقدية للإصلاح من زاوية المرشّحين المتميّزين."
       }
     },
     {
       "role_key": "policy_advocate",
       "profile": {
-        "fr": "Représentant d'un think-tank d'advocacy sur l'égalité des chances — produit une analyse rapide saluant la réforme, propose un benchmark des effets observés ailleurs.",
-        "en": "Equality-of-opportunity advocacy think-tank representative — produces a rapid analysis praising the reform, offers a benchmark of effects observed elsewhere.",
-        "ar": "ممثّل عن مركز فكر مدافع عن تكافؤ الفرص — يُصدر تحليلاً سريعاً يُشيد بالإصلاح، ويعرض مقارنة معيارية للتأثيرات المرصودة في أماكن أخرى."
+        "fr": "Représentant d'un think-tank d'advocacy sur l'égalité des chances · produit une analyse rapide saluant la réforme, propose un benchmark des effets observés ailleurs.",
+        "en": "Equality-of-opportunity advocacy think-tank representative · produces a rapid analysis praising the reform, offers a benchmark of effects observed elsewhere.",
+        "ar": "ممثّل عن مركز فكر مدافع عن تكافؤ الفرص · يُصدر تحليلاً سريعاً يُشيد بالإصلاح، ويعرض مقارنة معيارية للتأثيرات المرصودة في أماكن أخرى."
       }
     }
   ],
@@ -81,19 +81,19 @@
     "fr": [
       "Le pic de polarisation est concentré sur les 6-12 premières heures : passé ce délai, la conversation se segmente en sous-débats parallèles (équité, financement, mobilité sociale) qui réduisent fortement le risque de cascade nationale.",
       "La menace organisée d'une baisse des dons par les alumni opposés est rarement exécutée à hauteur des annonces : la modélisation suggère un effet réel sur la générosité 12 mois inférieur de moitié à la perte annoncée publiquement les premières heures.",
-      "Le soutien explicite d'établissements pairs est le levier le plus efficace pour stabiliser la trajectoire — bien davantage que la communication de la direction de l'établissement concerné.",
+      "Le soutien explicite d'établissements pairs est le levier le plus efficace pour stabiliser la trajectoire · bien davantage que la communication de la direction de l'établissement concerné.",
       "Une absence de réponse publique sous 12 heures de la direction laisse l'espace aux conseillers d'admissions privés pour structurer un récit alternatif et pèse durablement sur la perception de pilotage."
     ],
     "en": [
       "The polarisation peak concentrates in the first 6-12 hours: beyond that, the conversation segments into parallel sub-debates (equity, funding, social mobility) which significantly reduce the risk of a national cascade.",
       "Organised threats of giving reductions from opposed alumni are rarely executed at the scale announced: the model suggests an actual 12-month giving impact roughly half the loss publicly threatened in the first hours.",
-      "Explicit support from peer institutions is the most effective lever to stabilise the trajectory — far more so than the institution's own internal communication.",
+      "Explicit support from peer institutions is the most effective lever to stabilise the trajectory · far more so than the institution's own internal communication.",
       "An absence of public leadership response within 12 hours leaves room for private admissions consultants to structure an alternative narrative and durably weighs on the perception of governance."
     ],
     "ar": [
       "تتركّز ذروة الاستقطاب في أول 6 إلى 12 ساعة: بعدها، تنقسم المحادثة إلى نقاشات فرعية متوازية (الإنصاف، التمويل، الحراك الاجتماعي) تُقلِّص بشكل كبير خطر التتالي الوطني.",
       "نادراً ما تُنفَّذ تهديدات منظَّمة بتخفيض الهبات من خريجين معارضين بالحجم المُعلَن: تُشير المُحاكاة إلى أثر فعلي على عطاء 12 شهراً يقارب نصف الخسارة المُهدَّد بها علناً في الساعات الأولى.",
-      "الدعم الصريح من مؤسسات نظيرة هو الرافعة الأكثر فاعلية لاستقرار المسار — أكثر بكثير من تواصل إدارة المؤسسة المعنية ذاتها.",
+      "الدعم الصريح من مؤسسات نظيرة هو الرافعة الأكثر فاعلية لاستقرار المسار · أكثر بكثير من تواصل إدارة المؤسسة المعنية ذاتها.",
       "غياب ردّ علني من الإدارة خلال 12 ساعة يترك المجال لمستشاري القبول من القطاع الخاص لبناء سردية بديلة، ويُثقِل بشكل دائم تصوُّر القيادة."
     ]
   },

@@ -1,14 +1,52 @@
 <template>
   <router-view />
   <ThemeSwitcher />
+  <button
+    type="button"
+    class="restart-tour-btn"
+    :title="restartLabel"
+    :aria-label="restartLabel"
+    @click="restartTour"
+  >
+    <span aria-hidden="true">▶</span>
+  </button>
   <LanguageSwitcher class="lang-switcher--floating" />
   <DebugPanel />
 </template>
 
 <script setup>
+import { computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import DebugPanel from './components/DebugPanel.vue'
 import LanguageSwitcher from './components/LanguageSwitcher.vue'
 import ThemeSwitcher from './components/ThemeSwitcher.vue'
+
+const router = useRouter()
+const route = useRoute()
+const { locale } = useI18n()
+
+const restartLabel = computed(() => {
+  const labels = {
+    fr: 'Relancer la visite guidée',
+    en: 'Restart guided tour',
+    ar: 'إعادة تشغيل الجولة الإرشادية',
+  }
+  return labels[locale.value] || labels.fr
+})
+
+// Bouton "Relancer le tour" : ouvre l'OnboardingTour quel que soit la
+// page actuelle. Si on n'est pas sur "/", on y navigue d'abord (le tour
+// est instancié dans Home.vue), puis on déclenche l'évènement global.
+const restartTour = async () => {
+  if (route.path !== '/') {
+    await router.push('/')
+  }
+  // Laisser le temps à Home.vue + OnboardingTour de monter avant de fire
+  setTimeout(() => {
+    window.dispatchEvent(new CustomEvent('bassira:reopen-tour'))
+  }, 120)
+}
 </script>
 
 <style>
@@ -194,5 +232,45 @@ body .lang-switcher--floating {
   .lang-switcher--floating {
     animation: none;
   }
+}
+
+/* ── Bouton "Relancer la visite guidée" — flottant top-right, à côté du
+   sélecteur de langue. Visible sur toutes les routes. */
+.restart-tour-btn {
+  position: fixed;
+  top: 12px;
+  inset-inline-end: 116px; /* à gauche du LanguageSwitcher (qui fait ~85px + 12px de marge) */
+  z-index: var(--ms-z-floating-lang);
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--wi-surface, #FAF7F2);
+  color: var(--wi-primary, #FF8551);
+  border: 1px solid var(--wi-border, rgba(36, 25, 21, 0.12));
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  transition: var(--transition-fast, all 0.15s ease);
+  animation: lang-switcher-fadein 600ms var(--ms-ease, cubic-bezier(0.4, 0, 0.2, 1)) both;
+}
+
+.restart-tour-btn:hover {
+  background: var(--wi-primary, #FF8551);
+  color: var(--wi-on-primary, #FFFFFF);
+  border-color: var(--wi-primary, #FF8551);
+  transform: translateY(-1px);
+}
+
+.restart-tour-btn:focus-visible {
+  outline: 2px solid var(--wi-primary, #FF8551);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .restart-tour-btn { animation: none; }
+  .restart-tour-btn:hover { transform: none; }
 }
 </style>

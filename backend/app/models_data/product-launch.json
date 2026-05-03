@@ -3,9 +3,9 @@
   "sector": "marketing-export",
   "preset_source": "product_launch_v2",
   "title": {
-    "fr": "Lancement produit B2C — Trajectoire d'adoption et pic de churn early-adopters sur 7 jours",
-    "en": "B2C Product Launch — Adoption Trajectory and Early-Adopter Churn Peak over 7 Days",
-    "ar": "إطلاق منتج موجَّه للعموم — مسار التَبنّي وذروة هجرة المتبنّين الأوائل على مدى 7 أيام"
+    "fr": "Lancement produit B2C · Trajectoire d'adoption et pic de churn early-adopters sur 7 jours",
+    "en": "B2C Product Launch · Adoption Trajectory and Early-Adopter Churn Peak over 7 Days",
+    "ar": "إطلاق منتج موجَّه للعموم · مسار التَبنّي وذروة هجرة المتبنّين الأوائل على مدى 7 أيام"
   },
   "subtitle": {
     "fr": "Modèle pré-calibré sur la trajectoire d'adoption d'un produit B2C pan-Afrique, du Day 1 au Day 7, avec pic de churn early-adopters au Day 5 (60 agents, 28 rounds de 6 heures)",
@@ -31,70 +31,70 @@
     {
       "role_key": "early_adopters",
       "profile": {
-        "fr": "Early adopters — 8 agents — adoptent J1-J3, génèrent les premiers retours, multiplicateurs sociaux mais à risque de churn rapide si la promesse n'est pas tenue.",
-        "en": "Early adopters — 8 agents — adopt D1-D3, generate the first feedback, social multipliers but at risk of fast churn if the promise is unmet.",
-        "ar": "متبنّون مبكرون — 8 وكلاء — يَتبنّون من اليوم الأول إلى الثالث، يُولّدون أوّل التعليقات، مُضاعِفون اجتماعياً لكن عُرضة لهجرة سريعة إن لم يُنجَز الوعد."
+        "fr": "Early adopters · 8 agents · adoptent J1-J3, génèrent les premiers retours, multiplicateurs sociaux mais à risque de churn rapide si la promesse n'est pas tenue.",
+        "en": "Early adopters · 8 agents · adopt D1-D3, generate the first feedback, social multipliers but at risk of fast churn if the promise is unmet.",
+        "ar": "متبنّون مبكرون · 8 وكلاء · يَتبنّون من اليوم الأول إلى الثالث، يُولّدون أوّل التعليقات، مُضاعِفون اجتماعياً لكن عُرضة لهجرة سريعة إن لم يُنجَز الوعد."
       }
     },
     {
       "role_key": "pragmatic_majority",
       "profile": {
-        "fr": "Majorité pragmatique — 30 agents — adoptent J3-J7 selon retours visibles et rapport qualité-prix, déclencheurs principaux du volume cumulé.",
-        "en": "Pragmatic majority — 30 agents — adopt D3-D7 based on visible feedback and value-for-money, principal drivers of cumulative volume.",
-        "ar": "الأغلبية البراغماتية — 30 وكيلاً — يَتبنّون من اليوم الثالث إلى السابع وفق التعليقات المرئية والقيمة مقابل السعر، المُحرِّكون الرئيسيون للحجم التراكمي."
+        "fr": "Majorité pragmatique · 30 agents · adoptent J3-J7 selon retours visibles et rapport qualité-prix, déclencheurs principaux du volume cumulé.",
+        "en": "Pragmatic majority · 30 agents · adopt D3-D7 based on visible feedback and value-for-money, principal drivers of cumulative volume.",
+        "ar": "الأغلبية البراغماتية · 30 وكيلاً · يَتبنّون من اليوم الثالث إلى السابع وفق التعليقات المرئية والقيمة مقابل السعر، المُحرِّكون الرئيسيون للحجم التراكمي."
       }
     },
     {
       "role_key": "sceptical_late",
       "profile": {
-        "fr": "Late adopters sceptiques — 10 agents — adoptent au-delà de J7, exigent preuve sociale renforcée et stabilité technique avérée.",
-        "en": "Sceptical late adopters — 10 agents — adopt past D7, require strong social proof and proven technical stability.",
-        "ar": "متبنّون متأخّرون مشكِّكون — 10 وكلاء — يَتبنّون بعد اليوم السابع، يَشترطون دليلاً اجتماعياً قوياً واستقراراً تقنياً مُثبَتاً."
+        "fr": "Late adopters sceptiques · 10 agents · adoptent au-delà de J7, exigent preuve sociale renforcée et stabilité technique avérée.",
+        "en": "Sceptical late adopters · 10 agents · adopt past D7, require strong social proof and proven technical stability.",
+        "ar": "متبنّون متأخّرون مشكِّكون · 10 وكلاء · يَتبنّون بعد اليوم السابع، يَشترطون دليلاً اجتماعياً قوياً واستقراراً تقنياً مُثبَتاً."
       }
     },
     {
       "role_key": "createurs_contenu",
       "profile": {
-        "fr": "Créatrices et créateurs de contenu — 6 agents — multiplicateurs si convaincus, génèrent tutoriels et vidéos qui font basculer la majorité pragmatique.",
-        "en": "Content creators — 6 agents — multipliers when convinced, generate tutorials and videos that tip the pragmatic majority.",
-        "ar": "مُنشِئو محتوى — 6 وكلاء — مُضاعِفون عند الاقتناع، يُولّدون شروحات وفيديوهات تَقلب الأغلبية البراغماتية."
+        "fr": "Créatrices et créateurs de contenu · 6 agents · multiplicateurs si convaincus, génèrent tutoriels et vidéos qui font basculer la majorité pragmatique.",
+        "en": "Content creators · 6 agents · multipliers when convinced, generate tutorials and videos that tip the pragmatic majority.",
+        "ar": "مُنشِئو محتوى · 6 وكلاء · مُضاعِفون عند الاقتناع، يُولّدون شروحات وفيديوهات تَقلب الأغلبية البراغماتية."
       }
     },
     {
       "role_key": "support_users",
       "profile": {
-        "fr": "Support utilisateur — 3 agents — gèrent les premiers tickets, leur réactivité est un facteur clé de rétention au pic de churn J5.",
-        "en": "User support — 3 agents — handle first tickets, their responsiveness is a key retention factor at the D5 churn peak.",
-        "ar": "دعم المستخدم — 3 وكلاء — يَتعاملون مع التذاكر الأولى، تفاعليتهم عامل أساسي للاحتفاظ عند ذروة الهجرة في اليوم الخامس."
+        "fr": "Support utilisateur · 3 agents · gèrent les premiers tickets, leur réactivité est un facteur clé de rétention au pic de churn J5.",
+        "en": "User support · 3 agents · handle first tickets, their responsiveness is a key retention factor at the D5 churn peak.",
+        "ar": "دعم المستخدم · 3 وكلاء · يَتعاملون مع التذاكر الأولى، تفاعليتهم عامل أساسي للاحتفاظ عند ذروة الهجرة في اليوم الخامس."
       }
     },
     {
       "role_key": "competitor_observers",
       "profile": {
-        "fr": "Observateurs concurrents — 3 agents — préparent une riposte ciblée, généralement déclenchée à J5 sous forme de contre-pub agressive.",
-        "en": "Competitor observers — 3 agents — prepare a targeted retort, typically triggered on D5 in the form of an aggressive counter-ad.",
-        "ar": "مراقبون منافسون — 3 وكلاء — يُعدّون رداً مستهدَفاً، يُطلَق عادةً في اليوم الخامس على شكل إعلان مضاد عدواني."
+        "fr": "Observateurs concurrents · 3 agents · préparent une riposte ciblée, généralement déclenchée à J5 sous forme de contre-pub agressive.",
+        "en": "Competitor observers · 3 agents · prepare a targeted retort, typically triggered on D5 in the form of an aggressive counter-ad.",
+        "ar": "مراقبون منافسون · 3 وكلاء · يُعدّون رداً مستهدَفاً، يُطلَق عادةً في اليوم الخامس على شكل إعلان مضاد عدواني."
       }
     }
   ],
   "key_insights": {
     "fr": [
-      "Le pic de churn early-adopters tombe en J5 dans la majorité des trajectoires simulées : c'est un effet structurel lié à l'épuisement de la promesse initiale et au délai d'apparition des frustrations sur les fonctionnalités secondaires — anticiper avec contenu pédagogique et améliorations visibles entre J3 et J5 est le levier dominant.",
+      "Le pic de churn early-adopters tombe en J5 dans la majorité des trajectoires simulées : c'est un effet structurel lié à l'épuisement de la promesse initiale et au délai d'apparition des frustrations sur les fonctionnalités secondaires · anticiper avec contenu pédagogique et améliorations visibles entre J3 et J5 est le levier dominant.",
       "Un bug de scaling à J1-PM (timeouts visibles) ne tue pas la trajectoire si la communication transparente intervient dans les 6 heures : dans les exécutions du modèle, l'amplitude du churn est divisée par deux quand l'équipe communique honnêtement le périmètre et le délai de remédiation.",
-      "Un tutoriel viral créé par un power user à J3-PM change la trajectoire d'environ 1,5 à 3 points d'adoption cumulée à J7 dans les trajectoires simulées — d'où l'intérêt d'identifier ces 5 power users en amont du lancement et de leur fournir des accès anticipés pour cultiver le contenu.",
-      "La promotion flash de J6 est efficace en valeur absolue (volume J6-J7) mais peut détériorer la rétention long terme si elle communique implicitement que le prix initial était trop élevé — recommander de la formuler comme « bonus de première semaine » plutôt que comme rabais ciblé."
+      "Un tutoriel viral créé par un power user à J3-PM change la trajectoire d'environ 1,5 à 3 points d'adoption cumulée à J7 dans les trajectoires simulées · d'où l'intérêt d'identifier ces 5 power users en amont du lancement et de leur fournir des accès anticipés pour cultiver le contenu.",
+      "La promotion flash de J6 est efficace en valeur absolue (volume J6-J7) mais peut détériorer la rétention long terme si elle communique implicitement que le prix initial était trop élevé · recommander de la formuler comme « bonus de première semaine » plutôt que comme rabais ciblé."
     ],
     "en": [
-      "The early-adopter churn peak lands on D5 in most simulated trajectories: a structural effect tied to the exhaustion of the initial promise and the lag in surfacing frustrations on secondary features — anticipating with pedagogical content and visible improvements between D3 and D5 is the dominant lever.",
+      "The early-adopter churn peak lands on D5 in most simulated trajectories: a structural effect tied to the exhaustion of the initial promise and the lag in surfacing frustrations on secondary features · anticipating with pedagogical content and visible improvements between D3 and D5 is the dominant lever.",
       "A D1-PM scaling bug (visible timeouts) does not kill the trajectory if transparent communication occurs within 6 hours: in model runs, the churn amplitude is halved when the team honestly communicates scope and remediation timeline.",
-      "A D3-PM viral tutorial by a power user shifts the trajectory by roughly 1.5 to 3 cumulative adoption points by D7 in simulated trajectories — hence the value of identifying these 5 power users ahead of launch and giving them early access to cultivate content.",
-      "The D6 flash promotion is effective in absolute terms (D6-D7 volume) but can damage long-term retention if it implicitly communicates that the initial price was too high — recommend framing it as 'first-week bonus' rather than a targeted rebate."
+      "A D3-PM viral tutorial by a power user shifts the trajectory by roughly 1.5 to 3 cumulative adoption points by D7 in simulated trajectories · hence the value of identifying these 5 power users ahead of launch and giving them early access to cultivate content.",
+      "The D6 flash promotion is effective in absolute terms (D6-D7 volume) but can damage long-term retention if it implicitly communicates that the initial price was too high · recommend framing it as 'first-week bonus' rather than a targeted rebate."
     ],
     "ar": [
-      "تَقع ذروة هجرة المتبنّين الأوائل في اليوم الخامس في أغلب المسارات المُحاكاة: أثرٌ بنيوي مرتبط باستنفاد الوعد الأوّلي وتأخُّر ظهور الإحباطات على الميزات الثانوية — يُعدّ التوقُّع بمحتوى بيداغوجي وتحسينات مرئية بين اليومَين الثالث والخامس الرافعة المهيمنة.",
+      "تَقع ذروة هجرة المتبنّين الأوائل في اليوم الخامس في أغلب المسارات المُحاكاة: أثرٌ بنيوي مرتبط باستنفاد الوعد الأوّلي وتأخُّر ظهور الإحباطات على الميزات الثانوية · يُعدّ التوقُّع بمحتوى بيداغوجي وتحسينات مرئية بين اليومَين الثالث والخامس الرافعة المهيمنة.",
       "لا يَقتل خطأ مقياس في فترة بعد الزوال من اليوم الأول (حالات الفترة الزمنية المنتهية المرئية) المسارَ إذا حصل تواصل شفّاف في 6 ساعات: في تنفيذات النموذج، يُقَسَّم سَعَة الهجرة على اثنَين حين يَتواصل الفريق بصدق حول النطاق والمهلة العلاجية.",
-      "يُحرّك شرح فيروسي من مستخدم نشط في فترة بعد الزوال من اليوم الثالث المسارَ بنحو 1,5 إلى 3 نقاط تَبنٍّ تراكمية في اليوم السابع في المسارات المُحاكاة — ومن ثمّ تأتي قيمة تحديد هؤلاء الـ 5 مستخدمين النشطين قبل الإطلاق ومَنْحِهم وصولاً مبكراً لرعاية المحتوى.",
-      "العرض السريع في اليوم السادس فعّال من حيث القيمة المُطلَقة (حجم اليومَين السادس والسابع) لكنه قد يُضعِف الاحتفاظ على المدى الطويل إذا أوحى ضمنياً بأنّ السعر الأوّلي كان مرتفعاً جداً — يُوصى بصياغته بوصفه «مكافأة الأسبوع الأول» لا تخفيضاً مستهدَفاً."
+      "يُحرّك شرح فيروسي من مستخدم نشط في فترة بعد الزوال من اليوم الثالث المسارَ بنحو 1,5 إلى 3 نقاط تَبنٍّ تراكمية في اليوم السابع في المسارات المُحاكاة · ومن ثمّ تأتي قيمة تحديد هؤلاء الـ 5 مستخدمين النشطين قبل الإطلاق ومَنْحِهم وصولاً مبكراً لرعاية المحتوى.",
+      "العرض السريع في اليوم السادس فعّال من حيث القيمة المُطلَقة (حجم اليومَين السادس والسابع) لكنه قد يُضعِف الاحتفاظ على المدى الطويل إذا أوحى ضمنياً بأنّ السعر الأوّلي كان مرتفعاً جداً · يُوصى بصياغته بوصفه «مكافأة الأسبوع الأول» لا تخفيضاً مستهدَفاً."
     ]
   },
   "brier_illustrative": 0.20,
