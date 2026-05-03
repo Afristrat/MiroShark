@@ -127,6 +127,11 @@
         </button>
       </section>
 
+      <!-- Pivot models-first : SectorUseCases est désormais le bloc commercial
+           principal de la home cold. 8 secteurs × 2 cas C-level → /models?sector=
+           ou /devis?sector=&usecase=. Préserve la mécanique US-085 + relink US-087. -->
+      <SectorUseCases />
+
       <!-- US-087 : console self-service masquée pour visiteurs cold,
            accès admin/client à venir US-088. Le bloc DOM est préservé
            intégralement (logique upload, ScenarioSuggestions, runAskMode,
@@ -416,6 +421,7 @@ import SettingsPanel from '../components/SettingsPanel.vue'
 import ScenarioSuggestions from '../components/ScenarioSuggestions.vue'
 import TrendingTopics from '../components/TrendingTopics.vue'
 import OnboardingTour from '../components/OnboardingTour.vue'
+import SectorUseCases from '../components/SectorUseCases.vue'
 import { fetchUrl } from '../api/graph'
 import { askMode, enrichAsk } from '../api/simulation'
 import { useScrollFadeIn } from '../composables/useScrollFadeIn'
