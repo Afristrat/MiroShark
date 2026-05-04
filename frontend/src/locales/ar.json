@@ -282,6 +282,42 @@
         "loading": "جارٍ تحميل التفاصيل…",
         "error": "تعذّر تحميل التفاصيل."
       }
+    },
+    "allSims": {
+      "sectionTitle": "جميع المحاكاة",
+      "sectionHelp": "عرض شامل بين المؤسسات — جميع المؤسسات معًا.",
+      "loading": "جارٍ تحميل المحاكاة…",
+      "error": "تعذّر تحميل المحاكاة.",
+      "empty": "لا توجد محاكاة تطابق الفلاتر.",
+      "filters": {
+        "org": "المؤسسة",
+        "allOrgs": "جميع المؤسسات",
+        "package": "الحزمة",
+        "packagePlaceholder": "مثال : fusion-bancaire-mena",
+        "published": "النشر",
+        "publishedAny": "الكل",
+        "publishedYes": "المنشورة",
+        "publishedNo": "غير المنشورة",
+        "reset": "إعادة ضبط"
+      },
+      "table": {
+        "simulation": "المحاكاة",
+        "org": "المؤسسة",
+        "package": "الحزمة",
+        "published": "منشورة",
+        "outcome": "النتيجة",
+        "brier": "Brier",
+        "createdAt": "تاريخ الإنشاء"
+      },
+      "published": {
+        "yes": "منشور",
+        "no": "—"
+      },
+      "pagination": {
+        "prev": "السابق",
+        "next": "التالي",
+        "range": "{from} – {to} من {total}"
+      }
     }
   },
   "sectors": {

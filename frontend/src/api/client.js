@@ -168,4 +168,29 @@ export function fetchOrganizationDetail(orgId) {
   )
 }
 
+/**
+ * GET /api/admin/simulations — liste TOUTES les simulations cross-tenant (US-097).
+ *
+ * Reservé aux super-admins. Filtres optionnels passés via params :
+ *   - org_id, package_id, published (true|false), limit (default 50, max 200), offset
+ *
+ * Returns: `{ simulations: [{simulation_id, org_id, org_name, org_slug,
+ *   created_by, created_at, package_id, is_published, outcome,
+ *   brier_score}, ...], total: int, limit: int, offset: int }`
+ */
+export function fetchAllSimulations(filters = {}) {
+  const params = {}
+  if (filters.org_id) params.org_id = filters.org_id
+  if (filters.package_id) params.package_id = filters.package_id
+  if (filters.published === true) params.published = 'true'
+  if (filters.published === false) params.published = 'false'
+  if (typeof filters.limit === 'number' && filters.limit > 0) {
+    params.limit = filters.limit
+  }
+  if (typeof filters.offset === 'number' && filters.offset >= 0) {
+    params.offset = filters.offset
+  }
+  return client.get('/api/admin/simulations', { params })
+}
+
 export default client

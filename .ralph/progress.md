@@ -49,6 +49,26 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 
 ## Log d'itérations
 
+### 2026-05-04 — US-097 Super-admin voit toutes les simulations cross-tenant
+- **Statut** : passes:true (chantier M-multitenant-supabase, follow-up US-095).
+- **Endpoint backend** : `GET /api/admin/simulations` (require_super_admin) — service_role bypass RLS pour lire `simulation_ownership` toutes orgs confondues. Filtres : `org_id`, `package_id`, `published` (true|false), pagination `limit` (1-200, default 50) + `offset` (0+).
+- **Enrichissement org** : helper `_enrich_sims_with_org_info` fait 1 lookup batch sur `organizations` via `.in_('id', distinct_org_ids)` au lieu de N+1 queries. Si l'enrichment échoue (Supabase down), on retourne quand même les sims avec `org_name=None / org_slug=None` (fail-soft, robustesse opérateur).
+- **Frontend AnalyticsView** : nouvelle section « Toutes les simulations » (visible si `isSuperAdmin`) avec filtres (org dropdown alimenté par les orgs déjà chargées via US-095, package input texte, published select ternaire), pagination prev/next 50 par page, table 7 colonnes (sim · org · package · published · outcome · brier · createdAt). Reset bouton.
+- **Tests créés (14 nouveaux)** : `test_unit_admin_simulations.py` :
+  - `TestAuth` (3) : no-token 401 / invalid-token 401 / normal-user 403.
+  - `TestListSimulations` (8) : empty / single+enrichment / filter org_id / filter package_id / filter published true|false / pagination limit+offset / limit-cap-at-200.
+  - `TestRobustness` (3) : Supabase config 503 / select-failure 500 / org-enrichment-failure-does-not-brick (sim retournée, org_name=None).
+- **Quality gates** :
+  - `cd backend && uv run pytest tests/test_unit_admin_simulations.py -v` → **14 PASS** en 3,58 s.
+  - `cd backend && uv run pytest -q` → **805 passed, 17 skipped, 0 régression** (vs 791 baseline US-095, +14 nouveaux).
+  - `cd frontend && npm run build` → **OK**, 832 kB chunk principal (warning chunk-size pré-existant uniquement).
+- **Décisions architecturales** :
+  - **Pagination via `range(offset, offset+limit-1)`** (Postgrest convention) plutôt que `limit/offset` séparés : l'API supabase-py expose `range` qui translate vers `Range: 0-49` côté HTTP — pattern idiomatique Postgrest.
+  - **`count="exact"` lors du select** : retourne le total exact dans `response.count` même quand on pagine. Coût négligeable pour <100k rows ; on bascule sur `"estimated"` si la table dépasse 1M.
+  - **Filtre `published` ternaire côté frontend** : `'' | 'true' | 'false'` mappé sur `undefined | true | false` côté backend → permet de distinguer « tous » de « non publiés » sans mauvaise inférence.
+  - **Pas de filtre `status` pour l'instant** : `simulation_ownership` ne stocke pas le status filesystem évolutif ; un filtre côté Python sur les sims paginées n'aurait pas de sens. Reporté en US-101+ si besoin (avec une nouvelle colonne `last_known_status`).
+- **Apprentissage clé** : pour un endpoint super-admin avec filtres dynamiques, le pattern « MagicMock chain partagé pour toutes les méthodes (eq, order, range) → execute() » permet d'écrire un seul fixture `_make_fake_supabase_with_sims` réutilisable entre 14 tests. Capturer les calls `eq()` dans un dict `_captured` exposé sur le mock permet ensuite d'asserter en bloc « le filtre a bien été propagé à Postgrest » sans inspecter le SQL généré (qu'on ne contrôle pas).
+
 ### 2026-05-03 — US-095 Super-admin Bassira : voir toutes les organisations + interface admin
 
 - **Statut** : passes:true (chantier M-multitenant-supabase, follow-up US-092 + US-093 + US-094).

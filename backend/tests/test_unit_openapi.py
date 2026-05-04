@@ -141,6 +141,8 @@ _UNDOCUMENTED_ALLOWLIST: set[str] = {
     "/api/admin/me/super-status",
     "/api/admin/organizations",
     "/api/admin/organizations/<org_id>",
+    # US-097 — cross-tenant simulations listing (super-admin only).
+    "/api/admin/simulations",
 }
 
 

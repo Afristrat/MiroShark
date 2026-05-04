@@ -282,6 +282,42 @@
         "loading": "Loading detail…",
         "error": "Could not load detail."
       }
+    },
+    "allSims": {
+      "sectionTitle": "All simulations",
+      "sectionHelp": "Full cross-tenant view — all orgs combined.",
+      "loading": "Loading simulations…",
+      "error": "Could not load simulations.",
+      "empty": "No simulation matches the filters.",
+      "filters": {
+        "org": "Organization",
+        "allOrgs": "All orgs",
+        "package": "Package",
+        "packagePlaceholder": "e.g. fusion-bancaire-mena",
+        "published": "Publication",
+        "publishedAny": "All",
+        "publishedYes": "Published",
+        "publishedNo": "Not published",
+        "reset": "Reset"
+      },
+      "table": {
+        "simulation": "Simulation",
+        "org": "Org",
+        "package": "Package",
+        "published": "Published",
+        "outcome": "Outcome",
+        "brier": "Brier",
+        "createdAt": "Created at"
+      },
+      "published": {
+        "yes": "published",
+        "no": "—"
+      },
+      "pagination": {
+        "prev": "Previous",
+        "next": "Next",
+        "range": "{from} – {to} of {total}"
+      }
     }
   },
   "sectors": {

@@ -2972,14 +2972,31 @@
         "Tests : 8+ nouveaux tests pytest (no-token 401 / not-superadmin 403 / empty / single / filters / pagination / supabase-config 503 / select-failure 500)",
         "Aucune régression backend pytest, build Vite OK"
       ],
-      "passes": false,
-      "completedAt": null,
+      "passes": true,
+      "completedAt": "2026-05-04T13:00:00Z",
       "dependencies": [
         "US-095"
       ],
       "metadata": {
         "estimated_hours": 2,
-        "priority": "P0"
+        "priority": "P0",
+        "files_created": [
+          "backend/tests/test_unit_admin_simulations.py"
+        ],
+        "files_modified": [
+          "backend/app/api/admin.py",
+          "backend/tests/test_unit_openapi.py",
+          "frontend/src/api/client.js",
+          "frontend/src/views/AnalyticsView.vue",
+          "frontend/src/locales/fr.json",
+          "frontend/src/locales/en.json",
+          "frontend/src/locales/ar.json"
+        ],
+        "tests_passing": "805 passed, 17 skipped (vs 791 baseline US-095, +14 nouveaux)",
+        "build_vite": "OK",
+        "endpoints_added": [
+          "GET /api/admin/simulations"
+        ]
       }
     },
     {

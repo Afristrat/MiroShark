@@ -282,6 +282,42 @@
         "loading": "Chargement du détail…",
         "error": "Impossible de charger le détail."
       }
+    },
+    "allSims": {
+      "sectionTitle": "Toutes les simulations",
+      "sectionHelp": "Vue cross-tenant complète — toutes orgs confondues.",
+      "loading": "Chargement des simulations…",
+      "error": "Impossible de charger les simulations.",
+      "empty": "Aucune simulation ne correspond aux filtres.",
+      "filters": {
+        "org": "Organisation",
+        "allOrgs": "Toutes les orgs",
+        "package": "Package",
+        "packagePlaceholder": "ex : fusion-bancaire-mena",
+        "published": "Publication",
+        "publishedAny": "Toutes",
+        "publishedYes": "Publiées",
+        "publishedNo": "Non publiées",
+        "reset": "Réinitialiser"
+      },
+      "table": {
+        "simulation": "Simulation",
+        "org": "Org",
+        "package": "Package",
+        "published": "Publié",
+        "outcome": "Issue",
+        "brier": "Brier",
+        "createdAt": "Créée le"
+      },
+      "published": {
+        "yes": "publié",
+        "no": "—"
+      },
+      "pagination": {
+        "prev": "Précédent",
+        "next": "Suivant",
+        "range": "{from} – {to} sur {total}"
+      }
     }
   },
   "sectors": {

@@ -246,6 +246,123 @@
           </div>
         </section>
 
+        <!-- ─────────── US-097 — Toutes les simulations cross-tenant ─────────── -->
+        <section
+          v-if="isSuperAdmin"
+          class="analytics-card analytics-superadmin analytics-allsims"
+          aria-label="All simulations"
+        >
+          <header class="analytics-card-header">
+            <h2 class="analytics-card-title">{{ $t('analytics.allSims.sectionTitle') }}</h2>
+            <span class="analytics-card-help">{{ $t('analytics.allSims.sectionHelp') }}</span>
+          </header>
+
+          <div class="analytics-allsims-filters">
+            <label class="analytics-allsims-filter">
+              <span class="analytics-allsims-filter-label">{{ $t('analytics.allSims.filters.org') }}</span>
+              <select v-model="allSimsFilters.org_id" @change="loadAllSimulations(true)">
+                <option value="">{{ $t('analytics.allSims.filters.allOrgs') }}</option>
+                <option v-for="o in organizations" :key="o.id" :value="o.id">
+                  {{ o.slug || o.name }}
+                </option>
+              </select>
+            </label>
+            <label class="analytics-allsims-filter">
+              <span class="analytics-allsims-filter-label">{{ $t('analytics.allSims.filters.package') }}</span>
+              <input
+                v-model="allSimsFilters.package_id"
+                type="text"
+                :placeholder="$t('analytics.allSims.filters.packagePlaceholder')"
+                @keyup.enter="loadAllSimulations(true)"
+                @blur="loadAllSimulations(true)"
+              />
+            </label>
+            <label class="analytics-allsims-filter">
+              <span class="analytics-allsims-filter-label">{{ $t('analytics.allSims.filters.published') }}</span>
+              <select v-model="allSimsFilters.published" @change="loadAllSimulations(true)">
+                <option value="">{{ $t('analytics.allSims.filters.publishedAny') }}</option>
+                <option value="true">{{ $t('analytics.allSims.filters.publishedYes') }}</option>
+                <option value="false">{{ $t('analytics.allSims.filters.publishedNo') }}</option>
+              </select>
+            </label>
+            <button
+              type="button"
+              class="analytics-allsims-reset"
+              @click="resetAllSimsFilters"
+            >
+              {{ $t('analytics.allSims.filters.reset') }}
+            </button>
+          </div>
+
+          <div v-if="allSimsLoading" class="analytics-empty">
+            {{ $t('analytics.allSims.loading') }}
+          </div>
+          <div v-else-if="allSimsError" class="analytics-empty" role="alert">
+            {{ allSimsError }}
+          </div>
+          <div v-else-if="allSimulations.length === 0" class="analytics-empty">
+            {{ $t('analytics.allSims.empty') }}
+          </div>
+          <div v-else class="analytics-orgs-table-wrap">
+            <table class="analytics-orgs-table">
+              <thead>
+                <tr>
+                  <th>{{ $t('analytics.allSims.table.simulation') }}</th>
+                  <th>{{ $t('analytics.allSims.table.org') }}</th>
+                  <th>{{ $t('analytics.allSims.table.package') }}</th>
+                  <th>{{ $t('analytics.allSims.table.published') }}</th>
+                  <th>{{ $t('analytics.allSims.table.outcome') }}</th>
+                  <th class="analytics-orgs-num">{{ $t('analytics.allSims.table.brier') }}</th>
+                  <th>{{ $t('analytics.allSims.table.createdAt') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="s in allSimulations" :key="s.simulation_id" class="analytics-orgs-row" :title="s.simulation_id">
+                  <td><span class="analytics-orgs-slug">{{ s.simulation_id?.slice(0, 8) }}…</span></td>
+                  <td>
+                    <span v-if="s.org_slug" class="analytics-orgs-slug">{{ s.org_slug }}</span>
+                    <span v-else class="analytics-empty-inline">—</span>
+                  </td>
+                  <td>{{ s.package_id || '—' }}</td>
+                  <td>
+                    <span class="analytics-orgs-status" :class="s.is_published ? 'analytics-orgs-status--active' : 'analytics-orgs-status--unknown'">
+                      {{ s.is_published ? $t('analytics.allSims.published.yes') : $t('analytics.allSims.published.no') }}
+                    </span>
+                  </td>
+                  <td>{{ s.outcome?.label || '—' }}</td>
+                  <td class="analytics-orgs-num">{{ formatBrier(s.brier_score) }}</td>
+                  <td>{{ formatDate(s.created_at) }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="analytics-allsims-pagination">
+              <button
+                type="button"
+                class="analytics-allsims-page-btn"
+                :disabled="allSimsFilters.offset === 0 || allSimsLoading"
+                @click="prevAllSimsPage"
+              >
+                ← {{ $t('analytics.allSims.pagination.prev') }}
+              </button>
+              <span class="analytics-allsims-page-info">
+                {{ $t('analytics.allSims.pagination.range', {
+                  from: allSimsFilters.offset + 1,
+                  to: Math.min(allSimsFilters.offset + allSimulations.length, allSimsTotal),
+                  total: allSimsTotal
+                }) }}
+              </span>
+              <button
+                type="button"
+                class="analytics-allsims-page-btn"
+                :disabled="allSimsFilters.offset + allSimulations.length >= allSimsTotal || allSimsLoading"
+                @click="nextAllSimsPage"
+              >
+                {{ $t('analytics.allSims.pagination.next') }} →
+              </button>
+            </div>
+          </div>
+        </section>
+
         <!-- ─────────── Modal détail organisation ─────────── -->
         <div
           v-if="selectedOrg"
@@ -357,6 +474,7 @@ import { useAuthStore } from '../stores/auth'
 import {
   fetchAllOrganizations,
   fetchOrganizationDetail,
+  fetchAllSimulations,
 } from '../api/client.js'
 
 const { t } = useI18n()
@@ -499,6 +617,65 @@ const formatDate = (iso) => {
   }
 }
 
+// ─── US-097 — Toutes les simulations cross-tenant ──────────────────────────
+const allSimsPageSize = 50
+const allSimsFilters = ref({
+  org_id: '',
+  package_id: '',
+  published: '',
+  offset: 0
+})
+const allSimulations = ref([])
+const allSimsTotal = ref(0)
+const allSimsLoading = ref(false)
+const allSimsError = ref('')
+
+const _normalisedFilters = () => {
+  const f = allSimsFilters.value
+  const payload = { limit: allSimsPageSize, offset: f.offset }
+  if (f.org_id) payload.org_id = f.org_id
+  if (f.package_id) payload.package_id = f.package_id.trim()
+  if (f.published === 'true') payload.published = true
+  if (f.published === 'false') payload.published = false
+  return payload
+}
+
+const loadAllSimulations = async (resetOffset = false) => {
+  if (resetOffset) {
+    allSimsFilters.value.offset = 0
+  }
+  allSimsLoading.value = true
+  allSimsError.value = ''
+  try {
+    const res = await fetchAllSimulations(_normalisedFilters())
+    const payload = res?.data || res
+    allSimulations.value = Array.isArray(payload?.simulations) ? payload.simulations : []
+    allSimsTotal.value = typeof payload?.total === 'number' ? payload.total : allSimulations.value.length
+  } catch (err) {
+    allSimulations.value = []
+    allSimsTotal.value = 0
+    allSimsError.value = formatApiError(err) || t('analytics.allSims.error')
+  } finally {
+    allSimsLoading.value = false
+  }
+}
+
+const prevAllSimsPage = () => {
+  const next = Math.max(0, allSimsFilters.value.offset - allSimsPageSize)
+  allSimsFilters.value.offset = next
+  loadAllSimulations(false)
+}
+
+const nextAllSimsPage = () => {
+  allSimsFilters.value.offset = allSimsFilters.value.offset + allSimsPageSize
+  loadAllSimulations(false)
+}
+
+const resetAllSimsFilters = () => {
+  allSimsFilters.value = { org_id: '', package_id: '', published: '', offset: 0 }
+  loadAllSimulations(false)
+}
+
 onMounted(async () => {
   if (authed.value) fetchData()
   // US-095 — si l'user est authentifié Supabase ET super-admin Bassira,
@@ -514,6 +691,8 @@ onMounted(async () => {
     }
     if (authStore.isSuperAdmin) {
       await loadAllOrganizations()
+      // US-097 — charger la liste cross-tenant des simulations en parallèle
+      loadAllSimulations(false)
     }
   }
 })
@@ -1334,6 +1513,99 @@ const lastFetchedLabel = computed(() => {
   color: var(--wi-on-surface-variant);
   font-family: var(--ms-font-mono);
   font-size: var(--wi-caption);
+}
+
+/* ── US-097 — Toutes les simulations cross-tenant ───────────────────────── */
+.analytics-allsims-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--wi-space-md, 12px);
+  align-items: flex-end;
+  padding: var(--wi-space-sm, 8px) 0 var(--wi-space-md, 12px);
+  border-block-end: 1px solid var(--wi-outline-variant);
+  margin-block-end: var(--wi-space-md, 12px);
+}
+.analytics-allsims-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 160px;
+}
+.analytics-allsims-filter-label {
+  font-size: var(--wi-caption);
+  color: var(--wi-on-surface-variant);
+  font-family: var(--wi-font-body);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.analytics-allsims-filter select,
+.analytics-allsims-filter input {
+  padding: 6px 10px;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-body);
+  color: var(--wi-on-surface);
+  background: var(--wi-surface);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-md);
+  transition: border-color var(--ms-transition, 180ms) var(--ms-ease, ease);
+}
+.analytics-allsims-filter select:focus,
+.analytics-allsims-filter input:focus {
+  border-color: var(--wi-primary);
+  outline: 2px solid var(--wi-primary-soft);
+  outline-offset: 1px;
+}
+.analytics-allsims-reset {
+  padding: 6px 14px;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
+  color: var(--wi-primary);
+  background: transparent;
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-pill);
+  cursor: pointer;
+  transition: all var(--ms-transition, 180ms) var(--ms-ease, ease);
+}
+.analytics-allsims-reset:hover {
+  background: var(--wi-primary-soft);
+  border-color: var(--wi-primary);
+}
+.analytics-allsims-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--wi-space-md, 12px);
+  padding: var(--wi-space-md, 12px) 0 0;
+  border-block-start: 1px solid var(--wi-outline-variant);
+  margin-block-start: var(--wi-space-md, 12px);
+}
+.analytics-allsims-page-btn {
+  padding: 6px 14px;
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-caption);
+  color: var(--wi-on-surface);
+  background: var(--wi-surface-container-low);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-pill);
+  cursor: pointer;
+  transition: all var(--ms-transition, 180ms) var(--ms-ease, ease);
+}
+.analytics-allsims-page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.analytics-allsims-page-btn:not(:disabled):hover {
+  background: var(--wi-primary-soft);
+  border-color: var(--wi-primary);
+}
+.analytics-allsims-page-info {
+  font-family: var(--ms-font-mono, monospace);
+  font-size: var(--wi-caption);
+  color: var(--wi-on-surface-variant);
+}
+.analytics-empty-inline {
+  color: var(--wi-on-surface-variant);
+  font-style: italic;
 }
 
 /* ── RTL support ─────────────────────────────────────────────────────────── */

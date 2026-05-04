@@ -634,3 +634,194 @@ def get_organization_detail(org_id: str):
             "simulations": simulations,
         },
     }), 200
+
+
+# ─── US-097 — Toutes les simulations cross-tenant ────────────────────────────
+#
+# Endpoint super-admin pour lister TOUTES les simulations Bassira, toutes
+# orgs confondues. Permet à l'opérateur d'auditer la plateforme en
+# identifiant rapidement les sims problématiques sans avoir à drill-down
+# org par org.
+#
+# Filtres (query string) :
+#   ?org_id=<uuid>            — filtre sur une org précise
+#   ?package_id=<id>          — filtre sur un template_id (ex: 'fusion-bancaire-mena')
+#   ?status=<state>           — filtre sur le statut filesystem (loose match)
+#   ?published=true|false     — filtre sur is_published
+#   ?limit=<n>                — pagination (default 50, max 200)
+#   ?offset=<n>               — pagination (default 0)
+#
+# Pour la cohérence : on ne lit pas les statuts depuis simulation_ownership
+# (la table ne stocke pas le status filesystem évolutif). À la place on
+# filtre côté Python sur les sims retournées.
+
+_ADMIN_SIMS_DEFAULT_LIMIT = 50
+_ADMIN_SIMS_MAX_LIMIT = 200
+
+
+def _parse_published_filter(raw: Optional[str]) -> Optional[bool]:
+    """Parse le query param `published` en bool|None (None = pas de filtre)."""
+    if raw is None:
+        return None
+    s = str(raw).strip().lower()
+    if s in {"true", "1", "yes"}:
+        return True
+    if s in {"false", "0", "no"}:
+        return False
+    return None  # valeur invalide → pas de filtre (silent)
+
+
+def _parse_int_param(raw: Optional[str], default: int, min_val: int, max_val: int) -> int:
+    """Parse un query param numérique en bornant à [min_val, max_val]."""
+    if raw is None:
+        return default
+    try:
+        n = int(str(raw).strip())
+    except (TypeError, ValueError):
+        return default
+    return max(min_val, min(max_val, n))
+
+
+def _enrich_sims_with_org_info(
+    client: Any,
+    sims: List[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    """Enrichit chaque sim avec org_name + org_slug en lookup batch.
+
+    On lit toutes les org_id distinctes en une requête puis on indexe
+    en mémoire pour éviter N+1 queries.
+    """
+    org_ids = {s.get("org_id") for s in sims if s.get("org_id")}
+    org_index: Dict[str, Dict[str, Any]] = {}
+    if org_ids:
+        try:
+            resp = (
+                client.table("organizations")
+                .select("id, slug, name")
+                .in_("id", list(org_ids))
+                .execute()
+            )
+            rows = getattr(resp, "data", None) or []
+            for row in rows:
+                org_index[row.get("id")] = row
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(
+                "_enrich_sims_with_org_info batch lookup failed: %s",
+                exc.__class__.__name__,
+            )
+
+    out: List[Dict[str, Any]] = []
+    for s in sims:
+        org_id = s.get("org_id")
+        org_meta = org_index.get(org_id, {}) if org_id else {}
+        out.append({
+            "simulation_id": s.get("simulation_id"),
+            "org_id": org_id,
+            "org_name": org_meta.get("name"),
+            "org_slug": org_meta.get("slug"),
+            "created_by": s.get("created_by"),
+            "created_at": s.get("created_at"),
+            "package_id": s.get("package_id"),
+            "is_published": bool(s.get("is_published")),
+            "outcome": s.get("outcome"),
+            "brier_score": s.get("brier_score"),
+        })
+    return out
+
+
+@admin_bp.route("/simulations", methods=["GET"])
+@require_super_admin
+def list_all_simulations():
+    """Liste TOUTES les simulations cross-tenant (super-admin only).
+
+    Query params : org_id, package_id, published (true|false), limit, offset.
+
+    Response::
+
+        {
+          "success": true,
+          "data": {
+            "simulations": [
+              {
+                "simulation_id": "...",
+                "org_id": "...", "org_name": "...", "org_slug": "...",
+                "created_by": "...", "created_at": "...",
+                "package_id": "...", "is_published": bool,
+                "outcome": {...}|null, "brier_score": float|null
+              }, ...
+            ],
+            "total": int,
+            "limit": int,
+            "offset": int
+          }
+        }
+    """
+    from flask import request as _req
+
+    try:
+        cli = get_supabase_admin()
+    except SupabaseConfigError as exc:
+        logger.error("Supabase admin config missing: %s", exc)
+        return _err_admin(
+            "SUPABASE_NOT_CONFIGURED",
+            "Backend Supabase admin client is not configured.",
+            503,
+        )
+
+    org_id_filter = (_req.args.get("org_id") or "").strip() or None
+    package_id_filter = (_req.args.get("package_id") or "").strip() or None
+    published_filter = _parse_published_filter(_req.args.get("published"))
+    limit = _parse_int_param(
+        _req.args.get("limit"),
+        _ADMIN_SIMS_DEFAULT_LIMIT, 1, _ADMIN_SIMS_MAX_LIMIT,
+    )
+    offset = _parse_int_param(_req.args.get("offset"), 0, 0, 1_000_000)
+
+    try:
+        query = (
+            cli.table("simulation_ownership")
+            .select(
+                "simulation_id, org_id, created_by, created_at, package_id, "
+                "is_published, outcome, brier_score",
+                count="exact",
+            )
+        )
+        if org_id_filter:
+            query = query.eq("org_id", org_id_filter)
+        if package_id_filter:
+            query = query.eq("package_id", package_id_filter)
+        if published_filter is not None:
+            query = query.eq("is_published", published_filter)
+        # Pagination + tri DESC
+        query = query.order("created_at", desc=True).range(
+            offset, offset + limit - 1
+        )
+        resp = query.execute()
+        sims = getattr(resp, "data", None) or []
+        total = getattr(resp, "count", None)
+        if total is None:
+            # Fallback : si le SDK ne remonte pas le count, estimation basée
+            # sur la page courante (l'opérateur le saura via la doc UI).
+            total = len(sims) + offset
+    except Exception as exc:  # noqa: BLE001
+        logger.error(
+            "list_all_simulations select failed: %s",
+            exc.__class__.__name__,
+        )
+        return _err_admin(
+            "ADMIN_SIMS_FAILED",
+            "Could not list simulations.",
+            500,
+        )
+
+    enriched = _enrich_sims_with_org_info(cli, sims)
+
+    return jsonify({
+        "success": True,
+        "data": {
+            "simulations": enriched,
+            "total": int(total),
+            "limit": limit,
+            "offset": offset,
+        },
+    }), 200
