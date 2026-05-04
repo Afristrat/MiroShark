@@ -220,14 +220,17 @@ export const useAuthStore = defineStore('auth', {
 
     /**
      * Récupère le profil multitenant depuis le backend (US-092).
-     * Appelle GET /api/auth/me avec le bearer token. Le résultat
+     * Appelle GET /api/client/auth/me avec le bearer token. Le résultat
      * peuple `orgs` et sélectionne `currentOrgId` (1ère org par défaut).
+     *
+     * IMPORTANT : le path est /api/client/auth/me (pas /api/auth/me) — le
+     * blueprint backend client_bp est monté au préfixe /api/client/.
      */
     async fetchProfile() {
       if (!this.session?.access_token) {
         throw new Error('Aucune session active')
       }
-      const res = await fetch('/api/auth/me', {
+      const res = await fetch('/api/client/auth/me', {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${this.session.access_token}`,
