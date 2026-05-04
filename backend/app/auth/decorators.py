@@ -133,7 +133,8 @@ def require_auth(view_func: Callable) -> Callable:
     """Décorateur : exige un JWT Supabase valide.
 
     Pose `g.current_user` pour la suite du traitement. En cas d'absence
-    de configuration `SUPABASE_JWT_SECRET`, retourne 503 explicite.
+    de configuration backend (SUPABASE_URL pour le mode JWKS asymétrique
+    ou SUPABASE_JWT_SECRET pour le mode HS256 legacy), retourne 503.
     """
 
     @wraps(view_func)
@@ -151,11 +152,15 @@ def require_auth(view_func: Callable) -> Callable:
             # Distinction config-manquante vs token-invalide pour faciliter
             # le diagnostic opérateur sans fuiter d'info au client.
             msg = str(exc)
-            if "SUPABASE_JWT_SECRET" in msg:
+            if (
+                "SUPABASE_JWT_SECRET" in msg
+                or "SUPABASE_URL is not configured" in msg
+            ):
                 return _err(
                     "AUTH_NOT_CONFIGURED",
                     "Backend authentication is not configured. "
-                    "Set SUPABASE_JWT_SECRET in Coolify environment variables.",
+                    "Set SUPABASE_URL in Coolify environment variables "
+                    "(or SUPABASE_JWT_SECRET for legacy HS256 projects).",
                     503,
                 )
             return _err("INVALID_TOKEN", "Invalid or expired token.", 401)

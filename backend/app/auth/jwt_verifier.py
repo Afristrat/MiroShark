@@ -1,21 +1,31 @@
-"""Vérification des JWT émis par Supabase Auth (US-092).
+"""Vérification des JWT émis par Supabase Auth (US-092 + refactor ECC).
 
-Supabase Auth signe ses JWT en HS256 avec la clé secrète disponible
-dans le dashboard sous *Settings → API → JWT Settings*. Cette clé doit
-être injectée au backend via la variable d'environnement
-`SUPABASE_JWT_SECRET` (jamais commitée, jamais exposée au frontend).
+Supabase Auth a migré (2026) vers des **JWT Signing Keys asymétriques**
+(ECC P-256 = ES256, ou RS256). Les anciens projets utilisent encore le
+**Legacy JWT Secret** HS256. Ce module supporte les deux modes de
+manière transparente :
 
-Pour limiter la charge CPU sur les endpoints très sollicités, on cache
-la dernière vérification valide d'un jeton pendant 5 minutes
-(TTL court : un access token Supabase a une durée de vie d'1h, donc on
-ne risque pas de servir un token expiré au-delà de sa fenêtre).
-Le cache est borné à 256 entrées (LRU) pour ne pas grossir indéfiniment
-en présence d'un volume élevé de tokens distincts.
+  1. **Asymétrique (ES256/RS256, par défaut)** — récupère les clés
+     publiques depuis le JWKS endpoint Supabase :
+     ``${SUPABASE_URL}/auth/v1/.well-known/jwks.json``
+     Aucun secret partagé n'est requis côté backend ; seule l'URL du
+     projet (publique) suffit. Géré via ``PyJWKClient`` qui gère le
+     cache des clés et la rotation automatique.
 
-Aucune dépendance live à Supabase n'est introduite ici : la
-vérification est purement cryptographique (HS256 = HMAC-SHA256), donc
-les tests unitaires peuvent monkeypatcher `jwt.decode` ou bien fournir
-un secret en mémoire et signer un token valide.
+  2. **HS256 legacy (fallback)** — si ``SUPABASE_JWT_SECRET`` est défini
+     dans l'environnement, le module l'utilise pour valider les tokens
+     signés en HS256. Permet de coexister avec d'anciens projets.
+
+Le mode est **détecté automatiquement** depuis le header ``alg`` du JWT
+décodé sans vérification. Aucune configuration manuelle n'est requise.
+
+Cache : on cache la dernière vérification valide d'un jeton pendant
+5 minutes (TTL borné par ``exp``) pour limiter la charge CPU et les
+appels JWKS répétés. PyJWKClient gère lui-même le cache des clés
+publiques (par défaut 16 clés × lifespan).
+
+Aucune fuite de PII : ni le JWT brut ni le header ``Authorization`` ne
+sont jamais loggés (cf. rule supabase.md).
 """
 
 from __future__ import annotations
@@ -27,6 +37,7 @@ from collections import OrderedDict
 from typing import Any, Dict
 
 import jwt  # PyJWT — résolu via le pyproject.toml (extra `crypto`).
+from jwt import PyJWKClient
 from jwt.exceptions import InvalidTokenError as _PyJWTInvalidTokenError
 
 from ..utils.logger import get_logger
@@ -48,7 +59,7 @@ class InvalidTokenError(Exception):
     """
 
 
-# ─── Cache LRU + TTL ────────────────────────────────────────────────────────
+# ─── Cache LRU + TTL pour les claims décodés ────────────────────────────────
 
 _CACHE_MAX_SIZE = 256
 _CACHE_TTL_SECONDS = 5 * 60  # 5 minutes — voir docstring du module.
@@ -67,30 +78,24 @@ def _cache_get(token: str) -> Dict[str, Any] | None:
             return None
         expires_at, claims = entry
         if expires_at <= now:
-            # Entrée expirée — purge proactive.
             _cache.pop(token, None)
             return None
-        # LRU : on remet l'entrée en fin de file (plus récemment utilisée).
         _cache.move_to_end(token)
         return claims
 
 
 def _cache_set(token: str, claims: Dict[str, Any]) -> None:
     """Insère un payload validé avec un TTL borné par exp et 5 min."""
-    # Le TTL de cache ne doit jamais dépasser la durée de vie effective du
-    # token : si `exp` est < now+TTL, on cale sur exp (-5s de marge pour
-    # éviter de servir un token au moment exact de son expiration).
     now = time.time()
     exp = claims.get("exp")
     ttl_deadline = now + _CACHE_TTL_SECONDS
     if isinstance(exp, (int, float)):
         ttl_deadline = min(ttl_deadline, float(exp) - 5.0)
     if ttl_deadline <= now:
-        return  # token déjà sur le point d'expirer — inutile de cacher.
+        return
     with _cache_lock:
         _cache[token] = (ttl_deadline, claims)
         _cache.move_to_end(token)
-        # Politique LRU : on évince la plus ancienne entrée si on dépasse.
         while len(_cache) > _CACHE_MAX_SIZE:
             _cache.popitem(last=False)
 
@@ -101,29 +106,75 @@ def _cache_clear() -> None:
         _cache.clear()
 
 
+# ─── PyJWKClient (JWKS Supabase) ────────────────────────────────────────────
+
+# Singleton thread-safe. Reconstruit si l'URL change (ex: tests).
+_jwks_client_lock = threading.Lock()
+_jwks_client: PyJWKClient | None = None
+_jwks_client_url: str | None = None
+
+
+def _get_jwks_client() -> PyJWKClient:
+    """Retourne un PyJWKClient pour le projet Supabase courant.
+
+    L'URL JWKS est ``${SUPABASE_URL}/auth/v1/.well-known/jwks.json``.
+    PyJWKClient gère son propre cache (lifespan 5 min, 16 clés max).
+    """
+    global _jwks_client, _jwks_client_url
+    supabase_url = os.getenv("SUPABASE_URL", "").strip().rstrip("/")
+    if not supabase_url:
+        raise InvalidTokenError(
+            "SUPABASE_URL is not configured on the backend "
+            "(required to fetch JWKS for asymmetric JWT verification)."
+        )
+    jwks_url = f"{supabase_url}/auth/v1/.well-known/jwks.json"
+    with _jwks_client_lock:
+        if _jwks_client is None or _jwks_client_url != jwks_url:
+            _jwks_client = PyJWKClient(
+                jwks_url,
+                cache_keys=True,
+                lifespan=300,  # 5 min — cohérent avec _CACHE_TTL_SECONDS
+                max_cached_keys=16,
+            )
+            _jwks_client_url = jwks_url
+        return _jwks_client
+
+
+def _reset_jwks_client() -> None:
+    """Réinitialise le PyJWKClient (utilisé par les tests)."""
+    global _jwks_client, _jwks_client_url
+    with _jwks_client_lock:
+        _jwks_client = None
+        _jwks_client_url = None
+
+
 # ─── API publique ───────────────────────────────────────────────────────────
 
-def _load_jwt_secret() -> str:
-    """Lit `SUPABASE_JWT_SECRET` au moment de l'appel.
-
-    Résolu à chaque vérification afin que les tests pytest puissent
-    monkeypatcher `os.environ` sans recharger le module et qu'un
-    rotation de clé soit prise en compte sans redémarrer le process.
-    """
+def _load_legacy_secret() -> str | None:
+    """Lit ``SUPABASE_JWT_SECRET`` à chaque appel (legacy HS256)."""
     secret = os.getenv("SUPABASE_JWT_SECRET", "").strip()
-    if not secret:
-        # On ne loggue pas la clé absente comme un warning à chaque
-        # requête — la responsabilité de la configuration revient au
-        # déploiement, et ce signal est déjà capté par
-        # `@require_auth` qui retourne un 503 explicite.
-        raise InvalidTokenError(
-            "SUPABASE_JWT_SECRET is not configured on the backend."
-        )
-    return secret
+    return secret or None
+
+
+def _peek_alg(token: str) -> str:
+    """Lit l'algorithme déclaré dans le header JWT sans vérifier signature."""
+    try:
+        header = jwt.get_unverified_header(token)
+    except _PyJWTInvalidTokenError as exc:
+        raise InvalidTokenError("Invalid token header.") from exc
+    alg = header.get("alg")
+    if not isinstance(alg, str) or not alg:
+        raise InvalidTokenError("Token header missing 'alg'.")
+    return alg
 
 
 def verify_supabase_jwt(token: str) -> Dict[str, Any]:
     """Décode et vérifie un JWT Supabase, retourne les claims.
+
+    Détecte l'algorithme automatiquement :
+      - ``HS256`` → utilise ``SUPABASE_JWT_SECRET`` (legacy)
+      - ``ES256`` / ``RS256`` / ``EdDSA`` → utilise le JWKS asymétrique
+        à ``${SUPABASE_URL}/auth/v1/.well-known/jwks.json``
 
     Args:
         token : la valeur brute du JWT (sans le préfixe ``Bearer``).
@@ -134,9 +185,7 @@ def verify_supabase_jwt(token: str) -> Dict[str, Any]:
 
     Raises:
         InvalidTokenError : token vide, malformé, expiré, signature
-            invalide ou secret backend manquant. Le message d'erreur est
-            sécurisé côté API (générique) ; les détails apparaissent
-            dans les logs serveur pour le diagnostic opérateur.
+            invalide ou backend non configuré.
     """
     if not token or not token.strip():
         raise InvalidTokenError("Empty bearer token.")
@@ -146,29 +195,60 @@ def verify_supabase_jwt(token: str) -> Dict[str, Any]:
     if cached is not None:
         return cached
 
-    secret = _load_jwt_secret()
+    alg = _peek_alg(token)
 
-    # Supabase signe en HS256 par défaut. L'audience standard est
-    # `authenticated` pour les utilisateurs connectés ; on l'accepte
-    # explicitement et on tolère son absence pour rester compatible avec
-    # d'éventuels tokens custom (service_role par ex.).
+    decode_options = {
+        "require": ["exp", "sub"],
+        "verify_aud": False,
+    }
+
     try:
-        claims: Dict[str, Any] = jwt.decode(
-            token,
-            secret,
-            algorithms=["HS256"],
-            options={
-                "require": ["exp", "sub"],
-                "verify_aud": False,
-            },
-        )
+        if alg == "HS256":
+            # Mode legacy : exige SUPABASE_JWT_SECRET.
+            secret = _load_legacy_secret()
+            if not secret:
+                raise InvalidTokenError(
+                    "Token uses HS256 but SUPABASE_JWT_SECRET is not "
+                    "configured on the backend."
+                )
+            claims: Dict[str, Any] = jwt.decode(
+                token,
+                secret,
+                algorithms=["HS256"],
+                options=decode_options,
+            )
+        elif alg in ("ES256", "RS256", "EdDSA"):
+            # Mode asymétrique : récupère la public key via JWKS.
+            jwks_client = _get_jwks_client()
+            try:
+                signing_key = jwks_client.get_signing_key_from_jwt(token)
+            except _PyJWTInvalidTokenError:
+                raise
+            except Exception as exc:  # noqa: BLE001 — JWKS HTTP/parse error
+                logger.error(
+                    "JWKS fetch/parse error: %s", exc.__class__.__name__
+                )
+                raise InvalidTokenError(
+                    "Could not fetch JWKS for token verification."
+                ) from exc
+            claims = jwt.decode(
+                token,
+                signing_key.key,
+                algorithms=[alg],
+                options=decode_options,
+            )
+        else:
+            raise InvalidTokenError(f"Unsupported JWT algorithm: {alg}.")
+    except InvalidTokenError:
+        raise
     except _PyJWTInvalidTokenError as exc:
-        # Évite tout log du token (politique : on ne logue jamais un JWT
-        # ni une header Authorization, conformément à la rule supabase.md).
+        # Politique : on ne loggue jamais un JWT ni un header Authorization.
         logger.info("JWT rejected by PyJWT: %s", exc.__class__.__name__)
         raise InvalidTokenError("Invalid or expired token.") from exc
     except Exception as exc:  # noqa: BLE001 — défense en profondeur
-        logger.error("Unexpected JWT verification error: %s", exc.__class__.__name__)
+        logger.error(
+            "Unexpected JWT verification error: %s", exc.__class__.__name__
+        )
         raise InvalidTokenError("Token verification failed.") from exc
 
     # Sanity check minimal : sub doit être un uuid string non vide.
