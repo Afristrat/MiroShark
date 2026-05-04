@@ -49,6 +49,42 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 
 ## Log d'itérations
 
+### 2026-05-04 — US-100 Retirer BASSIRA_ADMIN_TOKEN legacy → JWT + email whitelist
+- **Statut** : passes:true (chantier M-multitenant-supabase, follow-up US-099). Story finale du chantier.
+- **Backend** :
+  - `simulation.py @require_admin_token` : refactor en mode **dual-auth**.
+    - PRIMARY : essaie de décoder le Bearer comme JWT Supabase + check email whitelist `BASSIRA_SUPER_ADMIN_EMAILS`. Si match → 200, pose `g.is_super_admin=True`.
+    - FALLBACK : si JWT KO, compare le bearer au legacy `BASSIRA_ADMIN_TOKEN` / `MIROSHARK_ADMIN_TOKEN`. Si match → 200 + log warning « legacy admin token used » pour traçabilité.
+    - Si rien ne matche : 401 (auth header présent mais ni JWT super-admin ni legacy correct) ou 503 (legacy unset + JWT non super-admin).
+  - Le décorateur `require_admin_token` reste utilisé par les endpoints existants (`/api/admin/analytics`, `/publish`, `/resolve`, `/outcome`) sans modification — la transition est transparente.
+- **Frontend** :
+  - `AnalyticsView.vue` :
+    - **Suppression complète** du formulaire admin token + `sessionStorage.getItem('bassira_admin_token')` + actions `login()` / `logout()`.
+    - `authed` devient `computed(() => isAuthenticated && isSuperAdmin)` — décision 100 % basée sur le store Supabase.
+    - Le gate (template `v-if="!authed"`) affiche désormais soit un CTA Login (`/login?redirect=/admin/analytics`) si pas connecté, soit un message « Accès super-admin requis » + lien retour `/` si connecté mais sans privilège.
+    - `fetchData()` utilise `client.get('/api/admin/analytics')` (axios qui injecte automatiquement le Bearer JWT) au lieu de l'ancien `api.get` + sessionStorage.
+    - Suppression du bouton `analytics-logout` du topbar (l'utilisateur se déconnecte via AppHeader désormais).
+    - Doublon `const isSuperAdmin` retiré (conflit avec le scope US-100 auth gate).
+  - i18n FR/EN/AR : nouveau namespace `analytics.gateSuperAdmin.{aria, title, notLoggedIn, notSuperAdmin, loginCta, backHome}`. Anciennes clés `analytics.gate.*` conservées pour compat (non utilisées mais non-cassantes).
+- **Tests créés (7 nouveaux)** : `test_unit_admin_token_dual_auth.py` :
+  - JWT super-admin valide → 200 (sans warning).
+  - Legacy token valide → 200 + warning « legacy ».
+  - JWT non super-admin + legacy unset → 503 ADMIN_AUTH_NOT_CONFIGURED.
+  - JWT non super-admin + legacy set mais non-matching → 401 UNAUTHORIZED.
+  - Pas de token + legacy set → 401.
+  - Pas de token + legacy unset → 503.
+  - JWT super-admin → pas de log warning legacy.
+- **Quality gates** :
+  - `cd backend && uv run pytest tests/test_unit_admin_token_dual_auth.py -v` → **7 PASS** en 4,11 s.
+  - `cd backend && uv run pytest -q` → **839 passed, 17 skipped, 0 régression** (vs 832 baseline US-099, +7 nouveaux).
+  - `cd frontend && npm run build` → **OK** en 14,17 s, après correction d'un doublon `const isSuperAdmin` (conflit de portée entre US-100 auth gate et US-095 cross-tenant section).
+- **Décisions architecturales notables** :
+  - **Dual-auth en cascade plutôt que feature flag** : le décorateur `@require_admin_token` essaie d'abord JWT, fallback legacy. Pas de feature flag à maintenir, transition transparente — un client n'envoyant que le legacy token continue de fonctionner durant la phase de migration. Le warning émet un signal explicite pour piloter l'arrêt définitif (US-101+).
+  - **Chemin JWT prioritaire** : on ne perd pas de cycles si le caller envoie déjà un JWT super-admin. Le legacy n'est tenté que si le JWT est invalide (mauvais format, signature KO, etc.). Le path heureux super-admin ne paie pas le coût hmac.
+  - **Frontend complètement réecrit, pas patché** : la suppression du sessionStorage pose un risque de boucles HTTP si un user a un vieux token en cache. On a évité ce piège en faisant `authed = computed(...)` (donc le composant n'invoque jamais `sessionStorage.removeItem` qui aurait laissé une trace). Le code legacy `analytics.gate.*` reste dans les locales pour ne pas casser un éventuel autre composant qui l'utiliserait — mais `grep` confirme qu'il n'y a qu'un seul appelant supprimé.
+  - **Pas de migration de `/publish`, `/resolve`, `/outcome` côté frontend** : ces endpoints utilisent déjà le décorateur `@require_admin_token` côté backend, donc ils acceptent désormais aussi le JWT super-admin. Un opérateur existant qui scriptait avec `BASSIRA_ADMIN_TOKEN` continuera de fonctionner ; un super-admin connecté côté UI peut désormais aussi appeler ces endpoints depuis le client web s'il y en a besoin.
+- **Apprentissage clé** : pour migrer un système d'auth legacy (token partagé) vers un système moderne (JWT par utilisateur) sans casser, le pattern « décorateur dual-auth en cascade » est plus simple qu'un middleware d'auth séparé. Il garde un seul point de gating, un seul code path de logging, et permet au backend d'émettre des warnings explicites pour piloter la dépréciation. Le coût additionnel par requête (un essai JWT raté avant de tomber sur le legacy) est négligeable comparé au temps DB de l'endpoint qui suit.
+
 ### 2026-05-04 — US-099 Super-admin lance ses propres simulations directement
 - **Statut** : passes:true (chantier M-multitenant-supabase, follow-up US-098).
 - **Backend** :

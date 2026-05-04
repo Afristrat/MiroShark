@@ -222,6 +222,14 @@
         "empty": "Token requis."
       }
     },
+    "gateSuperAdmin": {
+      "aria": "Authentification super-admin requise",
+      "title": "Accès super-admin requis",
+      "notLoggedIn": "Connectez-vous avec votre compte Bassira pour accéder au tableau de bord opérationnel.",
+      "notSuperAdmin": "Votre compte n'est pas dans la liste des super-admins Bassira. Contactez l'équipe pour activer cet accès.",
+      "loginCta": "Se connecter",
+      "backHome": "Retour à l'accueil"
+    },
     "kpi": {
       "total": "Simulations (total)",
       "completed": "Simulations clôturées",

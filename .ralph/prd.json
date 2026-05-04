@@ -3119,15 +3119,27 @@
         "Tests : 5+ nouveaux tests pytest (legacy token still works / JWT super-admin works on /admin/analytics / log warning emis / no auth 401 / wrong JWT 401)",
         "Aucune régression backend pytest, build Vite OK"
       ],
-      "passes": false,
-      "completedAt": null,
+      "passes": true,
+      "completedAt": "2026-05-04T16:00:00Z",
       "dependencies": [
         "US-099"
       ],
       "metadata": {
         "estimated_hours": 3,
         "priority": "P0",
-        "deprecation_note": "BASSIRA_ADMIN_TOKEN reste actif comme fallback durant 1 release. Removal complet planifié US-101+."
+        "deprecation_note": "BASSIRA_ADMIN_TOKEN reste actif comme fallback durant 1 release. Removal complet planifié US-101+.",
+        "files_created": [
+          "backend/tests/test_unit_admin_token_dual_auth.py"
+        ],
+        "files_modified": [
+          "backend/app/api/simulation.py",
+          "frontend/src/views/AnalyticsView.vue",
+          "frontend/src/locales/fr.json",
+          "frontend/src/locales/en.json",
+          "frontend/src/locales/ar.json"
+        ],
+        "tests_passing": "839 passed, 17 skipped (vs 832 baseline US-099, +7 nouveaux)",
+        "build_vite": "OK"
       }
     }
   ]

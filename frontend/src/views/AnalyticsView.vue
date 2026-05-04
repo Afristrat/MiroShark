@@ -11,47 +11,39 @@
           <span class="analytics-pill-dot" aria-hidden="true"></span>
           {{ $t('analytics.opsBadge') }}
         </span>
-        <button
-          v-if="authed"
-          type="button"
-          class="analytics-logout"
-          :title="$t('analytics.logout')"
-          @click="logout"
-        >
-          {{ $t('analytics.logout') }}
-        </button>
       </div>
     </header>
 
     <main class="analytics-main">
-      <!-- ───────────── Auth gate ─────────────
-           Quand le token n'est pas en sessionStorage on remplace
-           tout le contenu par un formulaire. Pas de redirect — c'est
-           une vue ops, l'opérateur attendu sait pourquoi il est là. -->
-      <section v-if="!authed" class="analytics-gate" aria-label="Admin auth">
+      <!-- ───────────── US-100 — Gate super-admin ─────────────
+           Plus de formulaire BASSIRA_ADMIN_TOKEN : on s'appuie 100 %
+           sur l'auth Supabase + whitelist email. Si l'utilisateur
+           n'est pas connecté → message + lien /login. S'il l'est mais
+           sans privilège super-admin → message refus + retour /. -->
+      <section v-if="!authed" class="analytics-gate" :aria-label="$t('analytics.gateSuperAdmin.aria')">
         <div class="analytics-gate-card">
-          <h1 class="analytics-gate-title">{{ $t('analytics.gate.title') }}</h1>
-          <p class="analytics-gate-sub">{{ $t('analytics.gate.subtitle') }}</p>
-          <form class="analytics-gate-form" @submit.prevent="login">
-            <label class="analytics-gate-label" for="analytics-token-input">
-              {{ $t('analytics.gate.label') }}
-            </label>
-            <input
-              id="analytics-token-input"
-              v-model="tokenInput"
-              type="password"
-              class="analytics-gate-input"
-              :placeholder="$t('analytics.gate.placeholder')"
-              autocomplete="off"
-              required
-            />
-            <button type="submit" class="analytics-gate-submit">
-              {{ $t('analytics.gate.submit') }}
-            </button>
-          </form>
-          <p v-if="gateError" class="analytics-gate-error" role="alert">
-            {{ gateError }}
+          <h1 class="analytics-gate-title">{{ $t('analytics.gateSuperAdmin.title') }}</h1>
+          <p class="analytics-gate-sub">
+            {{ isAuthenticated
+              ? $t('analytics.gateSuperAdmin.notSuperAdmin')
+              : $t('analytics.gateSuperAdmin.notLoggedIn') }}
           </p>
+          <div class="analytics-gate-actions">
+            <router-link
+              v-if="!isAuthenticated"
+              :to="{ path: '/login', query: { redirect: '/admin/analytics' } }"
+              class="analytics-gate-submit"
+            >
+              {{ $t('analytics.gateSuperAdmin.loginCta') }}
+            </router-link>
+            <router-link
+              v-else
+              to="/"
+              class="analytics-gate-submit"
+            >
+              {{ $t('analytics.gateSuperAdmin.backHome') }}
+            </router-link>
+          </div>
         </div>
       </section>
 
@@ -463,29 +455,31 @@
 
 <script setup>
 /**
- * /admin/analytics — tableau de bord interne ops (US-065).
+ * /admin/analytics — tableau de bord interne ops (US-065 + US-100).
  *
- * Audience : Amine + ops Bassira. Lecture en 30 secondes :
+ * Audience : Amine + super-admins Bassira (whitelist email backend
+ * BASSIRA_SUPER_ADMIN_EMAILS). Lecture en 30 secondes :
  *   - KPI row (4 chiffres bruts) — total / completed / 30d / quotes
  *   - Funnel (4 étapes : visits ? → simulations → completed → quotes)
  *   - Top packages (bar chart CSS, top 5 par template_id)
  *   - Time series 30 jours (bar chart CSS quotidien des completions)
+ *   - US-095 : Toutes les organisations (cross-tenant, super-admin)
+ *   - US-097 : Toutes les simulations (cross-tenant, super-admin)
  *
- * Auth :
- *   - bassira_admin_token attendu en sessionStorage
- *   - Si absent → on remplace toute la page par un form de saisie.
- *     Pas de redirect : c'est une vue ops, l'opérateur attendu sait
- *     pourquoi il est là, et un redirect /admin/analytics → /admin/analytics
- *     créerait une boucle si le navigateur ne supporte pas sessionStorage.
+ * Auth (US-100) :
+ *   - Plus de form sessionStorage admin token. La page s'appuie sur
+ *     l'auth Supabase + whitelist email côté backend.
+ *   - Si !auth.isAuthenticated → CTA Login (redirect=/admin/analytics).
+ *   - Si auth mais !isSuperAdmin → message refus + retour /.
+ *   - Si auth.isSuperAdmin → fetch direct /api/admin/analytics avec
+ *     Bearer JWT (via api/client.js qui injecte le token).
  *
- * Réseau : un seul appel GET /api/admin/analytics. L'intercepteur
- * axios attache automatiquement Authorization: Bearer <token> pour
- * toute URL contenant '/admin' (cf api/index.js mis à jour pour
- * cette US).
+ * Le décorateur backend `@require_admin_token` accepte JWT super-admin
+ * ou (transitionnellement) le legacy BASSIRA_ADMIN_TOKEN — à terme
+ * (US-101+) seul le JWT sera accepté.
  */
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import api from '../api/index.js'
 import { formatApiError } from '../utils/error-handler'
 import { useAuthStore } from '../stores/auth'
 import {
@@ -494,15 +488,16 @@ import {
   fetchAllSimulations,
   setOrgSelfService,
 } from '../api/client.js'
+import client from '../api/client.js'
 
 const { t } = useI18n()
 const authStore = useAuthStore()
 
-// ─── Auth state ────────────────────────────────────────────────────────────
-const TOKEN_KEY = 'bassira_admin_token'
-const authed = ref(Boolean(sessionStorage.getItem(TOKEN_KEY)))
-const tokenInput = ref('')
-const gateError = ref('')
+// ─── US-100 — Auth state via store Supabase + whitelist super-admin ────────
+const isAuthenticated = computed(() => authStore.isAuthenticated)
+const isSuperAdmin = computed(() => authStore.isSuperAdmin)
+// Le tableau de bord est accessible UNIQUEMENT si super-admin confirmé.
+const authed = computed(() => isAuthenticated.value && isSuperAdmin.value)
 
 // ─── Data state ────────────────────────────────────────────────────────────
 const data = ref(null)
@@ -510,60 +505,27 @@ const loading = ref(false)
 const error = ref('')
 const lastFetchedAt = ref(null)
 
-// ─── Auth flow ─────────────────────────────────────────────────────────────
-const login = async () => {
-  const tok = (tokenInput.value || '').trim()
-  if (!tok) {
-    gateError.value = t('analytics.gate.errors.empty')
-    return
-  }
-  // On stocke d'abord, puis on tente un fetch. Si 401/503 retournent on
-  // vide le storage et on affiche l'erreur dans la modal.
-  sessionStorage.setItem(TOKEN_KEY, tok)
-  authed.value = true
-  gateError.value = ''
-  await fetchData(true)
-  if (!data.value) {
-    // fetchData a échoué — on reste authed=false pour que le form revienne.
-    sessionStorage.removeItem(TOKEN_KEY)
-    authed.value = false
-  } else {
-    tokenInput.value = ''
-  }
-}
-
-const logout = () => {
-  sessionStorage.removeItem(TOKEN_KEY)
-  authed.value = false
-  data.value = null
-  error.value = ''
-}
-
 // ─── API ───────────────────────────────────────────────────────────────────
 const fetchData = async (silent = false) => {
   loading.value = true
   if (!silent) error.value = ''
   try {
-    const res = await api.get('/api/admin/analytics')
-    // L'intercepteur unwrap déjà le wrapper Flask. Quand il ne le fait
-    // pas (cas d'edge avec axios 1.x) on lit res.data en backup.
+    // US-100 — utilise le client axios qui injecte le Bearer JWT
+    // automatiquement (cf. ../api/client.js interceptor). Plus besoin
+    // de l'admin token sessionStorage.
+    const res = await client.get('/api/admin/analytics')
     const payload = res && res.data !== undefined ? res.data : res
     data.value = payload
     lastFetchedAt.value = new Date()
   } catch (err) {
     error.value = formatApiError(err) || t('analytics.error.generic')
-    if (silent) {
-      // Le form de gate gère son propre message — on ne pollue pas
-      // l'écran principal avant que l'utilisateur ait validé un token.
-      gateError.value = error.value
-    }
   } finally {
     loading.value = false
   }
 }
 
 // ─── US-095 — Super-admin (toutes les organisations) ───────────────────────
-const isSuperAdmin = computed(() => authStore.isSuperAdmin)
+// `isSuperAdmin` est déjà déclaré plus haut (US-100 auth gate).
 const organizations = ref([])
 const orgsLoading = ref(false)
 const orgsError = ref('')
@@ -724,18 +686,17 @@ const resetAllSimsFilters = () => {
 }
 
 onMounted(async () => {
-  if (authed.value) fetchData()
-  // US-095 — si l'user est authentifié Supabase ET super-admin Bassira,
-  // charger la liste cross-tenant. Le check côté serveur reste source
-  // de vérité — un user qui force le flag côté client recevra 403.
-  if (authStore.isAuthenticated) {
-    if (!authStore.superAdminLoaded) {
-      try {
-        await authStore.fetchSuperStatus()
-      } catch {
-        /* fail-soft */
-      }
+  // US-100 — vérifie d'abord le flag super-admin avant de charger quoi que ce soit.
+  if (authStore.isAuthenticated && !authStore.superAdminLoaded) {
+    try {
+      await authStore.fetchSuperStatus()
+    } catch {
+      /* fail-soft */
     }
+  }
+  // Si super-admin → charge dashboard + cross-tenant.
+  if (authed.value) {
+    fetchData()
     if (authStore.isSuperAdmin) {
       await loadAllOrganizations()
       // US-097 — charger la liste cross-tenant des simulations en parallèle
@@ -1019,11 +980,20 @@ const lastFetchedLabel = computed(() => {
   font-size: var(--wi-body-md);
   font-weight: 600;
   cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
   transition: background 0.18s ease, transform 0.18s ease;
 }
 .analytics-gate-submit:hover {
   background: var(--ms-orange-strong);
   transform: translateY(-1px);
+}
+/* US-100 — actions wrapper pour bouton login / retour home */
+.analytics-gate-actions {
+  display: flex;
+  justify-content: center;
+  margin-block-start: var(--wi-space-md);
 }
 .analytics-gate-error {
   margin-top: var(--wi-space-sm);

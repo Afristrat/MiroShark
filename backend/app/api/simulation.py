@@ -114,26 +114,53 @@ def _extract_bearer_token() -> str:
 def require_admin_token(view_func):
     """Decorator: gate a Flask view on a valid admin bearer token.
 
-    Behaviour matrix:
+    US-100 — Mode dual-auth :
+      1. PRIMARY : essaye d'authentifier comme super-admin Bassira (JWT
+         Supabase + email whitelist). Si succès, forward immédiatement.
+      2. FALLBACK : essaye de matcher le token legacy
+         ``BASSIRA_ADMIN_TOKEN`` / ``MIROSHARK_ADMIN_TOKEN``. Si succès,
+         log un warning « legacy token usage » pour aider l'équipe à
+         migrer définitivement vers JWT (US-101+).
 
-    * ``MIROSHARK_ADMIN_TOKEN`` unset/empty in env → **503**
+    Behaviour matrix (legacy fallback) :
+
+    * ``BASSIRA_ADMIN_TOKEN`` unset/empty in env → **503**
       (fail-closed; the deploy is misconfigured and we refuse to serve
       the mutation rather than silently allowing it).
     * ``Authorization`` header missing or wrong / token mismatch →
-      **401** with a generic "Unauthorized" message. We deliberately do
-      not distinguish "missing" from "wrong" so a probe can't tell
-      whether it found a valid endpoint.
-    * Match → forward to the wrapped view.
-
-    The constant-time comparison via :func:`hmac.compare_digest` keeps
-    a network attacker from byte-trialing the token.
+      **401** with a generic "Unauthorized" message.
+    * Match (legacy or JWT) → forward to the wrapped view.
 
     Reusable across blueprints — apply to any future mutation endpoint
     that should share the same operator-secret gate.
     """
+    # Local imports to avoid a circular import (admin.py imports this module).
+    from ..auth.jwt_verifier import InvalidTokenError, verify_supabase_jwt
+    from ..auth.decorators import is_super_admin_email
 
     @wraps(view_func)
     def _wrapper(*args, **kwargs):
+        # ─── 1. Try JWT super-admin (US-100 primary path) ─────────────
+        provided = _extract_bearer_token()
+        if provided:
+            try:
+                claims = verify_supabase_jwt(provided)
+                email = claims.get("email")
+                if email and is_super_admin_email(email):
+                    # JWT super-admin path — pose g pour cohérence.
+                    from flask import g
+                    g.current_user = {
+                        "id": claims.get("sub"),
+                        "email": email,
+                        "claims": claims,
+                    }
+                    g.is_super_admin = True
+                    return view_func(*args, **kwargs)
+            except InvalidTokenError:
+                # Pas un JWT valide → on tente le legacy token.
+                pass
+
+        # ─── 2. Legacy token fallback ─────────────────────────────────
         expected = _load_admin_token()
         if not expected:
             logger.error(
@@ -151,7 +178,6 @@ def require_admin_token(view_func):
                 ),
             }), 503
 
-        provided = _extract_bearer_token()
         # ``hmac.compare_digest`` requires equal-length operands of the
         # same type to do its constant-time work; encode both sides to
         # bytes and let the function handle short-circuiting safely.
@@ -164,6 +190,12 @@ def require_admin_token(view_func):
                 "error": "Unauthorized",
             }), 401
 
+        # Legacy match — log warning to encourage migration to JWT.
+        logger.warning(
+            "legacy admin token used on %s — migrate to Supabase JWT super-admin "
+            "(BASSIRA_SUPER_ADMIN_EMAILS whitelist). Endpoint: %s",
+            request.path, request.path,
+        )
         return view_func(*args, **kwargs)
 
     return _wrapper
