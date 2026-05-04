@@ -189,9 +189,14 @@ def test_submit_valid_quote_returns_200_and_stores_file(
     assert record["package"] == "crisis_drill_24h"
     assert record["locale"] == "fr"
 
-    # SMTP was attempted — at minimum sendmail fired exactly once.
+    # SMTP was attempted — depuis US-104, on envoie deux emails :
+    #   1. Notification interne sales (legacy US-025) → contact@ai-mpower.com
+    #   2. Confirmation au client (US-104) → email du payload
     sent = [c for c in smtp_mock.calls if c["event"] == "sendmail"]
-    assert len(sent) == 1
+    assert len(sent) == 2
+    recipients = {tuple(c["recipients"]) for c in sent}
+    assert ("contact@ai-mpower.com",) in recipients
+    assert ("karim@example.com",) in recipients
 
 
 def test_quote_missing_email_returns_400_MISSING_FIELD(client, smtp_mock):

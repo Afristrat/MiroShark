@@ -7,6 +7,15 @@
         <span>{{ $t('nav.brand') }}</span>
       </router-link>
       <div class="analytics-topbar-right">
+        <router-link
+          v-if="isSuperAdmin"
+          to="/admin/quotes"
+          class="analytics-pill"
+          :title="$t('nav.adminQuotesTitle')"
+          style="text-decoration:none"
+        >
+          {{ $t('nav.adminQuotes') }}
+        </router-link>
         <span class="analytics-pill">
           <span class="analytics-pill-dot" aria-hidden="true"></span>
           {{ $t('analytics.opsBadge') }}

@@ -26,6 +26,10 @@
     "logout": "تسجيل الخروج",
     "admin": "الإدارة",
     "adminTitle": "وحدة تحكم المشرف الرئيسي لبصيرة (جميع المؤسسات)",
+    "adminQuotes": "عروض الأسعار",
+    "adminQuotesTitle": "وحدة تحكم المشرف الرئيسي: جميع طلبات عروض الأسعار",
+    "console": "الوحدة",
+    "consoleTitle": "الوحدة الخاصة: إطلاق محاكاة يدوياً",
     "launchSimulation": "إطلاق محاكاة",
     "launchSimulationTitle": "إطلاق محاكاة جديدة مباشرة (مشرف رئيسي)"
   },
@@ -39,7 +43,8 @@
     "close": "إغلاق",
     "back": "رجوع",
     "next": "التالي",
-    "previous": "السابق"
+    "previous": "السابق",
+    "viewDetails": "عرض التفاصيل"
   },
   "language": {
     "fr": "Français",
@@ -113,7 +118,9 @@
       "viewModels": "تصفّح النماذج",
       "viewModelsTitle": "اكتشف نماذج المحاكاة الجاهزة للطلب",
       "orderAnalysis": "اطلب تحليلًا",
-      "orderAnalysisTitle": "اطلب عرض سعر لتحليل استراتيجي مخصص"
+      "orderAnalysisTitle": "اطلب عرض سعر لتحليل استراتيجي مخصص",
+      "runSimulation": "إطلاق محاكاة",
+      "runSimulationTitle": "افتح الوحدة الخاصة لإطلاق محاكاة يدوياً"
     },
     "panel": {
       "systemStatus": "حالة النظام",
@@ -463,7 +470,7 @@
     },
     "sheStart": {
       "variantA": "إعادة",
-      "variantATitle": "النوع أ · إعادة المحاكاة المرجعية (تشغيل واحد، 10 أسابيع، 50 وكيلًا): يقارن مسار MiroShark بمجموعة She Start الفعلية.",
+      "variantATitle": "النوع أ · إعادة المحاكاة المرجعية (تشغيل واحد، 10 أسابيع، 50 وكيلًا): يقارن مسار بصيرة بمجموعة She Start الفعلية.",
       "variantB": "توأم",
       "variantBTitle": "النوع ب · توأم المجموعة (5 تشغيلات متوازية، 10 أسابيع): يقيس الاستقرار الإحصائي للتنبؤات.",
       "variantC": "بقعة عمياء",
@@ -2304,6 +2311,55 @@
         "outcomeFailed": "تعذّر حفظ النتيجة. أعد المحاولة.",
         "profileFailed": "الملف الشخصي غير متاح. أعد المحاولة أو تواصل مع الدعم."
       }
+    }
+  },
+  "console": {
+    "eyebrow": "وحدة خاصة · خدمة ذاتية"
+  },
+  "adminQuotes": {
+    "title": "جميع طلبات عروض الأسعار المستلمة",
+    "subtitle": "وحدة تحكم المشرف الرئيسي لبصيرة — متابعة المسار التجاري.",
+    "loading": "جارٍ تحميل عروض الأسعار…",
+    "empty": "لا يوجد طلب مسجّل حتى الآن.",
+    "filters": {
+      "status": "الحالة",
+      "all": "الكل",
+      "reset": "إعادة الضبط"
+    },
+    "table": {
+      "id": "المعرّف",
+      "date": "تاريخ الاستلام",
+      "contact": "جهة الاتصال",
+      "package": "الباقة",
+      "situation": "السياق",
+      "status": "الحالة",
+      "actions": "الإجراءات"
+    },
+    "status": {
+      "received": "مُستلم",
+      "reviewing": "قيد الدراسة",
+      "quoted": "أُرسل العرض",
+      "declined": "مرفوض",
+      "paid": "مدفوع",
+      "in_progress": "قيد التنفيذ",
+      "delivered": "تم التسليم"
+    },
+    "modal": {
+      "title": "تفاصيل الطلب",
+      "close": "إغلاق",
+      "history": "السجلّ",
+      "notes": "ملاحظات داخلية (مشرف رئيسي)",
+      "notesPlaceholder": "ملاحظات تشغيلية، غير ظاهرة للعميل…",
+      "paymentLink": "رابط Stripe للدفع",
+      "paymentLinkPlaceholder": "https://buy.stripe.com/…",
+      "sendPaymentLink": "إرسال رابط الدفع عبر البريد",
+      "sendPaymentLinkSent": "تم الإرسال · {ago}",
+      "markDelivered": "تأكيد التسليم",
+      "deliveredAsk": "رابط Notion أو PDF للمنتج المسلّم",
+      "saveNotes": "حفظ الملاحظات",
+      "noteSaved": "تم حفظ الملاحظات.",
+      "noteFailed": "تعذّر حفظ الملاحظات.",
+      "transitionFailed": "تم رفض تغيير الحالة."
     }
   }
 }

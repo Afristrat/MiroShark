@@ -65,10 +65,11 @@
       <div v-if="orgs.length > 0" class="dash-toolbar">
         <h2 class="dash-section-title">{{ $t('client.dashboard.simulationsTitle') }}</h2>
         <div class="dash-toolbar-actions">
-          <!-- US-098 — Bouton self-service visible uniquement si l'org a le flag -->
+          <!-- US-098/US-107 — Bouton self-service visible uniquement si l'org a le flag.
+               Désormais conduit vers /console (route privative dédiée). -->
           <router-link
             v-if="canSelfService"
-            to="/process/new"
+            to="/console"
             class="dash-cta dash-cta--secondary"
             :title="$t('dashboard.selfServiceCta.title')"
           >

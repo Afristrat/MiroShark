@@ -103,6 +103,8 @@ _BLUEPRINT_PREFIXES = {
     "share_bp":          "",
     # quote_bp serves the public commercial-form receiver (US-025).
     "quote_bp":          "/api/quote",
+    # admin_quote_bp serves the super-admin quote console (US-102/103/104).
+    "admin_quote_bp":    "/api/admin/quotes",
     # admin_bp serves the gated ops analytics dashboard (US-065).
     "admin_bp":          "/api/admin",
     # models_bp serves the public branded-brief PDF endpoint (US-088).
@@ -145,6 +147,13 @@ _UNDOCUMENTED_ALLOWLIST: set[str] = {
     "/api/admin/simulations",
     # US-098 — toggle self-service per org (super-admin only).
     "/api/admin/organizations/<org_id>/self-service",
+    # US-102 / US-103 / US-104 — super-admin quote console.
+    "/api/admin/quotes",
+    "/api/admin/quotes/<quote_id>",
+    "/api/admin/quotes/<quote_id>/status",
+    "/api/admin/quotes/<quote_id>/notes",
+    "/api/admin/quotes/<quote_id>/send-payment-link",
+    "/api/admin/quotes/<quote_id>/send-delivered",
 }
 
 

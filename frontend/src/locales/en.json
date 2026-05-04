@@ -26,6 +26,10 @@
     "logout": "Sign out",
     "admin": "Admin",
     "adminTitle": "Bassira super-admin console (all organizations)",
+    "adminQuotes": "Quotes",
+    "adminQuotesTitle": "Super-admin console: all received quote requests",
+    "console": "Console",
+    "consoleTitle": "Private console: launch a simulation manually",
     "launchSimulation": "Launch simulation",
     "launchSimulationTitle": "Launch a new simulation directly (super-admin)"
   },
@@ -39,7 +43,8 @@
     "close": "Close",
     "back": "Back",
     "next": "Next",
-    "previous": "Previous"
+    "previous": "Previous",
+    "viewDetails": "View details"
   },
   "language": {
     "fr": "Français",
@@ -91,7 +96,7 @@
       "closeTitle": "Close preview"
     },
     "hero": {
-      "tag": "Universal Swarm Intelligence Engine",
+      "tag": "Strategic Foresight Engine",
       "eyebrow": "بصيرة · Strategic Foresight",
       "title": "Stress-test your strategy before it touches reality.",
       "subtitle": "The augmented foresight platform for MENA, Europe and Africaan decision-makers.",
@@ -113,7 +118,9 @@
       "viewModels": "Browse our models",
       "viewModelsTitle": "Discover our ready-to-order simulation models",
       "orderAnalysis": "Order an analysis",
-      "orderAnalysisTitle": "Request a quote for a custom strategic analysis"
+      "orderAnalysisTitle": "Request a quote for a custom strategic analysis",
+      "runSimulation": "Run a simulation",
+      "runSimulationTitle": "Open the private console to run a simulation manually"
     },
     "panel": {
       "systemStatus": "System Status",
@@ -463,7 +470,7 @@
     },
     "sheStart": {
       "variantA": "Replay",
-      "variantATitle": "Variant A · Ground Truth Replay (1 run, 10 weeks, 50 agents): compares the MiroShark trajectory to the real She Start cohort.",
+      "variantATitle": "Variant A · Ground Truth Replay (1 run, 10 weeks, 50 agents): compares the Bassira trajectory to the real She Start cohort.",
       "variantB": "Twin",
       "variantBTitle": "Variant B · Cohort Twin (5 parallel runs, 10 weeks): measures the statistical stability of the predictions.",
       "variantC": "Blind Spot",
@@ -2304,6 +2311,55 @@
         "outcomeFailed": "Could not save outcome. Try again.",
         "profileFailed": "Profile unavailable. Try again or contact support."
       }
+    }
+  },
+  "console": {
+    "eyebrow": "Private console · Self-service"
+  },
+  "adminQuotes": {
+    "title": "All received quote requests",
+    "subtitle": "Bassira super-admin console — commercial pipeline overview.",
+    "loading": "Loading quotes…",
+    "empty": "No quote received yet.",
+    "filters": {
+      "status": "Status",
+      "all": "All",
+      "reset": "Reset"
+    },
+    "table": {
+      "id": "ID",
+      "date": "Received",
+      "contact": "Contact",
+      "package": "Package",
+      "situation": "Situation",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": {
+      "received": "Received",
+      "reviewing": "Reviewing",
+      "quoted": "Quote sent",
+      "declined": "Declined",
+      "paid": "Paid",
+      "in_progress": "In progress",
+      "delivered": "Delivered"
+    },
+    "modal": {
+      "title": "Quote details",
+      "close": "Close",
+      "history": "History",
+      "notes": "Internal notes (super-admin)",
+      "notesPlaceholder": "Operational notes, not visible to the client…",
+      "paymentLink": "Stripe Payment Link URL",
+      "paymentLinkPlaceholder": "https://buy.stripe.com/…",
+      "sendPaymentLink": "Send payment link by email",
+      "sendPaymentLinkSent": "Email sent · {ago}",
+      "markDelivered": "Mark delivered",
+      "deliveredAsk": "Notion / PDF deliverable URL",
+      "saveNotes": "Save notes",
+      "noteSaved": "Notes saved.",
+      "noteFailed": "Could not save notes.",
+      "transitionFailed": "Status transition rejected."
     }
   }
 }

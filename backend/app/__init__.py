@@ -120,8 +120,11 @@ def create_app(config_class=Config):
     app.register_blueprint(admin_bp, url_prefix='/api/admin')
     # quote_bp serves the commercial-form receiver at POST /api/quote
     # (US-025) — public, rate-limited, fires a notification email.
-    from .api.quote import quote_bp
+    # admin_quote_bp expose la console super-admin /api/admin/quotes
+    # (US-102/103/104) — workflow statut + envoi Resend.
+    from .api.quote import quote_bp, admin_quote_bp
     app.register_blueprint(quote_bp, url_prefix='/api/quote')
+    app.register_blueprint(admin_quote_bp, url_prefix='/api/admin/quotes')
     # models_bp serves the public branded-brief PDF endpoint at
     # GET /api/models/<slug>/pdf-brief?lang=<fr|en|ar> (US-088).
     from .api.models import models_bp

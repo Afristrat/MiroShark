@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Bassira favicon (US-108) — placeholder neutre.
+  Lettre arabe « ب » (ba), première lettre de بصيرة, sur fond cream Causse.
+  Le vrai logo produit reste à concevoir par un designer (ne pas hardcoder ici).
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect width="64" height="64" rx="12" ry="12" fill="#FAF7F2"/>
+  <text
+    x="32"
+    y="48"
+    text-anchor="middle"
+    font-family="Tajawal, Outfit, system-ui, sans-serif"
+    font-weight="700"
+    font-size="48"
+    fill="#FF8551"
+  >ب</text>
+</svg>

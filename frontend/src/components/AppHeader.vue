@@ -39,6 +39,17 @@
       </div>
 
       <div class="app-header__actions">
+        <!-- US-107 — entrée « Console » visible aux super-admins ou
+             aux orgs avec self_service_enabled. Conduit vers /console
+             (privatif). Backend reste seul juge en cas de tentative. -->
+        <router-link
+          v-if="isAuthenticated && canRunConsole"
+          to="/console"
+          class="app-header__link app-header__link--auth"
+          :title="$t('nav.consoleTitle')"
+        >
+          {{ $t('nav.console') }}
+        </router-link>
         <!-- US-095 — entrée Admin réservée aux super-admins Bassira.
              Visibilité conditionnée par le flag store.isSuperAdmin
              (chargé via fetchSuperStatus côté backend, whitelist email). -->
@@ -49,6 +60,15 @@
           :title="$t('nav.adminTitle')"
         >
           {{ $t('nav.admin') }}
+        </router-link>
+        <!-- US-102 — entrée « Devis » super-admin uniquement. -->
+        <router-link
+          v-if="isAuthenticated && isSuperAdmin"
+          to="/admin/quotes"
+          class="app-header__link app-header__link--auth app-header__link--admin"
+          :title="$t('nav.adminQuotesTitle')"
+        >
+          {{ $t('nav.adminQuotes') }}
         </router-link>
         <!-- US-099 — Bouton « + Lancer une simulation » réservé aux super-admins.
              Permet à Amine de lancer une sim depuis n'importe quelle page. -->
@@ -105,7 +125,14 @@ const router = useRouter()
 const route = useRoute()
 const { locale } = useI18n()
 const authStore = useAuthStore()
-const { isAuthenticated, isSuperAdmin } = storeToRefs(authStore)
+const { isAuthenticated, isSuperAdmin, currentOrg } = storeToRefs(authStore)
+
+// US-107 — visibilité de l'entrée Console (super-admin OU org self-service).
+const canRunConsole = computed(() => {
+  if (isSuperAdmin.value) return true
+  if (!isAuthenticated.value) return false
+  return Boolean(currentOrg.value?.self_service_enabled)
+})
 
 // Libellé du bouton « Relancer la visite guidée » localisé sans dépendre
 // d'une nouvelle clé i18n (étend le pattern App.vue d'origine — US-094).

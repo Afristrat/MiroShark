@@ -26,6 +26,10 @@
     "logout": "Se déconnecter",
     "admin": "Admin",
     "adminTitle": "Console super-admin Bassira (toutes les organisations)",
+    "adminQuotes": "Devis",
+    "adminQuotesTitle": "Console super-admin : tous les devis reçus",
+    "console": "Console",
+    "consoleTitle": "Console privative : lancer une simulation manuellement",
     "launchSimulation": "Lancer simulation",
     "launchSimulationTitle": "Lancer une nouvelle simulation directement (super-admin)"
   },
@@ -39,7 +43,8 @@
     "close": "Fermer",
     "back": "Retour",
     "next": "Suivant",
-    "previous": "Précédent"
+    "previous": "Précédent",
+    "viewDetails": "Voir le détail"
   },
   "language": {
     "fr": "Français",
@@ -113,7 +118,9 @@
       "viewModels": "Voir les modèles",
       "viewModelsTitle": "Découvrir nos modèles de simulation prêts à commander",
       "orderAnalysis": "Commander une analyse",
-      "orderAnalysisTitle": "Demander un devis pour une analyse stratégique sur mesure"
+      "orderAnalysisTitle": "Demander un devis pour une analyse stratégique sur mesure",
+      "runSimulation": "Lancer une simulation",
+      "runSimulationTitle": "Ouvrir la console privative pour lancer une simulation manuellement"
     },
     "panel": {
       "systemStatus": "Statut du système",
@@ -463,7 +470,7 @@
     },
     "sheStart": {
       "variantA": "Replay",
-      "variantATitle": "Variant A · Ground Truth Replay (1 run, 10 semaines, 50 agents) : compare la trajectoire MiroShark à la cohorte She Start réelle.",
+      "variantATitle": "Variant A · Ground Truth Replay (1 run, 10 semaines, 50 agents) : compare la trajectoire Bassira à la cohorte She Start réelle.",
       "variantB": "Twin",
       "variantBTitle": "Variant B · Cohort Twin (5 runs parallèles, 10 semaines) : mesure la stabilité statistique des prédictions.",
       "variantC": "Blind Spot",
@@ -2304,6 +2311,55 @@
         "outcomeFailed": "Impossible d'enregistrer l'issue. Réessayez.",
         "profileFailed": "Profil indisponible. Réessayez ou contactez le support."
       }
+    }
+  },
+  "console": {
+    "eyebrow": "Console privative · Self-service"
+  },
+  "adminQuotes": {
+    "title": "Tous les devis reçus",
+    "subtitle": "Console super-admin Bassira — pilotage du tunnel commercial.",
+    "loading": "Chargement des devis…",
+    "empty": "Aucun devis enregistré pour le moment.",
+    "filters": {
+      "status": "Statut",
+      "all": "Tous",
+      "reset": "Réinitialiser"
+    },
+    "table": {
+      "id": "Identifiant",
+      "date": "Reçu le",
+      "contact": "Contact",
+      "package": "Package",
+      "situation": "Situation",
+      "status": "Statut",
+      "actions": "Actions"
+    },
+    "status": {
+      "received": "Reçu",
+      "reviewing": "À l'étude",
+      "quoted": "Devis envoyé",
+      "declined": "Refusé",
+      "paid": "Payé",
+      "in_progress": "En cours",
+      "delivered": "Livré"
+    },
+    "modal": {
+      "title": "Détail du devis",
+      "close": "Fermer",
+      "history": "Historique",
+      "notes": "Notes internes (super-admin)",
+      "notesPlaceholder": "Notes opérationnelles, non visibles du client…",
+      "paymentLink": "Lien Stripe Payment Link",
+      "paymentLinkPlaceholder": "https://buy.stripe.com/…",
+      "sendPaymentLink": "Envoyer le lien de paiement par email",
+      "sendPaymentLinkSent": "Email envoyé · {ago}",
+      "markDelivered": "Marquer livré",
+      "deliveredAsk": "Lien Notion / PDF du livrable",
+      "saveNotes": "Sauvegarder les notes",
+      "noteSaved": "Notes sauvegardées.",
+      "noteFailed": "Impossible de sauvegarder les notes.",
+      "transitionFailed": "Transition de statut refusée."
     }
   }
 }

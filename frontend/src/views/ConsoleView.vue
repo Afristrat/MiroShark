@@ -1,0 +1,1110 @@
+<template>
+  <!-- ═══════════════════════════════════════════════════════════
+       US-107 — Console upload privative (/console)
+       Extraction depuis Home.vue : la « console graines de réalité »
+       (upload, fetch URL, TrendingTopics, ScenarioSuggestions,
+       textarea prompt, bouton Lancer) ne vit plus sur la home
+       publique. Elle a maintenant sa propre route, gardée par
+       requiresAuth + requiresSelfService.
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="console-page">
+    <SettingsPanel :open="settingsOpen" @close="settingsOpen = false" />
+
+    <!-- Document preview modal (URL fetches + Ask-mode generations) -->
+    <Teleport to="body">
+      <div v-if="previewDoc" class="doc-preview-overlay" @click.self="previewDoc = null">
+        <div class="doc-preview-modal">
+          <div class="doc-preview-header">
+            <div class="doc-preview-title">
+              <span class="doc-preview-icon">◈</span>
+              <span>{{ previewDoc.title }}</span>
+            </div>
+            <button class="doc-preview-close" @click="previewDoc = null">✕</button>
+          </div>
+          <div class="doc-preview-warning"></div>
+          <div class="doc-preview-meta">
+            {{ $t('home.preview.chars', { count: previewDoc.char_count.toLocaleString() }) }}
+            <span v-if="previewDoc.url" class="doc-preview-meta-sep">·</span>
+            <span v-if="previewDoc.url" class="doc-preview-url">{{ previewDoc.url }}</span>
+          </div>
+          <pre class="doc-preview-body">{{ previewDoc.text }}</pre>
+        </div>
+      </div>
+    </Teleport>
+
+    <main class="console-main">
+      <!-- Hero introductif -->
+      <header class="console-hero">
+        <div class="console-hero-eyebrow">{{ $t('console.eyebrow') }}</div>
+        <h1 class="console-hero-title">{{ $t('home.panel.consoleTitle') }}</h1>
+        <p class="console-hero-subtitle">{{ $t('home.panel.consoleSubtitle') }}</p>
+      </header>
+
+      <!-- Dashboard 2 colonnes : statut + console -->
+      <section class="dashboard-section">
+        <!-- Left Column: Status & Steps -->
+        <div class="left-panel">
+          <div class="panel-header">
+            <span class="status-dot">■</span> {{ $t('home.panel.systemStatus') }}
+          </div>
+
+          <h2 class="section-title">{{ $t('home.panel.ready') }}</h2>
+          <p class="section-desc">{{ $t('home.panel.readyDesc') }}</p>
+
+          <div class="steps-container">
+            <div class="steps-header">
+              <span class="diamond-icon">◇</span> {{ $t('home.steps.title') }}
+            </div>
+            <div class="workflow-list">
+              <div class="workflow-item">
+                <span class="step-num">01</span>
+                <div class="step-info">
+                  <div class="step-title">{{ $t('home.steps.s1.title') }}</div>
+                  <div class="step-desc">{{ $t('home.steps.s1.desc') }}</div>
+                </div>
+              </div>
+              <div class="workflow-item">
+                <span class="step-num">02</span>
+                <div class="step-info">
+                  <div class="step-title">{{ $t('home.steps.s2.title') }}</div>
+                  <div class="step-desc">{{ $t('home.steps.s2.desc') }}</div>
+                </div>
+              </div>
+              <div class="workflow-item">
+                <span class="step-num">03</span>
+                <div class="step-info">
+                  <div class="step-title">{{ $t('home.steps.s3.title') }}</div>
+                  <div class="step-desc">{{ $t('home.steps.s3.desc') }}</div>
+                </div>
+              </div>
+              <div class="workflow-item">
+                <span class="step-num">04</span>
+                <div class="step-info">
+                  <div class="step-title">{{ $t('home.steps.s4.title') }}</div>
+                  <div class="step-desc">{{ $t('home.steps.s4.desc') }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Interactive Console -->
+        <div class="right-panel">
+          <div class="console-box">
+            <!-- Upload Area -->
+            <div class="console-section">
+              <div class="console-header">
+                <span class="console-label">{{ $t('home.console.seedsLabel') }}</span>
+                <span class="console-meta">{{ $t('home.console.seedsMeta') }}</span>
+              </div>
+
+              <div
+                class="upload-zone"
+                :class="{ 'drag-over': isDragOver, 'has-files': files.length > 0 }"
+                @dragover.prevent="handleDragOver"
+                @dragleave.prevent="handleDragLeave"
+                @drop.prevent="handleDrop"
+                @click="triggerFileInput"
+              >
+                <input
+                  ref="fileInput"
+                  type="file"
+                  multiple
+                  accept=".pdf,.md,.txt"
+                  @change="handleFileSelect"
+                  style="display: none"
+                  :disabled="loading"
+                />
+
+                <div v-if="files.length === 0" class="upload-placeholder">
+                  <div class="upload-icon">↑</div>
+                  <div class="upload-title">{{ $t('home.console.uploadTitle') }}</div>
+                  <div class="upload-hint">{{ $t('home.console.uploadHint') }}</div>
+                </div>
+
+                <div v-else class="file-list">
+                  <div v-for="(file, index) in files" :key="index" class="file-item">
+                    <span class="file-icon">📄</span>
+                    <span class="file-name">{{ file.name }}</span>
+                    <button @click.stop="removeFile(index)" class="remove-btn">×</button>
+                  </div>
+                </div>
+
+                <div v-if="pdfScanWarnings.length > 0" class="pdf-scan-warning">
+                  <span class="pdf-scan-icon" aria-hidden="true">⚠</span>
+                  <div class="pdf-scan-body">
+                    <strong>{{ $t('home.console.pdfScanTitle') }}</strong>
+                    <span>{{ $t('home.console.pdfScanHint') }}</span>
+                    <ul class="pdf-scan-files">
+                      <li v-for="name in pdfScanWarnings" :key="name">{{ name }}</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ask Mode -->
+            <div class="console-section url-section">
+              <div class="console-header">
+                <span class="console-label">{{ $t('home.console.askLabel') }}</span>
+                <span class="console-meta">{{ $t('home.console.askMeta') }}</span>
+              </div>
+              <div class="url-input-row">
+                <input
+                  v-model="askQuestion"
+                  class="url-input"
+                  type="text"
+                  :placeholder="$t('home.console.askPlaceholder')"
+                  :disabled="loading || askBusy"
+                  @keydown.enter.prevent="runAskMode"
+                />
+                <button
+                  class="url-fetch-btn"
+                  @click="runAskMode"
+                  :disabled="!askQuestion.trim() || loading || askBusy"
+                >
+                  <span v-if="askBusy">...</span>
+                  <span v-else>{{ $t('home.console.researchBtn') }}</span>
+                </button>
+              </div>
+              <div v-if="askError" class="url-error">{{ askError }}</div>
+              <div v-if="askEnriching" class="url-doc-meta" style="margin-top:6px">{{ $t('home.enriching') }}</div>
+              <div v-else-if="askBusy" class="url-doc-meta" style="margin-top:6px">{{ $t('home.console.researchBusy') }}</div>
+              <div v-if="askDocs.length > 0" class="url-doc-list">
+                <div
+                  v-for="doc in askDocs"
+                  :key="doc.url"
+                  class="url-doc-item"
+                  role="button"
+                  tabindex="0"
+                  :title="$t('home.console.askDocTitle')"
+                  @click="previewDoc = doc"
+                  @keydown.enter.prevent="previewDoc = doc"
+                  @keydown.space.prevent="previewDoc = doc"
+                >
+                  <span class="url-doc-icon">◈</span>
+                  <div class="url-doc-info">
+                    <div class="url-doc-title" :title="doc.title">{{ truncate(doc.title, 70) }}</div>
+                    <div class="url-doc-meta" :title="doc.url">{{ $t('home.preview.chars', { count: doc.char_count.toLocaleString() }) }} · {{ truncate(doc.url, 72) }}</div>
+                  </div>
+                  <button @click.stop="removeUrlDocByRef(doc)" class="remove-btn">×</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- URL Input Section -->
+            <div class="console-section url-section">
+              <div class="console-header">
+                <span class="console-label">{{ $t('home.console.urlLabel') }}</span>
+                <span class="console-meta">{{ $t('home.console.urlMeta') }}</span>
+              </div>
+              <div class="url-input-row">
+                <input
+                  v-model="urlInput"
+                  class="url-input"
+                  type="url"
+                  :placeholder="$t('home.console.urlPlaceholder')"
+                  :disabled="loading || urlFetching"
+                  @keydown.enter.prevent="fetchUrlDoc"
+                />
+                <button
+                  class="url-fetch-btn"
+                  @click="fetchUrlDoc"
+                  :disabled="!urlInput.trim() || loading || urlFetching"
+                >
+                  <span v-if="urlFetching">...</span>
+                  <span v-else>{{ $t('home.console.fetchBtn') }}</span>
+                </button>
+              </div>
+              <div v-if="urlError" class="url-error">{{ urlError }}</div>
+              <div v-if="fetchedDocs.length > 0" class="url-doc-list">
+                <div
+                  v-for="doc in fetchedDocs"
+                  :key="doc.url"
+                  class="url-doc-item"
+                  role="button"
+                  tabindex="0"
+                  :title="$t('home.console.urlDocTitle')"
+                  @click="previewDoc = doc"
+                  @keydown.enter.prevent="previewDoc = doc"
+                  @keydown.space.prevent="previewDoc = doc"
+                >
+                  <span class="url-doc-icon">◈</span>
+                  <div class="url-doc-info">
+                    <div class="url-doc-title" :title="doc.title">{{ truncate(doc.title, 70) }}</div>
+                    <div class="url-doc-meta" :title="doc.url">{{ $t('home.preview.chars', { count: doc.char_count.toLocaleString() }) }} · {{ truncate(doc.url, 72) }}</div>
+                  </div>
+                  <button @click.stop="removeUrlDocByRef(doc)" class="remove-btn">×</button>
+                </div>
+              </div>
+              <TrendingTopics :busy="urlFetching" @select="handleTrendingSelect" />
+            </div>
+
+            <div class="console-divider">
+              <span>{{ $t('home.console.params') }}</span>
+            </div>
+
+            <!-- Input Area -->
+            <div class="console-section">
+              <div class="console-header">
+                <span class="console-label">{{ $t('home.console.promptLabel') }}</span>
+              </div>
+              <ScenarioSuggestions
+                :text-preview="scenarioSuggestPreview"
+                :simulation-prompt="formData.simulationRequirement"
+                @use="handleSuggestionUse"
+              />
+              <div class="input-wrapper">
+                <textarea
+                  v-model="formData.simulationRequirement"
+                  class="code-input"
+                  :placeholder="$t('home.console.promptPlaceholder')"
+                  rows="6"
+                  :disabled="loading"
+                ></textarea>
+                <div class="model-badge">{{ $t('home.console.engine') }}</div>
+              </div>
+            </div>
+
+            <div class="console-section btn-section">
+              <button
+                class="start-engine-btn"
+                @click="startSimulation"
+                :disabled="!canSubmit || loading"
+              >
+                <span v-if="!loading">{{ $t('home.console.launch') }}</span>
+                <span v-else>{{ $t('home.console.initializing') }}</span>
+                <span class="btn-arrow">→</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Galerie de templates + historique : conservés ici car cohérents
+           avec un mode self-service. Visibles seulement aux utilisateurs
+           qui ont déjà passé le guard de la route. -->
+      <div id="templates-gallery">
+        <TemplateGallery />
+      </div>
+
+      <HistoryDatabase />
+    </main>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import HistoryDatabase from '../components/HistoryDatabase.vue'
+import TemplateGallery from '../components/TemplateGallery.vue'
+import SettingsPanel from '../components/SettingsPanel.vue'
+import ScenarioSuggestions from '../components/ScenarioSuggestions.vue'
+import TrendingTopics from '../components/TrendingTopics.vue'
+import { fetchUrl } from '../api/graph'
+import { askMode, enrichAsk } from '../api/simulation'
+
+const { t } = useI18n()
+const router = useRouter()
+const route = useRoute()
+
+const settingsOpen = ref(false)
+const previewDoc = ref(null)
+
+// Form data
+const formData = ref({
+  simulationRequirement: ''
+})
+
+const files = ref([])
+const urlInput = ref('')
+const urlDocs = ref([])
+const urlFetching = ref(false)
+const urlError = ref('')
+
+const askQuestion = ref('')
+const askBusy = ref(false)
+const askError = ref('')
+const askEnriching = ref(false)
+
+const loading = ref(false)
+const isDragOver = ref(false)
+const fileInput = ref(null)
+
+// Pré-remplir l'URL si ?url= présent (depuis TrendingTopics ailleurs)
+onMounted(() => {
+  const preloadUrl = route.query.url
+  if (preloadUrl && typeof preloadUrl === 'string') {
+    urlInput.value = preloadUrl
+    fetchUrlDoc()
+  }
+})
+
+const canSubmit = computed(() => {
+  return formData.value.simulationRequirement.trim() !== '' &&
+    (files.value.length > 0 || urlDocs.value.length > 0)
+})
+
+const triggerFileInput = () => {
+  if (!loading.value) {
+    fileInput.value?.click()
+  }
+}
+
+const handleFileSelect = (event) => {
+  const selectedFiles = Array.from(event.target.files)
+  addFiles(selectedFiles)
+}
+
+const handleDragOver = () => {
+  if (!loading.value) isDragOver.value = true
+}
+
+const handleDragLeave = () => {
+  isDragOver.value = false
+}
+
+const handleDrop = (e) => {
+  isDragOver.value = false
+  if (loading.value) return
+  const droppedFiles = Array.from(e.dataTransfer.files)
+  addFiles(droppedFiles)
+}
+
+const filePreviewText = ref('')
+const pdfScanWarnings = ref([])
+
+const _extractPdfPreview = async (file) => {
+  try {
+    const fd = new FormData()
+    fd.append('file', file)
+    const res = await fetch('/api/simulation/file-preview', { method: 'POST', body: fd })
+    if (!res.ok) return ''
+    const json = await res.json()
+    const text = (json?.data?.text || '').slice(0, 3000)
+    if (text.length < 80 && file.name.toLowerCase().endsWith('.pdf')) {
+      pdfScanWarnings.value.push(file.name)
+    }
+    return text
+  } catch (_) {
+    return ''
+  }
+}
+
+const refreshFilePreviewText = async () => {
+  const textish = files.value.filter(f => {
+    const ext = (f.name.split('.').pop() || '').toLowerCase()
+    return ext === 'md' || ext === 'txt'
+  })
+  const pdfs = files.value.filter(f =>
+    (f.name.split('.').pop() || '').toLowerCase() === 'pdf'
+  )
+  try {
+    const textChunks = await Promise.all(textish.map(async (f) => {
+      try {
+        const slice = f.slice ? f.slice(0, 6000) : f
+        const txt = await slice.text()
+        return (txt || '').slice(0, 3000)
+      } catch (_) { return '' }
+    }))
+    const pdfChunks = await Promise.all(pdfs.map(_extractPdfPreview))
+    const all = [...textChunks, ...pdfChunks].filter(Boolean)
+    filePreviewText.value = all.join('\n\n').slice(0, 6000)
+  } catch (_) {
+    filePreviewText.value = ''
+  }
+}
+
+const addFiles = (newFiles) => {
+  const validFiles = newFiles.filter(file => {
+    const ext = file.name.split('.').pop().toLowerCase()
+    return ['pdf', 'md', 'txt'].includes(ext)
+  })
+  files.value.push(...validFiles)
+  pdfScanWarnings.value = []
+  refreshFilePreviewText()
+}
+
+const removeFile = (index) => {
+  files.value.splice(index, 1)
+  pdfScanWarnings.value = []
+  refreshFilePreviewText()
+}
+
+const scenarioSuggestPreview = computed(() => {
+  const urlChunks = (urlDocs.value || [])
+    .map(d => {
+      const head = d.title ? `# ${d.title}\n` : ''
+      const body = (d.text || '').slice(0, 3000)
+      return body ? head + body : ''
+    })
+    .filter(Boolean)
+  const combined = [...urlChunks]
+  if (filePreviewText.value) combined.push(filePreviewText.value)
+  return combined.join('\n\n').slice(0, 6000)
+})
+
+const handleSuggestionUse = ({ question, simulationRequirement }) => {
+  if (!question) return
+  formData.value.simulationRequirement = simulationRequirement || question
+}
+
+const fetchUrlDoc = async () => {
+  const url = urlInput.value.trim()
+  if (!url || urlFetching.value) return
+  if (urlDocs.value.some(d => d.url === url)) {
+    urlError.value = t('home.console.duplicateUrl')
+    return
+  }
+  urlFetching.value = true
+  urlError.value = ''
+  try {
+    const res = await fetchUrl(url)
+    if (res.success) {
+      urlDocs.value.push(res.data)
+      urlInput.value = ''
+    } else {
+      urlError.value = res.error || t('home.console.fetchFailed')
+    }
+  } catch (err) {
+    urlError.value = err.message || t('home.console.fetchFailed')
+  } finally {
+    urlFetching.value = false
+  }
+}
+
+const runAskMode = async () => {
+  const q = askQuestion.value.trim()
+  if (!q || askBusy.value) return
+  askBusy.value = true
+  askError.value = ''
+
+  let enrichedQuestion = q
+  try {
+    askEnriching.value = true
+    const enrichRes = await enrichAsk(q)
+    if (enrichRes?.data?.context) {
+      enrichedQuestion = `${q}\n\n--- Web Context ---\n${enrichRes.data.context}`
+    }
+  } catch (_) {
+    // enrichissement non bloquant
+  } finally {
+    askEnriching.value = false
+  }
+
+  try {
+    const res = await askMode(enrichedQuestion)
+    if (!res.success) {
+      askError.value = res.error || t('home.console.askFailed')
+      return
+    }
+    const d = res.data
+    const synthUrl = `bassira://ask/${encodeURIComponent(q.slice(0, 64))}`
+    const idx = urlDocs.value.findIndex(x => x.url === synthUrl)
+    const payload = {
+      title: d.title,
+      url: synthUrl,
+      text: d.seed_document,
+      char_count: (d.seed_document || '').length,
+    }
+    if (idx >= 0) urlDocs.value.splice(idx, 1, payload)
+    else urlDocs.value.push(payload)
+    if (!formData.value.simulationRequirement) {
+      formData.value.simulationRequirement = d.simulation_requirement
+    }
+    askQuestion.value = ''
+  } catch (err) {
+    askError.value = err?.response?.data?.error || err?.message || t('home.console.askFailed')
+  } finally {
+    askBusy.value = false
+  }
+}
+
+const handleTrendingSelect = ({ url }) => {
+  if (!url || urlFetching.value) return
+  if (urlDocs.value.some(d => d.url === url)) {
+    urlError.value = t('home.console.alreadyLoadedUrl')
+    return
+  }
+  urlInput.value = url
+  urlError.value = ''
+  fetchUrlDoc()
+}
+
+const removeUrlDocByRef = (doc) => {
+  const idx = urlDocs.value.indexOf(doc)
+  if (idx >= 0) urlDocs.value.splice(idx, 1)
+}
+
+const truncate = (s, max) => {
+  if (!s) return ''
+  return s.length > max ? s.slice(0, max - 1).trimEnd() + '…' : s
+}
+
+const askDocs = computed(() =>
+  urlDocs.value.filter(d => typeof d.url === 'string' && d.url.startsWith('bassira://ask/'))
+)
+const fetchedDocs = computed(() =>
+  urlDocs.value.filter(d => !(typeof d.url === 'string' && d.url.startsWith('bassira://ask/')))
+)
+
+const startSimulation = () => {
+  if (!canSubmit.value || loading.value) return
+  import('../store/pendingUpload.js').then(({ setPendingUpload }) => {
+    setPendingUpload(files.value, formData.value.simulationRequirement, urlDocs.value)
+    router.push({
+      name: 'Process',
+      params: { projectId: 'new' }
+    })
+  })
+}
+</script>
+
+<style scoped>
+/* Console — réutilise la palette Warm Intelligence + tokens existants */
+.console-page {
+  min-height: 100vh;
+  background: var(--wi-bg);
+  font-family: var(--ms-font-body);
+  color: var(--wi-on-bg);
+}
+
+.console-main {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: var(--ms-space-12) var(--ms-space-6);
+}
+
+/* Hero introductif (remplace le hero Home + le sous-titre console) */
+.console-hero {
+  text-align: center;
+  margin: 0 auto var(--ms-space-10) auto;
+  max-width: 880px;
+}
+.console-hero-eyebrow {
+  display: inline-block;
+  padding: 6px var(--ms-space-4);
+  background: var(--wi-primary-soft);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-pill);
+  font-family: var(--wi-font-heading);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--wi-primary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: var(--ms-space-4);
+}
+.console-hero-title {
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-h1-size);
+  font-weight: var(--wi-h1-weight);
+  line-height: var(--wi-h1-leading);
+  letter-spacing: var(--wi-h1-tracking);
+  color: var(--wi-on-bg);
+  margin: 0 0 var(--ms-space-3) 0;
+}
+.console-hero-subtitle {
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-body-md);
+  line-height: var(--wi-body-md-leading);
+  color: var(--wi-on-surface-variant);
+  margin: 0;
+}
+
+/* Dashboard 2-cols (identique à Home.vue) */
+.dashboard-section {
+  display: flex;
+  gap: var(--ms-space-8);
+  align-items: flex-start;
+}
+.dashboard-section .left-panel,
+.dashboard-section .right-panel {
+  display: flex;
+  flex-direction: column;
+}
+.left-panel {
+  flex: 0.8;
+  background: var(--wi-surface);
+  border-radius: var(--wi-radius-card);
+  border: 1px solid var(--wi-outline-variant);
+  padding: var(--ms-space-6);
+  box-shadow: var(--wi-shadow-ambient);
+}
+.panel-header {
+  font-family: var(--ms-font-mono);
+  font-size: 12px;
+  color: var(--wi-on-surface-variant);
+  display: flex;
+  align-items: center;
+  gap: var(--ms-space-2);
+  margin-bottom: var(--ms-space-4);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.status-dot { color: var(--wi-secondary); font-size: 0.8rem; }
+.section-title {
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-h3-size);
+  line-height: var(--wi-h3-leading);
+  font-weight: var(--wi-h3-weight);
+  color: var(--wi-on-surface);
+  margin: 0 0 var(--ms-space-2) 0;
+}
+.section-desc {
+  color: var(--wi-on-surface-variant);
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-body-md);
+  line-height: var(--wi-body-md-leading);
+  margin-bottom: var(--ms-space-6);
+}
+.steps-container {
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-interactive);
+  padding: var(--ms-space-5);
+  background: var(--wi-surface-container-low);
+  position: relative;
+}
+.steps-header {
+  font-family: var(--ms-font-mono);
+  font-size: 12px;
+  color: var(--wi-on-surface-variant);
+  margin-bottom: var(--ms-space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--ms-space-2);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.diamond-icon { color: var(--wi-primary-container); font-size: 1rem; }
+.workflow-list { display: flex; flex-direction: column; gap: var(--ms-space-4); }
+.workflow-item { display: flex; align-items: flex-start; gap: var(--ms-space-4); }
+.step-num {
+  font-family: var(--ms-font-mono);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--wi-primary);
+  letter-spacing: 0.08em;
+  min-width: 28px;
+}
+.step-info { flex: 1; }
+.step-title {
+  font-family: var(--wi-font-heading);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--wi-on-surface);
+  margin-bottom: 4px;
+}
+.step-desc {
+  font-family: var(--wi-font-body);
+  font-size: 14px;
+  color: var(--wi-on-surface-variant);
+  line-height: 1.6;
+}
+
+.right-panel { flex: 1.2; }
+.console-box {
+  background: var(--wi-surface);
+  border: 1px solid var(--wi-outline-variant);
+  border-inline-start: 4px solid var(--wi-primary-container);
+  border-radius: var(--wi-radius-card);
+  padding: var(--ms-space-2);
+  position: relative;
+  box-shadow: var(--wi-shadow-ambient);
+}
+.console-section { padding: var(--ms-space-4); }
+.console-section.btn-section { padding-top: 0; }
+.console-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--ms-space-2);
+  font-family: var(--ms-font-mono);
+  font-size: 12px;
+  color: var(--wi-primary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.console-label { font-weight: 600; letter-spacing: 0.12em; }
+.console-meta {
+  font-size: 11px;
+  color: var(--wi-on-surface-variant);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.upload-zone {
+  border: 2px dashed var(--wi-outline-variant);
+  border-radius: var(--ms-radius-md);
+  height: 200px;
+  overflow-y: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--ms-transition);
+  background: var(--wi-surface-container-low);
+}
+.upload-zone.has-files { align-items: flex-start; }
+.upload-zone:hover {
+  border-color: var(--wi-primary-container);
+  background: var(--wi-surface);
+}
+.upload-zone.drag-over {
+  border-color: var(--wi-secondary);
+  background: var(--ms-mint-soft);
+}
+.upload-placeholder { text-align: center; }
+.upload-icon {
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--ms-space-2);
+  color: var(--wi-primary);
+  font-size: 1.4rem;
+  background: var(--wi-surface);
+}
+.upload-title {
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-h3-size);
+  font-weight: var(--wi-h3-weight);
+  color: var(--wi-on-surface);
+  margin-bottom: 4px;
+}
+.upload-hint {
+  font-family: var(--wi-font-body);
+  font-size: var(--wi-body-md);
+  color: var(--wi-on-surface-variant);
+}
+
+.file-list {
+  width: 100%;
+  padding: var(--ms-space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ms-space-1);
+}
+.file-item {
+  display: flex;
+  align-items: center;
+  background: var(--wi-surface);
+  padding: var(--ms-space-1) var(--ms-space-2);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--ms-radius-sm);
+  font-family: var(--ms-font-mono);
+  font-size: 14px;
+  color: var(--wi-on-surface);
+}
+.file-name { flex: 1; margin: 0 var(--ms-space-2); }
+.remove-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: var(--wi-on-surface-variant);
+  transition: var(--ms-transition-fast);
+}
+.remove-btn:hover { color: var(--wi-error); }
+
+.console-divider {
+  display: flex;
+  align-items: center;
+  margin: var(--ms-space-2) 0;
+}
+.console-divider::before,
+.console-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--ms-border);
+}
+.console-divider span {
+  padding: 0 var(--ms-space-2);
+  font-family: var(--ms-font-mono);
+  font-size: 11px;
+  color: var(--ms-text-subtle);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.input-wrapper {
+  position: relative;
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--ms-radius-md);
+  background: var(--wi-surface-container-low);
+  transition: var(--ms-transition-fast);
+}
+.input-wrapper:focus-within {
+  border-color: var(--wi-primary-container);
+  box-shadow: 0 0 0 3px var(--ms-orange-soft);
+}
+.code-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: var(--ms-space-4);
+  font-family: var(--ms-font-mono);
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+  outline: none;
+  min-height: 150px;
+  color: var(--wi-on-surface);
+}
+.code-input::placeholder { color: var(--ms-text-subtle); }
+.model-badge {
+  position: absolute;
+  bottom: var(--ms-space-1);
+  inset-inline-end: var(--ms-space-2);
+  font-family: var(--ms-font-mono);
+  font-size: 11px;
+  color: var(--ms-text-subtle);
+  letter-spacing: 0.06em;
+}
+
+.start-engine-btn {
+  width: 100%;
+  background: var(--wi-primary);
+  color: var(--wi-on-primary);
+  border: 2px solid var(--wi-primary);
+  border-radius: var(--wi-radius-pill);
+  padding: 16px var(--ms-space-6);
+  font-family: var(--wi-font-heading);
+  font-weight: 600;
+  font-size: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  letter-spacing: 0.02em;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--wi-shadow-md);
+}
+.start-engine-btn:hover:not(:disabled) {
+  background: var(--wi-primary-container);
+  border-color: var(--wi-primary-container);
+  color: var(--wi-on-primary-container);
+  box-shadow: var(--wi-shadow-lg);
+}
+.start-engine-btn:active:not(:disabled) { opacity: 0.92; }
+.start-engine-btn:disabled {
+  background: var(--ms-bg-muted);
+  color: var(--ms-text-subtle);
+  cursor: not-allowed;
+  border-color: var(--ms-border);
+  box-shadow: none;
+}
+
+.url-section { padding-top: 0; }
+.url-input-row { display: flex; gap: var(--ms-space-2); }
+.url-input {
+  flex: 1;
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--ms-radius-sm);
+  background: var(--wi-surface-container-low);
+  padding: var(--ms-space-2) var(--ms-space-3);
+  font-family: var(--ms-font-mono);
+  font-size: 13px;
+  color: var(--wi-on-surface);
+  outline: none;
+  transition: var(--ms-transition-fast);
+  min-width: 0;
+}
+.url-input:focus {
+  border-color: var(--wi-primary-container);
+  background: var(--wi-surface);
+  box-shadow: 0 0 0 3px var(--ms-orange-soft);
+}
+.url-input::placeholder { color: var(--ms-text-subtle); }
+.url-input:disabled { opacity: 0.5; cursor: not-allowed; }
+.url-fetch-btn {
+  background: var(--wi-secondary);
+  color: var(--wi-on-secondary);
+  border: 1px solid var(--wi-secondary);
+  border-radius: var(--ms-radius-sm);
+  padding: var(--ms-space-2) var(--ms-space-3);
+  font-family: var(--wi-font-heading);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: var(--ms-transition-fast);
+  white-space: nowrap;
+}
+.url-fetch-btn:hover:not(:disabled) {
+  background: var(--wi-on-secondary-container);
+  border-color: var(--wi-on-secondary-container);
+}
+.url-fetch-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.url-error {
+  margin-top: var(--ms-space-1);
+  font-family: var(--ms-font-mono);
+  font-size: 12px;
+  color: var(--wi-error);
+}
+.url-doc-list {
+  margin-top: var(--ms-space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ms-space-1);
+}
+.url-doc-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ms-space-2);
+  background: var(--wi-surface);
+  padding: var(--ms-space-2) var(--ms-space-3);
+  border: 1px solid var(--wi-outline-variant);
+  border-inline-start: 3px solid var(--wi-secondary);
+  border-radius: var(--ms-radius-sm);
+  cursor: pointer;
+  transition: background var(--ms-transition-fast), border-inline-start-color var(--ms-transition-fast);
+}
+.url-doc-item:hover,
+.url-doc-item:focus-visible {
+  background: var(--ms-mint-soft);
+  border-inline-start-color: var(--wi-primary-container);
+  outline: none;
+}
+.url-doc-icon {
+  color: var(--wi-secondary);
+  font-size: 14px;
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+.url-doc-info { flex: 1; min-width: 0; }
+.url-doc-title {
+  font-family: var(--wi-font-heading);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--wi-on-surface);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.url-doc-meta {
+  font-family: var(--ms-font-mono);
+  font-size: 11px;
+  color: var(--wi-on-surface-variant);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Doc Preview Modal */
+.doc-preview-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--ms-bg-overlay);
+  z-index: var(--ms-z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ms-space-8);
+  animation: doc-preview-fade 0.12s ease-out;
+}
+@keyframes doc-preview-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.doc-preview-modal {
+  background: var(--wi-surface);
+  width: 760px;
+  max-width: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--wi-radius-card);
+  border: 1px solid var(--wi-outline-variant);
+  box-shadow: var(--wi-shadow-lg);
+  overflow: hidden;
+  font-family: var(--ms-font-mono);
+}
+.doc-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ms-space-3);
+  padding: var(--ms-space-4) var(--ms-space-5);
+  background: var(--wi-on-bg);
+  color: var(--wi-surface);
+}
+.doc-preview-title {
+  display: flex;
+  align-items: center;
+  gap: var(--ms-space-2);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.doc-preview-icon { color: var(--ms-mint); flex-shrink: 0; }
+.doc-preview-close {
+  background: none;
+  border: none;
+  color: var(--wi-surface-dim);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 8px;
+  flex-shrink: 0;
+  transition: color var(--ms-transition-fast);
+}
+.doc-preview-close:hover { color: var(--wi-surface); }
+.doc-preview-warning {
+  height: 6px;
+  background: var(--wi-primary-container);
+}
+.doc-preview-meta {
+  padding: var(--ms-space-3) var(--ms-space-5);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--wi-on-surface-variant);
+  border-bottom: 1px solid var(--wi-outline-variant);
+  overflow-wrap: anywhere;
+}
+.doc-preview-meta-sep { margin: 0 6px; }
+.doc-preview-url { color: var(--wi-primary); }
+.doc-preview-body {
+  margin: 0;
+  padding: var(--ms-space-5);
+  flex: 1;
+  overflow-y: auto;
+  font-family: var(--ms-font-mono);
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--wi-on-surface);
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--wi-surface);
+}
+
+@media (max-width: 1024px) {
+  .dashboard-section { flex-direction: column; }
+}
+
+.pdf-scan-warning {
+  display: flex;
+  gap: var(--ms-space-2);
+  align-items: flex-start;
+  background: var(--ms-peach-soft);
+  border: 1px solid var(--ms-peach);
+  border-radius: var(--ms-radius-sm);
+  padding: var(--ms-space-2) var(--ms-space-3);
+  margin-top: var(--ms-space-2);
+  font-size: 13px;
+  color: var(--ms-text);
+}
+.pdf-scan-icon { font-size: 1rem; flex-shrink: 0; color: var(--ms-peach); }
+.pdf-scan-body { display: flex; flex-direction: column; gap: 4px; }
+.pdf-scan-files { margin: 4px 0 0 var(--ms-space-4); padding: 0; list-style: disc; }
+</style>

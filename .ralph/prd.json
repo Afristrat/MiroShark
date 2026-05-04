@@ -3179,6 +3179,152 @@
         ],
         "action_required_amine": "Lancer cd backend && uv run python scripts/check_legacy_sims_attribution.py --sql sur le serveur prod, coller la sortie dans 20260504_002_backfill_legacy_sims.sql à la place du placeholder, puis exécuter la migration dans le SQL Editor Supabase Bassira."
       }
+    },
+    {
+      "id": "US-102",
+      "chantier": "N-quotes-admin",
+      "title": "Vue admin /admin/quotes — console super-admin pour les devis",
+      "description": "Endpoints GET/PATCH/POST /api/admin/quotes (require_super_admin) pour lister, voir le détail, transitionner le statut et envoyer des emails commerciaux. Frontend AdminQuotesView.vue avec table + modal détail. Lien depuis AnalyticsView et entrée AppHeader 'Devis'.",
+      "acceptanceCriteria": [
+        "GET /api/admin/quotes (super-admin) : pagination + filtre status, hydrate sidecar status",
+        "GET /api/admin/quotes/<id> : détail payload + status",
+        "Frontend AdminQuotesView.vue avec table 7 colonnes + modal détail",
+        "Route /admin/quotes garde requiresSuperAdmin",
+        "AppHeader entrée 'Devis' visible super-admin only",
+        "Lien depuis AnalyticsView vers /admin/quotes",
+        "Tests pytest endpoints (auth + happy paths + 404)"
+      ],
+      "passes": true,
+      "completedAt": "2026-05-05T00:30:00Z",
+      "dependencies": ["US-095", "US-100"],
+      "metadata": {
+        "files_created": [
+          "frontend/src/views/AdminQuotesView.vue",
+          "backend/app/services/quote_admin_service.py",
+          "backend/tests/test_unit_quote_admin.py"
+        ],
+        "files_modified": [
+          "backend/app/api/quote.py",
+          "backend/app/__init__.py",
+          "frontend/src/api/client.js",
+          "frontend/src/router/index.js",
+          "frontend/src/components/AppHeader.vue",
+          "frontend/src/views/AnalyticsView.vue",
+          "frontend/src/locales/{fr,en,ar}.json"
+        ]
+      }
+    },
+    {
+      "id": "US-103",
+      "chantier": "N-quotes-admin",
+      "title": "Workflow statut devis (sidecar quote_*.status.json)",
+      "description": "Persistance du statut workflow (received → reviewing → quoted → paid → in_progress → delivered, avec déclassement vers declined) dans un sidecar JSON à côté de chaque quote payload. Endpoint PATCH /api/admin/quotes/<id>/status avec validation des transitions + historique. Endpoint PATCH /api/admin/quotes/<id>/notes pour les notes admin libres.",
+      "acceptanceCriteria": [
+        "Service quote_admin_service.py : VALID_STATUSES, ALLOWED_TRANSITIONS, is_valid_transition()",
+        "Sidecar quote_<id>.status.json : status, history[], payment_link, last_email_sent_at, notes, delivered_url",
+        "PATCH /status : valide la transition, ajoute une entrée d'historique avec by_email",
+        "PATCH /notes : update isolé sans transition",
+        "Default status = received quand sidecar absent",
+        "Frontend modal détail : boutons next-state + timeline historique + color-coded pills"
+      ],
+      "passes": true,
+      "completedAt": "2026-05-05T00:30:00Z",
+      "dependencies": ["US-102"],
+      "metadata": {
+        "files_created": [
+          "backend/app/services/quote_admin_service.py"
+        ]
+      }
+    },
+    {
+      "id": "US-104",
+      "chantier": "N-quotes-admin",
+      "title": "Bridge manuel Stripe Payment Link + emails Resend automatiques",
+      "description": "Service email_service.py unifié : Resend prioritaire (RESEND_API_KEY) puis fallback SMTP legacy (US-025). 3 templates HTML inline : quote_received (auto-envoyé client US-104 ajout au flow public), quote_payment_link (envoyé manuellement par admin avec un lien Stripe Payment Link), quote_delivered (envoyé manuellement quand le rapport est livré). Endpoints POST /api/admin/quotes/<id>/send-payment-link et /send-delivered. Pas d'API Stripe en code — bridge manuel uniquement.",
+      "acceptanceCriteria": [
+        "backend/app/services/email_service.py : send_email() Resend → SMTP → no-op (fail-soft)",
+        "Templates HTML : quote_received.html, quote_payment_link.html, quote_delivered.html",
+        "POST /send-payment-link : valide URL, envoie email, transitionne status → quoted",
+        "POST /send-delivered : valide URL, envoie email, transitionne status → delivered",
+        "POST /api/quote (US-025) : ajout d'un email de confirmation client après l'email sales",
+        "resend>=2.0.0 ajouté à backend/pyproject.toml",
+        "Tests pytest mockés (Resend SDK + SMTP) — pas de vrai email envoyé"
+      ],
+      "passes": true,
+      "completedAt": "2026-05-05T00:30:00Z",
+      "dependencies": ["US-102", "US-103"],
+      "metadata": {
+        "files_created": [
+          "backend/app/services/email_service.py",
+          "backend/app/templates/emails/quote_received.html",
+          "backend/app/templates/emails/quote_payment_link.html",
+          "backend/app/templates/emails/quote_delivered.html"
+        ],
+        "files_modified": [
+          "backend/app/services/quote_service.py",
+          "backend/pyproject.toml"
+        ],
+        "action_required_amine": "RESEND_API_KEY + RESEND_FROM_EMAIL doivent être posées dans Coolify (déjà fait selon brief). Run uv sync sur prod pour installer resend>=2.0.0 après le pull."
+      }
+    },
+    {
+      "id": "US-107",
+      "chantier": "O-self-service-console",
+      "title": "Refactor — console upload privative /console (extraite de Home.vue)",
+      "description": "La console upload (graines de réalité, fetch URL, TrendingTopics, ScenarioSuggestions, textarea simulation_requirement, bouton Lancer, TemplateGallery, HistoryDatabase) est extraite de Home.vue vers une nouvelle vue ConsoleView.vue à la route /console. Guard du router : requiresAuth + requiresSelfService (super-admin OR currentOrg.self_service_enabled). Home.vue est purement page produit (hero + SectorUseCases + Onboarding) sans aucune logique d'upload. CTA tertiaire conditionnel 'Lancer une simulation' dans le hero.",
+      "acceptanceCriteria": [
+        "frontend/src/views/ConsoleView.vue créé avec tous les blocs (upload, askMode, fetchUrl, TrendingTopics, ScenarioSuggestions, textarea, Lancer, TemplateGallery, HistoryDatabase)",
+        "Route /console dans router/index.js avec meta.requiresAuth + meta.requiresSelfService",
+        "Router beforeEach étendu : redirect /client/dashboard?reason=no-self-service si pas auth + flag",
+        "Home.vue : suppression COMPLETE des blocs DOM console + scripts associés",
+        "Home.vue hero CTAs : 3e bouton conditionnel 'Lancer une simulation' (super-admin OR self-service)",
+        "AppHeader.vue : entrée nav 'Console' (super-admin OR self-service)",
+        "ClientDashboardView : bouton 'Lancer moi-même une simulation' pointe désormais vers /console",
+        "Tests Playwright frontend/tests/e2e/console.spec.ts : redirige vers /login si non auth"
+      ],
+      "passes": true,
+      "completedAt": "2026-05-05T00:30:00Z",
+      "dependencies": ["US-098", "US-099"],
+      "metadata": {
+        "files_created": [
+          "frontend/src/views/ConsoleView.vue",
+          "frontend/tests/e2e/console.spec.ts"
+        ],
+        "files_modified": [
+          "frontend/src/views/Home.vue",
+          "frontend/src/views/ClientDashboardView.vue",
+          "frontend/src/components/AppHeader.vue",
+          "frontend/src/router/index.js",
+          "frontend/src/locales/{fr,en,ar}.json"
+        ]
+      }
+    },
+    {
+      "id": "US-108",
+      "chantier": "P-branding-fix",
+      "title": "Branding fix : titre + balises + favicon Bassira (neutralisation MiroShark résiduel)",
+      "description": "frontend/index.html : title 'Bassira · Prospective stratégique' + lang=fr + meta description Bassira + favicon SVG neutre (lettre arabe ب sur fond cream Causse) avec fallback ICO/PNG. manifest.json : nom Bassira + description prospective MENA, suppression mentions MiroShark résiduelles. locales : remplacer MiroShark par Bassira dans les chaînes user-facing (variantATitle she-start dans fr/en/ar). Backend miroshark.* namespace conservé (interne, pas user-facing). Logo SVG simple : pas de logo produit complet (Amine a explicitement rejeté la création de logo, cf. memory feedback_rejected_tools).",
+      "acceptanceCriteria": [
+        "frontend/index.html : title='Bassira · Prospective stratégique', lang='fr', favicon SVG primary",
+        "frontend/public/favicon.svg créé (lettre ب dans cream Causse + orange Causse)",
+        "frontend/public/manifest.json : name='Bassira', description prospective stratégique MENA",
+        "Locales fr/en/ar : MiroShark remplacé par Bassira dans variantATitle (chaîne user-facing)",
+        "Locales en : 'Universal Swarm Intelligence Engine' remplacé par 'Strategic Foresight Engine'",
+        "Backend Python miroshark.* (loggers, API) intentionnellement préservé (interne)"
+      ],
+      "passes": true,
+      "completedAt": "2026-05-05T00:30:00Z",
+      "dependencies": [],
+      "metadata": {
+        "files_created": [
+          "frontend/public/favicon.svg"
+        ],
+        "files_modified": [
+          "frontend/index.html",
+          "frontend/public/manifest.json",
+          "frontend/src/locales/{fr,en,ar}.json"
+        ]
+      }
     }
   ]
 }

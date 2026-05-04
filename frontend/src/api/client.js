@@ -207,4 +207,64 @@ export function fetchAllSimulations(filters = {}) {
   return client.get('/api/admin/simulations', { params })
 }
 
+// ───── Super-admin Bassira — Quotes (US-102 / US-103 / US-104) ──────────────
+
+/**
+ * GET /api/admin/quotes — liste paginée des devis reçus.
+ * Filtres : limit, offset, status (received|reviewing|quoted|...).
+ */
+export function fetchAdminQuotes(filters = {}) {
+  const params = {}
+  if (typeof filters.limit === 'number') params.limit = filters.limit
+  if (typeof filters.offset === 'number') params.offset = filters.offset
+  if (filters.status) params.status = filters.status
+  return client.get('/api/admin/quotes', { params })
+}
+
+/** GET /api/admin/quotes/<id> — détail d'un devis. */
+export function fetchAdminQuoteDetail(quoteId) {
+  return client.get(`/api/admin/quotes/${encodeURIComponent(quoteId)}`)
+}
+
+/**
+ * PATCH /api/admin/quotes/<id>/status — transition workflow (US-103).
+ * Body : { status, notes?, payment_link?, delivered_url? }
+ */
+export function patchAdminQuoteStatus(quoteId, payload) {
+  return client.patch(
+    `/api/admin/quotes/${encodeURIComponent(quoteId)}/status`,
+    payload
+  )
+}
+
+/** PATCH /api/admin/quotes/<id>/notes — notes admin libre (US-103). */
+export function patchAdminQuoteNotes(quoteId, notes) {
+  return client.patch(
+    `/api/admin/quotes/${encodeURIComponent(quoteId)}/notes`,
+    { notes }
+  )
+}
+
+/**
+ * POST /api/admin/quotes/<id>/send-payment-link — envoie l'email Stripe (US-104).
+ * Transition automatique vers `quoted`.
+ */
+export function sendAdminQuotePaymentLink(quoteId, payload) {
+  return client.post(
+    `/api/admin/quotes/${encodeURIComponent(quoteId)}/send-payment-link`,
+    payload
+  )
+}
+
+/**
+ * POST /api/admin/quotes/<id>/send-delivered — envoie l'email de livraison (US-104).
+ * Transition automatique vers `delivered`.
+ */
+export function sendAdminQuoteDelivered(quoteId, payload) {
+  return client.post(
+    `/api/admin/quotes/${encodeURIComponent(quoteId)}/send-delivered`,
+    payload
+  )
+}
+
 export default client

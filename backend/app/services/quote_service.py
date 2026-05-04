@@ -478,6 +478,51 @@ def _send_email(record: Dict[str, Any]) -> None:
 # ─── Public entry point ──────────────────────────────────────────────────────
 
 
+def _send_client_confirmation(record: Dict[str, Any]) -> None:
+    """Best-effort confirmation email to the client (US-104).
+
+    Uses the unified Resend / SMTP helper from ``email_service`` and the
+    template ``quote_received.html``. Never raises — the quote is
+    already persisted.
+    """
+    if not record.get("email"):
+        return
+    try:
+        from .email_service import render_template, send_email
+
+        package_labels = {
+            "crisis_drill_24h": "Stress-test 24 h",
+            "policy_brief_stress": "Note de cadrage politique",
+            "pre_launch_adcheck": "Vérif pré-lancement",
+            "custom": "Analyse sur mesure",
+        }
+        package_label = package_labels.get(
+            record.get("package") or "", record.get("package") or "Bassira"
+        )
+        industry_label = record.get("industry") or "stratégie générale"
+        html_body = render_template(
+            "quote_received",
+            {
+                "full_name": record.get("full_name") or "—",
+                "company": record.get("company") or "—",
+                "package_label": package_label,
+                "industry_label": industry_label,
+                "quote_id": record.get("quote_id") or "",
+            },
+        )
+        send_email(
+            to_email=record["email"],
+            subject=f"Bassira — Votre demande {package_label} est bien arrivée",
+            html_body=html_body,
+            reply_to="contact@ai-mpower.com",
+        )
+    except Exception as exc:  # noqa: BLE001 — best-effort
+        logger.error(
+            "Client confirmation email failed for quote %s: %s",
+            record.get("quote_id"), exc,
+        )
+
+
 def submit_quote(
     payload: Dict[str, Any],
     *,
@@ -518,8 +563,9 @@ def submit_quote(
             "error": "Could not persist the quote. Please retry.",
         }
 
-    # Best-effort email — never blocks success.
-    _send_email(record)
+    # Best-effort emails — never block success.
+    _send_email(record)            # internal sales notification (legacy)
+    _send_client_confirmation(record)  # confirmation au client (US-104)
 
     return 200, {
         "success": True,

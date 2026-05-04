@@ -167,6 +167,31 @@ const routes = [
     name: 'ClientDashboard',
     component: () => import('../views/ClientDashboardView.vue'),
     meta: { requiresAuth: true, title: 'Mon espace · Bassira' }
+  },
+  {
+    // US-107 — Console upload privative. Extraite de Home.vue, séparée
+    // proprement derrière requiresAuth + requiresSelfService (super-admin
+    // OU org avec self_service_enabled = true).
+    path: '/console',
+    name: 'Console',
+    component: () => import('../views/ConsoleView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresSelfService: true,
+      title: 'Console · Bassira'
+    }
+  },
+  {
+    // US-102 — Console super-admin pour gérer les devis (quotes).
+    // Tableau + modal détail + workflow statut + envoi Stripe Payment Link.
+    path: '/admin/quotes',
+    name: 'AdminQuotes',
+    component: () => import('../views/AdminQuotesView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresSuperAdmin: true,
+      title: 'Devis · Bassira admin'
+    }
   }
 ]
 
@@ -176,19 +201,23 @@ const router = createRouter({
 })
 
 // US-093 — guard global : protège les routes meta.requiresAuth.
+// US-107 — étendu pour requiresSelfService (super-admin OU
+//   currentOrg.self_service_enabled).
+// US-102 — étendu pour requiresSuperAdmin.
 // Si non authentifié → redirection vers /login avec ?redirect=<path>.
 // On lit l'auth store (Pinia) ; init() est appelé en amont depuis main.js
 // donc l'état de session persisté est déjà chargé au moment des nav.
 router.beforeEach(async (to) => {
-  if (!to.meta?.requiresAuth) return true
   // US-096 fix — Si on revient d'un OAuth implicit (URL contient
   // `#access_token=...`), Supabase JS est en train d'écrire la session ;
-  // ne pas rediriger vers /login dans cette fenêtre. auth.init() côté
-  // store attend déjà l'event SIGNED_IN — ce garde-fou est une 2e ligne
-  // de défense au cas où le router naviguerait avant que init() finisse.
+  // ne pas rediriger vers /login dans cette fenêtre.
   if (typeof window !== 'undefined' && window.location.hash.includes('access_token=')) {
     return true
   }
+
+  const needsAuth = to.meta?.requiresAuth || to.meta?.requiresSelfService || to.meta?.requiresSuperAdmin
+  if (!needsAuth) return true
+
   const auth = useAuthStore()
   if (!auth.isAuthenticated) {
     return {
@@ -196,6 +225,28 @@ router.beforeEach(async (to) => {
       query: { redirect: to.fullPath }
     }
   }
+
+  // US-107 — guard self-service : super-admin OU org avec flag activé.
+  if (to.meta?.requiresSelfService) {
+    const ok = auth.isSuperAdmin || Boolean(auth.currentOrg?.self_service_enabled)
+    if (!ok) {
+      return {
+        path: '/client/dashboard',
+        query: { reason: 'no-self-service' }
+      }
+    }
+  }
+
+  // US-102 — guard super-admin : front cache l'UI, backend reste seul juge.
+  if (to.meta?.requiresSuperAdmin) {
+    if (!auth.isSuperAdmin) {
+      return {
+        path: '/client/dashboard',
+        query: { reason: 'not-super-admin' }
+      }
+    }
+  }
+
   return true
 })
 

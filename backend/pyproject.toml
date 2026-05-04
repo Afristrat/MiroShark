@@ -49,6 +49,9 @@ dependencies = [
     # (clé service_role) qui contourne RLS pour les opérations backend.
     "pyjwt[crypto]>=2.10.0",
     "supabase>=2.7.0",
+    # US-104 : envoi d'emails transactionnels (devis, payment link, livraison)
+    # via Resend. Best-effort fallback SMTP si la clé n'est pas configurée.
+    "resend>=2.0.0",
 ]
 
 [project.optional-dependencies]

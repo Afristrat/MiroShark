@@ -19,28 +19,6 @@
       <span aria-hidden="true">⚙</span>
     </button>
 
-    <!-- Document preview modal (URL fetches + Ask-mode generations) -->
-    <Teleport to="body">
-      <div v-if="previewDoc" class="doc-preview-overlay" @click.self="previewDoc = null">
-        <div class="doc-preview-modal">
-          <div class="doc-preview-header">
-            <div class="doc-preview-title">
-              <span class="doc-preview-icon">◈</span>
-              <span>{{ previewDoc.title }}</span>
-            </div>
-            <button class="doc-preview-close" @click="previewDoc = null">✕</button>
-          </div>
-          <div class="doc-preview-warning"></div>
-          <div class="doc-preview-meta">
-            {{ $t('home.preview.chars', { count: previewDoc.char_count.toLocaleString() }) }}
-            <span v-if="previewDoc.url" class="doc-preview-meta-sep">·</span>
-            <span v-if="previewDoc.url" class="doc-preview-url">{{ previewDoc.url }}</span>
-          </div>
-          <pre class="doc-preview-body">{{ previewDoc.text }}</pre>
-        </div>
-      </div>
-    </Teleport>
-
     <div class="main-content">
       <!-- Upper Section: Hero Area — Stitch « Strategic Foresight » -->
       <section class="hero-section">
@@ -75,6 +53,17 @@
             :title="$t('home.heroCta.orderAnalysisTitle')"
           >
             <span>{{ $t('home.heroCta.orderAnalysis') }}</span>
+            <span class="hero-cta-arrow" aria-hidden="true">→</span>
+          </router-link>
+          <!-- US-107 — CTA tertiaire « Lancer une simulation » visible
+               uniquement aux super-admins ou aux orgs self-service. -->
+          <router-link
+            v-if="canRunConsole"
+            to="/console"
+            class="hero-cta hero-cta--secondary"
+            :title="$t('home.heroCta.runSimulationTitle')"
+          >
+            <span>{{ $t('home.heroCta.runSimulation') }}</span>
             <span class="hero-cta-arrow" aria-hidden="true">→</span>
           </router-link>
         </div>
@@ -117,278 +106,11 @@
            ou /devis?sector=&usecase=. Préserve la mécanique US-085 + relink US-087. -->
       <SectorUseCases />
 
-      <!-- US-087 : console self-service masquée pour visiteurs cold,
-           accès admin/client à venir US-088. Le bloc DOM est préservé
-           intégralement (logique upload, ScenarioSuggestions, runAskMode,
-           startSimulation) pour réactivation derrière un guard auth. -->
-      <!-- Console Header : « Graines de réalité » (Stitch design) -->
-      <header v-if="showSelfServiceConsole" id="reality-seeds-console" class="console-intro">
-        <h2 class="console-intro-title">{{ $t('home.panel.consoleTitle') }}</h2>
-        <p class="console-intro-subtitle">{{ $t('home.panel.consoleSubtitle') }}</p>
-      </header>
-
-      <!-- Lower Section: Two-Column Layout -->
-      <section v-if="showSelfServiceConsole" class="dashboard-section">
-        <!-- Left Column: Status & Steps -->
-        <div class="left-panel">
-          <div class="panel-header">
-            <span class="status-dot">■</span> {{ $t('home.panel.systemStatus') }}
-          </div>
-
-          <h2 class="section-title">{{ $t('home.panel.ready') }}</h2>
-          <p class="section-desc">
-            {{ $t('home.panel.readyDesc') }}
-          </p>
-
-
-          <!-- What it does (from README) -->
-          <div class="steps-container">
-            <div class="steps-header">
-               <span class="diamond-icon">◇</span> {{ $t('home.steps.title') }}
-            </div>
-            <div class="workflow-list">
-              <div class="workflow-item" :ref="el => setStepCardRef(el, 0)">
-                <span class="step-num">01</span>
-                <div class="step-info">
-                  <div class="step-title">{{ $t('home.steps.s1.title') }}</div>
-                  <div class="step-desc">{{ $t('home.steps.s1.desc') }}</div>
-                </div>
-              </div>
-              <div class="workflow-item" :ref="el => setStepCardRef(el, 1)">
-                <span class="step-num">02</span>
-                <div class="step-info">
-                  <div class="step-title">{{ $t('home.steps.s2.title') }}</div>
-                  <div class="step-desc">{{ $t('home.steps.s2.desc') }}</div>
-                </div>
-              </div>
-              <div class="workflow-item" :ref="el => setStepCardRef(el, 2)">
-                <span class="step-num">03</span>
-                <div class="step-info">
-                  <div class="step-title">{{ $t('home.steps.s3.title') }}</div>
-                  <div class="step-desc">{{ $t('home.steps.s3.desc') }}</div>
-                </div>
-              </div>
-              <div class="workflow-item" :ref="el => setStepCardRef(el, 3)">
-                <span class="step-num">04</span>
-                <div class="step-info">
-                  <div class="step-title">{{ $t('home.steps.s4.title') }}</div>
-                  <div class="step-desc">{{ $t('home.steps.s4.desc') }}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Right Column: Interactive Console -->
-        <div class="right-panel">
-          <div class="console-box">
-            <!-- Upload Area -->
-            <div class="console-section">
-              <div class="console-header">
-                <span class="console-label">{{ $t('home.console.seedsLabel') }}</span>
-                <span class="console-meta">{{ $t('home.console.seedsMeta') }}</span>
-              </div>
-              
-              <div 
-                class="upload-zone"
-                :class="{ 'drag-over': isDragOver, 'has-files': files.length > 0 }"
-                @dragover.prevent="handleDragOver"
-                @dragleave.prevent="handleDragLeave"
-                @drop.prevent="handleDrop"
-                @click="triggerFileInput"
-              >
-                <input
-                  ref="fileInput"
-                  type="file"
-                  multiple
-                  accept=".pdf,.md,.txt"
-                  @change="handleFileSelect"
-                  style="display: none"
-                  :disabled="loading"
-                />
-                
-                <div v-if="files.length === 0" class="upload-placeholder">
-                  <div class="upload-icon">↑</div>
-                  <div class="upload-title">{{ $t('home.console.uploadTitle') }}</div>
-                  <div class="upload-hint">{{ $t('home.console.uploadHint') }}</div>
-                </div>
-                
-                <div v-else class="file-list">
-                  <div v-for="(file, index) in files" :key="index" class="file-item">
-                    <span class="file-icon">📄</span>
-                    <span class="file-name">{{ file.name }}</span>
-                    <button @click.stop="removeFile(index)" class="remove-btn">×</button>
-                  </div>
-                </div>
-
-                <div v-if="pdfScanWarnings.length > 0" class="pdf-scan-warning">
-                  <span class="pdf-scan-icon" aria-hidden="true">⚠</span>
-                  <div class="pdf-scan-body">
-                    <strong>{{ $t('home.console.pdfScanTitle') }}</strong>
-                    <span>{{ $t('home.console.pdfScanHint') }}</span>
-                    <ul class="pdf-scan-files">
-                      <li v-for="name in pdfScanWarnings" :key="name">{{ name }}</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Ask Mode (no document needed) -->
-            <div class="console-section url-section">
-              <div class="console-header">
-                <span class="console-label">{{ $t('home.console.askLabel') }}</span>
-                <span class="console-meta">{{ $t('home.console.askMeta') }}</span>
-              </div>
-              <div class="url-input-row">
-                <input
-                  v-model="askQuestion"
-                  class="url-input"
-                  type="text"
-                  :placeholder="$t('home.console.askPlaceholder')"
-                  :disabled="loading || askBusy"
-                  @keydown.enter.prevent="runAskMode"
-                />
-                <button
-                  class="url-fetch-btn"
-                  @click="runAskMode"
-                  :disabled="!askQuestion.trim() || loading || askBusy"
-                >
-                  <span v-if="askBusy">...</span>
-                  <span v-else>{{ $t('home.console.researchBtn') }}</span>
-                </button>
-              </div>
-              <div v-if="askError" class="url-error">{{ askError }}</div>
-              <div v-if="askEnriching" class="url-doc-meta" style="margin-top:6px">{{ $t('home.enriching') }}</div>
-              <div v-else-if="askBusy" class="url-doc-meta" style="margin-top:6px">{{ $t('home.console.researchBusy') }}</div>
-              <div v-if="askDocs.length > 0" class="url-doc-list">
-                <div
-                  v-for="doc in askDocs"
-                  :key="doc.url"
-                  class="url-doc-item"
-                  role="button"
-                  tabindex="0"
-                  :title="$t('home.console.askDocTitle')"
-                  @click="previewDoc = doc"
-                  @keydown.enter.prevent="previewDoc = doc"
-                  @keydown.space.prevent="previewDoc = doc"
-                >
-                  <span class="url-doc-icon">◈</span>
-                  <div class="url-doc-info">
-                    <div class="url-doc-title" :title="doc.title">{{ truncate(doc.title, 70) }}</div>
-                    <div class="url-doc-meta" :title="doc.url">{{ $t('home.preview.chars', { count: doc.char_count.toLocaleString() }) }} · {{ truncate(doc.url, 72) }}</div>
-                  </div>
-                  <button @click.stop="removeUrlDocByRef(doc)" class="remove-btn">×</button>
-                </div>
-              </div>
-            </div>
-
-            <!-- URL Input Section -->
-            <div class="console-section url-section">
-              <div class="console-header">
-                <span class="console-label">{{ $t('home.console.urlLabel') }}</span>
-                <span class="console-meta">{{ $t('home.console.urlMeta') }}</span>
-              </div>
-              <div class="url-input-row">
-                <input
-                  v-model="urlInput"
-                  class="url-input"
-                  type="url"
-                  :placeholder="$t('home.console.urlPlaceholder')"
-                  :disabled="loading || urlFetching"
-                  @keydown.enter.prevent="fetchUrlDoc"
-                />
-                <button
-                  class="url-fetch-btn"
-                  @click="fetchUrlDoc"
-                  :disabled="!urlInput.trim() || loading || urlFetching"
-                >
-                  <span v-if="urlFetching">...</span>
-                  <span v-else>{{ $t('home.console.fetchBtn') }}</span>
-                </button>
-              </div>
-              <div v-if="urlError" class="url-error">{{ urlError }}</div>
-              <div v-if="fetchedDocs.length > 0" class="url-doc-list">
-                <div
-                  v-for="doc in fetchedDocs"
-                  :key="doc.url"
-                  class="url-doc-item"
-                  role="button"
-                  tabindex="0"
-                  :title="$t('home.console.urlDocTitle')"
-                  @click="previewDoc = doc"
-                  @keydown.enter.prevent="previewDoc = doc"
-                  @keydown.space.prevent="previewDoc = doc"
-                >
-                  <span class="url-doc-icon">◈</span>
-                  <div class="url-doc-info">
-                    <div class="url-doc-title" :title="doc.title">{{ truncate(doc.title, 70) }}</div>
-                    <div class="url-doc-meta" :title="doc.url">{{ $t('home.preview.chars', { count: doc.char_count.toLocaleString() }) }} · {{ truncate(doc.url, 72) }}</div>
-                  </div>
-                  <button @click.stop="removeUrlDocByRef(doc)" class="remove-btn">×</button>
-                </div>
-              </div>
-              <TrendingTopics
-                :busy="urlFetching"
-                @select="handleTrendingSelect"
-              />
-            </div>
-
-            <!-- Divider -->
-            <div class="console-divider">
-              <span>{{ $t('home.console.params') }}</span>
-            </div>
-
-            <!-- Input Area -->
-            <div class="console-section">
-              <div class="console-header">
-                <span class="console-label">{{ $t('home.console.promptLabel') }}</span>
-              </div>
-              <ScenarioSuggestions
-                :text-preview="scenarioSuggestPreview"
-                :simulation-prompt="formData.simulationRequirement"
-                @use="handleSuggestionUse"
-              />
-              <div class="input-wrapper">
-                <textarea
-                  v-model="formData.simulationRequirement"
-                  class="code-input"
-                  :placeholder="$t('home.console.promptPlaceholder')"
-                  rows="6"
-                  :disabled="loading"
-                ></textarea>
-                <div class="model-badge">{{ $t('home.console.engine') }}</div>
-              </div>
-            </div>
-
-            <!-- Start Button -->
-            <div class="console-section btn-section">
-              <button
-                class="start-engine-btn"
-                @click="startSimulation"
-                :disabled="!canSubmit || loading"
-              >
-                <span v-if="!loading">{{ $t('home.console.launch') }}</span>
-                <span v-else>{{ $t('home.console.initializing') }}</span>
-                <span class="btn-arrow">→</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- US-087 : TemplateGallery + HistoryDatabase masqués pour les visiteurs
-           cold. Les templates correspondent au self-service Step1-5 (clic « Lancer »
-           → /process), promotion stoppée sur la home publique au profit de /models.
-           Réactivation derrière un guard auth admin/client à venir (US-088). -->
-      <!-- Quick Start Templates -->
-      <div v-if="showSelfServiceConsole" id="templates-gallery">
-        <TemplateGallery />
-      </div>
-
-      <!-- History Project Database -->
-      <HistoryDatabase v-if="showSelfServiceConsole" />
-
+      <!-- US-107 — La console upload (graines de réalité, fetch URL,
+           TrendingTopics, ScenarioSuggestions, textarea prompt, bouton
+           Lancer) ne vit plus sur la home. Elle a sa route privative
+           /console derrière requiresAuth + requiresSelfService.
+           Lien d'accès : hero CTA "Lancer une simulation" + AppHeader. -->
     </div>
 
     <!-- US-060 — Onboarding solo 4 étapes (premier visit uniquement) -->
@@ -397,47 +119,30 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import HistoryDatabase from '../components/HistoryDatabase.vue'
-import TemplateGallery from '../components/TemplateGallery.vue'
 import SettingsPanel from '../components/SettingsPanel.vue'
-import ScenarioSuggestions from '../components/ScenarioSuggestions.vue'
-import TrendingTopics from '../components/TrendingTopics.vue'
 import OnboardingTour from '../components/OnboardingTour.vue'
 import SectorUseCases from '../components/SectorUseCases.vue'
-import { fetchUrl } from '../api/graph'
-import { askMode, enrichAsk } from '../api/simulation'
-import { useScrollFadeIn } from '../composables/useScrollFadeIn'
 import { useAuthStore } from '../stores/auth'
 import { storeToRefs } from 'pinia'
-// US-094 — l'entrée auth adaptative (login / dashboard) est désormais
-// portée par AppHeader.vue ; Home.vue n'a plus besoin du store auth.
 
-// Refs for the 4 workflow step cards — populated via :ref callback in the
-// template so the IntersectionObserver picks each one up individually.
-const stepCardRefs = ref([])
-const setStepCardRef = (el, idx) => {
-  if (el) stepCardRefs.value[idx] = el
-}
-useScrollFadeIn(stepCardRefs)
+// US-107 — Home.vue est désormais une page produit pure :
+//   - hero + CTAs
+//   - SectorUseCases
+//   - OnboardingTour (premier visit)
+// La console upload (graines de réalité, fetch URL, TrendingTopics,
+// ScenarioSuggestions, textarea, Lancer) a été extraite vers ConsoleView
+// (route /console privative). Plus aucune logique d'upload sur la home.
 
-const { t } = useI18n()
-
+const { t: _t } = useI18n()
 const settingsOpen = ref(false)
-const previewDoc = ref(null)
 
-// US-098 / US-099 — La console self-service (upload + Ask + URL + textarea +
-// Lancer) et la galerie de templates ne sont visibles que pour :
-//   1. Les super-admins Bassira (founders) — accès direct.
-//   2. Les membres d'une org ayant `self_service_enabled = true`
-//      (toggle sous contrôle Amine via /admin/analytics).
-// Pour tous les autres visiteurs (cold ou clients standards), la home reste
-// orientée découverte produit (CTA /models, /devis).
+// US-107 — visibilité du CTA tertiaire « Lancer une simulation » qui
+// redirige vers /console (super-admin OU org self-service).
 const authStore = useAuthStore()
 const { isAuthenticated, isSuperAdmin, currentOrg } = storeToRefs(authStore)
-const showSelfServiceConsole = computed(() => {
+const canRunConsole = computed(() => {
   if (isSuperAdmin.value) return true
   if (!isAuthenticated.value) return false
   return Boolean(currentOrg.value?.self_service_enabled)
@@ -450,311 +155,12 @@ const showOnboarding = ref(
   typeof window !== 'undefined' && !window.localStorage?.getItem('bassira_onboarding_done')
 )
 
-const router = useRouter()
-const route = useRoute()
-
-// US-058 — pré-remplir l'URL si ?url= présent (ex. clic depuis TrendingTopics dans SimulationView)
-onMounted(() => {
-  const preloadUrl = route.query.url
-  if (preloadUrl && typeof preloadUrl === 'string') {
-    urlInput.value = preloadUrl
-    fetchUrlDoc()
-  }
-})
-
-// US-087 — `scrollToTemplates` (US-044b) et `scrollToConsole` retirés :
-// la galerie de templates et la console self-service ne sont plus exposées
-// sur la home publique (cf. v-if="showSelfServiceConsole"). Le hero CTA
-// route désormais vers /models et /devis.
-
-// Form data
-const formData = ref({
-  simulationRequirement: ''
-})
-
-// File list
-const files = ref([])
-
-// URL import state
-const urlInput = ref('')
-const urlDocs = ref([])   // [{title, url, text, char_count}]
-const urlFetching = ref(false)
-const urlError = ref('')
-
-// Ask-mode state — question-only pipeline
-const askQuestion = ref('')
-const askBusy = ref(false)
-const askError = ref('')
-
-// State
-const loading = ref(false)
-const error = ref('')
-const isDragOver = ref(false)
-
-// File input ref
-const fileInput = ref(null)
-
-// Computed: whether the form can be submitted
-const canSubmit = computed(() => {
-  return formData.value.simulationRequirement.trim() !== '' &&
-    (files.value.length > 0 || urlDocs.value.length > 0)
-})
-
-// Trigger file selection
-const triggerFileInput = () => {
-  if (!loading.value) {
-    fileInput.value?.click()
-  }
-}
-
-// Handle file selection
-const handleFileSelect = (event) => {
-  const selectedFiles = Array.from(event.target.files)
-  addFiles(selectedFiles)
-}
-
-// Handle drag-related events
-const handleDragOver = (e) => {
-  if (!loading.value) {
-    isDragOver.value = true
-  }
-}
-
-const handleDragLeave = (e) => {
-  isDragOver.value = false
-}
-
-const handleDrop = (e) => {
-  isDragOver.value = false
-  if (loading.value) return
-  
-  const droppedFiles = Array.from(e.dataTransfer.files)
-  addFiles(droppedFiles)
-}
-
-// File text previews — MD/TXT are read client-side; PDFs are sent to
-// /api/simulation/file-preview (PyMuPDF server-side) so their content
-// drives ScenarioSuggestions exactly like any other document type.
-const filePreviewText = ref('')
-const pdfScanWarnings = ref([]) // noms de fichiers PDF sans texte extractible (probablement scannés)
-
-const _extractPdfPreview = async (file) => {
-  try {
-    const fd = new FormData()
-    fd.append('file', file)
-    const res = await fetch('/api/simulation/file-preview', { method: 'POST', body: fd })
-    if (!res.ok) return ''
-    const json = await res.json()
-    const text = (json?.data?.text || '').slice(0, 3000)
-    // Avertir si le PDF semble vide (< 80 chars = probablement un scan)
-    if (text.length < 80 && file.name.toLowerCase().endsWith('.pdf')) {
-      pdfScanWarnings.value.push(file.name)
-    }
-    return text
-  } catch (_) {
-    return ''
-  }
-}
-
-const refreshFilePreviewText = async () => {
-  const textish = files.value.filter(f => {
-    const ext = (f.name.split('.').pop() || '').toLowerCase()
-    return ext === 'md' || ext === 'txt'
-  })
-  const pdfs = files.value.filter(f =>
-    (f.name.split('.').pop() || '').toLowerCase() === 'pdf'
-  )
-
-  try {
-    const textChunks = await Promise.all(textish.map(async (f) => {
-      try {
-        const slice = f.slice ? f.slice(0, 6000) : f
-        const txt = await slice.text()
-        return (txt || '').slice(0, 3000)
-      } catch (_) { return '' }
-    }))
-    const pdfChunks = await Promise.all(pdfs.map(_extractPdfPreview))
-    const all = [...textChunks, ...pdfChunks].filter(Boolean)
-    filePreviewText.value = all.join('\n\n').slice(0, 6000)
-  } catch (_) {
-    filePreviewText.value = ''
-  }
-}
-
-// Add files
-const addFiles = (newFiles) => {
-  const validFiles = newFiles.filter(file => {
-    const ext = file.name.split('.').pop().toLowerCase()
-    return ['pdf', 'md', 'txt'].includes(ext)
-  })
-  files.value.push(...validFiles)
-  pdfScanWarnings.value = [] // reset à chaque ajout de fichiers
-  refreshFilePreviewText()
-}
-
-// Remove file
-const removeFile = (index) => {
-  files.value.splice(index, 1)
-  pdfScanWarnings.value = [] // reset après retrait d'un fichier
-  refreshFilePreviewText()
-}
-
-// Combined text preview handed to ScenarioSuggestions.  Includes every
-// fetched URL's extracted text plus any client-side-readable file text.
-// Kept to ~6KB on the client; the backend trims again.
-const scenarioSuggestPreview = computed(() => {
-  const urlChunks = (urlDocs.value || [])
-    .map(d => {
-      const head = d.title ? `# ${d.title}\n` : ''
-      const body = (d.text || '').slice(0, 3000)
-      return body ? head + body : ''
-    })
-    .filter(Boolean)
-
-  const combined = [...urlChunks]
-  if (filePreviewText.value) combined.push(filePreviewText.value)
-  return combined.join('\n\n').slice(0, 6000)
-})
-
-// User picked one of the 3 scenario cards — fill the textarea but don't
-// submit.  We overwrite whatever was there (including any earlier pick); if
-// the user had already typed a partial scenario they can undo with Ctrl+Z.
-const handleSuggestionUse = ({ question, simulationRequirement }) => {
-  if (!question) return
-  formData.value.simulationRequirement = simulationRequirement || question
-}
-
-// Scroll to bottom
 const scrollToBottom = () => {
   window.scrollTo({
     top: document.body.scrollHeight,
     behavior: 'smooth'
   })
 }
-
-// Fetch a URL and add it to urlDocs
-const fetchUrlDoc = async () => {
-  const url = urlInput.value.trim()
-  if (!url || urlFetching.value) return
-
-  // Prevent duplicate URLs
-  if (urlDocs.value.some(d => d.url === url)) {
-    urlError.value = t('home.console.duplicateUrl')
-    return
-  }
-
-  urlFetching.value = true
-  urlError.value = ''
-  try {
-    const res = await fetchUrl(url)
-    if (res.success) {
-      urlDocs.value.push(res.data)
-      urlInput.value = ''
-    } else {
-      urlError.value = res.error || t('home.console.fetchFailed')
-    }
-  } catch (err) {
-    urlError.value = err.message || t('home.console.fetchFailed')
-  } finally {
-    urlFetching.value = false
-  }
-}
-
-// Ask mode: ask → enrichissement web optionnel → synthesized briefing.
-// Si WEB_SEARCH_MODEL est configuré côté backend, enrichAsk() est appelé
-// en premier pour injecter un contexte web récent dans la question.
-const askEnriching = ref(false)
-
-const runAskMode = async () => {
-  const q = askQuestion.value.trim()
-  if (!q || askBusy.value) return
-  askBusy.value = true
-  askError.value = ''
-
-  // Enrichissement web (US-057) — silencieux si non configuré
-  let enrichedQuestion = q
-  try {
-    askEnriching.value = true
-    const enrichRes = await enrichAsk(q)
-    if (enrichRes?.data?.context) {
-      enrichedQuestion = `${q}\n\n--- Web Context ---\n${enrichRes.data.context}`
-    }
-  } catch (_) {
-    // enrichissement non bloquant
-  } finally {
-    askEnriching.value = false
-  }
-
-  try {
-    const res = await askMode(enrichedQuestion)
-    if (!res.success) {
-      askError.value = res.error || t('home.console.askFailed')
-      return
-    }
-    const d = res.data
-    const synthUrl = `bassira://ask/${encodeURIComponent(q.slice(0, 64))}`
-    // Don't duplicate if re-run.
-    const idx = urlDocs.value.findIndex(x => x.url === synthUrl)
-    const payload = {
-      title: d.title,
-      url: synthUrl,
-      text: d.seed_document,
-      char_count: (d.seed_document || '').length,
-    }
-    if (idx >= 0) urlDocs.value.splice(idx, 1, payload)
-    else urlDocs.value.push(payload)
-    if (!formData.value.simulationRequirement) {
-      formData.value.simulationRequirement = d.simulation_requirement
-    }
-    askQuestion.value = ''
-  } catch (err) {
-    askError.value = err?.response?.data?.error || err?.message || t('home.console.askFailed')
-  } finally {
-    askBusy.value = false
-  }
-}
-
-// User picked a "What's Trending" card — push the URL into the input and
-// reuse the existing fetch pipeline. ScenarioSuggestions already watches
-// urlDocs and will fire once the fetched doc lands, so the user goes from
-// blank-page to three scenario cards in one click.
-const handleTrendingSelect = ({ url }) => {
-  if (!url || urlFetching.value) return
-  if (urlDocs.value.some(d => d.url === url)) {
-    urlError.value = t('home.console.alreadyLoadedUrl')
-    return
-  }
-  urlInput.value = url
-  urlError.value = ''
-  fetchUrlDoc()
-}
-
-// Remove a URL document from the list
-const removeUrlDoc = (index) => {
-  urlDocs.value.splice(index, 1)
-}
-
-const removeUrlDocByRef = (doc) => {
-  const idx = urlDocs.value.indexOf(doc)
-  if (idx >= 0) urlDocs.value.splice(idx, 1)
-}
-
-// Hard-cap display strings so long titles / deep URLs can't widen the
-// doc-list row (CSS ellipsis can fail when intermediate flex ancestors
-// don't propagate min-width:0).
-const truncate = (s, max) => {
-  if (!s) return ''
-  return s.length > max ? s.slice(0, max - 1).trimEnd() + '…' : s
-}
-
-// Split docs by origin — Ask-synthesized briefings show under Just Ask,
-// real URL fetches show under URL Import.
-const askDocs = computed(() =>
-  urlDocs.value.filter(d => typeof d.url === 'string' && d.url.startsWith('bassira://ask/'))
-)
-const fetchedDocs = computed(() =>
-  urlDocs.value.filter(d => !(typeof d.url === 'string' && d.url.startsWith('bassira://ask/')))
-)
 
 // Start simulation - navigate immediately, API calls happen on the Process page
 const startSimulation = () => {

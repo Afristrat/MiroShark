@@ -49,7 +49,69 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 
 ## Log d'itérations
 
-### 2026-05-04 — US-101 Rétro-attribution des sims filesystem pré-multitenant
+### 2026-05-05 — US-102 + US-103 + US-104 + US-107 + US-108 Console super-admin devis + ConsoleView privative + branding fix
+
+- **Statut** : 5 stories passes:true (chantiers N-quotes-admin, O-self-service-console, P-branding-fix).
+
+#### US-108 — Branding fix résiduel
+- `frontend/index.html` : title `Bassira · Prospective stratégique`, `lang="fr"`, favicon SVG primary + fallback ICO/PNG.
+- `frontend/public/favicon.svg` : SVG inline 64×64 — lettre arabe ب (ba) sur fond `#FAF7F2` Causse, glyph en `#FF8551` orange. Placeholder neutre (Amine a explicitement rejeté la création de logo produit).
+- `frontend/public/manifest.json` : `name="Bassira"`, description « Plateforme de prospective stratégique pour décideurs MENA, Europe et Afrique ». Suppression mentions « Universal Swarm Intelligence Engine ».
+- Locales fr/en/ar : remplacement `MiroShark` → `Bassira` dans `home.scenarios.sheStart.variantATitle` (chaîne user-facing). Locale en : `home.hero.tag` "Universal Swarm Intelligence Engine" → "Strategic Foresight Engine".
+- Backend Python `miroshark.*` namespace **intentionnellement préservé** (loggers `miroshark.api.*`, package, MCP) car identifiant technique interne, jamais exposé visuellement.
+
+#### US-107 — Console upload privative /console
+- **Refactor majeur** : extraction de tout le bloc console (upload zone, ask-mode, fetch URL, TrendingTopics, ScenarioSuggestions, textarea, bouton Lancer, TemplateGallery, HistoryDatabase) depuis `Home.vue` vers une nouvelle vue dédiée `ConsoleView.vue` (route `/console`).
+- **Router guard étendu** : `meta.requiresSelfService` (super-admin OR `currentOrg.self_service_enabled`). Si KO → redirect `/client/dashboard?reason=no-self-service`. `meta.requiresSuperAdmin` ajouté pour US-102 (redirect `/client/dashboard?reason=not-super-admin`).
+- **Home.vue purifiée** : suppression *complète* du DOM dashboard-section, TemplateGallery, HistoryDatabase + scripts associés (fetchUrlDoc, runAskMode, startSimulation, formData, files, urlDocs, askDocs, etc.). Home devient page produit pure (hero + CTAs + SectorUseCases + Onboarding). 1760 → 1486 lignes.
+- **Hero CTA tertiaire** conditionnel "Lancer une simulation" → `/console` (visible super-admin OR self-service ON).
+- **AppHeader** : entrée nav "Console" (visible super-admin OR self-service) + entrée "Devis" (super-admin only).
+- **ClientDashboardView** : bouton "Lancer une simulation moi-même" pointe désormais vers `/console` (au lieu de `/process/new` directement).
+- **Tests Playwright** `console.spec.ts` : 2 tests valident que `/console` et `/admin/quotes` non-auth redirigent vers `/login?redirect=...`.
+
+#### US-103 — Workflow statut quotes (sidecar)
+- Service `quote_admin_service.py` : enum VALID_STATUSES (received|reviewing|quoted|declined|paid|in_progress|delivered) + ALLOWED_TRANSITIONS map. Sidecar `quote_<id>.status.json` à côté du payload original (US-025), structure `{status, history[], payment_link, last_email_sent_at, notes, delivered_url}`.
+- Helpers : `read_quote_payload`, `read_quote_status` (default `received` si sidecar absent), `list_quotes` (paginé + filtre status), `update_quote_status` (valide transition + ajoute entry historique avec `by_email`), `update_quote_notes` (update isolé sans transition).
+- Pattern `is_valid_transition(current, next)` : retourne True pour idempotence (current==next), False pour transitions interdites. Statuts terminaux : `delivered` et `declined`.
+
+#### US-102 — Endpoints + AdminQuotesView
+- Nouveau blueprint `admin_quote_bp` monté à `/api/admin/quotes`. Tous les endpoints gardés par `@require_super_admin` (compose `@require_auth` + whitelist email).
+- Routes : `GET /` (liste), `GET /<id>` (détail), `PATCH /<id>/status` (transition), `PATCH /<id>/notes` (notes admin), `POST /<id>/send-payment-link` (US-104), `POST /<id>/send-delivered` (US-104).
+- Frontend `AdminQuotesView.vue` : table 7 colonnes (id, date, contact, package, situation 100c, status pill couleur, actions) + modal détail (dump payload + transitions next-state buttons + zone payment_link + zone delivered + notes admin + timeline historique). Color coding pills selon brief : received=grey, reviewing=blue, quoted=orange, declined=red, paid=mint, in_progress=terracotta, delivered=green.
+- API client : `fetchAdminQuotes`, `fetchAdminQuoteDetail`, `patchAdminQuoteStatus`, `patchAdminQuoteNotes`, `sendAdminQuotePaymentLink`, `sendAdminQuoteDelivered` ajoutés à `frontend/src/api/client.js`.
+
+#### US-104 — Resend email + bridge manuel Stripe
+- Service unifié `email_service.py` : `send_email(to, subject, html_body)` essaie Resend (si `RESEND_API_KEY` set) → SMTP legacy (US-025) → no-op. Best-effort, ne lève jamais. Helper `render_template(name, ctx)` charge `app/templates/emails/<name>.html` avec `str.format` substitution.
+- 3 templates HTML inline (table-based, retina-safe, palette Causse Warm Intelligence) : `quote_received.html` (auto-envoyé client à la soumission US-025), `quote_payment_link.html` (envoyé par admin avec un Stripe Payment Link), `quote_delivered.html` (envoyé par admin avec un lien Notion/PDF).
+- Bridge manuel Stripe : pas d'API Stripe en code. Amine génère le Payment Link via Stripe Dashboard, le colle dans le form admin, click "Envoyer" → email client + transition statut → `quoted`.
+- `quote_service.py` mis à jour : `_send_client_confirmation()` ajouté à `submit_quote()` après le persist (US-025 inchangé) : envoie un email au client en plus de la notification interne sales.
+- Dépendance `resend>=2.0.0` ajoutée à `backend/pyproject.toml`. Tests Resend mockés via `monkeypatch.setitem(sys.modules, "resend", fake)` — pas de SDK installé requis pour CI.
+- **Action Amine post-merge** : `RESEND_API_KEY` + `RESEND_FROM_EMAIL` déjà posées dans Coolify (confirmé par Amine). Run `uv sync` sur prod après pull pour installer le SDK.
+
+#### Tests créés (39 nouveaux)
+- `tests/test_unit_quote_admin.py` : 39 tests dans 6 classes :
+  - `TestStatusTransitions` (11) : couverture exhaustive des transitions valides + interdites + terminaux + idempotence + invalid statuses.
+  - `TestQuoteAdminService` (8) : list_empty / list_one_quote / read_status_default / update_writes_sidecar / invalid_transition / unknown_quote / invalid_status / update_notes / filter_by_status.
+  - `TestAdminQuotesEndpoints` (10) : auth (401/403) + list super-admin + detail + 404 + patch status valid/invalid/missing + patch notes + filter.
+  - `TestSendPaymentLink` (3) : email envoyé + transition automatique vers quoted + sidecar payment_link / invalid URL 400 / quote not found 404. Mock Resend via `monkeypatch.setattr(email_service, "send_email")`.
+  - `TestSendDelivered` (1) : full workflow received→reviewing→quoted→paid→in_progress→delivered avec email final.
+  - `TestEmailService` (5) : no_backend_returns_false / resend_success (mock SDK) / empty_recipient_skipped / render_template_known / render_template_missing_fallbacks.
+
+#### Quality gates
+- `cd backend && uv run pytest -q` → **878 passed, 17 skipped, 0 régression** (vs 839 baseline US-101, +39 nouveaux). 25,65 s.
+- `cd frontend && npm run build` → **OK** en 16,79 s. ConsoleView chunk 69,96 kB / AdminQuotesView chunk 10,92 kB. Warning chunk-size pré-existant uniquement sur le chunk principal (767 kB).
+- `tests/test_unit_openapi.py` : 8/8 OK après ajout de `admin_quote_bp` au `_BLUEPRINT_PREFIXES` map + ajout des 6 routes admin/quotes dans `_UNDOCUMENTED_ALLOWLIST` (super-admin endpoints, internal-only).
+- `tests/test_unit_quote.py` : 1 test ajusté (`test_submit_valid_quote_returns_200_and_stores_file`) pour attendre 2 sendmail (sales + client confirmation) au lieu de 1.
+
+#### Décisions architecturales notables
+- **Sidecar JSON plutôt que table SQL** : cohérent avec le pattern US-025 (quotes sont déjà des fichiers filesystem). Pas de migration SQL nécessaire, lecture/écriture trivialement testables avec `tmp_path`. Coût : pas de filtre status complexe en SQL — mais le volume actuel (handful per week) ne justifie pas une table.
+- **3 templates HTML inline plutôt que Jinja** : aucune logique conditionnelle complexe (1 placeholder optionnel `custom_message_block` rendu directement en HTML pré-formaté côté Python). `str.format` suffit, pas de dépendance Jinja2 supplémentaire (déjà présente via Flask mais on évite de la coupler aux templates email pour les rendre testables sans contexte Flask).
+- **Bridge manuel Stripe vs API Stripe** : le brief impose explicitement de ne PAS coder l'intégration Stripe Payment Link API. Amine génère le lien via Dashboard, on fait que l'envoyer par email. Coût : 1 manipulation manuelle par devis, mais 0 secret Stripe à gérer côté backend, 0 webhook à brancher, 0 surface d'attaque PCI-DSS.
+- **Emails Resend avec fallback SMTP** : préserve l'expérience legacy US-025 (qui fonctionnait sur SMTP). Si Amine désactive Resend en supprimant la clé, on retombe automatiquement sur SMTP sans rien changer. Si les deux sont absents, le quote est quand même persisté sur disque (best-effort by design).
+- **Refactor Home.vue : suppression complète, pas de v-if** : le brief insiste explicitement « pas juste masquer via v-if, supprimer du template ». La conséquence est que la home publique est désormais une vraie page produit légère (hero + SectorUseCases + Onboarding). 274 lignes supprimées de Home.vue. Le bloc reproduit *à l'identique* dans ConsoleView pour préserver la mécanique upload + ScenarioSuggestions + handleSuggestionUse + handleTrendingSelect.
+- **Guard router en cascade dans beforeEach** : un seul `useAuthStore()` lookup, on évalue séquentiellement `requiresAuth` → `requiresSelfService` → `requiresSuperAdmin`. Plus efficace que 3 guards séparés et plus lisible.
+
+
 - **Statut** : passes:true (chantier M-multitenant-supabase, follow-up US-100). Avant chantier devis.
 - **Bug d'origine** : Amine a remonté que `/admin/analytics` (super-admin) affiche un compteur global de sims (« 6 au total ») mais le tableau cross-tenant US-097 reste vide. Cause identifiée : les sims créées avant US-091 vivent uniquement sur le filesystem (`backend/uploads/simulations/sim_*/`) et n'ont aucune entrée dans `public.simulation_ownership`. La table SQL drive le tableau, le compteur lit autre chose → divergence.
 - **Solution livrée — pure SQL + script utilitaire Python** :
