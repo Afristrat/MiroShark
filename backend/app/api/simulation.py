@@ -29,6 +29,7 @@ from ..utils.logger import get_logger
 from ..utils.file_parser import FileParser
 from ..models.project import ProjectManager
 from ..services.web_enrichment import WebEnricher
+from ..auth import soft_check_self_service
 
 logger = get_logger('miroshark.api.simulation')
 
@@ -1694,6 +1695,7 @@ def get_entities_by_type(graph_id: str, entity_type: str):
 # ============== Simulation Management Endpoints ==============
 
 @simulation_bp.route('/create', methods=['POST'])
+@soft_check_self_service
 def create_simulation():
     """
     Create a new simulation
@@ -3620,6 +3622,7 @@ def generate_profiles():
 # ============== Simulation Run Control Endpoints ==============
 
 @simulation_bp.route('/start', methods=['POST'])
+@soft_check_self_service
 def start_simulation():
     """
     Start running simulation

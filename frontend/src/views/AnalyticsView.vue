@@ -215,6 +215,7 @@
                   <th class="analytics-orgs-num">{{ $t('analytics.superAdmin.table.sims') }}</th>
                   <th class="analytics-orgs-num">{{ $t('analytics.superAdmin.table.published') }}</th>
                   <th class="analytics-orgs-num">{{ $t('analytics.superAdmin.table.avgBrier') }}</th>
+                  <th>{{ $t('analytics.selfServiceToggle.column') }}</th>
                   <th>{{ $t('analytics.superAdmin.table.createdAt') }}</th>
                 </tr>
               </thead>
@@ -223,23 +224,39 @@
                   v-for="org in organizations"
                   :key="org.id"
                   class="analytics-orgs-row"
-                  @click="openOrgDetail(org)"
                   :title="org.id"
                 >
-                  <td><span class="analytics-orgs-slug">{{ org.slug || '—' }}</span></td>
-                  <td>{{ org.name || '—' }}</td>
-                  <td>{{ org.sector || '—' }}</td>
-                  <td>{{ org.country_code || '—' }}</td>
-                  <td>
+                  <td @click="openOrgDetail(org)"><span class="analytics-orgs-slug">{{ org.slug || '—' }}</span></td>
+                  <td @click="openOrgDetail(org)">{{ org.name || '—' }}</td>
+                  <td @click="openOrgDetail(org)">{{ org.sector || '—' }}</td>
+                  <td @click="openOrgDetail(org)">{{ org.country_code || '—' }}</td>
+                  <td @click="openOrgDetail(org)">
                     <span class="analytics-orgs-status" :class="`analytics-orgs-status--${org.status || 'unknown'}`">
                       {{ org.status || '—' }}
                     </span>
                   </td>
-                  <td class="analytics-orgs-num">{{ org.members_count ?? '—' }}</td>
-                  <td class="analytics-orgs-num">{{ org.simulations_count ?? '—' }}</td>
-                  <td class="analytics-orgs-num">{{ org.published_count ?? '—' }}</td>
-                  <td class="analytics-orgs-num">{{ formatBrier(org.avg_brier) }}</td>
-                  <td>{{ formatDate(org.created_at) }}</td>
+                  <td class="analytics-orgs-num" @click="openOrgDetail(org)">{{ org.members_count ?? '—' }}</td>
+                  <td class="analytics-orgs-num" @click="openOrgDetail(org)">{{ org.simulations_count ?? '—' }}</td>
+                  <td class="analytics-orgs-num" @click="openOrgDetail(org)">{{ org.published_count ?? '—' }}</td>
+                  <td class="analytics-orgs-num" @click="openOrgDetail(org)">{{ formatBrier(org.avg_brier) }}</td>
+                  <!-- US-098 — toggle self-service par org -->
+                  <td>
+                    <label class="analytics-ss-toggle" :title="$t('analytics.selfServiceToggle.help')">
+                      <input
+                        type="checkbox"
+                        :checked="!!org.self_service_enabled"
+                        :disabled="ssToggleLoading[org.id] === true"
+                        @change.stop="toggleOrgSelfService(org)"
+                        @click.stop
+                      />
+                      <span class="analytics-ss-toggle-text">
+                        {{ org.self_service_enabled
+                          ? $t('analytics.selfServiceToggle.on')
+                          : $t('analytics.selfServiceToggle.off') }}
+                      </span>
+                    </label>
+                  </td>
+                  <td @click="openOrgDetail(org)">{{ formatDate(org.created_at) }}</td>
                 </tr>
               </tbody>
             </table>
@@ -475,6 +492,7 @@ import {
   fetchAllOrganizations,
   fetchOrganizationDetail,
   fetchAllSimulations,
+  setOrgSelfService,
 } from '../api/client.js'
 
 const { t } = useI18n()
@@ -614,6 +632,35 @@ const formatDate = (iso) => {
     return d.toISOString().slice(0, 10)
   } catch {
     return '—'
+  }
+}
+
+// ─── US-098 — Toggle self_service_enabled par org ──────────────────────────
+const ssToggleLoading = ref({}) // { [orgId]: boolean }
+
+const toggleOrgSelfService = async (org) => {
+  if (!org?.id) return
+  const newValue = !org.self_service_enabled
+  ssToggleLoading.value = { ...ssToggleLoading.value, [org.id]: true }
+  try {
+    const res = await setOrgSelfService(org.id, newValue)
+    const payload = res?.data || res
+    // Mise à jour optimiste de la ligne dans la liste.
+    const idx = organizations.value.findIndex((o) => o.id === org.id)
+    if (idx !== -1) {
+      organizations.value[idx] = {
+        ...organizations.value[idx],
+        self_service_enabled: !!payload?.self_service_enabled,
+      }
+    }
+  } catch (err) {
+    // Ne change pas l'état visuel (la valeur reste celle d'avant), affiche
+    // l'erreur dans la zone d'erreur globale orgsError.
+    orgsError.value = formatApiError(err) || t('analytics.selfServiceToggle.error')
+  } finally {
+    const next = { ...ssToggleLoading.value }
+    delete next[org.id]
+    ssToggleLoading.value = next
   }
 }
 
@@ -1513,6 +1560,57 @@ const lastFetchedLabel = computed(() => {
   color: var(--wi-on-surface-variant);
   font-family: var(--ms-font-mono);
   font-size: var(--wi-caption);
+}
+
+/* ── US-098 — Toggle self-service par org ──────────────────────────────── */
+.analytics-ss-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: var(--wi-caption);
+  color: var(--wi-on-surface-variant);
+  font-family: var(--wi-font-body);
+  user-select: none;
+}
+.analytics-ss-toggle input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 32px;
+  height: 18px;
+  border-radius: 9px;
+  background: var(--wi-outline-variant);
+  position: relative;
+  cursor: pointer;
+  transition: background var(--ms-transition, 180ms) var(--ms-ease, ease);
+  flex-shrink: 0;
+}
+.analytics-ss-toggle input[type="checkbox"]::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 2px;
+  inset-inline-start: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--wi-surface);
+  transition: transform var(--ms-transition, 180ms) var(--ms-ease, ease);
+}
+.analytics-ss-toggle input[type="checkbox"]:checked {
+  background: var(--wi-primary);
+}
+.analytics-ss-toggle input[type="checkbox"]:checked::before {
+  transform: translateX(14px);
+}
+[dir="rtl"] .analytics-ss-toggle input[type="checkbox"]:checked::before {
+  transform: translateX(-14px);
+}
+.analytics-ss-toggle input[type="checkbox"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.analytics-ss-toggle-text {
+  white-space: nowrap;
 }
 
 /* ── US-097 — Toutes les simulations cross-tenant ───────────────────────── */

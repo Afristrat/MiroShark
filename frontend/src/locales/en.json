@@ -283,6 +283,13 @@
         "error": "Could not load detail."
       }
     },
+    "selfServiceToggle": {
+      "column": "Self-service",
+      "on": "Enabled",
+      "off": "Disabled",
+      "help": "Enable to let org members launch their own simulations.",
+      "error": "Could not update self-service toggle."
+    },
     "allSims": {
       "sectionTitle": "All simulations",
       "sectionHelp": "Full cross-tenant view — all orgs combined.",
@@ -2206,6 +2213,12 @@
         "passwordsMismatch": "The two passwords don't match.",
         "network": "Network error. Check your connection and try again."
       }
+    }
+  },
+  "dashboard": {
+    "selfServiceCta": {
+      "label": "Launch a simulation myself",
+      "title": "Self-service mode is active for your organization."
     }
   },
   "client": {

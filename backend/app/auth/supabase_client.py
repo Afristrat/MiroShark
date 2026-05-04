@@ -107,25 +107,54 @@ def get_user_orgs(user_id: str, client: Any = None) -> List[Dict[str, Any]]:
 
     Effectue un JOIN logique côté Supabase :
       `org_members.role` + `organizations.{id, slug, name, sector,
-      country_code, status}`.
+      country_code, status, self_service_enabled}`.
 
     Returns:
         Une liste de dicts au format :
         ``[{"id": uuid, "slug": str, "name": str, "sector": str|None,
-            "country_code": str|None, "status": str, "role": str}, ...]``
+            "country_code": str|None, "status": str, "role": str,
+            "self_service_enabled": bool}, ...]``
         — vide si l'utilisateur n'est rattaché à aucune org.
+
+    Note US-098 : `self_service_enabled` peut être absent si la migration
+    003 n'a pas encore été jouée côté DB. Dans ce cas, on retombe à
+    `False` (sécurité par défaut).
     """
     cli = client or get_supabase_admin()
     # Le SDK Python supporte l'embed Postgrest : `organizations(...)`.
-    response = (
-        cli.table("org_members")
-        .select(
-            "role, org_id, "
-            "organizations(id, slug, name, sector, country_code, status)"
-        )
-        .eq("user_id", user_id)
-        .execute()
+    # On tente avec self_service_enabled (US-098). Si la colonne n'existe
+    # pas encore (migration 003 non jouée), on retombe sans cette colonne.
+    select_with_ss = (
+        "role, org_id, "
+        "organizations(id, slug, name, sector, country_code, status, self_service_enabled)"
     )
+    select_legacy = (
+        "role, org_id, "
+        "organizations(id, slug, name, sector, country_code, status)"
+    )
+    try:
+        response = (
+            cli.table("org_members")
+            .select(select_with_ss)
+            .eq("user_id", user_id)
+            .execute()
+        )
+    except Exception as exc:  # noqa: BLE001 — colonne absente ?
+        msg = str(exc).lower()
+        if "self_service_enabled" in msg or "column" in msg:
+            logger.warning(
+                "self_service_enabled column missing — falling back. "
+                "Run migration 20260504_001_org_self_service.sql in SQL Editor."
+            )
+            response = (
+                cli.table("org_members")
+                .select(select_legacy)
+                .eq("user_id", user_id)
+                .execute()
+            )
+        else:
+            raise
+
     rows = getattr(response, "data", None) or []
     out: List[Dict[str, Any]] = []
     for row in rows:
@@ -140,10 +169,70 @@ def get_user_orgs(user_id: str, client: Any = None) -> List[Dict[str, Any]]:
                 "sector": org.get("sector"),
                 "country_code": org.get("country_code"),
                 "status": org.get("status"),
+                "self_service_enabled": bool(org.get("self_service_enabled", False)),
                 "role": row.get("role"),
             }
         )
     return out
+
+
+def is_org_self_service_enabled(org_id: str, client: Any = None) -> bool:
+    """Retourne True si l'org a `self_service_enabled = true` (US-098).
+
+    Sécurité par défaut : toute erreur Supabase / colonne manquante / org
+    introuvable → False. L'opérateur active explicitement le flag via
+    l'UI super-admin ou par SQL direct ; pas d'auto-activation.
+    """
+    cli = client or get_supabase_admin()
+    try:
+        response = (
+            cli.table("organizations")
+            .select("self_service_enabled")
+            .eq("id", org_id)
+            .limit(1)
+            .execute()
+        )
+        rows = getattr(response, "data", None) or []
+        if not rows:
+            return False
+        return bool(rows[0].get("self_service_enabled", False))
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(
+            "is_org_self_service_enabled failed for org_id=%s: %s",
+            org_id, exc.__class__.__name__,
+        )
+        return False
+
+
+def set_org_self_service_enabled(
+    org_id: str,
+    enabled: bool,
+    client: Any = None,
+) -> bool:
+    """Met à jour `self_service_enabled` pour une org (US-098).
+
+    Pré-condition : appelé uniquement depuis un endpoint @require_super_admin.
+
+    Returns:
+        True si la mise à jour a affecté >=1 ligne, False sinon
+        (org introuvable, erreur Supabase).
+    """
+    cli = client or get_supabase_admin()
+    try:
+        response = (
+            cli.table("organizations")
+            .update({"self_service_enabled": bool(enabled)})
+            .eq("id", org_id)
+            .execute()
+        )
+        rows = getattr(response, "data", None) or []
+        return len(rows) > 0
+    except Exception as exc:  # noqa: BLE001
+        logger.error(
+            "set_org_self_service_enabled failed for org_id=%s: %s",
+            org_id, exc.__class__.__name__,
+        )
+        raise
 
 
 def get_user_role_in_org(user_id: str, org_id: str, client: Any = None) -> Optional[str]:

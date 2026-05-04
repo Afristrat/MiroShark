@@ -410,6 +410,8 @@ import SectorUseCases from '../components/SectorUseCases.vue'
 import { fetchUrl } from '../api/graph'
 import { askMode, enrichAsk } from '../api/simulation'
 import { useScrollFadeIn } from '../composables/useScrollFadeIn'
+import { useAuthStore } from '../stores/auth'
+import { storeToRefs } from 'pinia'
 // US-094 — l'entrée auth adaptative (login / dashboard) est désormais
 // portée par AppHeader.vue ; Home.vue n'a plus besoin du store auth.
 
@@ -426,12 +428,20 @@ const { t } = useI18n()
 const settingsOpen = ref(false)
 const previewDoc = ref(null)
 
-// US-087 — La console self-service (upload + Ask + URL + textarea + Lancer)
-// et la galerie de templates ne sont plus promues sur la home publique.
-// Tant qu'aucun système d'auth admin/client n'est en place (US-088 à venir),
-// on garde ce flag à `false` pour les visiteurs cold. Le code DOM est préservé
-// intégralement et restera atteignable via URL directe (/process/new, /simulation).
-const showSelfServiceConsole = ref(false)
+// US-098 / US-099 — La console self-service (upload + Ask + URL + textarea +
+// Lancer) et la galerie de templates ne sont visibles que pour :
+//   1. Les super-admins Bassira (founders) — accès direct.
+//   2. Les membres d'une org ayant `self_service_enabled = true`
+//      (toggle sous contrôle Amine via /admin/analytics).
+// Pour tous les autres visiteurs (cold ou clients standards), la home reste
+// orientée découverte produit (CTA /models, /devis).
+const authStore = useAuthStore()
+const { isAuthenticated, isSuperAdmin, currentOrg } = storeToRefs(authStore)
+const showSelfServiceConsole = computed(() => {
+  if (isSuperAdmin.value) return true
+  if (!isAuthenticated.value) return false
+  return Boolean(currentOrg.value?.self_service_enabled)
+})
 
 // US-060 — Onboarding solo 4 étapes : visible uniquement au premier visit.
 // Le flag `bassira_onboarding_done` est posé par OnboardingTour quand

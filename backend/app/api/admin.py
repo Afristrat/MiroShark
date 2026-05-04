@@ -51,6 +51,7 @@ from ..auth.decorators import (
 from ..auth.supabase_client import (
     SupabaseConfigError,
     get_supabase_admin,
+    set_org_self_service_enabled,
 )
 from ..config import Config
 from ..utils.logger import get_logger
@@ -444,26 +445,56 @@ def list_all_organizations():
             503,
         )
 
+    # US-098 — on tente de lire self_service_enabled. Si la colonne n'existe
+    # pas (migration pas jouée), on retombe sur le SELECT historique.
+    select_with_ss = (
+        "id, slug, name, sector, country_code, status, created_at, "
+        "self_service_enabled"
+    )
+    select_legacy = "id, slug, name, sector, country_code, status, created_at"
     try:
         response = (
             cli.table("organizations")
-            .select(
-                "id, slug, name, sector, country_code, status, created_at"
-            )
+            .select(select_with_ss)
             .order("created_at", desc=True)
             .execute()
         )
         orgs = getattr(response, "data", None) or []
     except Exception as exc:  # noqa: BLE001
-        logger.error(
-            "list_all_organizations select failed: %s",
-            exc.__class__.__name__,
-        )
-        return _err_admin(
-            "ADMIN_ORGS_FAILED",
-            "Could not list organizations.",
-            500,
-        )
+        msg = str(exc).lower()
+        if "self_service_enabled" in msg or "column" in msg:
+            logger.warning(
+                "self_service_enabled column missing in list_all_organizations — "
+                "fallback to legacy SELECT. Run migration 20260504_001."
+            )
+            try:
+                response = (
+                    cli.table("organizations")
+                    .select(select_legacy)
+                    .order("created_at", desc=True)
+                    .execute()
+                )
+                orgs = getattr(response, "data", None) or []
+            except Exception as exc2:  # noqa: BLE001
+                logger.error(
+                    "list_all_organizations legacy select failed: %s",
+                    exc2.__class__.__name__,
+                )
+                return _err_admin(
+                    "ADMIN_ORGS_FAILED",
+                    "Could not list organizations.",
+                    500,
+                )
+        else:
+            logger.error(
+                "list_all_organizations select failed: %s",
+                exc.__class__.__name__,
+            )
+            return _err_admin(
+                "ADMIN_ORGS_FAILED",
+                "Could not list organizations.",
+                500,
+            )
 
     enriched: List[Dict[str, Any]] = []
     for org in orgs:
@@ -480,6 +511,7 @@ def list_all_organizations():
             "country_code": org.get("country_code"),
             "status": org.get("status"),
             "created_at": org.get("created_at"),
+            "self_service_enabled": bool(org.get("self_service_enabled", False)),
             "members_count": members_count,
             **stats,
         })
@@ -823,5 +855,77 @@ def list_all_simulations():
             "total": int(total),
             "limit": limit,
             "offset": offset,
+        },
+    }), 200
+
+
+# ─── US-098 — Toggle self_service_enabled par organisation ───────────────────
+
+
+@admin_bp.route("/organizations/<org_id>/self-service", methods=["PATCH"])
+@require_super_admin
+def patch_org_self_service(org_id: str):
+    """Active / désactive le self-service pour une organisation (super-admin only).
+
+    Body JSON : ``{"enabled": true|false}``
+
+    Response 200 :
+        {"success": true, "data": {"org_id": "...", "self_service_enabled": bool}}
+
+    Codes d'erreur :
+        - 400 INVALID_BODY (body manquant ou mauvais type)
+        - 404 ORG_NOT_FOUND (org_id inconnu)
+        - 503 SUPABASE_NOT_CONFIGURED
+        - 500 ADMIN_TOGGLE_FAILED
+    """
+    from flask import request as _req
+
+    if not org_id or not isinstance(org_id, str):
+        return _err_admin("INVALID_ORG_ID", "org_id is required.", 400)
+
+    payload = _req.get_json(silent=True) or {}
+    enabled = payload.get("enabled")
+    if not isinstance(enabled, bool):
+        return _err_admin(
+            "INVALID_BODY",
+            "Body must be JSON {'enabled': true|false}.",
+            400,
+        )
+
+    try:
+        cli = get_supabase_admin()
+    except SupabaseConfigError as exc:
+        logger.error("Supabase admin config missing: %s", exc)
+        return _err_admin(
+            "SUPABASE_NOT_CONFIGURED",
+            "Backend Supabase admin client is not configured.",
+            503,
+        )
+
+    try:
+        updated = set_org_self_service_enabled(org_id, enabled, client=cli)
+    except Exception as exc:  # noqa: BLE001
+        logger.error(
+            "patch_org_self_service failed for org_id=%s: %s",
+            org_id, exc.__class__.__name__,
+        )
+        return _err_admin(
+            "ADMIN_TOGGLE_FAILED",
+            "Could not update self_service_enabled.",
+            500,
+        )
+
+    if not updated:
+        return _err_admin("ORG_NOT_FOUND", "Organization not found.", 404)
+
+    logger.info(
+        "self_service_enabled set to %s for org_id=%s by super-admin",
+        enabled, org_id,
+    )
+    return jsonify({
+        "success": True,
+        "data": {
+            "org_id": org_id,
+            "self_service_enabled": bool(enabled),
         },
     }), 200

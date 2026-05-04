@@ -61,17 +61,29 @@
         </article>
       </section>
 
-      <!-- ── Toolbar : commande nouvelle analyse ── -->
+      <!-- ── Toolbar : commande nouvelle analyse + (US-098) self-service ── -->
       <div v-if="orgs.length > 0" class="dash-toolbar">
         <h2 class="dash-section-title">{{ $t('client.dashboard.simulationsTitle') }}</h2>
-        <router-link
-          :to="{ name: 'Quote', query: { org: 'true' } }"
-          class="dash-cta"
-          :title="$t('client.dashboard.orderTitle')"
-        >
-          <span class="material-symbols-outlined" aria-hidden="true">add</span>
-          <span>{{ $t('client.dashboard.orderCta') }}</span>
-        </router-link>
+        <div class="dash-toolbar-actions">
+          <!-- US-098 — Bouton self-service visible uniquement si l'org a le flag -->
+          <router-link
+            v-if="canSelfService"
+            to="/process/new"
+            class="dash-cta dash-cta--secondary"
+            :title="$t('dashboard.selfServiceCta.title')"
+          >
+            <span class="material-symbols-outlined" aria-hidden="true">rocket_launch</span>
+            <span>{{ $t('dashboard.selfServiceCta.label') }}</span>
+          </router-link>
+          <router-link
+            :to="{ name: 'Quote', query: { org: 'true' } }"
+            class="dash-cta"
+            :title="$t('client.dashboard.orderTitle')"
+          >
+            <span class="material-symbols-outlined" aria-hidden="true">add</span>
+            <span>{{ $t('client.dashboard.orderCta') }}</span>
+          </router-link>
+        </div>
       </div>
 
       <!-- ── État de chargement ── -->
@@ -301,6 +313,13 @@ const heroTitle = computed(() => {
   return t('client.dashboard.heroTitle')
 })
 const canWrite = computed(() => auth.canWrite)
+// US-098 / US-099 — bouton self-service visible si :
+//   - super-admin Bassira (toujours autorisé), OU
+//   - membre actif d'une org dont self_service_enabled = true
+const canSelfService = computed(() => {
+  if (auth.isSuperAdmin) return true
+  return Boolean(auth.currentOrg?.self_service_enabled)
+})
 
 const stats = computed(() => {
   const total = simulations.value.length
@@ -716,6 +735,23 @@ onMounted(async () => {
 .dash-cta:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* US-098 — Toolbar avec deux actions (self-service + commande) */
+.dash-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--wi-space-sm, 8px);
+}
+.dash-cta--secondary {
+  background: var(--wi-surface-container-low, var(--wi-surface));
+  color: var(--wi-primary);
+  border: 1px solid var(--wi-primary);
+}
+.dash-cta--secondary:hover:not(:disabled) {
+  background: var(--wi-primary-soft, var(--wi-surface));
+  box-shadow: var(--wi-shadow-sm, none);
 }
 
 /* ── Loading / error / empty ─────────────────────────── */

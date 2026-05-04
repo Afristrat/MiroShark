@@ -8,6 +8,7 @@ Procédure step-by-step pour appliquer le schéma multitenant sur la DB Supabase
 |---|---|
 | `migrations/20260503_001_init_multitenant.sql` | Tables `organizations` + `org_members` + `simulation_ownership` + indexes + RLS policies + trigger updated_at |
 | `migrations/20260503_002_public_calibration_view.sql` | VIEW publique agrégée k-anonymity n≥5 pour `/calibration` v2 |
+| `migrations/20260504_001_org_self_service.sql` | Ajoute la colonne `self_service_enabled bool default false` sur `organizations` (US-098) |
 | `seed.sql` | Crée l'org "AIMPOWER" (toi en owner après signup) |
 
 ---
@@ -111,3 +112,17 @@ Et je pourrai dispatcher US-092 (backend Flask middleware JWT + extension Simula
 - **Pas de migration côté Coolify** à ce stade. Coolify n'a besoin que des 5 env vars Supabase pour le runtime (ce que tu as déjà fait).
 - **`seed.sql` peut être ré-exécuté** sans risque (toutes les insertions ont des `on conflict do nothing` ou `do update`).
 - **Si tu te trompes** : le SQL Editor permet aussi de `drop table organizations cascade;` pour repartir de zéro. Les migrations sont idempotentes (création des tables avec `if not exists`, etc.) — on peut les rejouer.
+
+---
+
+## Étape 8 — (US-098) Activer le toggle self-service par org
+
+**À jouer après le déploiement US-098** :
+
+1. SQL Editor → nouvelle query → colle l'intégralité de `migrations/20260504_001_org_self_service.sql` → **Run**.
+2. Vérification : Table Editor → `organizations` → la colonne `self_service_enabled` (boolean, default false) doit apparaître.
+3. Pour activer le self-service sur une org, soit :
+   - **Via UI** : `/admin/analytics` → section « Toutes les organisations » → toggle « Self-service activé » sur la ligne de l'org (super-admin only).
+   - **Via SQL direct** : `update public.organizations set self_service_enabled = true where slug = 'aimpower-bassira';`
+
+Le flag est lu par le décorateur backend `@require_self_service_enabled` qui retourne 403 `SELF_SERVICE_DISABLED` si l'org n'a pas le drapeau (sauf super-admin).

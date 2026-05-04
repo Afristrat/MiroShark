@@ -106,6 +106,8 @@ def auth_me():
                     "sector": o.get("sector"),
                     "country_code": o.get("country_code"),
                     "role": o.get("role"),
+                    # US-098 — flag toggle self-service par org
+                    "self_service_enabled": bool(o.get("self_service_enabled", False)),
                 }
                 for o in orgs
             ],

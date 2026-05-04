@@ -169,6 +169,20 @@ export function fetchOrganizationDetail(orgId) {
 }
 
 /**
+ * PATCH /api/admin/organizations/<orgId>/self-service — toggle self-service (US-098).
+ *
+ * Reservé aux super-admins. Body : `{ enabled: boolean }`.
+ *
+ * Returns: `{ org_id, self_service_enabled: bool }`
+ */
+export function setOrgSelfService(orgId, enabled) {
+  return client.patch(
+    `/api/admin/organizations/${encodeURIComponent(orgId)}/self-service`,
+    { enabled: Boolean(enabled) }
+  )
+}
+
+/**
  * GET /api/admin/simulations — liste TOUTES les simulations cross-tenant (US-097).
  *
  * Reservé aux super-admins. Filtres optionnels passés via params :

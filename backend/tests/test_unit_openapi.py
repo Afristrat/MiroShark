@@ -143,6 +143,8 @@ _UNDOCUMENTED_ALLOWLIST: set[str] = {
     "/api/admin/organizations/<org_id>",
     # US-097 — cross-tenant simulations listing (super-admin only).
     "/api/admin/simulations",
+    # US-098 — toggle self-service per org (super-admin only).
+    "/api/admin/organizations/<org_id>/self-service",
 }
 
 

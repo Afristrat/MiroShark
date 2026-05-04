@@ -49,6 +49,41 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 
 ## Log d'itérations
 
+### 2026-05-04 — US-098 Toggle org-level self_service_enabled
+- **Statut** : passes:true (chantier M-multitenant-supabase, follow-up US-097).
+- **Migration SQL** : `supabase/migrations/20260504_001_org_self_service.sql` créée mais **NON exécutée par Ralph** — Amine doit la jouer dans le SQL Editor avant déploiement (note ajoutée dans `supabase/README.md` étape 8). La migration est idempotente (`add column if not exists`) avec default=false (sécurité par défaut).
+- **Backend** :
+  - `supabase_client.py` : helper `is_org_self_service_enabled(org_id)` (read avec fallback `False` sur erreur — sécurité par défaut), helper `set_org_self_service_enabled(org_id, enabled)` (write, returns True si ≥1 row affectée). `get_user_orgs` mis à jour pour SELECT `self_service_enabled` avec **fallback automatique** au SELECT legacy si la colonne n'existe pas (migration pas encore jouée → l'app continue de tourner).
+  - `decorators.py` : 2 nouveaux décorateurs.
+    - `@require_self_service_enabled` (strict) : exige `g.current_org` (donc à chaîner après `@require_org_membership`). Vérifie le flag sinon 403 SELF_SERVICE_DISABLED. Bypass si super-admin (US-099 préparé).
+    - `@soft_check_self_service` (souple) : ne casse pas les endpoints publics existants. Si JWT absent → laisse passer (mode legacy). Si JWT présent → check membre + flag, 403 si non. Permet d'appliquer US-098 progressivement sur `/api/simulation/create`, `/api/graph/build`, `/api/simulation/start` sans casser les flows.
+  - `admin.py` : endpoint `PATCH /api/admin/organizations/<org_id>/self-service` (super-admin only) + colonne `self_service_enabled` exposée dans `list_all_organizations` (avec fallback legacy si migration pas jouée).
+  - `client.py` : `auth_me` expose `self_service_enabled` dans le payload des orgs (consommé côté frontend par `currentOrg.self_service_enabled`).
+- **Frontend** :
+  - `AnalyticsView.vue` : nouvelle colonne « Self-service » avec toggle on/off par org (super-admin only). `setOrgSelfService(orgId, enabled)` ajoutée à `api/client.js`. Update optimiste de l'état local après PATCH OK ; en cas d'erreur, rollback visuel (la valeur reste celle d'avant) + message dans `orgsError`. CSS toggle sans `!important` (custom checkbox + transition transform).
+  - `Home.vue` : `showSelfServiceConsole` devient `computed(isSuperAdmin || (isAuthenticated && currentOrg.self_service_enabled))` (was `ref(false)` constant US-087).
+  - `ClientDashboardView.vue` : ajout d'un bouton secondaire « Lancer une simulation moi-même » (icône rocket_launch) visible uniquement si `canSelfService` (super-admin OU org avec flag actif). Conduit vers `/process/new`.
+  - i18n FR/EN/AR : namespaces `analytics.selfServiceToggle.*` (column / on / off / help / error) et `dashboard.selfServiceCta.*` (label / title).
+- **Tests créés (20 nouveaux)** : `test_unit_self_service_toggle.py` :
+  - `TestIsOrgSelfServiceEnabled` (4) : enabled / disabled / org-missing / exception → False.
+  - `TestSetOrgSelfServiceEnabled` (3) : update OK / no row / exception propagated.
+  - `TestPatchSelfServiceEndpoint` (6) : no-token 401 / normal-user 403 / invalid-body 400 / org-not-found 404 / super-admin enables 200 / super-admin disables 200.
+  - `TestSoftCheckSelfService` (7) : no-jwt-lets-through / invalid-jwt 401 / super-admin bypass / member-with-enabled-org passes / member-with-disabled-org 403 / member-no-orgs 403 / supabase-misconfigured-lets-through-legacy.
+- **Quality gates** :
+  - `cd backend && uv run pytest tests/test_unit_self_service_toggle.py -v` → **20 PASS** en 3,46 s.
+  - `cd backend && uv run pytest -q` → **825 passed, 17 skipped, 0 régression** (vs 805 baseline US-097, +20 nouveaux).
+  - `cd frontend && npm run build` → **OK** en 14,58 s, 832 kB chunk principal.
+- **Action Amine post-merge** :
+  1. Jouer `supabase/migrations/20260504_001_org_self_service.sql` dans le SQL Editor.
+  2. Redeploy backend Coolify (la nouvelle colonne est utilisée par les helpers + endpoint PATCH).
+  3. Activer le flag pour son org : soit via UI `/admin/analytics` toggle, soit via SQL `update public.organizations set self_service_enabled=true where slug='aimpower-bassira';`.
+- **Décisions architecturales notables** :
+  - **2 décorateurs (strict + souple) plutôt qu'1** : permettait soit (a) de casser les flows existants en exigeant l'auth sur `/create`, `/build`, `/start`, soit (b) de garder le comportement legacy pour les requêtes publiques. On a choisi (b) avec `@soft_check_self_service` qui devient strict UNIQUEMENT quand un JWT est fourni — le frontend self-service envoie déjà le bearer token via `api/client.js`, donc l'expérience client est exactement comme prévu sans casser les flows historiques. Le décorateur strict reste exposé pour les futurs endpoints (US-101+).
+  - **Fallback SELECT pour la migration en transition** : `get_user_orgs` et `list_all_organizations` détectent l'absence de colonne `self_service_enabled` (`if "column" in str(exc)`) et retombent sur le SELECT legacy — l'app reste fonctionnelle tant que la migration n'est pas jouée, sans erreur 500 visible aux utilisateurs.
+  - **Sécurité par défaut** : `default=false` côté DB + `is_org_self_service_enabled` retourne False sur erreur → toute org créée est en mode commande analyste tant qu'Amine ne l'active pas explicitement. C'est la posture safe-by-default conforme à la philosophie zero-trust côté backend.
+  - **Toggle UI sans `!important`** : custom checkbox CSS (appearance: none + ::before pseudo) avec `transition: transform` pour glisser le pin. RTL géré via `inset-inline-*` + `[dir="rtl"]` translateX inversé. Aucun `!important` introduit (US-016 respect).
+- **Apprentissage clé** : pour activer une feature multitenant progressivement, le pattern « décorateur souple JWT-aware » (`@soft_check_self_service`) est plus pragmatique que le pattern « décorateur strict + feature flag » : le décorateur souple respecte le contrat de l'endpoint actuel pour les requêtes non-authentifiées (legacy public mode reste fonctionnel) et n'active la nouvelle vérification que pour les requêtes authentifiées. Pas de breaking change, pas de feature flag à maintenir.
+
 ### 2026-05-04 — US-097 Super-admin voit toutes les simulations cross-tenant
 - **Statut** : passes:true (chantier M-multitenant-supabase, follow-up US-095).
 - **Endpoint backend** : `GET /api/admin/simulations` (require_super_admin) — service_role bypass RLS pour lire `simulation_ownership` toutes orgs confondues. Filtres : `org_id`, `package_id`, `published` (true|false), pagination `limit` (1-200, default 50) + `offset` (0+).

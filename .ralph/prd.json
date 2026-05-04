@@ -3019,15 +3019,46 @@
         "Tests : 10+ nouveaux tests pytest (toggle endpoint 401/403/200, helper, decorator avec/sans org_id, bypass super_admin)",
         "Aucune régression backend pytest, build Vite OK"
       ],
-      "passes": false,
-      "completedAt": null,
+      "passes": true,
+      "completedAt": "2026-05-04T14:00:00Z",
       "dependencies": [
         "US-097"
       ],
       "metadata": {
         "estimated_hours": 4,
         "priority": "P0",
-        "migration_manual_required": "supabase/migrations/20260504_001_org_self_service.sql à exécuter par Amine dans SQL Editor"
+        "migration_manual_required": "supabase/migrations/20260504_001_org_self_service.sql à exécuter par Amine dans SQL Editor",
+        "files_created": [
+          "supabase/migrations/20260504_001_org_self_service.sql",
+          "backend/tests/test_unit_self_service_toggle.py"
+        ],
+        "files_modified": [
+          "supabase/README.md",
+          "backend/app/auth/supabase_client.py",
+          "backend/app/auth/decorators.py",
+          "backend/app/auth/__init__.py",
+          "backend/app/api/admin.py",
+          "backend/app/api/client.py",
+          "backend/app/api/simulation.py",
+          "backend/app/api/graph.py",
+          "backend/tests/test_unit_openapi.py",
+          "frontend/src/api/client.js",
+          "frontend/src/views/AnalyticsView.vue",
+          "frontend/src/views/Home.vue",
+          "frontend/src/views/ClientDashboardView.vue",
+          "frontend/src/locales/fr.json",
+          "frontend/src/locales/en.json",
+          "frontend/src/locales/ar.json"
+        ],
+        "tests_passing": "825 passed, 17 skipped (vs 805 baseline US-097, +20 nouveaux)",
+        "build_vite": "OK",
+        "endpoints_added": [
+          "PATCH /api/admin/organizations/<org_id>/self-service"
+        ],
+        "decorators_added": [
+          "@require_self_service_enabled (strict)",
+          "@soft_check_self_service (souple, JWT-aware)"
+        ]
       }
     },
     {

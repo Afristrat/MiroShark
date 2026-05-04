@@ -23,6 +23,8 @@ from .decorators import (  # noqa: F401
     require_org_membership,
     require_owner_or_admin,
     require_super_admin,
+    require_self_service_enabled,
+    soft_check_self_service,
     is_super_admin_email,
 )
 
@@ -33,5 +35,7 @@ __all__ = [
     "require_org_membership",
     "require_owner_or_admin",
     "require_super_admin",
+    "require_self_service_enabled",
+    "soft_check_self_service",
     "is_super_admin_email",
 ]

@@ -283,6 +283,13 @@
         "error": "Impossible de charger le détail."
       }
     },
+    "selfServiceToggle": {
+      "column": "Self-service",
+      "on": "Activé",
+      "off": "Désactivé",
+      "help": "Activer permet aux membres de l'org de lancer leurs propres simulations.",
+      "error": "Impossible de modifier le toggle self-service."
+    },
     "allSims": {
       "sectionTitle": "Toutes les simulations",
       "sectionHelp": "Vue cross-tenant complète — toutes orgs confondues.",
@@ -2206,6 +2213,12 @@
         "passwordsMismatch": "Les deux mots de passe ne correspondent pas.",
         "network": "Erreur réseau. Vérifiez votre connexion et réessayez."
       }
+    }
+  },
+  "dashboard": {
+    "selfServiceCta": {
+      "label": "Lancer une simulation moi-même",
+      "title": "Mode self-service activé pour votre organisation."
     }
   },
   "client": {

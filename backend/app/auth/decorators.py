@@ -37,6 +37,7 @@ from .jwt_verifier import InvalidTokenError, verify_supabase_jwt
 from .supabase_client import (
     SupabaseConfigError,
     get_user_orgs,
+    is_org_self_service_enabled,
     role_meets_minimum,
 )
 
@@ -253,6 +254,12 @@ def require_org_membership(role_min: str = "member") -> Callable:
                 "sector": selected.get("sector"),
                 "country_code": selected.get("country_code"),
                 "role": actual_role,
+                # US-098 — propagé pour permettre à
+                # @require_self_service_enabled d'éviter un round-trip
+                # Supabase si la donnée est déjà disponible.
+                "self_service_enabled": bool(
+                    selected.get("self_service_enabled", False)
+                ),
             }
             return view_func(*args, **kwargs)
 
@@ -355,6 +362,238 @@ def require_super_admin(view_func: Callable) -> Callable:
             )
 
         g.is_super_admin = True
+        return view_func(*args, **kwargs)
+
+    return _wrapper
+
+
+# ─── Self-service activation per-org (US-098) ───────────────────────────────
+
+
+def _user_is_super_admin_from_g() -> bool:
+    """Helper interne : True si g.is_super_admin OU si l'email est whitelist.
+
+    Permet à `@require_self_service_enabled` d'autoriser un super-admin
+    Bassira à utiliser les endpoints self-service même sur une org dont
+    le flag est désactivé. Ne nécessite pas que `@require_super_admin`
+    ait préalablement décoré la route — le check est fait via l'email
+    présent dans g.current_user.
+    """
+    if getattr(g, "is_super_admin", False) is True:
+        return True
+    user = getattr(g, "current_user", None) or {}
+    email = user.get("email")
+    return is_super_admin_email(email)
+
+
+def require_self_service_enabled(view_func: Callable) -> Callable:
+    """Décorateur : exige que l'org courante ait `self_service_enabled = true`.
+
+    À appliquer APRÈS `@require_org_membership` (qui pose `g.current_org`).
+    Le décorateur :
+      1. Vérifie qu'un `g.current_org` est posé (sinon 500 — erreur dev).
+      2. Vérifie le flag `self_service_enabled` côté Supabase.
+      3. Bypass si l'utilisateur est super-admin Bassira (cf. US-099).
+
+    Codes d'erreur :
+        - 500 NO_CURRENT_ORG (décoration incorrecte côté dev — `@require_org_membership` manquant)
+        - 403 SELF_SERVICE_DISABLED (org sans flag, user non super-admin)
+        - 503 SUPABASE_NOT_CONFIGURED (héritée des helpers Supabase)
+    """
+
+    @wraps(view_func)
+    def _wrapper(*args, **kwargs):
+        # US-099 — bypass super-admin (ils peuvent toujours lancer des sims).
+        if _user_is_super_admin_from_g():
+            g.self_service_bypass = True
+            return view_func(*args, **kwargs)
+
+        org = getattr(g, "current_org", None) or {}
+        org_id = org.get("id") if isinstance(org, dict) else None
+        if not org_id:
+            logger.error(
+                "require_self_service_enabled used without g.current_org. "
+                "Apply @require_org_membership first."
+            )
+            return _err(
+                "NO_CURRENT_ORG",
+                "Self-service decorator requires an authenticated org context.",
+                500,
+            )
+
+        # Si la valeur est déjà connue dans g.current_org (US-098 — get_user_orgs
+        # retourne self_service_enabled), on l'utilise pour éviter un round-trip.
+        ss = org.get("self_service_enabled")
+        if ss is None:
+            try:
+                ss = is_org_self_service_enabled(org_id)
+            except SupabaseConfigError:
+                return _err(
+                    "SUPABASE_NOT_CONFIGURED",
+                    "Backend Supabase admin client is not configured.",
+                    503,
+                )
+            except Exception as exc:  # noqa: BLE001
+                logger.error(
+                    "self-service flag fetch failed for org_id=%s: %s",
+                    org_id, exc.__class__.__name__,
+                )
+                return _err(
+                    "INTERNAL_AUTH_ERROR",
+                    "Could not verify self-service status.",
+                    500,
+                )
+
+        if not ss:
+            return _err(
+                "SELF_SERVICE_DISABLED",
+                "Self-service is disabled for this organization. "
+                "Contact your Bassira analyst to order a simulation.",
+                403,
+            )
+
+        return view_func(*args, **kwargs)
+
+    return _wrapper
+
+
+def soft_check_self_service(view_func: Callable) -> Callable:
+    """Décorateur souple — applique le check self-service UNIQUEMENT si JWT présent.
+
+    Logique :
+      - Pas de JWT → laisse passer (mode legacy/public, pas de breaking change).
+      - JWT + super-admin → laisse passer (US-099).
+      - JWT + org membership → vérifie self_service_enabled.
+      - JWT mais aucun JWT valide ne pose de g.current_user → laisse passer.
+
+    Permet à US-098 d'être appliqué progressivement sur les endpoints existants
+    (create / build / start) sans casser les flows publics legacy. Quand US-101+
+    rendra l'auth obligatoire sur ces endpoints, on basculera sur la chaîne
+    stricte `@require_org_membership + @require_self_service_enabled`.
+
+    Codes d'erreur (uniquement quand JWT fourni) :
+        - 403 SELF_SERVICE_DISABLED
+        - 401 INVALID_TOKEN (si JWT fourni mais invalide)
+    """
+
+    @wraps(view_func)
+    def _wrapper(*args, **kwargs):
+        token = _extract_jwt_from_request()
+        if not token:
+            # Pas de JWT → laisse passer (legacy public mode).
+            return view_func(*args, **kwargs)
+
+        try:
+            claims = verify_supabase_jwt(token)
+        except InvalidTokenError as exc:
+            msg = str(exc)
+            if (
+                "SUPABASE_JWT_SECRET" in msg
+                or "SUPABASE_URL is not configured" in msg
+            ):
+                # Backend mal configuré — on log et on laisse passer pour ne
+                # pas brique l'endpoint en dev local.
+                logger.warning(
+                    "soft_check_self_service: backend not configured, "
+                    "letting request through legacy."
+                )
+                return view_func(*args, **kwargs)
+            return _err("INVALID_TOKEN", "Invalid or expired token.", 401)
+
+        # JWT valide → on pose g.current_user comme require_auth.
+        g.current_user = {
+            "id": claims.get("sub"),
+            "email": claims.get("email"),
+            "claims": claims,
+        }
+
+        # US-099 — super-admin bypass.
+        if _user_is_super_admin_from_g():
+            g.is_super_admin = True
+            g.self_service_bypass = True
+            return view_func(*args, **kwargs)
+
+        # Sinon : on tente de résoudre l'org courante.
+        user_id = (g.current_user or {}).get("id")
+        if not user_id:
+            return _err("INVALID_TOKEN", "Token missing 'sub' claim.", 401)
+
+        requested_org_id = (
+            request.headers.get("X-Org-Id")
+            or request.args.get("org_id")
+            or None
+        )
+
+        try:
+            user_orgs = get_user_orgs(user_id)
+        except SupabaseConfigError:
+            # Backend mal configuré → fallback legacy.
+            logger.warning(
+                "soft_check_self_service: Supabase not configured, "
+                "letting request through legacy."
+            )
+            return view_func(*args, **kwargs)
+        except Exception as exc:  # noqa: BLE001
+            logger.error(
+                "soft_check_self_service get_user_orgs failed: %s",
+                exc.__class__.__name__,
+            )
+            return view_func(*args, **kwargs)
+
+        if not user_orgs:
+            # User authentifié mais sans org → on ne peut pas vérifier le
+            # flag. Si on est ici, c'est que le user veut explicitement
+            # utiliser le mode self-service. Refus 403.
+            return _err(
+                "SELF_SERVICE_DISABLED",
+                "Authenticated user is not a member of any organization. "
+                "Self-service requires an active organization membership.",
+                403,
+            )
+
+        # Sélection de l'org cible (X-Org-Id, ?org_id=, ou unique).
+        if requested_org_id:
+            match = next(
+                (o for o in user_orgs if str(o.get("id")) == str(requested_org_id)),
+                None,
+            )
+            if match is None:
+                return _err(
+                    "ORG_NOT_FOUND_FOR_USER",
+                    "The requested org_id is not associated with this user.",
+                    404,
+                )
+            selected = match
+        elif len(user_orgs) == 1:
+            selected = user_orgs[0]
+        else:
+            return _err(
+                "ORG_ID_REQUIRED",
+                "User belongs to multiple organizations — provide X-Org-Id "
+                "header or ?org_id= query parameter.",
+                400,
+            )
+
+        g.current_org = {
+            "id": selected.get("id"),
+            "slug": selected.get("slug"),
+            "name": selected.get("name"),
+            "sector": selected.get("sector"),
+            "country_code": selected.get("country_code"),
+            "role": selected.get("role"),
+            "self_service_enabled": bool(
+                selected.get("self_service_enabled", False)
+            ),
+        }
+
+        if not g.current_org["self_service_enabled"]:
+            return _err(
+                "SELF_SERVICE_DISABLED",
+                "Self-service is disabled for this organization. "
+                "Contact your Bassira analyst to order a simulation.",
+                403,
+            )
+
         return view_func(*args, **kwargs)
 
     return _wrapper

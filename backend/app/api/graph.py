@@ -20,6 +20,7 @@ from ..utils.file_parser import FileParser
 from ..utils.logger import get_logger
 from ..models.task import TaskManager, TaskStatus
 from ..models.project import ProjectManager, ProjectStatus
+from ..auth import soft_check_self_service
 
 # Get logger
 logger = get_logger('miroshark.api')
@@ -345,6 +346,7 @@ def generate_ontology():
 # ============== API 2: Build graph ==============
 
 @graph_bp.route('/build', methods=['POST'])
+@soft_check_self_service
 def build_graph():
     """
     API 2: Build graph based on project_id
