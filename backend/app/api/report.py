@@ -346,6 +346,14 @@ def get_report(report_id: str):
     try:
         report = ReportManager.get_report(report_id)
 
+        # Fallback : si l'id passé est en réalité un simulation_id (sim_xxxx),
+        # on tente la résolution par simulation. Le frontend route /report/:id
+        # accepte historiquement les deux formats — sans ce fallback, naviguer
+        # vers /report/sim_xxx déclenche un 404 silencieux et la vue reste
+        # bloquée en état GENERATING.
+        if not report and isinstance(report_id, str) and report_id.startswith("sim_"):
+            report = ReportManager.get_report_by_simulation(report_id)
+
         if not report:
             return jsonify({
                 "success": False,
