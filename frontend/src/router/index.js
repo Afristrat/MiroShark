@@ -181,6 +181,14 @@ const router = createRouter({
 // donc l'état de session persisté est déjà chargé au moment des nav.
 router.beforeEach(async (to) => {
   if (!to.meta?.requiresAuth) return true
+  // US-096 fix — Si on revient d'un OAuth implicit (URL contient
+  // `#access_token=...`), Supabase JS est en train d'écrire la session ;
+  // ne pas rediriger vers /login dans cette fenêtre. auth.init() côté
+  // store attend déjà l'event SIGNED_IN — ce garde-fou est une 2e ligne
+  // de défense au cas où le router naviguerait avant que init() finisse.
+  if (typeof window !== 'undefined' && window.location.hash.includes('access_token=')) {
+    return true
+  }
   const auth = useAuthStore()
   if (!auth.isAuthenticated) {
     return {

@@ -74,6 +74,26 @@ export const useAuthStore = defineStore('auth', {
      */
     async init() {
       try {
+        // US-096 fix — Si on revient d'un OAuth implicit (Google), l'URL
+        // contient un fragment `#access_token=...` que Supabase JS doit
+        // d'abord parser via detectSessionInUrl AVANT que getSession()
+        // ne renvoie une session valide. On attend l'event SIGNED_IN
+        // (failsafe 3s) pour éviter que le router beforeEach redirige
+        // vers /login alors que la session est en train de s'écrire.
+        if (typeof window !== 'undefined' && window.location.hash.includes('access_token=')) {
+          await new Promise((resolve) => {
+            let done = false
+            const finish = () => { if (!done) { done = true; resolve() } }
+            const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+              if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+                try { sub?.subscription?.unsubscribe?.() } catch (_) { /* ignore */ }
+                finish()
+              }
+            })
+            setTimeout(finish, 3000)
+          })
+        }
+
         const { data, error } = await supabase.auth.getSession()
         if (error) {
           // Erreur réseau ou Supabase down — on log mais on n'empêche
