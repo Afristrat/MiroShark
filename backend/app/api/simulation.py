@@ -1821,6 +1821,37 @@ def create_simulation():
                         )
                     }), 400
 
+        # US-098 / US-099 — multitenant ownership :
+        #   - Membre d'org : org_id provient de g.current_org (posé par
+        #     soft_check_self_service après vérification du flag).
+        #   - Super-admin : org_id par défaut = aimpower-bassira si pas
+        #     d'X-Org-Id explicite, sinon respect de l'header.
+        #   - Mode legacy public : aucun JWT → pas d'org_id (rétro-compat).
+        from flask import g as _g
+        resolved_org_id = None
+        resolved_user_id = None
+        org_ctx = getattr(_g, "current_org", None)
+        if isinstance(org_ctx, dict) and org_ctx.get("id"):
+            resolved_org_id = org_ctx.get("id")
+        user_ctx = getattr(_g, "current_user", None)
+        if isinstance(user_ctx, dict) and user_ctx.get("id"):
+            resolved_user_id = user_ctx.get("id")
+        # US-099 — bypass super-admin : si pas d'org explicite, attribuer
+        # à l'org Bassira par défaut pour avoir un audit trail propre.
+        if (
+            getattr(_g, "is_super_admin", False)
+            and not resolved_org_id
+        ):
+            try:
+                from ..auth.supabase_client import get_default_super_admin_org_id
+                resolved_org_id = get_default_super_admin_org_id()
+            except Exception as exc:  # noqa: BLE001
+                logger.warning(
+                    "Could not resolve default super-admin org: %s",
+                    exc.__class__.__name__,
+                )
+                # Continue sans org_id (mode legacy fallback).
+
         manager = SimulationManager()
         state = manager.create_simulation(
             project_id=project_id,
@@ -1829,13 +1860,16 @@ def create_simulation():
             enable_reddit=data.get('enable_reddit', True),
             enable_polymarket=data.get('enable_polymarket', False),
             polymarket_market_count=data.get('polymarket_market_count', 1),
+            org_id=resolved_org_id,
+            created_by=resolved_user_id,
+            package_id=data.get('package_id'),
         )
-        
+
         return jsonify({
             "success": True,
             "data": state.to_dict()
         })
-        
+
     except Exception as e:
         logger.error(f"Failed to create simulation: {str(e)}")
         return jsonify({

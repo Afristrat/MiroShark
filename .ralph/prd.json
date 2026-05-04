@@ -3076,14 +3076,30 @@
         "Tests : 4+ nouveaux tests pytest (super_admin sans org → ownership default org / super_admin + endpoint self-service / fallback org introuvable)",
         "Aucune régression backend pytest, build Vite OK"
       ],
-      "passes": false,
-      "completedAt": null,
+      "passes": true,
+      "completedAt": "2026-05-04T15:00:00Z",
       "dependencies": [
         "US-098"
       ],
       "metadata": {
         "estimated_hours": 2,
-        "priority": "P0"
+        "priority": "P0",
+        "files_created": [
+          "backend/tests/test_unit_super_admin_simulation.py"
+        ],
+        "files_modified": [
+          "backend/app/auth/supabase_client.py",
+          "backend/app/api/simulation.py",
+          "frontend/src/components/AppHeader.vue",
+          "frontend/src/locales/fr.json",
+          "frontend/src/locales/en.json",
+          "frontend/src/locales/ar.json"
+        ],
+        "tests_passing": "832 passed, 17 skipped (vs 825 baseline US-098, +7 nouveaux)",
+        "build_vite": "OK",
+        "helpers_added": [
+          "get_default_super_admin_org_id (résout aimpower-bassira par slug)"
+        ]
       }
     },
     {

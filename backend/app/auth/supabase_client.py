@@ -176,6 +176,45 @@ def get_user_orgs(user_id: str, client: Any = None) -> List[Dict[str, Any]]:
     return out
 
 
+_DEFAULT_SUPER_ADMIN_ORG_SLUG = "aimpower-bassira"
+
+
+def get_default_super_admin_org_id(client: Any = None) -> Optional[str]:
+    """Retourne l'UUID de l'org par défaut pour les super-admins (US-099).
+
+    Quand un super-admin Bassira lance une simulation sans `org_id` explicite
+    (depuis l'AppHeader « + Lancer » ou la console self-service), on rattache
+    l'ownership à l'org `aimpower-bassira` (créée par seed.sql US-091).
+
+    Si l'org n'existe pas en base (déploiement frais sans seed), on retourne
+    None et l'appelant fallback à un mode public (pas de record ownership).
+    """
+    cli = client or get_supabase_admin()
+    try:
+        response = (
+            cli.table("organizations")
+            .select("id")
+            .eq("slug", _DEFAULT_SUPER_ADMIN_ORG_SLUG)
+            .limit(1)
+            .execute()
+        )
+        rows = getattr(response, "data", None) or []
+        if not rows:
+            logger.warning(
+                "Default super-admin org '%s' not found in DB. "
+                "Run supabase/seed.sql section [A].",
+                _DEFAULT_SUPER_ADMIN_ORG_SLUG,
+            )
+            return None
+        return rows[0].get("id")
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(
+            "get_default_super_admin_org_id failed: %s",
+            exc.__class__.__name__,
+        )
+        return None
+
+
 def is_org_self_service_enabled(org_id: str, client: Any = None) -> bool:
     """Retourne True si l'org a `self_service_enabled = true` (US-098).
 

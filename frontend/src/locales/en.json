@@ -25,7 +25,9 @@
     "dashboardTitle": "Private client dashboard",
     "logout": "Sign out",
     "admin": "Admin",
-    "adminTitle": "Bassira super-admin console (all organizations)"
+    "adminTitle": "Bassira super-admin console (all organizations)",
+    "launchSimulation": "Launch simulation",
+    "launchSimulationTitle": "Launch a new simulation directly (super-admin)"
   },
   "common": {
     "loading": "Loading…",

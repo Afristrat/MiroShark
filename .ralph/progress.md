@@ -49,6 +49,33 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 
 ## Log d'itérations
 
+### 2026-05-04 — US-099 Super-admin lance ses propres simulations directement
+- **Statut** : passes:true (chantier M-multitenant-supabase, follow-up US-098).
+- **Backend** :
+  - `supabase_client.py` : helper `get_default_super_admin_org_id()` qui résout l'org `slug='aimpower-bassira'` (créée par US-091 seed.sql) en UUID. Retourne None si l'org n'existe pas (déploiement frais sans seed) — l'endpoint /api/simulation/create fallback alors en mode legacy (pas d'ownership recordé), sans crash.
+  - `simulation.py /api/simulation/create` : refactor pour résoudre `resolved_org_id` à partir de :
+    1. `g.current_org.id` (membre normal d'une org → soft_check_self_service l'a posé).
+    2. Sinon, si `g.is_super_admin` → `get_default_super_admin_org_id()` (US-099).
+    3. Sinon, `org_id=None` (legacy public, rétro-compat).
+  - `created_by` est aussi propagé depuis `g.current_user.id` quand JWT présent.
+  - `package_id` aussi remonté depuis le body JSON pour cohérence avec `/api/client/simulations` (US-092).
+- **Frontend** :
+  - `AppHeader.vue` : nouveau bouton « + Lancer simulation » (super-admin only, visible à côté de l'entrée Admin). Style CTA primaire (background `--wi-primary`, font-weight 600). Conduit vers `/process/new`.
+  - `Home.vue` : already done en US-098 (showSelfServiceConsole computed `isSuperAdmin || (isAuthenticated && currentOrg.self_service_enabled)`).
+  - i18n FR/EN/AR : `nav.launchSimulation` + `nav.launchSimulationTitle`.
+- **Tests créés (7 nouveaux)** : `test_unit_super_admin_simulation.py` :
+  - `TestGetDefaultSuperAdminOrgId` (3) : returns-uuid / returns-none-when-missing / returns-none-on-exception.
+  - `TestSuperAdminCreateSimulation` (4) : super-admin-no-org-resolves-default / super-admin-with-X-Org-Id (toujours default car bypass) / super-admin-default-missing-falls-back-legacy / legacy-no-jwt-no-org-id.
+- **Quality gates** :
+  - `cd backend && uv run pytest tests/test_unit_super_admin_simulation.py -v` → **7 PASS** en 14,67 s.
+  - `cd backend && uv run pytest -q` → **832 passed, 17 skipped, 0 régression** (vs 825 baseline US-098, +7 nouveaux).
+  - `cd frontend && npm run build` → **OK**.
+- **Décisions architecturales notables** :
+  - **Slug `aimpower-bassira` en constante module** (`_DEFAULT_SUPER_ADMIN_ORG_SLUG`) plutôt qu'env var : c'est un identifiant produit (pas une config d'opérateur). L'évolution vers une env var pourrait être nécessaire si Bassira lance un fork (un autre groupe founder pour un autre marché) — non urgent.
+  - **Fallback gracieux quand org introuvable** : si `aimpower-bassira` n'existe pas en base (seed pas joué), `get_default_super_admin_org_id` retourne None et le endpoint fonctionne quand même (sim créée filesystem, pas de record ownership). Cela évite de bloquer le super-admin dans un environnement de test.
+  - **X-Org-Id ignoré pour les super-admins** : par construction, `soft_check_self_service` bypass complet pour super-admin sans poser `g.current_org`. Si Amine veut explicitement attribuer une sim à une autre org, il devra utiliser `/api/client/simulations` (qui lui exige une vraie membership). Comportement clair, pas de surprise.
+- **Apprentissage clé** : pour permettre à un super-admin de lancer une simulation sans casser le multitenant, le pattern « ownership rattaché à l'org Bassira par défaut + slug constant » est plus simple qu'un mode « no-tenant » spécial. Toutes les sims gardent un propriétaire org dans `simulation_ownership`, le super-admin a son propre dashboard `/admin/analytics` qui voit aussi sa propre org, et l'audit trail Brier reste cohérent.
+
 ### 2026-05-04 — US-098 Toggle org-level self_service_enabled
 - **Statut** : passes:true (chantier M-multitenant-supabase, follow-up US-097).
 - **Migration SQL** : `supabase/migrations/20260504_001_org_self_service.sql` créée mais **NON exécutée par Ralph** — Amine doit la jouer dans le SQL Editor avant déploiement (note ajoutée dans `supabase/README.md` étape 8). La migration est idempotente (`add column if not exists`) avec default=false (sécurité par défaut).

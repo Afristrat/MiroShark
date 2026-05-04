@@ -25,7 +25,9 @@
     "dashboardTitle": "Tableau de bord client privatif",
     "logout": "Se déconnecter",
     "admin": "Admin",
-    "adminTitle": "Console super-admin Bassira (toutes les organisations)"
+    "adminTitle": "Console super-admin Bassira (toutes les organisations)",
+    "launchSimulation": "Lancer simulation",
+    "launchSimulationTitle": "Lancer une nouvelle simulation directement (super-admin)"
   },
   "common": {
     "loading": "Chargement…",

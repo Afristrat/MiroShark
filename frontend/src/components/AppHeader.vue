@@ -50,6 +50,16 @@
         >
           {{ $t('nav.admin') }}
         </router-link>
+        <!-- US-099 — Bouton « + Lancer une simulation » réservé aux super-admins.
+             Permet à Amine de lancer une sim depuis n'importe quelle page. -->
+        <router-link
+          v-if="isAuthenticated && isSuperAdmin"
+          to="/process/new"
+          class="app-header__link app-header__link--auth app-header__link--launch"
+          :title="$t('nav.launchSimulationTitle')"
+        >
+          + {{ $t('nav.launchSimulation') }}
+        </router-link>
         <router-link
           v-if="!isAuthenticated"
           to="/login"
@@ -256,6 +266,20 @@ const restartTour = async () => {
   background: var(--wi-primary, #a13f0f);
   color: var(--wi-on-primary, #ffffff);
   border-color: var(--wi-primary, #a13f0f);
+}
+
+/* US-099 — Bouton « + Lancer une simulation » super-admin (CTA visible). */
+.app-header__link--launch {
+  color: var(--wi-on-primary, #ffffff);
+  background: var(--wi-primary, #a13f0f);
+  border-color: var(--wi-primary, #a13f0f);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.app-header__link--launch:hover {
+  background: var(--wi-on-primary-container, #6b1f00);
+  color: var(--wi-on-primary, #ffffff);
+  border-color: var(--wi-on-primary-container, #6b1f00);
 }
 
 /* ── Actions group (right) ── */
