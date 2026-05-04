@@ -49,6 +49,21 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 
 ## Log d'itérations
 
+### 2026-05-04 — US-101 Rétro-attribution des sims filesystem pré-multitenant
+- **Statut** : passes:true (chantier M-multitenant-supabase, follow-up US-100). Avant chantier devis.
+- **Bug d'origine** : Amine a remonté que `/admin/analytics` (super-admin) affiche un compteur global de sims (« 6 au total ») mais le tableau cross-tenant US-097 reste vide. Cause identifiée : les sims créées avant US-091 vivent uniquement sur le filesystem (`backend/uploads/simulations/sim_*/`) et n'ont aucune entrée dans `public.simulation_ownership`. La table SQL drive le tableau, le compteur lit autre chose → divergence.
+- **Solution livrée — pure SQL + script utilitaire Python** :
+  - `supabase/migrations/20260504_002_backfill_legacy_sims.sql` : migration idempotente (`on conflict (simulation_id) do nothing`) qui insère les sims orphelines dans `simulation_ownership` avec org_id résolu par CTE `target_org` (slug `aimpower-bassira`). Inclut un placeholder neutralisant (`__placeholder__`) supprimé en fin de migration pour rester valide tant qu'aucune sim n'a été listée. Le bloc VALUES est destiné à être remplacé par la sortie du script Python.
+  - `backend/scripts/check_legacy_sims_attribution.py` : script de lecture pure (aucune dépendance Supabase). Deux modes : `list` (défaut, tableau lisible) + `--sql` (émet les `VALUES (...)` prêts à coller). Lit `simulation_config.json` (clés `template_id` ou `package_id`), `outcome.json` (objet entier + extraction `brier_score`), et le mtime du dossier (ISO 8601 UTC) pour `created_at`. Échappement SQL côté Python : apostrophes doublées, `null` pour les champs absents, `::jsonb` cast pour outcome.
+  - `supabase/README.md` : nouvelle Étape 9 qui documente (a) quand jouer la migration, (b) procédure de génération via le script, (c) queries SQL de vérification post-exec, (d) procédure pour ajouter de nouvelles sims rétroactivement plus tard sans toucher la migration.
+- **Pas de tests pytest** : SQL pur, le script Python ne fait que de la lecture filesystem. Le script SERT lui-même à la validation post-migration : Amine compare `count(*)` Supabase ↔ `len(sims)` script.
+- **Pourquoi pas d'auto-exec** : pas d'accès direct à Supabase live pour le sub-agent (pas de service_role key en local), et les sims réelles vivent sur le serveur Coolify (le filesystem local d'Amine n'a que `notarealsim/`, ce que confirme le run du script en local : « 0 sim trouvée »). Donc Amine doit lancer le script sur prod, copier la sortie dans la migration, puis Run dans le SQL Editor.
+- **Quality gates** :
+  - `python scripts/check_legacy_sims_attribution.py` (local) → « 0 sim trouvée » (attendu, pas de filesystem prod local).
+  - `python scripts/check_legacy_sims_attribution.py --sql` (local) → commentaire « no sims to backfill » (attendu).
+  - SQL syntaxiquement valide (placeholder neutralisé puis supprimé garde la migration runnable en l'état).
+- **Pattern consolidé** : *« Script Python read-only filesystem + migration SQL idempotente avec placeholder neutralisable »* — utilisable pour toute future rétro-attribution (autres orgs, autres tables liées au filesystem).
+
 ### 2026-05-04 — US-100 Retirer BASSIRA_ADMIN_TOKEN legacy → JWT + email whitelist
 - **Statut** : passes:true (chantier M-multitenant-supabase, follow-up US-099). Story finale du chantier.
 - **Backend** :

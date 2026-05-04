@@ -9,6 +9,7 @@ Procédure step-by-step pour appliquer le schéma multitenant sur la DB Supabase
 | `migrations/20260503_001_init_multitenant.sql` | Tables `organizations` + `org_members` + `simulation_ownership` + indexes + RLS policies + trigger updated_at |
 | `migrations/20260503_002_public_calibration_view.sql` | VIEW publique agrégée k-anonymity n≥5 pour `/calibration` v2 |
 | `migrations/20260504_001_org_self_service.sql` | Ajoute la colonne `self_service_enabled bool default false` sur `organizations` (US-098) |
+| `migrations/20260504_002_backfill_legacy_sims.sql` | Rétro-attribue les sims filesystem pré-multitenant à l'org `aimpower-bassira` (US-101) |
 | `seed.sql` | Crée l'org "AIMPOWER" (toi en owner après signup) |
 
 ---
@@ -126,3 +127,56 @@ Et je pourrai dispatcher US-092 (backend Flask middleware JWT + extension Simula
    - **Via SQL direct** : `update public.organizations set self_service_enabled = true where slug = 'aimpower-bassira';`
 
 Le flag est lu par le décorateur backend `@require_self_service_enabled` qui retourne 403 `SELF_SERVICE_DISABLED` si l'org n'a pas le drapeau (sauf super-admin).
+
+---
+
+## Étape 9 — (US-101) Rétro-attribution des sims filesystem pré-multitenant
+
+**Quand jouer cette migration** : maintenant, après que US-091 (multitenant) + US-098 (self-service) + US-100 (admin auth) soient en prod et que tu aies vérifié que la vue super-admin `/admin/analytics` affiche bien un total de sims non nul mais un tableau cross-tenant vide (incohérence remontée par Amine, cause : aucune entrée dans `public.simulation_ownership` pour les sims créées avant US-091).
+
+**Bloc unique à jouer une seule fois** :
+
+1. Sur le **serveur prod Coolify** (ou via un snapshot prod copié en local), génère la liste réelle des sims filesystem :
+
+   ```bash
+   cd backend && uv run python scripts/check_legacy_sims_attribution.py --sql
+   ```
+
+   Cette commande affiche les lignes `VALUES (...)` prêtes à coller, calculées depuis :
+   - le nom du dossier (`sim_xxxxxxxxxxxx`) → `simulation_id`
+   - le `mtime` du dossier → `created_at` (ISO 8601 UTC)
+   - `simulation_config.json` clés `template_id` / `package_id` → `package_id`
+   - `outcome.json` (si présent) → `outcome` (jsonb) + `brier_score`
+
+2. Ouvre `supabase/migrations/20260504_002_backfill_legacy_sims.sql`, remplace le bloc placeholder (`'__placeholder__'`) par la sortie du script, sauvegarde.
+
+3. SQL Editor Supabase Bassira → nouvelle query → colle l'intégralité du fichier modifié → **Run**.
+
+   La requête est **idempotente** : `on conflict (simulation_id) do nothing` garantit qu'une nouvelle exécution n'écrase ni ne duplique rien.
+
+**Vérification post-exécution** (queries dans le SQL Editor) :
+
+```sql
+-- Doit retourner un nombre = nombre de dossiers sim_* sur la prod
+select count(*) as sims_attributed
+  from public.simulation_ownership s
+  join public.organizations o on o.id = s.org_id
+ where o.slug = 'aimpower-bassira';
+
+-- Spot-check des 20 plus récentes
+select s.simulation_id, s.created_at, s.package_id, s.is_published
+  from public.simulation_ownership s
+  join public.organizations o on o.id = s.org_id
+ where o.slug = 'aimpower-bassira'
+ order by s.created_at desc
+ limit 20;
+```
+
+Comparer le `count(*)` avec la sortie locale de :
+```bash
+cd backend && uv run python scripts/check_legacy_sims_attribution.py
+```
+
+**Ajouter de nouvelles sims rétroactivement plus tard** : si après cette migration de nouvelles sims orphelines apparaissent (par ex. import depuis un environnement tiers), il suffit de :
+1. Relancer le script Python en mode `--sql` pour récupérer uniquement les nouvelles lignes.
+2. Coller dans une nouvelle query SQL Editor un simple `insert ... values (...) on conflict (simulation_id) do nothing;` (sans recréer toute la migration). Le `on conflict do nothing` ignorera proprement les sims déjà attribuées.

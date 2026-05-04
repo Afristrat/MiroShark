@@ -3141,6 +3141,44 @@
         "tests_passing": "839 passed, 17 skipped (vs 832 baseline US-099, +7 nouveaux)",
         "build_vite": "OK"
       }
+    },
+    {
+      "id": "US-101",
+      "chantier": "M-multitenant-supabase",
+      "title": "Rétro-attribution des sims filesystem pré-multitenant à l'org aimpower-bassira",
+      "description": "Bug remonté par Amine : la vue super-admin /admin/analytics (US-097) affiche '6 simulations au total' mais 0 dans le tableau cross-tenant. Cause : les simulations créées AVANT US-091 (multitenant) existent uniquement en filesystem (backend/uploads/simulations/sim_xxxxx/) et n'ont aucune entrée dans la table public.simulation_ownership. Cette story produit une migration SQL idempotente (on conflict do nothing) qui rétro-attribue toutes ces sims à l'organisation interne aimpower-bassira (slug fixe seedé en seed.sql). Métadonnées extraites : created_at depuis mtime du dossier, package_id depuis simulation_config.json (template_id ou package_id), outcome+brier_score depuis outcome.json si présent. Pas de tests pytest live (SQL pur), mais script Python check_legacy_sims_attribution.py qui (a) liste les sims filesystem en mode debug, (b) émet les VALUES SQL prêts à coller en mode --sql.",
+      "acceptanceCriteria": [
+        "supabase/migrations/20260504_002_backfill_legacy_sims.sql présent et idempotent (on conflict simulation_id do nothing)",
+        "Migration utilise un CTE target_org pour résoudre l'org_id par slug aimpower-bassira",
+        "backend/scripts/check_legacy_sims_attribution.py lit backend/uploads/simulations/sim_*/, extrait package_id depuis simulation_config.json (template_id ou package_id), outcome+brier_score depuis outcome.json",
+        "Script supporte deux modes : list (défaut, lecture humaine) + --sql (émission VALUES SQL)",
+        "Script ne fait QUE de la lecture (aucune dépendance Supabase live, pas d'écriture)",
+        "supabase/README.md : nouvelle Étape 9 documente quand/comment jouer la migration + queries de vérification + procédure pour ajouter de nouvelles sims rétroactivement",
+        "Migration référencée dans le tableau d'inventaire en haut du README",
+        "Aucune dette TS/lint introduite"
+      ],
+      "passes": true,
+      "completedAt": "2026-05-04T22:30:00Z",
+      "dependencies": [
+        "US-091",
+        "US-097",
+        "US-098",
+        "US-100"
+      ],
+      "metadata": {
+        "estimated_hours": 1,
+        "priority": "P0",
+        "files_created": [
+          "supabase/migrations/20260504_002_backfill_legacy_sims.sql",
+          "backend/scripts/check_legacy_sims_attribution.py"
+        ],
+        "files_modified": [
+          "supabase/README.md",
+          ".ralph/prd.json",
+          ".ralph/progress.md"
+        ],
+        "action_required_amine": "Lancer cd backend && uv run python scripts/check_legacy_sims_attribution.py --sql sur le serveur prod, coller la sortie dans 20260504_002_backfill_legacy_sims.sql à la place du placeholder, puis exécuter la migration dans le SQL Editor Supabase Bassira."
+      }
     }
   ]
 }
