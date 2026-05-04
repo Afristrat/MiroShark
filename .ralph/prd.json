@@ -2955,6 +2955,116 @@
         ],
         "coolify_action_required": "BASSIRA_SUPER_ADMIN_EMAILS=<email_signup_supabase> sur le service bassira-backend"
       }
+    },
+    {
+      "id": "US-097",
+      "chantier": "M-multitenant-supabase",
+      "title": "Super-admin voit TOUTES les simulations cross-tenant",
+      "description": "Endpoint backend GET /api/admin/simulations (require_super_admin) qui retourne TOUTES les simulations, toutes orgs confondues, via service_role bypass RLS. Filtres : org_id, package_id, status (initialised|running|completed|published), is_published, pagination limit/offset. Réponse enrichie avec org_name + org_slug pour rendu tableau côté frontend. Frontend : nouvelle section 'Toutes les simulations' dans AnalyticsView avec tableau filtrables (org dropdown, package input, status select, published checkbox).",
+      "acceptanceCriteria": [
+        "backend/app/api/admin.py : nouveau endpoint GET /api/admin/simulations + helper _enrich_sims_with_org_info",
+        "Filtres query string : org_id, package_id, status, published (true|false), limit (default 50, max 200), offset (default 0)",
+        "Réponse format : {success, data: {simulations: [...], total: int, limit, offset}}",
+        "Chaque sim contient : simulation_id, org_id, org_name, org_slug, created_by, created_at, package_id, status, is_published, outcome, brier_score",
+        "frontend/src/api/client.js : méthode fetchAllSimulations(filters)",
+        "frontend/src/views/AnalyticsView.vue : section 'Toutes les simulations' avec tableau + filtres",
+        "i18n FR/EN/AR : namespace analytics.allSims.*",
+        "Tests : 8+ nouveaux tests pytest (no-token 401 / not-superadmin 403 / empty / single / filters / pagination / supabase-config 503 / select-failure 500)",
+        "Aucune régression backend pytest, build Vite OK"
+      ],
+      "passes": false,
+      "completedAt": null,
+      "dependencies": [
+        "US-095"
+      ],
+      "metadata": {
+        "estimated_hours": 2,
+        "priority": "P0"
+      }
+    },
+    {
+      "id": "US-098",
+      "chantier": "M-multitenant-supabase",
+      "title": "Toggle org-level 'self-service activé'",
+      "description": "Migration Supabase : ajout colonne `self_service_enabled boolean not null default false` sur public.organizations. Endpoint PATCH /api/admin/organizations/<org_id>/self-service (require_super_admin) body {enabled:bool}. Helper is_org_self_service_enabled(org_id). Décorateur @require_self_service_enabled appliqué aux endpoints self-service Step1-5 (POST /api/simulation/create, /api/graph/build, /api/simulation/start) — bypass si super_admin. Frontend : toggle sur chaque org dans AnalyticsView, condition affichage 'Lancer simulation moi-même' dans ClientDashboardView, Home.vue showSelfServiceConsole devient computed sur currentOrg.self_service_enabled.",
+      "acceptanceCriteria": [
+        "supabase/migrations/20260504_001_org_self_service.sql créée (NOT exécutée par Ralph — Amine la jouera manuellement)",
+        "supabase/README.md mis à jour avec note migration manuelle",
+        "backend/app/auth/supabase_client.py : helper is_org_self_service_enabled(org_id) + colonne ajoutée à get_user_orgs()",
+        "backend/app/auth/decorators.py : décorateur @require_self_service_enabled (composé après @require_org_membership ; bypass si g.is_super_admin)",
+        "backend/app/api/admin.py : endpoint PATCH /api/admin/organizations/<org_id>/self-service (super-admin) + colonne self_service_enabled exposée dans list_all_organizations",
+        "backend/app/api/simulation.py + graph.py : décorateur appliqué aux 3 endpoints self-service (avec gestion robuste si org_id absent)",
+        "frontend/src/api/client.js : méthode setOrgSelfService(orgId, enabled)",
+        "frontend/src/views/AnalyticsView.vue : toggle 'Self-service activé' par org",
+        "frontend/src/views/ClientDashboardView.vue : bouton 'Lancer simulation moi-même' conditionnel sur org.self_service_enabled",
+        "frontend/src/views/Home.vue : showSelfServiceConsole = computed(auth.isAuthenticated && auth.currentOrg?.self_service_enabled)",
+        "i18n FR/EN/AR : namespace analytics.selfServiceToggle.*, dashboard.selfServiceCta.*",
+        "Tests : 10+ nouveaux tests pytest (toggle endpoint 401/403/200, helper, decorator avec/sans org_id, bypass super_admin)",
+        "Aucune régression backend pytest, build Vite OK"
+      ],
+      "passes": false,
+      "completedAt": null,
+      "dependencies": [
+        "US-097"
+      ],
+      "metadata": {
+        "estimated_hours": 4,
+        "priority": "P0",
+        "migration_manual_required": "supabase/migrations/20260504_001_org_self_service.sql à exécuter par Amine dans SQL Editor"
+      }
+    },
+    {
+      "id": "US-099",
+      "chantier": "M-multitenant-supabase",
+      "title": "Super-admin lance ses propres simulations directement",
+      "description": "Le décorateur @require_self_service_enabled bypass si g.is_super_admin = true. create_simulation accepte org_id=null si caller super_admin → ownership rattachée à 'aimpower-bassira' org par défaut. Frontend : AppHeader bouton '+ Lancer une simulation' visible uniquement si super_admin. Home.vue showSelfServiceConsole = computed(auth.isSuperAdmin || auth.currentOrg?.self_service_enabled).",
+      "acceptanceCriteria": [
+        "backend/app/auth/decorators.py : @require_self_service_enabled bypass si g.is_super_admin (déjà préparé US-098)",
+        "backend/app/services/simulation_manager.py : create_simulation accepte org_id=None pour super_admin (résolution org par défaut 'aimpower-bassira')",
+        "backend/app/api/simulation.py : POST /api/simulation/create propage is_super_admin pour bypass auth org",
+        "frontend/src/components/AppHeader.vue : bouton '+ Lancer simulation' (super-admin only)",
+        "frontend/src/views/Home.vue : showSelfServiceConsole computed isSuperAdmin || currentOrg.self_service_enabled",
+        "i18n FR/EN/AR : nav.launchSimulation, nav.launchSimulationTitle",
+        "Tests : 4+ nouveaux tests pytest (super_admin sans org → ownership default org / super_admin + endpoint self-service / fallback org introuvable)",
+        "Aucune régression backend pytest, build Vite OK"
+      ],
+      "passes": false,
+      "completedAt": null,
+      "dependencies": [
+        "US-098"
+      ],
+      "metadata": {
+        "estimated_hours": 2,
+        "priority": "P0"
+      }
+    },
+    {
+      "id": "US-100",
+      "chantier": "M-multitenant-supabase",
+      "title": "Retirer BASSIRA_ADMIN_TOKEN legacy → tout sur JWT + email whitelist",
+      "description": "Le décorateur require_admin_token (backend/app/api/simulation.py) reste actif comme fallback temporaire (1 release) avec log warning 'legacy token usage'. En primaire, ajouter un wrapper qui accepte SOIT JWT super-admin (Bearer JWT supabase + email whitelist), SOIT le legacy admin token. Endpoints migrés : /api/admin/analytics + endpoints publish/resolve/outcome. Frontend AnalyticsView : suppression de la modal sessionStorage admin token, vérification auth.isSuperAdmin avec redirect /login si non. AppHeader nav 'Admin' visible uniquement si isSuperAdmin (déjà partiellement fait US-095).",
+      "acceptanceCriteria": [
+        "backend/app/api/simulation.py : décorateur @require_admin_token enrichi pour accepter aussi JWT super-admin (priorité JWT, fallback token)",
+        "backend/app/api/admin.py : @require_admin_token devient @require_super_admin_or_legacy_token sur /admin/analytics",
+        "Log warning explicite 'legacy admin token used' à chaque utilisation du fallback",
+        "frontend/src/views/AnalyticsView.vue : suppression complète du form de saisie admin token + sessionStorage.getItem(TOKEN_KEY) + logique authed/login/logout",
+        "Si !auth.isSuperAdmin → message 'Accès super-admin requis' + lien retour /",
+        "Si auth.isSuperAdmin → fetch direct /api/admin/analytics avec Bearer JWT (via api/client.js)",
+        "frontend/src/components/AppHeader.vue : nav 'Admin' uniquement si isSuperAdmin (vérification déjà US-095, à reconfirmer)",
+        "i18n FR/EN/AR : namespace analytics.gateSuperAdmin.* (remplace analytics.gate.*)",
+        "Tests : 5+ nouveaux tests pytest (legacy token still works / JWT super-admin works on /admin/analytics / log warning emis / no auth 401 / wrong JWT 401)",
+        "Aucune régression backend pytest, build Vite OK"
+      ],
+      "passes": false,
+      "completedAt": null,
+      "dependencies": [
+        "US-099"
+      ],
+      "metadata": {
+        "estimated_hours": 3,
+        "priority": "P0",
+        "deprecation_note": "BASSIRA_ADMIN_TOKEN reste actif comme fallback durant 1 release. Removal complet planifié US-101+."
+      }
     }
   ]
 }
