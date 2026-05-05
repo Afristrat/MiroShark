@@ -3196,7 +3196,10 @@
       ],
       "passes": true,
       "completedAt": "2026-05-05T00:30:00Z",
-      "dependencies": ["US-095", "US-100"],
+      "dependencies": [
+        "US-095",
+        "US-100"
+      ],
       "metadata": {
         "files_created": [
           "frontend/src/views/AdminQuotesView.vue",
@@ -3229,7 +3232,9 @@
       ],
       "passes": true,
       "completedAt": "2026-05-05T00:30:00Z",
-      "dependencies": ["US-102"],
+      "dependencies": [
+        "US-102"
+      ],
       "metadata": {
         "files_created": [
           "backend/app/services/quote_admin_service.py"
@@ -3252,7 +3257,10 @@
       ],
       "passes": true,
       "completedAt": "2026-05-05T00:30:00Z",
-      "dependencies": ["US-102", "US-103"],
+      "dependencies": [
+        "US-102",
+        "US-103"
+      ],
       "metadata": {
         "files_created": [
           "backend/app/services/email_service.py",
@@ -3284,7 +3292,10 @@
       ],
       "passes": true,
       "completedAt": "2026-05-05T00:30:00Z",
-      "dependencies": ["US-098", "US-099"],
+      "dependencies": [
+        "US-098",
+        "US-099"
+      ],
       "metadata": {
         "files_created": [
           "frontend/src/views/ConsoleView.vue",
@@ -3339,7 +3350,7 @@
         "Tab title affiche le vrai titre du report (pas juste '(4/4) Bassira')",
         "Test manuel sur prod avec un sim_xxx existant : rapport visible"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [],
       "metadata": {
         "estimated_hours": 2,
@@ -3349,8 +3360,12 @@
           "frontend/src/components/Step4Report.vue",
           "frontend/src/api/report.js"
         ],
-        "investigation_starting_point": "frontend/src/views/ReportView.vue lignes 256-288 (loadReportData)"
-      }
+        "investigation_starting_point": "frontend/src/views/ReportView.vue lignes 256-288 (loadReportData)",
+        "ralph_session": "2026-05-05",
+        "merge_commit": "c0ff7fd",
+        "agent": "A"
+      },
+      "completedAt": "2026-05-05T03:00:00Z"
     },
     {
       "id": "US-110",
@@ -3366,8 +3381,10 @@
         "Quand completed : timeline collapse (clickable pour ré-ouvrir) + contenu rapport prend toute la place",
         "i18n FR/EN/AR pour les labels d'étapes"
       ],
-      "passes": false,
-      "dependencies": ["US-109"],
+      "passes": true,
+      "dependencies": [
+        "US-109"
+      ],
       "metadata": {
         "estimated_hours": 3,
         "priority": "P0",
@@ -3377,8 +3394,12 @@
         "files_to_modify": [
           "frontend/src/views/ReportView.vue",
           "frontend/src/locales/{fr,en,ar}.json"
-        ]
-      }
+        ],
+        "ralph_session": "2026-05-05",
+        "merge_commit": "58485ce",
+        "agent": "A"
+      },
+      "completedAt": "2026-05-05T03:00:00Z"
     },
     {
       "id": "US-111",
@@ -3396,8 +3417,10 @@
         "Responsive : sur mobile le panneau prend 100% (overlay)",
         "i18n FR/EN/AR (chat.placeholder, chat.send, chat.thinking, etc.)"
       ],
-      "passes": false,
-      "dependencies": ["US-109"],
+      "passes": true,
+      "dependencies": [
+        "US-109"
+      ],
       "metadata": {
         "estimated_hours": 4,
         "priority": "P1",
@@ -3408,8 +3431,12 @@
           "frontend/src/views/ReportView.vue",
           "frontend/src/api/report.js",
           "frontend/src/locales/{fr,en,ar}.json"
-        ]
-      }
+        ],
+        "ralph_session": "2026-05-05",
+        "merge_commit": "d0bc9c5",
+        "agent": "A"
+      },
+      "completedAt": "2026-05-05T03:00:00Z"
     },
     {
       "id": "US-112",
@@ -3424,8 +3451,10 @@
         "InteractionView a un bouton 'Retour au rapport' qui pointe vers `/report/:reportId`",
         "i18n FR/EN/AR (report.viewAgents, interaction.backToReport)"
       ],
-      "passes": false,
-      "dependencies": ["US-109"],
+      "passes": true,
+      "dependencies": [
+        "US-109"
+      ],
       "metadata": {
         "estimated_hours": 1,
         "priority": "P1",
@@ -3433,8 +3462,12 @@
           "frontend/src/views/ReportView.vue",
           "frontend/src/views/InteractionView.vue",
           "frontend/src/locales/{fr,en,ar}.json"
-        ]
-      }
+        ],
+        "ralph_session": "2026-05-05",
+        "merge_commit": "cc3089a",
+        "agent": "A"
+      },
+      "completedAt": "2026-05-05T03:00:00Z"
     },
     {
       "id": "US-113",
@@ -3472,8 +3505,10 @@
         "Endpoint /api/admin/quotes étendu : super-admin voit tout, members voient leur org",
         "Tests pytest pour helper + RLS"
       ],
-      "passes": false,
-      "dependencies": ["US-091"],
+      "passes": true,
+      "dependencies": [
+        "US-091"
+      ],
       "metadata": {
         "estimated_hours": 3,
         "priority": "P1",
@@ -3482,8 +3517,12 @@
           "backend/miroshark/quote_ownership.py",
           "scripts/migrate_quotes_to_supabase.py",
           "backend/tests/test_quote_ownership.py"
-        ]
-      }
+        ],
+        "ralph_session": "2026-05-05",
+        "merge_commit": "67dac02",
+        "agent": "B"
+      },
+      "completedAt": "2026-05-05T03:00:00Z"
     },
     {
       "id": "US-115",
@@ -3499,8 +3538,11 @@
         "Email template `org_invitation.html` Resend (FR/EN/AR selon org locale)",
         "Tests pytest endpoint invite + accept + expiration"
       ],
-      "passes": false,
-      "dependencies": ["US-091", "US-114"],
+      "passes": true,
+      "dependencies": [
+        "US-091",
+        "US-114"
+      ],
       "metadata": {
         "estimated_hours": 5,
         "priority": "P1",
@@ -3510,8 +3552,12 @@
           "backend/templates/email/org_invitation.html",
           "frontend/src/views/AdminInvitationsView.vue",
           "backend/tests/test_invitations.py"
-        ]
-      }
+        ],
+        "ralph_session": "2026-05-05",
+        "merge_commit": "4fbe346",
+        "agent": "B"
+      },
+      "completedAt": "2026-05-05T03:00:00Z"
     },
     {
       "id": "US-116",
@@ -3527,15 +3573,22 @@
         "Tests pytest pour rate limits + IDOR scenarios",
         "Logs sensibles purgés (jamais access_token / SUPABASE_SERVICE_ROLE_KEY dans stdout)"
       ],
-      "passes": false,
-      "dependencies": ["US-091", "US-092"],
+      "passes": true,
+      "dependencies": [
+        "US-091",
+        "US-092"
+      ],
       "metadata": {
         "estimated_hours": 4,
         "priority": "P2",
         "files_to_create": [
           "docs/SECURITY_AUDIT_2026-05.md"
-        ]
-      }
+        ],
+        "ralph_session": "2026-05-05",
+        "merge_commit": "e99aa48",
+        "agent": "C"
+      },
+      "completedAt": "2026-05-05T03:00:00Z"
     },
     {
       "id": "US-117",
@@ -3552,8 +3605,11 @@
         "Tests passent avec npx playwright test --reporter=list",
         "Total tests Playwright : 32 → 50+"
       ],
-      "passes": false,
-      "dependencies": ["US-091", "US-095"],
+      "passes": true,
+      "dependencies": [
+        "US-091",
+        "US-095"
+      ],
       "metadata": {
         "estimated_hours": 4,
         "priority": "P2",
@@ -3564,8 +3620,12 @@
           "frontend/tests/e2e/admin-organizations.spec.ts",
           "frontend/tests/e2e/client-dashboard.spec.ts",
           "frontend/tests/e2e/fixtures/auth.ts"
-        ]
-      }
+        ],
+        "ralph_session": "2026-05-05",
+        "merge_commit": "ed3f6ea",
+        "agent": "D"
+      },
+      "completedAt": "2026-05-05T03:00:00Z"
     }
   ]
 }
