@@ -458,7 +458,13 @@ const router = useRouter()
 const props = defineProps({
   reportId: String,
   simulationId: String,
-  systemLogs: Array
+  systemLogs: Array,
+  // initialReport — payload from GET /api/report/<id>. When provided and the
+  // report is already completed, we hydrate the panel immediately (outline +
+  // sections + markdown_content) instead of waiting for the polling agent-log
+  // to rebuild the state. This fixes the bug where ReportView stayed stuck
+  // on "Chargement du rapport…" for already-completed reports (US-109).
+  initialReport: { type: Object, default: null }
 })
 
 const emit = defineEmits(['add-log', 'update-status'])
@@ -2200,12 +2206,77 @@ const fetchConsoleLog = async () => {
 
 const startPolling = () => {
   if (agentLogTimer || consoleLogTimer) return
-  
+
   fetchAgentLog()
   fetchConsoleLog()
-  
+
   agentLogTimer = setInterval(fetchAgentLog, 2000)
   consoleLogTimer = setInterval(fetchConsoleLog, 1500)
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// US-109 — Hydrate panel directly from a finished report payload.
+// Backend GET /api/report/<id> returns { outline: { title, summary, sections:[
+//   { title, content } ] }, markdown_content, status }. When status is
+// "completed", we don't need to replay the agent log: just pre-fill
+// reportOutline + generatedSections so the magazine renders immediately.
+// ─────────────────────────────────────────────────────────────────────
+const _splitMarkdownIntoSections = (md, outlineSections) => {
+  if (!md || !Array.isArray(outlineSections) || !outlineSections.length) return {}
+  const trimmed = md.trim()
+  // Drop the leading "# Title" + optional "> summary" block — the outline
+  // already exposes them.
+  const bodyAfterTitle = trimmed.replace(/^#\s+[^\n]+\n+(?:>\s+[^\n]+\n+)?/, '')
+  // Split on "## " markers (each section starts with "## <title>").
+  const chunks = bodyAfterTitle.split(/\n(?=##\s+)/g).filter((c) => c.trim())
+  const out = {}
+  outlineSections.forEach((_, idx) => {
+    if (chunks[idx]) {
+      // Strip leading "## <title>\n" — the section header is rendered by
+      // Step4Report's own outline list, not the markdown body.
+      out[idx + 1] = chunks[idx].replace(/^##\s+[^\n]+\n+/, '').trim()
+    }
+  })
+  return out
+}
+
+const hydrateFromReport = (reportPayload) => {
+  if (!reportPayload || typeof reportPayload !== 'object') return
+  const outline = reportPayload.outline
+  if (!outline || !Array.isArray(outline.sections)) return
+
+  // Hydrate outline (title + summary + section titles).
+  reportOutline.value = {
+    title: outline.title || '',
+    summary: outline.summary || '',
+    sections: outline.sections.map((s) => ({ title: s.title || '', content: s.content || '' }))
+  }
+
+  // Hydrate per-section content. Prefer outline.sections[i].content (set by
+  // the new backend); otherwise fallback to slicing markdown_content.
+  const sectionsHaveContent = outline.sections.some((s) => s && s.content && s.content.trim())
+  if (sectionsHaveContent) {
+    outline.sections.forEach((s, idx) => {
+      if (s && s.content && s.content.trim()) {
+        generatedSections.value[idx + 1] = s.content
+      }
+    })
+  } else if (reportPayload.markdown_content) {
+    const fallback = _splitMarkdownIntoSections(reportPayload.markdown_content, outline.sections)
+    Object.entries(fallback).forEach(([k, v]) => {
+      generatedSections.value[Number(k)] = v
+    })
+  }
+
+  // Mark the report as complete so the UI shows the export buttons + chips.
+  if (reportPayload.status === 'completed') {
+    isComplete.value = true
+    currentSectionIndex.value = null
+    if (reportPayload.created_at) startTime.value = new Date(reportPayload.created_at)
+    emit('update-status', 'completed')
+    // Stop any running poll — we already have everything we need.
+    stopPolling()
+  }
 }
 
 const stopPolling = () => {
@@ -2223,7 +2294,6 @@ const stopPolling = () => {
 onMounted(() => {
   if (props.reportId) {
     addLog(`Report Agent initialized: ${props.reportId}`)
-    startPolling()
   }
 })
 
@@ -2245,10 +2315,26 @@ watch(() => props.reportId, (newId) => {
     collapsedSections.value = new Set()
     isComplete.value = false
     startTime.value = null
-    
-    startPolling()
+
+    // If the parent already passed an initialReport (US-109 path), hydrate
+    // immediately. Otherwise (or if status != completed), fall back to the
+    // legacy polling behaviour to follow live generation.
+    if (props.initialReport) {
+      hydrateFromReport(props.initialReport)
+    }
+    if (!isComplete.value) {
+      startPolling()
+    }
   }
 }, { immediate: true })
+
+// React to a late-arriving initialReport (parent loads it asynchronously
+// after the component mounts).
+watch(() => props.initialReport, (newReport) => {
+  if (newReport && !isComplete.value) {
+    hydrateFromReport(newReport)
+  }
+})
 </script>
 
 <style scoped>

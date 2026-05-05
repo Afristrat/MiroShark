@@ -86,6 +86,7 @@
             :reportId="currentReportId"
             :simulationId="simulationId"
             :systemLogs="systemLogs"
+            :initialReport="reportMeta"
             @add-log="addLog"
             @update-status="updateStatus"
           />
@@ -155,21 +156,28 @@ const systemLogs = ref([])
 const currentStatus = ref('processing') // processing | completed | error
 
 // --- Derived metadata for the magazine title section ---
+// Priority: report outline (the actual generated title) > project name > sim
+// requirement > simple placeholder. We never fabricate a fake topic here
+// (DEFCON 1: zero invented data).
 const projectTitle = computed(() => {
   return (
+    reportMeta.value?.outline?.title ||
     projectData.value?.name ||
     projectData.value?.project_name ||
     reportMeta.value?.title ||
-    'Market Sentiment Resilience Under Regulatory Stress'
+    simulationData.value?.simulation_requirement ||
+    reportMeta.value?.simulation_requirement ||
+    '—'
   )
 })
 
 const projectSummary = computed(() => {
   return (
+    reportMeta.value?.outline?.summary ||
     projectData.value?.description ||
     projectData.value?.summary ||
     reportMeta.value?.summary ||
-    'An analysis of simulated agent dynamics and belief drift across multiple socio-economic strata.'
+    ''
   )
 })
 
@@ -263,6 +271,22 @@ const loadReportData = async () => {
       reportMeta.value = reportData
       simulationId.value = reportData.simulation_id
 
+      // The URL sometimes carries a simulation_id (sim_xxx) instead of a
+      // report_id (report_xxx). The backend resolves both — but we MUST
+      // realign currentReportId with the canonical report_id, otherwise
+      // Step4Report will poll /api/report/sim_xxx/agent-log (404) and never
+      // hydrate the panel. Cf US-109.
+      if (reportData.report_id && reportData.report_id !== currentReportId.value) {
+        currentReportId.value = reportData.report_id
+      }
+
+      // Reflect the canonical status from the backend payload immediately.
+      if (reportData.status === 'completed') {
+        currentStatus.value = 'completed'
+      } else if (reportData.status === 'failed') {
+        currentStatus.value = 'error'
+      }
+
       if (simulationId.value) {
         const simRes = await getSimulation(simulationId.value)
         if (simRes.success && simRes.data) {
@@ -327,7 +351,15 @@ watchEffect(() => {
       : status === 'completed'
       ? '🟢'
       : ''
-  document.title = dot ? `${dot} (4/4) Bassira` : '(4/4) Bassira'
+  // Use the actual report title when available so the browser tab reflects
+  // the document the user is reading, not a generic phase counter.
+  const titleSrc = reportMeta.value?.outline?.title || projectData.value?.name
+  const truncated =
+    typeof titleSrc === 'string' && titleSrc.trim()
+      ? (titleSrc.length > 60 ? titleSrc.slice(0, 57) + '…' : titleSrc)
+      : ''
+  const base = truncated ? `${truncated} · Bassira` : 'Bassira · Report'
+  document.title = dot ? `${dot} ${base}` : base
 })
 
 onUnmounted(() => {
