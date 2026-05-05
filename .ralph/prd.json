@@ -3640,7 +3640,7 @@
         "tests/test_pdf_context_schema.py : valid construction depuis dict réaliste + invalid raises ValidationError",
         "Documentation inline avec docstring listant sub-fields et leur source artifact"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [],
       "metadata": {
         "estimated_hours": 3,
@@ -3649,8 +3649,11 @@
           "backend/app/services/report_pdf/__init__.py",
           "backend/app/services/report_pdf/schema.py",
           "backend/tests/test_pdf_context_schema.py"
-        ]
-      }
+        ],
+        "merge_commit": "4b7a042",
+        "ralph_session": "2026-05-05"
+      },
+      "completedAt": "2026-05-05T22:30:00Z"
     },
     {
       "id": "US-119",
@@ -3695,7 +3698,7 @@
         "Tests pytest RLS scenarios + helpers + preview endpoint",
         "Tests Playwright form fonctionne + preview se met à jour"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-091"
       ],
@@ -3709,8 +3712,11 @@
           "frontend/src/views/AdminBrandingView.vue",
           "backend/tests/test_pdf_branding.py",
           "frontend/tests/e2e/admin-branding.spec.ts"
-        ]
-      }
+        ],
+        "merge_commit": "b566de3",
+        "ralph_session": "2026-05-05"
+      },
+      "completedAt": "2026-05-05T22:30:00Z"
     },
     {
       "id": "US-121",
