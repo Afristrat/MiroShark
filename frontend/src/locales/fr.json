@@ -508,6 +508,23 @@
           "subtitle": "Analyse exécutive, sections rédigées et recommandations"
         }
       }
+    },
+    "actions": {
+      "openChat": "Discuter avec le rapport",
+      "closeChat": "Fermer le chat"
+    },
+    "chat": {
+      "title": "Chat avec le rapport",
+      "subtitle": "Posez des questions, comparez des hypothèses, explorez les sources",
+      "placeholder": "Posez votre question…",
+      "send": "Envoyer",
+      "sending": "Envoi…",
+      "thinking": "Bassira analyse votre question…",
+      "empty": "Démarrez la conversation pour interroger le rapport.",
+      "error": "Une erreur est survenue. Réessayez.",
+      "clear": "Effacer l'historique",
+      "you": "Vous",
+      "assistant": "Bassira"
     }
   },
   "process": {

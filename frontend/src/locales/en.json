@@ -508,6 +508,23 @@
           "subtitle": "Executive analysis, drafted sections and recommendations"
         }
       }
+    },
+    "actions": {
+      "openChat": "Chat with report",
+      "closeChat": "Close chat"
+    },
+    "chat": {
+      "title": "Chat with the report",
+      "subtitle": "Ask questions, compare hypotheses, explore sources",
+      "placeholder": "Ask your question…",
+      "send": "Send",
+      "sending": "Sending…",
+      "thinking": "Bassira is analysing your question…",
+      "empty": "Start the conversation to query the report.",
+      "error": "Something went wrong. Try again.",
+      "clear": "Clear history",
+      "you": "You",
+      "assistant": "Bassira"
     }
   },
   "process": {

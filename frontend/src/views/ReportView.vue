@@ -27,6 +27,21 @@
         </nav>
 
         <div class="toolbar-actions">
+          <button
+            type="button"
+            class="toolbar-action-btn"
+            :class="{ 'is-active': chatOpen }"
+            :title="chatOpen ? $t('report.actions.closeChat') : $t('report.actions.openChat')"
+            :aria-label="chatOpen ? $t('report.actions.closeChat') : $t('report.actions.openChat')"
+            :aria-pressed="chatOpen"
+            @click="toggleChat"
+          >
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+            </svg>
+            <span class="toolbar-action-label">{{ $t('report.actions.openChat') }}</span>
+          </button>
+
           <span class="toolbar-status" :class="statusClass" :title="statusText">
             <span class="toolbar-status-dot"></span>
             <span class="toolbar-status-label">{{ statusText }}</span>
@@ -117,6 +132,15 @@
         />
       </section>
     </main>
+
+    <!-- US-111 — Sliding chat panel (right side, 380px). Toggled by the
+         toolbar chat button. Persists history in localStorage. -->
+    <ReportChatPanel
+      :open="chatOpen"
+      :reportId="currentReportId"
+      :simulationId="simulationId"
+      @close="closeChat"
+    />
   </div>
 </template>
 
@@ -127,6 +151,7 @@ import GraphPanel from '../components/GraphPanel.vue'
 import NetworkPanel from '../components/NetworkPanel.vue'
 import Step4Report from '../components/Step4Report.vue'
 import ReportProgressTimeline from '../components/ReportProgressTimeline.vue'
+import ReportChatPanel from '../components/ReportChatPanel.vue'
 import { getProject, getGraphData } from '../api/graph'
 import { getSimulation } from '../api/simulation'
 import { getReport } from '../api/report'
@@ -359,6 +384,15 @@ const stopProgressPolling = () => {
     clearInterval(progressTimer)
     progressTimer = null
   }
+}
+
+// US-111 — Sliding chat panel.
+const chatOpen = ref(false)
+const toggleChat = () => {
+  chatOpen.value = !chatOpen.value
+}
+const closeChat = () => {
+  chatOpen.value = false
 }
 
 // --- Helpers ---
@@ -630,6 +664,47 @@ watch(allStagesDone, (done) => {
   align-items: center;
   gap: var(--wi-space-sm);
   flex: 0 0 auto;
+}
+
+.toolbar-action-btn {
+  appearance: none;
+  border: 1px solid rgba(250, 247, 242, 0.18);
+  background: rgba(250, 247, 242, 0.06);
+  color: var(--wi-bg);
+  font-family: var(--wi-font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border-radius: var(--wi-radius-pill);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background var(--ms-transition), border-color var(--ms-transition);
+}
+
+.toolbar-action-btn:hover {
+  background: rgba(250, 247, 242, 0.14);
+  border-color: rgba(250, 247, 242, 0.32);
+}
+
+.toolbar-action-btn.is-active {
+  background: var(--wi-primary-container);
+  color: var(--wi-on-primary-container);
+  border-color: var(--wi-primary-container);
+}
+
+.toolbar-action-btn:focus-visible {
+  outline: 2px solid var(--wi-primary-container);
+  outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+  .toolbar-action-btn .toolbar-action-label {
+    display: none;
+  }
 }
 
 .toolbar-status {
