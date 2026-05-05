@@ -479,7 +479,56 @@
   },
   "report": {
     "exportPdf": "Download PDF report (10 sections, disclaimer, graph)",
-    "exportMd": "Download Markdown report (Notion / Obsidian)"
+    "exportMd": "Download Markdown report (Notion / Obsidian)",
+    "progress": {
+      "title": "Progress",
+      "step": "Step",
+      "of": "of",
+      "status": {
+        "pending": "Pending",
+        "inProgress": "In progress",
+        "done": "Completed",
+        "error": "Failed"
+      },
+      "stages": {
+        "graphBuild": {
+          "title": "Graph build",
+          "subtitle": "Extracting entities and relations from your documents"
+        },
+        "simulation": {
+          "title": "Multi-agent simulation",
+          "subtitle": "Autonomous personas, conversation rounds, belief drift"
+        },
+        "agents": {
+          "title": "Agent synthesis",
+          "subtitle": "Methodological audit and network interactions"
+        },
+        "report": {
+          "title": "Final report",
+          "subtitle": "Executive analysis, drafted sections and recommendations"
+        }
+      }
+    },
+    "actions": {
+      "openChat": "Chat with report",
+      "closeChat": "Close chat",
+      "viewAgents": "View agents",
+      "viewAgentsAria": "Open the agents view (methodological audit)",
+      "backToReport": "Back to report"
+    },
+    "chat": {
+      "title": "Chat with the report",
+      "subtitle": "Ask questions, compare hypotheses, explore sources",
+      "placeholder": "Ask your question…",
+      "send": "Send",
+      "sending": "Sending…",
+      "thinking": "Bassira is analysing your question…",
+      "empty": "Start the conversation to query the report.",
+      "error": "Something went wrong. Try again.",
+      "clear": "Clear history",
+      "you": "You",
+      "assistant": "Bassira"
+    }
   },
   "process": {
     "common": {

@@ -479,7 +479,56 @@
   },
   "report": {
     "exportPdf": "Télécharger le rapport PDF (10 sections, disclaimer, graphe)",
-    "exportMd": "Télécharger le rapport Markdown (Notion / Obsidian)"
+    "exportMd": "Télécharger le rapport Markdown (Notion / Obsidian)",
+    "progress": {
+      "title": "Avancement",
+      "step": "Étape",
+      "of": "sur",
+      "status": {
+        "pending": "En attente",
+        "inProgress": "En cours",
+        "done": "Terminé",
+        "error": "Échec"
+      },
+      "stages": {
+        "graphBuild": {
+          "title": "Construction du graphe",
+          "subtitle": "Extraction d'entités et relations depuis vos documents"
+        },
+        "simulation": {
+          "title": "Simulation multi-agents",
+          "subtitle": "Personas autonomes, rounds de conversation, drift de croyances"
+        },
+        "agents": {
+          "title": "Synthèse des agents",
+          "subtitle": "Audit méthodologique et interaction réseau"
+        },
+        "report": {
+          "title": "Rapport final",
+          "subtitle": "Analyse exécutive, sections rédigées et recommandations"
+        }
+      }
+    },
+    "actions": {
+      "openChat": "Discuter avec le rapport",
+      "closeChat": "Fermer le chat",
+      "viewAgents": "Voir les agents",
+      "viewAgentsAria": "Ouvrir la vue des agents (audit méthodologique)",
+      "backToReport": "Retour au rapport"
+    },
+    "chat": {
+      "title": "Chat avec le rapport",
+      "subtitle": "Posez des questions, comparez des hypothèses, explorez les sources",
+      "placeholder": "Posez votre question…",
+      "send": "Envoyer",
+      "sending": "Envoi…",
+      "thinking": "Bassira analyse votre question…",
+      "empty": "Démarrez la conversation pour interroger le rapport.",
+      "error": "Une erreur est survenue. Réessayez.",
+      "clear": "Effacer l'historique",
+      "you": "Vous",
+      "assistant": "Bassira"
+    }
   },
   "process": {
     "common": {

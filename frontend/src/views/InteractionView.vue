@@ -41,6 +41,22 @@
 
       <div class="iv-topbar-right">
         <span class="iv-sim-id" v-if="simulationId">{{ $t('interactionAudit.topbar.simIdPrefix') }} {{ shortSimId }}</span>
+        <!-- US-112 — Retour explicite vers le rapport, symétrique du
+             bouton « Voir les agents » dans ReportView. -->
+        <button
+          v-if="reportId"
+          class="iv-back-btn"
+          type="button"
+          :title="$t('report.actions.backToReport')"
+          :aria-label="$t('report.actions.backToReport')"
+          @click="goBackToReport"
+        >
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          <span>{{ $t('report.actions.backToReport') }}</span>
+        </button>
         <button
           v-if="activeTab === 'audit'"
           class="iv-export-btn"
@@ -255,6 +271,15 @@ const setActiveTab = (next) => {
 // Sandbox event sinks (Step5Interaction emits add-log / update-status)
 const onSandboxLog = (_msg) => { /* no-op : sandbox owns its own log UI */ }
 const onSandboxStatus = (_status) => { /* no-op */ }
+
+// US-112 — Symmetric back navigation to the report page.
+const goBackToReport = () => {
+  if (reportId.value) {
+    router.push({ name: 'Report', params: { reportId: reportId.value } })
+  } else {
+    router.back()
+  }
+}
 
 // ─── Core state preserved (route + simulation linkage) ─────────
 const reportId = ref(route.params.reportId || null)
@@ -573,6 +598,33 @@ onUnmounted(() => {
 .iv-export-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+.iv-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  color: var(--wi-on-bg);
+  border: 1px solid var(--wi-outline-variant);
+  padding: 7px 12px;
+  border-radius: var(--wi-radius-md);
+  font-family: var(--wi-font-body);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background var(--ms-transition), border-color var(--ms-transition);
+}
+
+.iv-back-btn:hover {
+  background: var(--wi-surface-container, var(--wi-surface));
+  border-color: var(--wi-outline);
+}
+
+.iv-back-btn:focus-visible {
+  outline: 2px solid var(--wi-primary-container);
+  outline-offset: 2px;
 }
 
 /* ── Main split layout ───────────────────────────────────── */

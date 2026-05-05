@@ -27,6 +27,36 @@
         </nav>
 
         <div class="toolbar-actions">
+          <button
+            type="button"
+            class="toolbar-action-btn"
+            :title="$t('report.actions.viewAgentsAria')"
+            :aria-label="$t('report.actions.viewAgentsAria')"
+            @click="goToAgentsView"
+          >
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <span class="toolbar-action-label">{{ $t('report.actions.viewAgents') }}</span>
+          </button>
+
+          <button
+            type="button"
+            class="toolbar-action-btn"
+            :class="{ 'is-active': chatOpen }"
+            :title="chatOpen ? $t('report.actions.closeChat') : $t('report.actions.openChat')"
+            :aria-label="chatOpen ? $t('report.actions.closeChat') : $t('report.actions.openChat')"
+            :aria-pressed="chatOpen"
+            @click="toggleChat"
+          >
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+            </svg>
+            <span class="toolbar-action-label">{{ $t('report.actions.openChat') }}</span>
+          </button>
+
           <span class="toolbar-status" :class="statusClass" :title="statusText">
             <span class="toolbar-status-dot"></span>
             <span class="toolbar-status-label">{{ statusText }}</span>
@@ -38,6 +68,9 @@
     <main class="report-main">
       <!-- Magazine canvas (1000px max-width) — used in Report mode -->
       <article v-if="viewMode === 'workbench'" class="report-magazine">
+        <!-- Progress timeline (US-110) — 4 stages with auto-refresh -->
+        <ReportProgressTimeline :stages="progressStages" />
+
         <!-- Title Section -->
         <section class="magazine-card magazine-title">
           <div class="magazine-title-block">
@@ -86,6 +119,7 @@
             :reportId="currentReportId"
             :simulationId="simulationId"
             :systemLogs="systemLogs"
+            :initialReport="reportMeta"
             @add-log="addLog"
             @update-status="updateStatus"
           />
@@ -113,6 +147,15 @@
         />
       </section>
     </main>
+
+    <!-- US-111 — Sliding chat panel (right side, 380px). Toggled by the
+         toolbar chat button. Persists history in localStorage. -->
+    <ReportChatPanel
+      :open="chatOpen"
+      :reportId="currentReportId"
+      :simulationId="simulationId"
+      @close="closeChat"
+    />
   </div>
 </template>
 
@@ -122,6 +165,8 @@ import { useRoute, useRouter } from 'vue-router'
 import GraphPanel from '../components/GraphPanel.vue'
 import NetworkPanel from '../components/NetworkPanel.vue'
 import Step4Report from '../components/Step4Report.vue'
+import ReportProgressTimeline from '../components/ReportProgressTimeline.vue'
+import ReportChatPanel from '../components/ReportChatPanel.vue'
 import { getProject, getGraphData } from '../api/graph'
 import { getSimulation } from '../api/simulation'
 import { getReport } from '../api/report'
@@ -155,21 +200,28 @@ const systemLogs = ref([])
 const currentStatus = ref('processing') // processing | completed | error
 
 // --- Derived metadata for the magazine title section ---
+// Priority: report outline (the actual generated title) > project name > sim
+// requirement > simple placeholder. We never fabricate a fake topic here
+// (DEFCON 1: zero invented data).
 const projectTitle = computed(() => {
   return (
+    reportMeta.value?.outline?.title ||
     projectData.value?.name ||
     projectData.value?.project_name ||
     reportMeta.value?.title ||
-    'Market Sentiment Resilience Under Regulatory Stress'
+    simulationData.value?.simulation_requirement ||
+    reportMeta.value?.simulation_requirement ||
+    '—'
   )
 })
 
 const projectSummary = computed(() => {
   return (
+    reportMeta.value?.outline?.summary ||
     projectData.value?.description ||
     projectData.value?.summary ||
     reportMeta.value?.summary ||
-    'An analysis of simulated agent dynamics and belief drift across multiple socio-economic strata.'
+    ''
   )
 })
 
@@ -237,6 +289,137 @@ const statusText = computed(() => {
   return 'Generating'
 })
 
+// ─────────────────────────────────────────────────────────────────────
+// US-110 — Progress timeline (4 stages : graph_build → simulation → agents
+// → report). Stage status is computed from the data we already load
+// (reportMeta + simulationData + projectData). The timeline auto-refreshes
+// every 5s while at least one stage is still in progress.
+// ─────────────────────────────────────────────────────────────────────
+const progressStages = computed(() => {
+  const reportStatus = reportMeta.value?.status
+  const simStatus = simulationData.value?.status
+  const runnerStatus = simulationData.value?.runner_status
+  const completedAt = simulationData.value?.completed_at
+  const graphReady = !!(projectData.value?.graph_id || simulationData.value?.graph_id)
+
+  // Stage 1 — graph build : done as soon as a graph_id exists.
+  const graphStage = graphReady ? 'done' : 'pending'
+
+  // Stage 2 — simulation : done when runner says completed or completed_at
+  // is set on the simulation; in_progress when runner is running/preparing;
+  // pending otherwise. Failed → error.
+  let simStage = 'pending'
+  if (runnerStatus === 'completed' || completedAt) {
+    simStage = 'done'
+  } else if (
+    runnerStatus === 'running' ||
+    runnerStatus === 'preparing' ||
+    simStatus === 'running' ||
+    simStatus === 'preparing'
+  ) {
+    simStage = 'in_progress'
+  } else if (runnerStatus === 'failed' || simStatus === 'failed') {
+    simStage = 'error'
+  } else if (graphReady) {
+    simStage = 'pending'
+  }
+
+  // Stage 3 — agent synthesis : we treat the agent step as "done" once the
+  // simulation is complete (the interaction view + audit are derivative of
+  // the simulation runner's output). When the simulation is still running,
+  // this stage is pending. If the report is being generated while the
+  // simulation has just completed, this stage is "in_progress" until the
+  // report planner kicks in.
+  let agentStage = 'pending'
+  if (simStage === 'done' && (reportStatus === 'planning' || reportStatus === 'pending')) {
+    agentStage = 'in_progress'
+  } else if (simStage === 'done') {
+    agentStage = 'done'
+  } else if (simStage === 'error') {
+    agentStage = 'error'
+  }
+
+  // Stage 4 — final report : driven directly by reportMeta.status.
+  let reportStage = 'pending'
+  if (reportStatus === 'completed') reportStage = 'done'
+  else if (reportStatus === 'failed') reportStage = 'error'
+  else if (reportStatus === 'planning' || reportStatus === 'generating') reportStage = 'in_progress'
+
+  return [
+    { id: 'graphBuild', status: graphStage },
+    { id: 'simulation', status: simStage },
+    { id: 'agents', status: agentStage },
+    { id: 'report', status: reportStage }
+  ]
+})
+
+const allStagesDone = computed(() =>
+  progressStages.value.every((s) => s.status === 'done')
+)
+
+// Polling — refresh report + simulation every 5s while progression is
+// not finished. We never poll once everything is done (avoid wasted
+// network on a static document).
+let progressTimer = null
+
+const refreshProgress = async () => {
+  if (!currentReportId.value) return
+  try {
+    const reportRes = await getReport(currentReportId.value)
+    if (reportRes.success && reportRes.data) {
+      reportMeta.value = reportRes.data
+      if (reportRes.data.status === 'completed') currentStatus.value = 'completed'
+      if (reportRes.data.status === 'failed') currentStatus.value = 'error'
+      if (reportRes.data.simulation_id) {
+        simulationId.value = reportRes.data.simulation_id
+        const simRes = await getSimulation(reportRes.data.simulation_id)
+        if (simRes.success && simRes.data) {
+          simulationData.value = simRes.data
+        }
+      }
+    }
+  } catch (err) {
+    addLog(`Progress refresh error: ${err.message}`)
+  }
+}
+
+const startProgressPolling = () => {
+  if (progressTimer) return
+  progressTimer = setInterval(() => {
+    if (allStagesDone.value) {
+      stopProgressPolling()
+      return
+    }
+    refreshProgress()
+  }, 5000)
+}
+
+const stopProgressPolling = () => {
+  if (progressTimer) {
+    clearInterval(progressTimer)
+    progressTimer = null
+  }
+}
+
+// US-111 — Sliding chat panel.
+const chatOpen = ref(false)
+const toggleChat = () => {
+  chatOpen.value = !chatOpen.value
+}
+const closeChat = () => {
+  chatOpen.value = false
+}
+
+// US-112 — Quick navigation to the agents view (interaction audit +
+// sandbox). The InteractionView is already wired to the route name
+// 'Interaction' with :reportId. The reciprocal back button lives in
+// InteractionView.
+const goToAgentsView = () => {
+  if (currentReportId.value) {
+    router.push({ name: 'Interaction', params: { reportId: currentReportId.value } })
+  }
+}
+
 // --- Helpers ---
 const addLog = (msg) => {
   const now = new Date()
@@ -262,6 +445,22 @@ const loadReportData = async () => {
       const reportData = reportRes.data
       reportMeta.value = reportData
       simulationId.value = reportData.simulation_id
+
+      // The URL sometimes carries a simulation_id (sim_xxx) instead of a
+      // report_id (report_xxx). The backend resolves both — but we MUST
+      // realign currentReportId with the canonical report_id, otherwise
+      // Step4Report will poll /api/report/sim_xxx/agent-log (404) and never
+      // hydrate the panel. Cf US-109.
+      if (reportData.report_id && reportData.report_id !== currentReportId.value) {
+        currentReportId.value = reportData.report_id
+      }
+
+      // Reflect the canonical status from the backend payload immediately.
+      if (reportData.status === 'completed') {
+        currentStatus.value = 'completed'
+      } else if (reportData.status === 'failed') {
+        currentStatus.value = 'error'
+      }
 
       if (simulationId.value) {
         const simRes = await getSimulation(simulationId.value)
@@ -327,16 +526,36 @@ watchEffect(() => {
       : status === 'completed'
       ? '🟢'
       : ''
-  document.title = dot ? `${dot} (4/4) Bassira` : '(4/4) Bassira'
+  // Use the actual report title when available so the browser tab reflects
+  // the document the user is reading, not a generic phase counter.
+  const titleSrc = reportMeta.value?.outline?.title || projectData.value?.name
+  const truncated =
+    typeof titleSrc === 'string' && titleSrc.trim()
+      ? (titleSrc.length > 60 ? titleSrc.slice(0, 57) + '…' : titleSrc)
+      : ''
+  const base = truncated ? `${truncated} · Bassira` : 'Bassira · Report'
+  document.title = dot ? `${dot} ${base}` : base
 })
 
 onUnmounted(() => {
   document.title = 'Bassira'
+  stopProgressPolling()
 })
 
 onMounted(() => {
   addLog('ReportView initialized')
-  loadReportData()
+  loadReportData().then(() => {
+    if (!allStagesDone.value) {
+      startProgressPolling()
+    }
+  })
+})
+
+// React to status transitions: stop the polling as soon as we've reached
+// "all done" so we don't waste network on a static document.
+watch(allStagesDone, (done) => {
+  if (done) stopProgressPolling()
+  else if (!progressTimer && currentReportId.value) startProgressPolling()
 })
 </script>
 
@@ -470,6 +689,47 @@ onMounted(() => {
   align-items: center;
   gap: var(--wi-space-sm);
   flex: 0 0 auto;
+}
+
+.toolbar-action-btn {
+  appearance: none;
+  border: 1px solid rgba(250, 247, 242, 0.18);
+  background: rgba(250, 247, 242, 0.06);
+  color: var(--wi-bg);
+  font-family: var(--wi-font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border-radius: var(--wi-radius-pill);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background var(--ms-transition), border-color var(--ms-transition);
+}
+
+.toolbar-action-btn:hover {
+  background: rgba(250, 247, 242, 0.14);
+  border-color: rgba(250, 247, 242, 0.32);
+}
+
+.toolbar-action-btn.is-active {
+  background: var(--wi-primary-container);
+  color: var(--wi-on-primary-container);
+  border-color: var(--wi-primary-container);
+}
+
+.toolbar-action-btn:focus-visible {
+  outline: 2px solid var(--wi-primary-container);
+  outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+  .toolbar-action-btn .toolbar-action-label {
+    display: none;
+  }
 }
 
 .toolbar-status {

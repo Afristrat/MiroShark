@@ -49,6 +49,56 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 
 ## Log d'itérations
 
+### 2026-05-05 — US-109 + US-110 + US-111 + US-112 Fix ReportView + timeline + chat + agents (worktree agent-aa6c11cd)
+
+- **Statut** : 4 stories passes:true (chantier Q-report-experience). Worktree branch `worktree-agent-aa6c11cd`, 4 commits successifs c0ff7fd / 58485ce / d0bc9c5 / cc3089a, prêts à merger sur main.
+
+#### US-109 — Fix ReportView consume report payload (frontend rendering)
+- **Bug racine** : Step4Report.vue se reposait *exclusivement* sur le polling `getAgentLog(reportId, fromLine)` pour reconstruire `reportOutline` + `generatedSections`. Pour un report déjà `status='completed'` (donc agent-log statique ou tronqué après archivage), le polling reconstituait peut-être l'outline à la 1ère poll mais le rendu UI restait visuellement bloqué sur "Chargement du rapport…" tant que la route renvoyait un sim_xxx au lieu d'un report_id (Step4Report polling alors `/api/report/sim_xxx/agent-log` qui n'existe pas, fallback US-097 sur backend get_report étant invisible côté Step4Report).
+- **Fix architectural** : nouvelle prop `initialReport` sur Step4Report. Quand fournie *et* `status === 'completed'`, hydratation immédiate de `reportOutline` (depuis `outline.title/summary/sections[].title`) + `generatedSections[idx]` (depuis chaque `sections[i].content` si présent, sinon fallback sur `_splitMarkdownIntoSections(markdown_content, outline.sections)` qui découpe sur `## ` headings) + `isComplete=true` + `emit('update-status', 'completed')` + `stopPolling()`. Le polling ne démarre que si `!isComplete`.
+- **Fix routing** : ReportView aligne `currentReportId` avec `reportData.report_id` réel renvoyé par le backend (cf US-097 fallback sim_xxx → report). Sans ça, Step4Report polling continuait sur le mauvais ID.
+- **Fix DEFCON 1** : suppression du placeholder factice « Market Sentiment Resilience Under Regulatory Stress » dans `projectTitle` (et son équivalent dans `projectSummary`). Priorité réelle : `reportMeta.outline.title > projectData.name > simulation_requirement > '—'`. Aucun titre fabriqué.
+- **Fix tab title** : `document.title` utilise désormais le vrai `outline.title` tronqué à 60 chars (au lieu du compteur générique `(4/4) Bassira`).
+
+#### US-110 — Timeline avancement progressif 1/4 → 4/4
+- Nouveau composant `frontend/src/components/ReportProgressTimeline.vue` (4 stages : graphBuild → simulation → agents → report).
+- Statut de chaque stage *dérivé* des données existantes (`reportMeta.status` + `simulationData.runner_status` + `simulationData.completed_at` + `projectData.graph_id`) — aucun nouvel endpoint backend nécessaire. `agents` = done dès que simulation est done (synthèse agents = output dérivé du runner).
+- Polling 5 s sur `getReport` + `getSimulation` tant que `allStagesDone === false`. Auto-stop dès que tout est done. `watch(allStagesDone)` redémarre/arrête dynamiquement.
+- 28 clés i18n FR/EN/AR (`report.progress.title/step/of/status.* + stages.<id>.title/subtitle`). Polices Causse Warm Intelligence (--wi-*). RTL via `inset-inline-*` + grid → flex en mobile.
+
+#### US-111 — Chat avec le rapport
+- Nouveau composant `frontend/src/components/ReportChatPanel.vue` (sliding panel 380px à droite, fullscreen mobile <600px).
+- Endpoint backend `POST /api/report/chat` *déjà existant* (cf `frontend/src/api/report.js::chatWithReport`). Le panel lui passe `{simulation_id, message, chat_history}` avec history reconstruit depuis `messages.value.slice(0, -1)` (on exclut le dernier user message qu'on vient juste de pousser).
+- Persistance localStorage clé `bassira:report:<reportId>:chat` (40 derniers messages, slice protège du quota). `clearHistory()` retire la clé.
+- Markdown rendu via `renderMarkdown` (utility partagée Step4Report). Bulles user terracotta (--wi-primary-container) vs assistant cream (--wi-surface). 3 thinking-dots animés durant l'envoi.
+- 13 clés i18n FR/EN/AR (`report.chat.*` + `report.actions.openChat/closeChat`). Toggle via bouton dans toolbar ReportView.
+- RTL : `inset-inline-end: 0` (panel passe à gauche en RTL) + `:global([dir='rtl'])` pour inverser la direction du slide CSS.
+
+#### US-112 — Onglet « Voir les agents »
+- Bouton dans toolbar ReportView (icône users) → `router.push({ name: 'Interaction', params: { reportId } })`.
+- Bouton symétrique « Retour au rapport » dans toolbar InteractionView (`iv-back-btn`) → `router.push({ name: 'Report', params: { reportId } })`. Fallback `router.back()` si pas de reportId.
+- 3 clés i18n FR/EN/AR (`report.actions.viewAgents/viewAgentsAria/backToReport`).
+- Pattern : si InteractionView est ouvert directement par URL externe (sans navigation depuis ReportView), le bouton retour pointe quand même vers le bon report grâce au `route.params.reportId` lu au mount.
+
+#### Quality gates (4/4 commits passent)
+- `cd frontend && npm run build` → OK pour chaque commit. Bundle principal 773.93 kB (vs 767.87 kB avant US-110/111/112) — +6 kB pour 2 nouveaux composants + 88 nouvelles clés i18n × 3 langues, raisonnable.
+- `cd backend && uv run pytest tests/ --tb=short -x` → **878 passed, 17 skipped, 0 régression**. Aucune story n'a touché au backend (les endpoints `/api/report/*` étaient tous déjà présents).
+- Playwright : non lancé dans le worktree (suite e2e cible la prod, pas le dev local).
+
+#### Décisions architecturales notables
+- **Hydration vs polling** : Step4Report garde le polling pour la génération live (status `planning`/`generating`), mais l'hydration directe via `initialReport` est strictement préférable dès que `status === 'completed'`. Pas de boucle inutile sur un rapport statique. `stopPolling()` appelé immédiatement post-hydration.
+- **`_splitMarkdownIntoSections` fallback** : seulement utilisé si l'outline JSON ne contient pas le content de chaque section (anciens reports backend pre-2026-05). Le backend actuel (`save_outline` + `save_section`) garantit que `outline.sections[i].content` est rempli, donc le fallback ne s'active jamais en pratique sur les nouveaux reports.
+- **Timeline self-derived** : volontairement pas de nouvel endpoint `/api/simulation/<id>/progress` parce que tout l'info est déjà dispo. Évite une dette « new endpoint à maintenir ».
+- **Chat history scope** : par reportId pas par simulationId. Cohérent avec la convention frontend (la route est `/report/:reportId`). Si un user re-génère un rapport (nouveau report_id), il commence un nouveau chat (volontaire, le contexte sémantique change).
+- **Bouton retour InteractionView** : choix de `router.push` au lieu de `router.back()` parce que l'utilisateur peut arriver sur InteractionView par lien direct (URL externe), auquel cas back() ne pointerait pas vers le rapport.
+
+#### Patterns nouveaux à propager
+- **Hydration depuis payload + fallback polling** : pattern réutilisable pour tout composant Vue qui poll un endpoint. Si le parent peut fournir l'état complet, hydrater directement et n'activer le polling que pour le mode incrémental. Voir `Step4Report::hydrateFromReport` + `watch(() => props.initialReport)`.
+- **Timeline 4 stages dérivée** : pattern à étendre pour SimulationRunView (montrer `prepare → run → analyze → report`). Cf `ReportProgressTimeline.vue` comme template.
+- **Sliding panel `:global([dir='rtl'])`** : Vue scoped CSS isole les sélecteurs par data-attribute. Pour cibler un état HTML root (dir=rtl), utiliser `:global()` autour du sélecteur. Sinon le RTL ne flip pas.
+
+---
+
 ### 2026-05-05 — US-102 + US-103 + US-104 + US-107 + US-108 Console super-admin devis + ConsoleView privative + branding fix
 
 - **Statut** : 5 stories passes:true (chantiers N-quotes-admin, O-self-service-console, P-branding-fix).
