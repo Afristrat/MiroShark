@@ -313,4 +313,45 @@ export function redeemInvitation(token) {
   )
 }
 
+// ───── PDF Branding admin (US-120) ─────────────────────────────────────────
+
+/**
+ * GET /api/admin/branding — liste les brandings PDF d'une org (toutes versions).
+ * Params : org_id (requis si super-admin ou multi-org admin), limit, offset.
+ */
+export function fetchAdminBrandings(params = {}) {
+  return client.get('/api/admin/branding', { params })
+}
+
+/**
+ * POST /api/admin/branding — crée un nouveau branding PDF.
+ * Body : { org_id?, name, logo_url?, header_*, footer_*, palette_*, font_*, disclaimer_text? }
+ */
+export function createAdminBranding(payload) {
+  return client.post('/api/admin/branding', payload)
+}
+
+/**
+ * PATCH /api/admin/branding/<id> — met à jour un branding (versioning insert).
+ * Body : champs à modifier (tous optionnels sauf au moins un requis).
+ */
+export function patchAdminBranding(brandingId, payload) {
+  return client.patch(
+    `/api/admin/branding/${encodeURIComponent(brandingId)}`,
+    payload
+  )
+}
+
+/**
+ * POST /api/admin/branding/<id>/preview — génère un aperçu SVG du branding.
+ * Body : { lang: 'fr' | 'en' | 'ar' }
+ * Retourne : { preview_svg: '<base64>', content_type: 'image/svg+xml', lang }
+ */
+export function previewAdminBranding(brandingId, lang = 'fr') {
+  return client.post(
+    `/api/admin/branding/${encodeURIComponent(brandingId)}/preview`,
+    { lang }
+  )
+}
+
 export default client

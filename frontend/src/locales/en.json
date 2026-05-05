@@ -2410,5 +2410,66 @@
       "noteFailed": "Could not save notes.",
       "transitionFailed": "Status transition rejected."
     }
+  },
+  "adminBranding": {
+    "title": "PDF Branding",
+    "subtitle": "Configure the PDF report branding per organization.",
+    "loading": "Loading brandings…",
+    "empty": "No branding configured yet. Create the first one.",
+    "newBranding": "New branding",
+    "active": "Active",
+    "expired": "Expired",
+    "preview": "Preview",
+    "previewLang": "Preview language",
+    "previewUpdating": "Updating preview…",
+    "previewError": "Preview generation error.",
+    "table": {
+      "name": "Name",
+      "validFrom": "Active since",
+      "validTo": "Expired on",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "form": {
+      "title": "New branding",
+      "editTitle": "Edit branding",
+      "name": "Configuration name",
+      "namePlaceholder": "E.g.: Standard MENA Report",
+      "logoUrl": "Logo URL",
+      "logoUrlPlaceholder": "https://cdn.example.com/logo.svg",
+      "section": "Headers and footers",
+      "sectionHelp": "Allowed placeholders: logo, section, page, total, report_id, client_name, date, org_name, generated_at — wrapped in double braces",
+      "headerLeft": "Header left",
+      "headerCenter": "Header center",
+      "headerRight": "Header right",
+      "footerLeft": "Footer left",
+      "footerCenter": "Footer center",
+      "footerRight": "Footer right",
+      "palette": "Color palette",
+      "palettePrimary": "Primary color",
+      "paletteSecondary": "Secondary color",
+      "paletteText": "Text color",
+      "paletteBackground": "Page background",
+      "typography": "Typography",
+      "fontTitles": "Headings font",
+      "fontBody": "Body font",
+      "fontMono": "Monospace font",
+      "disclaimerFr": "Disclaimer (FR)",
+      "disclaimerEn": "Disclaimer (EN)",
+      "disclaimerAr": "Disclaimer (AR)",
+      "submit": "Create branding",
+      "submitEdit": "Save changes",
+      "saving": "Saving…",
+      "cancel": "Cancel"
+    },
+    "success": {
+      "created": "Branding created successfully.",
+      "updated": "Branding updated successfully."
+    },
+    "error": {
+      "load": "Error loading brandings.",
+      "create": "Error creating branding.",
+      "update": "Error updating branding."
+    }
   }
 }

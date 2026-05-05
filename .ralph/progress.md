@@ -893,3 +893,39 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
   - **Idempotence redeem org_members** : si la row `(org_id, user_id)` existe déjà (cas d'un user qui clique 2× sur le lien après être déjà membre), on log + on continue à marquer l'invitation consommée. Pas d'erreur user-facing.
   - **MagicMock `or` falsy trap** : `delete_rows = delete_rows or [{"token": "deleted"}]` écrase aussi `[]` (falsy). Pour permettre au caller de passer une liste vide explicite, utiliser `if delete_rows is None:` à la place du `or`.
   - **Layout du blueprint séparé** : un blueprint pour `/api/admin/invitations` (decorée `@require_auth` + branchement super-admin/org-admin) et un autre pour `/api/invitations/<token>` (mix public + auth). Évite la confusion des préfixes URL.
+
+### 2026-05-05 — US-120 — Migration pdf_branding Supabase + admin CRUD UI (worktree agent-af218de6)
+
+- **Statut** : passes:true — tous les quality gates backend OK. Frontend build OK. Playwright en attente déploiement prod (pattern établi : les E2E testent la prod).
+- **Branch** : main (worktree agent-af218de6)
+
+#### Fichiers créés
+- `supabase/migrations/20260506_001_pdf_branding.sql` — table + 5 RLS policies (versioning append-only)
+- `backend/app/services/pdf_branding.py` — 5 helpers : get_active_branding, create_branding, list_branding, update_branding, validate_placeholders
+- `backend/app/api/admin_branding.py` — blueprint admin_branding_bp : GET/POST/PATCH + POST preview (SVG base64)
+- `backend/tests/test_pdf_branding.py` — 37 tests (service + endpoints + RLS scenarios)
+- `frontend/src/views/AdminBrandingView.vue` — Vue 3 composition API, split layout (form + preview live), tokens --wi-*
+- `frontend/tests/e2e/admin-branding.spec.ts` — 8 tests Playwright (guards + super-admin UI)
+
+#### Fichiers modifiés
+- `backend/app/__init__.py` — register admin_branding_bp at /api/admin/branding
+- `frontend/src/api/client.js` — 4 nouvelles méthodes : fetchAdminBrandings, createAdminBranding, patchAdminBranding, previewAdminBranding
+- `frontend/src/router/index.js` — route /admin/branding (requiresAuth + requiresSuperAdmin)
+- `frontend/src/locales/fr.json` — clés adminBranding.* (FR)
+- `frontend/src/locales/en.json` — clés adminBranding.* (EN)
+- `frontend/src/locales/ar.json` — clés adminBranding.* (AR)
+
+#### Quality gates
+- `pytest tests/test_pdf_branding.py` : **37/37 passed**
+- `pytest tests/ --ignore=integration` : **1029/1029 passed, 0 régression**
+- `npm run build` / `npx vite build` : **exit 0**, 853 modules transformés
+- `playwright admin-branding.spec.ts` : **1/8 passed** (tests testent prod — route pas encore déployée, pattern identique à US-117 avant déploiement)
+
+#### Learnings
+- **Versioning append-only SQL** : une mise à jour branding crée une nouvelle row avec `valid_from=now()` et expire l'ancienne avec `valid_to=now()`. Requête active : `WHERE valid_from <= now() AND (valid_to IS NULL OR valid_to > now()) ORDER BY valid_from DESC LIMIT 1`. Préserve l'historique complet sans perte de données.
+- **Piège vue-i18n : double accolades dans les valeurs JSON** : `{{logo}}` dans une valeur JSON est interprété comme un placeholder vue-i18n et déclenche `error code: 9` au build Vite. Solution : remplacer par une description textuelle (ex: `"logo, section, page"`) dans le fichier JSON. Les valeurs JS dans `<script setup>` ne sont pas affectées.
+- **Piège Vue template : double accolades dans les fallback strings** : `{{ $t('key') || 'Texte {{logo}}' }}` cause `Unterminated string constant` au compile Vue. Le compilateur parse `{{` en interpolation. Même fix : éviter les doubles accolades dans les strings inline du template.
+- **Patch target pytest** : pour mocker `get_supabase_admin` dans un blueprint Flask, patcher l'import du MODULE blueprint (`app.api.admin_branding.get_supabase_admin`), PAS le module source (`app.auth.supabase_client.get_supabase_admin`). Sinon le mock n'affecte pas l'objet déjà importé dans le blueprint.
+- **SVG preview** : alternative légère à WeasyPrint/pdf2image pour les aperçus de branding. Génère un SVG A4 (595×842) avec header + zone contenu + footer. Les placeholders `{{...}}` sont résolus avec des valeurs d'exemple. Retourné en base64 pour une img `src=data:image/svg+xml;base64,...`. Zéro dépendance système supplémentaire.
+- **RLS DELETE restrictif** : pour les ressources de configuration (branding), `DELETE` uniquement via `service_role` (RLS bypass) — pas de policy publique. La policy `using (false)` bloque tout accès JWT. Le super-admin passe par `service_role` directement depuis le backend Flask.
+- **Debounce preview 1s** : déclencher l'aperçu live sur chaque keystroke casse l'UX (trop d'appels). 1 seconde de debounce après `@input` est le bon compromis. L'aperçu se met à jour automatiquement après la pause de frappe.

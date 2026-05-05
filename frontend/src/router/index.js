@@ -203,6 +203,18 @@ const routes = [
       requiresAuth: true,
       title: 'Invitations · Bassira admin'
     }
+  },
+  {
+    // US-120 — Gestion du branding PDF par org (super-admin uniquement).
+    // Table des configurations + form modal create/edit + preview SVG live.
+    path: '/admin/branding',
+    name: 'AdminBranding',
+    component: () => import('../views/AdminBrandingView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresSuperAdmin: true,
+      title: 'Branding PDF · Bassira admin'
+    }
   }
 ]
 
