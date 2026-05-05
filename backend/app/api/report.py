@@ -209,7 +209,7 @@ def generate_report():
                     task_manager.fail_task(task_id, report.error or "Report generation failed")
 
             except Exception as e:
-                logger.error(f"Report generation failed: {str(e)}")
+                logger.error(f"Report generation failed: {str(e)}\n" + traceback.format_exc())
                 task_manager.fail_task(task_id, str(e))
 
         # Start background thread
@@ -229,12 +229,11 @@ def generate_report():
         })
 
     except Exception as e:
-        logger.error(f"Failed to start report generation task: {str(e)}")
+        logger.error(f"Failed to start report generation task: {str(e)}\n{traceback.format_exc()}")
         return jsonify({
             "success": False,
             "error_code": "REPORT_GENERATION_FAILED",
-            "error": str(e),
-            "traceback": traceback.format_exc()
+            "error": "Internal server error",
         }), 500
 
 
@@ -314,7 +313,7 @@ def get_generate_status():
         })
 
     except Exception as e:
-        logger.error(f"Failed to query task status: {str(e)}")
+        logger.error(f"Failed to query task status: {str(e)}\n" + traceback.format_exc())
         return jsonify({
             "success": False,
             "error_code": "INTERNAL_ERROR",
@@ -367,12 +366,11 @@ def get_report(report_id: str):
         })
 
     except Exception as e:
-        logger.error(f"Failed to get report: {str(e)}")
+        logger.error(f"Failed to get report: {str(e)}\n" + traceback.format_exc())
         return jsonify({
             "success": False,
             "error_code": "INTERNAL_ERROR",
-            "error": str(e),
-            "traceback": traceback.format_exc()
+            "error": str(e)
         }), 500
 
 
@@ -408,12 +406,11 @@ def get_report_by_simulation(simulation_id: str):
         })
 
     except Exception as e:
-        logger.error(f"Failed to get report: {str(e)}")
+        logger.error(f"Failed to get report: {str(e)}\n" + traceback.format_exc())
         return jsonify({
             "success": False,
             "error_code": "INTERNAL_ERROR",
-            "error": str(e),
-            "traceback": traceback.format_exc()
+            "error": str(e)
         }), 500
 
 
@@ -456,12 +453,11 @@ def download_report(report_id: str):
         )
 
     except Exception as e:
-        logger.error(f"Failed to download report: {str(e)}")
+        logger.error(f"Failed to download report: {str(e)}\n" + traceback.format_exc())
         return jsonify({
             "success": False,
             "error_code": "INTERNAL_ERROR",
-            "error": str(e),
-            "traceback": traceback.format_exc()
+            "error": str(e)
         }), 500
 
 
@@ -484,12 +480,11 @@ def delete_report(report_id: str):
         })
 
     except Exception as e:
-        logger.error(f"Failed to delete report: {str(e)}")
+        logger.error(f"Failed to delete report: {str(e)}\n" + traceback.format_exc())
         return jsonify({
             "success": False,
             "error_code": "INTERNAL_ERROR",
-            "error": str(e),
-            "traceback": traceback.format_exc()
+            "error": str(e)
         }), 500
 
 
@@ -605,12 +600,11 @@ def chat_with_report_agent():
         })
 
     except Exception as e:
-        logger.error(f"Chat failed: {str(e)}")
+        logger.error(f"Chat failed: {str(e)}\n" + traceback.format_exc())
         return jsonify({
             "success": False,
             "error_code": "CHAT_FAILED",
-            "error": str(e),
-            "traceback": traceback.format_exc()
+            "error": str(e)
         }), 500
 
 
@@ -659,12 +653,11 @@ def check_report_status(simulation_id: str):
         })
 
     except Exception as e:
-        logger.error(f"Failed to check report status: {str(e)}")
+        logger.error(f"Failed to check report status: {str(e)}\n" + traceback.format_exc())
         return jsonify({
             "success": False,
             "error_code": "INTERNAL_ERROR",
-            "error": str(e),
-            "traceback": traceback.format_exc()
+            "error": str(e)
         }), 500
 
 
@@ -721,12 +714,11 @@ def get_agent_log(report_id: str):
         })
 
     except Exception as e:
-        logger.error(f"Failed to get Agent log: {str(e)}")
+        logger.error(f"Failed to get Agent log: {str(e)}\n" + traceback.format_exc())
         return jsonify({
             "success": False,
             "error_code": "INTERNAL_ERROR",
-            "error": str(e),
-            "traceback": traceback.format_exc()
+            "error": str(e)
         }), 500
 
 
@@ -756,12 +748,11 @@ def stream_agent_log(report_id: str):
         })
 
     except Exception as e:
-        logger.error(f"Failed to get Agent log: {str(e)}")
+        logger.error(f"Failed to get Agent log: {str(e)}\n" + traceback.format_exc())
         return jsonify({
             "success": False,
             "error_code": "INTERNAL_ERROR",
-            "error": str(e),
-            "traceback": traceback.format_exc()
+            "error": str(e)
         }), 500
 
 
@@ -805,12 +796,11 @@ def get_console_log(report_id: str):
         })
 
     except Exception as e:
-        logger.error(f"Failed to get console log: {str(e)}")
+        logger.error(f"Failed to get console log: {str(e)}\n" + traceback.format_exc())
         return jsonify({
             "success": False,
             "error_code": "INTERNAL_ERROR",
-            "error": str(e),
-            "traceback": traceback.format_exc()
+            "error": str(e)
         }), 500
 
 
@@ -840,12 +830,11 @@ def stream_console_log(report_id: str):
         })
 
     except Exception as e:
-        logger.error(f"Failed to get console log: {str(e)}")
+        logger.error(f"Failed to get console log: {str(e)}\n" + traceback.format_exc())
         return jsonify({
             "success": False,
             "error_code": "INTERNAL_ERROR",
-            "error": str(e),
-            "traceback": traceback.format_exc()
+            "error": str(e)
         }), 500
 
 
@@ -901,12 +890,11 @@ def search_graph_tool():
         })
 
     except Exception as e:
-        logger.error(f"Graph search failed: {str(e)}")
+        logger.error(f"Graph search failed: {str(e)}\n" + traceback.format_exc())
         return jsonify({
             "success": False,
             "error_code": "INTERNAL_ERROR",
-            "error": str(e),
-            "traceback": traceback.format_exc()
+            "error": str(e)
         }), 500
 
 
@@ -952,10 +940,9 @@ def get_graph_statistics_tool():
         })
 
     except Exception as e:
-        logger.error(f"Failed to get graph statistics: {str(e)}")
+        logger.error(f"Failed to get graph statistics: {str(e)}\n" + traceback.format_exc())
         return jsonify({
             "success": False,
             "error_code": "INTERNAL_ERROR",
-            "error": str(e),
-            "traceback": traceback.format_exc()
+            "error": str(e)
         }), 500

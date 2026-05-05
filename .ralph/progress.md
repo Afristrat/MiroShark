@@ -103,6 +103,38 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 - `tests/test_unit_openapi.py` : 8/8 OK après ajout de `admin_quote_bp` au `_BLUEPRINT_PREFIXES` map + ajout des 6 routes admin/quotes dans `_UNDOCUMENTED_ALLOWLIST` (super-admin endpoints, internal-only).
 - `tests/test_unit_quote.py` : 1 test ajusté (`test_submit_valid_quote_returns_200_and_stores_file`) pour attendre 2 sendmail (sales + client confirmation) au lieu de 1.
 
+---
+
+### 2026-05-05 — US-116 Audit sécurité OWASP post-multitenant + corrections P0
+
+- **Statut** : passes:true — rapport livré, 2 P0 corrigés, 36 tests ajoutés.
+
+#### Findings principaux
+- **A05 P0 CORRIGÉ** : `traceback.format_exc()` exposé dans les réponses JSON 500 publiques de `report.py` (14 occurrences). Tracebacks déplacés vers les logs serveur uniquement. Permet aux attaquants de voir les chemins de fichiers, versions bibliothèques et structure interne.
+- **A10 P0 CORRIGÉ** : `webhook_service.validate_url()` n'effectuait aucune vérification d'IP — SSRF possible si `WEBHOOK_URL=http://169.254.169.254/`. Correction : résolution DNS + blocage RFC 1918, loopback, link-local, reserved.
+- **A01 OK** : RLS Supabase strict sur `organizations`, `org_members`, `simulation_ownership`. Cross-tenant IDOR bloqué double couche (app + RLS). Tous les endpoints `/api/admin/*` et `/api/client/*` correctement protégés.
+- **A02 OK** : JWT dual-mode ES256/HS256 solide. Aucun secret JWT ni service_role key exposé.
+- **A04 P1** : `/api/report/generate` et `/api/report/chat` sans rate limit (appels LLM coûteux). Documénté pour next sprint.
+- **A06 P1** : npm — axios HIGH (DoS + SSRF bypass, `^1.13.2` → fix `≥1.15.1`), vite/rollup HIGH (dev only). pip-audit non disponible en CI (à intégrer).
+- **A09 OK** : JWT jamais loggué, super-admin audit en sha256 court. 3 `print()` résiduels dans services internes (pas de secrets, P2).
+- **A10 OK** : url_fetcher.py bloque les IP privées avant fetch LLM.
+
+#### Tests créés (36 nouveaux)
+- `tests/test_security_headers.py` (10) : headers A05 sur endpoints API + absents sur /share/*.
+- `tests/test_rate_limits.py` (5) : rate limits enrich-ask, suggest-scenarios, quote.
+- `tests/test_idor.py` (21) : auth A01 sur tous les endpoints admin + stack trace absente + SSRF webhook + SSRF url_fetcher.
+
+#### Quality gates
+- `cd backend && uv run pytest -q` → **914 passed, 17 skipped, 0 régression** (vs 878 baseline US-108). 42 s.
+- Rapport : `docs/SECURITY_AUDIT_2026-05.md` complet (10 catégories OWASP, preuves file:line).
+
+#### Codebase Patterns ajoutés
+- **Stack traces publiques** : ne JAMAIS passer `"traceback": traceback.format_exc()` dans les réponses JSON d'endpoints publics. Garder le traceback dans `logger.error()` uniquement.
+- **SSRF webhook** : toujours appeler `_is_private_ip(host)` dans les `validate_url()` qui acceptent des URLs arbitraires (pattern de webhook_service.py réutilisable).
+- **Test rate limits** : utiliser le dict interne `_ENRICH_RATE_HITS` / `_SCENARIO_RATE_HITS` pour forcer l'état en test (thread-safe car pas de lock sur ces dicts — ils utilisent le GIL).
+
+---
+
 #### Décisions architecturales notables
 - **Sidecar JSON plutôt que table SQL** : cohérent avec le pattern US-025 (quotes sont déjà des fichiers filesystem). Pas de migration SQL nécessaire, lecture/écriture trivialement testables avec `tmp_path`. Coût : pas de filtre status complexe en SQL — mais le volume actuel (handful per week) ne justifie pas une table.
 - **3 templates HTML inline plutôt que Jinja** : aucune logique conditionnelle complexe (1 placeholder optionnel `custom_message_block` rendu directement en HTML pré-formaté côté Python). `str.format` suffit, pas de dépendance Jinja2 supplémentaire (déjà présente via Flask mais on évite de la coupler aux templates email pour les rendre testables sans contexte Flask).
