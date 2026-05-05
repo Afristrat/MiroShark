@@ -3325,6 +3325,247 @@
           "frontend/src/locales/{fr,en,ar}.json"
         ]
       }
+    },
+    {
+      "id": "US-109",
+      "chantier": "Q-report-rendering",
+      "title": "Fix ReportView frontend rendering (priorité maximum)",
+      "description": "Le backend `/api/report/<id>` retourne le report complet (status=completed, markdown_content 17 702 chars, outline avec sections/summary/title) mais le frontend ReportView affiche « Chargement du rapport… » indéfiniment. Titre 'Unnamed Project' au lieu du vrai titre. Tab title `🟠 (4/4) Bassira` mais contenu vide. Probable mismatch entre le format de réponse backend et ce que ReportView/Step4Report consomme. Corriger le parsing dans loadReportData (lignes 256-288) et l'utilisation de report.outline + markdown_content + simulation_data.title dans Step4Report.",
+      "acceptanceCriteria": [
+        "ReportView affiche le titre du report (depuis simulation_data.title ou outline.title) — plus de 'Unnamed Project'",
+        "Step4Report rend markdown_content (17 702 chars) avec markdown-it",
+        "Sections de l'outline (executive_summary, key_findings, etc.) sont rendues",
+        "État 'Chargement du rapport…' disparaît dès status=completed",
+        "Tab title affiche le vrai titre du report (pas juste '(4/4) Bassira')",
+        "Test manuel sur prod avec un sim_xxx existant : rapport visible"
+      ],
+      "passes": false,
+      "dependencies": [],
+      "metadata": {
+        "estimated_hours": 2,
+        "priority": "P0",
+        "files_to_modify": [
+          "frontend/src/views/ReportView.vue",
+          "frontend/src/components/Step4Report.vue",
+          "frontend/src/api/report.js"
+        ],
+        "investigation_starting_point": "frontend/src/views/ReportView.vue lignes 256-288 (loadReportData)"
+      }
+    },
+    {
+      "id": "US-110",
+      "chantier": "Q-report-rendering",
+      "title": "Avancement progressif (timeline 1/4 → 4/4) dans ReportView header",
+      "description": "Actuellement le tab title affiche `🟠 (4/4) Bassira` mais on n'expose pas les étapes 1/4, 2/4, 3/4 dans la phase de génération. Ajouter une timeline ou breadcrumb d'avancement dans le header de ReportView qui montre quelle étape est en cours (graph build, simulation, agents, report) avec dates de début/fin pour chaque. Quand le report est completed, afficher la timeline finale comme chronologie consultative.",
+      "acceptanceCriteria": [
+        "Composant ReportProgressTimeline.vue créé (4 steps : graph_build → simulation → agents → report)",
+        "Affiche état pending / in_progress / completed avec icône + couleur (--wi-* tokens)",
+        "Affiche durée + timestamp pour chaque étape complétée",
+        "Polling status backend toutes 5s tant que step in_progress (réutilise endpoint existant /api/simulation/<id>/status)",
+        "Pendant la génération : timeline visible en haut, contenu rapport masqué",
+        "Quand completed : timeline collapse (clickable pour ré-ouvrir) + contenu rapport prend toute la place",
+        "i18n FR/EN/AR pour les labels d'étapes"
+      ],
+      "passes": false,
+      "dependencies": ["US-109"],
+      "metadata": {
+        "estimated_hours": 3,
+        "priority": "P0",
+        "files_to_create": [
+          "frontend/src/components/ReportProgressTimeline.vue"
+        ],
+        "files_to_modify": [
+          "frontend/src/views/ReportView.vue",
+          "frontend/src/locales/{fr,en,ar}.json"
+        ]
+      }
+    },
+    {
+      "id": "US-111",
+      "chantier": "Q-report-rendering",
+      "title": "Chat avec le rapport (panneau latéral, intégration /api/report/chat)",
+      "description": "L'endpoint backend `/api/report/chat` existe déjà (cf. `frontend/src/api/report.js` ligne 50) mais n'est pas exposé dans ReportView. Intégrer comme panneau latéral droit (toggleable) qui permet de poser des questions au LLM avec le contexte du rapport. Historique de la conversation persisté dans localStorage par reportId. UX : input bottom + scroll history + indicator typing.",
+      "acceptanceCriteria": [
+        "Composant ReportChatPanel.vue créé (sliding panel à droite, 380px max)",
+        "Bouton toggle dans toolbar ReportView (icône chat-bubble)",
+        "Historique persisté dans localStorage clé `bassira:report:<id>:chat`",
+        "Input + bouton Send → POST /api/report/chat avec body {report_id, messages: [...], question}",
+        "Réponse streaming si supporté backend, sinon affichage final",
+        "Indicator 'L'IA réfléchit...' pendant pending",
+        "Bouton 'Effacer la conversation' avec confirmation",
+        "Responsive : sur mobile le panneau prend 100% (overlay)",
+        "i18n FR/EN/AR (chat.placeholder, chat.send, chat.thinking, etc.)"
+      ],
+      "passes": false,
+      "dependencies": ["US-109"],
+      "metadata": {
+        "estimated_hours": 4,
+        "priority": "P1",
+        "files_to_create": [
+          "frontend/src/components/ReportChatPanel.vue"
+        ],
+        "files_to_modify": [
+          "frontend/src/views/ReportView.vue",
+          "frontend/src/api/report.js",
+          "frontend/src/locales/{fr,en,ar}.json"
+        ]
+      }
+    },
+    {
+      "id": "US-112",
+      "chantier": "Q-report-rendering",
+      "title": "Onglet « Voir les agents » dans ReportView toolbar",
+      "description": "Step5Interaction / InteractionView existent (route `/interaction/:reportId`, US-077 + US-084) mais ne sont pas linkés depuis ReportView. Ajouter un bouton/onglet dans la toolbar de ReportView qui pointe vers `/interaction/:reportId`. Le user doit pouvoir naviguer fluide entre rapport et vue agents.",
+      "acceptanceCriteria": [
+        "Bouton 'Voir les agents' dans toolbar ReportView (icône users + label)",
+        "Click → router.push(`/interaction/${reportId}`)",
+        "Bouton stylé cohérent avec autres CTAs toolbar (PDF, MD, Chat)",
+        "Disabled si simulation_id absent (cas edge où le rapport n'a pas d'agents associés)",
+        "InteractionView a un bouton 'Retour au rapport' qui pointe vers `/report/:reportId`",
+        "i18n FR/EN/AR (report.viewAgents, interaction.backToReport)"
+      ],
+      "passes": false,
+      "dependencies": ["US-109"],
+      "metadata": {
+        "estimated_hours": 1,
+        "priority": "P1",
+        "files_to_modify": [
+          "frontend/src/views/ReportView.vue",
+          "frontend/src/views/InteractionView.vue",
+          "frontend/src/locales/{fr,en,ar}.json"
+        ]
+      }
+    },
+    {
+      "id": "US-113",
+      "chantier": "R-stripe-native",
+      "title": "Stripe Checkout API native (Payment Sessions + webhook)",
+      "description": "Remplacer le bridge manuel Stripe Payment Link (US-104) par l'API native : création de Payment Sessions via `stripe.checkout.sessions.create` avec metadata quote_id + email + amount. Webhook `checkout.session.completed` côté backend qui marque le quote en `paid` et envoie automatiquement l'email `quote_payment_confirmation.html` au client. Nécessite STRIPE_SECRET_KEY + STRIPE_WEBHOOK_SECRET dans Coolify. Story BLOQUÉE tant que Amine n'a pas créé le compte Stripe et fourni les clés.",
+      "acceptanceCriteria": [
+        "Module backend/app/services/stripe_service.py avec create_checkout_session(quote_id, amount, currency, customer_email)",
+        "Endpoint POST /api/admin/quotes/<id>/create-checkout-session (super-admin)",
+        "Webhook POST /api/stripe/webhook avec vérification signature stripe-signature",
+        "Sur checkout.session.completed : update sidecar status.json -> paid + email auto",
+        "Frontend AdminQuotesView : bouton 'Créer Stripe Checkout' (à la place du Payment Link manuel quand mode native dispo)",
+        "Tests pytest mocked pour webhook (signature valide + invalide)"
+      ],
+      "passes": false,
+      "blocked": true,
+      "blocked_reason": "Amine doit créer compte Stripe + poser STRIPE_SECRET_KEY + STRIPE_WEBHOOK_SECRET dans Coolify",
+      "dependencies": [],
+      "metadata": {
+        "estimated_hours": 4,
+        "priority": "P1"
+      }
+    },
+    {
+      "id": "US-114",
+      "chantier": "S-multitenant-extend",
+      "title": "Migration table quote_ownership Supabase (lier devis filesystem à org_id)",
+      "description": "Actuellement les devis sont stockés en filesystem (backend/uploads/quotes/quote_*.json + sidecar status). Pas de lien explicite avec une org. Créer migration SQL `quote_ownership` (quote_id text PK, org_id uuid FK, created_at timestamptz, customer_email text, package_id text). RLS strict : super-admin bypass, members voient ceux de leur org. Helper backend `link_quote_to_org(quote_id, org_id)` + script de migration des devis filesystem existants vers la table.",
+      "acceptanceCriteria": [
+        "Migration `supabase/migrations/20260505_001_quote_ownership.sql` idempotente",
+        "Table quote_ownership avec colonnes (quote_id, org_id, created_at, customer_email, package_id, status)",
+        "RLS policies : SELECT WHERE org_id IN user_orgs(), super-admin bypass",
+        "Helper backend `quote_ownership.py` avec link_quote / get_org_for_quote / list_quotes_for_org",
+        "Script migration filesystem → DB : `scripts/migrate_quotes_to_supabase.py` idempotent",
+        "Endpoint /api/admin/quotes étendu : super-admin voit tout, members voient leur org",
+        "Tests pytest pour helper + RLS"
+      ],
+      "passes": false,
+      "dependencies": ["US-091"],
+      "metadata": {
+        "estimated_hours": 3,
+        "priority": "P1",
+        "files_to_create": [
+          "supabase/migrations/20260505_001_quote_ownership.sql",
+          "backend/miroshark/quote_ownership.py",
+          "scripts/migrate_quotes_to_supabase.py",
+          "backend/tests/test_quote_ownership.py"
+        ]
+      }
+    },
+    {
+      "id": "US-115",
+      "chantier": "S-multitenant-extend",
+      "title": "Système d'invitation user → org (table org_invitations + magic link)",
+      "description": "Actuellement Amine valide manuellement chaque membership en SQL Editor. Ajouter un système d'invitation : super-admin OU org admin invite un email → row dans `org_invitations` (token unique, expires_at, role) + email magic link Resend. Au click, le user crée son compte (si nouveau) puis est ajouté au membership de l'org. UX admin : page `/admin/invitations` avec form + liste pending.",
+      "acceptanceCriteria": [
+        "Migration `supabase/migrations/20260505_002_org_invitations.sql` (token uuid, org_id, email, role enum, expires_at, accepted_at, invited_by)",
+        "Endpoint POST /api/admin/invitations (org admin OR super-admin) → crée row + envoie email Resend",
+        "Endpoint GET /api/invitations/<token>/accept (public) → vérifie expires + redirect /signup?invite=<token>",
+        "Au signup, si ?invite=<token> dans URL : link membership après auth.users insertion",
+        "Frontend AdminInvitationsView (route /admin/invitations) : form + liste pending + revoke",
+        "Email template `org_invitation.html` Resend (FR/EN/AR selon org locale)",
+        "Tests pytest endpoint invite + accept + expiration"
+      ],
+      "passes": false,
+      "dependencies": ["US-091", "US-114"],
+      "metadata": {
+        "estimated_hours": 5,
+        "priority": "P1",
+        "files_to_create": [
+          "supabase/migrations/20260505_002_org_invitations.sql",
+          "backend/miroshark/invitations.py",
+          "backend/templates/email/org_invitation.html",
+          "frontend/src/views/AdminInvitationsView.vue",
+          "backend/tests/test_invitations.py"
+        ]
+      }
+    },
+    {
+      "id": "US-116",
+      "chantier": "T-security-audit",
+      "title": "Audit sécurité OWASP post-multitenant",
+      "description": "Audit complet OWASP Top 10 sur le code backend Flask + Supabase post-multitenant : (1) RLS Supabase strict sur toutes les tables, (2) CORS allowed_origins étroit, (3) rate-limit endpoints client (login, signup, ask, calibration), (4) log audit JWT verifier + admin actions, (5) headers sécurité HTTP (CSP, X-Frame-Options, HSTS), (6) secrets jamais loggés, (7) input validation côté backend, (8) SSRF prevention sur fetch URLs (US-058), (9) XSS sur markdown render, (10) IDOR sur /api/report/<id> et /api/admin/*. Produire rapport markdown + corrections P0/P1 inline.",
+      "acceptanceCriteria": [
+        "docs/SECURITY_AUDIT_2026-05.md créé (rapport complet OWASP Top 10)",
+        "Pour chaque catégorie : statut (OK / À corriger P0 / À corriger P1) + preuve (extrait code)",
+        "Corrections P0 appliquées (RLS missing, CORS too wide, rate limit absent, etc.)",
+        "Corrections P1 listées dans next steps US futures",
+        "Headers sécurité ajoutés via Flask after_request (CSP nonce-based, X-Content-Type-Options, etc.)",
+        "Tests pytest pour rate limits + IDOR scenarios",
+        "Logs sensibles purgés (jamais access_token / SUPABASE_SERVICE_ROLE_KEY dans stdout)"
+      ],
+      "passes": false,
+      "dependencies": ["US-091", "US-092"],
+      "metadata": {
+        "estimated_hours": 4,
+        "priority": "P2",
+        "files_to_create": [
+          "docs/SECURITY_AUDIT_2026-05.md"
+        ]
+      }
+    },
+    {
+      "id": "US-117",
+      "chantier": "T-security-audit",
+      "title": "Tests Playwright nouvelles routes (multitenant)",
+      "description": "La suite Playwright existante (32 tests, US-010) ne couvre pas les routes ajoutées en US-091→108 : /console, /admin/quotes, /client/dashboard, /admin/organizations, /admin/simulations, /login (Google + Magic Link), /signup. Étendre la suite avec : (1) login flows (mock Supabase auth via localStorage seed), (2) redirect non-auth vers /login, (3) super-admin cross-tenant access, (4) self-service flag toggle, (5) i18n bascule sur nouvelles vues. Pas d'actions destructives.",
+      "acceptanceCriteria": [
+        "frontend/tests/e2e/auth-flows.spec.ts : test login redirect + signup flow + magic link form",
+        "frontend/tests/e2e/console.spec.ts : test redirect non-auth + render quand auth + self-service",
+        "frontend/tests/e2e/admin-quotes.spec.ts : test super-admin liste devis + filtres + status pill",
+        "frontend/tests/e2e/admin-organizations.spec.ts : test cross-tenant view super-admin",
+        "frontend/tests/e2e/client-dashboard.spec.ts : test render org info + bouton lancer simulation",
+        "Fixture `seedSuperAdminAuth(page)` dans tests/e2e/fixtures/auth.ts (localStorage stub)",
+        "Tests passent avec npx playwright test --reporter=list",
+        "Total tests Playwright : 32 → 50+"
+      ],
+      "passes": false,
+      "dependencies": ["US-091", "US-095"],
+      "metadata": {
+        "estimated_hours": 4,
+        "priority": "P2",
+        "files_to_create": [
+          "frontend/tests/e2e/auth-flows.spec.ts",
+          "frontend/tests/e2e/console.spec.ts",
+          "frontend/tests/e2e/admin-quotes.spec.ts",
+          "frontend/tests/e2e/admin-organizations.spec.ts",
+          "frontend/tests/e2e/client-dashboard.spec.ts",
+          "frontend/tests/e2e/fixtures/auth.ts"
+        ]
+      }
     }
   ]
 }
