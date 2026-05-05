@@ -764,3 +764,26 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
   - **Fuite cross-tenant** : un member tentant de lire un devis qui ne lui appartient pas reçoit 404 (et non 403) pour ne pas révéler l'existence d'un quote_id valide cross-org (DEFCON 1, OWASP A01).
   - **Test évolution sémantique** : quand un endpoint change de contrat (super-admin only → super-admin OR member), il faut adapter les tests existants en respectant la nouvelle sémantique tout en couvrant les cas limites (user sans org, user mauvaise org). Le test `test_list_normal_user_403` est resté à 403 mais sous la condition `NOT_A_MEMBER` au lieu de `NOT_SUPER_ADMIN`.
   - **MagicMock chain pour Supabase** : pour mocker `cli.table().select().eq().limit().execute()` etc., construire une chaîne explicite avec `.return_value` — un seul `MagicMock()` global ne supporte pas `select_chain.in_()` et `select_chain.eq()` simultanément avec data différente. Helper `_make_fake_supabase_for_ownership()` factorise cette construction pour les 32 tests US-114.
+
+### 2026-05-05 — US-115 Système d'invitation user → org
+- **Statut** : passes: true (worktree agent-a7fb2c3e, à merger sur main)
+- **Fichiers créés** :
+  - `supabase/migrations/20260505_002_org_invitations.sql` (table + 5 RLS policies)
+  - `backend/app/services/org_invitations.py` (5 helpers : create/get/list/revoke/redeem)
+  - `backend/app/api/invitations.py` (5 endpoints : POST/GET/DELETE admin + GET accept public + POST redeem)
+  - `backend/app/templates/emails/org_invitation.html` (template HTML brand Bassira)
+  - `backend/tests/test_unit_invitations.py` (46 tests)
+  - `frontend/src/views/AdminInvitationsView.vue` (form + liste pending + revoke)
+- **Fichiers modifiés** :
+  - `backend/app/__init__.py` (register admin_invitations_bp + invitations_bp)
+  - `frontend/src/api/client.js` (5 nouvelles méthodes API)
+  - `frontend/src/router/index.js` (route /admin/invitations)
+- **Quality gates** : pytest 956 passed (+46 nouveaux tests US-115), 17 skipped, zéro régression. Migration SQL idempotente (CREATE...IF NOT EXISTS + DROP POLICY IF EXISTS partout).
+- **Learnings** :
+  - **Token UUID natif Postgres** via `gen_random_uuid()` : ~122 bits d'entropie, suffisant contre l'énumération sans avoir à créer un module crypto Python dédié. Plus simple à débugger qu'un secret HMAC custom.
+  - **RLS policy public read avec auth.email()** : `lower(email) = lower(coalesce(auth.email(), ''))` permet à un user authentifié de voir SON invitation pending sans avoir à hacker un endpoint. Pattern réutilisable pour d'autres invitations (sims partagées, exports, etc.).
+  - **Endpoint `/accept` public** : le pattern « lecture metadata sans auth pour pré-remplir signup » est crucial UX-wise — sans ça, le destinataire qui clique sur le lien doit deviner pour quelle org il est invité avant de créer son compte. On expose `email`, `role`, `org_name`, `expires_at` ; pas plus.
+  - **EMAIL_MISMATCH au redeem** : sécurité multi-couches. Même si le token leakait via screenshot, l'auth.email() du JWT doit matcher l'invitation.email pour que la création de membership passe. Empêche l'usurpation de membership croisée.
+  - **Idempotence redeem org_members** : si la row `(org_id, user_id)` existe déjà (cas d'un user qui clique 2× sur le lien après être déjà membre), on log + on continue à marquer l'invitation consommée. Pas d'erreur user-facing.
+  - **MagicMock `or` falsy trap** : `delete_rows = delete_rows or [{"token": "deleted"}]` écrase aussi `[]` (falsy). Pour permettre au caller de passer une liste vide explicite, utiliser `if delete_rows is None:` à la place du `or`.
+  - **Layout du blueprint séparé** : un blueprint pour `/api/admin/invitations` (decorée `@require_auth` + branchement super-admin/org-admin) et un autre pour `/api/invitations/<token>` (mix public + auth). Évite la confusion des préfixes URL.
