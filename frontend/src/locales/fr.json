@@ -2365,6 +2365,67 @@
   "console": {
     "eyebrow": "Console privative · Self-service"
   },
+  "adminBranding": {
+    "title": "Branding PDF",
+    "subtitle": "Configurez le branding des rapports PDF par organisation.",
+    "loading": "Chargement des brandings…",
+    "empty": "Aucun branding configuré. Créez le premier.",
+    "newBranding": "Nouveau branding",
+    "active": "Actif",
+    "expired": "Expiré",
+    "preview": "Aperçu",
+    "previewLang": "Langue de l'aperçu",
+    "previewUpdating": "Mise à jour de l'aperçu…",
+    "previewError": "Erreur de génération de l'aperçu.",
+    "table": {
+      "name": "Nom",
+      "validFrom": "Actif depuis",
+      "validTo": "Expiré le",
+      "status": "Statut",
+      "actions": "Actions"
+    },
+    "form": {
+      "title": "Nouveau branding",
+      "editTitle": "Modifier le branding",
+      "name": "Nom de la configuration",
+      "namePlaceholder": "Ex : Rapport Standard MENA",
+      "logoUrl": "URL du logo",
+      "logoUrlPlaceholder": "https://cdn.exemple.com/logo.svg",
+      "section": "En-têtes et pieds de page",
+      "sectionHelp": "Placeholders autorisés : logo, section, page, total, report_id, client_name, date, org_name, generated_at — entourés de doubles accolades",
+      "headerLeft": "En-tête gauche",
+      "headerCenter": "En-tête centre",
+      "headerRight": "En-tête droite",
+      "footerLeft": "Pied de page gauche",
+      "footerCenter": "Pied de page centre",
+      "footerRight": "Pied de page droite",
+      "palette": "Palette de couleurs",
+      "palettePrimary": "Couleur primaire",
+      "paletteSecondary": "Couleur secondaire",
+      "paletteText": "Couleur du texte",
+      "paletteBackground": "Fond de page",
+      "typography": "Typographie",
+      "fontTitles": "Police des titres",
+      "fontBody": "Police du corps",
+      "fontMono": "Police monospace",
+      "disclaimerFr": "Disclaimer (FR)",
+      "disclaimerEn": "Disclaimer (EN)",
+      "disclaimerAr": "Disclaimer (AR)",
+      "submit": "Créer le branding",
+      "submitEdit": "Enregistrer les modifications",
+      "saving": "Enregistrement…",
+      "cancel": "Annuler"
+    },
+    "success": {
+      "created": "Branding créé avec succès.",
+      "updated": "Branding mis à jour avec succès."
+    },
+    "error": {
+      "load": "Erreur de chargement des brandings.",
+      "create": "Erreur lors de la création du branding.",
+      "update": "Erreur lors de la mise à jour."
+    }
+  },
   "adminQuotes": {
     "title": "Tous les devis reçus",
     "subtitle": "Console super-admin Bassira — pilotage du tunnel commercial.",

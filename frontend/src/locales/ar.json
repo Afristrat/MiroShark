@@ -2410,5 +2410,66 @@
       "noteFailed": "تعذّر حفظ الملاحظات.",
       "transitionFailed": "تم رفض تغيير الحالة."
     }
+  },
+  "adminBranding": {
+    "title": "العلامة التجارية للتقارير PDF",
+    "subtitle": "تكوين علامة التقارير PDF لكل منظمة.",
+    "loading": "جارٍ تحميل إعدادات العلامة التجارية…",
+    "empty": "لا توجد علامة تجارية محددة. أنشئ أولى الإعدادات.",
+    "newBranding": "علامة تجارية جديدة",
+    "active": "نشط",
+    "expired": "منتهي الصلاحية",
+    "preview": "معاينة",
+    "previewLang": "لغة المعاينة",
+    "previewUpdating": "جارٍ تحديث المعاينة…",
+    "previewError": "خطأ في إنشاء المعاينة.",
+    "table": {
+      "name": "الاسم",
+      "validFrom": "نشط منذ",
+      "validTo": "انتهى في",
+      "status": "الحالة",
+      "actions": "إجراءات"
+    },
+    "form": {
+      "title": "علامة تجارية جديدة",
+      "editTitle": "تعديل العلامة التجارية",
+      "name": "اسم الإعداد",
+      "namePlaceholder": "مثال: تقرير MENA القياسي",
+      "logoUrl": "رابط الشعار",
+      "logoUrlPlaceholder": "https://cdn.example.com/logo.svg",
+      "section": "الترويسات والتذييلات",
+      "sectionHelp": "العناصر النائبة المسموح بها: logo, section, page, total, report_id, client_name, date, org_name, generated_at — محاطة بأقواس مزدوجة",
+      "headerLeft": "الترويسة — يسار",
+      "headerCenter": "الترويسة — وسط",
+      "headerRight": "الترويسة — يمين",
+      "footerLeft": "التذييل — يسار",
+      "footerCenter": "التذييل — وسط",
+      "footerRight": "التذييل — يمين",
+      "palette": "لوحة الألوان",
+      "palettePrimary": "اللون الأساسي",
+      "paletteSecondary": "اللون الثانوي",
+      "paletteText": "لون النص",
+      "paletteBackground": "خلفية الصفحة",
+      "typography": "الخطوط",
+      "fontTitles": "خط العناوين",
+      "fontBody": "خط النص",
+      "fontMono": "الخط الأحادي المسافة",
+      "disclaimerFr": "إخلاء المسؤولية (FR)",
+      "disclaimerEn": "إخلاء المسؤولية (EN)",
+      "disclaimerAr": "إخلاء المسؤولية (AR)",
+      "submit": "إنشاء العلامة التجارية",
+      "submitEdit": "حفظ التعديلات",
+      "saving": "جارٍ الحفظ…",
+      "cancel": "إلغاء"
+    },
+    "success": {
+      "created": "تم إنشاء العلامة التجارية بنجاح.",
+      "updated": "تم تحديث العلامة التجارية بنجاح."
+    },
+    "error": {
+      "load": "خطأ في تحميل إعدادات العلامة التجارية.",
+      "create": "خطأ عند إنشاء العلامة التجارية.",
+      "update": "خطأ عند التحديث."
+    }
   }
 }

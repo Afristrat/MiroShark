@@ -143,6 +143,13 @@ def create_app(config_class=Config):
     from .api.invitations import admin_invitations_bp, invitations_bp
     app.register_blueprint(admin_invitations_bp, url_prefix='/api/admin/invitations')
     app.register_blueprint(invitations_bp, url_prefix='/api/invitations')
+
+    # admin_branding_bp — gestion du branding PDF par org (US-120).
+    #   /api/admin/branding          — GET / POST
+    #   /api/admin/branding/<id>     — PATCH
+    #   /api/admin/branding/<id>/preview — POST (aperçu SVG)
+    from .api.admin_branding import admin_branding_bp
+    app.register_blueprint(admin_branding_bp, url_prefix='/api/admin/branding')
     
     # Health check
     @app.route('/health')
