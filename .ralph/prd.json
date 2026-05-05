@@ -3668,7 +3668,7 @@
         "Test sur sim réelle : tous les sous-fields présents",
         "Tests unitaires : missing files, malformed JSON, edge cases vides"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-118"
       ],
@@ -3678,8 +3678,12 @@
         "files_to_create": [
           "backend/app/services/report_pdf/loader.py",
           "backend/tests/test_pdf_context_loader.py"
-        ]
-      }
+        ],
+        "merge_commit": "2992605",
+        "ralph_session": "2026-05-05",
+        "note": "Re-spawned after parallel attempt failed (schema/loader contract mismatch)"
+      },
+      "completedAt": "2026-05-05T22:50:00Z"
     },
     {
       "id": "US-120",
