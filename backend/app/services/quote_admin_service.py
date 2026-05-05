@@ -377,6 +377,18 @@ def update_quote_status(
         logger.error("Failed to write status sidecar %s: %s", sidecar, exc)
         return False, "WRITE_FAILED", None
 
+    # US-114 — miroir best-effort vers la table quote_ownership Supabase.
+    # Échec silencieux si Supabase n'est pas configuré ou si la ligne
+    # n'existe pas (devis pré-US-114 non encore migré).
+    try:
+        from .quote_ownership import update_quote_status_in_supabase
+        update_quote_status_in_supabase(quote_id, new_status)
+    except Exception as exc:  # noqa: BLE001 — best-effort by design
+        logger.debug(
+            "quote_ownership status mirror skipped for %s: %s",
+            quote_id, exc.__class__.__name__,
+        )
+
     return True, "OK", new_payload
 
 

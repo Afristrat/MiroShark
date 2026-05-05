@@ -523,16 +523,81 @@ def _send_client_confirmation(record: Dict[str, Any]) -> None:
         )
 
 
+def _link_quote_ownership_best_effort(
+    quote_id: str,
+    record: Dict[str, Any],
+    org_id: Optional[str],
+) -> None:
+    """Lien best-effort ``quote_id → org_id`` dans Supabase (US-114).
+
+    - Si ``org_id`` explicite fourni → on linke à celui-ci.
+    - Sinon → fallback vers l'org par défaut Bassira (``aimpower-bassira``).
+    - Si Supabase n'est pas configuré (dev local) → no-op silencieux,
+      le filesystem reste source de vérité.
+
+    Cette fonction ne lève jamais : les devis pré-US-114 ou les
+    déploiements sans Supabase doivent rester fonctionnels.
+    """
+    try:
+        from .quote_ownership import link_quote_to_org
+        from ..auth.supabase_client import (
+            SupabaseConfigError,
+            get_default_super_admin_org_id,
+        )
+
+        target_org_id = org_id
+        if not target_org_id:
+            try:
+                target_org_id = get_default_super_admin_org_id()
+            except SupabaseConfigError:
+                logger.info(
+                    "quote_ownership skipped for %s: Supabase not configured.",
+                    quote_id,
+                )
+                return
+            except Exception as exc:  # noqa: BLE001
+                logger.warning(
+                    "quote_ownership default-org lookup failed for %s: %s",
+                    quote_id, exc.__class__.__name__,
+                )
+                return
+        if not target_org_id:
+            logger.info(
+                "quote_ownership skipped for %s: no default org available.",
+                quote_id,
+            )
+            return
+
+        link_quote_to_org(
+            quote_id,
+            target_org_id,
+            customer_email=record.get("email") or None,
+            package_id=record.get("package") or None,
+            status="received",
+        )
+    except Exception as exc:  # noqa: BLE001 — best-effort by design
+        logger.warning(
+            "quote_ownership link failed for %s: %s",
+            quote_id, exc.__class__.__name__,
+        )
+
+
 def submit_quote(
     payload: Dict[str, Any],
     *,
     client_ip: Optional[str] = None,
     user_agent: Optional[str] = None,
+    org_id: Optional[str] = None,
 ) -> Tuple[int, Dict[str, Any]]:
     """Validate, persist, notify. Returns ``(status, response_dict)``.
 
     Wraps the whole pipeline so the Flask handler is a thin adapter
     (``return jsonify(body), status``).
+
+    US-114 : enregistre aussi un mapping ``quote_id → org_id`` dans
+    Supabase (table ``quote_ownership``), best-effort. Si ``org_id``
+    n'est pas fourni, on retombe sur l'org par défaut Bassira
+    (``aimpower-bassira``) — cohérent avec le mode super-admin US-099.
     """
     error_code, error_msg = _validate_payload(payload)
     if error_code is not None:
@@ -562,6 +627,9 @@ def submit_quote(
             "error_code": "STORAGE_ERROR",
             "error": "Could not persist the quote. Please retry.",
         }
+
+    # US-114 — lien Supabase best-effort (jamais bloquant).
+    _link_quote_ownership_best_effort(quote_id, record, org_id)
 
     # Best-effort emails — never block success.
     _send_email(record)            # internal sales notification (legacy)

@@ -266,13 +266,22 @@ class TestAdminQuotesEndpoints:
         resp = client.get("/api/admin/quotes")
         assert resp.status_code == 401
 
-    def test_list_normal_user_403(self, client, isolated_quotes_dir, whitelist_env, jwt_secret):
+    def test_list_normal_user_403(
+        self, client, isolated_quotes_dir, whitelist_env, jwt_secret, monkeypatch
+    ):
+        # US-114 — la sémantique a évolué : un user authentifié non super-admin
+        # peut accéder s'il appartient à au moins une org. Sans org → 403.
+        monkeypatch.setattr(
+            "app.api.quote.get_user_orgs",
+            lambda user_id: [],  # user sans org
+        )
         token = _make_token(jwt_secret, "user@somecorp.com")
         resp = client.get(
             "/api/admin/quotes",
             headers={"Authorization": f"Bearer {token}"},
         )
         assert resp.status_code == 403
+        assert resp.get_json()["error_code"] == "NOT_A_MEMBER"
 
     def test_list_super_admin_returns_quotes(
         self, client, isolated_quotes_dir, whitelist_env, jwt_secret, super_admin_email

@@ -751,3 +751,16 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
   - Pour respecter la rétrocompatibilité, les routes publiques (/, /models, /calibration, /offres, /devis, /landing, /partenaires, /explore) sont restées intactes ; seuls /login, /signup, /client/dashboard ont été ajoutés.
   - Tokens `--wi-*` exclusifs : zéro hex hardcodé dans les 3 nouvelles vues + RTL via CSS logical properties (margin-inline-*, padding-inline-*, inset-inline-end).
   - L'attribution org reste manuelle pour le MVP (cf. supabase/seed.sql) : le SignupView affiche un message d'attente d'invitation 24 h.
+
+### 2026-05-05 — US-114 Migration table quote_ownership Supabase
+- **Statut** : passes: true (worktree agent-a7fb2c3e, à merger sur main)
+- **Fichiers créés** : `supabase/migrations/20260505_001_quote_ownership.sql`, `backend/app/services/quote_ownership.py`, `backend/tests/test_unit_quote_ownership.py`, `scripts/migrate_quotes_to_supabase.py`
+- **Fichiers modifiés** : `backend/app/api/quote.py` (scoping super-admin vs member sur GET /api/admin/quotes + /<id>), `backend/app/services/quote_service.py` (lien Supabase best-effort dans submit_quote), `backend/app/services/quote_admin_service.py` (mirror status sidecar → Supabase), `backend/tests/test_unit_quote_admin.py` (test_list_normal_user_403 adapté à la nouvelle sémantique)
+- **Quality gates** : pytest 910 passed, 17 skipped (+32 nouveaux tests US-114), zéro régression. Migration SQL idempotente (IF NOT EXISTS + DROP POLICY IF EXISTS).
+- **Learnings** :
+  - **Pattern best-effort Supabase** : tous les liens `quote_ownership` (insert au submit, mirror au status update) sont enrobés d'un try/except large qui ne lève jamais. Le filesystem reste source de vérité ; Supabase est un index requêtable.
+  - **Idempotence INSERT** : la convention « duplicate key (23505) → log + return False, autres exceptions → propagate » permet aux scripts de migration de tourner N fois sans erreur tout en remontant les vraies pannes.
+  - **Scoping endpoint admin** : pour préserver le contrat existant super-admin tout en élargissant aux members, la meilleure approche est `@require_auth` + branchement interne sur `is_super_admin_email(email)`. Évite la duplication d'endpoint et garde une URL unique `/api/admin/quotes`.
+  - **Fuite cross-tenant** : un member tentant de lire un devis qui ne lui appartient pas reçoit 404 (et non 403) pour ne pas révéler l'existence d'un quote_id valide cross-org (DEFCON 1, OWASP A01).
+  - **Test évolution sémantique** : quand un endpoint change de contrat (super-admin only → super-admin OR member), il faut adapter les tests existants en respectant la nouvelle sémantique tout en couvrant les cas limites (user sans org, user mauvaise org). Le test `test_list_normal_user_403` est resté à 403 mais sous la condition `NOT_A_MEMBER` au lieu de `NOT_SUPER_ADMIN`.
+  - **MagicMock chain pour Supabase** : pour mocker `cli.table().select().eq().limit().execute()` etc., construire une chaîne explicite avec `.return_value` — un seul `MagicMock()` global ne supporte pas `select_chain.in_()` et `select_chain.eq()` simultanément avec data différente. Helper `_make_fake_supabase_for_ownership()` factorise cette construction pour les 32 tests US-114.
