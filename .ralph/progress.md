@@ -929,3 +929,32 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 - **SVG preview** : alternative légère à WeasyPrint/pdf2image pour les aperçus de branding. Génère un SVG A4 (595×842) avec header + zone contenu + footer. Les placeholders `{{...}}` sont résolus avec des valeurs d'exemple. Retourné en base64 pour une img `src=data:image/svg+xml;base64,...`. Zéro dépendance système supplémentaire.
 - **RLS DELETE restrictif** : pour les ressources de configuration (branding), `DELETE` uniquement via `service_role` (RLS bypass) — pas de policy publique. La policy `using (false)` bloque tout accès JWT. Le super-admin passe par `service_role` directement depuis le backend Flask.
 - **Debounce preview 1s** : déclencher l'aperçu live sur chaque keystroke casse l'UX (trop d'appels). 1 seconde de debounce après `@input` est le bon compromis. L'aperçu se met à jour automatiquement après la pause de frappe.
+
+### 2026-05-05 — US-119 — Loader complet (charge tous les artifacts simulation + report)
+
+- **Statut** : passes:true — tous les quality gates backend OK.
+- **Branch** : worktree-agent-a2c116f3
+
+#### Fichiers créés
+- `backend/app/services/report_pdf/loader.py` — `PDFContextLoader.load()` + `PDFContextLoaderError`
+- `backend/tests/test_pdf_context_loader.py` — 55 tests (54 passent + 1 skip real-sim)
+- `backend/tests/fixtures/sim_aabbcc112233/` — 9 fichiers de fixtures simulation
+- `backend/tests/fixtures/report_a1b2c3d4e5f6/` — 4 fichiers de fixtures report
+
+#### Fichiers modifiés
+- `backend/app/services/report_pdf/__init__.py` — export `PDFContextLoader` + `PDFContextLoaderError`
+
+#### Quality gates
+- `pytest tests/test_pdf_context_loader.py` : **55 passed, 1 skipped (real sim absent)**
+- `pytest tests/test_pdf_context_schema.py` (US-118 no regression) : **52/52 passed**
+- `pytest tests/` : **1136/1136 passed, 18 skipped, 0 régression**
+
+#### Learnings
+- **Fixtures nommées avec l'ID** : pour que `PDFContextLoader.load(simulation_id=X, sim_base_dir=fixtures/)` trouve `fixtures/X/`, les dossiers de fixtures doivent être nommés avec l'ID exact (`sim_aabbcc112233/`), pas un nom générique (`sim_test/`). Erreur classique découverte au premier run.
+- **`extra="ignore"` côté loader** : grâce à la config Pydantic sur tous les sub-models, le loader peut passer le dict brut via `model_validate()` sans filtrer les champs. Les clés inconnues (ex. `"summary"` dans outcome) sont silencieusement ignorées.
+- **Chemin indépendant de Flask** : calculer `_SIMULATIONS_DIR` et `_REPORTS_DIR` depuis `__file__` (sans importer `Config`) rend le loader testable hors contexte Flask et évite les imports circulaires.
+- **Fallback chain profiles** : le fallback `agent_profiles → reddit → twitter CSV → polymarket` doit court-circuiter dès qu'une source retourne une liste non-vide. Un fichier JSON vide (`[]`) doit déclencher le fallback suivant (pas seulement `None`).
+- **counterfactual_injection.json** : peut être un objet unique (dict) ou une liste. Le parser doit gérer les deux cas et retourner toujours `List[Counterfactual]`.
+- **events.jsonl → DirectorEvent** : les événements bruts JSONL sont mappés en `DirectorEvent` (champs `round`, `event_type`, `description`, `impact`). Les champs manquants sont comblés par les defaults Pydantic.
+- **Paramètres override** `sim_base_dir` / `rep_base_dir` : indispensables pour les tests afin de pointer vers les fixtures sans toucher aux répertoires de production.
+- **Merge main avant US** : cette worktree avait 6 commits de retard sur main (US-118, US-120 mergés entre-temps). Un `git merge main --no-edit` fast-forward a résolu le problème avant de démarrer US-119.

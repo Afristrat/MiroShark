@@ -1,0 +1,8 @@
+{
+  "title": "Simulation test — réforme fiscale",
+  "package": "crisis-drill-24h",
+  "framework": "cerberus",
+  "lang": "fr",
+  "sources": ["Source A", "Source B"],
+  "params": {"rounds": 5, "agents_count": 10}
+}

@@ -1,0 +1,10 @@
+[
+  {
+    "name": "u/redditor_alpha",
+    "archetype": "Challenger",
+    "biais": ["confirmation_bias"],
+    "stance": "bullish",
+    "platform": "reddit",
+    "description": "Utilisateur Reddit bullish."
+  }
+]

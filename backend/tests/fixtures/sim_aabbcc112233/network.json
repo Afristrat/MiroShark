@@ -1,0 +1,9 @@
+{
+  "nodes": [
+    {"id": "agent_001", "name": "Agent Alpha", "group": "bullish", "weight": 1.5},
+    {"id": "agent_002", "name": "Agent Beta", "group": "bearish", "weight": 1.0}
+  ],
+  "edges": [
+    {"source": "agent_001", "target": "agent_002", "weight": 0.8, "sentiment": "negative"}
+  ]
+}

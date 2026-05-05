@@ -1,0 +1,18 @@
+[
+  {
+    "name": "Agent Alpha",
+    "archetype": "Challenger",
+    "biais": ["confirmation_bias", "anchoring"],
+    "stance": "bullish",
+    "platform": "twitter",
+    "description": "Un agent challenger optimiste."
+  },
+  {
+    "name": "Agent Beta",
+    "archetype": "Sceptique",
+    "biais": ["status_quo_bias"],
+    "stance": "bearish",
+    "platform": "reddit",
+    "description": "Un agent sceptique prudent."
+  }
+]

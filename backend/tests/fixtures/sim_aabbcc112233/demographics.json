@@ -1,0 +1,8 @@
+{
+  "segments": [
+    {"label": "18-24 ans", "count": 3, "pct": 30.0, "dimension": "age"},
+    {"label": "25-34 ans", "count": 5, "pct": 50.0, "dimension": "age"},
+    {"label": "35+ ans", "count": 2, "pct": 20.0, "dimension": "age"}
+  ],
+  "total": 10
+}
