@@ -479,7 +479,36 @@
   },
   "report": {
     "exportPdf": "Download PDF report (10 sections, disclaimer, graph)",
-    "exportMd": "Download Markdown report (Notion / Obsidian)"
+    "exportMd": "Download Markdown report (Notion / Obsidian)",
+    "progress": {
+      "title": "Progress",
+      "step": "Step",
+      "of": "of",
+      "status": {
+        "pending": "Pending",
+        "inProgress": "In progress",
+        "done": "Completed",
+        "error": "Failed"
+      },
+      "stages": {
+        "graphBuild": {
+          "title": "Graph build",
+          "subtitle": "Extracting entities and relations from your documents"
+        },
+        "simulation": {
+          "title": "Multi-agent simulation",
+          "subtitle": "Autonomous personas, conversation rounds, belief drift"
+        },
+        "agents": {
+          "title": "Agent synthesis",
+          "subtitle": "Methodological audit and network interactions"
+        },
+        "report": {
+          "title": "Final report",
+          "subtitle": "Executive analysis, drafted sections and recommendations"
+        }
+      }
+    }
   },
   "process": {
     "common": {

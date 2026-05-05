@@ -479,7 +479,36 @@
   },
   "report": {
     "exportPdf": "تحميل تقرير PDF (10 أقسام، تنبيه قانوني، رسم بياني)",
-    "exportMd": "تحميل تقرير Markdown (Notion / Obsidian)"
+    "exportMd": "تحميل تقرير Markdown (Notion / Obsidian)",
+    "progress": {
+      "title": "التقدّم",
+      "step": "خطوة",
+      "of": "من",
+      "status": {
+        "pending": "قيد الانتظار",
+        "inProgress": "قيد التنفيذ",
+        "done": "مكتمل",
+        "error": "فشل"
+      },
+      "stages": {
+        "graphBuild": {
+          "title": "بناء المخطّط",
+          "subtitle": "استخراج الكيانات والعلاقات من مستنداتك"
+        },
+        "simulation": {
+          "title": "محاكاة متعدّدة الوكلاء",
+          "subtitle": "شخصيات مستقلّة وجولات حوار وانزياح في القناعات"
+        },
+        "agents": {
+          "title": "تركيب الوكلاء",
+          "subtitle": "تدقيق منهجي وتفاعلات الشبكة"
+        },
+        "report": {
+          "title": "التقرير النهائي",
+          "subtitle": "تحليل تنفيذي، أقسام مكتوبة وتوصيات"
+        }
+      }
+    }
   },
   "process": {
     "common": {

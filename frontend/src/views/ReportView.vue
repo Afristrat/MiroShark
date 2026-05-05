@@ -38,6 +38,9 @@
     <main class="report-main">
       <!-- Magazine canvas (1000px max-width) — used in Report mode -->
       <article v-if="viewMode === 'workbench'" class="report-magazine">
+        <!-- Progress timeline (US-110) — 4 stages with auto-refresh -->
+        <ReportProgressTimeline :stages="progressStages" />
+
         <!-- Title Section -->
         <section class="magazine-card magazine-title">
           <div class="magazine-title-block">
@@ -123,6 +126,7 @@ import { useRoute, useRouter } from 'vue-router'
 import GraphPanel from '../components/GraphPanel.vue'
 import NetworkPanel from '../components/NetworkPanel.vue'
 import Step4Report from '../components/Step4Report.vue'
+import ReportProgressTimeline from '../components/ReportProgressTimeline.vue'
 import { getProject, getGraphData } from '../api/graph'
 import { getSimulation } from '../api/simulation'
 import { getReport } from '../api/report'
@@ -245,6 +249,118 @@ const statusText = computed(() => {
   return 'Generating'
 })
 
+// ─────────────────────────────────────────────────────────────────────
+// US-110 — Progress timeline (4 stages : graph_build → simulation → agents
+// → report). Stage status is computed from the data we already load
+// (reportMeta + simulationData + projectData). The timeline auto-refreshes
+// every 5s while at least one stage is still in progress.
+// ─────────────────────────────────────────────────────────────────────
+const progressStages = computed(() => {
+  const reportStatus = reportMeta.value?.status
+  const simStatus = simulationData.value?.status
+  const runnerStatus = simulationData.value?.runner_status
+  const completedAt = simulationData.value?.completed_at
+  const graphReady = !!(projectData.value?.graph_id || simulationData.value?.graph_id)
+
+  // Stage 1 — graph build : done as soon as a graph_id exists.
+  const graphStage = graphReady ? 'done' : 'pending'
+
+  // Stage 2 — simulation : done when runner says completed or completed_at
+  // is set on the simulation; in_progress when runner is running/preparing;
+  // pending otherwise. Failed → error.
+  let simStage = 'pending'
+  if (runnerStatus === 'completed' || completedAt) {
+    simStage = 'done'
+  } else if (
+    runnerStatus === 'running' ||
+    runnerStatus === 'preparing' ||
+    simStatus === 'running' ||
+    simStatus === 'preparing'
+  ) {
+    simStage = 'in_progress'
+  } else if (runnerStatus === 'failed' || simStatus === 'failed') {
+    simStage = 'error'
+  } else if (graphReady) {
+    simStage = 'pending'
+  }
+
+  // Stage 3 — agent synthesis : we treat the agent step as "done" once the
+  // simulation is complete (the interaction view + audit are derivative of
+  // the simulation runner's output). When the simulation is still running,
+  // this stage is pending. If the report is being generated while the
+  // simulation has just completed, this stage is "in_progress" until the
+  // report planner kicks in.
+  let agentStage = 'pending'
+  if (simStage === 'done' && (reportStatus === 'planning' || reportStatus === 'pending')) {
+    agentStage = 'in_progress'
+  } else if (simStage === 'done') {
+    agentStage = 'done'
+  } else if (simStage === 'error') {
+    agentStage = 'error'
+  }
+
+  // Stage 4 — final report : driven directly by reportMeta.status.
+  let reportStage = 'pending'
+  if (reportStatus === 'completed') reportStage = 'done'
+  else if (reportStatus === 'failed') reportStage = 'error'
+  else if (reportStatus === 'planning' || reportStatus === 'generating') reportStage = 'in_progress'
+
+  return [
+    { id: 'graphBuild', status: graphStage },
+    { id: 'simulation', status: simStage },
+    { id: 'agents', status: agentStage },
+    { id: 'report', status: reportStage }
+  ]
+})
+
+const allStagesDone = computed(() =>
+  progressStages.value.every((s) => s.status === 'done')
+)
+
+// Polling — refresh report + simulation every 5s while progression is
+// not finished. We never poll once everything is done (avoid wasted
+// network on a static document).
+let progressTimer = null
+
+const refreshProgress = async () => {
+  if (!currentReportId.value) return
+  try {
+    const reportRes = await getReport(currentReportId.value)
+    if (reportRes.success && reportRes.data) {
+      reportMeta.value = reportRes.data
+      if (reportRes.data.status === 'completed') currentStatus.value = 'completed'
+      if (reportRes.data.status === 'failed') currentStatus.value = 'error'
+      if (reportRes.data.simulation_id) {
+        simulationId.value = reportRes.data.simulation_id
+        const simRes = await getSimulation(reportRes.data.simulation_id)
+        if (simRes.success && simRes.data) {
+          simulationData.value = simRes.data
+        }
+      }
+    }
+  } catch (err) {
+    addLog(`Progress refresh error: ${err.message}`)
+  }
+}
+
+const startProgressPolling = () => {
+  if (progressTimer) return
+  progressTimer = setInterval(() => {
+    if (allStagesDone.value) {
+      stopProgressPolling()
+      return
+    }
+    refreshProgress()
+  }, 5000)
+}
+
+const stopProgressPolling = () => {
+  if (progressTimer) {
+    clearInterval(progressTimer)
+    progressTimer = null
+  }
+}
+
 // --- Helpers ---
 const addLog = (msg) => {
   const now = new Date()
@@ -364,11 +480,23 @@ watchEffect(() => {
 
 onUnmounted(() => {
   document.title = 'Bassira'
+  stopProgressPolling()
 })
 
 onMounted(() => {
   addLog('ReportView initialized')
-  loadReportData()
+  loadReportData().then(() => {
+    if (!allStagesDone.value) {
+      startProgressPolling()
+    }
+  })
+})
+
+// React to status transitions: stop the polling as soon as we've reached
+// "all done" so we don't waste network on a static document.
+watch(allStagesDone, (done) => {
+  if (done) stopProgressPolling()
+  else if (!progressTimer && currentReportId.value) startProgressPolling()
 })
 </script>
 
