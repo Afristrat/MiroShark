@@ -511,7 +511,10 @@
     },
     "actions": {
       "openChat": "Discuter avec le rapport",
-      "closeChat": "Fermer le chat"
+      "closeChat": "Fermer le chat",
+      "viewAgents": "Voir les agents",
+      "viewAgentsAria": "Ouvrir la vue des agents (audit méthodologique)",
+      "backToReport": "Retour au rapport"
     },
     "chat": {
       "title": "Chat avec le rapport",

@@ -30,6 +30,21 @@
           <button
             type="button"
             class="toolbar-action-btn"
+            :title="$t('report.actions.viewAgentsAria')"
+            :aria-label="$t('report.actions.viewAgentsAria')"
+            @click="goToAgentsView"
+          >
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <span class="toolbar-action-label">{{ $t('report.actions.viewAgents') }}</span>
+          </button>
+
+          <button
+            type="button"
+            class="toolbar-action-btn"
             :class="{ 'is-active': chatOpen }"
             :title="chatOpen ? $t('report.actions.closeChat') : $t('report.actions.openChat')"
             :aria-label="chatOpen ? $t('report.actions.closeChat') : $t('report.actions.openChat')"
@@ -393,6 +408,16 @@ const toggleChat = () => {
 }
 const closeChat = () => {
   chatOpen.value = false
+}
+
+// US-112 — Quick navigation to the agents view (interaction audit +
+// sandbox). The InteractionView is already wired to the route name
+// 'Interaction' with :reportId. The reciprocal back button lives in
+// InteractionView.
+const goToAgentsView = () => {
+  if (currentReportId.value) {
+    router.push({ name: 'Interaction', params: { reportId: currentReportId.value } })
+  }
 }
 
 // --- Helpers ---

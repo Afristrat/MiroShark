@@ -511,7 +511,10 @@
     },
     "actions": {
       "openChat": "Chat with report",
-      "closeChat": "Close chat"
+      "closeChat": "Close chat",
+      "viewAgents": "View agents",
+      "viewAgentsAria": "Open the agents view (methodological audit)",
+      "backToReport": "Back to report"
     },
     "chat": {
       "title": "Chat with the report",

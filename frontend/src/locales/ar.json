@@ -511,7 +511,10 @@
     },
     "actions": {
       "openChat": "حوار مع التقرير",
-      "closeChat": "إغلاق الحوار"
+      "closeChat": "إغلاق الحوار",
+      "viewAgents": "عرض الوكلاء",
+      "viewAgentsAria": "افتح عرض الوكلاء (تدقيق منهجي)",
+      "backToReport": "العودة إلى التقرير"
     },
     "chat": {
       "title": "حوار مع التقرير",
