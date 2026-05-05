@@ -3738,7 +3738,7 @@
         "Tests pytest 30+ cas par langue (avant/après normalisation, edge cases)",
         "CI hook pre-commit qui lint tous les .md.j2 et fail si typo cassée"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [],
       "metadata": {
         "estimated_hours": 6,
@@ -3754,8 +3754,11 @@
           "backend/tests/test_text_normalizer_ar.py",
           "docker-compose.languagetool.yml",
           ".pre-commit-hooks/check_typography.py"
-        ]
-      }
+        ],
+        "merge_commit": "7c1b277",
+        "ralph_session": "2026-05-05"
+      },
+      "completedAt": "2026-05-05T23:30:00Z"
     },
     {
       "id": "US-122",
