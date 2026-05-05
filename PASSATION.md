@@ -1,3 +1,152 @@
+== PASSATION MiroShark/Bassira 2026-05-04T23:50:00+01:00 ==
+
+[ETAT]
+- branche `main` `266ef0f` à jour avec `origin/main` (push confirmé, 13 commits cette session)
+- prod **ONLINE** sur https://prospectives.ai-mpower.com — bundle frontend `index-CtrTJkxa.js` à jour, backend US-091→US-108 + fix report en prod
+- **108/108 stories Ralph passes:true** — 22 nouvelles stories cette session (US-086 → US-108 + fixes)
+- **878 tests backend pytest passing** (+87 cette session vs 791 baseline) · zéro régression
+- npm run build : OK
+- **9 sub-agents pilotés** : Explore + 4 Ralph-loop autonomes + 4 sub-agents pour fixes ciblés
+- **Multitenant Supabase pleinement opérationnel** : auth ECC P-256 via JWKS, super-admin via env var whitelist, RLS strict, k-anonymity calibration, 4 vars env Coolify (SUPABASE_URL + ANON + SERVICE_ROLE + DB_URL — JWT_SECRET supprimé car ECC)
+
+[FAIT cette session — 22 stories Ralph + 5 fixes critiques]
+
+**Chantier J — Vitrine /models publique (US-086 → US-090)** :
+✓ **US-086** : ModelsListView + ModelDetailView, 5 modèles initiaux (fusion-bancaire-mena, crisis-drill-24h, allocation-fonds-strategique, stress-test-politique, lancement-diaspora-eu). JSONs FR/EN/AR exhaustifs, tokens --wi-*, RTL CSS logical properties. ~80 clés i18n.
+✓ **US-087** : Home masquage CTAs self-service + nav Modèles featured + SectorUseCases double CTA (relink → /models?sector= + /devis?sector=).
+✓ **US-088** : Backend `GET /api/models/<slug>/pdf-brief?lang=` (reportlab + Jinja2, brandé qualité cabinet, A4 4-6 pages). Script `generate_demo_pdfs.py` produit 18×3=54 PDFs. arabic-reshaper + python-bidi pour RTL Tahoma.
+✓ **US-089** : DEFCON 1 — purge 4 claims faux vérifiés WebSearch (Khalid Bouaza inventé, BAM circulaire 26/G/2006 mauvais sujet, BMCI-BNP fusion fictive, INSEE 6.8M faux) + 6 jaunes. Script Python pour MAJ batch.
+✓ **US-090** : Productivisation 13 templates restants (adcheck-pre-launch, budget-loi-finances, campus-controversy, implantation-startup, corporate-crisis, crypto-launch, historical-whatif, pmf-startup-tech, political-debate, primaires-parti-politique, product-announcement, product-launch, she-start-cohort). Total vitrine = **18 modèles**. Frontend refactoré en `import.meta.glob` pour découverte dynamique.
+
+**Chantier K — Multitenant Supabase (US-091 → US-100)** :
+✓ **US-091** : Schema Supabase Cloud (orgs + members + simulation_ownership + RLS strict + helper user_orgs() security definer + VIEW publique k-anonymity n>=5). Seed.sql org AIMPOWER (slug aimpower-bassira). 2 migrations 20260503_001/002 + README étape par étape.
+✓ **US-092** : Backend Flask middleware JWT Supabase + extension SimulationManager pour ownership. Cache LRU TTL 5 min, dual-mode (HS256 legacy + ES256/RS256/EdDSA via JWKS asymétrique). 5 endpoints /api/client/auth/me + simulations CRUD + /api/calibration/aggregates public.
+✓ **US-093** : Frontend Vue auth Supabase (LoginView Google/Magic Link, SignupView, ClientDashboardView privatif). Pinia store auth. Route guards meta.requiresAuth.
+✓ **US-094** : AppHeader.vue **partagé global** sur les 17 routes (extrait des nav locales Home/Landing). Sticky top, backdrop blur, ThemeSwitcher + LanguageSwitcher intégrés à droite. Bouton « Relancer la visite guidée ».
+✓ **US-095** : Super-admin via env var `BASSIRA_SUPER_ADMIN_EMAILS` (whitelist emails, lue à chaque request pour rotation live). 3 endpoints /api/admin/me/super-status + /api/admin/organizations + /api/admin/organizations/<id>. AnalyticsView étendu.
+✓ **US-096** : Login Google OAuth + Magic Link via signInWithOtp(shouldCreateUser:false). Fix critique : `auth.init()` attend SIGNED_IN si URL contient `#access_token=` (sinon router beforeEach redirigeait vers /login alors que Supabase JS écrivait la session depuis le hash).
+✓ **US-097** : Super-admin voit TOUTES les sims cross-tenant. Endpoint `GET /api/admin/simulations` (org_id, package_id, published, limit/offset). Section AnalyticsView avec tableau filtrable.
+✓ **US-098** : Toggle org-level `self_service_enabled` (boolean default false). Migration `20260504_001_org_self_service.sql`. Décorateur `@require_self_service_enabled` (super-admin bypass). Helper `is_org_self_service_enabled`.
+✓ **US-099** : Super-admin lance ses propres sims directement (toujours autorisé, bypass self_service flag). AppHeader bouton « + Lancer une simulation » (super-admin OR org self-service ON).
+✓ **US-100** : Retrait `BASSIRA_ADMIN_TOKEN` legacy → tout sur JWT + email whitelist. Décorateur `require_admin_token` refactor dual-auth (accepte JWT super-admin OU legacy token pendant transition).
+
+**Chantier L — Workflow devis + console privative + branding (US-101 → US-108)** :
+✓ **US-101** : Migration SQL idempotente rétro-attribution sims filesystem → org aimpower-bassira. Script `check_legacy_sims_attribution.py --sql` (lit simulation_config.json + outcome.json + mtime). Amine a joué la migration en prod (5 sims attribuées).
+✓ **US-102** : Vue `/admin/quotes` super-admin (lecture filesystem JSON). 6 endpoints `/api/admin/quotes/*`. Modal détail + workflow statut + zone Stripe Payment Link.
+✓ **US-103** : Workflow statut quotes (sidecar `*.status.json`). Transitions strictes : received → reviewing → quoted → declined → paid → in_progress → delivered. Color coding pill + timeline historique.
+✓ **US-104** : Bridge manuel Stripe Payment Link + email Resend automatique. Service `email_service.py` Resend → SMTP fallback. 3 templates HTML (`quote_received`, `quote_payment_link`, `quote_delivered`). Endpoint `POST /api/admin/quotes/<id>/send-payment-link`.
+✓ **US-107** : Refactor — console upload **sortie de Home.vue** (274 lignes supprimées du DOM) → vue privative `/console`. Composant `ConsoleView.vue` avec upload + URL fetch + TrendingTopics + ScenarioSuggestions + prompt + bouton Lancer + TemplateGallery + HistoryDatabase. Route guard `meta.requiresAuth + requiresSelfService` (super-admin OR org self-service ON).
+✓ **US-108** : Branding fix — `index.html` (titre/lang/og:tags), `manifest.json` (PWA name/short_name/description), `sw.js` (service worker), favicon SVG neutre lettre arabe « ب » sur fond Causse cream. Plus de référence MiroShark/Forecasting MENA en user-facing. Backend Python namespace `miroshark.*` conservé (interne).
+
+**Fixes critiques cette session** :
+✓ Fix `e744acb` US-093 path : `/api/auth/me` → `/api/client/auth/me` (mismatch frontend/backend)
+✓ Fix `e106a60` US-093 #2 : second appel `fetch('/api/auth/me')` non corrigé dans `stores/auth.js` (sub-agent l'avait écrit en parallèle de api/client.js, mon fix précédent ne couvrait que ce dernier)
+✓ Fix `dfbf5b8` US-092 ECC : refactor JWT verifier pour supporter les nouvelles JWT Signing Keys ECC P-256 de Supabase 2026 (legacy HS256 secret n'est plus exposé pour les nouveaux projets)
+✓ Fix CIH × Barid Al-Maghrib `5f5de2e` : purge claim factuel résiduel oublié dans US-089
+✓ Fix `266ef0f` US-097 : `GET /api/report/<id>` accepte un simulation_id en fallback (pour route `/report/:id` historique qui accepte les deux formats)
+
+[VALIDÉ EN PROD — 4 mai 2026]
+- `/api/client/auth/me` : 200 avec profil multitenant complet
+- `/api/admin/me/super-status` : 200 (medamine.mansouriidrissi@gmail.com whitelist)
+- `/api/admin/organizations` : 200 (cross-tenant, super-admin)
+- `/api/admin/quotes` : 200 (5 devis listés)
+- `/api/admin/simulations` : 200 (5 sims cross-tenant après rétro-attribution US-101)
+- `/api/calibration/aggregates` : 200 (public, fail-soft si Supabase pas configuré)
+- `/api/report/sim_xxx` : 200 (fix `266ef0f` déployé, fallback simulation_id OK)
+- `/console` route : routing OK, redirige vers /login si non auth
+- `/admin/quotes` route : routing OK, accessible super-admin
+
+[BLOQUÉ — actions humaines pendantes]
+- !! **ROTATION DE 3 SECRETS LEAKÉS** dans le chat de cette session (réflexe DEFCON 1) :
+  1. `SUPABASE_SERVICE_ROLE_KEY` — Settings → API → Reset service role key
+  2. Password DB Supabase — Settings → Database → Reset database password (puis recompose `SUPABASE_DB_URL` dans Coolify)
+  3. JWT access_token de la session Google active : Authentication → Users → toi → Log out user (forcera re-login)
+- **Configuration Stripe** pour vraie intégration Checkout API (US-105 future) : créer compte stripe.com, poser `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` dans Coolify
+- **Bug ReportView frontend rendering** (priorité haute prochaine session) : voir [PARTIEL] ci-dessous
+
+[ALERTE]
+!! **Build Coolify avec Force deploy without cache** PEUT CRASHER (re-pull des deps Python lourdes : torch 506 MB + nvidia-cuda 1.5 GB cumulés). 1 fois confirmé pendant la session (« Gracefully shutting down build container »). Toujours préférer **Redeploy simple** (rolling update qui réutilise les layers Docker cachés). Force only en cas de cache Docker pourri qui sert un dist obsolète.
+!! **Coolify Save Environment Variables** via le formulaire « New Environment Variable » individuel **ne persiste PAS toujours** (vu 2× pendant la session). Préférer le mode **Developer view** qui ouvre un textarea avec toutes les vars en format dotenv + bouton « Save All Environment Variables » — ce mode est fiable.
+!! **JWT Supabase 2026 = ECC P-256 par défaut** (asymétrique, JWKS). Le mode HS256 `SUPABASE_JWT_SECRET` n'est plus exposé pour les nouveaux projets — code backend (`jwt_verifier.py`) gère les deux modes via détection auto du header `alg`. Si Amine crée d'autres projets Supabase, le code marchera direct sans config supplémentaire.
+!! **Mismatch Coolify `--build-arg` listing vs vars persistées** : si tu vois dans les logs build « Added 24 ARG declarations » mais qu'une var attendue manque, c'est qu'elle n'est pas marquée build-time. Pour les vars runtime-only (cas typique), elles sont injectées via `--env-file` au container, pas via build-arg.
+
+[PARTIEL]
+
+### Bug ReportView frontend rendering (priorité maximum nouvelle session)
+- ✅ Backend `/api/report/<id>` retourne le report complet (status=completed, markdown_content 17 702 chars, outline avec sections/summary/title)
+- ❌ Frontend ReportView affiche « Chargement du rapport… » indéfiniment, titre « Unnamed Project » (au lieu du vrai titre du report), tab title `🟠 (4/4) Bassira` mais contenu vide
+- Probable mismatch entre le format de réponse backend et ce que ReportView/Step4Report consomme
+- À investiguer : `frontend/src/views/ReportView.vue` lignes 256-288 (loadReportData) + composant Step4Report. Vérifier si `reportRes.data.outline` est bien parsé, si `markdown_content` est bien rendu, si `simulation_data.title` ou similaire est bien lu
+
+### 3 fonctionnalités demandées par Amine non encore exposées dans ReportView
+1. **Avancement progressif** : titre tab `(4/4)` n'expose pas les étapes 1/4, 2/4, 3/4. À ajouter une timeline ou breadcrumb d'avancement dans la phase de génération
+2. **Chat avec le rapport** : `/api/report/chat` existe côté backend (cf. `frontend/src/api/report.js` ligne 50) mais pas exposé dans ReportView. À intégrer comme panneau lateral
+3. **Vue agents** : `Step5Interaction` / `InteractionView` existent (route `/interaction/:reportId`, US-077 + US-084) mais pas linkée depuis ReportView. À ajouter un onglet ou bouton « Voir les agents » dans ReportView toolbar
+
+### Multitenant — schema DB encore à étendre dans des US futures
+- Pas de table `quote_ownership` (les devis filesystem ne sont pas encore liés à org_id)
+- Pas de système d'invitation user → org (Amine valide manuellement chaque membership en SQL Editor pour l'instant)
+- Pas de RBAC fine-grained sur les modèles (un viewer pourrait voir un draft non publié)
+
+### Resend — SPF/DKIM
+- Vars posées Coolify : `RESEND_API_KEY` + `RESEND_FROM_EMAIL` (confirmé Amine)
+- Domain `ai-mpower.com` à vérifier dans Resend Dashboard si pas déjà fait (DNS records DKIM/SPF/DMARC doivent être dans Cloudflare)
+- À tester end-to-end : envoyer un devis → vérifier réception `quote_received.html` côté client → marquer outcome `quoted` avec lien Stripe → vérifier `quote_payment_link.html`
+
+[NEXT — chantiers prêts à attaquer en nouvelle session]
+
+### Prio P0 — débloquer le rendering rapport
+- **US-109** Fix ReportView consume report payload (frontend rendering) → priorité absolue, sans ça les clients ne voient pas leurs rapports
+- **US-110** Avancement progressif (timeline 1/4, 2/4, 3/4, 4/4 avec dates) dans ReportView header
+- **US-111** Chat avec le rapport (panneau latéral, intégration `/api/report/chat`)
+- **US-112** Onglet « Voir les agents » dans ReportView toolbar (lien vers `/interaction/:reportId`)
+
+### Prio P1 — finir multitenant
+- **US-113** Stripe Checkout API native (US-105 reportée) — création de Payment Sessions via API + webhook `checkout.session.completed` (nécessite `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET`)
+- **US-114** Migration `quote_ownership` table Supabase pour lier devis à org (au lieu du sidecar JSON filesystem)
+- **US-115** Système d'invitation user → org (email magic link + table `org_invitations`)
+
+### Prio P2
+- **US-116** Audit sécurité OWASP post-multitenant (RLS Supabase, CORS, rate limit endpoints client, log audit)
+- **US-117** Tests Playwright nouvelles routes (/console, /admin/quotes, /client/dashboard, login flows)
+
+### Bloqué humain
+- Logo Bassira complet — Amine a explicitement REJETÉ (memory `feedback_rejected_tools`)
+- Témoignages partenaires réels NDA — bloqué humain depuis 2026-04-29
+- Stripe credentials — bloqué humain (Amine doit créer compte Stripe)
+
+[CTX session]
+- ~3000+ tool calls cumulés (sub-agents inclus)
+- 13 commits poussés sur main : `e300312` US-090, `ea2a700` US-091, `7daa238` US-092, `4c46af7` US-093, `9726a65` purge em-dash, `e744acb` US-093 fix path, `da9938d` US-094, `5f5de2e` purge CIH, `7ca549a` fix US-087 SectorUseCases home, `61ce615` UX tour + JSONs, `e106a60` US-093 #2 fix path store, `dfbf5b8` US-092 ECC, `69800f5` US-096, `154ec66` fix US-096 OAuth router, `05d3116` US-095, `abc4143`/`125ab96`/`2106c47` bumps version trigger Coolify, `25803a1` US-101, `8d84adb` US-102+103+104+107+108, `266ef0f` fix US-097 report fallback
+- 9 sub-agents pilotés : 1 Explore initial pour pivot strategy + 4 Ralph-loop autonomes (US-090, US-095/097/098/099/100, US-101, US-102/103/104/107/108) + 4 sub-agents fixes ciblés
+- Tests : 423 → 878 backend pytest (+455 cette session)
+- Bundle frontend prod final : `index-CtrTJkxa.js` (US-108 branding + chunks ConsoleView/AdminQuotesView)
+
+[MEMO inter-sessions]
+- **Supabase Bassira Cloud** ref `fvfifgstytvxssffvsbs` (URL `https://fvfifgstytvxssffvsbs.supabase.co`) — projet en mode JWT Signing Keys ECC P-256 (pas legacy HS256). Org slug `aimpower-bassira`, super-admin email `medamine.mansouriidrissi@gmail.com`, self_service_enabled=true.
+- **Coolify app `miro-shark`** UUID `u6pn5mr2pgi88s13un55pkzb` dans projet `Ventures` (UUID `e6kerffaobuwy2uo9n5sdihu`) sur instance `https://coolify.ai-mpower.com`. 28 env vars dont `SUPABASE_URL` (sans préfixe VITE), `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_DB_URL`, `BASSIRA_SUPER_ADMIN_EMAILS`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`. Le `SUPABASE_JWT_SECRET` legacy est inutile pour ce projet (mode ECC).
+- **Coolify save env var** : utiliser le mode **Developer view** (textarea bulk) qui marche fiablement, pas le formulaire individuel « New Environment Variable » qui ne persiste pas systématiquement.
+- **Coolify deploy** : préférer Redeploy (rolling) vs Force deploy without cache (rebuilt complet, peut crasher OOM sur les deps Python). Force without cache uniquement si cache layer Docker a un dist/ obsolète.
+- **Resend domain** `ai-mpower.com` — DNS DKIM/SPF/DMARC à vérifier dans Cloudflare avant tester en prod
+- **Pattern frontend → backend** : path correct est `/api/client/auth/me` (blueprint `client_bp` au prefix `/api/client/`). Pas `/api/auth/me`. Tous les helpers axios + tous les fetch directs côté frontend doivent utiliser le bon prefix.
+- **Sub-agent isolation worktree** : si tu spécifies `isolation: "worktree"`, le sub-agent peut quand même écrire DIRECTEMENT dans main si le runtime auto-merge à la fin. Vérifier toujours `git log` après pour confirmer le commit final.
+- **Convention slugs models** : `fusion-bancaire-mena`, `crisis-drill-24h`, `allocation-fonds-strategique`, `stress-test-politique`, `lancement-diaspora-eu`, + 13 ajoutés US-090 (cf. liste complète dans .ralph/prd.json)
+- **JWKS endpoint Supabase** : `https://<ref>.supabase.co/auth/v1/.well-known/jwks.json` — utilisé par `PyJWKClient` côté backend Flask via lib `pyjwt[crypto]`
+- **Memory feedback_rejected_tools** : Plausible/Posthog/GA/logo Bassira/`npm run dev` local explicitement REJETÉS par Amine. Ne jamais reproposer.
+- **Memory bassira_rebrand** : MiroShark → Bassira frontend uniquement (backend Python namespace `miroshark.*` conservé)
+
+[Recommandations pour la nouvelle session]
+1. **AVANT TOUT** : faire la rotation des 3 secrets Supabase leakés dans le chat de cette session (cf. [BLOQUÉ]). C'est la priorité DEFCON 1.
+2. **Démarrer par US-109 fix ReportView rendering** (rapide à débugger : c'est juste un mismatch parsing entre `getReport` axios response et le composant Step4Report). Lire `frontend/src/views/ReportView.vue` lignes 256-288 + composant Step4Report.
+3. Une fois US-109 OK, enchaîner US-110/111/112 (avancement progressif + chat + onglet agents) en Ralph-loop autonomous.
+4. **Pour tester end-to-end Resend** : envoyer un devis test depuis `/devis` → vérifier réception `quote_received.html` côté client → marquer status `quoted` dans `/admin/quotes` avec un Stripe Payment Link de test → vérifier `quote_payment_link.html` arrive bien.
+5. **Pattern Coolify deploy après changement env var** : Redeploy simple suffit. Si bundle prod garde un cache layer obsolète, bumper `frontend/package.json` version (0.x.0 → 0.y.0) pour invalider la couche `COPY package.json` puis Redeploy.
+6. **Pattern d'investigation bug frontend qui ne charge pas** : ouvrir Edge avec extension Claude → naviguer vers la route → `mcp__claude-in-chrome__javascript_tool` pour `fetch()` direct l'API en réutilisant le token localStorage `bassira_supabase_auth.access_token` → comparer la réponse backend vs le DOM rendu pour identifier le mismatch.
+
+— fin passation 2026-05-04 —
+
+---
+
 == PASSATION MiroShark/Bassira 2026-05-03T01:00:00+01:00 ==
 
 [ETAT]
