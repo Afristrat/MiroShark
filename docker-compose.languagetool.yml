@@ -1,0 +1,33 @@
+# Fichier compose AUXILIAIRE — LanguageTool self-hosted
+#
+# Usage :
+#   docker compose -f docker-compose.yml -f docker-compose.languagetool.yml up
+#
+# Ce fichier ajoute uniquement le service LanguageTool sans modifier
+# le compose principal. La variable d'environnement LANGUAGETOOL_URL
+# doit être positionnée dans le backend :
+#   LANGUAGETOOL_URL=http://languagetool:8010
+
+services:
+  languagetool:
+    image: meyay/languagetool:latest
+    restart: unless-stopped
+    expose:
+      - "8010"
+    ports:
+      - "8010:8010"
+    environment:
+      # Désactiver les règles premium pour l'usage self-hosted
+      - langtool_languageModel=
+      # Langue par défaut
+      - DEFAULT_LANGUAGE=fr-FR
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf 'http://localhost:8010/v2/check?text=test&language=fr' || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
