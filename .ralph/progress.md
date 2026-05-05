@@ -21,7 +21,10 @@
 - **Reload après ajout sous-domaine** : `cloudflared tunnel route dns nahda-tunnel <sub>.ai-mpower.com` + ajout ingress + `sudo systemctl restart cloudflared-nahda`.
 
 ### Tests
-- À documenter au fur et à mesure (pytest configs, Playwright fixtures, etc.).
+- **Playwright E2E — pattern auth injection (US-117)** : pour tester des routes protégées par Pinia auth sans connexion réelle, utiliser la fixture `seedSuperAdminAuth(page)` / `seedRegularUserAuth(page)` + la stratégie 2 phases `navigateAuthenticated(page, path, authSignal)`. Toutes ces fonctions sont dans `frontend/tests/e2e/fixtures/auth.ts`. Ne jamais utiliser `page.goto(protected_path)` directement pour les routes nécessitant auth — race condition quasi garantie avec le guard Pinia.
+- **Signal d'auth stable** : super-admin → `a.app-header__link[href="/console"]` ou `a[href="/admin/quotes"]` ; user normal → `a[href="/client/dashboard"]`. Ces liens apparaissent seulement quand `fetchSuperStatus()` a abouti (réactif Pinia → AppHeader).
+- **Modale onboarding** : la première visite déclenche `.onb-root` sur `/` — fermer via `passerBtn.click({ force: true })` avant de cliquer les nav links.
+- **Playwright base pattern** : smoke tests en `gotoLocalized(page, path, locale)` (helper dans `helpers.ts`). Guards non-auth en `page.goto` direct + `waitForURL`. Guards auth en 2 phases via `navigateAuthenticated`.
 
 ## Pièges à éviter (déjà rencontrés)
 
@@ -96,6 +99,27 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 - **Hydration depuis payload + fallback polling** : pattern réutilisable pour tout composant Vue qui poll un endpoint. Si le parent peut fournir l'état complet, hydrater directement et n'activer le polling que pour le mode incrémental. Voir `Step4Report::hydrateFromReport` + `watch(() => props.initialReport)`.
 - **Timeline 4 stages dérivée** : pattern à étendre pour SimulationRunView (montrer `prepare → run → analyze → report`). Cf `ReportProgressTimeline.vue` comme template.
 - **Sliding panel `:global([dir='rtl'])`** : Vue scoped CSS isole les sélecteurs par data-attribute. Pour cibler un état HTML root (dir=rtl), utiliser `:global()` autour du sélecteur. Sinon le RTL ne flip pas.
+
+---
+
+### 2026-05-05 — US-117 Tests Playwright E2E multitenant (50+ tests)
+
+- **Statut** : passes:true (chantier Q-e2e-multitenant).
+- **Périmètre** : extension de la suite Playwright (32 → 74 tests) avec les nouvelles routes multitenant introduites en US-091→108.
+- **Fichiers créés** :
+  - `frontend/tests/e2e/fixtures/auth.ts` : fixtures `seedSuperAdminAuth(page)` + `seedRegularUserAuth(page)` + `navigateAuthenticated(page, path, signal)`. Stratégie d'injection en 2 phases : (1) `addInitScript` qui monkey-patche `window.fetch` en contexte browser pour intercepter les appels Supabase Auth + `/api/client/auth/me` + `/api/admin/me/super-status` AVANT l'init Pinia ; (2) `page.route` pour les appels réseau cross-origin Supabase. URL Supabase prod : `https://fvfifgstytvxssffvsbs.supabase.co`.
+  - `frontend/tests/e2e/auth-flows.spec.ts` : 14 tests — /login UI (bouton Google OAuth, Magic Link, validation email, intent ?redirect=), /signup form (5 champs, bouton submit, lien retour).
+  - `frontend/tests/e2e/console-multitenant.spec.ts` : 4 tests — guard non-auth, super-admin accès rendu, bouton Lancer, redirect user normal.
+  - `frontend/tests/e2e/admin-quotes.spec.ts` : 7 tests — guard non-auth, guard user normal → redirect not-super-admin, accès super-admin (h1, filtre, topbar link, état vide ou table, subtitle).
+  - `frontend/tests/e2e/admin-organizations.spec.ts` : 4 tests — guard API non-auth 401/403, AdminQuotesView topbar analytics link, mock API contract JSON (2 orgs), self_service_enabled count.
+  - `frontend/tests/e2e/client-dashboard.spec.ts` : 7 tests — guard non-auth, user normal (rendu, org info, CTA Commander), super-admin (rendu, CTA Lancer simulation, CTA Commander).
+- **Piège principal résolu — race condition auth guard** : la race entre `auth.init()` + `fetchSuperStatus()` (async non-awaited) et le `router.beforeEach` guard causait une redirection vers `/login` même avec session injectée. **Solution** : stratégie 2 phases — charger une page publique `/`, attendre le signal DOM d'auth stable (`a[href="/console"]` ou `a[href="/admin/quotes"]` dans AppHeader pour super-admin, `a[href="/client/dashboard"]` pour user normal), puis naviguer vers la route protégée via click sur le lien header (Vue Router push client-side, pas de rechargement = store Pinia préservé).
+- **Piège 2 — modale onboarding bloque click** : au premier login, une modale `.onb-root` d'onboarding apparaît sur `/`. Elle intercepte le click sur le lien Console header. Fix : `navigateAuthenticated` ferme d'abord la modale via click sur « Passer » (force: true) avant de cliquer le lien.
+- **Piège 3 — Supabase URL cross-origin** : le SDK Supabase JS appelle `https://fvfifgstytvxssffvsbs.supabase.co/auth/v1/...` (pas la même origine que la prod). Le mock `page.route('**/auth/v1/**', ...)` ne couvre pas les requêtes cross-origin → remplacé par monkey-patch `window.fetch` en `addInitScript` qui intercepte toutes les URLs contenant `.supabase.co/auth/v1`.
+- **Piège 4 — fetchSuperStatus non-awaited dans init()** : le store Pinia appelle `fetchSuperStatus().catch(...)` sans await dans `auth.init()`. Au moment où le guard router évalue `isSuperAdmin`, la requête peut ne pas avoir abouti → `isSuperAdmin = false` → redirect erronée. Résolu par le signal DOM (attendre `a[href="/console"]` dans le header, visible seulement quand `isSuperAdmin = true`).
+- **Quality gates** :
+  - `cd frontend && npx playwright test --reporter=list` → **74 passed, 0 failed** (23,3 s).
+  - `cd frontend && npm run build` → **OK** (exit 0). Warnings chunk size pré-existants uniquement.
 
 ---
 
