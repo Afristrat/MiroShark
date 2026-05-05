@@ -192,6 +192,17 @@ const routes = [
       requiresSuperAdmin: true,
       title: 'Devis · Bassira admin'
     }
+  },
+  {
+    // US-115 — Gestion des invitations org → user. Accessible aux
+    // admin/owner d'une org (et aux super-admins). Form + liste pending.
+    path: '/admin/invitations',
+    name: 'AdminInvitations',
+    component: () => import('../views/AdminInvitationsView.vue'),
+    meta: {
+      requiresAuth: true,
+      title: 'Invitations · Bassira admin'
+    }
   }
 ]
 

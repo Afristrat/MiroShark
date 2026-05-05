@@ -28,9 +28,18 @@ from typing import Any, Dict, Optional
 
 from flask import Blueprint, g, jsonify, request
 
-from ..auth.decorators import require_super_admin
+from ..auth.decorators import (
+    is_super_admin_email,
+    require_auth,
+    require_super_admin,
+)
+from ..auth.supabase_client import (
+    SupabaseConfigError,
+    get_user_orgs,
+)
 from ..services.quote_service import check_rate_limit, submit_quote
 from ..services import quote_admin_service as qa
+from ..services import quote_ownership as qo
 
 
 quote_bp = Blueprint("quote", __name__)
@@ -111,9 +120,18 @@ def _parse_int(raw: Optional[str], default: int, min_v: int, max_v: int) -> int:
 
 
 @admin_quote_bp.route("", methods=["GET"])
-@require_super_admin
+@require_auth
 def list_quotes_admin():
-    """Liste paginée des devis (super-admin only).
+    """Liste paginée des devis.
+
+    Comportement (US-114) :
+      - **Super-admin Bassira** (email whitelist) → voit TOUS les devis
+        filesystem, comme avant.
+      - **Membre d'une org** (JWT valide + appartient à >=1 org) → voit
+        uniquement les devis liés à ses orgs via la table
+        ``quote_ownership`` (RLS strict, lookup via service_role côté
+        backend pour résoudre l'email → org).
+      - **User authentifié sans org** → 403 ``NOT_A_MEMBER``.
 
     Query :
       - ``limit`` (default 50, max 200)
@@ -125,15 +143,75 @@ def list_quotes_admin():
         offset = _parse_int(request.args.get("offset"), 0, 0, 1_000_000)
         status_filter = (request.args.get("status") or "").strip() or None
 
-        items, total = qa.list_quotes(
-            limit=limit,
-            offset=offset,
-            status_filter=status_filter,
+        user = getattr(g, "current_user", None) or {}
+        email = user.get("email") if isinstance(user, dict) else None
+
+        # 1. Super-admin → vue cross-tenant complète (filesystem only).
+        if is_super_admin_email(email):
+            items, total = qa.list_quotes(
+                limit=limit,
+                offset=offset,
+                status_filter=status_filter,
+            )
+            return jsonify({
+                "success": True,
+                "data": {
+                    "quotes": items,
+                    "total": total,
+                    "limit": limit,
+                    "offset": offset,
+                },
+            }), 200
+
+        # 2. Membre d'une org → scoping via quote_ownership.
+        user_id = user.get("id") if isinstance(user, dict) else None
+        if not user_id:
+            return _err("INVALID_TOKEN", "Token missing 'sub' claim.", 401)
+
+        try:
+            user_orgs = get_user_orgs(user_id)
+        except SupabaseConfigError:
+            return _err(
+                "SUPABASE_NOT_CONFIGURED",
+                "Backend Supabase admin client is not configured.",
+                503,
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.error("list_quotes_admin user_orgs failed: %s", exc)
+            return _err("ADMIN_QUOTES_FAILED", "Could not resolve user orgs.", 500)
+
+        if not user_orgs:
+            return _err(
+                "NOT_A_MEMBER",
+                "Authenticated user is not a member of any organization.",
+                403,
+            )
+
+        org_ids = [o.get("id") for o in user_orgs if o.get("id")]
+        try:
+            ownership_rows = qo.list_quotes_for_orgs(org_ids)
+        except Exception as exc:  # noqa: BLE001
+            logger.error("list_quotes_for_orgs failed: %s", exc)
+            return _err("ADMIN_QUOTES_FAILED", "Could not list quotes.", 500)
+
+        # On indexe les rows ownership par quote_id pour pouvoir
+        # joindre avec le filesystem (qui contient le payload riche).
+        owned_ids = {row["quote_id"] for row in ownership_rows if row.get("quote_id")}
+
+        # Lit le filesystem complet puis filtre sur les ids autorisés.
+        # Le volume de devis reste petit (handful par semaine) — pas de
+        # besoin d'optimisation ; la logique reste identique au super-admin.
+        all_items, _ = qa.list_quotes(
+            limit=10_000, offset=0, status_filter=status_filter
         )
+        scoped_items = [it for it in all_items if it.get("quote_id") in owned_ids]
+        total = len(scoped_items)
+        page = scoped_items[offset : offset + limit]
+
         return jsonify({
             "success": True,
             "data": {
-                "quotes": items,
+                "quotes": page,
                 "total": total,
                 "limit": limit,
                 "offset": offset,
@@ -145,9 +223,48 @@ def list_quotes_admin():
 
 
 @admin_quote_bp.route("/<quote_id>", methods=["GET"])
-@require_super_admin
+@require_auth
 def get_quote_admin(quote_id: str):
-    """Détail d'un devis : payload + status sidecar (super-admin only)."""
+    """Détail d'un devis : payload + status sidecar.
+
+    Super-admin → tous les devis. Member → seulement les devis liés à
+    une de ses orgs via ``quote_ownership`` (US-114).
+    """
+    user = getattr(g, "current_user", None) or {}
+    email = user.get("email") if isinstance(user, dict) else None
+    is_super = is_super_admin_email(email)
+
+    if not is_super:
+        # Vérification ownership avant tout accès au filesystem.
+        user_id = user.get("id") if isinstance(user, dict) else None
+        if not user_id:
+            return _err("INVALID_TOKEN", "Token missing 'sub' claim.", 401)
+        try:
+            user_orgs = get_user_orgs(user_id)
+        except SupabaseConfigError:
+            return _err(
+                "SUPABASE_NOT_CONFIGURED",
+                "Backend Supabase admin client is not configured.",
+                503,
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.error("get_quote_admin user_orgs failed: %s", exc)
+            return _err("ADMIN_QUOTES_FAILED", "Could not resolve user orgs.", 500)
+
+        if not user_orgs:
+            return _err(
+                "NOT_A_MEMBER",
+                "Authenticated user is not a member of any organization.",
+                403,
+            )
+        owner_org = qo.get_org_for_quote(quote_id)
+        user_org_ids = {str(o.get("id")) for o in user_orgs if o.get("id")}
+        if owner_org is None or str(owner_org) not in user_org_ids:
+            # Le devis n'a pas d'ownership ou n'appartient pas à une de
+            # ses orgs : 404 plutôt que 403 pour éviter la fuite
+            # d'existence de devis cross-tenant.
+            return _err("QUOTE_NOT_FOUND", "Quote not found.", 404)
+
     payload = qa.read_quote_payload(quote_id)
     if payload is None:
         return _err("QUOTE_NOT_FOUND", "Quote not found.", 404)

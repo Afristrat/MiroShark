@@ -134,6 +134,15 @@ def create_app(config_class=Config):
     # Tous les endpoints sont protégés par JWT Supabase et rôle org.
     from .api.client import client_bp
     app.register_blueprint(client_bp, url_prefix='/api/client')
+
+    # invitations_bp + admin_invitations_bp — système d'invitation
+    # user → org via email magic link (US-115).
+    #   /api/admin/invitations          — POST/GET/DELETE (org admin OR super-admin)
+    #   /api/invitations/<token>/accept — public metadata pour pré-remplir signup
+    #   /api/invitations/<token>/redeem — auth requis, crée la row org_members
+    from .api.invitations import admin_invitations_bp, invitations_bp
+    app.register_blueprint(admin_invitations_bp, url_prefix='/api/admin/invitations')
+    app.register_blueprint(invitations_bp, url_prefix='/api/invitations')
     
     # Health check
     @app.route('/health')

@@ -267,4 +267,50 @@ export function sendAdminQuoteDelivered(quoteId, payload) {
   )
 }
 
+// ───── Invitations org → user (US-115) ─────────────────────────────────────
+
+/**
+ * GET /api/admin/invitations — liste les invitations pending d'une org.
+ * Param `org_id` requis si super-admin OR multi-org admin.
+ */
+export function fetchAdminInvitations(params = {}) {
+  return client.get('/api/admin/invitations', { params })
+}
+
+/**
+ * POST /api/admin/invitations — crée une invitation + envoie l'email.
+ * Body : { email, role: 'member'|'admin'|'viewer', org_id? }
+ */
+export function createAdminInvitation(payload) {
+  return client.post('/api/admin/invitations', payload)
+}
+
+/** DELETE /api/admin/invitations/<token> — révoque une invitation pending. */
+export function revokeAdminInvitation(token) {
+  return client.delete(
+    `/api/admin/invitations/${encodeURIComponent(token)}`
+  )
+}
+
+/**
+ * GET /api/invitations/<token>/accept — public, lit les metadata
+ * d'une invitation (org_name, role, expires_at) pour pré-remplir
+ * l'écran signup. Pas de bearer requis.
+ */
+export function fetchInvitationMetadata(token) {
+  return client.get(
+    `/api/invitations/${encodeURIComponent(token)}/accept`
+  )
+}
+
+/**
+ * POST /api/invitations/<token>/redeem — auth requis, crée la row
+ * org_members atomiquement après signup.
+ */
+export function redeemInvitation(token) {
+  return client.post(
+    `/api/invitations/${encodeURIComponent(token)}/redeem`
+  )
+}
+
 export default client
