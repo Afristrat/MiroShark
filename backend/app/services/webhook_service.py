@@ -117,10 +117,39 @@ def mask_url(url: str) -> str:
         return '***'
 
 
+def _is_private_ip(host: str) -> bool:
+    """Return True if the host resolves to a private/loopback/reserved IP.
+
+    Blocks SSRF attempts via WEBHOOK_URL (e.g. http://169.254.169.254/ AWS
+    metadata, http://localhost/, http://10.0.0.1/, etc.).
+
+    DNS resolution failures are silenced — if the host can't be resolved
+    we let the actual HTTP call surface the error naturally.
+    """
+    import ipaddress
+    import socket
+    try:
+        ip_str = socket.gethostbyname(host)
+        addr = ipaddress.ip_address(ip_str)
+        return (
+            addr.is_private
+            or addr.is_loopback
+            or addr.is_link_local
+            or addr.is_reserved
+        )
+    except Exception:
+        return False
+
+
 def validate_url(url: str) -> Optional[str]:
     """Return ``None`` if the URL is acceptable, else an error message.
 
     Empty string is valid (treated as "disable webhook").
+
+    SSRF protection (US-116): resolves the host IP and rejects private /
+    loopback / link-local / reserved ranges so a malicious WEBHOOK_URL
+    cannot coerce the backend into calling AWS metadata endpoints, internal
+    services, or the Docker host.
     """
     if not url:
         return None
@@ -134,6 +163,18 @@ def validate_url(url: str) -> Optional[str]:
     lowered = stripped.lower()
     if not (lowered.startswith('http://') or lowered.startswith('https://')):
         return "Webhook URL must start with http:// or https://"
+
+    # SSRF protection: reject private/internal IP ranges.
+    from urllib.parse import urlparse
+    parsed = urlparse(stripped)
+    host = parsed.netloc.split(':')[0] if parsed.netloc else ''
+    if host and _is_private_ip(host):
+        return (
+            "Webhook URL resolves to a private or internal address "
+            "(10.x, 172.16.x, 192.168.x, 127.x, 169.254.x, etc.) — "
+            "only public URLs are allowed."
+        )
+
     return None
 
 
