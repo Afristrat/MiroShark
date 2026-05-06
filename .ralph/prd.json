@@ -4186,6 +4186,50 @@
           "docs/PDF_QUALITY_GATES.md"
         ]
       }
+    },
+    {
+      "id": "US-133",
+      "chantier": "AH-pdf-wiring",
+      "title": "Cabler endpoints user export PDF/MD au nouveau Renderer (remplace ancien _build_pdf reportlab)",
+      "description": "Les boutons user self-service Step4Report.vue et EmbedDialog.vue appellent /api/simulation/<id>/export-pdf et /export-md qui utilisent encore l ancien pdf_export.py::_build_pdf() reportlab (10 sections plates). Refactorer ces 2 endpoints pour qu ils appellent le nouveau Renderer (US-125) qui mobilise tout le pipeline (loader US-119, enricher US-124, charts US-122, templates US-123, branding US-120). Garder la signature endpoint stable (frontend non modifié). Mettre a jour le label i18n report.exportPdf (qui mentionne 10 sections). NE PAS toucher /api/models/<slug>/pdf-brief (cas different US-088).",
+      "acceptanceCriteria": [
+        "backend/app/api/pdf_export.py::_build_pdf() refactore pour appeler Renderer(context).render_pdf() au lieu de reportlab",
+        "backend/app/api/pdf_export.py::_build_markdown() refactore pour appeler Renderer(context).render_md()",
+        "PDFContextLoader charge le contexte simulation + report (si report_id deduit, sinon mode degrade sans outline)",
+        "Le PDF retourne contient les sections du nouveau pipeline (cover, exec_summary, dynamics, verdict, recommendations, appendix) au lieu des 10 sections plates",
+        "Signature endpoint inchangee : POST /api/simulation/<id>/export-pdf body {graph_image_b64?} retourne application/pdf, GET /api/simulation/<id>/export-md retourne text/markdown",
+        "Frontend non modifie (Step4Report.vue:110, Step4Report.vue:125, EmbedDialog.vue:643 fonctionnent sans changement)",
+        "Label i18n report.exportPdf mis a jour FR/EN/AR : retirer mention 10 sections",
+        "EmbedDialog.vue:643 refactore pour utiliser exportSimulationPdf() service au lieu de fetch inline (coherence avec Step4Report)",
+        "Tests pytest backend/tests/test_pdf_export_endpoints.py : verifie endpoints retournent contenu nouveau pipeline (presence sections cover, exec_summary, etc.)",
+        "Tests Playwright frontend (existants si pas encore) : Step4Report bouton PDF fonctionne et telecharge un PDF non-vide"
+      ],
+      "passes": false,
+      "dependencies": [
+        "US-125",
+        "US-124",
+        "US-123",
+        "US-122",
+        "US-121",
+        "US-120",
+        "US-119",
+        "US-118"
+      ],
+      "metadata": {
+        "estimated_hours": 3,
+        "priority": "P0",
+        "files_to_modify": [
+          "backend/app/api/pdf_export.py",
+          "frontend/src/components/EmbedDialog.vue",
+          "frontend/src/locales/fr.json",
+          "frontend/src/locales/en.json",
+          "frontend/src/locales/ar.json"
+        ],
+        "files_to_create": [
+          "backend/tests/test_pdf_export_endpoints.py"
+        ],
+        "rationale": "Trou architectural identifie par CR-1 (endpoints) + CR-2 (frontend buttons). Le pipeline NEW Phase 1-6 etait livre mais les boutons user pointaient toujours sur l ancien code reportlab. Sans cette US, tout le travail Phases 1-6 est invisible cote user."
+      }
     }
   ]
 }
