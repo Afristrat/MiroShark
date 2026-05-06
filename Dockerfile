@@ -1,8 +1,19 @@
 FROM python:3.11
 
-# Install Node.js (>= 18) and necessary tools
+# Install Node.js + WeasyPrint system deps (Pango/Cairo/GDK-Pixbuf via libgobject).
+# Required by US-125 Renderer (WeasyPrint) used by /api/simulation/<id>/export-pdf
+# (US-133), /api/admin/reports/<id>/preview|generate|approve (US-128/129),
+# /api/models/<slug>/pdf-brief (US-088 si bascule WeasyPrint plus tard).
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends nodejs npm \
+  && apt-get install -y --no-install-recommends \
+       nodejs npm \
+       libpango-1.0-0 libpangoft2-1.0-0 \
+       libharfbuzz0b \
+       libcairo2 libgdk-pixbuf2.0-0 \
+       libffi-dev shared-mime-info \
+       fonts-dejavu-core \
+       ghostscript \
+       poppler-utils \
   && rm -rf /var/lib/apt/lists/*
 
 # Copy uv from the official uv image
