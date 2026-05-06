@@ -2347,11 +2347,14 @@ watch(() => props.initialReport, (newReport) => {
   overflow: hidden;
 }
 
-/* Main Split Layout */
+/* Main Split Layout — stack vertical : sommaire + exports en haut,
+   rapport en pleine largeur en bas (US-133 UX fix). Avant : split 45%/55%
+   horizontal qui laissait la moitié droite vide pendant le scroll. */
 .main-split-layout {
   flex: 1;
   display: flex;
-  overflow: hidden;
+  flex-direction: column;
+  overflow: visible;
 }
 
 /* Panel Headers */
@@ -2457,14 +2460,17 @@ watch(() => props.initialReport, (newReport) => {
 
 /* Left Panel - Report Style */
 .left-panel.report-style {
-  width: 45%;
-  min-width: 450px;
+  /* US-133 UX fix : pleine largeur, ordre 2 (sous le sommaire workflow). */
+  width: 100%;
+  min-width: auto;
   background: var(--wi-surface);
-  border-inline-end: 1px solid var(--wi-outline-variant);
-  overflow-y: auto;
+  border-inline-end: none;
+  border-top: 1px solid var(--wi-outline-variant);
+  overflow-y: visible;  /* le scroll est porté par la page, pas le panel */
   display: flex;
   flex-direction: column;
   padding: 34px 56px 56px 56px;
+  order: 2;
 }
 
 .left-panel::-webkit-scrollbar {
@@ -2812,13 +2818,17 @@ watch(() => props.initialReport, (newReport) => {
   font-family: var(--ms-font-mono);
 }
 
-/* Right Panel */
+/* Right Panel — devient désormais le BANDEAU SUPÉRIEUR (sommaire workflow
+   + boutons Export) en pleine largeur. Order 1 = au-dessus du rapport.
+   US-133 UX fix : avant flex:1 horizontal qui laissait colonne droite vide. */
 .right-panel {
-  flex: 1;
+  flex: none;
+  width: 100%;
   background: var(--ms-bg-elevated);
-  overflow-y: auto;
+  overflow-y: visible;
   display: flex;
   flex-direction: column;
+  order: 1;
 
   /* Functional palette (low saturation, status-based) */
   --wf-border: rgba(10,10,10,0.12);
