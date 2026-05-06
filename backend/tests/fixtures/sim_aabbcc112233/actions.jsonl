@@ -1,2 +1,7 @@
-{"round": 1, "agent": "Agent Alpha", "action": "post", "platform": "twitter", "content": "Post bullish round 1"}
-{"round": 2, "agent": "Agent Beta", "action": "post", "platform": "reddit", "content": "Post bearish round 2"}
+{"round": 1, "agent": "Agent Alpha", "action": "post", "platform": "twitter", "content": "Post bullish round 1 — la réforme fiscale va dans le bon sens.", "score": 12}
+{"round": 2, "agent": "Agent Beta", "action": "post", "platform": "reddit", "content": "Post bearish round 2 — attention aux effets pervers de cette réforme.", "score": 8}
+{"round": 3, "agent": "Agent Gamma", "action": "post", "platform": "twitter", "content": "La réforme va créer des inégalités supplémentaires entre PME et grands groupes.", "score": 15}
+{"round": 3, "agent": "Agent Delta", "action": "comment", "platform": "reddit", "content": "Je suis d'accord avec Agent Gamma — les PME seront pénalisées.", "score": 6}
+{"round": 4, "agent": "Agent Alpha", "action": "tweet", "platform": "twitter", "content": "Les chiffres du Trésor confirment l'impact positif attendu sur les investissements.", "score": 20}
+{"round": 4, "agent": "Agent Epsilon", "action": "post", "platform": "twitter", "content": "La réforme doit être accompagnée de mesures compensatoires pour les ménages modestes.", "score": 9}
+{"round": 5, "agent": "Agent Beta", "action": "post", "platform": "reddit", "content": "Après analyse, je révise ma position : la réforme a des mérites mais des risques importants.", "score": 11}
