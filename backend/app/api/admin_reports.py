@@ -23,7 +23,7 @@ from typing import Any, Dict, Optional
 
 from flask import Blueprint, g, jsonify, request
 
-from ..auth.decorators import is_super_admin_email, require_auth
+from ..auth.decorators import is_super_admin_email, require_auth, require_super_admin
 from ..auth.supabase_client import SupabaseConfigError, get_supabase_admin, get_user_orgs
 from ..services import report_workflow as rw
 
@@ -348,8 +348,33 @@ def unlock_endpoint(report_id: str):
 # ─── Approve & Sign (US-128) ────────────────────────────────────────────────
 # Endpoint super-admin only : génère snapshot immuable + watermark + signature.
 
+def _try_workflow_transition(report_id: str, target_status: str, *,
+                             actor_id: Optional[str] = None,
+                             actor_email: Optional[str] = None,
+                             snapshot_hash: Optional[str] = None) -> None:
+    """Best-effort wrapper autour de report_workflow.transition() (US-126).
+
+    Conserve la compatibilité avec les tests US-128 qui patchent ce helper.
+    """
+    try:
+        cli = get_supabase_admin()
+        rw.transition(
+            report_id,
+            target_state=target_status,
+            actor_id=actor_id,
+            actor_email=actor_email,
+            snapshot_hash=snapshot_hash,
+            client=cli,
+        )
+    except SupabaseConfigError:
+        logger.warning("Supabase admin client not configured — workflow transition %s skipped",
+                       target_status)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("workflow transition %s for %s failed: %s",
+                       target_status, report_id, exc)
+
 @admin_reports_bp.route("/<report_id>/approve", methods=["POST"])
-@require_auth
+@require_super_admin
 def approve_report(report_id: str):
     """Approuve un rapport : génère snapshot immuable + watermark + signature (US-128).
 
@@ -361,8 +386,6 @@ def approve_report(report_id: str):
     import hashlib
 
     user = getattr(g, "current_user", None) or {}
-    if not is_super_admin_email(user.get("email")):
-        return _err("FORBIDDEN", "Super-admin uniquement.", 403)
 
     body: Dict = {}
     if request.content_length and request.content_length > 0:
@@ -456,20 +479,15 @@ def approve_report(report_id: str):
         logger.error("create_snapshot echec : %s", exc)
         return _err("SNAPSHOT_ERROR", str(exc), 500)
 
-    # Workflow transition APPROVED (US-126)
-    try:
-        actor_id, _email, _ip, _ua = _get_actor_info()
-        cli = get_supabase_admin()
-        rw.transition(
-            report_id,
-            target_state="APPROVED",
-            actor_id=actor_id,
-            actor_email=user.get("email"),
-            snapshot_hash=sha256_hex,
-            client=cli,
-        )
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("Workflow transition APPROVED echec (ignored) : %s", exc)
+    # Workflow transition APPROVED (US-126, via best-effort helper)
+    actor_id, _email, _ip, _ua = _get_actor_info()
+    _try_workflow_transition(
+        report_id,
+        "APPROVED",
+        actor_id=actor_id,
+        actor_email=user.get("email"),
+        snapshot_hash=sha256_hex,
+    )
 
     logger.info("Report approved %s version=%d sha256=%s",
                 report_id, snapshot_result["version"], sha256_hex[:16])

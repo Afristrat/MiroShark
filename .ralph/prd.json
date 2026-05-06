@@ -3955,8 +3955,11 @@
         "files_modified": [
           "backend/app/__init__.py"
         ],
-        "tests_added": 50
-      }
+        "tests_added": 50,
+        "merge_commit": "6cbefb1",
+        "ralph_session": "2026-05-05"
+      },
+      "completedAt": "2026-05-06T02:00:00Z"
     },
     {
       "id": "US-127",
@@ -4012,7 +4015,7 @@
         "Tests pytest : snapshot files créés, hash stable, watermark visible (PDF text extraction), signature valid (selon cert dispo)"
       ],
       "passes": true,
-      "completedAt": "2026-05-05T09:30:00Z",
+      "completedAt": "2026-05-06T02:00:00Z",
       "dependencies": [
         "US-125",
         "US-126"
@@ -4034,7 +4037,9 @@
           "backend/tests/test_snapshot_watermark.py",
           "backend/app/__init__.py"
         ],
-        "test_result": "24 passed (test_snapshot_watermark.py) — 1340 passed total, 0 regression"
+        "test_result": "24 passed (test_snapshot_watermark.py) — 1340 passed total, 0 regression",
+        "merge_commit": "ab69c37",
+        "ralph_session": "2026-05-05"
       }
     },
     {
