@@ -1,0 +1,321 @@
+/* pdf_brand.css.j2 — CSS Jinja2 pour le rendu WeasyPrint Bassira.
+   Variables injectées depuis le branding row (pdf_branding table) ou defaults Bassira.
+*/
+
+/* ── Variables palette Bassira / Causse Warm Intelligence ──────────────────── */
+:root {
+{% if branding and branding.get('palette_primary') %}
+  --wi-orange:   {{ branding.palette_primary }};
+{% else %}
+  --wi-orange:   #FF8551;
+{% endif %}
+{% if branding and branding.get('palette_secondary') %}
+  --wi-mint:     {{ branding.palette_secondary }};
+{% else %}
+  --wi-mint:     #006D44;
+{% endif %}
+{% if branding and branding.get('palette_background') %}
+  --wi-cream:    {{ branding.palette_background }};
+{% else %}
+  --wi-cream:    #FAF7F2;
+{% endif %}
+{% if branding and branding.get('palette_text') %}
+  --wi-charcoal: {{ branding.palette_text }};
+{% else %}
+  --wi-charcoal: #241915;
+{% endif %}
+  --wi-terra:    #A13F0F;
+  --wi-sand:     #E8DDC9;
+  --wi-ink:      #1A0F0A;
+}
+
+/* ── @font-face ─────────────────────────────────────────────────────────────── */
+{% if branding and branding.get('font_titles') %}
+/* Custom title font from branding */
+{% else %}
+@font-face {
+  font-family: 'Outfit';
+  src: url('../fonts/Outfit-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Outfit';
+  src: url('../fonts/Outfit-Bold.woff2') format('woff2');
+  font-weight: bold;
+  font-style: normal;
+}
+{% endif %}
+@font-face {
+  font-family: 'Manrope';
+  src: url('../fonts/Manrope-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Manrope';
+  src: url('../fonts/Manrope-Bold.woff2') format('woff2');
+  font-weight: bold;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Tajawal';
+  src: url('../fonts/Tajawal-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Tajawal';
+  src: url('../fonts/Tajawal-Bold.woff2') format('woff2');
+  font-weight: bold;
+  font-style: normal;
+}
+
+/* ── Page rules ─────────────────────────────────────────────────────────────── */
+@page {
+  size: A4;
+  margin: 25mm 18mm 22mm 18mm;
+
+  @top-right {
+    content: counter(page) " / " counter(pages);
+    font-family: Manrope, 'DejaVu Sans', sans-serif;
+    font-size: 9pt;
+    color: var(--wi-charcoal);
+    opacity: 0.6;
+  }
+
+  @bottom-left {
+    content: "{{ context.report_id if context is defined else '' }}";
+    font-family: Manrope, 'DejaVu Sans', sans-serif;
+    font-size: 7pt;
+    color: var(--wi-charcoal);
+    opacity: 0.5;
+  }
+
+  @bottom-center {
+    content: "Bassira © {{ generated_at[:4] if generated_at is defined else '2026' }}";
+    font-family: Manrope, 'DejaVu Sans', sans-serif;
+    font-size: 7pt;
+    color: var(--wi-charcoal);
+    opacity: 0.5;
+  }
+
+  @bottom-right {
+    content: "{{ generated_at[:10] if generated_at is defined else '' }}";
+    font-family: Manrope, 'DejaVu Sans', sans-serif;
+    font-size: 7pt;
+    color: var(--wi-charcoal);
+    opacity: 0.5;
+  }
+}
+
+/* Cover page : no header/footer */
+@page :first {
+  margin-top: 40mm;
+
+  @top-right { content: none; }
+  @bottom-left { content: none; }
+  @bottom-center { content: none; }
+  @bottom-right { content: none; }
+}
+
+/* ── Base ──────────────────────────────────────────────────────────────────── */
+html, body {
+  font-family: {% if branding and branding.get('font_body') %}{{ branding.font_body }}{% else %}Manrope, 'DejaVu Sans', sans-serif{% endif %};
+  font-size: 11pt;
+  line-height: 1.6;
+  color: var(--wi-charcoal);
+  background-color: var(--wi-cream);
+}
+
+/* ── Headings ────────────────────────────────────────────────────────────────── */
+h1 {
+  font-family: {% if branding and branding.get('font_titles') %}{{ branding.font_titles }}{% else %}Outfit, 'DejaVu Sans', sans-serif{% endif %};
+  font-size: 24pt;
+  color: var(--wi-orange);
+  margin-top: 0;
+  margin-bottom: 12pt;
+  line-height: 1.2;
+}
+
+h2 {
+  font-family: {% if branding and branding.get('font_titles') %}{{ branding.font_titles }}{% else %}Outfit, 'DejaVu Sans', sans-serif{% endif %};
+  font-size: 18pt;
+  color: var(--wi-charcoal);
+  margin-top: 24pt;
+  margin-bottom: 8pt;
+  border-bottom: 2pt solid var(--wi-sand);
+  padding-bottom: 4pt;
+}
+
+h3 {
+  font-family: {% if branding and branding.get('font_titles') %}{{ branding.font_titles }}{% else %}Outfit, 'DejaVu Sans', sans-serif{% endif %};
+  font-size: 14pt;
+  color: var(--wi-terra);
+  margin-top: 16pt;
+  margin-bottom: 6pt;
+}
+
+h4, h5, h6 {
+  font-family: Manrope, 'DejaVu Sans', sans-serif;
+  font-size: 11pt;
+  color: var(--wi-charcoal);
+  margin-top: 12pt;
+  margin-bottom: 4pt;
+}
+
+/* ── Paragraphs ─────────────────────────────────────────────────────────────── */
+p {
+  font-family: Manrope, 'DejaVu Sans', sans-serif;
+  font-size: 11pt;
+  margin-bottom: 8pt;
+  orphans: 3;
+  widows: 3;
+}
+
+/* ── Tables ─────────────────────────────────────────────────────────────────── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12pt 0;
+  font-size: 10pt;
+}
+
+th {
+  background-color: var(--wi-charcoal);
+  color: var(--wi-cream);
+  font-family: Manrope, 'DejaVu Sans', sans-serif;
+  font-weight: bold;
+  padding: 6pt 8pt;
+  text-align: left;
+}
+
+td {
+  padding: 5pt 8pt;
+  border-bottom: 0.5pt solid var(--wi-sand);
+  vertical-align: top;
+}
+
+tr:nth-child(even) td {
+  background-color: var(--wi-sand);
+}
+
+/* ── Blockquotes ─────────────────────────────────────────────────────────────── */
+blockquote {
+  border-left: 4pt solid var(--wi-terra);
+  margin: 12pt 0;
+  padding: 8pt 12pt;
+  font-style: italic;
+  color: var(--wi-terra);
+  background-color: #FFF5EE;
+}
+
+/* ── KPI cards ──────────────────────────────────────────────────────────────── */
+.kpi-card {
+  display: inline-block;
+  margin: 4pt 6pt;
+  padding: 6pt 12pt;
+  border-radius: 4pt;
+  font-weight: bold;
+  font-size: 12pt;
+}
+
+.kpi-orange {
+  background-color: var(--wi-orange);
+  color: white;
+}
+
+.kpi-mint {
+  background-color: var(--wi-mint);
+  color: white;
+}
+
+.kpi-terra {
+  background-color: var(--wi-terra);
+  color: white;
+}
+
+/* ── Lists ───────────────────────────────────────────────────────────────────── */
+ul, ol {
+  margin: 6pt 0 10pt 18pt;
+  padding: 0;
+}
+
+li {
+  margin-bottom: 3pt;
+  font-size: 11pt;
+}
+
+/* ── Images / Charts ─────────────────────────────────────────────────────────── */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 12pt auto;
+}
+
+/* ── Code / monospace ────────────────────────────────────────────────────────── */
+code, pre {
+  font-family: {% if branding and branding.get('font_mono') %}{{ branding.font_mono }}{% else %}'Courier New', monospace{% endif %};
+  font-size: 9pt;
+  background-color: var(--wi-sand);
+  padding: 2pt 4pt;
+  border-radius: 2pt;
+}
+
+pre {
+  padding: 8pt 12pt;
+  overflow: hidden;
+  white-space: pre-wrap;
+}
+
+/* ── Horizontal rule ────────────────────────────────────────────────────────── */
+hr {
+  border: none;
+  border-top: 1pt solid var(--wi-sand);
+  margin: 16pt 0;
+}
+
+/* ── Page break helpers ─────────────────────────────────────────────────────── */
+h1, h2 {
+  page-break-after: avoid;
+}
+
+table, figure {
+  page-break-inside: avoid;
+}
+
+/* ── RTL support ─────────────────────────────────────────────────────────────── */
+{% if lang == 'ar' %}
+html[dir="rtl"], [dir="rtl"] {
+  font-family: Tajawal, 'DejaVu Sans', sans-serif;
+  direction: rtl;
+  text-align: right;
+}
+
+[dir="rtl"] th {
+  text-align: right;
+}
+
+[dir="rtl"] blockquote {
+  border-left: none;
+  border-right: 4pt solid var(--wi-terra);
+  padding: 8pt 12pt 8pt 8pt;
+}
+
+[dir="rtl"] ul, [dir="rtl"] ol {
+  margin: 6pt 18pt 10pt 0;
+}
+{% endif %}
+
+/* ── Disclaimer ──────────────────────────────────────────────────────────────── */
+{% if branding and branding.get('disclaimer_text') %}
+.disclaimer {
+  font-size: 7pt;
+  color: var(--wi-charcoal);
+  opacity: 0.6;
+  margin-top: 16pt;
+  padding-top: 8pt;
+  border-top: 0.5pt solid var(--wi-sand);
+}
+{% endif %}

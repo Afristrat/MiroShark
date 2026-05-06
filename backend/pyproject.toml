@@ -55,6 +55,11 @@ dependencies = [
     # US-122 : ChartFactory matplotlib — rendu charts signature PDF Bassira
     "matplotlib>=3.8",
     "networkx>=3.0",
+    # US-125 : Renderer pipeline PDF (MD + WeasyPrint + brand CSS injectable)
+    "weasyprint>=60",
+    "markdown-it-py>=3",
+    "pypdf>=4",
+    "pyyaml>=6.0",
 ]
 
 [project.optional-dependencies]
