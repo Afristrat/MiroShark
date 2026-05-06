@@ -3999,7 +3999,8 @@
         "Workflow transition automatique APPROVED -> DELIVERED après envoi",
         "Tests pytest : snapshot files créés, hash stable, watermark visible (PDF text extraction), signature valid (selon cert dispo)"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-05-05T09:30:00Z",
       "dependencies": [
         "US-125",
         "US-126"
@@ -4012,7 +4013,16 @@
           "backend/app/services/report_pdf/watermark.py",
           "backend/app/services/report_pdf/signer.py",
           "backend/tests/test_snapshot_watermark.py"
-        ]
+        ],
+        "files_touched": [
+          "backend/app/services/report_pdf/snapshot.py",
+          "backend/app/services/report_pdf/watermark.py",
+          "backend/app/services/report_pdf/signer.py",
+          "backend/app/api/admin_reports.py",
+          "backend/tests/test_snapshot_watermark.py",
+          "backend/app/__init__.py"
+        ],
+        "test_result": "24 passed (test_snapshot_watermark.py) — 1340 passed total, 0 regression"
       }
     },
     {
