@@ -150,6 +150,13 @@ def create_app(config_class=Config):
     #   /api/admin/branding/<id>/preview — POST (aperçu SVG)
     from .api.admin_branding import admin_branding_bp
     app.register_blueprint(admin_branding_bp, url_prefix='/api/admin/branding')
+
+    # pdf_generation_bp — génération PDF hybride sync/async (US-129).
+    #   POST /api/admin/reports/<id>/preview  — preview sync 1 page
+    #   POST /api/admin/reports/<id>/generate — enqueue async RQ
+    #   GET  /api/admin/reports/<id>/jobs/<job_id> — polling status
+    from .api.pdf_generation import pdf_generation_bp
+    app.register_blueprint(pdf_generation_bp, url_prefix='/api/admin/reports')
     
     # Health check
     @app.route('/health')
