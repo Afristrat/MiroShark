@@ -3777,7 +3777,7 @@
         "Données absentes → PNG placeholder élégant",
         "Tests pytest fixture + visual regression pytest-mpl tolérance pixel"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-118",
         "US-119"
@@ -3789,8 +3789,12 @@
           "backend/app/services/report_pdf/charts.py",
           "backend/app/services/report_pdf/_style.py",
           "backend/tests/test_charts.py"
-        ]
-      }
+        ],
+        "merge_commit": "f3d8de2",
+        "ralph_session": "2026-05-05",
+        "note": "Re-spawned v2 after v1 used phantom schema fields"
+      },
+      "completedAt": "2026-05-05T23:55:00Z"
     },
     {
       "id": "US-123",
