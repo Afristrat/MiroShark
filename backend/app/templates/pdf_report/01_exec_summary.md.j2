@@ -1,0 +1,40 @@
+{#- 01_exec_summary.md.j2 — Résumé exécutif -#}
+
+## {% if context.lang == 'fr' %}Résumé Exécutif{% elif context.lang == 'en' %}Executive Summary{% else %}ملخص تنفيذي{% endif %}
+
+{% if context.outline and context.outline.summary %}
+{{ context.outline.summary | normalize(context.lang) }}
+{% else %}
+{% if context.lang == 'fr' %}
+*Résumé non disponible pour cette simulation.*
+{% elif context.lang == 'en' %}
+*Summary not available for this simulation.*
+{% else %}
+*الملخص غير متاح لهذه المحاكاة.*
+{% endif %}
+{% endif %}
+
+{% if context.outcome %}
+### {% if context.lang == 'fr' %}Métriques Clés{% elif context.lang == 'en' %}Key Metrics{% else %}المؤشرات الرئيسية{% endif %}
+
+| {% if context.lang == 'fr' %}Indicateur{% elif context.lang == 'en' %}Indicator{% else %}المؤشر{% endif %} | {% if context.lang == 'fr' %}Valeur{% elif context.lang == 'en' %}Value{% else %}القيمة{% endif %} |
+| --- | --- |
+| {% if context.lang == 'fr' %}Verdict{% elif context.lang == 'en' %}Verdict{% else %}الحكم{% endif %} | {{ context.outcome.verdict | normalize(context.lang) }} |
+| {% if context.lang == 'fr' %}Confiance{% elif context.lang == 'en' %}Confidence{% else %}الثقة{% endif %} | {{ (context.outcome.confidence * 100) | round(1) }} % |
+| {% if context.lang == 'fr' %}Rounds exécutés{% elif context.lang == 'en' %}Rounds executed{% else %}الجولات المنفذة{% endif %} | {{ context.outcome.nb_rounds }} |
+| {% if context.lang == 'fr' %}Agents haussiers{% elif context.lang == 'en' %}Bullish agents{% else %}الوكلاء المتفائلون{% endif %} | {{ context.outcome.bullish_pct | round(1) }} % |
+| {% if context.lang == 'fr' %}Agents baissiers{% elif context.lang == 'en' %}Bearish agents{% else %}الوكلاء المتشائمون{% endif %} | {{ context.outcome.bearish_pct | round(1) }} % |
+{% if context.outcome.quality_metrics %}
+| {% if context.lang == 'fr' %}Cohérence{% elif context.lang == 'en' %}Coherence{% else %}التماسك{% endif %} | {{ (context.outcome.quality_metrics.coherence * 100) | round(1) }} % |
+| {% if context.lang == 'fr' %}Diversité{% elif context.lang == 'en' %}Diversity{% else %}التنوع{% endif %} | {{ (context.outcome.quality_metrics.diversity * 100) | round(1) }} % |
+{% endif %}
+
+{% if context.outcome.recommendations %}
+### {% if context.lang == 'fr' %}Recommandations{% elif context.lang == 'en' %}Recommendations{% else %}التوصيات{% endif %}
+
+{% for rec in context.outcome.recommendations %}
+{{ loop.index }}. {{ rec | normalize(context.lang) }}
+{% endfor %}
+{% endif %}
+
+{% endif %}

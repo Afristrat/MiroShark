@@ -1,0 +1,53 @@
+{#- 07_appendix.md.j2 — Annexes -#}
+
+## {% if context.lang == 'fr' %}Annexes{% elif context.lang == 'en' %}Appendices{% else %}الملاحق{% endif %}
+
+{% if context.full_report_md %}
+### {% if context.lang == 'fr' %}Rapport Markdown Complet{% elif context.lang == 'en' %}Full Markdown Report{% else %}التقرير الكامل بصيغة Markdown{% endif %}
+
+{{ context.full_report_md }}
+
+---
+{% endif %}
+
+{% if context.articles %}
+### {% if context.lang == 'fr' %}Articles Générés{% elif context.lang == 'en' %}Generated Articles{% else %}المقالات المولّدة{% endif %}
+
+{% for article in context.articles[:10] %}
+**{{ article.title | normalize(context.lang) }}** — {{ article.agent_name }} ({{ article.platform }}, {% if context.lang == 'fr' %}Round{% elif context.lang == 'en' %}Round{% else %}الجولة{% endif %} {{ article.round }})
+
+{{ article.content | normalize(context.lang) | truncate(300) }}
+
+---
+{% endfor %}
+{% if context.articles | length > 10 %}
+*{% if context.lang == 'fr' %}… {{ context.articles | length - 10 }} article(s) supplémentaire(s) non affiché(s){% elif context.lang == 'en' %}… {{ context.articles | length - 10 }} additional article(s) not shown{% else %}… {{ context.articles | length - 10 }} مقالة إضافية غير معروضة{% endif %}.*
+{% endif %}
+{% endif %}
+
+{% if context.interviews %}
+### {% if context.lang == 'fr' %}Interviews Agents{% elif context.lang == 'en' %}Agent Interviews{% else %}مقابلات الوكلاء{% endif %}
+
+{% for interview in context.interviews[:5] %}
+**{{ interview.agent_name }}** ({{ interview.archetype }})
+{% if interview.questions and interview.answers %}
+{% for q in interview.questions %}
+- **Q:** {{ q | normalize(context.lang) }}
+  {% if loop.index0 < interview.answers | length %}**A:** {{ interview.answers[loop.index0] | normalize(context.lang) }}{% endif %}
+{% endfor %}
+{% endif %}
+*{% if context.lang == 'fr' %}Position finale{% elif context.lang == 'en' %}Final stance{% else %}الموقف النهائي{% endif %}* : {{ interview.final_stance }}
+
+---
+{% endfor %}
+{% endif %}
+
+### {% if context.lang == 'fr' %}Identifiants Techniques{% elif context.lang == 'en' %}Technical Identifiers{% else %}المعرفات التقنية{% endif %}
+
+| {% if context.lang == 'fr' %}Champ{% elif context.lang == 'en' %}Field{% else %}الحقل{% endif %} | {% if context.lang == 'fr' %}Valeur{% elif context.lang == 'en' %}Value{% else %}القيمة{% endif %} |
+| --- | --- |
+| report_id | {{ context.report_id }} |
+| simulation_id | {{ context.simulation_id }} |
+| {% if context.lang == 'fr' %}Généré le{% elif context.lang == 'en' %}Generated at{% else %}تاريخ الإنشاء{% endif %} | {{ generated_at }} |
+| {% if context.lang == 'fr' %}Version template{% elif context.lang == 'en' %}Template version{% else %}إصدار القالب{% endif %} | {{ template_version }} |
+| {% if context.lang == 'fr' %}Branding{% elif context.lang == 'en' %}Branding{% else %}العلامة التجارية{% endif %} | {{ branding_version }} |

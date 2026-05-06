@@ -1,0 +1,44 @@
+{#- 05_verdict.md.j2 — Verdict et conclusion -#}
+
+## {% if context.lang == 'fr' %}Verdict et Conclusion{% elif context.lang == 'en' %}Verdict and Conclusion{% else %}الحكم والخلاصة{% endif %}
+
+{% if context.outcome %}
+{% if context.outcome.verdict %}
+> **{{ context.outcome.verdict | normalize(context.lang) }}**
+{% endif %}
+
+{% if context.outcome.consensus_reached %}
+> ✓ {% if context.lang == 'fr' %}Consensus atteint{% elif context.lang == 'en' %}Consensus reached{% else %}تم التوافق{% endif %}
+{% endif %}
+
+{% if context.outcome.scenario_winner %}
+**{% if context.lang == 'fr' %}Scénario dominant{% elif context.lang == 'en' %}Dominant scenario{% else %}السيناريو المهيمن{% endif %}** : {{ context.outcome.scenario_winner | normalize(context.lang) }}
+{% endif %}
+
+### {% if context.lang == 'fr' %}Distribution Finale{% elif context.lang == 'en' %}Final Distribution{% else %}التوزيع النهائي{% endif %}
+
+| {% if context.lang == 'fr' %}Camp{% elif context.lang == 'en' %}Stance{% else %}الموقف{% endif %} | {% if context.lang == 'fr' %}Part{% elif context.lang == 'en' %}Share{% else %}النسبة{% endif %} |
+| --- | --- |
+| {% if context.lang == 'fr' %}Haussier{% elif context.lang == 'en' %}Bullish{% else %}متفائل{% endif %} | {{ context.outcome.bullish_pct | round(1) }} % |
+| {% if context.lang == 'fr' %}Baissier{% elif context.lang == 'en' %}Bearish{% else %}متشائم{% endif %} | {{ context.outcome.bearish_pct | round(1) }} % |
+
+{% if context.outcome.quality_metrics %}
+### {% if context.lang == 'fr' %}Métriques de Qualité{% elif context.lang == 'en' %}Quality Metrics{% else %}مقاييس الجودة{% endif %}
+
+| {% if context.lang == 'fr' %}Dimension{% elif context.lang == 'en' %}Dimension{% else %}البعد{% endif %} | {% if context.lang == 'fr' %}Score{% elif context.lang == 'en' %}Score{% else %}النتيجة{% endif %} |
+| --- | --- |
+| {% if context.lang == 'fr' %}Cohérence{% elif context.lang == 'en' %}Coherence{% else %}التماسك{% endif %} | {{ (context.outcome.quality_metrics.coherence * 100) | round(1) }} % |
+| {% if context.lang == 'fr' %}Diversité{% elif context.lang == 'en' %}Diversity{% else %}التنوع{% endif %} | {{ (context.outcome.quality_metrics.diversity * 100) | round(1) }} % |
+| {% if context.lang == 'fr' %}Plausibilité{% elif context.lang == 'en' %}Plausibility{% else %}المعقولية{% endif %} | {{ (context.outcome.quality_metrics.plausibility * 100) | round(1) }} % |
+| {% if context.lang == 'fr' %}Alignement{% elif context.lang == 'en' %}Alignment{% else %}التوافق{% endif %} | {{ (context.outcome.quality_metrics.alignment * 100) | round(1) }} % |
+{% endif %}
+
+{% else %}
+{% if context.lang == 'fr' %}
+*Données de verdict non disponibles pour cette simulation.*
+{% elif context.lang == 'en' %}
+*Verdict data not available for this simulation.*
+{% else %}
+*بيانات الحكم غير متوفرة لهذه المحاكاة.*
+{% endif %}
+{% endif %}

@@ -1,0 +1,40 @@
+---
+title: "{{ context.title | normalize(context.lang) }}"
+report_id: "{{ context.report_id }}"
+simulation_id: "{{ context.simulation_id }}"
+lang: "{{ context.lang }}"
+framework: "{{ context.framework }}"
+generated_at: "{{ generated_at }}"
+template_version: "{{ template_version }}"
+branding_version: "{{ branding_version }}"
+---
+
+{% include '00_cover.md.j2' %}
+
+---
+
+{% include '01_exec_summary.md.j2' %}
+
+---
+
+{% include '02_toc.md.j2' %}
+
+---
+
+{% include '03_diagnostic.md.j2' %}
+
+---
+
+{% include '04_dynamic.md.j2' %}
+
+---
+
+{% include '05_verdict.md.j2' %}
+
+---
+
+{% include '06_recommendations.md.j2' %}
+
+---
+
+{% include '07_appendix.md.j2' %}

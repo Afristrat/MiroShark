@@ -1,0 +1,54 @@
+{#- 04_dynamic.md.j2 — Dynamiques et charts narrativés -#}
+{%- from '_macros.md.j2' import chart_with_narrative -%}
+
+## {% if context.lang == 'fr' %}Dynamiques et Analyses{% elif context.lang == 'en' %}Dynamics and Analysis{% else %}الديناميكيات والتحليلات{% endif %}
+
+{% set interp = context.interpretations %}
+
+{{ chart_with_narrative(
+    'belief_drift',
+    'Évolution des Convictions' if context.lang == 'fr' else ('Belief Evolution' if context.lang == 'en' else 'تطور المعتقدات'),
+    interp.get('belief_drift', '') if interp else ''
+) }}
+
+{{ chart_with_narrative(
+    'polymarket_curves',
+    'Courbes de Probabilité' if context.lang == 'fr' else ('Probability Curves' if context.lang == 'en' else 'منحنيات الاحتمالية'),
+    interp.get('polymarket_curves', '') if interp else ''
+) }}
+
+{% if context.demographics %}
+{{ chart_with_narrative(
+    'demographic_pyramid',
+    'Répartition Démographique' if context.lang == 'fr' else ('Demographic Distribution' if context.lang == 'en' else 'التوزيع الديموغرافي'),
+    interp.get('demographic_pyramid', '') if interp else ''
+) }}
+{% endif %}
+
+{{ chart_with_narrative(
+    'influence_leaderboard',
+    'Classement d\'Influence' if context.lang == 'fr' else ('Influence Ranking' if context.lang == 'en' else 'تصنيف النفوذ'),
+    interp.get('influence_leaderboard', '') if interp else ''
+) }}
+
+{% if context.social_network and context.social_network.nodes %}
+{{ chart_with_narrative(
+    'interaction_network',
+    'Réseau d\'Interactions' if context.lang == 'fr' else ('Interaction Network' if context.lang == 'en' else 'شبكة التفاعلات'),
+    interp.get('interaction_network', '') if interp else ''
+) }}
+{% endif %}
+
+{% if context.counterfactuals %}
+### {% if context.lang == 'fr' %}Scénarios Contrefactuels{% elif context.lang == 'en' %}Counterfactual Scenarios{% else %}السيناريوهات البديلة{% endif %}
+
+{% for cf in context.counterfactuals %}
+> **{% if context.lang == 'fr' %}Hypothèse{% elif context.lang == 'en' %}Hypothesis{% else %}الفرضية{% endif %}** : {{ cf.hypothesis | normalize(context.lang) }}
+>
+> *{% if context.lang == 'fr' %}Impact{% elif context.lang == 'en' %}Impact{% else %}الأثر{% endif %}* : {{ cf.delta_verdict | normalize(context.lang) }} (Δ confiance : {{ cf.delta_confidence | round(3) }})
+{% if cf.notes %}
+> {{ cf.notes | normalize(context.lang) }}
+{% endif %}
+
+{% endfor %}
+{% endif %}

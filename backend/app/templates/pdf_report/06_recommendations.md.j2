@@ -1,0 +1,26 @@
+{#- 06_recommendations.md.j2 — Recommandations actionables -#}
+
+## {% if context.lang == 'fr' %}Recommandations{% elif context.lang == 'en' %}Recommendations{% else %}التوصيات{% endif %}
+
+{% if context.outline and context.outline.sections %}
+{% for section in context.outline.sections %}
+### {{ section.title | normalize(context.lang) }}
+
+{% if section.content %}
+{{ section.content | normalize(context.lang) }}
+{% endif %}
+
+{% endfor %}
+{% elif context.outcome and context.outcome.recommendations %}
+{% for rec in context.outcome.recommendations %}
+{{ loop.index }}. {{ rec | normalize(context.lang) }}
+{% endfor %}
+{% else %}
+{% if context.lang == 'fr' %}
+*Recommandations non disponibles pour cette simulation.*
+{% elif context.lang == 'en' %}
+*Recommendations not available for this simulation.*
+{% else %}
+*التوصيات غير متوفرة لهذه المحاكاة.*
+{% endif %}
+{% endif %}

@@ -1,0 +1,45 @@
+{#- _macros.md.j2 — Macros Jinja2 réutilisables pour les templates PDF Bassira -#}
+
+{#- ── kpi_card : carte KPI hero ────────────────────────────────────────────── -#}
+{% macro kpi_card(label, value, unit='', color='orange') -%}
+<div class="kpi-card kpi-{{ color }}">
+**{{ label }}** : {{ value }}{% if unit %} {{ unit }}{% endif %}
+</div>
+{%- endmacro %}
+
+{#- ── callout : encadré informatif ──────────────────────────────────────────── -#}
+{% macro callout(type='info', title='') -%}
+> **{% if type == 'critical' %}⚠ CRITIQUE{% elif type == 'warning' %}⚡ ATTENTION{% else %}ℹ INFO{% endif %}{% if title %} — {{ title }}{% endif %}**
+>
+> {{ caller() }}
+{%- endmacro %}
+
+{#- ── pull_quote : citation mise en valeur ───────────────────────────────────── -#}
+{% macro pull_quote(author='') -%}
+> *{{ caller() }}*
+{% if author %}> — **{{ author }}**{% endif %}
+{%- endmacro %}
+
+{#- ── table_from_data : tableau Markdown depuis liste de dicts ───────────────── -#}
+{% macro table_from_data(rows, columns) -%}
+{% if rows and columns %}
+| {% for col in columns %}{{ col }}{% if not loop.last %} | {% endif %}{% endfor %} |
+| {% for col in columns %}---{% if not loop.last %} | {% endif %}{% endfor %} |
+{% for row in rows %}
+| {% for col in columns %}{{ row.get(col, '—') }}{% if not loop.last %} | {% endif %}{% endfor %} |
+{% endfor %}
+{% else %}
+*Données non disponibles.*
+{% endif %}
+{%- endmacro %}
+
+{#- ── chart_with_narrative : chart + narratif ────────────────────────────────── -#}
+{% macro chart_with_narrative(chart_id, title, narrative='') -%}
+### {{ title }}
+
+![{{ chart_id }}](charts/{{ chart_id }}.png)
+
+{% if narrative %}
+{{ narrative }}
+{% endif %}
+{%- endmacro %}

@@ -1,0 +1,28 @@
+{#- 02_toc.md.j2 — Table des matières -#}
+
+## {% if context.lang == 'fr' %}Table des Matières{% elif context.lang == 'en' %}Table of Contents{% else %}جدول المحتويات{% endif %}
+
+{% if context.lang == 'fr' %}
+1. [Résumé Exécutif](#résumé-exécutif)
+2. [Diagnostic de la Simulation](#diagnostic-de-la-simulation)
+3. [Dynamiques et Charts](#dynamiques-et-charts)
+4. [Verdict et Conclusion](#verdict-et-conclusion)
+5. [Recommandations](#recommandations)
+6. [Annexes](#annexes)
+{% elif context.lang == 'en' %}
+1. [Executive Summary](#executive-summary)
+2. [Simulation Diagnostic](#simulation-diagnostic)
+3. [Dynamics and Charts](#dynamics-and-charts)
+4. [Verdict and Conclusion](#verdict-and-conclusion)
+5. [Recommendations](#recommendations)
+6. [Appendices](#appendices)
+{% else %}
+١. [الملخص التنفيذي](#الملخص-التنفيذي)
+٢. [تشخيص المحاكاة](#تشخيص-المحاكاة)
+٣. [الديناميكيات والمخططات](#الديناميكيات-والمخططات)
+٤. [الحكم والخلاصة](#الحكم-والخلاصة)
+٥. [التوصيات](#التوصيات)
+٦. [الملاحق](#الملاحق)
+{% endif %}
+
+---

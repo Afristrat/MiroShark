@@ -1,0 +1,59 @@
+{#- 03_diagnostic.md.j2 — Diagnostic de la simulation -#}
+
+## {% if context.lang == 'fr' %}Diagnostic de la Simulation{% elif context.lang == 'en' %}Simulation Diagnostic{% else %}تشخيص المحاكاة{% endif %}
+
+{% if context.sim_config %}
+### {% if context.lang == 'fr' %}Configuration{% elif context.lang == 'en' %}Configuration{% else %}الإعدادات{% endif %}
+
+- **{% if context.lang == 'fr' %}Cadre analytique{% elif context.lang == 'en' %}Framework{% else %}الإطار التحليلي{% endif %}** : {{ context.framework | upper }}
+- **{% if context.lang == 'fr' %}Package{% elif context.lang == 'en' %}Package{% else %}الباقة{% endif %}** : {{ context.package }}
+- **{% if context.lang == 'fr' %}Langue{% elif context.lang == 'en' %}Language{% else %}اللغة{% endif %}** : {{ context.lang | upper }}
+{% if context.sim_config.sources %}
+- **{% if context.lang == 'fr' %}Sources{% elif context.lang == 'en' %}Sources{% else %}المصادر{% endif %}** :
+{% for source in context.sim_config.sources %}
+  - {{ source }}
+{% endfor %}
+{% endif %}
+{% endif %}
+
+{% if context.sim_state %}
+### {% if context.lang == 'fr' %}État de la Simulation{% elif context.lang == 'en' %}Simulation State{% else %}حالة المحاكاة{% endif %}
+
+- **{% if context.lang == 'fr' %}Statut{% elif context.lang == 'en' %}Status{% else %}الحالة{% endif %}** : {{ context.sim_state.status }}
+- **{% if context.lang == 'fr' %}Rounds exécutés{% elif context.lang == 'en' %}Rounds executed{% else %}الجولات المنفذة{% endif %}** : {{ context.sim_state.current_round }}
+- **{% if context.lang == 'fr' %}Profils agents{% elif context.lang == 'en' %}Agent profiles{% else %}ملفات الوكلاء{% endif %}** : {{ context.sim_state.profiles_count }}
+- **{% if context.lang == 'fr' %}Entités Neo4j{% elif context.lang == 'en' %}Neo4j entities{% else %}كيانات نيو٤جيه{% endif %}** : {{ context.sim_state.entities_count }}
+{% if context.sim_state.entity_types %}
+- **{% if context.lang == 'fr' %}Types d'entités{% elif context.lang == 'en' %}Entity types{% else %}أنواع الكيانات{% endif %}** : {{ context.sim_state.entity_types | join(', ') }}
+{% endif %}
+{% endif %}
+
+{% if context.agent_profiles %}
+### {% if context.lang == 'fr' %}Profils des Agents Clés{% elif context.lang == 'en' %}Key Agent Profiles{% else %}ملفات الوكلاء الرئيسيين{% endif %}
+
+{% for profile in context.agent_profiles[:5] %}
+**{{ profile.name }}** ({{ profile.archetype }}) — *{{ profile.stance }}*{% if profile.platform %} — {{ profile.platform }}{% endif %}
+{% if profile.description %}
+{{ profile.description | normalize(context.lang) }}
+{% endif %}
+{% endfor %}
+{% if context.agent_profiles | length > 5 %}
+*{% if context.lang == 'fr' %}… et {{ context.agent_profiles | length - 5 }} autre(s) profil(s){% elif context.lang == 'en' %}… and {{ context.agent_profiles | length - 5 }} more profile(s){% else %}… و{{ context.agent_profiles | length - 5 }} ملف إضافي{% endif %}.*
+{% endif %}
+{% endif %}
+
+{% if context.pivotal_moments %}
+### {% if context.lang == 'fr' %}Moments Pivots Détectés{% elif context.lang == 'en' %}Detected Pivotal Moments{% else %}نقاط التحول المكتشفة{% endif %}
+
+{% for moment in context.pivotal_moments[:5] %}
+- **{% if context.lang == 'fr' %}Round{% elif context.lang == 'en' %}Round{% else %}الجولة{% endif %} {{ moment.round }}** ({{ moment.agent }}) : {{ moment.event | normalize(context.lang) }} *(Δ {{ moment.delta_score | round(3) }})*
+{% endfor %}
+{% endif %}
+
+{% if context.director_events %}
+### {% if context.lang == 'fr' %}Événements Directeur{% elif context.lang == 'en' %}Director Events{% else %}أحداث المدير{% endif %}
+
+{% for event in context.director_events %}
+- **{% if context.lang == 'fr' %}Round{% elif context.lang == 'en' %}Round{% else %}الجولة{% endif %} {{ event.round }}** [{{ event.event_type }}] : {{ event.description | normalize(context.lang) }}
+{% endfor %}
+{% endif %}
