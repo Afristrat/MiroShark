@@ -1238,3 +1238,40 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 - `pytest tests/ --tb=short -q` → **1442 passed, 41 skipped, 0 régression** (5 min 00s).
 - `npm run build` → **OK** (warnings chunk pré-existants, 0 erreur).
 - Lignes supprimées de pdf_export.py : ~540 lignes ReportLab obsolètes.
+
+---
+
+### 2026-05-05 — US-134 Loader fixes : outline+outcome+posts+articles+profils complets (worktree agent-a3c62801)
+
+- **Statut** : passes:true. Branch `main` (worktree direct).
+- **Fichiers modifiés** :
+  - `backend/app/services/report_pdf/loader.py` — normaliseurs de champs production + extraction posts critiques
+  - `backend/tests/test_pdf_context_loader.py` — 2 assertions ajustées pour critical_posts dans agent_log
+  - `backend/tests/fixtures/sim_aabbcc112233/actions.jsonl` — enrichi de 7 posts avec scores
+- **Fichiers créés** :
+  - `backend/tests/test_loader_completeness.py` — 34 tests (29 passed + 5 skipped sim réelle absente)
+
+#### Bugs corrigés
+
+1. **`simulation_config.json` : `simulation_requirement` → `title`** (`_normalize_sim_config`) — le format production utilise `simulation_requirement` au lieu de `title`. Mapping + fallback sur aliases `source_documents`→`sources`, `scenario_framework`→`framework`.
+2. **`outcome.json` : `final_verdict` → `verdict`** (`_normalize_outcome`) — `final_verdict`, `conclusion`, `summary_verdict` sont tous mappés vers `verdict`.
+3. **`outcome.json` : `recommendation_list` → `recommendations`** — aliases `recommendation_list`, `recommendation`, `action_items` gérés.
+4. **`outcome.json` : `bullish_percentage` → `bullish_pct`** — et `bearish_percentage` → `bearish_pct`.
+5. **`trajectory.json` format production (snapshots)** (`_normalize_trajectory`) — le format production utilise `{"snapshots": [{"round_num": N, "belief_positions": {...}, "agent_stances": {...}}]}` au lieu de `{"rounds": [...]}`. Convertit snapshots → rounds canoniques avec AgentState.
+6. **`state.json` : aliases `round`/`agent_count`** (`_normalize_sim_state`) — `round` → `current_round`, `agent_count` → `profiles_count`.
+7. **`agent_profiles.json` production : `realname`/`persona.archetype`** (`_normalize_agent_profile`) — profils production ont `realname`, `username`, `bio`, `persona.archetype` (nested dict). Tous les champs déballés correctement vers le schéma canonique.
+8. **`generated_article.json` production : `article_text`** (`_normalize_article_dict`) — format production est un dict unique `{"article_text": "# Titre...\n...", "generated_at": "..."}`. Le titre est extrait de la 1ère ligne, le contenu complet est utilisé.
+9. **Posts critiques absents** (`_extract_critical_posts`) — nouvelle fonction qui extrait depuis `{platform}/actions.jsonl` (format production, `CREATE_POST`) ET depuis `actions.jsonl` racine (format legacy, `action ∈ {post, tweet, comment, message}`). Triés par score décroissant, top 10. Stockés dans `agent_log` avec `_type=critical_posts`.
+
+#### Patterns nouveaux
+
+- **Normaliseurs "2 formats" dans le Loader** : pattern `_normalize_X(data: dict) -> dict` qui résout les aliases de champs production → schéma canonique AVANT `model_validate`. Les fixtures gardent les champs canoniques (pas de double mapping). Le modèle Pydantic avec `extra="ignore"` absorbe les champs inconnus.
+- **Trajectoire dual-format** : `_normalize_trajectory` détecte si `rounds` est présent (format schéma) ou si `snapshots` est présent (format production). Conversion snapshots → AgentState depuis `belief_positions` (moyenne des positions topics) + `agent_stances`.
+- **critical_posts dans agent_log** : les posts critiques sont injectés dans `agent_log` avec `{"_type": "critical_posts", "posts": [...]}`. Les tests qui vérifient l'agent_log doivent filtrer les entrées `_type == "critical_posts"` pour isoler les entries pures report. Schéma non modifié (schema.py intouchable, US-118).
+- **Profil production multi-source** : `realname` > `username` > `user_name` > `agent_name` > `handle` pour `name`. `persona` peut être `str` ou `dict` (avec `archetype`, `bio`). `bio` + `profession` + `interested_topics` → `description` assemblée.
+
+#### Quality gates (2026-05-05)
+
+- `pytest tests/test_loader_completeness.py --tb=short -x` → **29 passed, 5 skipped** (sim réelle absente).
+- `pytest tests/test_pdf_context_loader.py --tb=short -x` → **55 passed, 1 skipped** (0 régression).
+- `pytest tests/ --tb=short -q` → **1471 passed, 46 skipped, 0 failed, 0 régression** (3 min 45s).

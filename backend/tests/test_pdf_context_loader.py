@@ -250,7 +250,15 @@ class TestHappyPathSimOnly:
         assert ctx.outline is None
         assert ctx.full_report_md is None
         assert ctx.sections_md == {}
-        assert ctx.agent_log == []
+        # agent_log peut contenir des entrées critical_posts issues des actions.jsonl
+        # même sans report_id — filtrer les entrées report pures (level/message).
+        report_entries = [
+            e for e in ctx.agent_log
+            if isinstance(e, dict) and e.get("_type") != "critical_posts"
+        ]
+        assert report_entries == [], (
+            "Sans report_id, agent_log ne doit contenir que des entrées critical_posts"
+        )
 
 
 class TestHappyPathWithReport:
@@ -310,8 +318,14 @@ class TestHappyPathWithReport:
             rep_base_dir=_FIXTURES_DIR,
         )
         assert isinstance(ctx.agent_log, list)
-        assert len(ctx.agent_log) == 2
-        assert ctx.agent_log[0]["level"] == "INFO"
+        # agent_log contient les entrées report_agent_log.jsonl + critical_posts
+        # Filtrer uniquement les entrées report (level=INFO/etc.)
+        report_entries = [
+            e for e in ctx.agent_log
+            if isinstance(e, dict) and e.get("_type") != "critical_posts"
+        ]
+        assert len(report_entries) == 2
+        assert report_entries[0]["level"] == "INFO"
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
