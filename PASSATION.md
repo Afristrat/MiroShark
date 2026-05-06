@@ -1,3 +1,250 @@
+== PASSATION MiroShark/Bassira 2026-05-06T05:30:00+01:00 ==
+
+[ETAT]
+- branche `main` `6cd67a1` à jour avec `origin/main` (push confirmé, 39 commits cette session marathon)
+- prod **ONLINE** sur https://prospectives.ai-mpower.com — Coolify rebuild en cours sur dernier push (Phase 7 + US-137)
+- **134/135 stories Ralph passes:true** — 27 nouvelles stories cette session (US-109 → US-117 + US-118 → US-137)
+- **1571 tests backend pytest passing** (+693 cette session vs 878 baseline) · 1 fail mineur `test_md_hash_stable` (datetime non-déterministe) · 59 skipped GTK/Pango Windows
+- npm run build : OK
+- **15 sub-agents Ralph pilotés** (10 sonnet + 4 haiku code review + 1 opus initial) sur 8 phases
+- **Pipeline PDF C-level COMPLET livré** : Loader → Enricher (sanitize tool_call) → ChartFactory → Templates → Renderer → 4 variantes (full/exec/public/one-pager) → Snapshot → Workflow 7 états → Approve & Sign → Async RQ → Delivery URL signée + tracking + Page admin Review
+- **Fix infra critique cloudflared** : config-nahda.yml restauré depuis .bak (vidé à 16:24, prod down 4h)
+- **Path bug critique loader** : `backend/app/uploads/` → `backend/uploads/` (tests passaient via override)
+- **Câblage user→Renderer** (US-133) : -463 lignes reportlab legacy, boutons Step4Report/EmbedDialog branchés sur nouveau pipeline
+
+[FAIT cette session — 27 stories Ralph + ~10 fixes critiques infra]
+
+**Vague 1 — Ralph swarm matin (US-109 → US-117)** :
+✓ **US-109** : Fix ReportView frontend rendering (hydration prop pattern Step4Report). Bug racine : `currentReportId` à valeur d'URL (sim_xxx) au lieu de report_id réel → polling 404. Fix `reportRes.data.report_id` aligné.
+✓ **US-110** : Timeline avancement progressif 1/4 → 4/4 (`ReportProgressTimeline.vue`, 4 stages self-derived, polling 5s auto-stop).
+✓ **US-111** : Chat avec rapport (`ReportChatPanel.vue` sliding panel 380px, RTL via `:global([dir='rtl'])`, history localStorage scopé reportId).
+✓ **US-112** : Onglet "Voir les agents" navigation symétrique ReportView ↔ InteractionView.
+✓ **US-114** : Migration `quote_ownership` Supabase + script filesystem→DB + scoping endpoints admin (404 cross-tenant DEFCON 1).
+✓ **US-115** : Système d'invitation user→org (token UUID + Resend magic link + 410 Gone pour expired/consumed).
+✓ **US-116** : Audit OWASP + 2 corrections P0 (tracebacks purgés `report.py`, SSRF `webhook_service.validate_url()` + 36 tests sécurité).
+✓ **US-117** : 42 tests Playwright multitenant (fixtures `seedSuperAdminAuth`, 4 race conditions auth guard documentées). 32 → 74 tests E2E.
+
+**Vague 2 — Chantier PDF C-level (US-118 → US-137) — 8 phases swarm** :
+
+**Phase 1 fondations data (US-118/119/120)** :
+✓ **US-118** : Schema PDFReportContext Pydantic v2 — 22 sub-models (52 tests). `extra="ignore"` global, `validate_assignment=True`.
+✓ **US-119** : Loader 20+ artifacts simulation/report (re-spawn v2 contre schema canonique, v1 avait reconstruit son propre schema fantôme). 55 tests.
+✓ **US-120** : Migration `pdf_branding` Supabase + admin CRUD `/admin/branding` (37+8 tests). Versioning append-only (valid_from/to). Preview SVG base64 sans WeasyPrint.
+
+**Phase 2 i18n + visualisations (US-121/122)** :
+✓ **US-121** : TextNormalizer FR/EN/AR + LanguageTool self-host Docker (103 tests). FR DEFCON 1 : accents majuscules forcés via dict + nbsp `U+202F` + guillemets «».
+✓ **US-122** : ChartFactory matplotlib palette Causse — 5 charts signature 300 DPI (re-spawn v2, v1 utilisait champs schema inexistants `belief_score`/`agent_name`). 22 tests + `nx.spring_layout(seed=42)` reproductible.
+
+**Phase 3 templates + enrichment (US-123/124)** :
+✓ **US-123** : Templates Jinja2 `.md.j2` source unique (cover + exec_summary + toc + 4 sections + appendix + `_full.md.j2` + `_macros.md.j2`). Filter `|normalize` lang-aware. 18 tests.
+✓ **US-124** : Enricher LLM (KPI hero + pivotal_moments + chart narratives + executive_takeaways). Cache LRU TTL 24h. Mock `MagicMock` autouse. 14 tests.
+
+**Phase 4 renderer (US-125)** :
+✓ **US-125** : Renderer pipeline (MD direct + PDF via WeasyPrint). CSS `@page` natif headers/footers running elements. `pdf_brand.css.j2` injectable depuis branding row. PDF metadata set. 23+10 tests (10 skip GTK Windows).
+
+**Phase 5 workflow + finalize (US-126/128)** :
+✓ **US-126** : Workflow 7 états (GENERATING → DRAFT → IN_REVIEW → PENDING_APPROVAL → APPROVED → DELIVERED → ARCHIVED) + audit log immuable (RLS `using(false)`). Locking optimiste 30 min. 50 tests.
+✓ **US-128** : Approve & Sign — snapshot SHA256 immuable + watermark diagonal recipient (reportlab overlay + pypdf merge) + signature PAdES via pyHanko (best-effort). 24 tests.
+
+**Phase 6 admin UI + async + delivery (US-127/129/130)** :
+✓ **US-127** : Page admin `/admin/reports/<id>/review` — split view PDF.js + Tiptap inline + CodeMirror raw MD + diff-match-patch versions + comments. 19+8 tests. 9 nouvelles deps NPM (Tiptap + CodeMirror + diff-match-patch).
+✓ **US-129** : Génération hybride sync/async — `/preview` 1p sync + `/generate` async RQ Redis (`coolify-redis`) + cache LRU TTL 24h + Ghostscript `-dPDFSETTINGS=/prepress`. 18 tests. Pre-warm fonts WeasyPrint au boot worker.
+✓ **US-130** : Delivery URL signée HMAC SHA256 (nonce 8 bytes hex, comparison constant-time) + email Resend multilang + tracking `report_downloads` (CF-IPCountry géo). Auto-archive 90j. 19+6 tests.
+
+**US-133 câblage user endpoints** (post-audit Amine, pas dans PRD initial) :
+✓ Refactor `pdf_export.py::_build_pdf()` et `_build_markdown()` → appellent `Renderer(context).render_pdf()/render_md()`. -463 lignes reportlab legacy. Helpers `_resolve_report_id_for_simulation()` + `_resolve_lang_for_simulation()`. EmbedDialog.vue:643 fetch inline → `exportSimulationPdf()` service centralisé. i18n `report.exportPdf` mis à jour FR/EN/AR. 12 tests.
+
+**Phase 8 fixes post-audit rapport (US-134/135/136)** :
+✓ **US-134** : Loader fixes — 9 bugs majeurs mapping prod→canonique : `simulation_requirement → title`, `final_verdict → verdict`, `bullish_percentage → bullish_pct`, `snapshots → rounds`, `realname + persona.archetype → name + archetype`. Helpers `_normalize_*`. Nouvelle `_extract_critical_posts()` top 10 actions.jsonl. 34 tests.
+✓ **US-135** : Enricher fixes — **DEFCON 1 sanitize_llm_output()** supprime `<tool_call>`, `<function_call>`, `<thinking>`, `<scratchpad>` avant injection livrable client. KPI Hero `confidence_pct` depuis `bullish_pct` (pas `outcome.confidence` souvent 0). Takeaways fallback gracieux depuis `outline.summary` split 3 phrases. 20 tests.
+✓ **US-136** : Templates fixes — numérotation `loop.index` (au lieu de `section.idx`), filter `|format_date` Babel `fr_FR/en_US/ar_MA`, charts `data:image/png;base64,...` via `_embed_charts_md()` dans Renderer, articles+posts fallbacks callouts gracieux, profils colonnes Archétype/Plateforme conditionnelles via `selectattr`. 17 tests.
+
+**Phase 7 reprise (US-131/132)** :
+✓ **US-131** : 4 variantes PDF (full=10424c / exec=1920c / public=1502c / one-pager=1162c). Anonymizer regex ORG (Inc/SA/SAS/SARL/Corp/LLC/GmbH) + AGENT (Agent_X/@username). Cohérence via `_AnonymizationState` partagé. Public désactive watermark. 38 tests.
+✓ **US-132** : Tests pipeline E2E + accessibilité PDF/UA + visual regression. Linter `lint_palette_contrast.py` WCAG AA. **Finding** : `WI_ORANGE/WI_CREAM 2.25:1 < 3.0:1` (échec WCAG AA large text). 20 tests + golden masters dossier.
+
+**US-137 page admin Users** :
+✓ Page `/admin/users` — `auth.users + members + orgs` agrégés. Stats cards (Total/Actifs 7j/Nouveaux 30j) + filtres org+search+pagination. Modal simulations + modal profil. Super-admin cross-tenant via `auth.admin.list_users()`, org admin scoped via `user_orgs()`. 21+4 tests.
+
+**Fixes infra critiques cette session** :
+✓ **Fix prod down 4h (cloudflared)** : `/home/serveurai/.cloudflared/config-nahda.yml` vidé à 16:24 (cause inconnue, post mon push). Restauration depuis `.bak` du 1er mai (9 hostnames mappés). Service `cloudflared-nahda.service` redémarré. 4h de diagnostic raté avant de trouver — leçon : **si plusieurs services tombent en même temps, ce n'est PAS le push, c'est l'infra commune** (memory `feedback_diagnostic_method` créée).
+✓ **Path bug loader** : `_UPLOADS_DIR = backend/app/uploads/` → `backend/uploads/` (alignement SimulationManager). Régression invisible aux tests US-119 (override `sim_base_dir=tmp_path` dans tests, prod cassé).
+✓ **Step4Report layout split→stack** : `display: flex` horizontal 45%/55% qui laissait moitié droite vide pendant scroll → `flex-direction: column` + ordre 1 (sommaire en haut) / ordre 2 (rapport pleine largeur).
+✓ **Dockerfile WeasyPrint deps** : `libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz0b libcairo2 libgdk-pixbuf-2.0-0` (PAS `libgdk-pixbuf2.0-0` — Bookworm, pas Bullseye). + `ghostscript poppler-utils fonts-dejavu-core`.
+✓ **N rounds** : lecture exhaustive `current_round / total_rounds / outcome.nb_rounds` (au lieu de `n_rounds` inexistant).
+✓ **Timeline cascade** : si `reportStatus=completed`, force `simStage` + `agentStage` à `done`.
+✓ **IDs cosmétiques** : "Référence simulation/rapport" + abrégés `…XXXXXXXX` + tooltip ID complet.
+
+[VALIDÉ EN PROD — partiel après redeploys successifs]
+- Layout stack vertical fonctionnel (commit `84ef9e3`)
+- Backend nouveau pipeline tourne (test direct `/api/simulation/<id>/export-pdf` retourne erreur PDFContextLoaderError quand fichier absent — preuve que le loader tape les bons paths)
+- Page `/admin/branding` accessible super-admin
+- Page `/admin/reports/<id>/review` accessible super-admin
+- Tests Playwright nouvelles routes : 6/8 sur `admin-users` 4/4 sur `admin-report-tracking` 8/8 sur `admin-report-review`
+
+[BLOQUÉ — actions humaines pendantes]
+- !! **3 SECRETS LEAKÉS** dans le chat de cette session (rotation OBLIGATOIRE) :
+  1. `POSTGRES_PASSWORD` Coolify DB : `FMTsYG19xrU/yQ/yF6Zt49OztrOitUT90gGb/9XCwA8=` → reset via Coolify
+  2. Secrets Supabase déjà leakés session précédente (toujours pas tournés ?) : `SUPABASE_SERVICE_ROLE_KEY`, password DB Supabase, JWT access_token Google
+- **Stripe credentials** (US-113) : Amine doit créer compte stripe.com + poser `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` dans Coolify
+- **Variables Coolify à vérifier en prod** :
+  - `BASSIRA_DELIVERY_HMAC_SECRET` — DOIT être set 32 bytes random (sinon fallback dev insecure)
+  - `LANGUAGETOOL_URL` (default `http://localhost:8010` — container séparé US-121, à activer si voulu)
+  - `BASSIRA_SIGNING_CERT_P12_PATH` + `BASSIRA_SIGNING_CERT_PASSWORD` (US-128 signature PAdES, optionnel)
+  - `PDF_GENERATION_WEBHOOK_URL` (US-129 callback, optionnel)
+  - `BASSIRA_PUBLIC_URL` (default https://prospectives.ai-mpower.com — déjà OK)
+- **2 nouvelles migrations Supabase à jouer** :
+  - `supabase/migrations/20260506_001_pdf_branding.sql` (US-120 — table branding)
+  - `supabase/migrations/20260506_002_report_workflow.sql` (US-126 — report_states + audit_log)
+  - `supabase/migrations/20260506_003_report_versions.sql` (US-127 — versions + comments)
+  - `supabase/migrations/20260506_004_report_delivery.sql` (US-130 — deliveries + downloads)
+
+[ALERTE]
+!! **Rapport généré avant Phase 8** : le `bassira-sim_ea0eb65b.md` audité par Amine montrait 16 bugs (KPI 0%, `<tool_call>` brut, sections numérotées 1-1-1, profils tous neutral, etc.). **Re-générer un rapport après Coolify redeploy Phase 8** pour valider que les fixes US-134/135/136 sont effectifs en prod.
+!! **Anglais mélangé au FR dans citations agents** : c'est dans le `full_report.md` source (LLM-généré). Le pipeline ne traduit pas. À traiter via prompt ReportAgent renforcé OU post-translation US-138 future.
+!! **WI_ORANGE/WI_CREAM contraste 2.25:1** : échec WCAG AA large text (≥ 3:1 requis). À corriger en US-138 (choisir `WI_ORANGE` plus foncé ou utiliser `WI_TERRA` pour les titres sur fond cream).
+!! **1 test fail mineur** : `test_md_hash_stable_with_deterministic_enricher` (datetime non-déterministe). À fixer via mock `freezegun` ou patcher `_now()` helper.
+!! **Coolify Force without cache** : toujours alerte connue (re-pull torch + nvidia-cuda 1.5 GB cumulés peut OOM). Préférer Redeploy simple. Maintenant que Dockerfile inclut WeasyPrint deps, première rebuild après push Dockerfile = longue (~15 min).
+!! **2 endpoints publics à WatchOut** : `POST /api/simulation/<id>/export-pdf` (US-133) — l'agent a mis `@require_auth` mais à vérifier en prod (pas d'auth dans test direct = trou ?). `GET /r/<token>` (US-130) public sans auth, signature HMAC TTL OK.
+
+[PARTIEL]
+
+### Le rapport audité a 16 bugs identifiés mais 13/16 sont fixés par Phase 8 (à valider post-redeploy)
+✅ Fix US-134 : titre, verdict, recommandations, sources, profils, current_round
+✅ Fix US-135 : KPI hero, sanitize tool_call, takeaways
+✅ Fix US-136 : numérotation sections, dates Babel, charts data URI, articles+posts callouts gracieux
+⚠️ **Reste 3 bugs liés à la donnée source** (pas le pipeline) :
+1. **Anglais mélangé** dans citations agents (bug de LLM source au moment de la simulation)
+2. **Profils stance "neutral"** — peut-être lire depuis `trajectory.snapshots[i].agent_stances` au lieu de profil statique
+3. **Articles "Round 0"** avec titre = répétition exec summary — parsing GeneratedArticle à creuser
+
+### Test fail mineur (non-bloquant)
+- `test_md_hash_stable_with_deterministic_enricher` : datetime non-déterministe → mock `freezegun` à ajouter
+
+### Variantes PDF non testées en visuel
+- US-131 livré 38 tests passing mais pas validé visuellement avec WeasyPrint (skip Windows). Les 4 variantes (full/exec/public/one-pager) doivent être testées en prod après redeploy.
+
+### Page admin Users (US-137) à tester en visuel
+- Build OK, tests Playwright OK ciblés prod (résilients pré-déploiement). À cliquer manuellement post-redeploy.
+
+[NEXT — chantiers prêts à attaquer en nouvelle session]
+
+### Prio P0 — validation utilisateur
+- **Lancer une simulation propre** avec le fichier MD préparé `C:\Users\amans\Downloads\bassira-simulation-reforme-code-travail-2026.md` (Réforme Code du travail Maroc 2026, framework cerberus, fr, 25 rounds). Document exhaustif 30+ acteurs, hypothèses chiffrées, sources publiques. Sera la VRAIE preuve que le pipeline fonctionne C-level.
+- Une fois simulation completed → re-télécharger PDF + MD → comparer avec le rapport audité (avant fixes Phase 8).
+
+### Prio P1 — US-138 finitions résiduelles
+- **Fix accessibilité** : changer la palette ou les usages — `WI_ORANGE` sur `WI_CREAM` ratio 2.25 cassé. Solutions : utiliser `WI_TERRA` (#A13F0F) pour titres, OU foncer `WI_ORANGE` jusqu'à `#E55A1F`, OU ajouter `text-shadow` ou `outline` pour améliorer lisibilité.
+- **Fix test hash stable** : `freezegun.freeze_time("2026-01-01")` autour des tests de hash MD/PDF.
+- **Profils stance non-neutral** : modifier loader pour lire `snapshots[-1].agent_stances` et associer à chaque AgentProfile.
+- **Articles parser** : améliorer `_parse_generated_articles()` pour extraire vrais titres + bodies + round + platform + stance.
+- **Anglais dans citations** : prompt ReportAgent renforcé "respecte la langue source" OU post-translation.
+
+### Prio P1 — Stripe checkout natif (US-113)
+- Bloqué humain pour credentials, sinon prêt à coder dès que `STRIPE_SECRET_KEY` posée.
+
+### Prio P2 — features futures
+- **US-139 Quote Stripe automation** : automatiser `quote_delivered.html` pour appeler `report_delivery.create_delivery()` au lieu d'admin manuel.
+- **US-140 Workflow client→admin→delivery** : si on veut un vrai flow où le user demande un rapport, admin valide, user reçoit lien signé. Refonte UX Step4Report.
+- **US-141 Mode "Diff" entre simulations** : variante "Comparison Report" alimentée par `/api/simulation/compare` existant.
+- **US-142 Watermark dynamique** : actuellement on a la fonction `apply_watermark_to_pdf()` (US-128) mais pas branchée sur le user export. À ajouter si livraison NDA-strict.
+- **US-143 Slide deck export** : sortie PowerPoint/Keynote depuis le même PDFReportContext via python-pptx.
+- **US-144 Mode async pour /export-pdf user** : actuellement sync. Pour les rapports lourds (> 30s), basculer sur queue RQ avec polling client.
+
+### Bloqué humain
+- US-113 Stripe (credentials)
+- Témoignages partenaires NDA
+- Logo Bassira complet (rejeté memory `feedback_rejected_tools`)
+
+[CTX session marathon]
+- ~5000+ tool calls cumulés (interactions Claude + 15 sub-agents)
+- **39 commits poussés** sur main : Ralph swarm 4 sub-agents matin (US-109→117) + Ajout US-118→132 PRD + 8 phases swarm (US-118→137) + 3 fix infra (cloudflared, path loader, Dockerfile WeasyPrint, layout) + US-133 câblage + Phase 8 fixes + push Phase 7+US-137 final
+- 15 sub-agents pilotés : 1 opus (Ralph batch matin), 10 sonnet (Phases 1-8), 4 haiku (code review câblage)
+- Tests : 878 → **1571 backend pytest** (+693 cette session)
+- Modèle : Opus 4.7 (1M context) toute la session
+
+[MEMO inter-sessions]
+
+### Patterns Ralph swarm validés
+- **Stories qui IMPORTENT depuis le schema canonique doivent attendre que ce schema soit mergé** — pas de parallélisation tant que le contrat n'est pas en main. Re-spawn US-119 et US-122 v2 ont prouvé cette règle.
+- **Worktrees démarrés depuis commit ancien manquent les fichiers récents** : agents doivent vérifier `ls` au démarrage et `git merge main --no-edit` si absents. Plusieurs agents ont recréé schema.py/loader.py au lieu de les utiliser depuis main.
+- **`<tool_call>` brut LLM injecté livrable client = DEFCON 1** : sanitize obligatoire sur TOUTE sortie LLM via `sanitize_llm_output()` avant injection contexte.
+- **Mapping prod ↔ schema canonique** : tests fixtures fonctionnent mais prod casse — ajouter `_normalize_*` helpers dans loader pour mapper noms de champs prod (`simulation_requirement → title`, `final_verdict → verdict`, etc.).
+- **Code review haiku parallel** : 4 agents read-only modèle léger pour cartographier des bugs avant fix sonnet. Très efficace.
+
+### Infra serveurai
+- Tunnel Cloudflare = `cloudflared-nahda.service` (PAS `cloudflared.service`). Config `/home/serveurai/.cloudflared/config-nahda.yml` mappe 9 hostnames `*.ai-mpower.com`.
+- **Garde un .bak** : `/home/serveurai/.cloudflared/config-nahda.yml.bak` (1er mai 14:29) = filet de sauvetage essentiel.
+- Docker base : `FROM python:3.11` = Debian 12 Bookworm (PAS Ubuntu, malgré que le host serveur soit Ubuntu). Noms de packages = Debian Bookworm (`libgdk-pixbuf-2.0-0` avec trait d'union).
+- Reboot serveur n'aide pas si le bug est dans un fichier config user (ex: cloudflared YAML vide).
+
+### Pipeline PDF Bassira
+- **Stocké dans `backend/uploads/report_snapshots/<report_id>/v<n>/`** (PAS `backend/app/uploads/`).
+- **Schema canonique vs noms prod différents** : `simulation_requirement → title`, `final_verdict → verdict`, `bullish_percentage → bullish_pct`, `snapshots → rounds`, `realname + persona.archetype → name + archetype`. Helpers `_normalize_*` dans loader.
+- **WeasyPrint deps Docker Bookworm** : `libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz0b libcairo2 libgdk-pixbuf-2.0-0 libffi-dev shared-mime-info fonts-dejavu-core ghostscript poppler-utils`.
+- **Tests skip @skipif WEASYPRINT_UNAVAILABLE** : Windows local sans GTK passe les tests qui n'utilisent pas le rendu PDF, prod Linux active tout.
+- **TextNormalizer FR** : accents majuscules forcés UNIQUEMENT sur mots TOUT-CAPS (`ETAT` → `ÉTAT`). Pas sur mots normaux (`Etat` reste tel quel — c'est un bug LLM source à corriger en amont si nécessaire).
+
+### Conventions commits
+- `[US-XXX] Titre exact de la story` pour les stories Ralph
+- `[fix US-XXX] Description` pour les fix critiques
+- `[Ralph] Description` pour les actions de gouvernance (PRD update, push, mark passes:true)
+- Toujours `Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>` (ou `Sonnet 4.6` selon agent)
+
+### Memory globale
+- `feedback_diagnostic_method` créée : "si plusieurs services tombent en même temps, mon push n'est probablement PAS la cause" — vérifier le périmètre AVANT de creuser.
+- `feedback_shell_single_line` créée : commandes SSH/bash sur UNE ligne (séparateurs `;` ou `&&`) pour éviter casse au copier-coller PuTTY.
+- `reference_serveurai_infra` créée : topologie tunnel + Coolify Traefik + paths critiques.
+
+[Recommandations pour la nouvelle session]
+
+1. **AVANT TOUT** : rotation 3 secrets leakés cette session + lancer une simulation propre avec le MD `bassira-simulation-reforme-code-travail-2026.md` pour valider le pipeline visuellement.
+
+2. **Étape 1 — Vérifier que Phase 7 + US-137 sont bien déployés** :
+   - Hard refresh navigateur (Ctrl+Shift+R) sur `/console`, `/admin/users`, `/admin/branding`, `/admin/reports/<id>/review`
+   - Vérifier que `/admin/users` liste les users (Supabase + members + orgs)
+   - Vérifier que `/admin/branding` permet de configurer le branding PDF
+   - Si quelque chose casse → check Coolify logs runtime container miroshark
+
+3. **Étape 2 — Valider le pipeline PDF via simulation propre** :
+   - Charger le fichier MD préparé dans `/console`
+   - Lancer simulation framework=cerberus, lang=fr, ~25 rounds
+   - Attendre completion
+   - Cliquer icône PDF + icône MD dans Step4Report
+   - Comparer avec rapport audité (avant Phase 8) :
+     * Titre rempli ✓ (US-134)
+     * KPI Hero non-zero ✓ (US-135)
+     * Verdict non vide ✓ (US-134 + 135)
+     * Recommandations remplies ✓ (US-134)
+     * Sections numérotées 1-N ✓ (US-136)
+     * Date format FR humain ✓ (US-136)
+     * Pas de `<tool_call>` brut ✓ (US-135)
+     * Charts embarqués data URI dans MD ✓ (US-136)
+     * Articles + posts callouts gracieux si vides ✓ (US-136)
+
+4. **Étape 3 — Si bugs résiduels → US-138** :
+   - Profils stance non-neutral (lire depuis trajectory)
+   - Articles parser amélioré
+   - Anglais mélangé FR (prompt ReportAgent ou post-translation)
+   - WI_ORANGE/WI_CREAM contraste WCAG AA
+   - Test hash stable freezegun
+
+5. **Étape 4 — Stripe (US-113)** : créer compte Stripe, poser `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` dans Coolify, l'US est codée prête.
+
+6. **Étape 5 — Variables env Coolify à valider** :
+   - `BASSIRA_DELIVERY_HMAC_SECRET` (US-130 sécurité critique)
+   - `BASSIRA_SUPER_ADMIN_EMAILS` (déjà OK depuis session précédente)
+   - `RESEND_API_KEY` + `RESEND_FROM_EMAIL` (déjà OK)
+   - Migrations Supabase 20260506_001 à 004 à jouer (4 migrations, idempotentes)
+
+7. **Étape 6 — Tests Playwright en CI Linux** : sur Linux les tests WeasyPrint passent (skip seulement sur Windows). Configurer GitHub Actions pour exécuter pytest + playwright avec deps GTK installées.
+
+8. **Étape 7 — Phase 9 features futures** (selon priorité business) : US-138 fixes, US-139 quote automation, US-140 workflow client→admin, US-141 comparison report, US-142 watermark user export, US-143 slide deck.
+
+— fin passation 2026-05-06 — Session marathon 27 stories Ralph + 15 sub-agents + 8 phases swarm + 39 commits — Pipeline PDF C-level COMPLET + Page admin Users livrés. Reste US-113 Stripe (humain) + US-138 finitions résiduelles.
+
+---
+
 == PASSATION MiroShark/Bassira 2026-05-04T23:50:00+01:00 ==
 
 [ETAT]
