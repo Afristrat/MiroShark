@@ -16,7 +16,7 @@
 | Section | Titre |
 | --- | --- |
 {% for section in context.outline.sections %}
-| {{ section.idx + 1 }} | {{ section.title | normalize(context.lang) }} |
+| {{ loop.index }} | {{ section.title | normalize(context.lang) }} |
 {% endfor %}
 
 {% endif %}

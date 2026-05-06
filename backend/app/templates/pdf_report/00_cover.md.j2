@@ -3,7 +3,7 @@
 
 **Framework d'analyse :** {{ context.framework | upper }} — **Package :** {{ context.package }}
 
-**Date de génération :** {{ generated_at }}
+**Date de génération :** {{ generated_at | format_date(lang=context.lang) }}
 
 ---
 

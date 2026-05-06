@@ -55,18 +55,23 @@ class Renderer:
     """Pipeline de génération de rapports PDF Bassira.
 
     Args:
-        context:  Contexte complet du rapport (PDFReportContext).
-        branding: Row de branding PDF actif (dict depuis pdf_branding).
-                  Si None, les defaults Bassira sont utilisés dans le CSS.
+        context:       Contexte complet du rapport (PDFReportContext).
+        branding:      Row de branding PDF actif (dict depuis pdf_branding).
+                       Si None, les defaults Bassira sont utilisés dans le CSS.
+        charts_factory: Instance de ChartFactory optionnelle. Si fournie,
+                       les charts sont embarqués en data URI dans le Markdown
+                       rendu par ``render_md()`` ET dans le HTML de ``render_pdf()``.
     """
 
     def __init__(
         self,
         context: PDFReportContext,
         branding: Optional[Any] = None,
+        charts_factory: Optional[Any] = None,
     ) -> None:
         self.context = context
         self.branding = branding  # Dict ou None
+        self.charts_factory = charts_factory  # ChartFactory ou None
 
     # ── Méthodes publiques ─────────────────────────────────────────────────────
 
@@ -105,6 +110,11 @@ class Renderer:
             template_version=_TEMPLATE_VERSION,
             branding_version=branding_version,
         )
+
+        # 4. Embed des charts en data URI dans le Markdown (standalone .md)
+        #    Remplace ](belief_drift.png) → ](data:image/png;base64,XXXX)
+        if self.charts_factory is not None:
+            md_text = _embed_charts_md(md_text, self.charts_factory)
 
         return md_text
 
@@ -202,6 +212,50 @@ class Renderer:
 
 
 # ── Helpers module-level ───────────────────────────────────────────────────────
+
+
+def _embed_charts_md(md_text: str, charts_factory: Any) -> str:
+    """Remplace les références image Markdown ``](name.png)`` par des data URIs base64.
+
+    Le template ``_macros.md.j2`` génère ``![alt](belief_drift.png)``.
+    Dans un fichier .md standalone, ces chemins sont invalides (les PNG ne sont
+    pas copiés à côté du fichier). Cette fonction les remplace par des data URIs
+    ``data:image/png;base64,XXXX`` produits par ``charts_factory``.
+
+    Args:
+        md_text:        Markdown rendu par Jinja2 (avec les chemins ``.png`` bruts).
+        charts_factory: Instance de ChartFactory avec les méthodes de génération.
+
+    Returns:
+        Markdown avec les references PNG remplacées par des data URIs base64.
+    """
+    for method_name in _CHART_METHODS:
+        placeholder = f"]({method_name}.png)"
+        if placeholder not in md_text:
+            continue
+
+        try:
+            chart_method = getattr(charts_factory, method_name, None)
+            if chart_method is None:
+                logger.warning(
+                    "ChartFactory.%s() non trouvé — placeholder PNG conservé dans MD.",
+                    method_name,
+                )
+                continue
+
+            png_bytes: bytes = chart_method()
+            b64 = base64.b64encode(png_bytes).decode("ascii")
+            data_uri = f"](data:image/png;base64,{b64})"
+            md_text = md_text.replace(placeholder, data_uri)
+            logger.debug("Chart %s embarqué en data URI dans le MD (%d bytes PNG).", method_name, len(png_bytes))
+        except Exception as exc:
+            logger.warning(
+                "Génération chart %s échouée pour embed MD : %s — placeholder conservé.",
+                method_name,
+                exc,
+            )
+
+    return md_text
 
 
 def _strip_frontmatter(md_text: str) -> str:

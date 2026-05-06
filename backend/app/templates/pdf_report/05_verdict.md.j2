@@ -68,12 +68,12 @@
 
 {% if context.articles %}
 {% for article in context.articles[:5] %}
-#### Article — Round {{ article.round }} — *{{ article.agent_name | normalize(context.lang) }}*
+#### Article — Round {{ article.round | default('—') }} — *{{ article.agent_name | default('') | normalize(context.lang) }}*
 
-**Titre :** {{ article.title | normalize(context.lang) }}
-**Plateforme :** {{ article.platform }} | **Stance :** {{ article.stance }}
+**Titre :** {{ article.title | default('Sans titre') | normalize(context.lang) }}
+**Plateforme :** {{ article.platform | default('—') }} | **Stance :** {{ article.stance | default('neutre') }}
 
-{{ article.content[:300] | normalize(context.lang) }}{% if article.content | length > 300 %}…{% endif %}
+{{ (article.content | default(''))[:300] | normalize(context.lang) }}{% if article.content and article.content | length > 300 %}…{% endif %}
 
 ---
 {% endfor %}
@@ -82,7 +82,11 @@
 *{{ context.articles | length - 5 }} article(s) supplémentaire(s) non affiché(s). Voir l'Annexe pour la liste complète.*
 {% endif %}
 {% else %}
-{{ callout('info', 'Articles générés', 'Aucun article généré par les agents n\'est disponible pour cette simulation.') }}
+> [!NOTE] **Articles générés**
+>
+> Aucun article n'a été généré par les agents pour cette simulation.
+> Les articles synthétiques apparaissent uniquement avec certaines configurations
+> de simulation activant le mode « press-room ».
 {% endif %}
 
 ---

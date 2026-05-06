@@ -73,23 +73,35 @@
 ### Posts Critiques et Interprétation
 
 {% set action_source = context.agent_log if context.agent_log else [] %}
+{# Filtrer les entrées qui ont au moins un message ou un contenu non vide #}
+{% set critical_posts = [] %}
+{% for entry in action_source %}
+{% set msg = entry.get('message', entry.get('content', '')) %}
+{% if msg and msg | trim | length > 0 %}
+{% if critical_posts.append(entry) %}{% endif %}
+{% endif %}
+{% endfor %}
 
-{% if action_source %}
+{% if critical_posts %}
 | Round | Agent | Plateforme | Message (extrait) |
 | --- | --- | --- | --- |
-{% for entry in action_source[:10] %}
-| {{ entry.get('round', '—') }} | {{ entry.get('agent_name', entry.get('name', '—')) }} | {{ entry.get('platform', '—') }} | {{ (entry.get('message', entry.get('content', '—'))[:80] + '…') | normalize(context.lang) }} |
+{% for entry in critical_posts[:10] %}
+| {{ entry.get('round', '—') }} | {{ entry.get('agent_name', entry.get('name', '—')) | normalize(context.lang) }} | {{ entry.get('platform', '—') }} | {{ (entry.get('message', entry.get('content', ''))[:80] + '…') | normalize(context.lang) }} |
 {% endfor %}
 
 {% elif context.articles %}
 | Round | Agent | Plateforme | Titre Article |
 | --- | --- | --- | --- |
 {% for article in context.articles[:10] %}
-| {{ article.round }} | {{ article.agent_name | normalize(context.lang) }} | {{ article.platform }} | {{ article.title | normalize(context.lang) }} |
+| {{ article.round | default('—') }} | {{ article.agent_name | default('—') | normalize(context.lang) }} | {{ article.platform | default('—') }} | {{ article.title | default('Sans titre') | normalize(context.lang) }} |
 {% endfor %}
 
 {% else %}
-{{ callout('info', 'Journal d\'actions', 'Le journal d\'actions des agents (agent_log.jsonl / actions.jsonl) n\'est pas disponible pour cette simulation.') }}
+> [!NOTE] **Posts critiques**
+>
+> La trajectoire de simulation ne contient pas de posts publiés.
+> Cette section est alimentée par `actions.jsonl` quand le framework
+> active la diffusion sociale (Reddit/Twitter agents).
 {% endif %}
 
 ---
