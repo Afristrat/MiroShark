@@ -149,7 +149,10 @@ def clear_enricher_caches():
 
 
 def test_compute_kpi_hero_champs_corrects():
-    """Test 01 — KPIHero rempli avec champs corrects depuis outcome."""
+    """Test 01 — KPIHero rempli avec champs corrects depuis outcome.
+
+    US-135 : confidence_pct dérivé de bullish_pct (62.5), pas de confidence (0.78).
+    """
     ctx = _make_context(with_outcome=True)
     enricher = Enricher(ctx, llm_client=_make_mock_llm())
     enricher._compute_kpi_hero()
@@ -158,7 +161,8 @@ def test_compute_kpi_hero_champs_corrects():
     assert hero is not None
     assert isinstance(hero, KPIHero)
     assert hero.verdict == "Le marché demeure haussier malgré la pression réglementaire."
-    assert abs(hero.confidence_pct - 78.0) < 0.1
+    # US-135 : confidence_pct vient de bullish_pct=62.5, pas de confidence=0.78*100
+    assert abs(hero.confidence_pct - 62.5) < 0.1
     assert 0.0 <= hero.brier <= 1.0
     assert "bullish" in hero.scenario_distribution
     assert "bearish" in hero.scenario_distribution
@@ -447,7 +451,13 @@ def test_enrich_retourne_le_contexte():
 
 
 def test_enrich_llm_none_pas_de_crash():
-    """Test 14 — Fallback LLM=None (client non configuré) → texte générique, pas de crash."""
+    """Test 14 — Fallback LLM=None (client non configuré) → texte générique, pas de crash.
+
+    US-135 : les chart narratives retournent _LLM_FALLBACK. Les executive takeaways
+    utilisent maintenant le fallback summary (outline.summary découpé en phrases)
+    plutôt que 3× _LLM_FALLBACK — ce qui garantit un livrable client lisible même
+    quand le LLM est indisponible.
+    """
     ctx = _make_context(with_outcome=True, with_trajectory=True)
     enricher = Enricher(ctx, llm_client=None)
 
@@ -458,6 +468,8 @@ def test_enrich_llm_none_pas_de_crash():
     assert len(result.interpretations) == 5
     for narrative in result.interpretations.values():
         assert narrative == _LLM_FALLBACK
+    # Takeaways : au moins 3 éléments (fallback summary ou _LLM_FALLBACK)
     assert len(result.executive_takeaways) == 3
     for t in result.executive_takeaways:
-        assert t == _LLM_FALLBACK
+        assert isinstance(t, str)
+        assert len(t) > 0

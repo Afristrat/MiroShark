@@ -2,6 +2,7 @@
 Enricher — service LLM d'enrichissement du PDFReportContext.
 
 US-124 — Enricher LLM (insights, pivotal_moments, interpretations narratives par chart).
+US-135 — Enricher fixes : KPI Hero réel + sanitize tool_call + pivotal_moments.
 
 Ce module transforme un PDFReportContext brut en un contexte enrichi prêt pour le
 rendu PDF. Il orchestre :
@@ -11,6 +12,12 @@ rendu PDF. Il orchestre :
 3. ``_generate_chart_narratives`` — génère ~80 mots par chart via LLM (cache LRU 24h)
 4. ``_extract_executive_takeaways`` — 3 takeaways C-level via LLM (cache LRU 24h)
 5. ``_pass_through_normalizer`` — tous textes générés passent par TextNormalizer(lang)
+
+Sanitize LLM (US-135) :
+    ``sanitize_llm_output(text)`` supprime toute balise <tool_call>, <function_call>,
+    <thinking>, <scratchpad>, [function_calls]…[/function_calls] et leurs variantes
+    échappées avant d'injecter le texte dans le contexte PDF client.
+    Appliqué systématiquement sur chaque sortie LLM.
 
 Architecture du cache :
     Pas de ``functools.lru_cache`` (incompatible avec des clés unhashable comme des
@@ -29,6 +36,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
+import re
 import time
 from typing import Dict, List, Optional, Tuple
 
@@ -37,6 +45,58 @@ from ...utils.llm_client import create_llm_client
 from .schema import KPIHero, PDFReportContext, PivotalMoment
 
 logger = logging.getLogger("miroshark.report_pdf.enricher")
+
+# ─── Sanitize LLM output (US-135) ────────────────────────────────────────────
+
+_TAG_PATTERNS: Tuple[re.Pattern, ...] = (
+    # Balises <tool_call>...</tool_call> avec attributs optionnels, multiline
+    re.compile(r"<tool_call\b[^>]*>.*?</tool_call>", re.DOTALL | re.IGNORECASE),
+    # Balises auto-fermées <tool_call ... />
+    re.compile(r"<tool_call\b[^>]*/>", re.IGNORECASE),
+    # Balises <function_call>...</function_call>
+    re.compile(r"<function_call\b[^>]*>.*?</function_call>", re.DOTALL | re.IGNORECASE),
+    # Balises <thinking>...</thinking>
+    re.compile(r"<thinking\b[^>]*>.*?</thinking>", re.DOTALL | re.IGNORECASE),
+    # Balises <scratchpad>...</scratchpad>
+    re.compile(r"<scratchpad\b[^>]*>.*?</scratchpad>", re.DOTALL | re.IGNORECASE),
+    # Blocs [function_calls]...[/function_calls]
+    re.compile(r"\[function_calls\].*?\[/function_calls\]", re.DOTALL | re.IGNORECASE),
+    # Versions échappées \<tool_call\>...\</tool_call\>
+    re.compile(r"\\<tool_call\\>.*?\\</tool_call\\>", re.DOTALL | re.IGNORECASE),
+)
+
+
+def sanitize_llm_output(text: str) -> str:
+    """Supprime toute balise LLM interne (tool_call, thinking, etc.) du texte.
+
+    Appliqué sur **chaque** sortie LLM avant injection dans le contexte PDF client.
+    Garantit qu'aucune balise technique brute ne se retrouve dans un livrable client.
+
+    Patterns supprimés :
+    - ``<tool_call>...</tool_call>`` (et variantes avec attributs, auto-fermées)
+    - ``<function_call>...</function_call>``
+    - ``<thinking>...</thinking>``
+    - ``<scratchpad>...</scratchpad>``
+    - ``[function_calls]...[/function_calls]``
+    - Versions échappées ``\\<tool_call\\>...\\</tool_call\\>``
+
+    Parameters
+    ----------
+    text:
+        Texte brut issu du LLM.
+
+    Returns
+    -------
+    str
+        Texte nettoyé, stripped des espaces résiduels.
+    """
+    if not text:
+        return text
+    cleaned = text
+    for pattern in _TAG_PATTERNS:
+        cleaned = pattern.sub("", cleaned)
+    return cleaned.strip()
+
 
 # ─── Constantes ──────────────────────────────────────────────────────────────
 
@@ -133,12 +193,15 @@ class Enricher:
     def _compute_kpi_hero(self) -> None:
         """Calcule et stocke le KPIHero dans context.kpi_hero.
 
-        Source : context.outcome (verdict, bullish_pct, bearish_pct, confidence)
-                + context.quality_metrics (brier via quality_metrics.coherence proxy)
-                + context.outcome.quality_metrics.coherence
+        Source : context.outcome (verdict, bullish_pct, bearish_pct)
+                + context.quality_metrics (brier via brier_score si présent,
+                  sinon proxy 1-coherence)
 
-        Le champ ``brier`` du KPIHero utilise ``outcome.quality_metrics`` si présent,
-        sinon ``context.quality_metrics``, sinon 0.0.
+        US-135 — Corrections :
+        - ``confidence_pct`` : dérivé de ``outcome.bullish_pct`` (ou 100 - bearish_pct
+          si bullish absent) — NON plus de ``outcome.confidence`` qui est souvent 0.0.
+        - ``brier`` : utilise ``quality_metrics.brier_score`` si l'attribut existe,
+          sinon proxy ``1 - coherence``. Compatible avec l'extension future du schéma.
         """
         outcome = self.context.outcome
 
@@ -149,17 +212,33 @@ class Enricher:
 
         if outcome is not None:
             verdict = outcome.verdict
-            confidence_pct = round(outcome.confidence * 100.0, 1)
 
-            # Brier score : cherche dans outcome.quality_metrics d'abord,
-            # puis context.quality_metrics. Le schema ne contient pas de champ
-            # brier_score explicite ; on utilise `coherence` comme proxy du
-            # score global (valeur [0,1], 0 = parfait pour Brier).
+            # Confidence : depuis bullish_pct (représente la conviction directionnelle
+            # réelle des agents) — bearish_pct utilisé en fallback si bullish absent.
+            if outcome.bullish_pct is not None and outcome.bullish_pct > 0.0:
+                confidence_pct = round(float(outcome.bullish_pct), 1)
+            elif outcome.bearish_pct is not None and outcome.bearish_pct > 0.0:
+                confidence_pct = round(100.0 - float(outcome.bearish_pct), 1)
+            else:
+                confidence_pct = 0.0
+
+            # Brier score : préfère brier_score explicite si disponible (extension future
+            # du schéma QualityMetrics), sinon proxy 1-coherence (valeur [0,1],
+            # 0 = prédiction parfaite).
             qm = outcome.quality_metrics
             if qm is not None:
-                brier = round(1.0 - qm.coherence, 4)
+                brier_score_attr = getattr(qm, "brier_score", None)
+                if brier_score_attr is not None:
+                    brier = round(float(brier_score_attr), 4)
+                else:
+                    brier = round(1.0 - qm.coherence, 4)
             elif self.context.quality_metrics is not None:
-                brier = round(1.0 - self.context.quality_metrics.coherence, 4)
+                qm_ctx = self.context.quality_metrics
+                brier_score_attr = getattr(qm_ctx, "brier_score", None)
+                if brier_score_attr is not None:
+                    brier = round(float(brier_score_attr), 4)
+                else:
+                    brier = round(1.0 - qm_ctx.coherence, 4)
 
             # Distribution des scénarios : bullish / bearish / neutral (déduit)
             bullish = outcome.bullish_pct
@@ -253,12 +332,37 @@ class Enricher:
             self.context.interpretations[chart_id] = narrative
 
     def _extract_executive_takeaways(self) -> None:
-        """Génère 3 takeaways C-level via LLM.
+        """Génère 3 takeaways C-level.
+
+        Stratégie (US-135) :
+        1. Si ``outline.executive_summary`` ou ``outline.takeaways`` existe
+           (extension future du schéma), les utiliser directement.
+        2. Sinon, générer via LLM avec prompt strict + sanitize.
+        3. Sinon (LLM indisponible), fallback : découper ``outline.summary``
+           en 3 phrases.
 
         Source : outline.summary + outcome.verdict + pivotal_moments.
         Cache : (verdict_hash, moments_hash, lang) — TTL 24h.
         Stocké dans context.executive_takeaways.
         """
+        # — Priorité 1 : données déjà disponibles dans l'outline (extension future) —
+        outline = self.context.outline
+        if outline is not None:
+            # Champs optionnels futurs (getattr pour ne pas casser si absents)
+            outline_takeaways = getattr(outline, "takeaways", None)
+            outline_exec_summary = getattr(outline, "executive_summary", None)
+
+            if outline_takeaways and isinstance(outline_takeaways, list) and len(outline_takeaways) >= 3:
+                self.context.executive_takeaways = [str(t) for t in outline_takeaways[:3]]
+                logger.debug("Executive takeaways depuis outline.takeaways")
+                return
+
+            if outline_exec_summary and isinstance(outline_exec_summary, list) and len(outline_exec_summary) >= 3:
+                self.context.executive_takeaways = [str(t) for t in outline_exec_summary[:3]]
+                logger.debug("Executive takeaways depuis outline.executive_summary")
+                return
+
+        # — Priorité 2 : génération LLM avec cache —
         lang = self.context.lang
         verdict = self.context.outcome.verdict if self.context.outcome else ""
         summary = self.context.outline.summary if self.context.outline else ""
@@ -275,7 +379,7 @@ class Enricher:
 
         cached = _cache_get(_takeaway_cache, cache_key)
         if cached is not None:
-            # cached est une string JSON-like séparée par \n — on rehydrate
+            # cached est une string séparée par \n — on rehydrate
             self.context.executive_takeaways = [t for t in cached.split("\n") if t.strip()]
             logger.debug("Cache HIT executive takeaways")
             return
@@ -376,6 +480,7 @@ class Enricher:
         """Appelle le LLM pour générer une narrative de chart.
 
         Retourne _LLM_FALLBACK en cas d'erreur.
+        Applique ``sanitize_llm_output`` sur la réponse avant retour (US-135).
         """
         if self.llm is None:
             return _LLM_FALLBACK
@@ -389,7 +494,10 @@ class Enricher:
 
         try:
             result = self.llm.chat(messages=messages, max_tokens=200, temperature=0.3)
-            return result.strip() if result else _LLM_FALLBACK
+            if not result:
+                return _LLM_FALLBACK
+            sanitized = sanitize_llm_output(result)
+            return sanitized if sanitized else _LLM_FALLBACK
         except Exception as exc:
             logger.warning("LLM indisponible pour chart %s : %s", chart_id, exc)
             return _LLM_FALLBACK
@@ -404,9 +512,13 @@ class Enricher:
         """Appelle le LLM pour générer 3 takeaways C-level.
 
         Retourne une liste de 3 strings. En cas d'erreur LLM : 3 fallbacks.
+        Applique ``sanitize_llm_output`` sur chaque ligne (US-135).
+
+        Si le LLM est indisponible et qu'un résumé outline est disponible,
+        utilise ``outline.summary`` splitté en phrases comme fallback gracieux.
         """
         if self.llm is None:
-            return [_LLM_FALLBACK, _LLM_FALLBACK, _LLM_FALLBACK]
+            return self._fallback_takeaways_from_summary(summary)
 
         prompt = (
             f"Synthétise en 3 takeaways C-level (1 phrase chacun, ton ferme) en {lang} "
@@ -421,13 +533,15 @@ class Enricher:
         try:
             result = self.llm.chat(messages=messages, max_tokens=300, temperature=0.3)
             if not result:
-                return [_LLM_FALLBACK, _LLM_FALLBACK, _LLM_FALLBACK]
+                return self._fallback_takeaways_from_summary(summary)
 
             lines = [
-                line.strip().lstrip("123. )-").strip()
+                sanitize_llm_output(line.strip().lstrip("123. )-").strip())
                 for line in result.strip().splitlines()
                 if line.strip() and not line.strip().startswith("#")
             ]
+            # Filtre les lignes vides après sanitize
+            lines = [l for l in lines if l]
             # Garde exactement 3 takeaways ; complète ou tronque si besoin
             while len(lines) < 3:
                 lines.append(_LLM_FALLBACK)
@@ -435,7 +549,29 @@ class Enricher:
 
         except Exception as exc:
             logger.warning("LLM indisponible pour executive takeaways : %s", exc)
+            return self._fallback_takeaways_from_summary(summary)
+
+    def _fallback_takeaways_from_summary(self, summary: str) -> List[str]:
+        """Fallback gracieux : extrait 3 phrases depuis outline.summary.
+
+        Si le résumé est absent ou trop court, retourne 3 fois _LLM_FALLBACK.
+        """
+        if not summary or not summary.strip():
             return [_LLM_FALLBACK, _LLM_FALLBACK, _LLM_FALLBACK]
+
+        # Découpe sur les séparateurs de phrases communs
+        sentences = [
+            s.strip()
+            for s in re.split(r"[.!?;]+", summary)
+            if s.strip() and len(s.strip()) > 10
+        ]
+
+        result: List[str] = []
+        for s in sentences[:3]:
+            result.append(s)
+        while len(result) < 3:
+            result.append(_LLM_FALLBACK)
+        return result
 
 
 # ─── Factory helper ───────────────────────────────────────────────────────────
