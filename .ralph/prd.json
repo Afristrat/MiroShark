@@ -4134,7 +4134,7 @@
         "Tests : génère 4 variantes sur même fixture, vérifie nb pages, présence/absence sections clés",
         "Tests visual regression sur 4 variantes en FR/EN"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-123",
         "US-125"
@@ -4152,8 +4152,11 @@
           "backend/app/templates/pdf_report/one-pager/00_cover.md.j2",
           "backend/app/services/report_pdf/anonymizer.py",
           "backend/tests/test_pdf_variants.py"
-        ]
-      }
+        ],
+        "merge_commit": "81a9090",
+        "ralph_session": "2026-05-06"
+      },
+      "completedAt": "2026-05-06T05:30:00Z"
     },
     {
       "id": "US-132",
@@ -4170,7 +4173,7 @@
         "CI : pytest -m visual_regression",
         "docs/PDF_QUALITY_GATES.md : comment ajouter golden master, debugger régression visuelle"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-125",
         "US-131"
@@ -4184,8 +4187,11 @@
           "backend/tests/fixtures/pdf_golden/.gitkeep",
           "scripts/lint_palette_contrast.py",
           "docs/PDF_QUALITY_GATES.md"
-        ]
-      }
+        ],
+        "merge_commit": "1e8de17",
+        "ralph_session": "2026-05-06"
+      },
+      "completedAt": "2026-05-06T05:30:00Z"
     },
     {
       "id": "US-133",
@@ -4370,7 +4376,7 @@
         "Tests pytest backend/tests/test_admin_users.py : RLS scenarios (super-admin all, org admin own org, member 403), endpoints + filtre + search",
         "Tests Playwright frontend/tests/e2e/admin-users.spec.ts : page accessible super-admin, redirect non-auth, filtre fonctionne"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-091",
         "US-092",
@@ -4394,8 +4400,11 @@
           "frontend/src/locales/en.json",
           "frontend/src/locales/ar.json"
         ],
-        "rationale": "Trou identifie par Amine 2026-05-06. Sans cette page, les super-admins doivent passer par Supabase Dashboard externe pour voir leurs users. Necessaire pour onboarding tracking + support client + audit RGPD."
-      }
+        "rationale": "Trou identifie par Amine 2026-05-06. Sans cette page, les super-admins doivent passer par Supabase Dashboard externe pour voir leurs users. Necessaire pour onboarding tracking + support client + audit RGPD.",
+        "merge_commit": "eb03cda",
+        "ralph_session": "2026-05-06"
+      },
+      "completedAt": "2026-05-06T05:30:00Z"
     }
   ]
 }
