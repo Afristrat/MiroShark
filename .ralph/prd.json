@@ -4204,7 +4204,7 @@
         "Tests pytest backend/tests/test_pdf_export_endpoints.py : verifie endpoints retournent contenu nouveau pipeline (presence sections cover, exec_summary, etc.)",
         "Tests Playwright frontend (existants si pas encore) : Step4Report bouton PDF fonctionne et telecharge un PDF non-vide"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-125",
         "US-124",
@@ -4228,8 +4228,12 @@
         "files_to_create": [
           "backend/tests/test_pdf_export_endpoints.py"
         ],
-        "rationale": "Trou architectural identifie par CR-1 (endpoints) + CR-2 (frontend buttons). Le pipeline NEW Phase 1-6 etait livre mais les boutons user pointaient toujours sur l ancien code reportlab. Sans cette US, tout le travail Phases 1-6 est invisible cote user."
-      }
+        "rationale": "Trou architectural identifie par CR-1 (endpoints) + CR-2 (frontend buttons). Le pipeline NEW Phase 1-6 etait livre mais les boutons user pointaient toujours sur l ancien code reportlab. Sans cette US, tout le travail Phases 1-6 est invisible cote user.",
+        "merge_commit": "52b2c88",
+        "ralph_session": "2026-05-05",
+        "lines_deleted": 463
+      },
+      "completedAt": "2026-05-06T04:00:00Z"
     }
   ]
 }
