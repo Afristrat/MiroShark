@@ -159,6 +159,16 @@ def create_app(config_class=Config):
     #   /api/admin/reports/<id>/approve    — POST (super-admin only, snapshot+watermark+sign) (US-128)
     from .api.admin_reports import admin_reports_bp
     app.register_blueprint(admin_reports_bp, url_prefix='/api/admin/reports')
+
+    # report_delivery_admin_bp + report_delivery_public_bp — livraison rapport (US-130).
+    #   POST /api/admin/reports/<id>/deliver                           — crée delivery + email
+    #   GET  /api/admin/reports/<id>/deliveries                        — liste deliveries
+    #   GET  /api/admin/reports/<id>/deliveries/<did>/downloads        — tracking
+    #   POST /api/admin/reports/<id>/deliveries/<did>/resend           — re-envoi
+    #   GET  /r/<token>                                                — téléchargement public PDF
+    from .api.report_delivery import report_delivery_admin_bp, report_delivery_public_bp
+    app.register_blueprint(report_delivery_admin_bp, url_prefix='/api/admin/reports')
+    app.register_blueprint(report_delivery_public_bp)
     
     # Health check
     @app.route('/health')

@@ -2365,6 +2365,54 @@
   "console": {
     "eyebrow": "Private console · Self-service"
   },
+  "adminReportTracking": {
+    "title": "Delivery Tracking",
+    "subtitle": "Delivery and download history for this report.",
+    "loading": "Loading deliveries…",
+    "empty": "No deliveries for this report.",
+    "deliverBtn": "Deliver to recipient",
+    "table": {
+      "recipient": "Recipient",
+      "language": "Language",
+      "status": "Status",
+      "expires": "Expires on",
+      "sent": "Sent on",
+      "downloads": "Downloads",
+      "actions": "Actions"
+    },
+    "status": {
+      "pending": "Pending",
+      "sent": "Sent",
+      "failed": "Failed",
+      "expired": "Expired",
+      "archived": "Archived"
+    },
+    "downloads": {
+      "title": "Downloads",
+      "empty": "No downloads recorded.",
+      "date": "Date",
+      "country": "Country",
+      "ip": "IP",
+      "ua": "Browser"
+    },
+    "modal": {
+      "title": "Deliver report",
+      "recipientEmail": "Recipient email",
+      "recipientName": "Recipient name",
+      "expiryDays": "Link validity (days)",
+      "language": "Email language",
+      "submit": "Send link",
+      "cancel": "Cancel",
+      "sending": "Sending…"
+    },
+    "resend": "Resend link",
+    "resending": "Resending…",
+    "resendSuccess": "New link sent.",
+    "resendFailed": "Failed to resend.",
+    "deliverSuccess": "Report delivered successfully.",
+    "deliverFailed": "Delivery failed.",
+    "back": "Back"
+  },
   "adminQuotes": {
     "title": "All received quote requests",
     "subtitle": "Bassira super-admin console — commercial pipeline overview.",

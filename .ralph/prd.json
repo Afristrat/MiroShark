@@ -4090,7 +4090,8 @@
         "Tests pytest : URL signée valid/expired/tampered, download log inserted, re-send invalidates old token",
         "Tests Playwright : page tracking affiche downloads"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-05-05T10:30:00Z",
       "dependencies": [
         "US-128"
       ],
@@ -4105,7 +4106,10 @@
           "frontend/src/views/AdminReportTrackingView.vue",
           "backend/tests/test_report_delivery.py",
           "frontend/tests/e2e/admin-report-tracking.spec.ts"
-        ]
+        ],
+        "tests_backend": 19,
+        "tests_frontend_e2e": 6,
+        "validation": "1409 passed 0 failed backend + npm build OK"
       }
     },
     {

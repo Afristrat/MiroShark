@@ -215,6 +215,19 @@ const routes = [
       requiresSuperAdmin: true,
       title: 'Branding PDF · Bassira admin'
     }
+  },
+  {
+    // US-130 — Suivi des livraisons + tracking téléchargements (super-admin).
+    // Liste des livraisons + downloads géo + re-envoi de lien.
+    path: '/admin/reports/:id/tracking',
+    name: 'AdminReportTracking',
+    component: () => import('../views/AdminReportTrackingView.vue'),
+    props: true,
+    meta: {
+      requiresAuth: true,
+      requiresSuperAdmin: true,
+      title: 'Suivi livraisons · Bassira admin'
+    }
   }
 ]
 
