@@ -958,3 +958,37 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 - **events.jsonl → DirectorEvent** : les événements bruts JSONL sont mappés en `DirectorEvent` (champs `round`, `event_type`, `description`, `impact`). Les champs manquants sont comblés par les defaults Pydantic.
 - **Paramètres override** `sim_base_dir` / `rep_base_dir` : indispensables pour les tests afin de pointer vers les fixtures sans toucher aux répertoires de production.
 - **Merge main avant US** : cette worktree avait 6 commits de retard sur main (US-118, US-120 mergés entre-temps). Un `git merge main --no-edit` fast-forward a résolu le problème avant de démarrer US-119.
+
+---
+
+### 2026-05-05 — US-122 ChartFactory matplotlib palette Causse (5 charts signature)
+
+- **Statut** : passes:true — worktree `worktree-agent-ae155daa`, commit `f3d8de2`.
+- **Fichiers créés** :
+  - `backend/app/services/report_pdf/_style.py` : `apply_causse_style()` — palette Causse Warm Intelligence (WI_ORANGE `#FF8551`, WI_MINT `#006D44`, WI_CREAM `#FAF7F2`, WI_CHARCOAL `#241915`, WI_TERRA `#A13F0F`, WI_SAND `#E8DDC9`, WI_INK `#1A0F0A`), polices Outfit/Manrope avec fallback DejaVu Sans, DPI 300, spines top/right off, grid WI_SAND opacity 0.4.
+  - `backend/app/services/report_pdf/charts.py` : `ChartFactory(context: PDFReportContext)` avec 5 méthodes `→ bytes PNG 300 DPI` :
+    - `belief_drift()` — line chart score/round par stance + callouts PivotalMoment.round/agent
+    - `polymarket_curves()` — % bullish/bearish/neutral par round depuis trajectoire (+ annotation Outcome.bullish_pct/bearish_pct)
+    - `demographic_pyramid()` — pyramide horizontale genre si dimension='genre', sinon bar chart horizontal par segment
+    - `influence_leaderboard()` — top-10 agents par score max (AgentState.score agrégé par name), coloré par stance dominante
+    - `interaction_network()` — networkx Graph depuis SocialNetwork.nodes/edges, spring_layout(seed=42), couleur par SocialNode.group, taille par weight
+  - `backend/tests/test_charts.py` : 22 tests (import Agg, rcParams, 5 charts ×  données/placeholder, reproducibilité, magic bytes PNG, top10 limit, nœuds isolés)
+- **Fichiers portés depuis main** (US-118/119/120 déjà mergés mais absents du worktree) :
+  - `backend/app/services/report_pdf/schema.py`, `loader.py`, `__init__.py`
+  - `backend/tests/test_pdf_context_schema.py`, `test_pdf_context_loader.py`
+  - `backend/tests/fixtures/` (sim_aabbcc112233/ + report_a1b2c3d4e5f6/)
+- **Dépendances ajoutées** à `pyproject.toml` + `uv.lock` : `matplotlib>=3.8` (→ 3.10.9 installé), `networkx>=3.0` (→ 3.6.1 déjà présent via camel-ai).
+
+#### Quality gates
+- `pytest tests/test_charts.py` : **22 passed** en 67 s.
+- `pytest tests/test_pdf_context_schema.py + test_pdf_context_loader.py` : **107 passed, 1 skipped** (sim réelle absente, attendu).
+- `pytest tests/` (suite complète) : **1121 passed, 18 skipped, 0 failed** en 94 s. Zéro régression.
+
+#### Learnings — adaptation au schema canonique
+- **`Round.round_idx`** (pas `round_index`) : le champ est `round_idx` dans le schema US-118. Utiliser `r.round_idx` pour le tri et l'axe X des charts.
+- **`PivotalMoment` sans champ `label`** : le schema a `round`, `agent`, `event`, `delta_score`. Pour les callouts du belief_drift, utiliser `pm.agent[:12]` comme étiquette.
+- **`SocialNode.group`** (pas `archetype`, pas `stance`) : la couleur du réseau est basée sur `SocialNode.group`. La stance est dans `AgentState`, pas dans `SocialNode`.
+- **`Round` n'a pas de `market_probs`** : le champ n'existe pas dans le schema. Les polymarket curves sont calculées depuis `AgentState.stance` (comptage bullish/bearish/neutral per round), pas depuis un champ dédié.
+- **Backend Agg obligatoire** : `matplotlib.use("Agg")` doit être appelé AVANT `import matplotlib.pyplot`. Placer l'appel au niveau module dans `_style.py` ET dans `charts.py` (double garde) évite les imports circulaires et les imports par tiers qui reset le backend.
+- **Worktree isolé** : les fichiers mergés en main depuis d'autres worktrees (US-118, US-119) ne sont PAS présents dans un nouveau worktree basé sur un commit antérieur. Il faut les `cp` manuellement ou les retravailler from scratch. La prochaine fois, vérifier `ls backend/app/services/report_pdf/` dès le début.
+- **Fixtures pytest** : `test_pdf_context_loader.py` nécessite `backend/tests/fixtures/sim_aabbcc112233/` (plusieurs JSONs). Ces fixtures n'existaient pas dans le worktree — copier depuis main avant d'exécuter la suite complète.
