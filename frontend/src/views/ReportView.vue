@@ -81,19 +81,19 @@
 
           <dl class="magazine-meta">
             <div class="magazine-meta-item">
-              <dt>Simulation ID</dt>
-              <dd class="mono">{{ simulationId || '—' }}</dd>
+              <dt>Référence simulation</dt>
+              <dd class="mono" :title="simulationId || ''">{{ simIdShort }}</dd>
             </div>
             <div class="magazine-meta-item">
-              <dt>Report ID</dt>
-              <dd class="mono">{{ currentReportId || '—' }}</dd>
+              <dt>Référence rapport</dt>
+              <dd class="mono" :title="currentReportId || ''">{{ reportIdShort }}</dd>
             </div>
             <div class="magazine-meta-item">
-              <dt>Date generated</dt>
+              <dt>Date de génération</dt>
               <dd class="mono">{{ generatedAt }}</dd>
             </div>
             <div class="magazine-meta-item">
-              <dt>N rounds</dt>
+              <dt>Tours de simulation</dt>
               <dd class="mono">{{ nRoundsLabel }}</dd>
             </div>
           </dl>
@@ -249,9 +249,34 @@ const generatedAt = computed(() => {
   }
 })
 
+// Versions abrégées des IDs pour affichage cosmétique (8 derniers caractères
+// avec préfixe ellipsé). L'ID complet reste disponible via `:title` au survol.
+const simIdShort = computed(() => {
+  if (!simulationId.value) return '—'
+  const id = simulationId.value
+  if (id.length <= 16) return id
+  return '…' + id.slice(-8)
+})
+
+const reportIdShort = computed(() => {
+  if (!currentReportId.value) return '—'
+  const id = currentReportId.value
+  if (id.length <= 16) return id
+  return '…' + id.slice(-8)
+})
+
 const nRoundsLabel = computed(() => {
-  const n = simulationData.value?.n_rounds || simulationData.value?.rounds || reportMeta.value?.n_rounds
-  if (n == null) return '—'
+  // Lecture exhaustive selon les noms de champs canoniques (SimState +
+  // Outcome + state.json brut). Le Loader US-119 expose context.state.
+  const n =
+    simulationData.value?.current_round ||
+    simulationData.value?.total_rounds ||
+    simulationData.value?.n_rounds ||
+    simulationData.value?.rounds ||
+    simulationData.value?.outcome?.nb_rounds ||
+    reportMeta.value?.n_rounds ||
+    reportMeta.value?.outcome?.nb_rounds
+  if (n == null || n === 0) return '—'
   try {
     return Number(n).toLocaleString('en-US')
   } catch {
@@ -344,6 +369,15 @@ const progressStages = computed(() => {
   if (reportStatus === 'completed') reportStage = 'done'
   else if (reportStatus === 'failed') reportStage = 'error'
   else if (reportStatus === 'planning' || reportStatus === 'generating') reportStage = 'in_progress'
+
+  // Cascade logique : si le report final est completed, alors la simulation
+  // ET la synthèse agents ont nécessairement abouti. Force-les à done même
+  // si simulationData manque le runner_status (cas où on consulte un report
+  // archivé sans la state.json fraîche en mémoire SimulationManager).
+  if (reportStage === 'done') {
+    if (simStage !== 'error') simStage = 'done'
+    if (agentStage !== 'error') agentStage = 'done'
+  }
 
   return [
     { id: 'graphBuild', status: graphStage },

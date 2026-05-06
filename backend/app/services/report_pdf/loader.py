@@ -64,8 +64,12 @@ logger = logging.getLogger(__name__)
 # Calculés à partir de l'emplacement de ce module pour être indépendants de
 # l'état de l'application Flask (pas d'import de Config ici).
 _THIS_DIR = Path(__file__).resolve().parent              # …/report_pdf/
-_BACKEND_DIR = _THIS_DIR.parent.parent.parent            # …/backend/app/../.. = backend/
-_UPLOADS_DIR = _BACKEND_DIR / "app" / "uploads"
+_BACKEND_DIR = _THIS_DIR.parent.parent.parent            # backend/
+# Aligné sur SimulationManager.SIMULATION_DATA_DIR qui résout à
+# `backend/uploads/simulations/` via `../../uploads/simulations` depuis
+# `backend/app/services/simulation_manager.py`. Pas de préfixe `app/`.
+# Régression critique en prod corrigée 2026-05-06 (export-pdf US-133).
+_UPLOADS_DIR = _BACKEND_DIR / "uploads"
 _SIMULATIONS_DIR = _UPLOADS_DIR / "simulations"
 _REPORTS_DIR = _UPLOADS_DIR / "reports"
 
