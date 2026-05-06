@@ -1,17 +1,23 @@
 """
-renderer.py — Renderer pipeline PDF Bassira (US-125).
+renderer.py — Renderer pipeline PDF Bassira (US-125 + US-131).
 
 Assemble les modules report_pdf en un pipeline complet :
     1. Enrichissement du contexte via Enricher
-    2. Rendu Markdown GFM via templates Jinja2 (_full.md.j2)
+    2. Rendu Markdown GFM via templates Jinja2 (_full.md.j2 ou variante)
     3. Conversion Markdown → HTML via markdown-it-py
     4. Injection CSS brandé (pdf_brand.css.j2)
     5. Embed des charts PNG en base64
     6. Rendu PDF final via WeasyPrint
 
 API publique :
-    ``Renderer(context, branding).render_md() -> str``
-    ``Renderer(context, branding).render_pdf(charts_factory=None) -> bytes``
+    ``Renderer(context, branding).render_md(variant='full') -> str``
+    ``Renderer(context, branding).render_pdf(charts_factory=None, variant='full') -> bytes``
+
+Variantes disponibles (US-131) :
+    - 'full'      : rapport complet ~50p (template racine _full.md.j2)
+    - 'exec'      : digest exécutif ~5p (exec/_main.md.j2)
+    - 'public'    : extrait public anonymisé ~3p (public/_main.md.j2)
+    - 'one-pager' : one-pager A4 ~1p (one-pager/_main.md.j2)
 
 Multilang :
     - fr : police Outfit/Manrope, LTR
@@ -28,7 +34,7 @@ import base64
 import logging
 import re
 from datetime import datetime, timezone
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
 from .schema import PDFReportContext
 
@@ -49,6 +55,17 @@ _CHART_METHODS = [
     "influence_leaderboard",
     "interaction_network",
 ]
+
+# Variantes de rapport disponibles (US-131)
+VariantLiteral = Literal["full", "exec", "public", "one-pager"]
+
+# Mapping variant → template path (relatif au dossier pdf_report)
+_VARIANT_TEMPLATE: dict[str, str] = {
+    "full": "_full.md.j2",
+    "exec": "exec/_main.md.j2",
+    "public": "public/_main.md.j2",
+    "one-pager": "one-pager/_main.md.j2",
+}
 
 
 class Renderer:
@@ -75,13 +92,18 @@ class Renderer:
 
     # ── Méthodes publiques ─────────────────────────────────────────────────────
 
-    def render_md(self) -> str:
+    def render_md(self, variant: VariantLiteral = "full") -> str:
         """Assemble les templates Jinja2 → string Markdown GFM avec front-matter YAML.
 
         Étapes :
             1. Enrichissement du contexte (kpi_hero, pivotal_moments, interpretations,
                executive_takeaways) via Enricher si non déjà rempli.
-            2. Rendu du template _full.md.j2 avec le contexte enrichi.
+            2. Pour la variante 'public', anonymisation via Anonymizer.
+            3. Rendu du template selon la variante choisie.
+
+        Args:
+            variant: Variante de rapport parmi 'full', 'exec', 'public', 'one-pager'.
+                     Défaut : 'full' (rapport complet ~50p).
 
         Returns:
             String Markdown GFM avec front-matter YAML en tête.
@@ -89,11 +111,17 @@ class Renderer:
         # 1. Enrichir le contexte avant rendu
         enriched_context = self._enrich_context()
 
-        # 2. Récupérer l'environnement Jinja2
+        # 2. Anonymisation pour la variante public
+        if variant == "public":
+            from .anonymizer import anonymize_context
+            enriched_context = anonymize_context(enriched_context)
+
+        # 3. Récupérer le template selon la variante
         from .jinja_env import get_jinja_env
 
         env = get_jinja_env()
-        template = env.get_template("_full.md.j2")
+        template_name = _VARIANT_TEMPLATE.get(variant, "_full.md.j2")
+        template = env.get_template(template_name)
 
         generated_at = datetime.now(tz=timezone.utc).isoformat()
         branding_version = (
@@ -102,7 +130,7 @@ class Renderer:
             else "default"
         )
 
-        # 3. Rendre le template
+        # 4. Rendre le template
         md_text = template.render(
             context=enriched_context,
             branding=self.branding,
@@ -111,19 +139,20 @@ class Renderer:
             branding_version=branding_version,
         )
 
-        # 4. Embed des charts en data URI dans le Markdown (standalone .md)
+        # 5. Embed des charts en data URI dans le Markdown (standalone .md)
         #    Remplace ](belief_drift.png) → ](data:image/png;base64,XXXX)
         if self.charts_factory is not None:
             md_text = _embed_charts_md(md_text, self.charts_factory)
 
         return md_text
 
-    def render_pdf(self, charts_factory: Optional[Any] = None) -> bytes:
+    def render_pdf(self, charts_factory: Optional[Any] = None, variant: VariantLiteral = "full") -> bytes:
         """Pipeline complet : MD → markdown-it → HTML → WeasyPrint → bytes PDF.
 
         Args:
             charts_factory: Instance de ChartFactory (optionnelle). Si fournie,
                             les charts sont générés et embarqués en base64.
+            variant:        Variante de rapport parmi 'full', 'exec', 'public', 'one-pager'.
 
         Returns:
             Bytes PDF valide (WeasyPrint).
@@ -131,8 +160,8 @@ class Renderer:
         Raises:
             ImportError: Si WeasyPrint ou markdown-it-py ne sont pas installés.
         """
-        # 1. Render Markdown complet
-        md_text = self.render_md()
+        # 1. Render Markdown complet (avec variant)
+        md_text = self.render_md(variant=variant)
 
         # 2. Extraire le front-matter YAML avant markdown-it
         #    (markdown-it ne parse pas le YAML, il le traiterait comme du texte)

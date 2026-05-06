@@ -1,0 +1,122 @@
+---
+title: {{ context.title }}
+report_id: {{ context.report_id }}
+simulation_id: {{ context.simulation_id }}
+lang: {{ context.lang }}
+framework: {{ context.framework }}
+variant: exec
+generated_at: {{ generated_at }}
+template_version: 1.0.0
+branding_version: {{ branding_version | default('default') }}
+---
+
+{% from '_macros.md.j2' import kpi_card, callout %}
+
+# {{ context.title | normalize(context.lang) }}
+
+**Framework :** {{ context.framework | upper }} — **Package :** {{ context.package }}
+
+**Date :** {{ generated_at | format_date(lang=context.lang) }}
+
+*Propulsé par **Bassira** — une solution AIMPOWER — **Digest Exécutif***
+
+---
+
+{% if context.kpi_hero %}
+## KPI Héro
+
+{{ kpi_card(
+    label=context.kpi_hero.verdict | normalize(context.lang),
+    value=(context.kpi_hero.confidence_pct | round(1) | string) + ' %',
+    unit='de confiance'
+) }}
+
+| Indicateur | Valeur |
+| --- | --- |
+| Confiance | {{ context.kpi_hero.confidence_pct | round(1) }} % |
+| Score de Brier | {{ context.kpi_hero.brier | round(3) }} |
+{% for camp, pct in context.kpi_hero.scenario_distribution.items() %}
+| {{ camp | capitalize }} | {{ (pct * 100) | round(1) }} % |
+{% endfor %}
+
+{% endif %}
+
+---
+
+> **Avertissement :** Ce résumé exécutif est produit par un système de simulation multi-agents. Les résultats sont probabilistes et ne constituent pas des conseils d'investissement ou stratégiques. Validation par des experts humains requise.
+
+---
+
+## Résumé Exécutif
+
+{% set takeaways = context.executive_takeaways if context.executive_takeaways else [] %}
+{% if takeaways %}
+{% for t in takeaways[:3] %}
+{{ loop.index }}. {{ t | normalize(context.lang) }}
+{% endfor %}
+{% elif context.outline and context.outline.summary %}
+{{ context.outline.summary | normalize(context.lang) }}
+{% else %}
+{{ callout('info', 'Takeaways', 'Les takeaways seront disponibles après enrichissement.') }}
+{% endif %}
+
+---
+
+### Verdict
+
+{% if context.outcome %}
+{{ kpi_card(
+    label='Verdict de Simulation',
+    value=context.outcome.verdict | normalize(context.lang),
+    unit='',
+    color='primary'
+) }}
+
+| Métrique | Valeur |
+| --- | --- |
+| Confiance | {{ (context.outcome.confidence * 100) | round(1) }} % |
+| Bullish | {{ context.outcome.bullish_pct | round(1) }} % |
+| Bearish | {{ context.outcome.bearish_pct | round(1) }} % |
+| Rounds | {{ context.outcome.nb_rounds }} |
+| Consensus | {{ 'Oui ✓' if context.outcome.consensus_reached else 'Non ✗' }} |
+{% if context.outcome.scenario_winner %}
+| Camp dominant | {{ context.outcome.scenario_winner }} |
+{% endif %}
+
+{% else %}
+{{ callout('warning', 'Verdict', 'Verdict non disponible.') }}
+{% endif %}
+
+---
+
+## Recommandations C-Level
+
+{% if context.outcome and context.outcome.recommendations %}
+{% set recs = context.outcome.recommendations %}
+| # | Recommandation |
+| --- | --- |
+{% for rec in recs[:5] %}
+| {{ loop.index }} | {{ rec | normalize(context.lang) }} |
+{% endfor %}
+
+{% else %}
+{{ callout('warning', 'Recommandations', 'Aucune recommandation disponible. Co-désignation avec experts humains requise.') }}
+{% endif %}
+
+---
+
+## Note Méthodologique
+
+Cette simulation a été exécutée via le framework **{{ context.framework | upper }}** (package : *{{ context.package }}*). Les résultats sont issus d'un modèle multi-agents Bassira — les conclusions doivent être validées par des experts humains qualifiés avant toute prise de décision stratégique.
+
+{% if context.sim_state %}
+| Paramètre | Valeur |
+| --- | --- |
+| Rounds exécutés | {{ context.sim_state.current_round }} |
+| Agents simulés | {{ context.sim_state.profiles_count }} |
+| Entités extraites | {{ context.sim_state.entities_count }} |
+{% endif %}
+
+---
+
+*© 2026 AIMPOWER — Bassira — Digest Exécutif — Confidentiel*

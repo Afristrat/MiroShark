@@ -1,0 +1,120 @@
+---
+title: {{ context.title }}
+report_id: {{ context.report_id }}
+simulation_id: {{ context.simulation_id }}
+lang: {{ context.lang }}
+framework: {{ context.framework }}
+variant: one-pager
+generated_at: {{ generated_at }}
+template_version: 1.0.0
+branding_version: {{ branding_version | default('default') }}
+---
+
+{% from '_macros.md.j2' import kpi_card, callout %}
+
+<div class="one-pager-layout">
+
+<div class="one-pager-header">
+
+# {{ context.title | normalize(context.lang) }}
+
+**{{ context.framework | upper }}** · **{{ context.package }}** · {{ generated_at | format_date(lang=context.lang) }} · *Bassira / AIMPOWER*
+
+</div>
+
+---
+
+<div class="kpi-grid">
+
+{% if context.kpi_hero %}
+<div class="kpi-card kpi-primary">
+
+**Confiance**
+
+# {{ context.kpi_hero.confidence_pct | round(1) }} %
+
+</div>
+
+<div class="kpi-card kpi-secondary">
+
+**Brier Score**
+
+# {{ context.kpi_hero.brier | round(3) }}
+
+</div>
+
+{% for camp, pct in context.kpi_hero.scenario_distribution.items() %}
+{% if loop.index <= 2 %}
+<div class="kpi-card">
+
+**{{ camp | capitalize }}**
+
+# {{ (pct * 100) | round(1) }} %
+
+</div>
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% if context.outcome %}
+<div class="kpi-card">
+
+**Rounds**
+
+# {{ context.outcome.nb_rounds }}
+
+</div>
+
+<div class="kpi-card {% if context.outcome.consensus_reached %}kpi-success{% else %}kpi-warning{% endif %}">
+
+**Consensus**
+
+# {{ 'Oui' if context.outcome.consensus_reached else 'Non' }}
+
+</div>
+{% endif %}
+
+</div>
+
+---
+
+<div class="one-pager-verdict">
+
+## Verdict
+
+{% if context.outcome and context.outcome.verdict %}
+**{{ context.outcome.verdict | normalize(context.lang) }}**
+
+Bullish : **{{ context.outcome.bullish_pct | round(1) }} %** · Bearish : **{{ context.outcome.bearish_pct | round(1) }} %**
+{% else %}
+{{ callout('warning', 'Verdict', 'Verdict non disponible.') }}
+{% endif %}
+
+</div>
+
+---
+
+<div class="one-pager-reco">
+
+## Top 3 Recommandations
+
+{% if context.outcome and context.outcome.recommendations %}
+{% for rec in context.outcome.recommendations[:3] %}
+**{{ loop.index }}.** {{ rec | normalize(context.lang) }}
+
+{% endfor %}
+{% else %}
+{{ callout('info', 'Recommandations', 'Co-désignation avec experts requis.') }}
+{% endif %}
+
+</div>
+
+---
+
+<div class="one-pager-footer">
+
+*© 2026 AIMPOWER — Bassira — One-Pager — Confidentiel · `{{ context.report_id }}`*
+
+</div>
+
+</div>

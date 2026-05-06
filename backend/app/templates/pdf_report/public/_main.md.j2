@@ -1,0 +1,79 @@
+---
+title: {{ context.title }}
+report_id: {{ context.report_id }}
+simulation_id: {{ context.simulation_id }}
+lang: {{ context.lang }}
+framework: {{ context.framework }}
+variant: public
+generated_at: {{ generated_at }}
+template_version: 1.0.0
+branding_version: {{ branding_version | default('default') }}
+---
+
+{% from '_macros.md.j2' import kpi_card, callout, chart_with_narrative %}
+
+# {{ context.title | normalize(context.lang) }}
+
+**Framework :** {{ context.framework | upper }}
+
+**Date :** {{ generated_at | format_date(lang=context.lang) }}
+
+*Propulsé par **Bassira** — une solution AIMPOWER — **Extrait Public***
+
+---
+
+> Ce document est un extrait public anonymisé d'une simulation Bassira. Les noms des organisations et des agents ont été masqués. Pour accéder au rapport complet, contactez AIMPOWER.
+
+---
+
+## 3 Enseignements Clés
+
+{% set takeaways = context.executive_takeaways if context.executive_takeaways else [] %}
+{% if takeaways %}
+{% for t in takeaways[:3] %}
+### {{ loop.index }}. {{ t | normalize(context.lang) }}
+
+{% endfor %}
+{% elif context.outline and context.outline.summary %}
+{{ context.outline.summary | normalize(context.lang) }}
+{% else %}
+{{ callout('info', 'Enseignements', 'Les enseignements clés seront disponibles après enrichissement.') }}
+{% endif %}
+
+---
+
+## Verdict de Simulation
+
+{% if context.outcome %}
+{{ kpi_card(
+    label='Conclusion',
+    value=context.outcome.verdict | normalize(context.lang),
+    unit='',
+    color='primary'
+) }}
+
+| Métrique | Valeur |
+| --- | --- |
+| Confiance globale | {{ (context.outcome.confidence * 100) | round(1) }} % |
+| Consensus | {{ 'Atteint ✓' if context.outcome.consensus_reached else 'Non atteint ✗' }} |
+
+{% else %}
+{{ callout('info', 'Verdict', 'Verdict non disponible dans cet extrait.') }}
+{% endif %}
+
+---
+
+## Graphique Signature — Évolution des Convictions
+
+{{ chart_with_narrative(
+    chart_filename='belief_drift.png',
+    alt='Évolution des convictions des agents au fil des rounds',
+    caption='Figure 1 — Dynamique d\'opinion (données anonymisées)',
+    narrative_text='Ce graphique illustre l\'évolution des positions des agents simulés. Les noms des agents et organisations ont été anonymisés dans cet extrait public.'
+) }}
+
+---
+
+*© 2026 AIMPOWER — Bassira — Extrait Public — Données anonymisées*
+
+*Pour accéder au rapport complet ou commander une simulation : [contact@aimpower.ma](mailto:contact@aimpower.ma)*

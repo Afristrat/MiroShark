@@ -319,3 +319,132 @@ html[dir="rtl"], [dir="rtl"] {
   border-top: 0.5pt solid var(--wi-sand);
 }
 {% endif %}
+
+/* ── One-pager layout (US-131) ───────────────────────────────────────────────── */
+/* Conteneur principal one-pager — tient sur une seule page A4 */
+.one-pager-layout {
+  display: block;
+  width: 100%;
+  max-height: 240mm;
+  overflow: hidden;
+}
+
+/* En-tête one-pager */
+.one-pager-header h1 {
+  font-size: 16pt;
+  margin-bottom: 4pt;
+}
+
+.one-pager-header p {
+  font-size: 9pt;
+  margin-bottom: 4pt;
+}
+
+/* Grille KPI 2 colonnes (CSS Grid) — WeasyPrint >= 60 supporte grid */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6pt;
+  margin: 8pt 0;
+}
+
+/* Cartes KPI dans le one-pager */
+.kpi-grid .kpi-card {
+  display: block;
+  padding: 6pt 8pt;
+  border-radius: 4pt;
+  background-color: var(--wi-sand);
+  text-align: center;
+  font-size: 9pt;
+}
+
+.kpi-grid .kpi-card h1 {
+  font-size: 14pt;
+  margin: 2pt 0;
+  color: var(--wi-charcoal);
+}
+
+.kpi-grid .kpi-primary {
+  background-color: var(--wi-orange);
+  color: white;
+}
+
+.kpi-grid .kpi-primary h1 {
+  color: white;
+}
+
+.kpi-grid .kpi-secondary {
+  background-color: var(--wi-mint);
+  color: white;
+}
+
+.kpi-grid .kpi-secondary h1 {
+  color: white;
+}
+
+.kpi-grid .kpi-success {
+  background-color: var(--wi-mint);
+  color: white;
+}
+
+.kpi-grid .kpi-success h1 {
+  color: white;
+}
+
+.kpi-grid .kpi-warning {
+  background-color: var(--wi-terra);
+  color: white;
+}
+
+.kpi-grid .kpi-warning h1 {
+  color: white;
+}
+
+/* Sections verdict et recommandations one-pager */
+.one-pager-verdict {
+  margin: 6pt 0;
+}
+
+.one-pager-verdict h2 {
+  font-size: 12pt;
+  margin-top: 4pt;
+  margin-bottom: 4pt;
+}
+
+.one-pager-reco {
+  margin: 6pt 0;
+}
+
+.one-pager-reco h2 {
+  font-size: 12pt;
+  margin-top: 4pt;
+  margin-bottom: 4pt;
+}
+
+.one-pager-reco p {
+  font-size: 9pt;
+  margin-bottom: 3pt;
+}
+
+/* Pied de page one-pager */
+.one-pager-footer {
+  margin-top: 6pt;
+  font-size: 7pt;
+  color: var(--wi-charcoal);
+  opacity: 0.6;
+}
+
+/* Réduire taille texte pour one-pager */
+.one-pager-layout p {
+  font-size: 9pt;
+  margin-bottom: 3pt;
+}
+
+.one-pager-layout h3 {
+  font-size: 11pt;
+  margin-top: 6pt;
+}
+
+.one-pager-layout hr {
+  margin: 6pt 0;
+}
