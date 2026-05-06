@@ -389,6 +389,7 @@ import {
   getShareLandingUrl,
   getSimulationOutcome,
   submitSimulationOutcome,
+  exportSimulationPdf,
 } from '../api/simulation'
 
 const props = defineProps({
@@ -639,15 +640,7 @@ const exportPdf = async () => {
   pdfExporting.value = true
   pdfExportError.value = false
   try {
-    const resp = await fetch(
-      `${origin.value}/api/simulation/${props.simulationId}/export-pdf`,
-      { method: 'POST' }
-    )
-    if (!resp.ok) {
-      pdfExportError.value = true
-      return
-    }
-    const blob = await resp.blob()
+    const blob = await exportSimulationPdf(props.simulationId)
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
