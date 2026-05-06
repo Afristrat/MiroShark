@@ -4252,7 +4252,7 @@
         "Tests pytest backend/tests/test_loader_completeness.py verifiant fixture sim_aabbcc112233 charge tous ces champs non-None",
         "Test sur sim reelle si dispo (sim_ea0eb65b2e5b skip si absente) : tous les champs remplis"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-118",
         "US-119"
@@ -4266,8 +4266,11 @@
         "files_to_create": [
           "backend/tests/test_loader_completeness.py"
         ],
-        "rationale": "Sans loader complet, Enricher et Templates produisent des outputs vides. Trou identifie par audit du rapport genere."
-      }
+        "rationale": "Sans loader complet, Enricher et Templates produisent des outputs vides. Trou identifie par audit du rapport genere.",
+        "merge_commit": "f5eefee",
+        "ralph_session": "2026-05-06"
+      },
+      "completedAt": "2026-05-06T05:00:00Z"
     },
     {
       "id": "US-135",
@@ -4285,7 +4288,7 @@
         "Tests pytest backend/tests/test_enricher_sanitize.py : input avec tool_call -> output sans, KPI Hero non-zero sur fixture",
         "Test contexte avec outcome.recommendations vide -> executive_takeaways quand meme generes depuis outline.summary"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-118",
         "US-124"
@@ -4299,8 +4302,11 @@
         "files_to_create": [
           "backend/tests/test_enricher_sanitize.py"
         ],
-        "rationale": "DEFCON 1: tool_call brut LLM injecte dans livrable client. Sanitize obligatoire."
-      }
+        "rationale": "DEFCON 1: tool_call brut LLM injecte dans livrable client. Sanitize obligatoire.",
+        "merge_commit": "1c61b41",
+        "ralph_session": "2026-05-06"
+      },
+      "completedAt": "2026-05-06T05:00:00Z"
     },
     {
       "id": "US-136",
@@ -4317,7 +4323,7 @@
         "Profils agents annexe 7.2 : afficher uniquement les colonnes avec data reelle (skip Archetype/Plateforme si tous vides)",
         "Tests pytest backend/tests/test_templates_render_quality.py : numerotation OK, dates formatees, charts data URI present, fallbacks gracieux"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-123",
         "US-118"
@@ -4337,8 +4343,11 @@
         "files_to_create": [
           "backend/tests/test_templates_render_quality.py"
         ],
-        "rationale": "Numerotation cassee + dates brutes + charts non embarques + articles placeholder. Tous identifies par audit Amine."
-      }
+        "rationale": "Numerotation cassee + dates brutes + charts non embarques + articles placeholder. Tous identifies par audit Amine.",
+        "merge_commit": "4f8e8fe",
+        "ralph_session": "2026-05-06"
+      },
+      "completedAt": "2026-05-06T05:00:00Z"
     },
     {
       "id": "US-137",
