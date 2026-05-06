@@ -1046,3 +1046,37 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 - **Include dans Jinja2** : `{% include '00_cover.md.j2' %}` dans `_full.md.j2` utilise le FileSystemLoader de l'environnement — les includes partagent le même contexte que le template parent. Pas besoin de `from ... import` pour les macros incluses dans les sections.
 
 ---
+
+### 2026-05-06 — US-126 Workflow états 7 transitions + audit log immuable (worktree agent-a885ff36)
+
+- **Statut** : passes:true (chantier AA-pdf-workflow). Commit `[US-126]`, branch `main`.
+- **Fichiers créés** :
+  - `supabase/migrations/20260506_002_report_workflow.sql` — migration idempotente (tables report_states + report_audit_log, helper is_super_admin(), RLS strict, index, trigger updated_at)
+  - `backend/app/services/report_workflow.py` — service complet (transitions, locking, audit log, auto-release stale locks)
+  - `backend/app/api/admin_reports.py` — 4 endpoints admin (GET /state, POST /transition, POST /lock, POST /unlock)
+  - `backend/tests/test_report_workflow.py` — 50 tests (37 fonctions, paramétrisées × 15 + 9 + 3)
+- **Fichiers modifiés** :
+  - `backend/app/__init__.py` — register `admin_reports_bp` sur `/api/admin/reports`
+
+#### Architecture Workflow
+
+- **7 états** : `GENERATING → DRAFT → IN_REVIEW → PENDING_APPROVAL → APPROVED → DELIVERED → ARCHIVED`. Graphe dirigé acyclique avec rétrogradations légales (IN_REVIEW → DRAFT, PENDING_APPROVAL → IN_REVIEW). ARCHIVED = état terminal sans sortie.
+- **`LEGAL_TRANSITIONS` dict** : source de vérité unique pour la validation. Toute tentative de transition non listée → `IllegalTransitionError`.
+- **Locking optimiste** : champs `locked_by` + `locked_at` sur `report_states`. Auto-release si `locked_at > 30 min`. Super-admin bypass via `is_super_admin=True`.
+- **Audit log immuable** : toute transition insère une row dans `report_audit_log` (from_state, to_state, actor_id, actor_email, ip_address, user_agent, snapshot_hash, comment). RLS bloque UPDATE + DELETE avec `using (false)`.
+- **is_super_admin() Postgres** : lookup dans `super_admin_emails` si la table existe, sinon `false` (fail-safe). La RLS de `report_states` et `report_audit_log` l'utilise pour le bypass super-admin.
+
+#### Patterns à retenir
+
+- **Monkeypatching endpoint Flask** : patcher TOUJOURS au point d'usage dans le module API, pas dans le module source. Exemple : `patch("app.api.admin_reports.get_supabase_admin")` et NON `patch("app.auth.supabase_client.get_supabase_admin")`. Les imports `from … import` créent des aliases locaux non patchables à distance.
+- **`side_effect` avec `*args, **kw`** : les `MagicMock(side_effect=fn)` passent tous les args positionnels + keyword. Toujours déclarer `def _raise_fn(*args, **kw): raise Exc(...)` pour éviter les `TypeError: unexpected keyword argument`.
+- **Immutabilité RLS** : `create policy "..." for update using (false)` + `for delete using (false)` garantit l'immutabilité côté Supabase. Le test d'immutabilité simule une exception RLS (SQLSTATE 42501) via `side_effect` — pas besoin d'un vrai Supabase live.
+- **is_super_admin() safe** : la fonction Postgres teste l'existence de `super_admin_emails` via `information_schema.tables` avant de la joindre. Évite les erreurs dans les migrations fraîches ou les environnements de test.
+- **init_report_state idempotent** : vérifier l'existence via `get_report_state` avant d'insérer. Retourne la row existante sans créer de doublon (important pour les retries de génération).
+
+#### Quality gates (2026-05-06)
+
+- `cd backend && uv run pytest tests/test_report_workflow.py --tb=short -q` → **50 passed, 0 failed** en 8,17 s.
+- `cd backend && uv run pytest tests/ --tb=short -q` (suite complète, hors integration) → **1366 passed, 11 skipped, 0 régression** (vs 1316 baseline US-125, +50 nouveaux). 243,76 s.
+
+---

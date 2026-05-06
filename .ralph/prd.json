@@ -3931,7 +3931,7 @@
         "Locking optimiste IN_REVIEW (lock_by + lock_at) ; auto-release 30 min inactivité",
         "Tests pytest : transitions légales/illégales, audit immutability (UPDATE bloqué par RLS), lock acquisition/release/timeout"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-091"
       ],
@@ -3943,7 +3943,19 @@
           "backend/app/services/report_workflow.py",
           "backend/app/api/admin_reports.py",
           "backend/tests/test_report_workflow.py"
-        ]
+        ],
+        "completedAt": "2026-05-06T08:29:35.060910+00:00",
+        "completedBy": "claude-sonnet-4-6",
+        "files_created": [
+          "supabase/migrations/20260506_002_report_workflow.sql",
+          "backend/app/services/report_workflow.py",
+          "backend/app/api/admin_reports.py",
+          "backend/tests/test_report_workflow.py"
+        ],
+        "files_modified": [
+          "backend/app/__init__.py"
+        ],
+        "tests_added": 50
       }
     },
     {

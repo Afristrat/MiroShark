@@ -150,6 +150,14 @@ def create_app(config_class=Config):
     #   /api/admin/branding/<id>/preview — POST (aperçu SVG)
     from .api.admin_branding import admin_branding_bp
     app.register_blueprint(admin_branding_bp, url_prefix='/api/admin/branding')
+
+    # admin_reports_bp — workflow états rapport + audit log (US-126).
+    #   /api/admin/reports/<id>/state      — GET état courant + audit log
+    #   /api/admin/reports/<id>/transition — POST effectue une transition
+    #   /api/admin/reports/<id>/lock       — POST acquiert le lock IN_REVIEW
+    #   /api/admin/reports/<id>/unlock     — POST relâche le lock
+    from .api.admin_reports import admin_reports_bp
+    app.register_blueprint(admin_reports_bp, url_prefix='/api/admin/reports')
     
     # Health check
     @app.route('/health')
