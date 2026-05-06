@@ -1108,6 +1108,7 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 
 ---
 
+---
 ### 2026-05-05 — US-127 — Page admin review (split view + Tiptap + CodeMirror + diff versioning)
 
 - **Statut** : passes:true. Worktree branch `worktree-agent-aa73ee7b`, 1 commit.
@@ -1168,3 +1169,38 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 - **Mock auth super-admin dans tests Flask** : combiner `patch("app.auth.decorators.verify_supabase_jwt", return_value={...})` + `patch.dict(os.environ, {"BASSIRA_SUPER_ADMIN_EMAILS": "admin@bassira.ai"})`. Ne pas mocker `is_super_admin_email` (fonction libre) mais `_super_admin_emails()` via l'env var.
 - **RQ enqueue kwargs** : utiliser `queue.enqueue(func, kwargs={...})` plutôt que positional args pour fonctions avec keyword-only params (`*`).
 - **job.return_value()** vs `job.result` : RQ >= 1.15 déprécie `job.result` → utiliser `job.return_value()` avec fallback gracieux.
+### 2026-05-05 — US-130 Delivery (URL signée TTL + email Resend + tracking téléchargements)
+
+- **Statut** : passes:true (chantier AE-pdf-delivery). Branch `worktree-agent-a95854eb`.
+- **Commit** : `[US-130] Delivery (URL signée TTL + email Resend + tracking)`.
+
+#### Fichiers créés
+- `supabase/migrations/20260506_004_report_delivery.sql` — tables `report_deliveries` + `report_downloads` + RLS + triggers `updated_at`.
+- `backend/app/services/report_delivery.py` — service complet : generate/verify token HMAC SHA256, create_delivery, log_download, list_deliveries, list_downloads, re_send_link, auto_archive_after_90_days.
+- `backend/app/api/report_delivery.py` — blueprints : `report_delivery_admin_bp` (admin routes) + `report_delivery_public_bp` (GET /r/<token> public).
+- `backend/app/templates/emails/report_delivery.html` — email HTML Bassira multilang (template `str.format` comme quote_payment_link.html).
+- `frontend/src/views/AdminReportTrackingView.vue` — vue super-admin tracking : liste deliveries + téléchargements géo + re-send + modal livraison.
+- `backend/tests/test_report_delivery.py` — 19 tests (12 unitaires + 7 endpoint Flask).
+- `frontend/tests/e2e/admin-report-tracking.spec.ts` — 6 tests Playwright (2 guards + 4 super-admin).
+
+#### Fichiers modifiés
+- `backend/app/__init__.py` — enregistrement des blueprints `report_delivery_admin_bp` + `report_delivery_public_bp`.
+- `frontend/src/router/index.js` — route `/admin/reports/:id/tracking` avec `requiresSuperAdmin`.
+- `frontend/src/locales/fr.json` + `en.json` + `ar.json` — clé `adminReportTracking` (30 sous-clés FR/EN/AR).
+
+#### Décisions architecturales
+- **Token HMAC** : format `payload_b64.sig_b64` (1 seul séparateur `.`). Le payload JSON encode `{rid, ver, eml, exp, nonce}`. Le nonce (8 bytes hex) garantit l'unicité des tokens même pour le même destinataire/rapport. Comparaison HMAC en temps constant avec `hmac.compare_digest`.
+- **Route /r/<token> publique** : blueprint séparé (`report_delivery_public_bp`) monté sans préfixe sur l'app Flask. Pas d'auth requis. Journalise le téléchargement best-effort (ne bloque jamais le stream si Supabase est KO). Stream PDF en chunks de 64 Ko avec `Content-Disposition: attachment`.
+- **Email template** : `str.format` (pattern existant email_service.py US-104). Pas de Jinja — conforme au code existant. Le subject est multilingue (dict fr/en/ar) dans le service Python.
+- **Frontend** : classe `art-*` préfixée (Admin Report Tracking) — pattern classe scoped par vue. Tokens CSS `--wi-*`. Sélecteur de langue FR/EN/AR dans le modal identique au pattern AdminBrandingView.
+
+#### Patterns nouveaux à propager
+- **Blueprint Flask "public + admin" séparés** : pour un endpoint public (`/r/<token>`) + des endpoints admin (`/api/admin/…`), créer 2 blueprints dans le même fichier. Le public est monté sans préfixe, l'admin est monté avec `url_prefix='/api/admin/reports'`. Permet la cohabitation sans modifier admin_reports_bp.
+- **Mock `app.auth.decorators.verify_supabase_jwt`** : pour les tests endpoint Flask avec `@require_auth`, patcher `app.auth.decorators.verify_supabase_jwt` (retourner les claims dict directement) + passer un fake JWT syntaxiquement valide (3 segments base64) dans le header `Authorization`. Pattern confirmé dans `test_snapshot_watermark.py`.
+- **Sélecteur de langue dans modal** : `art-lang-btns` + `art-lang-btn--active` (v-for sur `['fr', 'en', 'ar']`, binding `@click="form.language = lang"`). Testable en Playwright avec `modal.locator('button:has-text("FR")')`.
+
+#### Quality gates (2026-05-05)
+- `pytest tests/test_report_delivery.py --tb=short -x` → **19 passed, 0 failed**.
+- `pytest tests/ --tb=short -x` → **1409 passed, 28 skipped, 0 régression** (5 min 01s).
+- `npm run build` → **OK** (warnings chunk size pré-existants, 0 erreur).
+- Playwright : structurellement valide (6 tests), lancé en mode mock prod.

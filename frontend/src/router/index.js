@@ -218,7 +218,6 @@ const routes = [
   },
   {
     // US-127 — Révision rapport (split view PDF + Tiptap + CodeMirror + diff versioning).
-    // Super-admin uniquement. Accessible depuis la console rapport.
     path: '/admin/reports/:id/review',
     name: 'AdminReportReview',
     component: () => import('../views/AdminReportReviewView.vue'),
@@ -227,6 +226,18 @@ const routes = [
       requiresAuth: true,
       requiresSuperAdmin: true,
       title: 'Révision rapport · Bassira admin'
+    }
+  },
+  {
+    // US-130 — Suivi des livraisons + tracking téléchargements (super-admin).
+    path: '/admin/reports/:id/tracking',
+    name: 'AdminReportTracking',
+    component: () => import('../views/AdminReportTrackingView.vue'),
+    props: true,
+    meta: {
+      requiresAuth: true,
+      requiresSuperAdmin: true,
+      title: 'Suivi livraisons · Bassira admin'
     }
   }
 ]

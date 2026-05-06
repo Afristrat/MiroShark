@@ -2426,6 +2426,54 @@
       "update": "Erreur lors de la mise à jour."
     }
   },
+  "adminReportTracking": {
+    "title": "Suivi des livraisons",
+    "subtitle": "Historique des livraisons et téléchargements de ce rapport.",
+    "loading": "Chargement des livraisons…",
+    "empty": "Aucune livraison pour ce rapport.",
+    "deliverBtn": "Livrer à un destinataire",
+    "table": {
+      "recipient": "Destinataire",
+      "language": "Langue",
+      "status": "Statut",
+      "expires": "Expire le",
+      "sent": "Envoyé le",
+      "downloads": "Téléchargements",
+      "actions": "Actions"
+    },
+    "status": {
+      "pending": "En attente",
+      "sent": "Envoyé",
+      "failed": "Échec",
+      "expired": "Expiré",
+      "archived": "Archivé"
+    },
+    "downloads": {
+      "title": "Téléchargements",
+      "empty": "Aucun téléchargement enregistré.",
+      "date": "Date",
+      "country": "Pays",
+      "ip": "IP",
+      "ua": "Navigateur"
+    },
+    "modal": {
+      "title": "Livrer le rapport",
+      "recipientEmail": "Email du destinataire",
+      "recipientName": "Nom du destinataire",
+      "expiryDays": "Durée de validité (jours)",
+      "language": "Langue de l'email",
+      "submit": "Envoyer le lien",
+      "cancel": "Annuler",
+      "sending": "Envoi en cours…"
+    },
+    "resend": "Renvoyer le lien",
+    "resending": "Renvoi en cours…",
+    "resendSuccess": "Nouveau lien envoyé.",
+    "resendFailed": "Échec du renvoi.",
+    "deliverSuccess": "Rapport livré avec succès.",
+    "deliverFailed": "Échec de la livraison.",
+    "back": "Retour"
+  },
   "adminQuotes": {
     "title": "Tous les devis reçus",
     "subtitle": "Console super-admin Bassira — pilotage du tunnel commercial.",

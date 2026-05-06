@@ -161,19 +161,22 @@ def create_app(config_class=Config):
     app.register_blueprint(admin_reports_bp, url_prefix='/api/admin/reports')
 
     # admin_report_versions_bp — versioning + commentaires rapport (US-127).
-    #   /api/admin/reports/<id>/versions                         — GET/POST
-    #   /api/admin/reports/<id>/versions/<vid>/diff/<other_vid>  — GET diff
-    #   /api/admin/reports/<id>/comments                         — GET/POST
-    #   /api/admin/reports/<id>/comments/<cid>                   — PATCH
     from .api.admin_report_versions import admin_report_versions_bp
     app.register_blueprint(admin_report_versions_bp, url_prefix='/api/admin/reports')
 
     # pdf_generation_bp — génération PDF hybride sync/async (US-129).
-    #   POST /api/admin/reports/<id>/preview  — preview sync 1 page
-    #   POST /api/admin/reports/<id>/generate — enqueue async RQ
-    #   GET  /api/admin/reports/<id>/jobs/<job_id> — polling status
     from .api.pdf_generation import pdf_generation_bp
     app.register_blueprint(pdf_generation_bp, url_prefix='/api/admin/reports')
+
+    # report_delivery_admin_bp + report_delivery_public_bp — livraison rapport (US-130).
+    #   POST /api/admin/reports/<id>/deliver                           — crée delivery + email
+    #   GET  /api/admin/reports/<id>/deliveries                        — liste deliveries
+    #   GET  /api/admin/reports/<id>/deliveries/<did>/downloads        — tracking
+    #   POST /api/admin/reports/<id>/deliveries/<did>/resend           — re-envoi
+    #   GET  /r/<token>                                                — téléchargement public PDF
+    from .api.report_delivery import report_delivery_admin_bp, report_delivery_public_bp
+    app.register_blueprint(report_delivery_admin_bp, url_prefix='/api/admin/reports')
+    app.register_blueprint(report_delivery_public_bp)
     
     # Health check
     @app.route('/health')
