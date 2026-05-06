@@ -1238,3 +1238,46 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 - `pytest tests/ --tb=short -q` → **1442 passed, 41 skipped, 0 régression** (5 min 00s).
 - `npm run build` → **OK** (warnings chunk pré-existants, 0 erreur).
 - Lignes supprimées de pdf_export.py : ~540 lignes ReportLab obsolètes.
+
+---
+
+## [2026-05-05] US-136 — Templates fixes : numérotation + dates Babel + charts data URI + fallbacks
+
+**Story :** US-136  
+**Commit :** `4f8e8fe`  
+**Branche :** `worktree-agent-aad9d685`  
+**Durée :** ~1 session  
+
+### Fichiers modifiés
+- `backend/app/templates/pdf_report/02_toc.md.j2` — `section.idx + 1` → `loop.index`
+- `backend/app/templates/pdf_report/00_cover.md.j2` — `generated_at` avec filter `|format_date`
+- `backend/app/services/report_pdf/jinja_env.py` — filter `format_date` lang-aware (Babel fr_FR/en_US/ar_MA + fallback sans Babel)
+- `backend/app/services/report_pdf/renderer.py` — `charts_factory` param dans `__init__` + `_embed_charts_md()` helper
+- `backend/app/templates/pdf_report/05_verdict.md.j2` — fallback callout explicite articles vides + defaults
+- `backend/app/templates/pdf_report/04_dynamic.md.j2` — filtre messages vides avant table posts + callout amélioré
+- `backend/app/templates/pdf_report/07_appendix.md.j2` — colonnes Archétype/Plateforme conditionnelles
+- `backend/pyproject.toml` — `babel>=2.14`
+- `backend/uv.lock` — mise à jour lock
+
+### Fichiers créés
+- `backend/tests/test_templates_render_quality.py` — 17 tests qualité (tous verts)
+
+### Bugs corrigés
+1. **Numérotation TOC** : `section.idx + 1` (tous 0) → `loop.index` (séquentiel garanti)
+2. **Date ISO brute** : `generated_at` affiché brut → filter `|format_date` via Babel/fallback
+3. **Charts PNG introuvables** : `render_md()` embarque maintenant les charts en data URI si `charts_factory` fourni
+4. **Articles placeholder vide** : fallback callout explicite + default filters sur tous les champs
+5. **Posts critiques all-dash** : filtre messages vides → fallback callout si aucun contenu réel
+6. **Profils agent colonnes vides** : colonnes Archétype/Plateforme conditionnelles (`selectattr`)
+
+### Patterns appris
+- **Jinja2 `loop.index`** : toujours préférer `loop.index` à `object.field + 1` pour la numérotation séquentielle — `loop.index` est garantit séquentiel, `object.field` peut avoir des valeurs répétées.
+- **Babel import optionnel** : pattern `try: from babel.dates import ...; HAS_BABEL = True except ImportError: HAS_BABEL = False` permet un fallback gracieux sans crash si Babel absent.
+- **`selectattr` Jinja2** : `| selectattr('field') | list | length > 0` filtre les valeurs falsy (y compris `""`) — fiable pour tester si une colonne a des données.
+- **`agent_log` est `List[Dict]` non-nullable** dans le schema — passer `[]` et non `None`.
+- **`Renderer(context, charts_factory=factory)`** : la signature accepte maintenant `charts_factory` en kwarg optionnel. `render_pdf()` ignore ce paramètre (il a son propre `charts_factory` en arg) — cohérence à surveiller.
+
+### Validation
+- pytest `test_templates_render_quality.py` : **17/17 PASSED**
+- pytest `test_md_templates.py` : **18/18 PASSED** (zéro régression)
+- pytest full suite : **1459 PASSED, 41 SKIPPED** (WeasyPrint/integration — mêmes skips qu'avant)
