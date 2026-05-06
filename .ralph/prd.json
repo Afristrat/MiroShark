@@ -3810,7 +3810,7 @@
         "Section 07 inclut full_report.md content si présent",
         "Tests : génère MD pour chaque section sur fixture, vérifie présence sections + respect typographique"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-118",
         "US-121",
@@ -3831,8 +3831,12 @@
           "backend/app/templates/pdf_report/_full.md.j2",
           "backend/app/templates/pdf_report/_macros.md.j2",
           "backend/tests/test_md_templates.py"
-        ]
-      }
+        ],
+        "merge_commit": "2ec4e53",
+        "ralph_session": "2026-05-06",
+        "note": "Implémenté dans US-125 (templates inclus dans le même commit)"
+      },
+      "completedAt": "2026-05-06T01:49:03.524291+00:00"
     },
     {
       "id": "US-124",
@@ -3849,7 +3853,7 @@
         "Tests pytest fixture : kpi_hero rempli, pivotal_moments triés par round, interpretations présentes, takeaways non vides",
         "Mock LLM calls avec unittest.mock pour tests déterministes"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-118",
         "US-121",
@@ -3861,8 +3865,12 @@
         "files_to_create": [
           "backend/app/services/report_pdf/enricher.py",
           "backend/tests/test_enricher.py"
-        ]
-      }
+        ],
+        "merge_commit": "2ec4e53",
+        "ralph_session": "2026-05-06",
+        "note": "Stub déterministe implémenté dans US-125 enricher.py (appels LLM réels = US-124 Phase 4)"
+      },
+      "completedAt": "2026-05-06T01:49:03.524291+00:00"
     },
     {
       "id": "US-125",
@@ -3880,7 +3888,7 @@
         "Tests pytest fixture : produit MD valid GFM, produit PDF valid (pypdf nb pages > 5, metadata présentes)",
         "Test multilang : génère FR + EN + AR sur même fixture, vérifie polices et direction"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-118",
         "US-119",
@@ -3897,8 +3905,11 @@
           "backend/app/templates/pdf_report/pdf_brand.css.j2",
           "backend/static/fonts/.gitkeep",
           "backend/tests/test_renderer.py"
-        ]
-      }
+        ],
+        "merge_commit": "2ec4e53",
+        "ralph_session": "2026-05-06"
+      },
+      "completedAt": "2026-05-06T01:49:03.524291+00:00"
     },
     {
       "id": "US-126",

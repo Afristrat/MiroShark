@@ -992,3 +992,32 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 - **Backend Agg obligatoire** : `matplotlib.use("Agg")` doit être appelé AVANT `import matplotlib.pyplot`. Placer l'appel au niveau module dans `_style.py` ET dans `charts.py` (double garde) évite les imports circulaires et les imports par tiers qui reset le backend.
 - **Worktree isolé** : les fichiers mergés en main depuis d'autres worktrees (US-118, US-119) ne sont PAS présents dans un nouveau worktree basé sur un commit antérieur. Il faut les `cp` manuellement ou les retravailler from scratch. La prochaine fois, vérifier `ls backend/app/services/report_pdf/` dès le début.
 - **Fixtures pytest** : `test_pdf_context_loader.py` nécessite `backend/tests/fixtures/sim_aabbcc112233/` (plusieurs JSONs). Ces fixtures n'existaient pas dans le worktree — copier depuis main avant d'exécuter la suite complète.
+
+### 2026-05-06 — US-125 Renderer pipeline MD + WeasyPrint PDF + brand CSS injectable (worktree agent-affef8ef)
+
+- **Statut** : passes:true. Commit `2ec4e53`, branch `worktree-agent-affef8ef`.
+- **Contexte** : US-123 (templates Jinja2) et US-124 (Enricher) n'étaient PAS mergés en main contrairement aux instructions du brief. Implémentation complète dans US-125 (templates + enricher stub + renderer).
+
+#### Fichiers créés (17 au total)
+- `backend/app/services/report_pdf/jinja_env.py` — env Jinja2 + filtres `normalize` / `md_to_html`
+- `backend/app/services/report_pdf/enricher.py` — enrichissement déterministe (stub US-124 complet)
+- `backend/app/services/report_pdf/renderer.py` — `Renderer(context, branding).render_md() / .render_pdf()`
+- `backend/app/templates/pdf_report/_full.md.j2` — assembleur + front-matter YAML
+- `backend/app/templates/pdf_report/_macros.md.j2` — macros kpi_card, callout, pull_quote, table_from_data, chart_with_narrative
+- `backend/app/templates/pdf_report/00_cover.md.j2` → `07_appendix.md.j2` — 8 sections
+- `backend/app/templates/pdf_report/pdf_brand.css.j2` — CSS WeasyPrint @page natif, palette Causse injectable, RTL ar
+- `backend/static/fonts/.gitkeep` — répertoire fonts (woff2 à ajouter manuellement)
+- `backend/tests/test_renderer.py` — 33 tests
+
+#### Quality gates
+- `pytest tests/test_renderer.py` : **23 passed, 10 skipped** (WeasyPrint/GTK absent sur Windows) en 2.09 s.
+- `pytest tests/` (suite complète) : **1261 passed, 18 skipped, 0 failed, 0 régression** en 436 s.
+
+#### Pièges rencontrés et learnings
+- **WeasyPrint sur Windows** : nécessite GTK/Pango (`libgobject-2.0-0`). Non disponible en environnement Windows sans MSYS2/GTK3. Les tests render_pdf() sont décorés `@skip_no_weasyprint` et passent sur Linux (prod Railway/Coolify). Détection via `_weasyprint_available()` au module level.
+- **LanguageTool timeout** : `TextNormalizer.normalize()` appelle `lt_check()` qui attend 5s par call. Sans mock, les tests prenaient 12+ minutes. Fixe : fixture `autouse=True, scope="session"` mockant `app.services.text_normalizer.lt_check` → tests en 2s.
+- **Patch cible** : pour mocker une fonction importée avec `from .module import fn as alias`, patcher `module_qui_importe.alias` pas `module_source.fn`.
+- **`zip()` non disponible en Jinja2** : utiliser `loop.index0` + subscript (`answers[loop.index0]`) au lieu de `zip(questions, answers)`.
+- **Jinja2 `StrictUndefined`** : le CSS template doit avoir toutes les variables déclarées lors du `template.render()`. Passer `context=enriched_context` ET `generated_at` ET `lang` explicitement.
+- **Front-matter YAML + markdown-it** : markdown-it interprète `---\nkey: val\n---` comme `<hr>` si le front-matter n'est pas strippé avant rendu. `_strip_frontmatter()` retire le bloc avant MD→HTML.
+- **US-123 et US-124 intégrés dans US-125** : éviter la dette de dépendances non satisfaites. Vérifier `ls` complet dès l'étape 1 avant toute implémentation.
