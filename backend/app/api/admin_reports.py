@@ -343,3 +343,140 @@ def unlock_endpoint(report_id: str):
             "locked":    False,
         },
     }), 200
+
+
+# ─── Approve & Sign (US-128) ────────────────────────────────────────────────
+# Endpoint super-admin only : génère snapshot immuable + watermark + signature.
+
+@admin_reports_bp.route("/<report_id>/approve", methods=["POST"])
+@require_auth
+def approve_report(report_id: str):
+    """Approuve un rapport : génère snapshot immuable + watermark + signature (US-128).
+
+    Body JSON :
+        {"watermark_recipient": {"name": str, "company": str | null} | null, "sign": bool}
+
+    Returns : {"success": true, "snapshot_path": str, "sha256": str, "version": int}
+    """
+    import hashlib
+
+    user = getattr(g, "current_user", None) or {}
+    if not is_super_admin_email(user.get("email")):
+        return _err("FORBIDDEN", "Super-admin uniquement.", 403)
+
+    body: Dict = {}
+    if request.content_length and request.content_length > 0:
+        body = request.get_json(silent=True) or {}
+
+    watermark_recipient: Optional[Dict] = body.get("watermark_recipient")
+    do_sign: bool = bool(body.get("sign", False))
+
+    if watermark_recipient is not None:
+        if not isinstance(watermark_recipient, dict) or not watermark_recipient.get("name"):
+            return _err("INVALID_BODY", "'watermark_recipient.name' requis.", 400)
+
+    try:
+        from ..services.report_pdf.loader import PDFContextLoader
+        context = PDFContextLoader.load(report_id=report_id)
+    except Exception as exc:  # noqa: BLE001
+        logger.error("PDFContextLoader.load() echec %s : %s", report_id, exc)
+        return _err("CONTEXT_LOAD_ERROR", str(exc), 500)
+
+    branding = None
+    try:
+        from ..services.pdf_branding import get_active_branding
+        org_id = getattr(context, "org_id", None) or getattr(context, "organisation_id", None)
+        if org_id:
+            branding = get_active_branding(org_id)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("branding lookup failed: %s", exc)
+
+    try:
+        from ..services.report_pdf.renderer import Renderer
+        from ..services.report_pdf.charts import ChartFactory
+        chart_factory = ChartFactory(context)
+        renderer = Renderer(context, branding)
+        markdown_str = renderer.render_md()
+        pdf_bytes = renderer.render_pdf(charts_factory=chart_factory)
+    except Exception as exc:  # noqa: BLE001
+        logger.error("Renderer echec %s : %s", report_id, exc)
+        return _err("RENDER_ERROR", str(exc), 500)
+
+    chart_pngs: Dict[str, bytes] = {}
+    try:
+        from ..services.report_pdf.charts import ChartFactory as _CF
+        _cf = _CF(context)
+        for method_name in ("belief_drift", "polymarket_curves", "demographic_pyramid",
+                            "influence_leaderboard", "interaction_network"):
+            method = getattr(_cf, method_name, None)
+            if callable(method):
+                try:
+                    png = method()
+                    if png:
+                        chart_pngs[method_name] = png
+                except Exception:  # noqa: BLE001
+                    pass
+    except Exception:  # noqa: BLE001
+        pass
+
+    if watermark_recipient is not None:
+        try:
+            from ..services.report_pdf.watermark import apply_watermark_to_pdf
+            pdf_bytes = apply_watermark_to_pdf(
+                pdf_bytes,
+                recipient_name=watermark_recipient["name"],
+                recipient_company=watermark_recipient.get("company"),
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.error("Watermark echec : %s", exc)
+            return _err("WATERMARK_ERROR", str(exc), 500)
+
+    if do_sign:
+        try:
+            from ..services.report_pdf.signer import sign_pdf_pades
+            pdf_bytes = sign_pdf_pades(pdf_bytes)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Signature PAdES echec (ignored) : %s", exc)
+
+    sha256_hex = hashlib.sha256(pdf_bytes).hexdigest()
+
+    try:
+        from ..services.report_pdf.snapshot import create_snapshot, list_snapshots
+        existing = list_snapshots(report_id)
+        version = (existing[-1]["version"] + 1) if existing else 1
+        snapshot_result = create_snapshot(
+            report_id=report_id,
+            version=version,
+            markdown=markdown_str,
+            pdf_bytes=pdf_bytes,
+            branding=branding,
+            chart_pngs=chart_pngs,
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.error("create_snapshot echec : %s", exc)
+        return _err("SNAPSHOT_ERROR", str(exc), 500)
+
+    # Workflow transition APPROVED (US-126)
+    try:
+        actor_id, _email, _ip, _ua = _get_actor_info()
+        cli = get_supabase_admin()
+        rw.transition(
+            report_id,
+            target_state="APPROVED",
+            actor_id=actor_id,
+            actor_email=user.get("email"),
+            snapshot_hash=sha256_hex,
+            client=cli,
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Workflow transition APPROVED echec (ignored) : %s", exc)
+
+    logger.info("Report approved %s version=%d sha256=%s",
+                report_id, snapshot_result["version"], sha256_hex[:16])
+
+    return jsonify({
+        "success": True,
+        "snapshot_path": snapshot_result["path"],
+        "sha256": snapshot_result["sha256"],
+        "version": snapshot_result["version"],
+    }), 200

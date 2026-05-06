@@ -1047,6 +1047,7 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 
 ---
 
+---
 ### 2026-05-06 — US-126 Workflow états 7 transitions + audit log immuable (worktree agent-a885ff36)
 
 - **Statut** : passes:true (chantier AA-pdf-workflow). Commit `[US-126]`, branch `main`.
@@ -1080,3 +1081,26 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 - `cd backend && uv run pytest tests/ --tb=short -q` (suite complète, hors integration) → **1366 passed, 11 skipped, 0 régression** (vs 1316 baseline US-125, +50 nouveaux). 243,76 s.
 
 ---
+### 2026-05-05 — US-128 Approve & Sign (snapshot immuable + watermark + signature) (worktree agent-ae7bcdc9)
+
+- **Statut** : passes:true. 24/24 tests, 1340 passed full suite, 0 régression.
+
+#### US-128 — Snapshot immuable + watermark optionnel + signature PAdES optionnelle
+
+**Fichiers créés :**
+- `backend/app/services/report_pdf/snapshot.py` — `create_snapshot()`, `verify_snapshot()`, `list_snapshots()`, `SnapshotError`. SHA256 calculé sur la concaténation triée (nom relatif + bytes) de tous les fichiers hors metadata.json.
+- `backend/app/services/report_pdf/watermark.py` — `apply_watermark_to_pdf()`. Overlay reportlab (diagonal -30°, opacité 0.08, gris #888888) via pypdf merge_page(). skip_first_page=True par défaut (cover sans filigrane).
+- `backend/app/services/report_pdf/signer.py` — `sign_pdf_pades()`, `can_sign()`, `SigningConfig`, `SigningError`. pyHanko best-effort : si absent ou cert manquant → log warning + retour PDF inchangé. `_do_sign()` utilise `SimpleSigner.load_pkcs12` + `IncrementalPdfFileWriter` + PAdES B-B.
+- `backend/app/api/admin_reports.py` — `Blueprint("admin_reports")` + `POST /<report_id>/approve` (`@require_super_admin`). Pipeline : load context → render MD/PDF → watermark → sign → create_snapshot → workflow transition (best-effort via `_try_workflow_transition`).
+- `backend/tests/test_snapshot_watermark.py` — 24 tests (4 classes + endpoint tests).
+
+**Fichiers modifiés :**
+- `backend/app/__init__.py` — enregistrement du blueprint `admin_reports_bp` sur `/api/admin/reports`.
+
+#### Patterns nouveaux à propager
+
+- **pypdf DeprecationWarning `replace_contents()`** : sur pypdf ≥ 5 la méthode `merge_page()` sur une page non attachée à un writer émet un warning. Workaround propre : ignorer le warning en test (c'est une limitation pypdf 4, corrigée en 5). Ne pas patcher pypdf — utiliser `PdfWriter.add_page()` après merge si problème bloquant.
+- **Blueprint Flask isolé en test** : pour tester un endpoint protégé par `@require_super_admin` sans infra JWT, utiliser `test_request_context()` + `g.is_super_admin = True` + appel direct `__wrapped__` de la vue (via `while hasattr(view_fn, "__wrapped__")`) plutôt que `test_client()`. Plus fiable que `before_request()` qui ne passe pas si le décorateur intercepte avant le dispatch.
+- **Signer best-effort** : pour les dépendances lourdes optionnelles (pyHanko), toujours entourer l'import de `try/except ImportError` + log warning + return original. Pattern : `if not _pyhanko_available(): logger.warning(...); return original_bytes`. Ne jamais raise depuis une feature optionnelle.
+- **Workflow transition best-effort** : `_try_workflow_transition(report_id, "APPROVED")` encapsule l'import `report_workflow` dans un try/except ImportError (US-126 pas encore mergé). Permet à US-128 d'être mergé et testé indépendamment de US-126.
+- **SHA256 snapshot déterministe** : trier les fichiers par chemin relatif (`sorted(..., key=lambda p: str(p.relative_to(snap_dir)))`) AVANT de hasher. Sans tri, le SHA256 peut varier selon l'OS (ordre d'itération `rglob` non garanti).
