@@ -24,13 +24,91 @@ Usage ::
 from __future__ import annotations
 
 import pathlib
+from datetime import datetime
 
 from jinja2 import Environment, FileSystemLoader
 
 from app.services.text_normalizer import TextNormalizer
 
+# ── Babel (optionnel — fallback intégré si absent) ────────────────────────────
+try:
+    from babel.dates import format_datetime as _babel_format_datetime
+
+    _HAS_BABEL = True
+except ImportError:  # pragma: no cover — babel présent en prod, absent en CI minimal
+    _HAS_BABEL = False
+
 # Chemin absolu vers les templates PDF
 _TEMPLATES_DIR = pathlib.Path(__file__).parent.parent.parent / "templates" / "pdf_report"
+
+
+def _format_date_filter(value: object, lang: str = "fr", format_style: str = "long") -> str:
+    """Formate un horodatage ISO 8601 en date lisible selon la langue.
+
+    Utilise Babel si disponible (fr_FR, en_US, ar_MA) ; sinon fallback
+    manuel sans dépendance externe.
+
+    Parameters
+    ----------
+    value :
+        Chaîne ISO 8601 (ex. ``'2026-05-06T15:07:07+00:00'``) ou objet datetime.
+    lang :
+        Langue cible : ``'fr'``, ``'en'`` ou ``'ar'``. Défaut : ``'fr'``.
+    format_style :
+        Style Babel (``'long'``, ``'medium'``, ``'short'``). Défaut : ``'long'``.
+
+    Returns
+    -------
+    str
+        Date formatée, ou chaîne vide si value est None/vide.
+    """
+    if not value:
+        return ""
+
+    # Normalisation de la valeur en datetime
+    if isinstance(value, str):
+        try:
+            dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError:
+            return str(value)
+    elif isinstance(value, datetime):
+        dt = value
+    else:
+        return str(value)
+
+    # Validation de la langue
+    if lang not in {"fr", "en", "ar"}:
+        lang = "fr"
+
+    if _HAS_BABEL:
+        locale_map = {"fr": "fr_FR", "en": "en_US", "ar": "ar_MA"}
+        locale = locale_map.get(lang, "fr_FR")
+        try:
+            return _babel_format_datetime(dt, format=format_style, locale=locale)
+        except Exception:
+            pass  # Fallback ci-dessous
+
+    # Fallback sans Babel
+    _FR_MONTHS = [
+        "janvier", "février", "mars", "avril", "mai", "juin",
+        "juillet", "août", "septembre", "octobre", "novembre", "décembre",
+    ]
+    _EN_MONTHS = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December",
+    ]
+    if lang == "fr":
+        return (
+            f"{dt.day} {_FR_MONTHS[dt.month - 1]} {dt.year}"
+            f" à {dt.hour:02d}h{dt.minute:02d} UTC"
+        )
+    if lang == "ar":
+        return (
+            f"{dt.day} {_EN_MONTHS[dt.month - 1]} {dt.year}"
+            f" — {dt.hour:02d}:{dt.minute:02d} UTC"
+        )
+    # Anglais par défaut
+    return f"{_EN_MONTHS[dt.month - 1]} {dt.day}, {dt.year} at {dt.hour:02d}:{dt.minute:02d} UTC"
 
 
 def get_jinja_env() -> Environment:
@@ -83,6 +161,10 @@ def get_jinja_env() -> Environment:
             return text
 
     env.filters["normalize"] = _normalize_filter
+
+    # ── Filter |format_date ────────────────────────────────────────────────────
+    # Appelé depuis les templates via {{ generated_at | format_date(lang=context.lang) }}
+    env.filters["format_date"] = _format_date_filter
 
     return env
 

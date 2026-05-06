@@ -55,10 +55,12 @@ Bassira utilise un cadre de simulation multi-agents (framework **{{ context.fram
 {% elif context.agent_profiles %}
 #### Profils des Agents Simulés
 
-| Nom | Archétype | Stance Initiale | Plateforme |
-| --- | --- | --- | --- |
+{% set has_archetype = context.agent_profiles | selectattr('archetype') | list | length > 0 %}
+{% set has_platform = context.agent_profiles | selectattr('platform') | list | length > 0 %}
+| Nom {% if has_archetype %}| Archétype {% endif %}| Stance Initiale {% if has_platform %}| Plateforme {% endif %}|
+| --- {% if has_archetype %}| --- {% endif %}| --- {% if has_platform %}| --- {% endif %}|
 {% for profile in context.agent_profiles %}
-| {{ profile.name | normalize(context.lang) }} | {{ profile.archetype }} | {{ profile.stance }} | {{ profile.platform }} |
+| {{ profile.name | normalize(context.lang) }} {% if has_archetype %}| {{ profile.archetype | default('—') }} {% endif %}| {{ profile.stance | default('neutre') }} {% if has_platform %}| {{ profile.platform | default('—') }} {% endif %}|
 {% endfor %}
 
 {% else %}

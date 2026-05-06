@@ -62,6 +62,8 @@ dependencies = [
     "pyyaml>=6.0",
     # US-129 : Génération hybride sync/async — queue RQ + Redis
     "rq>=1.15",
+    # US-136 : Formatage des dates en langage naturel (fr/en/ar) dans les templates PDF
+    "babel>=2.14",
 ]
 
 [project.optional-dependencies]
