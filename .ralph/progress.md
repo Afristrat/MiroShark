@@ -1237,4 +1237,33 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 - `pytest tests/test_pdf_export_endpoints.py --tb=short -v` → **8 passed, 4 skipped** (WeasyPrint/GTK absent sur Windows — skip correct).
 - `pytest tests/ --tb=short -q` → **1442 passed, 41 skipped, 0 régression** (5 min 00s).
 - `npm run build` → **OK** (warnings chunk pré-existants, 0 erreur).
+
+---
+
+### 2026-05-05 — US-135 Enricher fixes : KPI Hero réel + sanitize tool_call + pivotal_moments (worktree agent-a209a3d7)
+
+- **Statut** : 1 story passes:true. Commit `1c61b41`, branch `worktree-agent-a209a3d7`.
+- **Fichiers modifiés** :
+  - `backend/app/services/report_pdf/enricher.py` — `sanitize_llm_output()` + fix `_compute_kpi_hero()` + fix `_call_llm_for_takeaways()` + `_fallback_takeaways_from_summary()`
+  - `backend/tests/test_enricher.py` — tests 01/14 mis à jour pour nouvelle logique confidence_pct
+- **Fichiers créés** :
+  - `backend/tests/test_enricher_sanitize.py` — 20 nouveaux tests (sanitize + KPI Hero + pivotal_moments + takeaways)
+
+#### Bugs corrigés (DEFCON 1)
+
+- **KPI Hero confidence_pct=0.0** : `outcome.confidence` est souvent 0.0 dans les fixtures réelles. Corrigé : `confidence_pct` vient désormais de `outcome.bullish_pct` (valeur réelle de la simulation). Fallback : `100 - bearish_pct` si bullish=0.
+- **`<tool_call>insight_forge</tool_call>` dans le livrable client** : aucun sanitize n'était appliqué sur les sorties LLM. Corrigé : `sanitize_llm_output()` supprime toutes les balises internes LLM (`<tool_call>`, `<function_call>`, `<thinking>`, `<scratchpad>`, `[function_calls]`, versions échappées). Appliqué sur chart narratives et takeaways.
+- **Executive takeaways** : fallback gracieux depuis `outline.summary` découpé en phrases quand LLM est indisponible.
+
+#### Patterns nouveaux
+
+- **sanitize_llm_output** : pattern à réutiliser dans tout nouveau service qui consomme une sortie LLM pour l'injecter dans un livrable client. Toujours appliquer avant injection.
+- **getattr(qm, 'brier_score', None)** : pattern pour accéder à un champ potentiellement absent du schéma (intouchable) sans KeyError. Compatible avec l'extension future de `QualityMetrics`.
+- **_fallback_takeaways_from_summary** : pattern fallback LLM → texte structuré existant → split → padding avec _LLM_FALLBACK. À propager partout où une génération LLM a un équivalent textuel disponible.
+
+#### Quality gates (US-135)
+
+- `pytest tests/test_enricher_sanitize.py --tb=short -x` → **20 passed, 0 failed**.
+- `pytest tests/test_enricher.py --tb=short -x` → **14 passed, 0 régression**.
+- `pytest tests/ --tb=short -x --ignore=tests/test_enricher.py --ignore=tests/test_enricher_sanitize.py` → **1428 passed, 41 skipped, 0 régression**.
 - Lignes supprimées de pdf_export.py : ~540 lignes ReportLab obsolètes.
