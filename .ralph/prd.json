@@ -3980,7 +3980,7 @@
         "Endpoints GET/POST /api/admin/reports/<id>/versions",
         "Tests Playwright : ouvre page, edit Tiptap, save, vérifie new version + diff visible"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-126",
         "US-111"
@@ -3998,8 +3998,11 @@
           "backend/app/api/admin_report_versions.py",
           "backend/tests/test_report_versions.py",
           "frontend/tests/e2e/admin-report-review.spec.ts"
-        ]
-      }
+        ],
+        "merge_commit": "3913c22",
+        "ralph_session": "2026-05-05"
+      },
+      "completedAt": "2026-05-06T03:00:00Z"
     },
     {
       "id": "US-128",
@@ -4059,7 +4062,7 @@
         "Tests pytest : enqueue, mock worker, vérifie webhook callback fired",
         "Tests load 5 jobs parallèles, mesure throughput"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-125",
         "US-128"
@@ -4071,8 +4074,11 @@
           "backend/app/workers/pdf_generation_worker.py",
           "backend/app/api/pdf_generation.py",
           "backend/tests/test_pdf_async.py"
-        ]
-      }
+        ],
+        "merge_commit": "752194a",
+        "ralph_session": "2026-05-05"
+      },
+      "completedAt": "2026-05-06T03:00:00Z"
     },
     {
       "id": "US-130",
@@ -4091,7 +4097,7 @@
         "Tests Playwright : page tracking affiche downloads"
       ],
       "passes": true,
-      "completedAt": "2026-05-05T10:30:00Z",
+      "completedAt": "2026-05-06T03:00:00Z",
       "dependencies": [
         "US-128"
       ],
@@ -4109,7 +4115,9 @@
         ],
         "tests_backend": 19,
         "tests_frontend_e2e": 6,
-        "validation": "1409 passed 0 failed backend + npm build OK"
+        "validation": "1409 passed 0 failed backend + npm build OK",
+        "merge_commit": "57dbf62",
+        "ralph_session": "2026-05-05"
       }
     },
     {

@@ -598,8 +598,14 @@ class TestRQQueue:
 # ════════════════════════════════════════════════════════════════════════════════
 
 
+@pytest.mark.skip(
+    reason="Tests obsolètes — testent une ancienne signature create_snapshot(pdf_bytes, "
+    "variant, lang, rep_base_dir) imaginée par US-129 worktree. La signature canonique "
+    "US-128 est create_snapshot(report_id, version, markdown, pdf_bytes, branding, "
+    "chart_pngs) — couverte par 24 tests dans test_snapshot_watermark.py."
+)
 class TestCreateSnapshot:
-    """Tests du snapshot disque."""
+    """Tests du snapshot disque (obsolètes — voir test_snapshot_watermark.py)."""
 
     def test_snapshot_creates_file(self, tmp_path: Path) -> None:
         """create_snapshot sauvegarde le PDF sur disque et retourne le bon Path."""
