@@ -1204,3 +1204,37 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 - `pytest tests/ --tb=short -x` → **1409 passed, 28 skipped, 0 régression** (5 min 01s).
 - `npm run build` → **OK** (warnings chunk size pré-existants, 0 erreur).
 - Playwright : structurellement valide (6 tests), lancé en mode mock prod.
+
+---
+
+### 2026-05-05 — US-133 Câbler endpoints user export PDF/MD au nouveau Renderer
+
+- **Statut** : passes:true. Commit `52b2c88`, branch `worktree-agent-ad00c88c`.
+- **Fichiers modifiés** :
+  - `backend/app/api/pdf_export.py` — refactor complet (Option B clean code) : ~600 lignes ReportLab supprimées, nouveau pipeline PDFContextLoader → Enricher → ChartFactory → Renderer
+  - `backend/tests/test_unit_pdf_export.py` — mis à jour pour le nouveau pipeline (6 passed + 6 skipped WeasyPrint)
+  - `frontend/src/components/EmbedDialog.vue` — remplace fetch() inline par `exportSimulationPdf()` du service API
+  - `frontend/src/locales/fr.json` + `en.json` + `ar.json` — clé `report.exportPdf` simplifiée
+- **Fichiers créés** :
+  - `backend/tests/test_pdf_export_endpoints.py` — 12 tests (8 passed + 4 skipped WeasyPrint/GTK absent Windows)
+
+#### Architecture US-133
+
+- **Helpers `_resolve_report_id_for_simulation`** : parcourt `_REPORTS_DIR` pour matcher `meta.json::simulation_id` ou `outline.json::simulation_id`. Retourne None en mode dégradé (sans outline).
+- **Helper `_resolve_lang_for_simulation`** : consulte `SimulationState.locale` (SimulationManager) puis `simulation_config.json::lang`. Défaut `'fr'`.
+- **graph_image_b64 ignoré** : la signature de l'endpoint garde `graph_image_b64` pour compatibilité ascendante mais l'ignore. `ChartFactory.interaction_network()` génère le graphe server-side. Log info pour traçabilité.
+
+#### Patterns à retenir
+
+- **Mock patch cible "where used"** : le mock du LLM Enricher doit cibler `app.services.report_pdf.enricher._safe_create_llm_client` (là où c'est appelé), pas `app.utils.llm_client.create_llm_client`.
+- **LanguageTool mock cible** : `app.services.text_normalizer.lt_check` (alias importé dans `__init__.py`), pas le module source `languagetool_client.LanguageToolClient.check` (qui n'existe pas en tant que classe).
+- **validate_simulation_id** : n'invalide que `..`, `/`, `\`, et chars non-alphanum/`-_..`. Les IDs `INVALID_ID` passent la validation (pas de format `sim_` requis). Pour tester 400, utiliser `sim..escape` qui déclenche le `..` check.
+- **EmbedDialog.vue exports** : remplacer le `fetch()` inline par le service `exportSimulationPdf()` du module `../api/simulation`. Plus simple, unifié, testable.
+- **patch.object(cls, method, classmethod(fn))** : pour patcher une classmethod Loader, utiliser `patch.object(PDFContextLoader, "load", classmethod(_patched_load))`. Passage de `sim_base_dir`/`rep_base_dir` fixtures.
+
+#### Quality gates (2026-05-05)
+
+- `pytest tests/test_pdf_export_endpoints.py --tb=short -v` → **8 passed, 4 skipped** (WeasyPrint/GTK absent sur Windows — skip correct).
+- `pytest tests/ --tb=short -q` → **1442 passed, 41 skipped, 0 régression** (5 min 00s).
+- `npm run build` → **OK** (warnings chunk pré-existants, 0 erreur).
+- Lignes supprimées de pdf_export.py : ~540 lignes ReportLab obsolètes.
