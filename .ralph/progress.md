@@ -1048,6 +1048,7 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 ---
 
 ---
+---
 ### 2026-05-06 — US-126 Workflow états 7 transitions + audit log immuable (worktree agent-a885ff36)
 
 - **Statut** : passes:true (chantier AA-pdf-workflow). Commit `[US-126]`, branch `main`.
@@ -1146,3 +1147,24 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 - **Commentaires non bloquants** : l'ajout et la résolution de commentaires n'impactent pas le workflow de version. Un commentaire peut exister sans version associée (version_id null).
 - **RLS simplifiée** : `service_role` bypass pour les opérations backend ; `authenticated` read via `report_states JOIN org_members`. Les writes sont toujours faits par le backend (service_role), jamais directement par le client.
 - **Pas de store Pinia dédié** : les données versions/commentaires sont gérées localement dans `AdminReportReviewView` via `ref()`. Pas besoin d'un store global pour une page admin ponctuelle.
+### 2026-05-05 — US-129 Génération hybride sync/async (queue RQ Redis + webhook) (worktree agent-a99889e9)
+
+- **Statut** : passes:true. Branch `worktree-agent-a99889e9`, commit `752194a`.
+- **Tests** : 18 tests (pytest OK), full suite 1316 passed 28 skipped 0 failed.
+
+**Fichiers créés :**
+- `backend/app/services/report_pdf/snapshot.py` — `create_snapshot(report_id, pdf_bytes, variant, lang) -> Path`
+- `backend/app/workers/__init__.py` + `backend/app/workers/pdf_generation_worker.py` — tâche RQ `generate_pdf_job` avec cache LRU 24h in-memory, pre-warm WeasyPrint au boot, compression Ghostscript optionnelle, webhook callback via `PDF_GENERATION_WEBHOOK_URL`, mode sync fallback si `REDIS_URL` absent.
+- `backend/app/api/pdf_generation.py` — blueprint `pdf_generation_bp` : `POST /api/admin/reports/<id>/preview` (sync 1p), `POST /api/admin/reports/<id>/generate` (async enqueue RQ), `GET /api/admin/reports/<id>/jobs/<job_id>` (polling status).
+- `backend/tests/test_pdf_async.py` — 18 tests couvrant generate_pdf_job, cache LRU, webhook, RQ fakeredis, snapshot, API Flask.
+
+**Fichiers modifiés :**
+- `backend/app/__init__.py` — enregistrement `pdf_generation_bp` sur `/api/admin/reports`
+- `backend/pyproject.toml` — `rq>=1.15` (prod), `fakeredis>=2.20` (dev)
+
+**Patterns nouveaux :**
+- **Cache LRU in-memory** : dict `_PDF_CACHE : Dict[Tuple[str,...], Tuple[str, float]]` + TTL check + is_file() guard. Clé `(sim_id, report_id, branding_v, template_v, variant, lang)`. Pattern reproductible dans d'autres workers.
+- **Mode sync fallback** : si `REDIS_URL` absent → générer directement + retourner résultat. `_get_redis_connection()` retourne `None`, `_get_queue()` retourne `None` → branche sync dans le endpoint `/generate`.
+- **Mock auth super-admin dans tests Flask** : combiner `patch("app.auth.decorators.verify_supabase_jwt", return_value={...})` + `patch.dict(os.environ, {"BASSIRA_SUPER_ADMIN_EMAILS": "admin@bassira.ai"})`. Ne pas mocker `is_super_admin_email` (fonction libre) mais `_super_admin_emails()` via l'env var.
+- **RQ enqueue kwargs** : utiliser `queue.enqueue(func, kwargs={...})` plutôt que positional args pour fonctions avec keyword-only params (`*`).
+- **job.return_value()** vs `job.result` : RQ >= 1.15 déprécie `job.result` → utiliser `job.return_value()` avec fallback gracieux.

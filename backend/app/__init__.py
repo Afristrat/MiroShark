@@ -160,13 +160,20 @@ def create_app(config_class=Config):
     from .api.admin_reports import admin_reports_bp
     app.register_blueprint(admin_reports_bp, url_prefix='/api/admin/reports')
 
-    # admin_report_versions_bp — versionning + commentaires rapport (US-127).
+    # admin_report_versions_bp — versioning + commentaires rapport (US-127).
     #   /api/admin/reports/<id>/versions                         — GET/POST
     #   /api/admin/reports/<id>/versions/<vid>/diff/<other_vid>  — GET diff
     #   /api/admin/reports/<id>/comments                         — GET/POST
     #   /api/admin/reports/<id>/comments/<cid>                   — PATCH
     from .api.admin_report_versions import admin_report_versions_bp
     app.register_blueprint(admin_report_versions_bp, url_prefix='/api/admin/reports')
+
+    # pdf_generation_bp — génération PDF hybride sync/async (US-129).
+    #   POST /api/admin/reports/<id>/preview  — preview sync 1 page
+    #   POST /api/admin/reports/<id>/generate — enqueue async RQ
+    #   GET  /api/admin/reports/<id>/jobs/<job_id> — polling status
+    from .api.pdf_generation import pdf_generation_bp
+    app.register_blueprint(pdf_generation_bp, url_prefix='/api/admin/reports')
     
     # Health check
     @app.route('/health')
