@@ -1,0 +1,54 @@
+{% from '_macros.md.j2' import chart_with_narrative, callout %}
+
+## 1. Résumé Exécutif
+
+### Takeaways Prioritaires
+
+{% set takeaways = context.executive_takeaways if context.executive_takeaways else [] %}
+{% if not takeaways and context.outline and context.outline.summary %}
+{% set fallback_summary = context.outline.summary %}
+{% endif %}
+
+{% if takeaways %}
+{% for t in takeaways[:3] %}
+{{ loop.index }}. {{ t | normalize(context.lang) }}
+{% endfor %}
+{% elif fallback_summary is defined and fallback_summary %}
+{{ callout('info', 'Résumé exécutif', fallback_summary | normalize(context.lang)) }}
+{% else %}
+{{ callout('warning', 'Takeaways non disponibles', 'Les takeaways exécutifs seront enrichis lors de la phase US-124 (Enricher).') }}
+{% endif %}
+
+---
+
+### Verdict
+
+{% if context.outcome and context.outcome.verdict %}
+**{{ context.outcome.verdict | normalize(context.lang) }}**
+
+| Métrique | Valeur |
+| --- | --- |
+| Confiance | {{ (context.outcome.confidence * 100) | round(1) }} % |
+| Bullish | {{ context.outcome.bullish_pct | round(1) }} % |
+| Bearish | {{ context.outcome.bearish_pct | round(1) }} % |
+| Consensus atteint | {{ 'Oui' if context.outcome.consensus_reached else 'Non' }} |
+{% if context.outcome.scenario_winner %}
+| Camp dominant | {{ context.outcome.scenario_winner }} |
+{% endif %}
+
+{% else %}
+{{ callout('warning', 'Verdict non disponible', 'Le verdict de simulation n\'est pas encore calculé pour ce rapport.') }}
+{% endif %}
+
+---
+
+### Évolution des Convictions (Belief Drift)
+
+{{ chart_with_narrative(
+    chart_filename='belief_drift.png',
+    alt='Graphique d\'évolution des convictions par round',
+    caption='Figure 1 — Évolution des scores de conviction des agents par round de simulation.',
+    narrative_text='Ce graphique illustre la dynamique d\'opinion au fil des rounds. Les lignes représentent les scores moyens de conviction par position (bullish, bearish, neutre). Les marqueurs verticaux indiquent les moments pivots identifiés dans la trajectoire.'
+) }}
+
+---

@@ -1,0 +1,122 @@
+{% from '_macros.md.j2' import callout %}
+
+## 7. Annexes
+
+### 7.1 Méthodologie Détaillée
+
+Bassira utilise un cadre de simulation multi-agents (framework **{{ context.framework | upper }}**) pour modéliser la dynamique d'opinion et de décision au sein d'une population synthétique d'agents.
+
+**Étapes du pipeline de simulation :**
+
+1. **Extraction de connaissances** — Analyse documentaire et extraction d'entités via un graphe de connaissances Neo4j.
+2. **Génération de profils** — Création de profils agents Wonderwall (archétypes, biais cognitifs, stances initiales) adaptés au contexte.
+3. **Simulation multi-rounds** — Exécution de rounds d'interaction où les agents échangent des arguments et mettent à jour leurs convictions.
+4. **Analyse et verdict** — Calcul du verdict probabiliste, du score de Brier, et identification des moments pivots.
+5. **Génération du rapport** — Assemblage du rapport via les templates Jinja2 Bassira (version template : 1.0.0).
+
+**Métriques de qualité :**
+
+{% if context.outcome and context.outcome.quality_metrics %}
+| Métrique | Score | Interprétation |
+| --- | --- | --- |
+| Cohérence interne | {{ (context.outcome.quality_metrics.coherence * 100) | round(1) }} % | Cohérence du scénario simulé |
+| Diversité des opinions | {{ (context.outcome.quality_metrics.diversity * 100) | round(1) }} % | Hétérogénéité des positions agents |
+| Plausibilité | {{ (context.outcome.quality_metrics.plausibility * 100) | round(1) }} % | Vraisemblance des dynamiques |
+| Alignement sources | {{ (context.outcome.quality_metrics.alignment * 100) | round(1) }} % | Fidélité aux données documentaires |
+
+{% else %}
+*Métriques de qualité non disponibles pour cette simulation.*
+{% endif %}
+
+---
+
+### 7.2 Liste des Agents et Interviews
+
+{% if context.interviews %}
+#### Interviews des Agents (Chain of Thought)
+
+{% for interview in context.interviews %}
+##### Agent : {{ interview.agent_name | normalize(context.lang) }} ({{ interview.archetype }})
+
+**Position finale :** {{ interview.final_stance }}
+
+{% if interview.questions and interview.answers %}
+{% for i in range([interview.questions | length, interview.answers | length] | min) %}
+**Q :** {{ interview.questions[i] | normalize(context.lang) }}
+
+**R :** {{ interview.answers[i] | normalize(context.lang) }}
+
+{% endfor %}
+{% endif %}
+
+---
+{% endfor %}
+
+{% elif context.agent_profiles %}
+#### Profils des Agents Simulés
+
+| Nom | Archétype | Stance Initiale | Plateforme |
+| --- | --- | --- | --- |
+{% for profile in context.agent_profiles %}
+| {{ profile.name | normalize(context.lang) }} | {{ profile.archetype }} | {{ profile.stance }} | {{ profile.platform }} |
+{% endfor %}
+
+{% else %}
+{{ callout('info', 'Agents', 'Les données d\'interview ou de profil des agents ne sont pas disponibles pour cette simulation.') }}
+{% endif %}
+
+---
+
+### 7.3 Rapport Complet (Markdown Brut)
+
+{% if context.full_report_md %}
+
+> **Note technique :** Le contenu suivant est le markdown brut généré par le ReportAgent, inclus ici comme annexe de référence.
+
+<details>
+<summary>Rapport Markdown Brut (cliquer pour développer)</summary>
+
+{{ context.full_report_md }}
+
+</details>
+
+{% else %}
+{{ callout('info', 'Rapport brut', 'Le markdown complet du rapport n\'est pas disponible dans ce contexte PDF.') }}
+{% endif %}
+
+---
+
+### 7.4 Glossaire
+
+| Terme | Définition |
+| --- | --- |
+| **Agent** | Entité simulée représentant un acteur (individu, organisation, média) avec un profil comportemental défini. |
+| **Belief Drift** | Évolution du score de conviction d'un agent ou d'une population au fil des rounds. |
+| **Brier Score** | Mesure de l'exactitude d'une prévision probabiliste (0 = parfait, 1 = totalement faux). |
+| **Bullish** | Position optimiste d'un agent vis-à-vis du scénario simulé. |
+| **Bearish** | Position pessimiste d'un agent vis-à-vis du scénario simulé. |
+| **Contrefactuel** | Scénario hypothétique injecté pendant la simulation pour mesurer l'impact d'un événement alternatif. |
+| **Framework** | Cadre analytique structurant la simulation (Cerberus, Market, Crisis, Policy, Decision). |
+| **Moment Pivot** | Événement ou interaction qui a significativement modifié la dynamique collective de la simulation. |
+| **Round** | Unité temporelle de la simulation durant laquelle chaque agent produit une action et met à jour sa conviction. |
+| **Stance** | Position déclarée d'un agent (bullish, bearish, neutre, ou spécifique au framework). |
+| **Wonderwall** | Système de génération de profils agents de Bassira. |
+
+---
+
+### 7.5 Disclaimer Légal
+
+Ce rapport est généré automatiquement par le système Bassira d'AIMPOWER. Il est fondé sur des données simulées par des agents artificiels et ne constitue en aucun cas :
+
+- un conseil d'investissement, financier ou boursier ;
+- un avis juridique ou réglementaire ;
+- une recommandation médicale ou de santé publique ;
+- une garantie de résultat ou de performance future.
+
+Les résultats de simulation sont de nature probabiliste et dépendent de la qualité des données sources, de la configuration des agents et des paramètres de simulation. Toute décision stratégique doit faire l'objet d'une validation par des experts humains qualifiés.
+
+**AIMPOWER / Bassira décline toute responsabilité** quant à l'utilisation des résultats de simulation à des fins décisionnelles sans validation humaine appropriée.
+
+*© 2026 AIMPOWER — Tous droits réservés. Bassira est une marque déposée d'AIMPOWER.*
+
+---

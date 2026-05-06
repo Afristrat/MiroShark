@@ -3810,7 +3810,8 @@
         "Section 07 inclut full_report.md content si présent",
         "Tests : génère MD pour chaque section sur fixture, vérifie présence sections + respect typographique"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-05-05T02:00:00Z",
       "dependencies": [
         "US-118",
         "US-121",
@@ -3819,7 +3820,8 @@
       "metadata": {
         "estimated_hours": 5,
         "priority": "P0",
-        "files_to_create": [
+        "files_created": [
+          "backend/app/templates/pdf_report/_macros.md.j2",
           "backend/app/templates/pdf_report/00_cover.md.j2",
           "backend/app/templates/pdf_report/01_exec_summary.md.j2",
           "backend/app/templates/pdf_report/02_toc.md.j2",
@@ -3829,9 +3831,13 @@
           "backend/app/templates/pdf_report/06_recommendations.md.j2",
           "backend/app/templates/pdf_report/07_appendix.md.j2",
           "backend/app/templates/pdf_report/_full.md.j2",
-          "backend/app/templates/pdf_report/_macros.md.j2",
+          "backend/app/services/report_pdf/jinja_env.py",
           "backend/tests/test_md_templates.py"
-        ]
+        ],
+        "files_modified": [
+          "backend/app/services/report_pdf/__init__.py"
+        ],
+        "test_result": "18 passed (test_md_templates.py), 1261 passed full suite, 0 regression"
       }
     },
     {

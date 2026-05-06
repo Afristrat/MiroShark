@@ -1,0 +1,67 @@
+{#
+  _macros.md.j2 — Macros Jinja2 réutilisables pour les rapports PDF Bassira.
+
+  Usage : {% from '_macros.md.j2' import kpi_card, callout, pull_quote, table_from_data, chart_with_narrative %}
+
+  Macros disponibles :
+    kpi_card(label, value, unit, color)                    → bloc KPI visuel (callout box)
+    callout(type, title, body)                             → admonition GFM (info|warning|critical)
+    pull_quote(text, author)                               → blockquote stylisé avec attribution
+    table_from_data(rows, headers)                         → table GFM responsive avec en-têtes
+    chart_with_narrative(chart_filename, alt, caption, narrative_text) → image + figcaption + narratif
+#}
+
+{# ─── KPI Card ──────────────────────────────────────────────────────────────── #}
+{% macro kpi_card(label, value, unit='', color='primary') %}
+> **{{ label }}**
+>
+> # {{ value }}{% if unit %} {{ unit }}{% endif %}
+>
+> *— Bassira Intelligence —*
+{% endmacro %}
+
+{# ─── Callout / Admonition ──────────────────────────────────────────────────── #}
+{% macro callout(type, title, body) %}
+{% if type == 'critical' %}
+> [!CAUTION]
+{% elif type == 'warning' %}
+> [!WARNING]
+{% else %}
+> [!NOTE]
+{% endif %}
+> **{{ title }}**
+>
+> {{ body }}
+{% endmacro %}
+
+{# ─── Pull Quote ────────────────────────────────────────────────────────────── #}
+{% macro pull_quote(text, author) %}
+> {{ text }}
+>
+> — *{{ author }}*
+{% endmacro %}
+
+{# ─── Table from data ───────────────────────────────────────────────────────── #}
+{% macro table_from_data(rows, headers) %}
+{% if headers %}
+| {% for h in headers %}{{ h }} | {% endfor %}
+
+| {% for h in headers %}--- | {% endfor %}
+
+{% for row in rows %}
+| {% for cell in row %}{{ cell }} | {% endfor %}
+
+{% endfor %}
+{% else %}
+*Aucune donnée disponible.*
+{% endif %}
+{% endmacro %}
+
+{# ─── Chart with Narrative ──────────────────────────────────────────────────── #}
+{% macro chart_with_narrative(chart_filename, alt, caption, narrative_text) %}
+![{{ alt }}]({{ chart_filename }})
+
+*{{ caption }}*
+
+{{ narrative_text }}
+{% endmacro %}

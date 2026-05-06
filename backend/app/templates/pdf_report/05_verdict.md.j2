@@ -1,0 +1,88 @@
+{% from '_macros.md.j2' import kpi_card, callout %}
+
+## 5. Verdict et Scénarios
+
+### Verdict Probabiliste
+
+{% if context.outcome %}
+{{ kpi_card(
+    label='Verdict de Simulation',
+    value=context.outcome.verdict | normalize(context.lang),
+    unit='',
+    color='primary'
+) }}
+
+| Métrique de Confiance | Valeur |
+| --- | --- |
+| Score de confiance global | {{ (context.outcome.confidence * 100) | round(1) }} % |
+| Bullish final | {{ context.outcome.bullish_pct | round(1) }} % |
+| Bearish final | {{ context.outcome.bearish_pct | round(1) }} % |
+| Rounds totaux | {{ context.outcome.nb_rounds }} |
+| Consensus atteint | {{ 'Oui ✓' if context.outcome.consensus_reached else 'Non ✗' }} |
+{% if context.outcome.scenario_winner %}
+| Camp dominant | {{ context.outcome.scenario_winner }} |
+{% endif %}
+
+{% if context.kpi_hero %}
+#### Distribution des Scénarios
+
+| Scénario | Probabilité |
+| --- | --- |
+{% for camp, pct in context.kpi_hero.scenario_distribution.items() %}
+| {{ camp | capitalize }} | {{ (pct * 100) | round(1) }} % |
+{% endfor %}
+
+{% endif %}
+{% else %}
+{{ callout('warning', 'Verdict non disponible', 'Le verdict de simulation n\'a pas encore été calculé. Veuillez vous assurer que la simulation est complète (statut : completed).') }}
+{% endif %}
+
+---
+
+### Scénarios Contrefactuels (What-If)
+
+{% if context.counterfactuals %}
+{% for cf in context.counterfactuals %}
+#### Contrefactuel {{ loop.index }}
+
+**Hypothèse :** {{ cf.hypothesis | normalize(context.lang) }}
+
+| Paramètre | Valeur |
+| --- | --- |
+| Round d'injection | {{ cf.round_injected }} |
+| Δ Verdict | {{ cf.delta_verdict | normalize(context.lang) if cf.delta_verdict else '—' }} |
+| Δ Confiance | {{ '%+.1f' | format(cf.delta_confidence * 100) }} % |
+
+{% if cf.notes %}
+*{{ cf.notes | normalize(context.lang) }}*
+{% endif %}
+
+{% endfor %}
+{% else %}
+{{ callout('info', 'Contrefactuels', 'Aucun scénario contrefactuel n\'a été injecté dans cette simulation.') }}
+{% endif %}
+
+---
+
+### Articles Générés par les Agents
+
+{% if context.articles %}
+{% for article in context.articles[:5] %}
+#### Article — Round {{ article.round }} — *{{ article.agent_name | normalize(context.lang) }}*
+
+**Titre :** {{ article.title | normalize(context.lang) }}
+**Plateforme :** {{ article.platform }} | **Stance :** {{ article.stance }}
+
+{{ article.content[:300] | normalize(context.lang) }}{% if article.content | length > 300 %}…{% endif %}
+
+---
+{% endfor %}
+
+{% if context.articles | length > 5 %}
+*{{ context.articles | length - 5 }} article(s) supplémentaire(s) non affiché(s). Voir l'Annexe pour la liste complète.*
+{% endif %}
+{% else %}
+{{ callout('info', 'Articles générés', 'Aucun article généré par les agents n\'est disponible pour cette simulation.') }}
+{% endif %}
+
+---

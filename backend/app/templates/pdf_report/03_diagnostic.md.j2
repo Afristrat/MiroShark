@@ -1,0 +1,78 @@
+{% from '_macros.md.j2' import chart_with_narrative, callout, table_from_data %}
+
+## 3. Diagnostic Stratégique
+
+### Question Stratégique
+
+{% if context.sim_config and context.sim_config.title %}
+**{{ context.sim_config.title | normalize(context.lang) }}**
+{% elif context.title %}
+**{{ context.title | normalize(context.lang) }}**
+{% else %}
+*Question stratégique non définie.*
+{% endif %}
+
+---
+
+### Méthode et Framework
+
+| Paramètre | Valeur |
+| --- | --- |
+| Framework analytique | {{ context.framework | upper }} |
+| Package commandé | {{ context.package if context.package else '—' }} |
+| Langue du rendu | {{ context.lang | upper }} |
+{% if context.outcome %}
+| Score de Brier | {{ context.outcome.quality_metrics.plausibility | round(3) if context.outcome.quality_metrics else '—' }} |
+| Cohérence | {{ (context.outcome.quality_metrics.coherence * 100) | round(1) if context.outcome.quality_metrics else '—' }} % |
+| Diversité agents | {{ (context.outcome.quality_metrics.diversity * 100) | round(1) if context.outcome.quality_metrics else '—' }} % |
+{% endif %}
+{% if context.sim_state %}
+| Rounds exécutés | {{ context.sim_state.current_round }} |
+| Agents simulés | {{ context.sim_state.profiles_count }} |
+| Entités extraites | {{ context.sim_state.entities_count }} |
+{% endif %}
+
+---
+
+### Sources Utilisées
+
+{% if context.sim_config and context.sim_config.sources %}
+{% for source in context.sim_config.sources %}
+- {{ source }}
+{% endfor %}
+{% else %}
+*Aucune source documentaire référencée pour cette simulation.*
+{% endif %}
+
+---
+
+### Démographie de la Population Simulée
+
+{{ chart_with_narrative(
+    chart_filename='demographic_pyramid.png',
+    alt='Pyramide démographique des agents simulés',
+    caption='Figure 3 — Répartition démographique de la population d\'agents simulés.',
+    narrative_text='Ce graphique présente la structure démographique de la population d\'agents modélisée. La diversité démographique est un facteur clé pour la robustesse des résultats de simulation.'
+) }}
+
+{% if context.demographics and context.demographics.segments %}
+| Segment | Dimension | Effectif | Part |
+| --- | --- | --- | --- |
+{% for seg in context.demographics.segments %}
+| {{ seg.label }} | {{ seg.dimension }} | {{ seg.count }} | {{ seg.pct | round(1) }} % |
+{% endfor %}
+
+**Population totale simulée :** {{ context.demographics.total }} agents.
+{% endif %}
+
+---
+
+### Graphe d'Entités
+
+{% if context.social_network and context.social_network.nodes %}
+Le graphe d'interactions contient **{{ context.social_network.nodes | length }} nœuds** et **{{ context.social_network.edges | length }} arêtes**. Voir la section 4 (Dynamique Observée) pour le graphe de réseau complet.
+{% else %}
+{{ callout('info', 'Graphe d\'entités', 'Le graphe de réseau social n\'est pas disponible pour cette simulation. La visualisation complète du graphe est accessible depuis l\'interface Step4Report du frontend.') }}
+{% endif %}
+
+---

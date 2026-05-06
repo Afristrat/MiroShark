@@ -1,0 +1,24 @@
+## Table des Matières
+
+1. [Résumé Exécutif](#1-résumé-exécutif)
+2. [Table des Matières](#2-table-des-matières)
+3. [Diagnostic Stratégique](#3-diagnostic-stratégique)
+4. [Dynamique Observée](#4-dynamique-observée)
+5. [Verdict et Scénarios](#5-verdict-et-scénarios)
+6. [Recommandations C-Level](#6-recommandations-c-level)
+7. [Annexes](#7-annexes)
+
+---
+
+{% if context.outline and context.outline.sections %}
+### Sections détaillées
+
+| Section | Titre |
+| --- | --- |
+{% for section in context.outline.sections %}
+| {{ section.idx + 1 }} | {{ section.title | normalize(context.lang) }} |
+{% endfor %}
+
+{% endif %}
+
+---

@@ -1,0 +1,48 @@
+{% from '_macros.md.j2' import callout %}
+
+## 6. Recommandations C-Level
+
+{% if context.outcome and context.outcome.recommendations %}
+{% set recs = context.outcome.recommendations %}
+{% if recs %}
+
+Les recommandations suivantes sont issues de l'analyse de la simulation. Elles doivent être adaptées au contexte spécifique de l'organisation et validées avec les parties prenantes concernées.
+
+| # | Recommandation | Horizon | Priorité |
+| --- | --- | --- | --- |
+{% for rec in recs[:7] %}
+| {{ loop.index }} | {{ rec | normalize(context.lang) }} | Court terme | P{{ loop.index }} |
+{% endfor %}
+
+---
+
+### Détail des Recommandations
+
+{% for rec in recs[:7] %}
+#### Recommandation {{ loop.index }}
+
+**{{ rec | normalize(context.lang) }}**
+
+| Paramètre | À définir avec les parties prenantes |
+| --- | --- |
+| Horizon | Court / Moyen / Long terme |
+| Owner | À désigner |
+| KPI de suivi | À définir |
+| Risque principal | À évaluer |
+
+---
+{% endfor %}
+
+{% if recs | length > 7 %}
+{{ callout('info', 'Recommandations supplémentaires', (recs | length - 7) | string + ' recommandation(s) supplémentaire(s) disponible(s) dans les données brutes de l\'outcome.') }}
+{% endif %}
+
+{% else %}
+{{ callout('warning', 'Recommandations à co-désigner', 'La liste de recommandations est vide pour cette simulation. Les recommandations stratégiques doivent être co-désignées avec un partenaire humain qualifié (consultant, analyste senior, décideur métier) avant toute mise en œuvre. Bassira fournit une base analytique, non un substitut à l\'expertise humaine.') }}
+{% endif %}
+
+{% else %}
+{{ callout('warning', 'Recommandations à co-désigner', 'Aucune recommandation n\'a été générée par le moteur de simulation pour ce rapport. Les recommandations stratégiques doivent être co-désignées avec un partenaire humain qualifié (consultant, analyste senior, décideur métier) avant toute mise en œuvre. Bassira fournit une base analytique, non un substitut à l\'expertise humaine.') }}
+{% endif %}
+
+---

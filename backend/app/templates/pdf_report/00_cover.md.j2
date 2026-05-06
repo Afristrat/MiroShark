@@ -1,0 +1,37 @@
+{% from '_macros.md.j2' import kpi_card, callout %}
+# {{ context.title | normalize(context.lang) }}
+
+**Framework d'analyse :** {{ context.framework | upper }} — **Package :** {{ context.package }}
+
+**Date de génération :** {{ generated_at }}
+
+---
+
+*Propulsé par **Bassira** — une solution AIMPOWER*
+
+---
+
+{% if context.kpi_hero %}
+## KPI Héro
+
+{{ kpi_card(
+    label=context.kpi_hero.verdict | normalize(context.lang),
+    value=(context.kpi_hero.confidence_pct | round(1) | string) + ' %',
+    unit='de confiance'
+) }}
+
+| Indicateur | Valeur |
+| --- | --- |
+| Confiance | {{ context.kpi_hero.confidence_pct | round(1) }} % |
+| Score de Brier | {{ context.kpi_hero.brier | round(3) }} |
+{% for camp, pct in context.kpi_hero.scenario_distribution.items() %}
+| {{ camp | capitalize }} | {{ (pct * 100) | round(1) }} % |
+{% endfor %}
+
+{% endif %}
+
+---
+
+> **Avertissement :** Ce rapport est produit par un système de simulation multi-agents. Les résultats sont de nature probabiliste et ne constituent pas des conseils d'investissement, juridiques ou stratégiques. Toute décision doit faire l'objet d'une validation par des experts humains qualifiés.
+
+---

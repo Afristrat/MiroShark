@@ -992,3 +992,29 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 - **Backend Agg obligatoire** : `matplotlib.use("Agg")` doit être appelé AVANT `import matplotlib.pyplot`. Placer l'appel au niveau module dans `_style.py` ET dans `charts.py` (double garde) évite les imports circulaires et les imports par tiers qui reset le backend.
 - **Worktree isolé** : les fichiers mergés en main depuis d'autres worktrees (US-118, US-119) ne sont PAS présents dans un nouveau worktree basé sur un commit antérieur. Il faut les `cp` manuellement ou les retravailler from scratch. La prochaine fois, vérifier `ls backend/app/services/report_pdf/` dès le début.
 - **Fixtures pytest** : `test_pdf_context_loader.py` nécessite `backend/tests/fixtures/sim_aabbcc112233/` (plusieurs JSONs). Ces fixtures n'existaient pas dans le worktree — copier depuis main avant d'exécuter la suite complète.
+
+### 2026-05-05 — US-123 Templates Jinja2 Markdown source unique + macros (worktree agent-ab3dea9e)
+
+- **Statut** : passes:true. 18/18 tests, 1261 passed full suite, 0 régression.
+
+#### US-123 — Templates Jinja2 Markdown source unique + macros réutilisables
+
+**Fichiers créés :**
+- `backend/app/templates/pdf_report/_macros.md.j2` — 5 macros : `kpi_card`, `callout`, `pull_quote`, `table_from_data`, `chart_with_narrative`
+- `backend/app/templates/pdf_report/00_cover.md.j2` à `07_appendix.md.j2` — 8 sections du rapport
+- `backend/app/templates/pdf_report/_full.md.j2` — assembleur avec front-matter YAML + includes
+- `backend/app/services/report_pdf/jinja_env.py` — `get_jinja_env()`, `render_section()`, `render_full_report()` + filter `|normalize`
+- `backend/tests/test_md_templates.py` — 18 tests couvrant toutes les sections, edge cases, YAML front-matter
+
+**Fichiers modifiés :**
+- `backend/app/services/report_pdf/__init__.py` — export `get_jinja_env`, `render_section`, `render_full_report`
+
+#### Patterns nouveaux à propager
+
+- **Filter Jinja2 `|normalize`** : enregistré via `env.filters['normalize'] = _normalize_filter` dans `jinja_env.py`. Défensif : `None` → `''`, lang invalide → fallback `'fr'`, exception → `str(value)`. Toujours appeler `TextNormalizer(lang).normalize(text).normalized`, pas `NormalizedText` directement.
+- **Mock LanguageTool en CI** : `with patch("app.services.text_normalizer.languagetool_client.check", return_value=[])` — à placer en fixture `autouse=True, scope="module"` dans tout test qui appelle TextNormalizer massivement. Évite 5 s × N timeouts HTTP.
+- **yaml.safe_load sur ISO 8601** : `yaml.safe_load` parse automatiquement `2026-05-05T12:00:00Z` en `datetime.datetime`. Comparer avec `str(parsed["generated_at"]).startswith("2026-05-05")` plutôt qu'une égalité string directe.
+- **Jinja2 `trim_blocks=True` + `lstrip_blocks=True`** : combinés avec `{%- -%}` pour contrôler les whitespaces dans les templates Markdown. Sans ça, les tables GFM et les listes génèrent des lignes vides parasites.
+- **Include dans Jinja2** : `{% include '00_cover.md.j2' %}` dans `_full.md.j2` utilise le FileSystemLoader de l'environnement — les includes partagent le même contexte que le template parent. Pas besoin de `from ... import` pour les macros incluses dans les sections.
+
+---

@@ -1,0 +1,95 @@
+{% from '_macros.md.j2' import chart_with_narrative, pull_quote, callout %}
+
+## 4. Dynamique Observée
+
+### Évolution des Convictions par Round
+
+{{ chart_with_narrative(
+    chart_filename='belief_drift.png',
+    alt='Évolution des convictions (Belief Drift) par round',
+    caption='Figure 4a — Scores de conviction moyens par stance et par round.',
+    narrative_text='Ce graphique montre comment les positions des agents évoluent au fil de la simulation. Les lignes représentent les stances dominantes (bullish, bearish, neutre). Les marqueurs verticaux indiquent les moments pivots où un événement a significativement modifié la dynamique collective.'
+) }}
+
+{% if context.pivotal_moments %}
+#### Moments Pivots Identifiés
+
+| Round | Agent Déclencheur | Événement | Δ Score |
+| --- | --- | --- | --- |
+{% for pm in context.pivotal_moments %}
+| {{ pm.round }} | {{ pm.agent | normalize(context.lang) }} | {{ pm.event | normalize(context.lang) }} | {{ '%+.2f' | format(pm.delta_score) }} |
+{% endfor %}
+
+{% endif %}
+
+---
+
+### Courbes de Distribution (Style Prédictif)
+
+{{ chart_with_narrative(
+    chart_filename='polymarket_curves.png',
+    alt='Courbes de distribution bullish/bearish par round',
+    caption='Figure 4b — Distribution des positions bullish vs bearish par round (style marché prédictif).',
+    narrative_text='Ces courbes illustrent la dynamique des positions agrégées à chaque round, à la manière d\'un marché de prédiction. La zone de remplissage indique l\'intensité relative de chaque camp. Les annotations finales correspondent aux valeurs de l\'outcome calculé.'
+) }}
+
+---
+
+### Top Influenceurs
+
+{{ chart_with_narrative(
+    chart_filename='influence_leaderboard.png',
+    alt='Classement des agents par score de conviction maximal',
+    caption='Figure 4c — Top agents classés par score de conviction maximal atteint sur la trajectoire.',
+    narrative_text='Ce classement identifie les agents ayant exercé la plus forte influence au cours de la simulation, mesurée par leur score de conviction maximal. La couleur indique la stance dominante de chaque agent.'
+) }}
+
+{% if context.trajectory and context.trajectory.rounds %}
+{% set all_agents = [] %}
+{% for rnd in context.trajectory.rounds %}
+{% for agent in rnd.agents %}
+{% if all_agents.append({'name': agent.name, 'score': agent.score, 'stance': agent.stance}) %}{% endif %}
+{% endfor %}
+{% endfor %}
+
+{% set sorted_agents = all_agents | sort(attribute='score', reverse=True) %}
+{% set top3 = sorted_agents[:3] %}
+
+{% if top3 %}
+#### Citations des Top 3 Agents
+
+{% for agent in top3 %}
+{{ pull_quote(
+    text='Agent simulé — score de conviction : ' + (agent.score | round(2) | string),
+    author=agent.name | normalize(context.lang) + ' (' + agent.stance + ')'
+) }}
+
+{% endfor %}
+{% endif %}
+{% endif %}
+
+---
+
+### Posts Critiques et Interprétation
+
+{% set action_source = context.agent_log if context.agent_log else [] %}
+
+{% if action_source %}
+| Round | Agent | Plateforme | Message (extrait) |
+| --- | --- | --- | --- |
+{% for entry in action_source[:10] %}
+| {{ entry.get('round', '—') }} | {{ entry.get('agent_name', entry.get('name', '—')) }} | {{ entry.get('platform', '—') }} | {{ (entry.get('message', entry.get('content', '—'))[:80] + '…') | normalize(context.lang) }} |
+{% endfor %}
+
+{% elif context.articles %}
+| Round | Agent | Plateforme | Titre Article |
+| --- | --- | --- | --- |
+{% for article in context.articles[:10] %}
+| {{ article.round }} | {{ article.agent_name | normalize(context.lang) }} | {{ article.platform }} | {{ article.title | normalize(context.lang) }} |
+{% endfor %}
+
+{% else %}
+{{ callout('info', 'Journal d\'actions', 'Le journal d\'actions des agents (agent_log.jsonl / actions.jsonl) n\'est pas disponible pour cette simulation.') }}
+{% endif %}
+
+---
