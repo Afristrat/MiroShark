@@ -102,6 +102,34 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 
 ---
 
+### 2026-05-05 — US-124 Enricher LLM (worktree agent-a5fbeeca)
+
+- **Statut** : 1 story passes:true (chantier Y-pdf-enrich). Commit `d20b81d`, branch `worktree-agent-a5fbeeca`.
+- **Fichiers créés** :
+  - `backend/app/services/report_pdf/enricher.py` — classe `Enricher` + `_safe_create_llm_client()`
+  - `backend/tests/test_enricher.py` — 14 tests (100% pass)
+
+#### Architecture Enricher
+
+- `Enricher(context, llm_client=None).enrich()` → mutation in-place + return pour chaînage
+- **Cache TTL 24h** : dict manuel `{key: {value, expires_at}}` — même pattern que `_ENRICH_CACHE` (US-057 simulation.py). Pas de `functools.lru_cache` (clés tuples avec hash de string → compatible, mais isolé par module-level dict pour clearabilité en tests).
+- **Seuil pivotal_moments** : `_PIVOTAL_THRESHOLD = 0.20` — constante module-level, testable.
+- **Fallback LLM** : `_safe_create_llm_client()` retourne None si `LLM_API_KEY` absent → toutes les méthodes testent `if self.llm is None` → texte générique sans crash.
+- **Brier proxy** : le schema `KPIHero.brier` n'a pas de source explicite dans `outcome.json` ; convention `brier = 1 - coherence` (cohérence = proxy inversé du Brier). Documenté dans le code.
+
+#### Patterns à retenir
+
+- **TextNormalizer accentuation majuscules** : le normalizer FR corrige uniquement les mots entièrement en majuscules (`[A-Z]{2,}` regex). « ETAT » → « ÉTAT » ✓. « Etat » (titre) → inchangé. Tester avec la bonne casse dans les fixtures.
+- **Mock LLM** : `MagicMock()` avec `mock.chat.return_value = str` suffit pour couvrir tous les appels `llm.chat(messages=..., max_tokens=..., temperature=...)`. Le `call_count` est fiable pour vérifier le cache.
+- **Isolation cache entre tests** : fixture `autouse=True` qui vide `_narrative_cache` et `_takeaway_cache` avant/après chaque test — obligatoire sinon pollution inter-tests sur clés identiques.
+
+#### Quality gates (2026-05-05)
+
+- `pytest tests/test_enricher.py --tb=short -x` → **14 passed, 0 failed**
+- `pytest tests/ --tb=short` (suite complète) → **1261 passed, 18 skipped, 0 régression**
+
+---
+
 ### 2026-05-05 — US-117 Tests Playwright E2E multitenant (50+ tests)
 
 - **Statut** : passes:true (chantier Q-e2e-multitenant).
