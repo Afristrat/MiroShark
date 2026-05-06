@@ -3811,7 +3811,7 @@
         "Tests : génère MD pour chaque section sur fixture, vérifie présence sections + respect typographique"
       ],
       "passes": true,
-      "completedAt": "2026-05-05T02:00:00Z",
+      "completedAt": "2026-05-06T00:30:00Z",
       "dependencies": [
         "US-118",
         "US-121",
@@ -3837,7 +3837,9 @@
         "files_modified": [
           "backend/app/services/report_pdf/__init__.py"
         ],
-        "test_result": "18 passed (test_md_templates.py), 1261 passed full suite, 0 regression"
+        "test_result": "18 passed (test_md_templates.py), 1261 passed full suite, 0 regression",
+        "merge_commit": "5b91ae9",
+        "ralph_session": "2026-05-05"
       }
     },
     {
@@ -3855,7 +3857,7 @@
         "Tests pytest fixture : kpi_hero rempli, pivotal_moments triés par round, interpretations présentes, takeaways non vides",
         "Mock LLM calls avec unittest.mock pour tests déterministes"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-118",
         "US-121",
@@ -3867,8 +3869,11 @@
         "files_to_create": [
           "backend/app/services/report_pdf/enricher.py",
           "backend/tests/test_enricher.py"
-        ]
-      }
+        ],
+        "merge_commit": "d20b81d",
+        "ralph_session": "2026-05-05"
+      },
+      "completedAt": "2026-05-06T00:30:00Z"
     },
     {
       "id": "US-125",
