@@ -478,7 +478,7 @@
     }
   },
   "report": {
-    "exportPdf": "Download PDF report (10 sections, disclaimer, graph)",
+    "exportPdf": "Download PDF report",
     "exportMd": "Download Markdown report (Notion / Obsidian)",
     "progress": {
       "title": "Progress",

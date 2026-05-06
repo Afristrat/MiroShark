@@ -478,7 +478,7 @@
     }
   },
   "report": {
-    "exportPdf": "تحميل تقرير PDF (10 أقسام، تنبيه قانوني، رسم بياني)",
+    "exportPdf": "تحميل تقرير PDF",
     "exportMd": "تحميل تقرير Markdown (Notion / Obsidian)",
     "progress": {
       "title": "التقدّم",
