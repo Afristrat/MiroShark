@@ -1,0 +1,7 @@
+{
+  "status": "completed",
+  "current_round": 5,
+  "profiles_count": 10,
+  "entities_count": 42,
+  "entity_types": ["Person", "Organisation"]
+}

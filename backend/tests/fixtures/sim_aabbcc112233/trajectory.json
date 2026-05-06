@@ -1,0 +1,32 @@
+{
+  "rounds": [
+    {
+      "round_idx": 0,
+      "agents": [
+        {
+          "agent_id": "agent_001",
+          "name": "Agent Alpha",
+          "stance": "bullish",
+          "score": 0.7,
+          "message": "Je pense que la réforme est bénéfique.",
+          "platform": "twitter"
+        }
+      ],
+      "summary": "Premier round — positions initiales établies."
+    },
+    {
+      "round_idx": 1,
+      "agents": [
+        {
+          "agent_id": "agent_001",
+          "name": "Agent Alpha",
+          "stance": "bullish",
+          "score": 0.8,
+          "message": "La réforme progresse bien.",
+          "platform": "twitter"
+        }
+      ],
+      "summary": "Second round — consensus en cours."
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "verdict": "Consensus progressif",
+  "bullish_pct": 60.0,
+  "bearish_pct": 30.0,
+  "nb_rounds": 5,
+  "recommendations": ["Recommandation 1", "Recommandation 2"],
+  "confidence": 0.75,
+  "quality_metrics": {
+    "coherence": 0.82,
+    "diversity": 0.65,
+    "plausibility": 0.78,
+    "alignment": 0.71
+  },
+  "scenario_winner": "Camp A",
+  "consensus_reached": true
+}
