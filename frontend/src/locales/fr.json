@@ -2576,5 +2576,59 @@
       "DELIVERED": "Livré",
       "ARCHIVED": "Archivé"
     }
+  },
+  "adminUsers": {
+    "title": "Utilisateurs",
+    "subtitle": "Vue cross-tenant des inscriptions — filtrez par organisation, recherchez par email.",
+    "loading": "Chargement des utilisateurs…",
+    "empty": "Aucun utilisateur trouvé.",
+    "search": "Rechercher par email",
+    "searchPlaceholder": "Filtrer par email…",
+    "filterOrg": "Organisation",
+    "filterOrgAll": "Toutes les organisations",
+    "viewSimulations": "Voir les simulations",
+    "viewProfile": "Voir le profil",
+    "statsTotal": "Total utilisateurs",
+    "statsActive7d": "Actifs 7 derniers jours",
+    "statsNew30d": "Nouveaux 30 derniers jours",
+    "table": {
+      "email": "Email",
+      "orgs": "Organisation(s)",
+      "role": "Rôle",
+      "createdAt": "Date d'inscription",
+      "lastSignIn": "Dernier login",
+      "actions": "Actions"
+    },
+    "role": {
+      "owner": "Propriétaire",
+      "admin": "Administrateur",
+      "member": "Membre",
+      "viewer": "Lecteur"
+    },
+    "never": "Jamais",
+    "noOrg": "Aucune org",
+    "modal": {
+      "profileTitle": "Profil utilisateur",
+      "simulationsTitle": "Simulations de l'utilisateur",
+      "close": "Fermer",
+      "loading": "Chargement…",
+      "empty": "Aucune simulation.",
+      "simId": "ID simulation",
+      "simOrg": "Organisation",
+      "simPublished": "Publié",
+      "simDate": "Date",
+      "yes": "Oui",
+      "no": "Non"
+    },
+    "pagination": {
+      "previous": "Précédent",
+      "next": "Suivant",
+      "of": "sur"
+    },
+    "error": {
+      "load": "Erreur de chargement des utilisateurs.",
+      "stats": "Erreur de chargement des statistiques.",
+      "simulations": "Erreur de chargement des simulations."
+    }
   }
 }

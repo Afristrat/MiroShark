@@ -217,6 +217,17 @@ const routes = [
     }
   },
   {
+    // US-137 — Liste cross-tenant des inscriptions (super-admin OU org admin).
+    // Stats globales + filtres org/email + modal simulations + modal profil.
+    path: '/admin/users',
+    name: 'AdminUsers',
+    component: () => import('../views/AdminUsersView.vue'),
+    meta: {
+      requiresAuth: true,
+      title: 'Utilisateurs · Bassira admin'
+    }
+  },
+  {
     // US-127 — Révision rapport (split view PDF + Tiptap + CodeMirror + diff versioning).
     path: '/admin/reports/:id/review',
     name: 'AdminReportReview',

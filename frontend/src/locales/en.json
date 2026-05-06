@@ -2576,5 +2576,59 @@
       "DELIVERED": "Delivered",
       "ARCHIVED": "Archived"
     }
+  },
+  "adminUsers": {
+    "title": "Users",
+    "subtitle": "Cross-tenant view of registrations — filter by organization, search by email.",
+    "loading": "Loading users…",
+    "empty": "No users found.",
+    "search": "Search by email",
+    "searchPlaceholder": "Filter by email…",
+    "filterOrg": "Organization",
+    "filterOrgAll": "All organizations",
+    "viewSimulations": "View simulations",
+    "viewProfile": "View profile",
+    "statsTotal": "Total users",
+    "statsActive7d": "Active last 7 days",
+    "statsNew30d": "New last 30 days",
+    "table": {
+      "email": "Email",
+      "orgs": "Organization(s)",
+      "role": "Role",
+      "createdAt": "Signup date",
+      "lastSignIn": "Last login",
+      "actions": "Actions"
+    },
+    "role": {
+      "owner": "Owner",
+      "admin": "Administrator",
+      "member": "Member",
+      "viewer": "Viewer"
+    },
+    "never": "Never",
+    "noOrg": "No org",
+    "modal": {
+      "profileTitle": "User profile",
+      "simulationsTitle": "User simulations",
+      "close": "Close",
+      "loading": "Loading…",
+      "empty": "No simulations.",
+      "simId": "Simulation ID",
+      "simOrg": "Organization",
+      "simPublished": "Published",
+      "simDate": "Date",
+      "yes": "Yes",
+      "no": "No"
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "of": "of"
+    },
+    "error": {
+      "load": "Error loading users.",
+      "stats": "Error loading statistics.",
+      "simulations": "Error loading simulations."
+    }
   }
 }
