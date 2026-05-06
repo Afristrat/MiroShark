@@ -2471,5 +2471,62 @@
       "noteFailed": "Impossible de sauvegarder les notes.",
       "transitionFailed": "Transition de statut refusée."
     }
+  },
+  "adminReportReview": {
+    "title": "Révision du rapport",
+    "subtitle": "Éditez, annotez et versionnez le rapport PDF.",
+    "loading": "Chargement du rapport…",
+    "notFound": "Rapport introuvable.",
+    "pdfPreview": "Aperçu PDF",
+    "editor": "Éditeur",
+    "rawMarkdown": "Markdown brut",
+    "richEditor": "Éditeur riche",
+    "saveVersion": "Sauvegarder la version",
+    "saveVersionComment": "Commentaire de version (optionnel)",
+    "saveVersionCommentPlaceholder": "Brève description des modifications…",
+    "saveVersionSuccess": "Version {n} sauvegardée.",
+    "saveVersionError": "Impossible de sauvegarder la version.",
+    "compareVersions": "Comparer les versions",
+    "rephraseAI": "Reformuler avec l'IA",
+    "rephrasing": "Reformulation en cours…",
+    "rephraseError": "Impossible de reformuler ce paragraphe.",
+    "rephrasePrompt": "Reformule ce paragraphe en conservant le sens exact, mais en améliorant la clarté et la fluidité :",
+    "versions": "Versions",
+    "versionsEmpty": "Aucune version sauvegardée.",
+    "versionN": "Version {n}",
+    "versionDate": "Le {date}",
+    "diffModal": {
+      "title": "Différences entre les versions",
+      "from": "Depuis",
+      "to": "Vers",
+      "close": "Fermer",
+      "loading": "Calcul du diff…",
+      "empty": "Aucune différence détectée."
+    },
+    "comments": "Annotations",
+    "commentsEmpty": "Aucune annotation.",
+    "commentPlaceholder": "Votre annotation sur ce paragraphe…",
+    "commentAdd": "Ajouter",
+    "commentResolve": "Résoudre",
+    "commentResolved": "Résolu",
+    "sections": "Sections",
+    "sectionsEmpty": "Aucune section détectée.",
+    "toolbar": {
+      "undo": "Annuler",
+      "redo": "Rétablir",
+      "bold": "Gras",
+      "italic": "Italique",
+      "heading": "Titre"
+    },
+    "state": "État",
+    "workflow": {
+      "GENERATING": "En génération",
+      "DRAFT": "Brouillon",
+      "IN_REVIEW": "En révision",
+      "PENDING_APPROVAL": "En attente d'approbation",
+      "APPROVED": "Approuvé",
+      "DELIVERED": "Livré",
+      "ARCHIVED": "Archivé"
+    }
   }
 }

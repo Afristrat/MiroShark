@@ -2471,5 +2471,62 @@
       "create": "Error creating branding.",
       "update": "Error updating branding."
     }
+  },
+  "adminReportReview": {
+    "title": "Report Review",
+    "subtitle": "Edit, annotate and version the PDF report.",
+    "loading": "Loading report…",
+    "notFound": "Report not found.",
+    "pdfPreview": "PDF Preview",
+    "editor": "Editor",
+    "rawMarkdown": "Raw Markdown",
+    "richEditor": "Rich Editor",
+    "saveVersion": "Save version",
+    "saveVersionComment": "Version comment (optional)",
+    "saveVersionCommentPlaceholder": "Brief description of changes…",
+    "saveVersionSuccess": "Version {n} saved.",
+    "saveVersionError": "Could not save version.",
+    "compareVersions": "Compare versions",
+    "rephraseAI": "Rephrase with AI",
+    "rephrasing": "Rephrasing…",
+    "rephraseError": "Could not rephrase this paragraph.",
+    "rephrasePrompt": "Rephrase this paragraph while keeping the exact meaning, improving clarity and fluency:",
+    "versions": "Versions",
+    "versionsEmpty": "No saved versions.",
+    "versionN": "Version {n}",
+    "versionDate": "On {date}",
+    "diffModal": {
+      "title": "Differences between versions",
+      "from": "From",
+      "to": "To",
+      "close": "Close",
+      "loading": "Computing diff…",
+      "empty": "No differences detected."
+    },
+    "comments": "Annotations",
+    "commentsEmpty": "No annotations.",
+    "commentPlaceholder": "Your annotation on this paragraph…",
+    "commentAdd": "Add",
+    "commentResolve": "Resolve",
+    "commentResolved": "Resolved",
+    "sections": "Sections",
+    "sectionsEmpty": "No sections detected.",
+    "toolbar": {
+      "undo": "Undo",
+      "redo": "Redo",
+      "bold": "Bold",
+      "italic": "Italic",
+      "heading": "Heading"
+    },
+    "state": "State",
+    "workflow": {
+      "GENERATING": "Generating",
+      "DRAFT": "Draft",
+      "IN_REVIEW": "In Review",
+      "PENDING_APPROVAL": "Pending Approval",
+      "APPROVED": "Approved",
+      "DELIVERED": "Delivered",
+      "ARCHIVED": "Archived"
+    }
   }
 }

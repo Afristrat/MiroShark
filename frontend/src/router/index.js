@@ -215,6 +215,19 @@ const routes = [
       requiresSuperAdmin: true,
       title: 'Branding PDF · Bassira admin'
     }
+  },
+  {
+    // US-127 — Révision rapport (split view PDF + Tiptap + CodeMirror + diff versioning).
+    // Super-admin uniquement. Accessible depuis la console rapport.
+    path: '/admin/reports/:id/review',
+    name: 'AdminReportReview',
+    component: () => import('../views/AdminReportReviewView.vue'),
+    props: true,
+    meta: {
+      requiresAuth: true,
+      requiresSuperAdmin: true,
+      title: 'Révision rapport · Bassira admin'
+    }
   }
 ]
 

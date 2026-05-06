@@ -1104,3 +1104,45 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 - **Signer best-effort** : pour les dépendances lourdes optionnelles (pyHanko), toujours entourer l'import de `try/except ImportError` + log warning + return original. Pattern : `if not _pyhanko_available(): logger.warning(...); return original_bytes`. Ne jamais raise depuis une feature optionnelle.
 - **Workflow transition best-effort** : `_try_workflow_transition(report_id, "APPROVED")` encapsule l'import `report_workflow` dans un try/except ImportError (US-126 pas encore mergé). Permet à US-128 d'être mergé et testé indépendamment de US-126.
 - **SHA256 snapshot déterministe** : trier les fichiers par chemin relatif (`sorted(..., key=lambda p: str(p.relative_to(snap_dir)))`) AVANT de hasher. Sans tri, le SHA256 peut varier selon l'OS (ordre d'itération `rglob` non garanti).
+
+---
+
+### 2026-05-05 — US-127 — Page admin review (split view + Tiptap + CodeMirror + diff versioning)
+
+- **Statut** : passes:true. Worktree branch `worktree-agent-aa73ee7b`, 1 commit.
+
+#### Fichiers créés
+- `supabase/migrations/20260506_003_report_versions.sql` — 2 tables (`report_versions`, `report_comments`) + RLS service_role + politique member read via `report_states.org_id` join `org_members`.
+- `backend/app/api/admin_report_versions.py` — 6 endpoints REST (list/create versions, diff, list/create/patch comments). Diff calculé côté Python avec `difflib.SequenceMatcher` (ops equal/insert/delete). Blueprint monté sur `/api/admin/reports` (même préfixe que admin_reports_bp).
+- `backend/tests/test_report_versions.py` — 19 tests (5 `_compute_diff` unitaires + 14 HTTP). Couvre CRUD versions/commentaires, guards auth (401/403), accès denied non-admin.
+- `frontend/src/components/TiptapEditor.vue` — wrapper Tiptap (StarterKit + Placeholder). Toolbar bold/italic/H1/H2/undo/redo. Normalisation debounced 800ms (visuel, non bloquant). Tokens `--wi-*`.
+- `frontend/src/components/RawMdEditor.vue` — wrapper CodeMirror 6 (state+view+lang-markdown). Theme tokens `--wi-*`, line numbers, history, line wrapping.
+- `frontend/src/components/VersionDiff.vue` — visual diff via `GET /versions/<v>/diff/<other>`. Ops colorées rouge/vert/gris. Monospace, scroll horizontal.
+- `frontend/src/components/AdminReportTree.vue` — arbre sections avec badge count commentaires ouverts. Keyboard accessible (Enter/Space).
+- `frontend/src/views/AdminReportReviewView.vue` — split 50/50 PDF iframe + éditeur. 2 modals (save version + compare diff). Zone commentaires. Rephrase IA via `/api/report/chat`. Tous les textes i18n FR/EN/AR.
+- `frontend/tests/e2e/admin-report-review.spec.ts` — 8 tests Playwright. Guard non-auth/non-super-admin, accès super-admin, toggle raw/rich, modal save, bouton compare disabled, ajout commentaire, modal diff.
+
+#### i18n ajouté
+- 51 clés `adminReportReview.*` dans `fr.json`, `en.json`, `ar.json`.
+
+#### Quality gates
+- `pytest tests/test_report_versions.py` : **19 passed**.
+- `pytest tests/` (full suite) : **1409 passed, 28 skipped, 0 failed** (zéro régression).
+- `npm run build` : **OK** (875 kB AdminReportReviewView — attendu avec Tiptap + CodeMirror).
+- Playwright : **PARTIAL** — 8 tests créés, tous échouent car ciblent prod non encore déployée (comportement attendu, identique aux patterns US-117/120).
+
+#### Patterns nouveaux à propager
+- **`_compute_diff` Python interne** : `difflib.SequenceMatcher` → ops `{op, text}` JSON. Évite une dépendance NPM `diff-match-patch` côté backend. Le frontend peut consommer directement ou recalculer localement.
+- **CodeMirror 6 Vue wrapper** : `EditorView` injecté dans `onMounted()`, sync bidirectionnel via `watch(modelValue)` + `updateListener`. Destroy propre dans `onBeforeUnmount`. Éviter `EditorView.theme` avec des `!important` sur les sélecteurs de sélection (conflits avec `.cm-focused`).
+- **Tiptap + Placeholder** : `Placeholder.configure({ placeholder })` + pseudo-CSS `:deep(.ProseMirror p.is-editor-empty:first-child::before)` pour le placeholder flottant. Le `content` Tiptap est HTML — sync avec `getHTML()` / `setContent()`.
+- **Split 50/50 CSS Grid** : `grid-template-columns: 1fr 1fr` sur `.arr-split` avec `flex: 1; overflow: hidden` — chaque pane gère son overflow indépendamment. Responsive mobile via `grid-template-rows: 40vh 1fr`.
+- **iframe PDF debounced** : 2s après `saveVersion()` → set `pdfUrl` avec `?t=Date.now()` pour invalider le cache browser. `pdfLoading` visuel pendant le délai.
+- **Blueprint URL identique** : deux blueprints (`admin_reports_bp` + `admin_report_versions_bp`) peuvent être montés sur le même préfixe (`/api/admin/reports`) en Flask sans conflit — Flask route par path complet.
+- **`client` default export** : `frontend/src/api/client.js` exporte `default client` (axios instance). Pour les appels sans helper typé, caster en `unknown as { get/post/patch }` côté TypeScript strict. Pattern utilisé dans AdminReportReviewView.
+
+#### Décisions architecturales
+- **Diff Python côté backend** : choix de `difflib` stdlib au lieu de `diff-match-patch` NPM pour conserver la logique de diff dans le backend (testable unitairement, contrôlé). Le frontend consomme le JSON brut.
+- **Tiptap output HTML** : l'éditeur émet du HTML (non du Markdown). Pour la sauvegarde en version, le `markdown_content` est l'HTML Tiptap ou le texte brut CodeMirror selon le mode actif. Ce choix simplifie le rendu mais signifie que le Markdown source et le HTML édité peuvent diverger — acceptable pour la phase review.
+- **Commentaires non bloquants** : l'ajout et la résolution de commentaires n'impactent pas le workflow de version. Un commentaire peut exister sans version associée (version_id null).
+- **RLS simplifiée** : `service_role` bypass pour les opérations backend ; `authenticated` read via `report_states JOIN org_members`. Les writes sont toujours faits par le backend (service_role), jamais directement par le client.
+- **Pas de store Pinia dédié** : les données versions/commentaires sont gérées localement dans `AdminReportReviewView` via `ref()`. Pas besoin d'un store global pour une page admin ponctuelle.

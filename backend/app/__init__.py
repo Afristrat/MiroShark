@@ -159,6 +159,14 @@ def create_app(config_class=Config):
     #   /api/admin/reports/<id>/approve    — POST (super-admin only, snapshot+watermark+sign) (US-128)
     from .api.admin_reports import admin_reports_bp
     app.register_blueprint(admin_reports_bp, url_prefix='/api/admin/reports')
+
+    # admin_report_versions_bp — versionning + commentaires rapport (US-127).
+    #   /api/admin/reports/<id>/versions                         — GET/POST
+    #   /api/admin/reports/<id>/versions/<vid>/diff/<other_vid>  — GET diff
+    #   /api/admin/reports/<id>/comments                         — GET/POST
+    #   /api/admin/reports/<id>/comments/<cid>                   — PATCH
+    from .api.admin_report_versions import admin_report_versions_bp
+    app.register_blueprint(admin_report_versions_bp, url_prefix='/api/admin/reports')
     
     # Health check
     @app.route('/health')

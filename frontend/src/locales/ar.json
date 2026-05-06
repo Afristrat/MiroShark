@@ -2471,5 +2471,62 @@
       "create": "خطأ عند إنشاء العلامة التجارية.",
       "update": "خطأ عند التحديث."
     }
+  },
+  "adminReportReview": {
+    "title": "مراجعة التقرير",
+    "subtitle": "تحرير التقرير وإضافة ملاحظات وإدارة الإصدارات.",
+    "loading": "جارٍ تحميل التقرير…",
+    "notFound": "التقرير غير موجود.",
+    "pdfPreview": "معاينة PDF",
+    "editor": "المحرر",
+    "rawMarkdown": "Markdown الخام",
+    "richEditor": "المحرر الغني",
+    "saveVersion": "حفظ الإصدار",
+    "saveVersionComment": "تعليق الإصدار (اختياري)",
+    "saveVersionCommentPlaceholder": "وصف موجز للتغييرات…",
+    "saveVersionSuccess": "تم حفظ الإصدار {n}.",
+    "saveVersionError": "تعذّر حفظ الإصدار.",
+    "compareVersions": "مقارنة الإصدارات",
+    "rephraseAI": "إعادة الصياغة بالذكاء الاصطناعي",
+    "rephrasing": "جارٍ إعادة الصياغة…",
+    "rephraseError": "تعذّر إعادة صياغة هذه الفقرة.",
+    "rephrasePrompt": "أعد صياغة هذه الفقرة مع الحفاظ على المعنى الدقيق، مع تحسين الوضوح والسلاسة:",
+    "versions": "الإصدارات",
+    "versionsEmpty": "لا توجد إصدارات محفوظة.",
+    "versionN": "الإصدار {n}",
+    "versionDate": "بتاريخ {date}",
+    "diffModal": {
+      "title": "الفروق بين الإصدارات",
+      "from": "من",
+      "to": "إلى",
+      "close": "إغلاق",
+      "loading": "جارٍ حساب الفروق…",
+      "empty": "لا توجد فروق."
+    },
+    "comments": "التعليقات",
+    "commentsEmpty": "لا توجد تعليقات.",
+    "commentPlaceholder": "تعليقك على هذه الفقرة…",
+    "commentAdd": "إضافة",
+    "commentResolve": "حل",
+    "commentResolved": "تم الحل",
+    "sections": "الأقسام",
+    "sectionsEmpty": "لم يتم اكتشاف أقسام.",
+    "toolbar": {
+      "undo": "تراجع",
+      "redo": "إعادة",
+      "bold": "غامق",
+      "italic": "مائل",
+      "heading": "عنوان"
+    },
+    "state": "الحالة",
+    "workflow": {
+      "GENERATING": "قيد الإنشاء",
+      "DRAFT": "مسودة",
+      "IN_REVIEW": "قيد المراجعة",
+      "PENDING_APPROVAL": "في انتظار الموافقة",
+      "APPROVED": "موافق عليه",
+      "DELIVERED": "تم التسليم",
+      "ARCHIVED": "مؤرشف"
+    }
   }
 }
