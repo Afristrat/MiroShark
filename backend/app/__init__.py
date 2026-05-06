@@ -177,6 +177,13 @@ def create_app(config_class=Config):
     from .api.report_delivery import report_delivery_admin_bp, report_delivery_public_bp
     app.register_blueprint(report_delivery_admin_bp, url_prefix='/api/admin/reports')
     app.register_blueprint(report_delivery_public_bp)
+
+    # admin_users_bp — liste cross-tenant inscriptions + actions (US-137).
+    #   GET /api/admin/users                    — liste paginée
+    #   GET /api/admin/users/stats              — statistiques globales
+    #   GET /api/admin/users/<id>/simulations   — simulations d'un user
+    from .api.admin_users import admin_users_bp
+    app.register_blueprint(admin_users_bp, url_prefix='/api/admin/users')
     
     # Health check
     @app.route('/health')

@@ -354,4 +354,44 @@ export function previewAdminBranding(brandingId, lang = 'fr') {
   )
 }
 
+// ───── Admin Users — liste cross-tenant (US-137) ───────────────────────────
+
+/**
+ * GET /api/admin/users — liste paginée des inscriptions.
+ * Filtres : org_id, search (email), limit, offset.
+ * Super-admin : cross-tenant. Org admin : scopé à ses orgs.
+ *
+ * Returns: `{ users: [...], total: N, limit: N, offset: N }`
+ */
+export function fetchAdminUsers(filters = {}) {
+  const params = {}
+  if (filters.org_id) params.org_id = filters.org_id
+  if (filters.search) params.search = filters.search
+  if (typeof filters.limit === 'number' && filters.limit > 0) params.limit = filters.limit
+  if (typeof filters.offset === 'number' && filters.offset >= 0) params.offset = filters.offset
+  return client.get('/api/admin/users', { params })
+}
+
+/**
+ * GET /api/admin/users/stats — statistiques globales des inscriptions.
+ *
+ * Returns: `{ total_users: N, active_7d: N, new_30d: N, by_org: {...} }`
+ */
+export function fetchAdminUsersStats() {
+  return client.get('/api/admin/users/stats')
+}
+
+/**
+ * GET /api/admin/users/<user_id>/simulations — liste des simulations d'un user.
+ * Params : limit, offset.
+ *
+ * Returns: `{ simulations: [...], total: N, user_id: "uuid" }`
+ */
+export function fetchAdminUserSimulations(userId, params = {}) {
+  return client.get(
+    `/api/admin/users/${encodeURIComponent(userId)}/simulations`,
+    { params }
+  )
+}
+
 export default client
