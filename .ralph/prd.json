@@ -3891,7 +3891,7 @@
         "Tests pytest fixture : produit MD valid GFM, produit PDF valid (pypdf nb pages > 5, metadata présentes)",
         "Test multilang : génère FR + EN + AR sur même fixture, vérifie polices et direction"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-118",
         "US-119",
@@ -3908,8 +3908,12 @@
           "backend/app/templates/pdf_report/pdf_brand.css.j2",
           "backend/static/fonts/.gitkeep",
           "backend/tests/test_renderer.py"
-        ]
-      }
+        ],
+        "merge_commit": "2ec4e53",
+        "ralph_session": "2026-05-05",
+        "note": "Worktree partait d un commit ancien, fichiers Phase3 en conflit add/add résolus en gardant ours"
+      },
+      "completedAt": "2026-05-06T01:30:00Z"
     },
     {
       "id": "US-126",
