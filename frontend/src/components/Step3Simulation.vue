@@ -230,9 +230,9 @@
             <span v-if="runStatus.twitter_completed" class="status-badge done">{{ $t('process.step3.platforms.done') }}</span>
           </div>
           <div class="platform-stats">
-            <span class="stat"><span class="stat-label">{{ $t('process.step3.platforms.rnd') }}</span><span class="stat-value mono">{{ runStatus.twitter_current_round || 0 }}<span class="stat-total">/{{ runStatus.total_rounds || maxRounds || '-' }}</span></span></span>
+            <span class="stat"><span class="stat-label">{{ $t('process.step3.platforms.rnd') }}</span><span class="stat-value mono">{{ isStatusLoading ? '—' : (runStatus.twitter_current_round || 0) }}<span class="stat-total">/{{ isStatusLoading ? '—' : (runStatus.total_rounds || maxRounds || '-') }}</span></span></span>
             <span class="stat"><span class="stat-label">{{ $t('process.step3.platforms.time') }}</span><span class="stat-value mono">{{ twitterElapsedTime }}</span></span>
-            <span class="stat"><span class="stat-label">{{ $t('process.step3.platforms.acts') }}</span><span class="stat-value mono">{{ runStatus.twitter_actions_count || 0 }}</span></span>
+            <span class="stat"><span class="stat-label">{{ $t('process.step3.platforms.acts') }}</span><span class="stat-value mono">{{ isStatusLoading ? '—' : (runStatus.twitter_actions_count || 0) }}</span></span>
           </div>
           <div class="platform-actions-list"><span class="action-tag">POST</span><span class="action-tag">LIKE</span><span class="action-tag">REPOST</span><span class="action-tag">QUOTE</span><span class="action-tag">FOLLOW</span></div>
         </div>
@@ -245,9 +245,9 @@
             <span v-if="runStatus.reddit_completed" class="status-badge done">{{ $t('process.step3.platforms.done') }}</span>
           </div>
           <div class="platform-stats">
-            <span class="stat"><span class="stat-label">{{ $t('process.step3.platforms.rnd') }}</span><span class="stat-value mono">{{ runStatus.reddit_current_round || 0 }}<span class="stat-total">/{{ runStatus.total_rounds || maxRounds || '-' }}</span></span></span>
+            <span class="stat"><span class="stat-label">{{ $t('process.step3.platforms.rnd') }}</span><span class="stat-value mono">{{ isStatusLoading ? '—' : (runStatus.reddit_current_round || 0) }}<span class="stat-total">/{{ isStatusLoading ? '—' : (runStatus.total_rounds || maxRounds || '-') }}</span></span></span>
             <span class="stat"><span class="stat-label">{{ $t('process.step3.platforms.time') }}</span><span class="stat-value mono">{{ redditElapsedTime }}</span></span>
-            <span class="stat"><span class="stat-label">{{ $t('process.step3.platforms.acts') }}</span><span class="stat-value mono">{{ runStatus.reddit_actions_count || 0 }}</span></span>
+            <span class="stat"><span class="stat-label">{{ $t('process.step3.platforms.acts') }}</span><span class="stat-value mono">{{ isStatusLoading ? '—' : (runStatus.reddit_actions_count || 0) }}</span></span>
           </div>
           <div class="platform-actions-list"><span class="action-tag">POST</span><span class="action-tag">COMMENT</span><span class="action-tag">LIKE</span><span class="action-tag">DISLIKE</span><span class="action-tag">SEARCH</span><span class="action-tag">FOLLOW</span></div>
         </div>
@@ -260,9 +260,9 @@
             <span v-if="runStatus.polymarket_completed" class="status-badge done">{{ $t('process.step3.platforms.done') }}</span>
           </div>
           <div class="platform-stats">
-            <span class="stat"><span class="stat-label">{{ $t('process.step3.platforms.rnd') }}</span><span class="stat-value mono">{{ runStatus.polymarket_current_round || 0 }}<span class="stat-total">/{{ runStatus.total_rounds || maxRounds || '-' }}</span></span></span>
+            <span class="stat"><span class="stat-label">{{ $t('process.step3.platforms.rnd') }}</span><span class="stat-value mono">{{ isStatusLoading ? '—' : (runStatus.polymarket_current_round || 0) }}<span class="stat-total">/{{ isStatusLoading ? '—' : (runStatus.total_rounds || maxRounds || '-') }}</span></span></span>
             <span class="stat"><span class="stat-label">{{ $t('process.step3.platforms.time') }}</span><span class="stat-value mono">{{ polymarketElapsedTime }}</span></span>
-            <span class="stat"><span class="stat-label">{{ $t('process.step3.platforms.trades') }}</span><span class="stat-value mono">{{ runStatus.polymarket_actions_count || 0 }}</span></span>
+            <span class="stat"><span class="stat-label">{{ $t('process.step3.platforms.trades') }}</span><span class="stat-value mono">{{ isStatusLoading ? '—' : (runStatus.polymarket_actions_count || 0) }}</span></span>
           </div>
           <div class="platform-actions-list"><span class="action-tag">BROWSE</span><span class="action-tag">BUY</span><span class="action-tag">SELL</span><span class="action-tag">CREATE</span><span class="action-tag">COMMENT</span></div>
         </div>
@@ -781,7 +781,31 @@ const phase = ref(0) // 0: Not Started, 1: Running, 2: Completed
 const isStarting = ref(false)
 const isStopping = ref(false)
 const startError = ref(null)
-const runStatus = ref({})
+// US-138 — runStatus est initialisé avec `runner_status: 'loading'` plutôt qu'un
+// objet vide. Sans ce sentinel, l'UI affichait "0/48" pendant le mount et le
+// premier polling (~1-2s), indistinguable d'un worker mort qui ne polle plus.
+// Voir Step3 template : `isStatusLoading` masque les compteurs avec "—" tant
+// que la première réponse n'est pas arrivée.
+const runStatus = ref({
+  runner_status: 'loading',
+  current_round: 0,
+  total_rounds: 0,
+  twitter_current_round: 0,
+  reddit_current_round: 0,
+  polymarket_current_round: 0,
+  twitter_actions_count: 0,
+  reddit_actions_count: 0,
+  polymarket_actions_count: 0,
+  twitter_running: false,
+  reddit_running: false,
+  polymarket_running: false,
+  twitter_completed: false,
+  reddit_completed: false,
+  polymarket_completed: false,
+})
+// True tant que le premier polling backend n'a pas répondu — masque les
+// compteurs avec "—" pour ne pas faire croire au user que la sim est à 0.
+const isStatusLoading = computed(() => runStatus.value.runner_status === 'loading')
 const allActions = ref([]) // All actions (incremental accumulation)
 const actionIds = ref(new Set()) // Action ID set for deduplication
 const scrollContainer = ref(null)
@@ -1064,9 +1088,27 @@ const addLog = (msg) => {
 }
 
 // Reset all state (for restarting simulation)
+// US-138 — runner_status: 'loading' (pas {} qui ferait afficher "0" sur tous
+// les compteurs avant le premier polling de la nouvelle run).
 const resetAllState = () => {
   phase.value = 0
-  runStatus.value = {}
+  runStatus.value = {
+    runner_status: 'loading',
+    current_round: 0,
+    total_rounds: 0,
+    twitter_current_round: 0,
+    reddit_current_round: 0,
+    polymarket_current_round: 0,
+    twitter_actions_count: 0,
+    reddit_actions_count: 0,
+    polymarket_actions_count: 0,
+    twitter_running: false,
+    reddit_running: false,
+    polymarket_running: false,
+    twitter_completed: false,
+    reddit_completed: false,
+    polymarket_completed: false,
+  }
   allActions.value = []
   actionIds.value = new Set()
   prevTwitterRound.value = 0

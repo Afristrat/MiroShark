@@ -168,6 +168,10 @@ const currentStatus = ref('processing') // processing | completed | error
 // remontée full runStatus (perf : pas besoin de tout l'objet pour 2 chiffres).
 const currentRound = ref(0)
 const totalRounds = ref(maxRounds.value || 0)
+// US-138 — masque les compteurs avec "—" tant que le premier polling backend
+// n'a pas répondu. Sans ce flag, le user revenant sur la page voyait "00 / 48"
+// pendant 1-2s (init UI), confondu avec un worker mort qui ne polle plus.
+const hasReceivedRealStatus = ref(false)
 
 const stopInFlight = ref(false)
 const showCompleteToast = ref(false)
@@ -194,9 +198,13 @@ const statusText = computed(() => {
 
 const isSimulating = computed(() => currentStatus.value === 'processing')
 
-const formattedRound = computed(() => String(currentRound.value || 0).padStart(2, '0'))
+const formattedRound = computed(() => {
+  if (!hasReceivedRealStatus.value) return '—'
+  return String(currentRound.value || 0).padStart(2, '0')
+})
 
 const progressPercent = computed(() => {
+  if (!hasReceivedRealStatus.value) return 0
   const total = totalRounds.value || maxRounds.value || 0
   if (!total) return 0
   return Math.min(100, Math.round((currentRound.value / total) * 100))
@@ -216,7 +224,14 @@ const updateStatus = (status) => {
 }
 
 // Reçoit le tick de Step3Simulation (mirror du runStatus côté enfant).
-const handleProgress = ({ currentRound: cr, totalRounds: tr }) => {
+// US-138 — runnerStatus 'loading' est le sentinel envoyé pendant le mount
+// avant que le premier polling backend ait répondu. Tant qu'on n'a pas reçu
+// un statut réel, on n'écrit pas dans currentRound (sinon le heartbeat
+// affiche prématurément "00" au lieu du sentinel "—").
+const handleProgress = ({ currentRound: cr, totalRounds: tr, runnerStatus: rs }) => {
+  if (rs && rs !== 'loading') {
+    hasReceivedRealStatus.value = true
+  }
   if (typeof cr === 'number') currentRound.value = cr
   if (typeof tr === 'number' && tr > 0) totalRounds.value = tr
 }

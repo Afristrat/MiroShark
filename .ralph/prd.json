@@ -4405,6 +4405,92 @@
         "ralph_session": "2026-05-06"
       },
       "completedAt": "2026-05-06T05:30:00Z"
+    },
+    {
+      "id": "US-138",
+      "chantier": "AK-pdf-fixes-prod",
+      "title": "Fix critiques pipeline PDF découverts en validation prod 2026-05-07",
+      "description": "Validation visuelle live de la sim Code du Travail Maroc 2026 a révélé 3 bugs critiques dans le câblage user→Renderer (pdf_export.py). Bug 1 : paramètre variant ignoré → les 4 variantes (full/exec/public/one-pager) génèrent toutes le même PDF de 124 KB (différence 7 bytes seulement). Bug 2 : _build_markdown() instancie Renderer SANS charts_factory → _embed_charts_md() ne s'applique jamais → 0 chart en data URI dans le .md exporté. Bug 3 (UX) : Step3Simulation affiche 0/48 brièvement au mount avant le premier polling — quand le worker est mort, ça reste à 0 et le user croit que la sim est plantée alors qu'elle peut tourner ailleurs. Bug 4 : citations en anglais résiduelles dans rapport FR malgré le prompt locale (les agents simulés génèrent en EN, le ReportAgent les cite tel quels).",
+      "acceptanceCriteria": [
+        "backend/app/api/pdf_export.py : helper _parse_variant valide la valeur dans {full, exec, public, one-pager}, fallback full si vide, ValueError sinon",
+        "_build_pdf accepte variant=str et passe variant + charts_factory à Renderer.render_pdf()",
+        "_build_markdown accepte variant=str, instancie ChartFactory(context) et passe charts_factory + variant au Renderer",
+        "POST /export-pdf : extrait body.variant, valide, retourne 400 INVALID_VARIANT si inconnu, sinon délègue à _build_pdf(variant=...)",
+        "GET /export-md : accepte ?variant= en query string, valide, retourne 400 INVALID_VARIANT si inconnu",
+        "Filename Content-Disposition reflète la variante non-default (bassira-<sim>-exec.pdf vs bassira-<sim>.pdf pour full)",
+        "frontend/src/components/Step3Simulation.vue : runStatus initialisé avec runner_status: 'loading' au lieu de {}",
+        "Computed isStatusLoading affiche '—' dans les compteurs round/actions tant que premier polling pas reçu",
+        "frontend/src/views/SimulationRunView.vue : flag hasReceivedRealStatus + formattedRound retourne '—' tant que faux",
+        "handleProgress ignore les ticks runnerStatus='loading' (sentinel de Step3 avant polling)",
+        "backend/app/utils/locale_prompt.py : clause US-138 explicite sur traduction des citations en langue source",
+        "Liste explicite des exceptions à la traduction (CGEM, OCP, FMI, etc.) dans la clause",
+        "Étape de relecture qualité avant la réponse finale instruite explicitement",
+        "tests/test_pdf_export_endpoints.py : 6 nouveaux tests TestVariantParameter (invalid 400, propagation variant, charts_factory passé, default full, query param md)",
+        "tests/test_locale_prompt.py NEW : 8 tests dont 3 paramétriques fr/en/ar pour la clause US-138",
+        "Suite backend pytest : ≥1604 passed (vs 1571 baseline US-137), 0 fail",
+        "Frontend npm run build : OK sans erreur Vue compile"
+      ],
+      "passes": true,
+      "dependencies": [
+        "US-131",
+        "US-133",
+        "US-135",
+        "US-136"
+      ],
+      "metadata": {
+        "estimated_hours": 2,
+        "priority": "P0",
+        "files_to_modify": [
+          "backend/app/api/pdf_export.py",
+          "backend/app/utils/locale_prompt.py",
+          "frontend/src/components/Step3Simulation.vue",
+          "frontend/src/views/SimulationRunView.vue",
+          "backend/tests/test_pdf_export_endpoints.py"
+        ],
+        "files_to_create": [
+          "backend/tests/test_locale_prompt.py"
+        ],
+        "rationale": "DEFCON 1 — pipeline PDF C-level facturé. Les 4 variantes promises à US-131 ne fonctionnaient en réalité pas en prod. Le markdown exporté avait 0 chart embarqué malgré le claim US-136. L'UX du Step3 faisait croire à un crash à chaque retour sur page. La règle CLAUDE.md FRANÇAIS IRRÉPROCHABLE est violée par les fragments anglais résiduels.",
+        "test_result": "1604 passed, 59 skipped (GTK Windows), 0 fail",
+        "ralph_session": "2026-05-07"
+      },
+      "completedAt": "2026-05-07T01:55:00Z"
+    },
+    {
+      "id": "US-145",
+      "chantier": "AK-pdf-fixes-prod",
+      "title": "Filet anti-zombie : réconcilier les states orphelins du SimulationRunner",
+      "description": "Incident prod 2026-05-07 : worker simulation spawné à 00:13, plante silencieusement ~4 min plus tard. simulation_config.json reste figé à runner_status=RUNNING avec process_pid=865 et error=null. Frontend polle indéfiniment, user croit que ça tourne, attend, puis relance manuellement (créant deux runs concurrents avec des configs différentes). Causes racines probables : container Coolify redémarré (monitor thread tué avant transition FAILED), OOM-kill, ou kill -9 externe. Solution : ajouter un check PID alive dans get_run_state() qui force la transition vers FAILED + écrit un message d'erreur explicite quand le subprocess est parti sans transition propre.",
+      "acceptanceCriteria": [
+        "backend/app/services/simulation_runner.py : helper module-level _is_pid_alive(pid) cross-platform (POSIX os.kill(pid, 0) + Windows OpenProcess + GetExitCodeProcess STILL_ACTIVE)",
+        "_is_pid_alive(None) / (0) / (-1) → False",
+        "_is_pid_alive(os.getpid()) → True",
+        "_is_pid_alive(<pid jamais alloué>) → False",
+        "Méthode SimulationRunner._reconcile_orphaned_state(state) : skip si terminal_status (COMPLETED/FAILED/IDLE/STOPPED), skip si subprocess local actif (cls._processes), skip si PID encore alive ailleurs, sinon force FAILED + error explicite",
+        "Message d'erreur explicite : 'Worker process disappeared without exit status (previous_status=X, pid=Y). Likely causes : container restart, OOM-kill, or external termination. Check container logs around started_at.'",
+        "twitter_running/reddit_running/polymarket_running forcés à False, completed_at horodaté",
+        "state.error préservé s'il existe déjà (ne pas écraser une trace plus précise)",
+        "get_run_state() appelle _reconcile_orphaned_state(state) après chargement (cache in-memory ou disque)",
+        "tests/test_simulation_runner_orphan.py NEW : 16 tests couvrant _is_pid_alive (5 cas), _reconcile_orphaned_state (9 cas), get_run_state intégration (2 cas)",
+        "Aucune régression sur les tests existants simulation_runner",
+        "Suite backend pytest : 1604 passed, 0 fail"
+      ],
+      "passes": true,
+      "dependencies": [],
+      "metadata": {
+        "estimated_hours": 2,
+        "priority": "P1",
+        "files_to_modify": [
+          "backend/app/services/simulation_runner.py"
+        ],
+        "files_to_create": [
+          "backend/tests/test_simulation_runner_orphan.py"
+        ],
+        "rationale": "Sans ce filet, les sims orphelines bloquent silencieusement l'UX et faussent les métriques business (sim affichée running mais worker mort). La détection est conservative — on ne touche jamais un state COMPLETED/FAILED/IDLE/STOPPED ni un state RUNNING dont le PID est encore vivant.",
+        "test_result": "16 nouveaux tests + 0 régression",
+        "ralph_session": "2026-05-07"
+      },
+      "completedAt": "2026-05-07T01:55:00Z"
     }
   ]
 }

@@ -31,6 +31,66 @@ _cleanup_registered = False
 IS_WINDOWS = sys.platform == 'win32'
 
 
+def _is_pid_alive(pid: Optional[int]) -> bool:
+    """US-145 — Vérifie qu'un PID correspond à un process système actif.
+
+    Utilisé pour détecter les états orphelins du run_state.json (worker
+    mort sans transition propre — typiquement après un redémarrage du
+    container Coolify, un OOM-kill, ou un kill -9 externe). Sur ces cas,
+    le monitor thread n'a pas eu l'occasion d'écrire FAILED + error :
+    le state reste figé à RUNNING avec un PID qui n'existe plus.
+
+    Args:
+        pid: PID à vérifier. None ou 0 retournent toujours False.
+
+    Returns:
+        True si le PID est associé à un process actif, False sinon.
+
+    Notes:
+        - Sur POSIX, `os.kill(pid, 0)` ne tue rien — il ne fait que tester
+          la délivrabilité d'un signal. ProcessLookupError = mort,
+          PermissionError = vivant mais signal interdit (process d'un
+          autre user, ce qui est OK pour notre check d'existence).
+        - Sur Windows, on passe par OpenProcess (kernel32) avec
+          PROCESS_QUERY_LIMITED_INFORMATION (0x1000) qui fonctionne même
+          pour les processes d'autres sessions.
+    """
+    if not pid or pid <= 0:
+        return False
+
+    if IS_WINDOWS:
+        try:
+            import ctypes  # type: ignore[import-not-found]
+
+            PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+            handle = ctypes.windll.kernel32.OpenProcess(  # type: ignore[attr-defined]
+                PROCESS_QUERY_LIMITED_INFORMATION, False, int(pid)
+            )
+            if not handle:
+                return False
+            try:
+                # Confirme via GetExitCodeProcess : 259 (STILL_ACTIVE) = vivant.
+                exit_code = ctypes.c_ulong(0)
+                ctypes.windll.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code))  # type: ignore[attr-defined]
+                return exit_code.value == 259  # STILL_ACTIVE
+            finally:
+                ctypes.windll.kernel32.CloseHandle(handle)  # type: ignore[attr-defined]
+        except Exception:
+            return False
+
+    # POSIX
+    try:
+        os.kill(int(pid), 0)
+        return True
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        # Process exists but belongs to another user — still "alive"
+        return True
+    except (OSError, ValueError):
+        return False
+
+
 class RunnerStatus(str, Enum):
     """Runner status"""
     IDLE = "idle"
@@ -239,15 +299,91 @@ class SimulationRunner:
     
     @classmethod
     def get_run_state(cls, simulation_id: str) -> Optional[SimulationRunState]:
-        """Get run state"""
+        """Get run state, with orphan reconciliation (US-145).
+
+        Si le state lu depuis le disque dit RUNNING/STARTING/STOPPING mais
+        qu'aucun monitor thread ne tient le subprocess (typiquement après
+        redémarrage du container Coolify, OOM-kill, ou crash hard), on
+        force la transition vers FAILED avec un message d'erreur explicite.
+        Sans ce filet, le state reste figé indéfiniment et le frontend
+        polle en croyant que la sim tourne toujours.
+        """
         if simulation_id in cls._run_states:
-            return cls._run_states[simulation_id]
-        
-        # Try to load from file
-        state = cls._load_run_state(simulation_id)
-        if state:
-            cls._run_states[simulation_id] = state
+            state = cls._run_states[simulation_id]
+        else:
+            state = cls._load_run_state(simulation_id)
+            if state:
+                cls._run_states[simulation_id] = state
+
+        if state is not None:
+            cls._reconcile_orphaned_state(state)
         return state
+
+    @classmethod
+    def _reconcile_orphaned_state(cls, state: SimulationRunState) -> None:
+        """Détecte et corrige un state orphelin (US-145).
+
+        Cas concret observé en prod 2026-05-07 : worker spawné à 00:13,
+        crash silencieux ~00:17, simulation_config.json reste à RUNNING
+        avec process_pid=865 et error=null. Le frontend polle sans jamais
+        voir d'événement de fin → user croit que ça tourne, attend, puis
+        relance manuellement. Cette méthode capture explicitement la mort
+        du process pour que le frontend sache afficher "FAILED — worker
+        disparu" et offrir le bouton "Restart" au lieu d'un état zombi.
+        """
+        terminal_states = (
+            RunnerStatus.RUNNING,
+            RunnerStatus.STARTING,
+            RunnerStatus.STOPPING,
+        )
+        if state.runner_status not in terminal_states:
+            return
+
+        sim_id = state.simulation_id
+
+        # Cas 1 : un monitor thread tourne sur cette sim dans CE backend
+        # → le subprocess est piloté correctement, on ne touche à rien.
+        if sim_id in cls._processes:
+            proc = cls._processes.get(sim_id)
+            if proc is not None and proc.poll() is None:
+                return
+
+        # Cas 2 : le PID stocké dans le run_state existe encore au niveau OS
+        # → un autre worker/instance pourrait le suivre, on ne touche à rien.
+        # (Multi-replica Coolify : le state JSON est partagé via le volume,
+        # le subprocess peut être attaché à une autre réplique.)
+        if state.process_pid and _is_pid_alive(state.process_pid):
+            return
+
+        # Cas 3 : orphelin détecté → transition explicite vers FAILED.
+        previous_status = state.runner_status.value
+        previous_pid = state.process_pid
+        state.runner_status = RunnerStatus.FAILED
+        if not state.error:
+            state.error = (
+                f"Worker process disappeared without exit status "
+                f"(previous_status={previous_status}, pid={previous_pid}). "
+                "Likely causes : container restart, OOM-kill, or external "
+                "termination. Check container logs around started_at "
+                f"({state.started_at}) for the root cause."
+            )
+        state.twitter_running = False
+        state.reddit_running = False
+        state.polymarket_running = False
+        if not state.completed_at:
+            state.completed_at = datetime.now().isoformat()
+
+        try:
+            cls._save_run_state(state)
+        except Exception as save_err:
+            logger.warning(
+                f"Could not persist orphan reconciliation for {sim_id} : {save_err}"
+            )
+
+        logger.warning(
+            f"Orphaned simulation state recovered : {sim_id} "
+            f"(was {previous_status}, pid={previous_pid}) → FAILED"
+        )
     
     @classmethod
     def _load_run_state(cls, simulation_id: str) -> Optional[SimulationRunState]:

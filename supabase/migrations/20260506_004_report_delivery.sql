@@ -23,7 +23,7 @@ COMMENT ON TABLE  public.report_deliveries                  IS 'Livraisons de ra
 COMMENT ON COLUMN public.report_deliveries.report_id        IS 'Identifiant du rapport (ex. report_abc123).';
 COMMENT ON COLUMN public.report_deliveries.version          IS 'Version du snapshot livré.';
 COMMENT ON COLUMN public.report_deliveries.signing_token    IS 'Token HMAC opaque — inclus dans le lien public /r/<token>.';
-COMMENT ON COLUMN public.report_deliveries.expires_at       IS 'Date d'expiration du lien de téléchargement.';
+COMMENT ON COLUMN public.report_deliveries.expires_at       IS 'Date d''expiration du lien de téléchargement.';
 COMMENT ON COLUMN public.report_deliveries.language         IS 'Langue de l''email envoyé : fr | en | ar.';
 COMMENT ON COLUMN public.report_deliveries.email_status     IS 'Statut Resend : pending | sent | failed.';
 

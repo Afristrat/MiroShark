@@ -444,3 +444,131 @@ def _patch_loader_to_fixture():
         )
 
     return patch.object(PDFContextLoader, "load", classmethod(_patched_load))
+
+
+# ── Tests US-138 — variant + chart embedding ─────────────────────────────────
+
+
+class TestVariantParameter:
+    """US-138 — la valeur `variant` doit être lue, validée et propagée."""
+
+    def test_invalid_variant_pdf_returns_400(self, client):
+        """POST /export-pdf avec variant inconnu → 400 INVALID_VARIANT."""
+        p1, p2 = _patch_sim_manager()
+        with p1, p2:
+            resp = client.post(
+                f"/api/simulation/{_VALID_SIM_ID}/export-pdf",
+                json={"variant": "executive-summary"},
+                content_type="application/json",
+            )
+        assert resp.status_code == 400
+        data = resp.get_json()
+        assert data["success"] is False
+        assert data["error_code"] == "INVALID_VARIANT"
+
+    def test_invalid_variant_md_returns_400(self, client):
+        """GET /export-md?variant=foo → 400 INVALID_VARIANT."""
+        p1, p2 = _patch_sim_manager()
+        with p1, p2:
+            resp = client.get(
+                f"/api/simulation/{_VALID_SIM_ID}/export-md?variant=foo"
+            )
+        assert resp.status_code == 400
+        data = resp.get_json()
+        assert data["error_code"] == "INVALID_VARIANT"
+
+    def test_pdf_propagates_variant_to_renderer(self):
+        """_build_pdf(variant='exec') doit passer `variant='exec'` à Renderer.render_pdf()."""
+        from app.api.pdf_export import _build_pdf
+
+        captured = {}
+
+        class _FakeRenderer:
+            def __init__(self, context, branding=None, charts_factory=None):
+                captured["init_charts_factory"] = charts_factory
+
+            def render_pdf(self, charts_factory=None, variant="full"):
+                captured["render_variant"] = variant
+                captured["render_charts_factory"] = charts_factory
+                return b"%PDF-fake"
+
+        with patch(
+            "app.api.pdf_export._resolve_report_id_for_simulation",
+            return_value=None,
+        ), patch(
+            "app.api.pdf_export._resolve_lang_for_simulation",
+            return_value="fr",
+        ), patch(
+            "app.services.report_pdf.loader.PDFContextLoader.load",
+            return_value=_make_minimal_context(),
+        ), patch(
+            "app.services.report_pdf.renderer.Renderer",
+            _FakeRenderer,
+        ):
+            out = _build_pdf(_VALID_SIM_ID, variant="exec")
+
+        assert out.startswith(b"%PDF-")
+        assert captured["render_variant"] == "exec", (
+            f"variant='exec' aurait dû arriver à render_pdf(), reçu {captured.get('render_variant')!r}"
+        )
+        assert captured["render_charts_factory"] is not None, (
+            "ChartFactory aurait dû être instancié et passé à render_pdf()"
+        )
+
+    def test_md_propagates_variant_and_charts_factory(self):
+        """_build_markdown(variant='public') doit instancier ChartFactory et propager variant."""
+        from app.api.pdf_export import _build_markdown
+
+        captured = {}
+
+        class _FakeRenderer:
+            def __init__(self, context, branding=None, charts_factory=None):
+                captured["init_charts_factory"] = charts_factory
+
+            def render_md(self, variant="full"):
+                captured["render_variant"] = variant
+                return "---\nfront: matter\n---\nfake md"
+
+        with patch(
+            "app.api.pdf_export._resolve_report_id_for_simulation",
+            return_value=None,
+        ), patch(
+            "app.api.pdf_export._resolve_lang_for_simulation",
+            return_value="fr",
+        ), patch(
+            "app.services.report_pdf.loader.PDFContextLoader.load",
+            return_value=_make_minimal_context(),
+        ), patch(
+            "app.services.report_pdf.renderer.Renderer",
+            _FakeRenderer,
+        ):
+            md = _build_markdown(_VALID_SIM_ID, variant="public")
+
+        assert md.startswith("---")
+        assert captured["render_variant"] == "public"
+        # US-138 fix critique : ChartFactory doit être passé au constructeur,
+        # sinon `_embed_charts_md` ne s'applique jamais → MD avec placeholders cassés.
+        assert captured["init_charts_factory"] is not None, (
+            "_build_markdown doit instancier un ChartFactory et le passer à Renderer"
+        )
+
+    def test_md_default_variant_is_full(self, client):
+        """GET /export-md sans param → variant 'full' (rétro-compatible)."""
+        from app.api.pdf_export import _parse_variant
+
+        # Le test parametrique de _parse_variant suffit ici (test endpoint
+        # déjà couvert par TestEndpointExportMd plus haut).
+        assert _parse_variant(None) == "full"
+        assert _parse_variant("") == "full"
+        assert _parse_variant("FULL") == "full"  # Insensible à la casse
+        assert _parse_variant("exec") == "exec"
+        assert _parse_variant("one-pager") == "one-pager"
+
+    def test_md_accepts_variant_query_param(self, client):
+        """GET /export-md?variant=exec → 200 et content-disposition contient le suffix."""
+        p1, p2 = _patch_sim_manager()
+        with p1, p2, _patch_loader_to_fixture():
+            resp = client.get(f"/api/simulation/{_VALID_SIM_ID}/export-md?variant=exec")
+        assert resp.status_code == 200
+        # Le filename doit refléter la variante non-default
+        assert "exec" in resp.headers.get("Content-Disposition", "")

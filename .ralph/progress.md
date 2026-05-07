@@ -1345,3 +1345,39 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 - pytest `test_templates_render_quality.py` : **17/17 PASSED**
 - pytest `test_md_templates.py` : **18/18 PASSED** (zéro régression)
 - pytest full suite : **1459 PASSED, 41 SKIPPED** (WeasyPrint/integration — mêmes skips qu'avant)
+
+---
+
+## 2026-05-07 — US-138 + US-145 (fixes critiques validation prod)
+
+### Contexte
+Première validation visuelle live d'une simulation propre (Réforme Code du Travail Maroc 2026, framework cerberus, 15 rounds, 118 actions agents). Cinq bugs critiques découverts qui invalidaient des claims de la session précédente : US-131 (4 variantes promises mais non câblées), US-136 (charts inlinés mais ChartFactory non passé en MD), règle DEFCON 1 français (citations EN dans rapport FR). Plus un bug latent — silent worker crash — découvert pendant l'investigation : Run 1 PID 865 mort sans `error` logged, frontend incapable de distinguer mort vs lent.
+
+### Bugs corrigés
+1. **`pdf_export.py:226-248` — `variant` ignoré** : POST endpoint lisait `body.graph_image_b64` mais jamais `body.variant`. `_build_pdf` n'avait pas le paramètre dans sa signature → `Renderer.render_pdf()` recevait `'full'` par défaut. Les 4 variantes générant exactement le même PDF (124 KB ± 7 bytes).
+2. **`pdf_export.py:186-220` — `_build_markdown` sans ChartFactory** : `Renderer(context, branding=branding)` sans `charts_factory=` → `render_md()` skippait `_embed_charts_md()` (gated par `if self.charts_factory is not None`) → 0 chart en data URI dans le `.md` exporté.
+3. **`Step3Simulation.vue:784` + `SimulationRunView.vue:169-197` — UX init à 0** : `runStatus = ref({})` au mount affichait "0 / 48" pendant 1-2s avant le premier polling. Sur un worker mort, ça restait à 0 indéfiniment, indistinguable d'une sim qui démarre vraiment.
+4. **`locale_prompt.py:90` — anglais résiduel** : la clause de localisation ne forçait pas la traduction des citations en langue source. Les agents simulés (Twitter/Reddit) génèrent en anglais → ReportAgent les cite tel quel → rapport FR avec `"non-blocking protocol"`, `"automatically tri..."` visibles.
+5. **`simulation_runner.py:241` — silent worker crash (US-145)** : si le subprocess meurt sans transition propre (container redémarré, OOM-kill, kill -9), le monitor thread est tué avec → `simulation_config.json` reste figé `runner_status=RUNNING / error=null`. Frontend polle indéfiniment sans signal de fin.
+
+### Solutions
+1. **Helper `_parse_variant(raw)`** dans `pdf_export.py` : valide dans `{full, exec, public, one-pager}`, défaut `'full'`, lève `ValueError` sur inconnu (mappé 400 INVALID_VARIANT). `_build_pdf` et `_build_markdown` acceptent `variant: str` et le propagent à `Renderer.render_pdf(variant=...)` / `render_md(variant=...)`. Filename Content-Disposition reflète la variante non-default.
+2. **ChartFactory câblé dans `_build_markdown`** : `chart_factory = ChartFactory(context); Renderer(context, branding=branding, charts_factory=chart_factory)`. `render_md()` passe maintenant systématiquement par `_embed_charts_md()`.
+3. **Sentinel `runner_status: 'loading'`** : `runStatus` initialisé typé incluant `runner_status: 'loading'` (pas `{}`). Computed `isStatusLoading` masque les compteurs Step3 avec `'—'`. Côté `SimulationRunView`, flag `hasReceivedRealStatus` (false par défaut) mis à `true` seulement par `handleProgress` quand `runnerStatus !== 'loading'`. `formattedRound` retourne `'—'` tant que false. Aussi modifié `resetAllState()` pour utiliser le même objet typé que l'init (sinon restart faisait régresser à `{}`).
+4. **Clause US-138 dans `localize_system_prompt`** : ajout instruction explicite sur traduction des citations en langue source + liste des exceptions explicites (CGEM, OCP, FMI, BCEAO, CFCIM) + étape de relecture qualité avant finalisation.
+5. **`_is_pid_alive(pid)` cross-platform + `_reconcile_orphaned_state(state)`** : helper module-level qui teste l'existence du PID via `os.kill(pid, 0)` (POSIX) ou `OpenProcess` + `GetExitCodeProcess STILL_ACTIVE` (Windows kernel32). Méthode de classe : si state lu dans `{RUNNING, STARTING, STOPPING}` ET aucun subprocess local n'est piloté ET PID stocké pas alive → force `FAILED` + `error` explicite ("Worker process disappeared..."). Appelée systématiquement depuis `get_run_state()`.
+
+### Patterns appris
+- **Câblage POST endpoint Flask** : extraire les paramètres du body JSON, valider AVEC un helper dédié qui lève `ValueError` (mappé sur un code d'erreur API explicite type `INVALID_VARIANT`). Toujours passer le paramètre à TOUS les niveaux du pipeline (signature → fonction interne → kwargs Renderer). Une variant non-câblée à 100 % finit par défaut sur `'full'`.
+- **Vue ref initial state** : pour un objet polled depuis l'API, ne JAMAIS l'initialiser à `{}`. Utiliser un sentinel `{ ..._status: 'loading' }` et un computed `isLoading` pour distinguer init vs valeur réelle à zéro. Sans ce sentinel, l'UI affiche les fallbacks `|| 0` qui sont indistinguables des valeurs réelles. Penser AUSSI à mettre à jour les fonctions `reset*` qui écrasent à `{}`.
+- **Worker subprocess + state JSON** : ne jamais se reposer uniquement sur `runner_status` du JSON. Toujours croiser avec un check OS (PID alive) dans le `get_state()`. Le state JSON est ÉCRIT par le monitor — si le monitor meurt avec son container, le JSON reste figé. Le filet anti-zombie doit être read-only et reconvergent.
+- **Cross-platform PID alive check** : POSIX `os.kill(pid, 0)` ne tue rien — c'est un signal probe qui lève `ProcessLookupError` si pid mort. Windows demande `OpenProcess` (kernel32 PROCESS_QUERY_LIMITED_INFORMATION = 0x1000) + `GetExitCodeProcess` qui retourne 259 (`STILL_ACTIVE`) si vivant. La constante 259 documentée MSDN, pas Python stdlib.
+- **Locale prompt LLM — clause de traduction** : le LLM cible respecte mieux une instruction explicite avec exemples d'exceptions (CGEM, OCP, FMI) qu'une instruction abstraite. Toujours conclure par une étape de "relecture avant réponse" pour activer un second pass mental.
+- **Mock subprocess + PID dans tests** : `os.kill(<huge_pid>, 0)` est suffisant pour mocker un PID mort (Linux pid_max = 32k par défaut, Windows alloue séquentiellement < 100k). Pour mocker un subprocess local actif : classe `_FakeProcess` avec `poll()` retournant `None`. Pas besoin de spawn réel.
+
+### Validation
+- pytest `test_pdf_export_endpoints.py` : **18 PASSED + 4 SKIPPED GTK** (10 existants + 6 TestVariantParameter + 2 helpers)
+- pytest `test_simulation_runner_orphan.py` (NEW) : **16/16 PASSED**
+- pytest `test_locale_prompt.py` (NEW) : **8/8 PASSED**
+- pytest full suite : **1604 PASSED, 59 SKIPPED** (vs 1571 PASSED baseline US-137 — +33 tests, 0 régression)
+- frontend `npm run build` : **OK** (zéro warning Vue, build en 14.29s)
