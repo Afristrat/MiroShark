@@ -8,7 +8,7 @@
       </router-link>
       <div class="au-topbar-right">
         <router-link to="/client/dashboard" class="au-pill au-pill--ghost">
-          {{ $t('adminInvitations.backToDashboard') || 'Mon espace' }}
+          {{ $t('nav.dashboard') }}
         </router-link>
       </div>
     </header>

@@ -581,6 +581,53 @@ class TestAdminUsersStats:
         assert by_org.get(org_id, 0) == 2
         assert by_org.get(org2, 0) == 1
 
+    def test_stats_total_users_reflects_auth_users_not_members(
+        self, client, whitelist_env, jwt_secret, super_admin_id, super_admin_email,
+        org_id, monkeypatch
+    ):
+        """US-138 — Bug observé en prod 2026-05-08 : la table affichait
+        3 utilisateurs (depuis /api/admin/users qui lit auth.users) mais
+        le compteur `total_users` du card stats affichait 1 (qui ne
+        comptait que les users avec membership).
+
+        Reproduction : 3 users dans auth.users, 1 seul a une membership.
+        Le total doit refléter ce qui est réellement listé (3), avec le
+        compteur secondaire `users_with_org` pour la sémantique "actifs
+        dans une org" (1 dans cet exemple).
+        """
+        token = _make_token(jwt_secret, sub=super_admin_id, email=super_admin_email)
+        uid_with_org = "uid-bug001-with-org"
+        uid_orphan_a = "uid-bug001-orphan-a"
+        uid_orphan_b = "uid-bug001-orphan-b"
+
+        # Un seul user a une membership
+        members_rows = [
+            {"user_id": uid_with_org, "org_id": org_id},
+        ]
+        # Trois users existent dans auth.users
+        auth_users = [
+            _make_fake_user(uid_with_org, "owner@acme.com"),
+            _make_fake_user(uid_orphan_a, "orphan-a@example.com"),
+            _make_fake_user(uid_orphan_b, "orphan-b@example.com"),
+        ]
+        mock_cli = _make_supabase_mock(members_rows=members_rows, auth_users=auth_users)
+        monkeypatch.setattr("app.api.admin_users.get_supabase_admin", lambda: mock_cli)
+
+        resp = client.get(
+            "/api/admin/users/stats",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert resp.status_code == 200
+        data = resp.get_json()["data"]
+        assert data["total_users"] == 3, (
+            f"total_users doit refléter auth.users (3), pas la membership count "
+            f"(1) — Avant fix US-138 ce champ valait 1, contredisant active_7d/"
+            f"new_30d qui voient 3."
+        )
+        assert data.get("users_with_org") == 1, (
+            "users_with_org doit refléter le nombre d'utilisateurs avec membership."
+        )
+
 
 # ─── Tests : endpoint /<user_id>/simulations ─────────────────────────────────
 

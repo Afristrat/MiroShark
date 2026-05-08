@@ -39,46 +39,91 @@
       </div>
 
       <div class="app-header__actions">
-        <!-- US-107 — entrée « Console » visible aux super-admins ou
-             aux orgs avec self_service_enabled. Conduit vers /console
-             (privatif). Backend reste seul juge en cas de tentative. -->
+        <!-- US-138 — Sous-menu Admin unique qui regroupe Console, + Lancer
+             simulation, Devis, Analytics, Branding, Users. Remplace les 3
+             liens séparés (Admin/Devis/+Lancer) qui ne couvraient pas
+             /admin/branding ni /admin/users. Visible super-admin uniquement.
+             Le « + Lancer simulation » pointe vers /console (entry point
+             réel — l'ancien /process/new ne déclenchait pas le flow). -->
+        <div
+          v-if="isAuthenticated && isSuperAdmin"
+          ref="adminMenuRef"
+          class="app-header__admin-group"
+        >
+          <button
+            type="button"
+            class="app-header__link app-header__link--auth app-header__link--admin app-header__admin-toggle"
+            :title="$t('nav.adminTitle')"
+            :aria-label="$t('nav.adminMenuLabel')"
+            :aria-expanded="showAdminMenu"
+            aria-haspopup="menu"
+            @click.stop="toggleAdminMenu"
+          >
+            {{ $t('nav.admin') }}
+            <span class="app-header__admin-caret" aria-hidden="true">▾</span>
+          </button>
+          <div
+            v-show="showAdminMenu"
+            class="app-header__admin-menu"
+            role="menu"
+          >
+            <router-link
+              to="/console"
+              class="app-header__admin-item app-header__admin-item--launch"
+              role="menuitem"
+              :title="$t('nav.launchSimulationTitle')"
+              @click="closeAdminMenu"
+            >
+              + {{ $t('nav.launchSimulation') }}
+            </router-link>
+            <router-link
+              to="/admin/quotes"
+              class="app-header__admin-item"
+              role="menuitem"
+              :title="$t('nav.adminQuotesTitle')"
+              @click="closeAdminMenu"
+            >
+              {{ $t('nav.adminQuotes') }}
+            </router-link>
+            <router-link
+              to="/admin/analytics"
+              class="app-header__admin-item"
+              role="menuitem"
+              :title="$t('nav.adminAnalyticsTitle')"
+              @click="closeAdminMenu"
+            >
+              {{ $t('nav.adminAnalytics') }}
+            </router-link>
+            <router-link
+              to="/admin/branding"
+              class="app-header__admin-item"
+              role="menuitem"
+              :title="$t('nav.adminBrandingTitle')"
+              @click="closeAdminMenu"
+            >
+              {{ $t('nav.adminBranding') }}
+            </router-link>
+            <router-link
+              to="/admin/users"
+              class="app-header__admin-item"
+              role="menuitem"
+              :title="$t('nav.adminUsersTitle')"
+              @click="closeAdminMenu"
+            >
+              {{ $t('nav.adminUsers') }}
+            </router-link>
+          </div>
+        </div>
+        <!-- US-107 — entrée « Console » dédiée pour les org admins
+             self-service NON super-admin (les super-admins l'ont via le
+             menu Admin ci-dessus). -->
         <router-link
-          v-if="isAuthenticated && canRunConsole"
+          v-if="isAuthenticated && canRunConsole && !isSuperAdmin"
           to="/console"
           class="app-header__link app-header__link--auth"
           :title="$t('nav.consoleTitle')"
         >
           {{ $t('nav.console') }}
-        </router-link>
-        <!-- US-095 — entrée Admin réservée aux super-admins Bassira.
-             Visibilité conditionnée par le flag store.isSuperAdmin
-             (chargé via fetchSuperStatus côté backend, whitelist email). -->
-        <router-link
-          v-if="isAuthenticated && isSuperAdmin"
-          to="/admin/analytics"
-          class="app-header__link app-header__link--auth app-header__link--admin"
-          :title="$t('nav.adminTitle')"
-        >
-          {{ $t('nav.admin') }}
-        </router-link>
-        <!-- US-102 — entrée « Devis » super-admin uniquement. -->
-        <router-link
-          v-if="isAuthenticated && isSuperAdmin"
-          to="/admin/quotes"
-          class="app-header__link app-header__link--auth app-header__link--admin"
-          :title="$t('nav.adminQuotesTitle')"
-        >
-          {{ $t('nav.adminQuotes') }}
-        </router-link>
-        <!-- US-099 — Bouton « + Lancer une simulation » réservé aux super-admins.
-             Permet à Amine de lancer une sim depuis n'importe quelle page. -->
-        <router-link
-          v-if="isAuthenticated && isSuperAdmin"
-          to="/process/new"
-          class="app-header__link app-header__link--auth app-header__link--launch"
-          :title="$t('nav.launchSimulationTitle')"
-        >
-          + {{ $t('nav.launchSimulation') }}
         </router-link>
         <router-link
           v-if="!isAuthenticated"
@@ -113,7 +158,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -133,6 +178,31 @@ const canRunConsole = computed(() => {
   if (!isAuthenticated.value) return false
   return Boolean(currentOrg.value?.self_service_enabled)
 })
+
+// US-138 — sous-menu super-admin unique (regroupe Console, Devis,
+// Analytics, Branding, Users + entrée « + Lancer simulation »).
+const showAdminMenu = ref(false)
+const adminMenuRef = ref(null)
+const toggleAdminMenu = () => { showAdminMenu.value = !showAdminMenu.value }
+const closeAdminMenu = () => { showAdminMenu.value = false }
+const onDocumentClick = (ev) => {
+  if (!showAdminMenu.value) return
+  const root = adminMenuRef.value
+  if (root && !root.contains(ev.target)) showAdminMenu.value = false
+}
+const onEscape = (ev) => {
+  if (ev.key === 'Escape') showAdminMenu.value = false
+}
+onMounted(() => {
+  document.addEventListener('click', onDocumentClick)
+  document.addEventListener('keydown', onEscape)
+})
+onBeforeUnmount(() => {
+  document.removeEventListener('click', onDocumentClick)
+  document.removeEventListener('keydown', onEscape)
+})
+// Si l'utilisateur navigue vers une autre route, ferme le menu.
+watch(() => route.fullPath, () => { showAdminMenu.value = false })
 
 // Libellé du bouton « Relancer la visite guidée » localisé sans dépendre
 // d'une nouvelle clé i18n (étend le pattern App.vue d'origine — US-094).
@@ -394,6 +464,106 @@ const restartTour = async () => {
     overflow-x: auto;
     padding-block-start: 4px;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   US-138 — Dropdown super-admin
+   ═══════════════════════════════════════════════════════════ */
+.app-header__admin-group {
+  position: relative;
+  display: inline-flex;
+}
+
+.app-header__admin-toggle {
+  /* Hérite des styles `.app-header__link` ; ajoute juste un curseur
+     pointer + un alignement caret. */
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: 0;
+  font: inherit;
+  color: inherit;
+}
+
+.app-header__admin-caret {
+  display: inline-block;
+  font-size: 0.75em;
+  transition: transform 160ms var(--ms-ease, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+.app-header__admin-toggle[aria-expanded="true"] .app-header__admin-caret {
+  transform: rotate(-180deg);
+}
+
+.app-header__admin-menu {
+  position: absolute;
+  inset-block-start: calc(100% + 6px);
+  inset-inline-end: 0;
+  min-width: 220px;
+  padding: 6px;
+  background: var(--wi-surface, #ffffff);
+  border: 1px solid var(--wi-outline-variant, rgba(36, 25, 21, 0.12));
+  border-radius: 12px;
+  box-shadow: 0 12px 28px -8px rgba(36, 25, 21, 0.18),
+              0 4px 10px -2px rgba(36, 25, 21, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: calc(var(--ms-z-floating-lang, 1500) + 1);
+  animation: app-header-admin-menu-in 140ms var(--ms-ease, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+@keyframes app-header-admin-menu-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.app-header__admin-item {
+  display: block;
+  padding: 8px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--wi-on-surface, #241915);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 140ms ease, color 140ms ease;
+}
+
+.app-header__admin-item:hover,
+.app-header__admin-item:focus-visible {
+  background: var(--wi-secondary-soft, rgba(255, 133, 81, 0.08));
+  color: var(--wi-primary, #FF8551);
+  outline: none;
+}
+
+.app-header__admin-item.router-link-active,
+.app-header__admin-item.router-link-exact-active {
+  background: var(--wi-primary-container-soft, rgba(255, 133, 81, 0.15));
+  color: var(--wi-primary, #FF8551);
+  font-weight: 600;
+}
+
+.app-header__admin-item--launch {
+  color: var(--wi-primary, #FF8551);
+  font-weight: 600;
+  border-block-end: 1px solid var(--wi-outline-variant, rgba(36, 25, 21, 0.08));
+  margin-block-end: 2px;
+  padding-block-end: 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-header__admin-menu { animation: none; }
+  .app-header__admin-caret { transition: none; }
+}
+
+/* Dark mode (--data-theme="dark") : surface inversée. */
+[data-theme="dark"] .app-header__admin-menu {
+  background: var(--wi-surface, #1a1310);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.6);
 }
 </style>
 

@@ -356,7 +356,7 @@ def users_stats_endpoint():
         return _err("FETCH_FAILED", "Could not fetch stats.", 500)
 
     unique_user_ids = {str(r.get("user_id") or "") for r in members_rows if r.get("user_id")}
-    total_users = len(unique_user_ids)
+    users_with_org = len(unique_user_ids)
 
     # Comptage par org
     by_org: Dict[str, int] = {}
@@ -367,6 +367,12 @@ def users_stats_endpoint():
             by_org[oid] = by_org.get(oid, 0) + 1
 
     # Active 7 jours + new 30 jours via auth.admin.list_users
+    # US-138 — total_users réutilise auth.users (TOUTES les inscriptions),
+    # plus le total filtré par org pour les org admins. Avant ce fix le total
+    # ne comptait que les users avec membership (= 1 pour notre seed) ce qui
+    # contredisait visuellement les compteurs actifs/nouveaux qui prennent
+    # auth.users complet (= 3) → confusion utilisateur.
+    total_users = 0
     active_7d = 0
     new_30d = 0
     try:
@@ -385,6 +391,9 @@ def users_stats_endpoint():
                 u for u in all_auth_users
                 if str(getattr(u, 'id', '') or '') in unique_user_ids
             ]
+
+        # Total cohérent avec la liste affichée par /api/admin/users
+        total_users = len(all_auth_users)
 
         for u in all_auth_users:
             last_sign = getattr(u, 'last_sign_in_at', None)
@@ -428,6 +437,7 @@ def users_stats_endpoint():
         "success": True,
         "data": {
             "total_users": total_users,
+            "users_with_org": users_with_org,  # US-138 — info séparée
             "active_7d": active_7d,
             "new_30d": new_30d,
             "by_org": by_org,
