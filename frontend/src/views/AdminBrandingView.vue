@@ -908,29 +908,29 @@ onMounted(() => {
   flex: 1 1 auto;
   min-height: 0;          /* indispensable en flex pour que overflow joue */
   overflow: hidden;       /* le scroll est délégué aux enfants (.ab-form, .ab-preview-panel) */
+  display: flex;          /* US-138 v3 — body est conteneur flex column pour que */
+  flex-direction: column; /* split puisse prendre flex:1 1 0 et avoir une hauteur définie. */
 }
 
 /* ── Split layout modal ───────────────────────────────────────────────── */
-/* US-138 — passé en flex (pas grid) pour que `min-height: 0` sur les
-   enfants soit honoré et que `overflow-y: auto` se déclenche vraiment.
-   Avec grid + height:100% le form gardait sa hauteur naturelle (~1100px)
-   et débordait sans scroll, masquant les boutons submit en bas du form. */
+/* US-138 v3 — split utilise flex:1 1 0 pour grandir dans body (qui est
+   maintenant flex column). `height: 100%` ne marche pas ici car la hauteur
+   CSS de body est `auto` (sa hauteur réelle vient du flex algorithm de
+   .ab-modal). Avec flex:1 1 0 le split prend l'espace restant et son
+   contenu peut scroller via overflow-y:auto sur .ab-form. */
 .ab-modal-split {
   display: flex;
-  flex: 1 1 auto;
+  flex: 1 1 0;
   min-height: 0;
-  height: 100%;
 }
 .ab-modal-split > .ab-form {
   flex: 1 1 0;
   min-width: 0;
-  height: 100%;
-  max-height: 100%;
+  min-height: 0;
 }
 .ab-modal-split > .ab-preview-panel {
   flex: 0 0 340px;
-  height: 100%;
-  max-height: 100%;
+  min-height: 0;
 }
 @media (max-width: 860px) {
   .ab-modal-split { flex-direction: column; }

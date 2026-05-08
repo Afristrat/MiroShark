@@ -1,3 +1,230 @@
+== PASSATION MiroShark/Bassira 2026-05-08T00:30:00+01:00 ==
+
+[ETAT]
+- branche `main` `98d4610` à jour avec `origin/main` (push confirmé, 5 commits cette session)
+- prod **REDEPLOY EN COURS** sur Coolify (deployment id `vh5u61oafvjaajl5j0c3zpgn`, déclenché ~00:30) — vérifier https://prospectives.ai-mpower.com après ~3 min
+- tests backend **1612 passing, 59 skip** (+7 nouveaux US-138 phase 2 + 16 US-145 + 8 US-138 locale, 0 régression)
+- npm run build : OK (Vite, frontend bundle prod livré)
+- migrations Supabase **20260506_004_report_delivery.sql** : appliquée en prod via Monaco SQL Editor (apostrophe `d'expiration` ligne 26 doublée `d''expiration` après échec `42601`). Tables `report_deliveries` + `report_downloads` + RLS + comments OK.
+- session courte centrée sur 5 fix critiques + 2 features admin (assign user↔org + create org inline) post-passation 2026-05-06
+
+[FAIT cette session — 5 commits, US-138 phases 1+2, US-145]
+
+**Commit `d0b4e08` [US-138 + US-145] — fixes critiques pipeline PDF prod + filet anti-zombie worker**
+
+✓ **US-138 fix #1 — variant non transmis backend** (`backend/app/api/pdf_export.py`)
+  - Ajout `_parse_variant(raw)` + `_ALLOWED_VARIANTS` frozenset (full/exec/public/one-pager).
+  - `_build_pdf(simulation_id, graph_image_b64="", variant=_DEFAULT_VARIANT)` propage `variant` à `Renderer.render_pdf(charts_factory=cf, variant=variant)`.
+  - `_build_markdown(simulation_id, variant=_DEFAULT_VARIANT)` instancie `ChartFactory(context)` et passe `charts_factory=cf` à Renderer.
+  - POST endpoint lit `body.get("variant")`, retourne 400 INVALID_VARIANT.
+  - GET `/export-md` lit `?variant=` query param.
+  - Filename inclut variant si non-default.
+
+✓ **US-138 fix #2 — round counter flicker pendant init** (`frontend/src/components/Step3Simulation.vue` + `frontend/src/views/SimulationRunView.vue`)
+  - Step3Simulation.vue:784 `runStatus = ref({...})` initialisé avec `runner_status: 'loading'` et tous compteurs à 0.
+  - `isStatusLoading = computed(() => runStatus.value.runner_status === 'loading')`.
+  - Lignes 233/248/263 : remplacé `runStatus.X || 0` par `isStatusLoading ? '—' : (runStatus.X || 0)` (tirets en attendant les vraies valeurs).
+  - SimulationRunView.vue : `hasReceivedRealStatus = ref(false)`, `formattedRound` retourne `'—'` si pas reçu, `progressPercent` retourne 0, `handleProgress` ignore `runnerStatus === 'loading'`.
+
+✓ **US-138 fix #3 — citations EN dans rapports FR** (`backend/app/utils/locale_prompt.py`)
+  - Clause US-138 ajoutée : "Citations issues du contexte" forcent traduction langue source.
+  - Exceptions listées : CGEM, OCP, FMI, BCEAO, CFCIM (acronymes/noms propres).
+  - Étape de relecture qualité ajoutée avant finalisation prompt.
+
+✓ **US-145 — filet anti-zombie worker** (`backend/app/services/simulation_runner.py`)
+  - Module-level `_is_pid_alive(pid)` cross-platform :
+    * POSIX : `os.kill(pid, 0)` (raises ESRCH si mort).
+    * Windows : `OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION=0x1000)` + `GetExitCodeProcess` STILL_ACTIVE=259.
+  - Classmethod `_reconcile_orphaned_state(state)` :
+    * skip si statut terminal (completed/failed/cancelled),
+    * skip si subprocess dans `cls._processes` (worker actif),
+    * skip si PID toujours alive,
+    * sinon force FAILED avec error explicite "Worker process disappeared during execution. The simulation was running but the worker died unexpectedly."
+  - `get_run_state()` appelle `_reconcile_orphaned_state(state)` après chargement.
+  - 16 tests `test_simulation_runner_orphan.py` (POSIX/Windows mocks + intégration get_run_state).
+
+**Commit `659c20c` [US-138 follow-up] — sous-menu Admin + fix /process/new + stats total + flicker init**
+
+✓ **Sous-menu Admin global** (`frontend/src/components/AppHeader.vue`)
+  - Remplacé 3 router-links séparés (Admin/Devis/+Lancer) par un dropdown unique.
+  - Items : `+ Lancer simulation` (→ `/console`), Devis, Analytics, Branding PDF, Utilisateurs.
+  - State `showAdminMenu = ref(false)`, `adminMenuRef`, click-outside + Escape handlers.
+  - Watch `route.fullPath` pour fermer menu à la navigation.
+  - CSS `.app-header__admin-group/menu/item` avec hover rgb(255 133 81).
+
+✓ **Fix `/process/new` cassé** : route ne gérait pas le sentinel `'new'`. Repointé `+ Lancer simulation` vers `/console` (vrai entry-point upload + prompt).
+
+✓ **Fix stats total_users** (`backend/app/api/admin_users.py`)
+  - Affichait `total_users: 1` alors que 3 users dans auth.users (comptait `unique_user_ids` membres orgs).
+  - Fix : `len(all_auth_users)` au lieu de `len(unique_user_ids)`.
+  - Ajout champ `users_with_org`.
+
+✓ **Init super_status au boot frontend** (`frontend/src/main.js`) — éviter flicker route guards.
+  ```js
+  await auth.init()
+  if (auth.isAuthenticated) {
+    try { await auth.fetchSuperStatus() } catch (e) {...}
+  }
+  app.mount('#app')
+  ```
+
+**Commit `a8e681c` [fix US-138] — modal Branding masqué par AppHeader (z-index + flex layout)**
+
+✓ Diagnostic via Chrome MCP DOM inspection + screenshot OS user : modal `/admin/branding` masqué derrière AppHeader.
+✓ `.ab-modal-backdrop` z-index 1000→2200 (au-dessus AppHeader 1500).
+✓ `.ab-modal` : `display: flex; flex-direction: column; max-height: calc(100vh - 64px)`.
+
+**Commit `be8ab3e` [fix US-138] — modal Branding scroll form cassé après le z-index fix**
+
+✓ Régression signalée par Amine "plus d'ascenseur, je ne vois plus le bas du modal ni les boutons".
+✓ Diagnostic : `.ab-modal-split` en `display: grid` — le `min-height: 0` ne se propage pas comme avec flex pour permettre le scroll interne.
+✓ Fix : passage en `display: flex` avec hauteurs explicites :
+  - `.ab-modal-body` : `flex: 1 1 auto; min-height: 0; overflow: hidden`.
+  - `.ab-modal-split` : `display: flex` (pas grid) avec `min-height: 0`.
+  - `.ab-form` : `flex: 1 1 0; height: 100%; max-height: 100%`.
+  - `.ab-preview-panel` : `flex: 0 0 340px; min-height: 0; overflow-y: auto`.
+
+**Commit `98d4610` [US-138 phase 2] — affecter user à org + créer org inline depuis AdminUsersView**
+
+✓ **Backend `backend/app/api/admin_users.py`** :
+  - `POST /<user_id>/orgs` : ajoute user à org. Validations : role ∈ {owner, admin, member, viewer}, super-admin libre, org-admin scoped (refuse owner role pour org-admin), 400 si org_id manquant. UPSERT on conflict `(user_id, org_id)`.
+  - `DELETE /<user_id>/orgs/<org_id>` : retire user de org. Protection LAST_OWNER (409 si dernier owner restant).
+
+✓ **Backend `backend/app/api/admin.py`** :
+  - `_slugify(name)` helper avec translit FR/AR.
+  - `POST /api/admin/organizations` (`@require_super_admin`).
+  - Auto-ajoute le caller comme owner via UPSERT `org_members`.
+  - Fallback gracieux si colonne `self_service_enabled` absente (pattern US-098).
+
+✓ **Frontend `frontend/src/views/AdminUsersView.vue`** :
+  - i18n fix : `adminInvitations.backToDashboard` → `nav.dashboard`.
+  - Section "Affecter une organisation" dans modal profil (super-admin only).
+  - Liste orgs membres avec boutons × remove + role pills.
+  - Picker org existante + role + bouton "+ Créer une org".
+  - Form inline create : name, country (default MA), role.
+  - Functions : `addOrg()`, `removeOrg()`, `createOrgInline()`, `loadAllOrgs()`, `_refreshAfterMembershipChange()`.
+  - State `orgsForm = reactive({selectedOrgId, selectedRole, busy, error, success, creating, newName, newCountry, newAssignRole})`.
+  - Computed `availableOrgs` filtre orgs déjà membres.
+
+✓ **Frontend `frontend/src/api/client.js`** : ajout `addUserToOrg`, `removeUserFromOrg`, `createOrganization`. Suppression doublon `fetchAllOrganizations` (existait déjà ligne 154).
+
+✓ **i18n** : ajout `adminUsers.orgs.*` (14 clés × 3 langues fr/en/ar) + `nav.adminAnalytics/Branding/Users`.
+
+✓ **Tests `backend/tests/test_admin_users.py`** : nouvelle classe `TestUserOrgMembership` avec 7 tests (super_admin_adds, invalid_role 400, missing_org_id 400, org_admin_cannot_add_other, super_admin_removes, remove_nonexistent 404, cannot_remove_last_owner 409). Plus `test_stats_total_users_reflects_auth_users_not_members`.
+
+[VALIDÉ EN COURS — Coolify redeploy `vh5u61oafvjaajl5j0c3zpgn` lancé à 00:30, ~3 min de build]
+- Migration Supabase 004 confirmée appliquée en prod (table `report_deliveries` + `report_downloads` + indexes + RLS + comments).
+- Tests utilisateur en attente : voir [NEXT].
+
+[BLOQUÉ — actions humaines pendantes]
+- !! **Aucun secret leaké cette session** (pas de rotation requise).
+- **Tests post-redeploy** à faire par Amine après ~3 min :
+  1. `/admin/branding` → `+ Nouveau branding` → vérifier modal a un scroll fonctionnel + boutons "Annuler/Enregistrer" visibles en bas.
+  2. `/admin/users` → `Voir le profil` sur Nezha Bentara → section "Affecter une organisation" → `+ Créer une org` → "Tenga Conseil" → "Créer et affecter" → org doit apparaître avec son badge owner/admin/member.
+  3. Vérifier sous-menu Admin dans header (dropdown unique au lieu de 3 liens séparés).
+  4. Vérifier round counter Step3Simulation : tirets `—` au lieu de `0/0` pendant init.
+  5. Lancer un export PDF avec `?variant=exec` ou `?variant=public` ou `?variant=one-pager` pour valider la propagation variant côté backend.
+
+[ALERTE]
+!! **US-139 (activate/deactivate user + org cascade) reportée** : non livrée cette session. Demande exprimée par Amine ("comment je peux activer/desactiver un utilisateur ou une organisation et tous ses utilisateurs ?") → à attaquer en prochaine session si toujours nécessaire (Supabase auth ban + propagation cascade RLS).
+!! **Test backend `test_admin_create_org.py` non créé** : tests dédiés pour le nouveau `POST /api/admin/organizations` non isolés. La couverture passe via `TestUserOrgMembership` (qui crée des orgs en setup) mais pas de test direct du endpoint create. À ajouter en US-138 phase 3 ou US-139.
+!! **Anglais mélangé FR dans citations** : prompt US-138 fix #3 ajoute la clause traduction mais NON validé en prod (besoin d'une simulation en français avec sources EN pour confirmer). Clause `locale_prompt.py` correctement intégrée mais effet observable seulement après une nouvelle simulation FR.
+!! **Service Worker cache** : si Amine voit du 404 ou des composants obsolètes après redeploy, exécuter dans la console navigateur :
+  ```js
+  navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister()));
+  caches.keys().then(ks => ks.forEach(c => caches.delete(c)));
+  location.reload();
+  ```
+
+[PARTIEL]
+
+### US-138 phase 3 (non livrée)
+- Activate/deactivate user (Supabase `auth.admin.update_user_by_id({banned_until: ...})`).
+- Activate/deactivate org cascade (toggle `is_active` colonne orgs + propagation guards via RLS).
+- UI : boutons sur AdminUsersView profil modal + AdminAnalyticsView orgs section.
+
+### Variantes PDF non testées en prod
+- Code US-138 fix #1 transmet bien `variant` mais pas de test E2E/Playwright sur les 4 variants (full/exec/public/one-pager) en prod. À cliquer manuellement post-redeploy.
+
+[NEXT — chantiers prêts à attaquer]
+
+### Prio P0 — validation utilisateur post-redeploy (~3 min après ce push)
+1. **Hard refresh navigateur** (`Ctrl+Shift+R`) sur prospectives.ai-mpower.com.
+2. **Tester les 5 points** listés dans [BLOQUÉ] ci-dessus (Branding modal scroll + Users assign org + Admin sub-menu + Round counter + Variant export).
+3. **Lancer une simulation FR** pour valider le prompt US-138 fix #3 (citations EN traduites en FR).
+
+### Prio P1 — US-139 si Amine confirme le besoin
+- Activer/désactiver user via `auth.admin.update_user_by_id({banned_until: '2099-12-31T23:59:59Z'})`.
+- Toggle `is_active` colonne orgs (migration `20260507_001_org_active.sql` ?) + propagation via décorateur `@require_active_org`.
+- UI : 2 boutons "Désactiver" sur AdminUsersView + AdminAnalyticsView avec confirmation.
+
+### Prio P2 — dette résiduelle US-138
+- Tests dédiés `test_admin_create_org.py` (5 tests : super_admin_creates, non_super_403, name_required, slug_collision_409, country_default_MA).
+- WCAG AA contraste WI_ORANGE/WI_CREAM (2.25:1 < 3:1) — passation 2026-05-06 alerte.
+- Test `test_md_hash_stable_with_deterministic_enricher` : ajouter `freezegun.freeze_time("2026-01-01")`.
+
+### Bloqué humain
+- US-113 Stripe : credentials toujours absents en Coolify.
+- Témoignages partenaires NDA.
+
+[CTX session]
+- ~150 tool calls (browser MCP Coolify+Supabase + git push + ralph + tests)
+- 5 commits poussés sur main : `d0b4e08`, `659c20c`, `a8e681c`, `be8ab3e`, `98d4610`
+- 1 deployment Coolify déclenché à 00:30 (`vh5u61oafvjaajl5j0c3zpgn`)
+- Tests : 1571 → 1612 backend pytest (+41 nouveaux : 7 admin_users + 16 simulation_runner_orphan + 8 locale_prompt + 8 admin_users stats + 2 pdf_export variant)
+- 1 migration Supabase appliquée (`20260506_004_report_delivery.sql` — apostrophe fixée puis ré-jouée)
+- Modèle : Opus 4.7 (1M context) toute la session
+
+[MEMO inter-sessions]
+
+### Pattern apostrophes SQL dans migrations Supabase
+- Toujours doubler `'` → `''` à l'intérieur d'une string SQL (`COMMENT ON COLUMN ... IS 'Date d''expiration...'`).
+- Erreur typique : `42601: syntax error at or near "expiration"` quand `'` non échappé.
+- Pattern de check rapide avant push : `grep -E "IS '[^']*'[^']*'[^,;]" supabase/migrations/*.sql` (cherche apostrophes orphelines).
+
+### Pattern modal scroll Vue
+- `display: grid` dans un container parent ne propage PAS `min-height: 0` aux enfants pour permettre l'overflow scroll comme `display: flex` le fait.
+- Pour modaux avec scroll interne dans formulaire : utiliser flex (column) à TOUS les niveaux du chemin scroll : modal → body → split → form. Hauteurs explicites (max-height calc viewport) sur le top.
+- Z-index AppHeader Bassira = 1500. Tous les modaux globaux doivent être ≥ 2000 (recommandation : 2200).
+
+### Pattern PID liveness cross-platform Python
+- POSIX : `os.kill(pid, 0)` lève `OSError(ESRCH)` si process mort.
+- Windows : `ctypes.windll.kernel32.OpenProcess(0x1000, False, pid)` puis `GetExitCodeProcess`. Code STILL_ACTIVE = `259` = process toujours vivant.
+- Toujours wrapper dans try/except OSError pour les permissions denied (returns False par défaut).
+
+### Pattern stats Admin
+- `total_users` doit être `auth.admin.list_users()` count (pas `org_members` count).
+- Un user peut exister dans `auth.users` sans être membre d'aucune org (super-admin email whitelist par exemple).
+- Toujours afficher 2 métriques : `total_users` (auth.users) + `users_with_org` (au moins 1 membership).
+
+### Memory globale
+- `reference_stack_access` créée session précédente (Coolify 192.168.100.3:8000, Supabase project `fvfifgstytvxssffvsbs`, Monaco SQL editor pattern, base64 chunking, SUPABASE_DB_URL password rotated dans .env.local).
+- `feedback_diagnostic_method` : si plusieurs services tombent simultanément, vérifier infra commune AVANT de blâmer le push.
+- `feedback_shell_single_line` : commandes SSH/bash sur UNE ligne pour PuTTY.
+
+[Recommandations pour la nouvelle session]
+
+1. **Vérifier le statut du redeploy Coolify** : ouvrir http://192.168.100.3:8000/project/.../application/u6pn5mr2pgi88s13un55pkzb → onglet Deployments → confirmer que `vh5u61oafvjaajl5j0c3zpgn` est en SUCCESS.
+
+2. **Faire les 5 tests utilisateur** listés dans [BLOQUÉ] avant tout autre travail.
+
+3. **Si tests OK** : enchaîner US-139 (activate/deactivate user + org cascade) si Amine confirme. Code patterns prêts :
+   ```python
+   # Activate/deactivate user
+   sb_admin.auth.admin.update_user_by_id(user_id, {"banned_until": "2099-12-31T23:59:59Z" if deactivate else None})
+   ```
+   Migration `20260507_001_org_is_active.sql` à créer (boolean default true + index).
+
+4. **Si bug résiduel modal Branding** : vérifier dans DevTools que `.ab-modal-split` est bien en `display: flex` (pas `grid`) après hard refresh. Si encore en grid → cache Service Worker (cf snippet console dans [ALERTE]).
+
+5. **Pour tester variant PDF en prod** : ouvrir une simulation completed → `POST /api/simulation/<id>/export-pdf` avec body `{"variant": "exec"}` → télécharger PDF → vérifier filename inclut `_exec` et le contenu est plus court que `_full`.
+
+6. **Memory à NE PAS oublier** : `reference_stack_access.md` contient maintenant tous les accès (Coolify URL + UUIDs + Supabase ref + pattern Monaco SQL + base64 chunking). Ne plus jamais demander à Amine "où est X ?" — tout est dans cette memory.
+
+— fin passation 2026-05-08 — Session courte 5 commits, US-138 phases 1+2 + US-145 anti-zombie + 1 migration Supabase. Pipeline PDF maintenant complet avec variant transmis correctement, page admin Users avec assign org + create inline. Reste US-139 activate/deactivate.
+
+---
+
 == PASSATION MiroShark/Bassira 2026-05-06T05:30:00+01:00 ==
 
 [ETAT]
