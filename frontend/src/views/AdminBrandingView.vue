@@ -847,17 +847,21 @@ onMounted(() => {
 }
 
 /* ── Modal ────────────────────────────────────────────────────────────── */
+/* US-138 — z-index 2200 pour passer au-dessus du AppHeader sticky
+   (z-index 1500 via --ms-z-floating-lang). Sans ce fix le titre + bouton
+   close du modal étaient masqués par la nav (BASSIRA/Accueil/…). */
 .ab-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(36, 25, 21, 0.40);
-  z-index: 1000;
+  background: rgba(36, 25, 21, 0.55);
+  z-index: 2200;
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 24px 16px;
+  padding: 32px 16px;
   overflow-y: auto;
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 .ab-modal {
   background: var(--wi-surface, #ffffff);
@@ -866,6 +870,9 @@ onMounted(() => {
   max-width: 1040px;
   box-shadow: var(--wi-shadow-lg);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 64px);
 }
 .ab-modal-header {
   display: flex;
@@ -874,6 +881,7 @@ onMounted(() => {
   padding: 20px 28px;
   border-block-end: 1px solid var(--wi-outline-variant, #dec0b6);
   background: var(--wi-surface-container-low, #fff1ec);
+  flex: 0 0 auto;
 }
 .ab-modal-title {
   font-family: var(--wi-font-heading, 'Outfit', system-ui);
@@ -897,26 +905,33 @@ onMounted(() => {
 }
 .ab-modal-body {
   padding: 0;
+  flex: 1 1 auto;
+  min-height: 0;          /* indispensable en flex pour que overflow joue */
+  overflow: hidden;       /* le scroll est délégué aux enfants (.ab-form, .ab-preview-panel) */
 }
 
 /* ── Split layout modal ───────────────────────────────────────────────── */
 .ab-modal-split {
   display: grid;
   grid-template-columns: 1fr 340px;
-  min-height: 500px;
+  min-height: 0;          /* US-138 — clé pour que les enfants puissent scroller */
+  height: 100%;
 }
 @media (max-width: 860px) {
   .ab-modal-split { grid-template-columns: 1fr; }
 }
 
 /* ── Formulaire ───────────────────────────────────────────────────────── */
+/* US-138 — la hauteur du form est désormais contrôlée par le parent
+   flexbox (.ab-modal-body min-height:0 + height:100%) → plus de
+   max-height: 80vh hardcodé qui ignorait le header sticky. */
 .ab-form {
   padding: 24px 28px;
   display: flex;
   flex-direction: column;
   gap: 16px;
   overflow-y: auto;
-  max-height: 80vh;
+  min-height: 0;
 }
 .ab-field {
   display: flex;
@@ -1021,6 +1036,8 @@ onMounted(() => {
   background: var(--wi-surface-container-low, #fff1ec);
   display: flex;
   flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
 }
 .ab-preview-toolbar {
   display: flex;
