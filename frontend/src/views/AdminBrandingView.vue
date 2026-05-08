@@ -870,9 +870,14 @@ onMounted(() => {
   max-width: 1040px;
   box-shadow: var(--wi-shadow-lg);
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  max-height: calc(100vh - 64px);
+  /* US-138 v4 — grid 2 rangées (header auto + body 1fr) avec hauteur EXPLICITE
+     (pas max-height). Sans hauteur explicite, 1fr résout à la hauteur intrinsèque
+     des enfants — donc body=0 quand son contenu utilise height:100%. Cela
+     donne à .ab-modal-body une hauteur définie à laquelle .ab-modal-split
+     peut référer via height:100%. */
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: calc(100vh - 64px);
 }
 .ab-modal-header {
   display: flex;
@@ -881,7 +886,6 @@ onMounted(() => {
   padding: 20px 28px;
   border-block-end: 1px solid var(--wi-outline-variant, #dec0b6);
   background: var(--wi-surface-container-low, #fff1ec);
-  flex: 0 0 auto;
 }
 .ab-modal-title {
   font-family: var(--wi-font-heading, 'Outfit', system-ui);
@@ -905,32 +909,29 @@ onMounted(() => {
 }
 .ab-modal-body {
   padding: 0;
-  flex: 1 1 auto;
-  min-height: 0;          /* indispensable en flex pour que overflow joue */
+  min-height: 0;
   overflow: hidden;       /* le scroll est délégué aux enfants (.ab-form, .ab-preview-panel) */
-  display: flex;          /* US-138 v3 — body est conteneur flex column pour que */
-  flex-direction: column; /* split puisse prendre flex:1 1 0 et avoir une hauteur définie. */
 }
 
 /* ── Split layout modal ───────────────────────────────────────────────── */
-/* US-138 v3 — split utilise flex:1 1 0 pour grandir dans body (qui est
-   maintenant flex column). `height: 100%` ne marche pas ici car la hauteur
-   CSS de body est `auto` (sa hauteur réelle vient du flex algorithm de
-   .ab-modal). Avec flex:1 1 0 le split prend l'espace restant et son
-   contenu peut scroller via overflow-y:auto sur .ab-form. */
+/* US-138 v4 — body étant la 2e rangée 1fr d'un grid avec hauteur EXPLICITE,
+   sa hauteur computée est définie. Donc height:100% sur split résout
+   correctement à la hauteur de body. Idem pour form/preview. */
 .ab-modal-split {
   display: flex;
-  flex: 1 1 0;
+  height: 100%;
   min-height: 0;
 }
 .ab-modal-split > .ab-form {
   flex: 1 1 0;
   min-width: 0;
-  min-height: 0;
+  height: 100%;
+  max-height: 100%;
 }
 .ab-modal-split > .ab-preview-panel {
   flex: 0 0 340px;
-  min-height: 0;
+  height: 100%;
+  max-height: 100%;
 }
 @media (max-width: 860px) {
   .ab-modal-split { flex-direction: column; }
