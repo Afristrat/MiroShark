@@ -911,14 +911,30 @@ onMounted(() => {
 }
 
 /* ── Split layout modal ───────────────────────────────────────────────── */
+/* US-138 — passé en flex (pas grid) pour que `min-height: 0` sur les
+   enfants soit honoré et que `overflow-y: auto` se déclenche vraiment.
+   Avec grid + height:100% le form gardait sa hauteur naturelle (~1100px)
+   et débordait sans scroll, masquant les boutons submit en bas du form. */
 .ab-modal-split {
-  display: grid;
-  grid-template-columns: 1fr 340px;
-  min-height: 0;          /* US-138 — clé pour que les enfants puissent scroller */
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
   height: 100%;
 }
+.ab-modal-split > .ab-form {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  max-height: 100%;
+}
+.ab-modal-split > .ab-preview-panel {
+  flex: 0 0 340px;
+  height: 100%;
+  max-height: 100%;
+}
 @media (max-width: 860px) {
-  .ab-modal-split { grid-template-columns: 1fr; }
+  .ab-modal-split { flex-direction: column; }
+  .ab-modal-split > .ab-preview-panel { flex: 0 0 auto; }
 }
 
 /* ── Formulaire ───────────────────────────────────────────────────────── */
