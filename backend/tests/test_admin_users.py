@@ -784,3 +784,197 @@ class TestAdminUserSimulations:
         )
         assert resp.status_code == 403
         assert resp.get_json()["error_code"] == "ACCESS_DENIED"
+
+
+# ─── Tests : US-138 — gestion membership user ↔ org ──────────────────────────
+
+
+class TestUserOrgMembership:
+    """Tests POST/DELETE /api/admin/users/<uid>/orgs (US-138)."""
+
+    def _make_membership_mock(
+        self,
+        existing_rows=None,
+        owners_rows=None,
+        upsert_rows=None,
+        delete_rows=None,
+    ):
+        """Mock Supabase pour les tests membership.
+
+        existing_rows : retour des lookup .eq("org_id").eq("user_id").limit(1)
+        owners_rows : retour du compte des owners (si test last-owner)
+        """
+        existing = existing_rows if existing_rows is not None else []
+        owners = owners_rows if owners_rows is not None else []
+        upsert_data = upsert_rows if upsert_rows is not None else []
+        delete_data = delete_rows if delete_rows is not None else []
+
+        # Les .eq() chainés peuvent retourner différents datasets selon
+        # le contexte. On utilise un compteur pour distinguer.
+        call_state = {"select_count": 0}
+
+        def _build_table(name: str):
+            t = MagicMock()
+            t.select.return_value = t
+            t.eq.return_value = t
+            t.in_.return_value = t
+            t.order.return_value = t
+            t.limit.return_value = t
+
+            def _execute_select():
+                call_state["select_count"] += 1
+                resp = MagicMock()
+                # 1er select : lookup membership existante (1 row attendu)
+                # 2e select : count des owners
+                if call_state["select_count"] == 1:
+                    resp.data = existing
+                else:
+                    resp.data = owners
+                return resp
+
+            t.execute.side_effect = _execute_select
+
+            upsert_ret = MagicMock()
+            upsert_ret.execute.return_value = MagicMock(data=upsert_data)
+            t.upsert.return_value = upsert_ret
+
+            delete_ret = MagicMock()
+            delete_ret.eq.return_value = delete_ret
+            delete_ret.execute.return_value = MagicMock(data=delete_data)
+            t.delete.return_value = delete_ret
+            return t
+
+        mock_cli = MagicMock()
+        mock_cli.table.side_effect = _build_table
+        return mock_cli
+
+    def test_super_admin_adds_user_to_org(
+        self, client, whitelist_env, jwt_secret,
+        super_admin_id, super_admin_email, org_id, monkeypatch,
+    ):
+        """Super-admin POSTe { org_id, role } → 200 + payload."""
+        token = _make_token(jwt_secret, sub=super_admin_id, email=super_admin_email)
+        target_uid = "uid-target-user-001"
+        mock_cli = self._make_membership_mock()
+        monkeypatch.setattr("app.api.admin_users.get_supabase_admin", lambda: mock_cli)
+
+        resp = client.post(
+            f"/api/admin/users/{target_uid}/orgs",
+            json={"org_id": org_id, "role": "admin"},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert resp.status_code == 200, resp.get_json()
+        data = resp.get_json()["data"]
+        assert data == {"user_id": target_uid, "org_id": org_id, "role": "admin"}
+
+    def test_invalid_role_returns_400(
+        self, client, whitelist_env, jwt_secret,
+        super_admin_id, super_admin_email, org_id, monkeypatch,
+    ):
+        """role hors {member, admin, owner} → 400 INVALID_ROLE."""
+        token = _make_token(jwt_secret, sub=super_admin_id, email=super_admin_email)
+        mock_cli = self._make_membership_mock()
+        monkeypatch.setattr("app.api.admin_users.get_supabase_admin", lambda: mock_cli)
+        resp = client.post(
+            "/api/admin/users/uid-x/orgs",
+            json={"org_id": org_id, "role": "god"},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert resp.status_code == 400
+        assert resp.get_json()["error_code"] == "INVALID_ROLE"
+
+    def test_missing_org_id_returns_400(
+        self, client, whitelist_env, jwt_secret,
+        super_admin_id, super_admin_email, monkeypatch,
+    ):
+        token = _make_token(jwt_secret, sub=super_admin_id, email=super_admin_email)
+        mock_cli = self._make_membership_mock()
+        monkeypatch.setattr("app.api.admin_users.get_supabase_admin", lambda: mock_cli)
+        resp = client.post(
+            "/api/admin/users/uid-x/orgs",
+            json={"role": "member"},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert resp.status_code == 400
+        assert resp.get_json()["error_code"] == "MISSING_ORG_ID"
+
+    def test_org_admin_cannot_add_to_other_org(
+        self, client, whitelist_env, jwt_secret,
+        org_admin_id, org_admin_email, org_id, monkeypatch,
+    ):
+        """Org admin tente d'ajouter à une org dont il n'est pas admin → 403."""
+        token = _make_token(jwt_secret, sub=org_admin_id, email=org_admin_email)
+        mock_cli = self._make_membership_mock()
+        monkeypatch.setattr("app.api.admin_users.get_supabase_admin", lambda: mock_cli)
+        # L'org admin n'est admin que de "another-org-id", pas de org_id ciblé
+        monkeypatch.setattr("app.api.admin_users.get_user_orgs", lambda uid, **kw: [
+            {
+                "id": "another-org-id", "slug": "other", "name": "Other",
+                "sector": None, "country_code": None, "status": "active",
+                "self_service_enabled": False, "role": "admin",
+            }
+        ])
+
+        resp = client.post(
+            "/api/admin/users/uid-victim/orgs",
+            json={"org_id": org_id, "role": "member"},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert resp.status_code == 403
+        assert resp.get_json()["error_code"] == "ORG_NOT_FOUND_FOR_USER"
+
+    def test_super_admin_removes_user_from_org(
+        self, client, whitelist_env, jwt_secret,
+        super_admin_id, super_admin_email, org_id, monkeypatch,
+    ):
+        """Super-admin DELETE membership existante (rôle member) → 200."""
+        token = _make_token(jwt_secret, sub=super_admin_id, email=super_admin_email)
+        target_uid = "uid-target-002"
+        mock_cli = self._make_membership_mock(
+            existing_rows=[{"user_id": target_uid, "role": "member"}],
+        )
+        monkeypatch.setattr("app.api.admin_users.get_supabase_admin", lambda: mock_cli)
+
+        resp = client.delete(
+            f"/api/admin/users/{target_uid}/orgs/{org_id}",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert resp.status_code == 200, resp.get_json()
+        assert resp.get_json()["data"] == {"deleted": True}
+
+    def test_remove_nonexistent_returns_404(
+        self, client, whitelist_env, jwt_secret,
+        super_admin_id, super_admin_email, org_id, monkeypatch,
+    ):
+        """DELETE membership inexistante → 404 MEMBERSHIP_NOT_FOUND."""
+        token = _make_token(jwt_secret, sub=super_admin_id, email=super_admin_email)
+        mock_cli = self._make_membership_mock(existing_rows=[])
+        monkeypatch.setattr("app.api.admin_users.get_supabase_admin", lambda: mock_cli)
+
+        resp = client.delete(
+            f"/api/admin/users/uid-nope/orgs/{org_id}",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert resp.status_code == 404
+        assert resp.get_json()["error_code"] == "MEMBERSHIP_NOT_FOUND"
+
+    def test_cannot_remove_last_owner(
+        self, client, whitelist_env, jwt_secret,
+        super_admin_id, super_admin_email, org_id, monkeypatch,
+    ):
+        """Tentative de retirer le DERNIER owner → 409 LAST_OWNER."""
+        token = _make_token(jwt_secret, sub=super_admin_id, email=super_admin_email)
+        target_uid = "uid-last-owner"
+        # 1er select retourne l'user en owner ; 2e select compte les owners (1 seul)
+        mock_cli = self._make_membership_mock(
+            existing_rows=[{"user_id": target_uid, "role": "owner"}],
+            owners_rows=[{"user_id": target_uid}],
+        )
+        monkeypatch.setattr("app.api.admin_users.get_supabase_admin", lambda: mock_cli)
+
+        resp = client.delete(
+            f"/api/admin/users/{target_uid}/orgs/{org_id}",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert resp.status_code == 409
+        assert resp.get_json()["error_code"] == "LAST_OWNER"

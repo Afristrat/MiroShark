@@ -556,3 +556,175 @@ def user_simulations_endpoint(user_id: str):
             "offset": offset,
         },
     }), 200
+
+
+# ─── POST /api/admin/users/<user_id>/orgs (US-138) ────────────────────────────
+
+
+_VALID_ROLES = frozenset({"member", "admin", "owner"})
+
+
+@admin_users_bp.route("/<user_id>/orgs", methods=["POST"])
+@require_auth
+def add_user_to_org_endpoint(user_id: str):
+    """Affecte un utilisateur à une organisation (US-138).
+
+    Body JSON ::
+
+        { "org_id": "uuid", "role": "member"|"admin"|"owner" }
+
+    UPSERT idempotent dans `org_members`. Si la membership existe déjà,
+    son rôle est mis à jour vers la nouvelle valeur.
+
+    Permissions :
+        - super-admin : tous les org_id ;
+        - org admin/owner : uniquement les org_id dont il est lui-même admin/owner.
+
+    Response : 200 ::
+        { "success": true, "data": { "user_id", "org_id", "role" } }
+    """
+    is_super, admin_org_ids, err = _check_admin_access()
+    if err is not None:
+        return err
+
+    body = request.get_json(silent=True) or {}
+    org_id = (body.get("org_id") or "").strip()
+    role = (body.get("role") or "member").strip().lower()
+
+    if not org_id:
+        return _err("MISSING_ORG_ID", "org_id is required.", 400)
+    if role not in _VALID_ROLES:
+        return _err(
+            "INVALID_ROLE",
+            f"role must be one of {sorted(_VALID_ROLES)}.",
+            400,
+        )
+
+    # Org admin : restreint à ses propres orgs
+    if not is_super and org_id not in (admin_org_ids or []):
+        return _err(
+            "ORG_NOT_FOUND_FOR_USER",
+            "Vous n'êtes pas admin/owner de cette organisation.",
+            403,
+        )
+    # Org admin ne peut pas créer un owner (escalade de privilège)
+    if not is_super and role == "owner":
+        return _err(
+            "INSUFFICIENT_ROLE",
+            "Un org admin ne peut pas créer un autre owner — passe par un super-admin.",
+            403,
+        )
+
+    try:
+        cli = get_supabase_admin()
+    except SupabaseConfigError:
+        return _err("SUPABASE_NOT_CONFIGURED", "Backend Supabase admin client is not configured.", 503)
+
+    # UPSERT sur la primary key composite (user_id, org_id) ou une unique idx
+    try:
+        cli.table("org_members").upsert(
+            {"user_id": user_id, "org_id": org_id, "role": role},
+            on_conflict="user_id,org_id",
+        ).execute()
+    except Exception as exc:  # noqa: BLE001
+        logger.error(
+            "add_user_to_org upsert failed: user=%s org=%s err=%s",
+            user_id, org_id, exc.__class__.__name__,
+        )
+        return _err("WRITE_FAILED", "Could not add user to organization.", 500)
+
+    return jsonify({
+        "success": True,
+        "data": {"user_id": user_id, "org_id": org_id, "role": role},
+    }), 200
+
+
+# ─── DELETE /api/admin/users/<user_id>/orgs/<org_id> (US-138) ────────────────
+
+
+@admin_users_bp.route("/<user_id>/orgs/<org_id>", methods=["DELETE"])
+@require_auth
+def remove_user_from_org_endpoint(user_id: str, org_id: str):
+    """Retire la membership d'un utilisateur dans une organisation (US-138).
+
+    Refus si c'est le DERNIER owner de l'org (sécurité — éviter de créer
+    une org orpheline sans personne pour la gérer). Le caller doit
+    promouvoir un autre membre owner d'abord.
+
+    Permissions identiques à `POST .../orgs` (super-admin OU org admin
+    de cette org).
+
+    Response : 200 ``{"success": true, "data": {"deleted": true}}``
+    """
+    is_super, admin_org_ids, err = _check_admin_access()
+    if err is not None:
+        return err
+
+    if not is_super and org_id not in (admin_org_ids or []):
+        return _err(
+            "ORG_NOT_FOUND_FOR_USER",
+            "Vous n'êtes pas admin/owner de cette organisation.",
+            403,
+        )
+
+    try:
+        cli = get_supabase_admin()
+    except SupabaseConfigError:
+        return _err("SUPABASE_NOT_CONFIGURED", "Backend Supabase admin client is not configured.", 503)
+
+    # Vérifier la cible existe + récupérer son rôle
+    try:
+        target_resp = (
+            cli.table("org_members")
+            .select("user_id, role")
+            .eq("org_id", org_id)
+            .eq("user_id", user_id)
+            .limit(1)
+            .execute()
+        )
+        target_rows = getattr(target_resp, "data", None) or []
+    except Exception as exc:  # noqa: BLE001
+        logger.error("remove_user_from_org lookup failed: %s", exc.__class__.__name__)
+        return _err("FETCH_FAILED", "Could not look up membership.", 500)
+
+    if not target_rows:
+        return _err("MEMBERSHIP_NOT_FOUND", "Cet utilisateur n'est pas membre de cette org.", 404)
+
+    target_role = (target_rows[0].get("role") or "").lower()
+
+    # Si owner, vérifier qu'il en reste au moins un autre
+    if target_role == "owner":
+        try:
+            owners_resp = (
+                cli.table("org_members")
+                .select("user_id")
+                .eq("org_id", org_id)
+                .eq("role", "owner")
+                .execute()
+            )
+            owners = getattr(owners_resp, "data", None) or []
+        except Exception as exc:  # noqa: BLE001
+            logger.error("owners count failed: %s", exc.__class__.__name__)
+            return _err("FETCH_FAILED", "Could not count org owners.", 500)
+        if len(owners) <= 1:
+            return _err(
+                "LAST_OWNER",
+                "Impossible de retirer le dernier owner de l'organisation. "
+                "Promeus un autre membre owner d'abord.",
+                409,
+            )
+
+    try:
+        cli.table("org_members") \
+            .delete() \
+            .eq("org_id", org_id) \
+            .eq("user_id", user_id) \
+            .execute()
+    except Exception as exc:  # noqa: BLE001
+        logger.error(
+            "remove_user_from_org delete failed: user=%s org=%s err=%s",
+            user_id, org_id, exc.__class__.__name__,
+        )
+        return _err("WRITE_FAILED", "Could not remove user from organization.", 500)
+
+    return jsonify({"success": True, "data": {"deleted": True}}), 200

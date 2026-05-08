@@ -267,17 +267,136 @@
             <div class="au-dl-row">
               <dt>{{ $t('adminUsers.table.orgs') }}</dt>
               <dd>
-                <span v-if="profileModal.user.orgs && profileModal.user.orgs.length > 0">
-                  <span
+                <ul v-if="profileModal.user.orgs && profileModal.user.orgs.length > 0" class="au-org-list">
+                  <li
                     v-for="org in profileModal.user.orgs"
                     :key="org.id"
-                    class="au-org-badge"
-                  >{{ org.name }} ({{ org.role }})</span>
-                </span>
+                    class="au-org-row"
+                  >
+                    <span class="au-org-badge">{{ org.name }}</span>
+                    <span class="au-role-pill" :class="`au-role-pill--${org.role}`">
+                      {{ $t(`adminUsers.role.${org.role}`) || org.role }}
+                    </span>
+                    <button
+                      type="button"
+                      class="au-org-remove"
+                      :disabled="orgsForm.busy"
+                      :title="$t('adminUsers.orgs.remove')"
+                      @click="removeOrg(org.id)"
+                    >×</button>
+                  </li>
+                </ul>
                 <span v-else class="au-muted">{{ $t('adminUsers.noOrg') }}</span>
               </dd>
             </div>
           </dl>
+
+          <!-- ── US-138 — Affecter / créer une organisation ──────────── -->
+          <section class="au-orgs-actions" v-if="isSuperAdmin">
+            <h3 class="au-orgs-title">{{ $t('adminUsers.orgs.title') }}</h3>
+
+            <p v-if="orgsForm.error" class="au-error" role="alert">{{ orgsForm.error }}</p>
+            <p v-if="orgsForm.success" class="au-success">{{ orgsForm.success }}</p>
+
+            <div v-if="!orgsForm.creating" class="au-orgs-add">
+              <select
+                v-model="orgsForm.selectedOrgId"
+                class="au-select"
+                :disabled="orgsForm.busy"
+              >
+                <option value="">{{ $t('adminUsers.orgs.pickOrg') }}</option>
+                <option v-for="o in availableOrgs" :key="o.id" :value="o.id">
+                  {{ o.name }}{{ o.slug ? ` (${o.slug})` : '' }}
+                </option>
+              </select>
+              <select
+                v-model="orgsForm.selectedRole"
+                class="au-select"
+                :disabled="orgsForm.busy"
+              >
+                <option value="member">{{ $t('adminUsers.role.member') }}</option>
+                <option value="admin">{{ $t('adminUsers.role.admin') }}</option>
+                <option value="owner">{{ $t('adminUsers.role.owner') }}</option>
+              </select>
+              <button
+                type="button"
+                class="au-action"
+                :disabled="orgsForm.busy || !orgsForm.selectedOrgId"
+                @click="addOrg"
+              >
+                {{ orgsForm.busy ? '…' : $t('adminUsers.orgs.add') }}
+              </button>
+              <button
+                type="button"
+                class="au-action au-action--ghost"
+                :disabled="orgsForm.busy"
+                @click="toggleCreateForm(true)"
+              >
+                + {{ $t('adminUsers.orgs.createNew') }}
+              </button>
+            </div>
+
+            <form
+              v-else
+              class="au-orgs-create"
+              @submit.prevent="createOrgInline"
+            >
+              <div class="au-create-grid">
+                <div class="au-filter-field">
+                  <label class="au-filter-label">{{ $t('adminUsers.orgs.newName') }} *</label>
+                  <input
+                    v-model.trim="orgsForm.newName"
+                    type="text"
+                    class="au-input"
+                    :placeholder="$t('adminUsers.orgs.newNamePlaceholder')"
+                    required
+                    maxlength="200"
+                    :disabled="orgsForm.busy"
+                  />
+                </div>
+                <div class="au-filter-field">
+                  <label class="au-filter-label">{{ $t('adminUsers.orgs.newCountry') }}</label>
+                  <input
+                    v-model.trim="orgsForm.newCountry"
+                    type="text"
+                    class="au-input"
+                    placeholder="MA"
+                    maxlength="2"
+                    :disabled="orgsForm.busy"
+                  />
+                </div>
+                <div class="au-filter-field">
+                  <label class="au-filter-label">{{ $t('adminUsers.orgs.newRole') }}</label>
+                  <select
+                    v-model="orgsForm.newAssignRole"
+                    class="au-select"
+                    :disabled="orgsForm.busy"
+                  >
+                    <option value="member">{{ $t('adminUsers.role.member') }}</option>
+                    <option value="admin">{{ $t('adminUsers.role.admin') }}</option>
+                    <option value="owner">{{ $t('adminUsers.role.owner') }}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="au-create-actions">
+                <button
+                  type="submit"
+                  class="au-action"
+                  :disabled="orgsForm.busy || !orgsForm.newName"
+                >
+                  {{ orgsForm.busy ? '…' : $t('adminUsers.orgs.createAndAssign') }}
+                </button>
+                <button
+                  type="button"
+                  class="au-action au-action--ghost"
+                  :disabled="orgsForm.busy"
+                  @click="toggleCreateForm(false)"
+                >
+                  {{ $t('adminUsers.modal.close') }}
+                </button>
+              </div>
+            </form>
+          </section>
         </div>
       </div>
     </div>
@@ -286,14 +405,22 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../stores/auth'
 import {
   fetchAdminUsers,
   fetchAdminUsersStats,
   fetchAdminUserSimulations,
+  addUserToOrg,
+  removeUserFromOrg,
+  fetchAllOrganizations,
+  createOrganization,
 } from '../api/client'
 
 const authStore = useAuthStore()
+const { isSuperAdmin } = storeToRefs(authStore)
+const { t } = useI18n()
 
 // ── État filtres ─────────────────────────────────────────────────────────────
 const filterOrgId = ref('')
@@ -343,6 +470,28 @@ const simsModal = reactive({
 const profileModal = reactive({
   open: false,
   user: null,
+})
+
+// US-138 — gestion des memberships utilisateur ↔ organisation
+const allOrgs = ref([])
+const orgsForm = reactive({
+  selectedOrgId: '',
+  selectedRole: 'member',
+  busy: false,
+  error: '',
+  success: '',
+  creating: false,
+  newName: '',
+  newCountry: 'MA',
+  newAssignRole: 'member',
+})
+
+// Orgs auxquelles l'utilisateur n'est PAS encore membre — pour le dropdown.
+const availableOrgs = computed(() => {
+  const userOrgIds = new Set(
+    (profileModal.user?.orgs || []).map((o) => o.id)
+  )
+  return allOrgs.value.filter((o) => !userOrgIds.has(o.id))
 })
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -449,6 +598,19 @@ async function openSimulations(user) {
 function openProfile(user) {
   profileModal.open = true
   profileModal.user = user
+  // US-138 — reset du form orgs à chaque ouverture
+  orgsForm.selectedOrgId = ''
+  orgsForm.selectedRole = 'member'
+  orgsForm.error = ''
+  orgsForm.success = ''
+  orgsForm.creating = false
+  orgsForm.newName = ''
+  orgsForm.newCountry = 'MA'
+  orgsForm.newAssignRole = 'member'
+  // Pré-charger la liste d'orgs pour les super-admins (idempotent)
+  if (isSuperAdmin.value && allOrgs.value.length === 0) {
+    loadAllOrgs()
+  }
 }
 
 function closeModals() {
@@ -456,10 +618,126 @@ function closeModals() {
   profileModal.open = false
 }
 
+// ── US-138 — chargement des orgs + actions membership ───────────────────────
+
+async function loadAllOrgs() {
+  try {
+    const res = await fetchAllOrganizations()
+    const list = res?.data?.organizations || res?.data || []
+    allOrgs.value = Array.isArray(list)
+      ? list
+          .map((o) => ({ id: o.id, name: o.name, slug: o.slug }))
+          .filter((o) => o.id)
+          .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+      : []
+  } catch (err) {
+    // Silencieux — la section Orgs gère l'absence (dropdown vide).
+    allOrgs.value = []
+  }
+}
+
+function toggleCreateForm(force) {
+  orgsForm.creating = typeof force === 'boolean' ? force : !orgsForm.creating
+  orgsForm.error = ''
+  orgsForm.success = ''
+}
+
+function _refreshAfterMembershipChange(updatedUserOrgs) {
+  // Met à jour profileModal.user.orgs ET la même ligne dans la liste users
+  // pour que la fermeture/réouverture du modal reflète le bon état.
+  if (profileModal.user) {
+    profileModal.user.orgs = updatedUserOrgs
+    const idx = users.value.findIndex((u) => u.id === profileModal.user.id)
+    if (idx !== -1) {
+      users.value[idx] = { ...users.value[idx], orgs: updatedUserOrgs }
+    }
+  }
+}
+
+async function addOrg() {
+  if (!profileModal.user || !orgsForm.selectedOrgId) return
+  orgsForm.busy = true
+  orgsForm.error = ''
+  orgsForm.success = ''
+  try {
+    await addUserToOrg(profileModal.user.id, orgsForm.selectedOrgId, orgsForm.selectedRole)
+    // Reload de l'user pour avoir la liste à jour
+    await loadUsers()
+    const fresh = users.value.find((u) => u.id === profileModal.user.id)
+    if (fresh) _refreshAfterMembershipChange(fresh.orgs || [])
+    orgsForm.success = t('adminUsers.orgs.addedSuccess')
+    orgsForm.selectedOrgId = ''
+    orgsForm.selectedRole = 'member'
+  } catch (err) {
+    orgsForm.error = err?.response?.data?.error || err?.message || 'Erreur'
+  } finally {
+    orgsForm.busy = false
+  }
+}
+
+async function removeOrg(orgId) {
+  if (!profileModal.user || !orgId) return
+  orgsForm.busy = true
+  orgsForm.error = ''
+  orgsForm.success = ''
+  try {
+    await removeUserFromOrg(profileModal.user.id, orgId)
+    await loadUsers()
+    const fresh = users.value.find((u) => u.id === profileModal.user.id)
+    if (fresh) _refreshAfterMembershipChange(fresh.orgs || [])
+    orgsForm.success = t('adminUsers.orgs.removedSuccess')
+  } catch (err) {
+    const code = err?.response?.data?.error_code
+    if (code === 'LAST_OWNER') {
+      orgsForm.error = t('adminUsers.orgs.lastOwnerError')
+    } else {
+      orgsForm.error = err?.response?.data?.error || err?.message || 'Erreur'
+    }
+  } finally {
+    orgsForm.busy = false
+  }
+}
+
+async function createOrgInline() {
+  if (!profileModal.user || !orgsForm.newName) return
+  orgsForm.busy = true
+  orgsForm.error = ''
+  orgsForm.success = ''
+  try {
+    const payload = { name: orgsForm.newName }
+    if (orgsForm.newCountry) payload.country_code = orgsForm.newCountry.toUpperCase()
+    const res = await createOrganization(payload)
+    const newOrg = res?.data
+    if (!newOrg?.id) throw new Error('Réponse de création invalide.')
+    // Ajouter à la liste locale + affecter immédiatement le user
+    allOrgs.value = [...allOrgs.value, { id: newOrg.id, name: newOrg.name, slug: newOrg.slug }]
+      .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+    await addUserToOrg(profileModal.user.id, newOrg.id, orgsForm.newAssignRole)
+    await loadUsers()
+    const fresh = users.value.find((u) => u.id === profileModal.user.id)
+    if (fresh) _refreshAfterMembershipChange(fresh.orgs || [])
+    orgsForm.success = t('adminUsers.orgs.createdSuccess', { name: newOrg.name })
+    orgsForm.newName = ''
+    orgsForm.creating = false
+  } catch (err) {
+    const code = err?.response?.data?.error_code
+    if (code === 'SLUG_ALREADY_EXISTS') {
+      orgsForm.error = t('adminUsers.orgs.slugExistsError')
+    } else {
+      orgsForm.error = err?.response?.data?.error || err?.message || 'Erreur création.'
+    }
+  } finally {
+    orgsForm.busy = false
+  }
+}
+
 // ── Init ─────────────────────────────────────────────────────────────────────
 onMounted(() => {
   loadStats()
   loadUsers()
+  if (isSuperAdmin.value) {
+    loadAllOrgs()
+  }
 })
 </script>
 
@@ -900,5 +1178,95 @@ onMounted(() => {
   background: rgba(36, 25, 21, 0.05);
   padding: 2px 6px;
   border-radius: 4px;
+}
+
+/* ── US-138 — gestion des memberships dans le modal profile ─────────── */
+.au-org-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.au-org-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.au-org-remove {
+  margin-inline-start: auto;
+  background: none;
+  border: 1px solid var(--wi-outline-variant, rgba(36, 25, 21, 0.12));
+  color: var(--wi-on-surface-variant, #57423a);
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+.au-org-remove:hover:not(:disabled) {
+  background: var(--wi-error-container, #ffdad6);
+  border-color: var(--wi-error, #c33);
+  color: var(--wi-error, #c33);
+}
+.au-org-remove:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.au-orgs-actions {
+  margin-block-start: 24px;
+  padding-block-start: 20px;
+  border-block-start: 1px solid var(--wi-outline-variant, #dec0b6);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.au-orgs-title {
+  font-family: var(--wi-font-heading, 'Outfit', system-ui);
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--wi-on-surface, #241915);
+}
+.au-orgs-add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.au-orgs-add .au-select { flex: 1 1 180px; min-width: 0; }
+.au-success {
+  font-size: 13px;
+  color: var(--wi-on-tertiary-container, #006d44);
+  background: var(--wi-secondary-container, rgba(0, 109, 68, 0.10));
+  border-radius: var(--wi-radius-md, 8px);
+  padding: 8px 12px;
+  margin: 0;
+}
+.au-orgs-create {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--wi-surface-container-low, #fff1ec);
+  padding: 14px;
+  border-radius: var(--wi-radius-md, 12px);
+}
+.au-create-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 10px;
+}
+@media (max-width: 600px) {
+  .au-create-grid { grid-template-columns: 1fr; }
+}
+.au-create-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 </style>

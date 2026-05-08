@@ -2614,6 +2614,23 @@
     },
     "never": "Never",
     "noOrg": "No org",
+    "orgs": {
+      "title": "Assign to an organization",
+      "add": "Add",
+      "remove": "Remove from organization",
+      "createNew": "Create org",
+      "createAndAssign": "Create and assign",
+      "pickOrg": "— Choose an organization —",
+      "newName": "Organization name",
+      "newNamePlaceholder": "e.g., Tenga Conseil",
+      "newCountry": "Country (ISO-2)",
+      "newRole": "Initial role",
+      "addedSuccess": "Membership added successfully.",
+      "removedSuccess": "Membership removed.",
+      "createdSuccess": "Organization \"{name}\" created and user assigned.",
+      "lastOwnerError": "Cannot remove the last owner. Promote another member to owner first.",
+      "slugExistsError": "An organization with this slug already exists — pick another name."
+    },
     "modal": {
       "profileTitle": "User profile",
       "simulationsTitle": "User simulations",

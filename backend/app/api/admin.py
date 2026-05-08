@@ -35,13 +35,14 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import time
 import traceback
 from collections import Counter
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-from flask import Blueprint, g, jsonify
+from flask import Blueprint, g, jsonify, request
 
 from ..auth.decorators import (
     is_super_admin_email,
@@ -929,3 +930,170 @@ def patch_org_self_service(org_id: str):
             "self_service_enabled": bool(enabled),
         },
     }), 200
+
+
+# ─── POST /api/admin/organizations (US-138) ────────────────────────────────────
+
+
+_ORG_SLUG_RE = re.compile(r"[^a-z0-9-]+")
+
+
+def _slugify(name: str) -> str:
+    """Génère un slug minuscule kebab-case depuis un nom d'organisation."""
+    s = (name or "").lower().strip()
+    # Translittération basique des accents FR/AR vers ASCII
+    replacements = {
+        "à": "a", "â": "a", "ä": "a", "á": "a", "ã": "a",
+        "ç": "c",
+        "è": "e", "é": "e", "ê": "e", "ë": "e",
+        "ì": "i", "í": "i", "î": "i", "ï": "i",
+        "ò": "o", "ó": "o", "ô": "o", "ö": "o", "õ": "o",
+        "ù": "u", "ú": "u", "û": "u", "ü": "u",
+        "ñ": "n", "ý": "y", "ÿ": "y",
+        "œ": "oe", "æ": "ae", "ß": "ss",
+    }
+    for k, v in replacements.items():
+        s = s.replace(k, v)
+    s = s.replace(" ", "-").replace("_", "-")
+    s = _ORG_SLUG_RE.sub("", s)
+    s = re.sub(r"-+", "-", s).strip("-")
+    return s or "org"
+
+
+@admin_bp.route("/organizations", methods=["POST"])
+@require_super_admin
+def create_organization():
+    """Crée une nouvelle organisation Bassira (super-admin only).
+
+    Body JSON ::
+
+        {
+          "name": str (requis),
+          "slug": str (optionnel — auto-généré depuis name si absent),
+          "country_code": str (optionnel, ISO-2, ex "MA"),
+          "sector": str (optionnel, ex "finance"),
+          "self_service_enabled": bool (optionnel, défaut false)
+        }
+
+    Side effect : ajoute le caller comme `owner` dans `org_members`
+    pour qu'il puisse gérer cette org tout de suite.
+
+    Response : 201 ::
+        { "success": true, "data": { "id", "slug", "name", ... } }
+    """
+    body = request.get_json(silent=True) or {}
+    name = (body.get("name") or "").strip()
+    if not name:
+        return _err_admin("MISSING_NAME", "name is required.", 400)
+    if len(name) > 200:
+        return _err_admin("NAME_TOO_LONG", "name must be 200 characters or less.", 400)
+
+    slug = (body.get("slug") or "").strip().lower() or _slugify(name)
+    if not re.match(r"^[a-z0-9][a-z0-9-]*[a-z0-9]$", slug):
+        return _err_admin(
+            "INVALID_SLUG",
+            "slug doit contenir uniquement [a-z0-9-] et commencer/finir par alphanum.",
+            400,
+        )
+
+    country_code = (body.get("country_code") or "").strip().upper()
+    if country_code and not re.match(r"^[A-Z]{2}$", country_code):
+        return _err_admin("INVALID_COUNTRY_CODE", "country_code must be ISO-2 (e.g. MA, FR).", 400)
+    sector = (body.get("sector") or "").strip() or None
+    self_service_enabled = bool(body.get("self_service_enabled", False))
+
+    try:
+        cli = get_supabase_admin()
+    except SupabaseConfigError:
+        return _err_admin(
+            "SUPABASE_NOT_CONFIGURED",
+            "Backend Supabase admin client is not configured.",
+            503,
+        )
+
+    # Insérer l'organisation
+    org_payload: Dict[str, Any] = {
+        "name": name,
+        "slug": slug,
+        "status": "active",
+    }
+    if country_code:
+        org_payload["country_code"] = country_code
+    if sector:
+        org_payload["sector"] = sector
+
+    # self_service_enabled : essai avec, fallback sans (cf. pattern existant US-098)
+    payload_with_ss = dict(org_payload, self_service_enabled=self_service_enabled)
+    new_org: Dict[str, Any]
+    try:
+        resp = cli.table("organizations").insert(payload_with_ss).execute()
+        rows = getattr(resp, "data", None) or []
+        if not rows:
+            raise RuntimeError("INSERT returned no rows")
+        new_org = rows[0]
+    except Exception as exc:  # noqa: BLE001
+        msg = str(exc).lower()
+        if "duplicate" in msg or "unique" in msg or "23505" in msg:
+            return _err_admin(
+                "SLUG_ALREADY_EXISTS",
+                f"Une organisation existe déjà avec le slug '{slug}'.",
+                409,
+            )
+        if "self_service_enabled" in msg or "column" in msg:
+            try:
+                resp = cli.table("organizations").insert(org_payload).execute()
+                rows = getattr(resp, "data", None) or []
+                if not rows:
+                    raise RuntimeError("INSERT returned no rows (legacy)")
+                new_org = rows[0]
+            except Exception as exc2:  # noqa: BLE001
+                logger.error("create_organization fallback insert failed: %s", exc2.__class__.__name__)
+                return _err_admin(
+                    "ADMIN_CREATE_ORG_FAILED",
+                    "Could not create organization.",
+                    500,
+                )
+        else:
+            logger.error("create_organization insert failed: %s", exc.__class__.__name__)
+            return _err_admin(
+                "ADMIN_CREATE_ORG_FAILED",
+                "Could not create organization.",
+                500,
+            )
+
+    org_id = new_org.get("id")
+    if not org_id:
+        logger.error("create_organization: created row missing id field")
+        return _err_admin("ADMIN_CREATE_ORG_FAILED", "Organization created but id missing.", 500)
+
+    # Auto-add caller as owner — best-effort (la création réussit même
+    # si l'ajout échoue ; le super-admin pourra se rajouter manuellement).
+    user = getattr(g, "current_user", None) or {}
+    caller_uid = user.get("id")
+    if caller_uid:
+        try:
+            cli.table("org_members").upsert(
+                {"user_id": caller_uid, "org_id": org_id, "role": "owner"},
+                on_conflict="user_id,org_id",
+            ).execute()
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(
+                "create_organization: could not auto-add caller %s as owner of %s : %s",
+                caller_uid, org_id, exc.__class__.__name__,
+            )
+
+    logger.info("Organization created : id=%s slug=%s name=%r", org_id, slug, name)
+
+    return jsonify({
+        "success": True,
+        "data": {
+            "id": org_id,
+            "slug": new_org.get("slug") or slug,
+            "name": new_org.get("name") or name,
+            "country_code": new_org.get("country_code") or country_code or None,
+            "sector": new_org.get("sector") or sector,
+            "status": new_org.get("status") or "active",
+            "self_service_enabled": bool(new_org.get("self_service_enabled", self_service_enabled)),
+            "created_at": new_org.get("created_at"),
+        },
+    }), 201

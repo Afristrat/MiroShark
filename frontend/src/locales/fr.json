@@ -2614,6 +2614,23 @@
     },
     "never": "Jamais",
     "noOrg": "Aucune org",
+    "orgs": {
+      "title": "Affecter une organisation",
+      "add": "Ajouter",
+      "remove": "Retirer de l'organisation",
+      "createNew": "Créer une org",
+      "createAndAssign": "Créer et affecter",
+      "pickOrg": "— Choisir une organisation —",
+      "newName": "Nom de l'organisation",
+      "newNamePlaceholder": "Ex : Tenga Conseil",
+      "newCountry": "Pays (ISO-2)",
+      "newRole": "Rôle initial",
+      "addedSuccess": "Membership ajoutée avec succès.",
+      "removedSuccess": "Membership retirée.",
+      "createdSuccess": "Organisation « {name} » créée et utilisateur affecté.",
+      "lastOwnerError": "Impossible de retirer le dernier owner. Promeus un autre membre owner d'abord.",
+      "slugExistsError": "Une organisation avec ce slug existe déjà — choisis un autre nom."
+    },
     "modal": {
       "profileTitle": "Profil utilisateur",
       "simulationsTitle": "Simulations de l'utilisateur",

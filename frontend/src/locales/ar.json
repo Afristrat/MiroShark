@@ -2614,6 +2614,23 @@
     },
     "never": "أبداً",
     "noOrg": "لا توجد منظمة",
+    "orgs": {
+      "title": "إسناد إلى منظمة",
+      "add": "إضافة",
+      "remove": "إزالة من المنظمة",
+      "createNew": "إنشاء منظمة",
+      "createAndAssign": "إنشاء وإسناد",
+      "pickOrg": "— اختر منظمة —",
+      "newName": "اسم المنظمة",
+      "newNamePlaceholder": "مثلاً: Tenga Conseil",
+      "newCountry": "البلد (ISO-2)",
+      "newRole": "الدور المبدئي",
+      "addedSuccess": "تمت إضافة العضوية بنجاح.",
+      "removedSuccess": "تمت إزالة العضوية.",
+      "createdSuccess": "تم إنشاء المنظمة « {name} » وإسناد المستخدم.",
+      "lastOwnerError": "لا يمكن إزالة آخر مالك. عيّن عضواً آخر كمالك أولاً.",
+      "slugExistsError": "توجد منظمة بهذا المعرّف مسبقاً — اختر اسماً آخر."
+    },
     "modal": {
       "profileTitle": "الملف الشخصي للمستخدم",
       "simulationsTitle": "محاكاة المستخدم",

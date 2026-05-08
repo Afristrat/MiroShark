@@ -394,4 +394,41 @@ export function fetchAdminUserSimulations(userId, params = {}) {
   )
 }
 
+// ── US-138 — gestion des memberships utilisateur ↔ organisation ─────────────
+
+/**
+ * POST /api/admin/users/<user_id>/orgs — affecte (ou met à jour) un user
+ * dans une organisation. Idempotent.
+ *
+ * Body : `{ org_id, role: 'member'|'admin'|'owner' }`
+ * Returns: `{ user_id, org_id, role }`
+ */
+export function addUserToOrg(userId, orgId, role = 'member') {
+  return client.post(
+    `/api/admin/users/${encodeURIComponent(userId)}/orgs`,
+    { org_id: orgId, role }
+  )
+}
+
+/**
+ * DELETE /api/admin/users/<user_id>/orgs/<org_id> — retire la membership.
+ * 409 LAST_OWNER si c'est le dernier owner de l'org.
+ */
+export function removeUserFromOrg(userId, orgId) {
+  return client.delete(
+    `/api/admin/users/${encodeURIComponent(userId)}/orgs/${encodeURIComponent(orgId)}`
+  )
+}
+
+/**
+ * POST /api/admin/organizations — crée une nouvelle organisation (super-admin).
+ *
+ * Body : `{ name, slug?, country_code?, sector?, self_service_enabled? }`
+ * Le caller est automatiquement ajouté comme owner.
+ * Returns: l'organisation créée (id, slug, name, ...).
+ */
+export function createOrganization(payload) {
+  return client.post('/api/admin/organizations', payload)
+}
+
 export default client
