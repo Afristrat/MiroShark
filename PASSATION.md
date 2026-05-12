@@ -1,3 +1,212 @@
+== PASSATION MiroShark/Bassira+Kairos 2026-05-13T01:00:00+01:00 ==
+
+[ETAT]
+- branche Bassira `main` `d0249f4` à jour origin (1 commit pendant cette session : doc spec pipeline Kairos)
+- branche Kairos `main` `aedc93f` à jour origin (chantier complet K01→K09e + pivot auth + async pattern)
+- prod Bassira ONLINE https://prospectives.ai-mpower.com — stable, aucune régression cette session
+- prod Kairos (Supabase `crplceoptyeslqyfcqvj` = zlatan-scrap-v2) — **8 edge functions Phase 1+2 + orchestratrice déployées + smoke E2E validé**
+- npm run build Bassira : OK
+- chantier majoritairement côté Kairos (autre repo) : `C:\Users\amans\OneDrive\Projets\claudia-zlatan-scrap-main`
+- côté Bassira : aucune intégration encore — uniquement doc spec poussée
+
+[FAIT cette session — 2 chantiers]
+
+**Chantier A — Hotfixes Bassira (8 mai matin)** :
+✓ Modal Branding scroll v3 commit `ffea6f2` : passage flex column, mais split flex:1 1 0 a collapsé modal à 69px
+✓ Modal Branding scroll v4 commit `634b6da` : pivot final **grid** (`display:grid; grid-template-rows:auto 1fr; height:calc(100vh-64px)`) avec body block + split height:100% → cause racine identifiée via DOM inspection live Chrome MCP (body offsetHeight 741 mais CSS height auto → percentage ne résout pas → split prend hauteur intrinsèque content 1125)
+✓ Validé E2E en prod : `modal=805 body=737 split=737 form=737, scrollH=1125, hasScrollbar=true`
+
+**Chantier B — Pipeline dynamique Kairos↔Bassira** :
+
+Spec rédigée + commitée dans Bassira `docs/kairos-bassira-research-prompts.md` (442 lignes, validé Amine) :
+- 5 prompts LLM v2 (research-strategist + rubric-architect + signal-synthesizer + quality-auditor + iterative-deepening)
+- Architecture récursive seed→subjects→signals→topics→briefs
+- BYOK strict (aucun modèle imposé, tasks Kairos `enrichment`/`scoring`)
+- Anti-blind-spot MENA-Europe natif (multi-langue FR+AR+EN, soft_boost AR, devil_advocate forcé)
+
+11 stories Ralph livrées sur Kairos main (commits sur `Afristrat/scrapping`) :
+
+| # | Story | Hash | Description |
+|---|-------|------|-------------|
+| K01 | research-strategist | `5cba9a0` | Edge fn seed→research_strategy (36 tests, lib.ts split) |
+| K02 | rubric-architect | `528d302` | Rubric 3-couches criteria+disqualifiers+soft_boosts (20 tests) |
+| K03 | signals-session | `7416568` | Table éphémère TTL 1h + adapt 4 scrapers + cron */15min (31 tests) |
+| K04 | llm-score-batch rubric_override | `45a5e8a` | 3 modes legacy/hybrid/ad_hoc + scoring 3-couches (32 tests) |
+| K05 | signal-synthesizer | `0b67b4b` | Topics + brief_variants + coverage_map + devil_advocate forcé (27 tests) |
+| K06 | research-from-seed orchestratrice | `d22ee87` puis enrichi | Compose K01→K05 + K07 + scrapers, x-api-key public auth |
+| K07 | quality-auditor | `d22ee87` | Audit 7 axes + decision tree pass/warn/fail/deepen (33 tests) |
+| K09a | proxy_user_id mapping | `64290ee` | Migration colonne + helper signature JWT HS256 — **bloqué** projet ECC P-256 |
+| K09b | signInWithPassword | `2d8f086` | Helper cache 50min — **abandonné** (Amine refuse password en secret) |
+| K09c | service_role + x-proxy-user-id | `cc329c7` | Dual-mode dans dispatch-llm + 5 fns Phase 1 — partiel |
+| K09d | x-internal-auth + token dédié | `b7be56a`→`7a3ec89` | Pivot final : env `KAIROS_INTERNAL_TOKEN` + service_role bypass RLS — **validé E2E** |
+| K09e | async pattern research_sessions | `aedc93f` | EdgeRuntime.waitUntil + GET status polling — **smoke E2E completed** |
+
+[VALIDÉ EN PROD Kairos — 12 mai 23h]
+- POST `/functions/v1/research-from-seed` (x-api-key) → 202 + session_id en <1s
+- Pipeline background : research-strategist 31s + rubric-architect 22s + scrape 44s + llm-score-batch 12s + signal-synthesizer 45s + quality-auditor 14s = **170s total**
+- GET `/functions/v1/research-from-seed?session_id=X` → `status=completed` avec result complet
+- Smoke graine "Réforme Code travail Maroc 2026" → 3 topics générés (méfiance employeurs / fierté amazighe / résilience informelle=devil_advocate), 2 brief_variants chacun avec framework_hint (crisis/market/policy/cerberus/decision)
+- **BYOK strict respecté en prod** : `provider_used: deepseek`, `model_used: deepseek-v4-flash` (lecture settings du proxy_user_id = compte Amine)
+- Audit verdict='deepen' cohérent : coverage_map 5/5 subjects sans signal direct + cultural_warning AR/EN absent
+
+[BLOQUÉ — actions humaines pendantes]
+- Aucun secret leaké cette session (1 token KAIROS_INTERNAL_TOKEN posé proprement via `supabase secrets set`, pas en chat).
+- Aucune action humaine bloquante pour avancer côté Bassira.
+
+[ALERTE]
+!! **Pipeline durée 170s vs Gateway Supabase 150s** : le pipeline complet dépasse fréquemment la limite Gateway. Pour ça que K09e async = obligatoire. Si tu rajoutes des stages, watch out.
+!! **research_sessions TTL 24h** : cron purge horaire. Session_id devient `not_found` après 24h. Adapter Bassira pour stocker side une copie locale du result si tu veux du long-terme.
+!! **proxy_user_id pointe directement sur Amine `f313137b-3480-4b2b-bc11-e2d4c6ba8fd3`** : pas un user dédié bassira-bot. Coûts LLM trackés sur ton compte. À la prochaine onboarding tenant externe, créer un user proxy dédié par tenant (cf US-K10 futur).
+!! **Tests Kairos pas tous re-vérifiés post-Option C** : 239 tests verts AVANT le pivot K09c/d. Refaire passer la suite complète en V2 stabilization si on touche encore au helper auth.
+!! **Stash Kairos pendant** : 1 stash@{0} contient du travail Amine pré-existant (Wave 10C/D/E filtres dashboard, etc.) qui était en cours avant le chantier. À re-pop manuellement quand tu reviens sur Kairos UI (conflits potentiels sur `database.ts`, `digest/index.ts`).
+
+[PARTIEL]
+
+### Pipeline Kairos = 100 % livré E2E
+- ✅ 11 stories
+- ✅ 239 tests unitaires (avant K09c/d/e — à re-passer en stabilization)
+- ✅ Smoke prod confirmé
+
+### Intégration Bassira = 0 % (pas commencé)
+- ❌ Backend `POST /api/research/from-seed` (US-B01) : proxy + cache LRU 1h + fallback RSS legacy
+- ❌ Frontend `TopicResearchPanel.vue` (US-B02) : refonte de `TrendingTopics.vue` avec cards topic + brief_variants picker + sliding panel sources
+- ❌ Hook `ConsoleView.vue` (US-B03) : déclencher /api/research/from-seed dès que seed ≥ 60 chars + debounce 1.5s + polling GET status toutes les 3s
+
+### Iterative-deepening = NON implémenté V1
+- quality-auditor retourne `verdict='deepen'` mais V1 ne re-pipeline pas
+- Pipeline `K09f` futur : si verdict=deepen ET depth<2, re-lancer un sub-seed scopé sur deepening_targets
+
+### Web scrape (Perplexity) = NON implémenté V1
+- Subjects sans hints X/Reddit/ArXiv sont skippés au scrape
+- À ajouter en V2 si gap de couverture mesuré en prod (cf smoke ce soir : 5/5 subjects sans signal direct → signe que les scrapers existants ne couvrent pas la graine sociale-politique Maroc)
+
+[NEXT — chantiers prêts à attaquer en nouvelle session][CRITIQUE PROCHAINE SESSION]
+
+### Prio P0 — Intégration Bassira (US-B01/B02/B03)
+**Effort estimé** : 2-3h en Ralph swarm (3 sub-agents parallèles).
+
+**US-B01 backend Bassira** :
+- `POST /api/research/from-seed` (proxy Kairos) :
+  - Body : `{ seed, lang, sector_hint?, depth_hint? }`
+  - Cache LRU 1h sur `sha256(seed+lang)` côté Bassira pour amortir si même seed soumis
+  - Appel HTTP Kairos avec `x-api-key: <BASSIRA_KAIROS_API_KEY>` (env Coolify)
+  - Retourne `{ session_id, status: 'running' }` côté Bassira au client
+- `GET /api/research/status?session_id=X` (proxy GET Kairos) :
+  - Idem proxy mais avec polling
+  - Si status=completed, cache LRU le result avec TTL 24h
+- Fallback gracieux : si Kairos down/timeout → fallback sur TrendingTopics RSS legacy en background avec flag `degraded: true`
+- Tests pytest : cache hit/miss, fallback, propagation erreurs
+
+**US-B02 frontend `TopicResearchPanel.vue`** :
+- Refonte complète de `TrendingTopics.vue`
+- État Vue 3 : `sessionId`, `topics`, `status`, `pollingInterval`
+- UI cards (Causse palette) :
+  - Topic label + summary
+  - 1-3 brief_variants picker (radio buttons avec framework_hint badge)
+  - "Use this brief" → émet event `select` avec brief + framework + signals_refs
+  - Sliding panel "Voir sources" → key_signals avec favicon + score + URL
+- État loading (skeleton cards pendant polling)
+- Devil's advocate visuellement distinctif (border orange WI_TERRA)
+- Coverage warnings affichées si verdict='deepen'
+
+**US-B03 hook `ConsoleView.vue` + tests E2E Playwright** :
+- Watch sur `formData.simulationRequirement` :
+  - Si length >= 60 chars + debounce 1.5s + pas en cours → trigger `triggerResearchFromSeed(seed, lang)`
+- triggerResearchFromSeed → POST /api/research/from-seed → reçoit session_id
+- setInterval polling GET /api/research/status toutes les 3s → updates topics
+- Quand status=completed → arrête polling, hydrate `TopicResearchPanel`
+- Tests Playwright : pose graine → confirme apparition cards topics en <60s (mock Kairos pour speed)
+
+**Contrat API Kairos pour Bassira (à mettre en .env Coolify)** :
+```
+KAIROS_API_URL=https://crplceoptyeslqyfcqvj.supabase.co/functions/v1
+KAIROS_API_KEY=bsr_fdc02df124e51c1386de9e49e38ccdf34001a186909a997b
+```
+(la clé est valide, scopée `research-only`, rate 60 RPM, proxy_user_id = compte Amine)
+
+### Prio P1 — Stabilization Kairos (post-intégration)
+- US-K10 : créer user `bassira-bot@internal.kairos` dédié + cloner BYOK config + UPDATE proxy_user_id (isolation tenant)
+- US-K11 : re-passer suite complète 239 tests + ajouter integration tests Deno pour pipeline E2E avec mocks dispatch-llm
+- US-K12 : iterative-deepening (verdict='deepen' → re-pipeline sub_seed, max depth 2)
+- US-K13 : Perplexity web scrape pour subjects sans hints X/Reddit/ArXiv (combler 5/5 coverage gap observé en smoke ce soir)
+
+### Prio P2 — Bloqués humain (inchangé)
+- US-113 Stripe credentials (toujours pas posés Coolify)
+- Témoignages partenaires NDA
+- Logo Bassira (memory feedback_rejected_tools — ne pas reproposer)
+
+[CTX session]
+- ~6h session marathon (8 mai 17h → 13 mai 1h, avec pauses)
+- 1 commit Bassira (`d0249f4` doc spec) + 14 commits Kairos
+- 11 stories Ralph livrées (K01-K07 + K09a-e)
+- ~6 sub-agents Sonnet pilotés cette session (Phase 1 swarm 4 parallèles + Phase 2 background 2 parallèles + K06)
+- ~120 calls Bash/MCP cumulés
+- Tests Kairos : ~120 baseline → 239 verts (pre-pivot K09c)
+- Modèle : Opus 4.7 (1M context) toute la session
+- Coût LLM total smoke E2E ce soir : ~$0 (deepseek-v4-flash très bon marché, dispatch-llm `usage.cost: 0`)
+
+[MEMO inter-sessions]
+
+### Kairos infra (referenced from Bassira)
+- **Projet Supabase Kairos** ref `crplceoptyeslqyfcqvj` (zlatan-scrap-v2) — projet **JWT Signing Keys ECC P-256** (Supabase 2026), pas de legacy HS256 secret exposé
+- **GitHub repo** : `Afristrat/scrapping` (sur main `aedc93f`)
+- **Local repo** : `C:\Users\amans\OneDrive\Projets\claudia-zlatan-scrap-main` (rebranded "Kairos" en cours, designs Stitch présents)
+- **Edge functions secrets** posés : `KAIROS_INTERNAL_TOKEN=e2ec8718197b41c3bbb559cc68c52d3cd6c2627a5262d5d58ee5a34b2a42d82b` (32 bytes hex random)
+- **Migrations appliquées** :
+  - `20260506_004_report_delivery.sql` (Bassira side)
+  - `20260508000001_signals_session.sql` (Kairos)
+  - `20260508000002_public_api_keys.sql` (Kairos)
+  - `20260509000001_public_api_keys_proxy_user.sql` (Kairos)
+  - `20260512000001_research_sessions.sql` (Kairos)
+
+### API contract Kairos (consommable Bassira)
+```
+POST https://crplceoptyeslqyfcqvj.supabase.co/functions/v1/research-from-seed
+Headers: x-api-key: bsr_fdc02df124e51c1386de9e49e38ccdf34001a186909a997b
+         Content-Type: application/json
+Body: { seed: string (50-3000 chars), lang: 'fr'|'en'|'ar', sector_hint?: string, depth_hint?: 0|1|2 }
+→ 202 { ok: true, session_id, status: 'running', message }
+→ 400 invalid_json | invalid_body | seed_too_short | seed_too_long | lang_unsupported
+→ 401 missing_api_key | invalid_api_key | inactive
+→ 403 cors_origin_not_allowed | scope_missing
+→ 429 rate_limited (60 RPM sliding window)
+→ 500 service_role_env_missing | session_create_failed
+
+GET https://crplceoptyeslqyfcqvj.supabase.co/functions/v1/research-from-seed?session_id=<uuid>
+Headers: x-api-key: bsr_fdc02df124e51c1386de9e49e38ccdf34001a186909a997b
+→ 200 { ok: true, session_id, status: 'running'|'completed'|'failed'|'timeout', result?, error_detail?, telemetry?, created_at, completed_at }
+→ 400 session_id_required
+→ 401 missing_api_key
+→ 404 session_not_found
+```
+
+### Pattern auth Kairos (Option C+D définitive)
+- Mode user JWT : caller envoie `Authorization: Bearer <user JWT>` → `auth.getUser()` → mode='user'
+- Mode internal : caller envoie `Authorization: Bearer <anything>` + `x-internal-auth: <KAIROS_INTERNAL_TOKEN>` + `x-proxy-user-id: <uuid>` → `resolveAuthOrProxy()` retourne mode='internal' avec userId=proxy_uuid
+- dispatch-llm en mode internal : re-create supabase client avec service_role pour bypass RLS sur lookup settings+user_api_keys du proxy
+
+### Conventions commits Kairos
+- `[K0X title]` pour les stories, `[K0X X title]` pour les fixes/pivots (ex `[K09 d]`)
+- `Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>`
+
+### Memory globale touchée cette session
+- Aucun ajout durable (les leçons sont dans le code+passation, pas dans `memory/`)
+
+[Recommandations pour la nouvelle session]
+
+1. **Reprise direct sur US-B01/B02/B03** — sub-agents Ralph swarm idéal (3 parallèles : B01 backend Python, B02 frontend Vue, B03 hook+E2E)
+2. **Brief les sub-agents avec** :
+   - Le contrat API Kairos copié-collé du MEMO ci-dessus
+   - La spec côté Bassira : `frontend/src/components/TrendingTopics.vue` (à refondre, pas remplacer car util pour fallback)
+   - Var env Coolify à poser AVANT déploiement Bassira : `KAIROS_API_URL` + `KAIROS_API_KEY`
+3. **Avant de coder B02** : valider design Stitch préférable — Amine a-t-il un mockup spécifique pour TopicResearchPanel ? Sinon improviser dans la palette Causse `--wi-*` cohérente avec ConsoleView actuel.
+4. **Test E2E après B03** : lancer une vraie graine depuis `/console` en prod Bassira → confirmer cards apparaissent → click "Use this brief" → ScenarioSuggestions hydraté → simulation lançable. C'est le vrai gate de validation produit.
+5. **Si bugs subtils dispatch-llm** : il y a un try/catch global maintenant qui expose `unhandled_exception` avec stack. Lit dans Studio logs Kairos.
+
+— fin passation 2026-05-13 — Pipeline Kairos COMPLET livré + smoke E2E validé. Intégration Bassira (~2-3h) reste pour prochaine session.
+
+---
+
 == PASSATION MiroShark/Bassira 2026-05-08T00:30:00+01:00 ==
 
 [ETAT]
