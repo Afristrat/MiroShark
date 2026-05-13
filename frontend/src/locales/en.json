@@ -447,6 +447,50 @@
       "dAgo": "{n}d ago"
     }
   },
+  "research": {
+    "label": "Dynamic Research",
+    "subIdle": "// drop a seed of 60+ characters",
+    "subStarting": "// kicking off the pipeline…",
+    "subRunning": "// analyzing… {elapsed}s",
+    "subCompleted": "{topics} topics · {sources} sources · {verdict}",
+    "subCached": "cached result",
+    "subFailed": "// pipeline failed",
+    "subTimeout": "// timed out — refine the seed and retry",
+    "loading": "Research in progress… the pipeline sweeps sources and tensions.",
+    "verdict": {
+      "pass": "audited",
+      "warn": "audited with caveats",
+      "deepen": "needs deepening",
+      "fail": "needs rework"
+    },
+    "framework": {
+      "crisis": "crisis",
+      "market": "market",
+      "policy": "policy",
+      "cerberus": "cerberus",
+      "decision": "decision"
+    },
+    "devilAdvocate": "devil's advocate",
+    "useThisBrief": "Use this brief",
+    "viewSources": "View sources",
+    "hideSources": "Hide sources",
+    "sourcesTitle": "Key sources",
+    "noSources": "No direct sources for this topic.",
+    "coverageGap": "{n} angle with no direct signal",
+    "coverageGapPlural": "{n} angles with no direct signal",
+    "noBriefSelected": "Pick an angle for this topic.",
+    "errors": {
+      "generic": "Something went wrong.",
+      "notConfigured": "Research service not configured.",
+      "unreachable": "Research service unreachable.",
+      "timeout": "Research service didn't respond in time.",
+      "rateLimited": "Too many requests — try again in a minute.",
+      "sessionNotFound": "Session expired. Resubmit your seed.",
+      "invalidKey": "Access key rejected by the service.",
+      "seedTooShort": "Seed too short (60 characters minimum).",
+      "seedTooLong": "Seed too long (3000 characters maximum)."
+    }
+  },
   "templates": {
     "gallery": {
       "title": "Quick Start Templates",

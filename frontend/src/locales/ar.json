@@ -447,6 +447,50 @@
       "dAgo": "قبل {n} ي"
     }
   },
+  "research": {
+    "label": "بحث ديناميكي",
+    "subIdle": "// أدخل بذرة من ٦٠ حرفًا أو أكثر",
+    "subStarting": "// تشغيل خط الأنابيب…",
+    "subRunning": "// جارٍ التحليل… {elapsed} ث",
+    "subCompleted": "{topics} مواضيع · {sources} مصادر · {verdict}",
+    "subCached": "نتيجة مخبّأة",
+    "subFailed": "// فشل خط الأنابيب",
+    "subTimeout": "// انتهت المهلة — حسّن البذرة وأعد المحاولة",
+    "loading": "البحث جارٍ… يستعرض خط الأنابيب المصادر والتوترات.",
+    "verdict": {
+      "pass": "مدقَّق",
+      "warn": "مدقَّق مع تحفّظات",
+      "deepen": "يحتاج تعميقًا",
+      "fail": "يحتاج إعادة"
+    },
+    "framework": {
+      "crisis": "أزمة",
+      "market": "سوق",
+      "policy": "سياسة",
+      "cerberus": "سيربيروس",
+      "decision": "قرار"
+    },
+    "devilAdvocate": "رأي مُعاكِس",
+    "useThisBrief": "استخدم هذا الموجز",
+    "viewSources": "عرض المصادر",
+    "hideSources": "إخفاء المصادر",
+    "sourcesTitle": "المصادر الأساسية",
+    "noSources": "لا توجد مصادر مباشرة لهذا الموضوع.",
+    "coverageGap": "{n} زاوية بدون إشارة مباشرة",
+    "coverageGapPlural": "{n} زوايا بدون إشارة مباشرة",
+    "noBriefSelected": "اختر زاوية لهذا الموضوع.",
+    "errors": {
+      "generic": "حدث خطأ.",
+      "notConfigured": "خدمة البحث غير مُهيّأة.",
+      "unreachable": "خدمة البحث غير متاحة.",
+      "timeout": "لم تستجب خدمة البحث في الوقت المحدد.",
+      "rateLimited": "طلبات كثيرة جدًا — أعد المحاولة بعد دقيقة.",
+      "sessionNotFound": "انتهت صلاحية الجلسة. أعد إرسال البذرة.",
+      "invalidKey": "رفضت الخدمة مفتاح الوصول.",
+      "seedTooShort": "البذرة قصيرة جدًا (٦٠ حرفًا كحدّ أدنى).",
+      "seedTooLong": "البذرة طويلة جدًا (٣٠٠٠ حرف كحدّ أقصى)."
+    }
+  },
   "templates": {
     "gallery": {
       "title": "قوالب البدء السريع",

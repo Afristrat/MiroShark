@@ -447,6 +447,50 @@
       "dAgo": "il y a {n} j"
     }
   },
+  "research": {
+    "label": "Recherche dynamique",
+    "subIdle": "// posez une graine de 60 caractères ou plus",
+    "subStarting": "// initialisation du pipeline…",
+    "subRunning": "// analyse en cours… {elapsed}s",
+    "subCompleted": "{topics} topics · {sources} sources · {verdict}",
+    "subCached": "résultat en cache",
+    "subFailed": "// pipeline échoué",
+    "subTimeout": "// délai dépassé — affinez la graine et réessayez",
+    "loading": "Recherche en cours… le pipeline parcourt sources et tensions.",
+    "verdict": {
+      "pass": "auditée",
+      "warn": "auditée avec réserves",
+      "deepen": "à approfondir",
+      "fail": "à reprendre"
+    },
+    "framework": {
+      "crisis": "crise",
+      "market": "marché",
+      "policy": "politique",
+      "cerberus": "cerberus",
+      "decision": "décision"
+    },
+    "devilAdvocate": "contre-courant",
+    "useThisBrief": "Utiliser ce brief",
+    "viewSources": "Voir les sources",
+    "hideSources": "Masquer les sources",
+    "sourcesTitle": "Sources clés",
+    "noSources": "Aucune source directe pour ce topic.",
+    "coverageGap": "{n} angle sans signal direct",
+    "coverageGapPlural": "{n} angles sans signal direct",
+    "noBriefSelected": "Choisissez un angle pour ce topic.",
+    "errors": {
+      "generic": "Une erreur est survenue.",
+      "notConfigured": "Service de recherche non configuré.",
+      "unreachable": "Service de recherche indisponible.",
+      "timeout": "Le service de recherche n’a pas répondu à temps.",
+      "rateLimited": "Trop de requêtes — réessayez dans une minute.",
+      "sessionNotFound": "Session expirée. Relancez avec votre graine.",
+      "invalidKey": "Clé d’accès rejetée par le service.",
+      "seedTooShort": "Graine trop courte (60 caractères minimum).",
+      "seedTooLong": "Graine trop longue (3000 caractères maximum)."
+    }
+  },
   "templates": {
     "gallery": {
       "title": "Modèles à démarrage rapide",
