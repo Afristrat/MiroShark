@@ -261,9 +261,20 @@
                   :placeholder="$t('home.console.promptPlaceholder')"
                   rows="6"
                   :disabled="loading"
+                  data-testid="seed-textarea"
                 ></textarea>
                 <div class="model-badge">{{ $t('home.console.engine') }}</div>
               </div>
+              <TopicResearchPanel
+                :session-id="researchSessionId"
+                :status="researchStatus"
+                :result="researchResult"
+                :error-code="researchErrorCode"
+                :elapsed-seconds="researchElapsed"
+                :cached="researchCached"
+                data-testid="research-panel"
+                @select="handleResearchSelect"
+              />
             </div>
 
             <div class="console-section btn-section">
@@ -294,7 +305,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import HistoryDatabase from '../components/HistoryDatabase.vue'
@@ -302,10 +313,12 @@ import TemplateGallery from '../components/TemplateGallery.vue'
 import SettingsPanel from '../components/SettingsPanel.vue'
 import ScenarioSuggestions from '../components/ScenarioSuggestions.vue'
 import TrendingTopics from '../components/TrendingTopics.vue'
+import TopicResearchPanel from '../components/TopicResearchPanel.vue'
 import { fetchUrl } from '../api/graph'
 import { askMode, enrichAsk } from '../api/simulation'
+import { postResearchFromSeed, getResearchStatus } from '../api/research'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const router = useRouter()
 const route = useRoute()
 
@@ -316,6 +329,30 @@ const previewDoc = ref(null)
 const formData = ref({
   simulationRequirement: ''
 })
+
+// ─── US-B03 — Recherche dynamique seed → topics ────────────────────────────
+// Constantes du watcher : trigger seulement si seed assez longue + debounce.
+const RESEARCH_SEED_MIN_CHARS = 60
+const RESEARCH_DEBOUNCE_MS = 1500
+const RESEARCH_POLL_INTERVAL_MS = 3000
+// Max 6 min de polling (le pipeline Kairos prend ~170 s, +marge cold start).
+const RESEARCH_POLL_TIMEOUT_MS = 6 * 60 * 1000
+
+const researchSessionId = ref(null)
+const researchStatus = ref('idle') // idle|starting|running|completed|failed|timeout|error
+const researchResult = ref(null)
+const researchErrorCode = ref(null)
+const researchCached = ref(false)
+const researchElapsed = ref(0)
+// Dernier seed qui a déclenché un POST, pour éviter de re-trigger sur la
+// même chaîne quand l'utilisateur navigue dans le textarea sans modifier.
+const lastTriggeredSeed = ref('')
+
+let researchDebounceTimer = null
+let researchPollTimer = null
+let researchElapsedTimer = null
+let researchStartedAt = 0
+let researchPollDeadline = 0
 
 const files = ref([])
 const urlInput = ref('')
@@ -548,6 +585,167 @@ const askDocs = computed(() =>
 const fetchedDocs = computed(() =>
   urlDocs.value.filter(d => !(typeof d.url === 'string' && d.url.startsWith('bassira://ask/')))
 )
+
+// ─── US-B03 — Recherche dynamique : watcher + polling ──────────────────────
+
+const _stopResearchTimers = () => {
+  if (researchPollTimer) {
+    clearTimeout(researchPollTimer)
+    researchPollTimer = null
+  }
+  if (researchElapsedTimer) {
+    clearInterval(researchElapsedTimer)
+    researchElapsedTimer = null
+  }
+}
+
+const _isPipelineActive = () =>
+  researchStatus.value === 'starting' || researchStatus.value === 'running'
+
+const _pickLang = () => {
+  const loc = String(locale.value || 'fr').toLowerCase()
+  if (loc.startsWith('ar')) return 'ar'
+  if (loc.startsWith('en')) return 'en'
+  return 'fr'
+}
+
+const _pollResearch = async () => {
+  if (!researchSessionId.value) return
+  if (Date.now() > researchPollDeadline) {
+    researchStatus.value = 'timeout'
+    _stopResearchTimers()
+    return
+  }
+  try {
+    const res = await getResearchStatus(researchSessionId.value)
+    if (!res || res.success === false) {
+      researchStatus.value = 'error'
+      researchErrorCode.value = res?.error_code || 'UNKNOWN'
+      _stopResearchTimers()
+      return
+    }
+    const d = res.data || {}
+    const next = String(d.status || '').toLowerCase()
+    researchCached.value = !!d.cached
+    if (next === 'completed') {
+      researchStatus.value = 'completed'
+      researchResult.value = d.result || null
+      _stopResearchTimers()
+      return
+    }
+    if (next === 'failed' || next === 'timeout') {
+      researchStatus.value = next
+      researchErrorCode.value = (d.error_detail && d.error_detail.code) || null
+      _stopResearchTimers()
+      return
+    }
+    // Toujours running — réarmer le timer pour le prochain tick.
+    researchPollTimer = setTimeout(_pollResearch, RESEARCH_POLL_INTERVAL_MS)
+  } catch (err) {
+    researchStatus.value = 'error'
+    researchErrorCode.value = err?.response?.data?.error_code || 'UNKNOWN'
+    _stopResearchTimers()
+  }
+}
+
+const _triggerResearch = async (seed) => {
+  // Idempotence : si même seed que la dernière fois, ne rien faire.
+  if (lastTriggeredSeed.value === seed) return
+  lastTriggeredSeed.value = seed
+  // Reset complet de l'état avant nouveau lancement.
+  _stopResearchTimers()
+  researchSessionId.value = null
+  researchResult.value = null
+  researchErrorCode.value = null
+  researchCached.value = false
+  researchElapsed.value = 0
+  researchStatus.value = 'starting'
+  researchStartedAt = Date.now()
+  researchPollDeadline = researchStartedAt + RESEARCH_POLL_TIMEOUT_MS
+  researchElapsedTimer = setInterval(() => {
+    researchElapsed.value = Math.floor((Date.now() - researchStartedAt) / 1000)
+  }, 1000)
+  try {
+    const res = await postResearchFromSeed({ seed, lang: _pickLang() })
+    if (!res || res.success === false) {
+      researchStatus.value = 'error'
+      researchErrorCode.value = res?.error_code || 'UNKNOWN'
+      _stopResearchTimers()
+      return
+    }
+    const d = res.data || {}
+    researchSessionId.value = d.session_id || null
+    researchCached.value = !!d.cached
+    if (!researchSessionId.value) {
+      researchStatus.value = 'error'
+      researchErrorCode.value = 'NO_SESSION_ID'
+      _stopResearchTimers()
+      return
+    }
+    researchStatus.value = 'running'
+    // Premier poll après 1s plutôt que 3 (cache hit Bassira → completed
+    // déjà disponible). Les ticks suivants restent à 3s.
+    researchPollTimer = setTimeout(_pollResearch, 1000)
+  } catch (err) {
+    researchStatus.value = 'error'
+    researchErrorCode.value = err?.response?.data?.error_code || 'UNKNOWN'
+    _stopResearchTimers()
+  }
+}
+
+watch(
+  () => formData.value.simulationRequirement,
+  (next) => {
+    if (researchDebounceTimer) {
+      clearTimeout(researchDebounceTimer)
+      researchDebounceTimer = null
+    }
+    const seed = (next || '').trim()
+    // Tant qu'un pipeline est actif, on ne (re)déclenche pas — laisse-le
+    // finir. L'utilisateur peut continuer à éditer le texte sans casser
+    // le polling courant.
+    if (_isPipelineActive()) return
+    if (seed.length < RESEARCH_SEED_MIN_CHARS) {
+      // Reset state si l'user a effacé la graine ; ça masque le panel
+      // (shouldRender redevient false) sans interrompre un completed
+      // déjà affiché — on garde le dernier résultat tant que la graine
+      // était suffisante.
+      if (researchStatus.value !== 'idle' && lastTriggeredSeed.value !== seed) {
+        // On ne purge pas le result du précédent succès — il reste
+        // utile à l'utilisateur même s'il édite légèrement sa seed.
+      }
+      return
+    }
+    researchDebounceTimer = setTimeout(() => {
+      _triggerResearch(seed)
+    }, RESEARCH_DEBOUNCE_MS)
+  },
+)
+
+const handleResearchSelect = ({ topic_label, brief_variant, framework_hint }) => {
+  if (!brief_variant) return
+  const angleLabel = brief_variant.label || brief_variant.title || ''
+  const briefBody = brief_variant.summary || brief_variant.body || ''
+  const frameworkLine = framework_hint ? ` [${framework_hint}]` : ''
+  const topicLine = topic_label ? `# ${topic_label}${frameworkLine}\n\n` : ''
+  const compiled = `${topicLine}${angleLabel ? angleLabel + '\n\n' : ''}${briefBody}`
+    .trim()
+  if (compiled) {
+    formData.value.simulationRequirement = compiled
+    // Aligne lastTriggeredSeed sur la nouvelle valeur pour éviter
+    // qu'elle redéclenche un pipeline (la sélection est elle-même
+    // dérivée du pipeline qu'on vient d'exécuter).
+    lastTriggeredSeed.value = compiled.trim()
+  }
+}
+
+onBeforeUnmount(() => {
+  if (researchDebounceTimer) {
+    clearTimeout(researchDebounceTimer)
+    researchDebounceTimer = null
+  }
+  _stopResearchTimers()
+})
 
 const startSimulation = () => {
   if (!canSubmit.value || loading.value) return
