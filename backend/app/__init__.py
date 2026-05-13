@@ -184,6 +184,12 @@ def create_app(config_class=Config):
     #   GET /api/admin/users/<id>/simulations   — simulations d'un user
     from .api.admin_users import admin_users_bp
     app.register_blueprint(admin_users_bp, url_prefix='/api/admin/users')
+
+    # research_bp — proxy Kairos recherche dynamique seed → topics (US-B01).
+    #   POST /api/research/from-seed    — soumet une graine
+    #   GET  /api/research/status       — polling status + result
+    from .api.research import research_bp
+    app.register_blueprint(research_bp, url_prefix='/api/research')
     
     # Health check
     @app.route('/health')

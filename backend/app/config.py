@@ -220,6 +220,25 @@ class Config:
     # relative ``share_path`` is included and the consumer must build the
     # absolute URL themselves.
     PUBLIC_BASE_URL = os.environ.get('PUBLIC_BASE_URL', '')
+
+    # US-B01 — Kairos research pipeline (graine → topics + brief_variants).
+    # Bassira proxifie POST/GET /api/research/* vers ces endpoints Kairos.
+    # Quand ``KAIROS_API_URL`` est vide, l'endpoint Bassira répond 503
+    # ``KAIROS_NOT_CONFIGURED`` plutôt que de masquer le manque de config.
+    KAIROS_API_URL = os.environ.get('KAIROS_API_URL', '').rstrip('/')
+    KAIROS_API_KEY = os.environ.get('KAIROS_API_KEY', '')
+    # Timeout (s) du POST /research-from-seed côté Kairos : la réponse 202
+    # est rapide (<1s), mais on tolère 10 s pour absorber un cold start.
+    KAIROS_POST_TIMEOUT_S = float(os.environ.get('KAIROS_POST_TIMEOUT_S', '10'))
+    # Timeout (s) du GET /research-from-seed?session_id=… : aussi rapide
+    # (lecture row Supabase), 5 s suffisent largement.
+    KAIROS_GET_TIMEOUT_S = float(os.environ.get('KAIROS_GET_TIMEOUT_S', '5'))
+
+    # Cache backend pour les réponses research (US-B01). Quand
+    # ``REDIS_URL`` est défini, on utilise Redis pour partager le cache
+    # entre workers Gunicorn. Sinon, fallback in-process (dict TTL) qui
+    # marche encore correctement avec un seul worker.
+    REDIS_URL = os.environ.get('REDIS_URL', '')
     
     @classmethod
     def validate(cls):
