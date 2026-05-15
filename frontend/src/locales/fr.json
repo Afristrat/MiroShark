@@ -182,6 +182,15 @@
       "engine": "Moteur : Bassira-V1.0",
       "launch": "Lancer la simulation",
       "initializing": "Initialisation…",
+      "research": {
+        "toggleLabel": "Activer la recherche dynamique Kairos",
+        "toggleHint": "Génère automatiquement des briefs prospectifs à partir des graines posées en 01 (fichiers, URLs, recherche).",
+        "briefDocTitle": "Brief composé Kairos — {topic}"
+      },
+      "disabledReason": {
+        "noSeeds": "Ajoutez au moins une graine en 01 (fichier, URL, recherche ou brief Kairos) pour pouvoir lancer.",
+        "noPrompt": "Rédigez votre invite de simulation en 02 pour décrire ce que vous voulez simuler."
+      },
       "pdfScanTitle": "PDF non lisible",
       "pdfScanHint": "Ce fichier semble être un scan (image sans texte). Le graphe risque d'être vide. Utilisez « Posez simplement » pour décrire son contenu ou importez une version avec couche texte.",
       "scopeProfile": {

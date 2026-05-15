@@ -182,6 +182,15 @@
       "engine": "Engine: Bassira-V1.0",
       "launch": "Launch Simulation",
       "initializing": "Initializing...",
+      "research": {
+        "toggleLabel": "Enable Kairos dynamic research",
+        "toggleHint": "Automatically generates prospective briefs from the seeds you provide in 01 (files, URLs, ask).",
+        "briefDocTitle": "Composed Kairos brief — {topic}"
+      },
+      "disabledReason": {
+        "noSeeds": "Add at least one seed in 01 (file, URL, ask, or Kairos brief) before launching.",
+        "noPrompt": "Write your simulation prompt in 02 to describe what you want to simulate."
+      },
       "pdfScanTitle": "Unreadable PDF",
       "pdfScanHint": "This file appears to be a scanned image without text. The graph may be empty. Use 'Just Ask' to describe its content or import a version with a text layer.",
       "scopeProfile": {

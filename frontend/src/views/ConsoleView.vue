@@ -291,7 +291,25 @@
                 ></textarea>
                 <div class="model-badge">{{ $t('home.console.engine') }}</div>
               </div>
+
+              <!-- US-B04.1 — Toggle Kairos + panel research consomme 01 -->
+              <label class="kairos-toggle">
+                <input
+                  v-model="researchEnabled"
+                  type="checkbox"
+                  class="kairos-toggle-input"
+                  data-testid="kairos-toggle"
+                />
+                <span class="kairos-toggle-text">
+                  <strong>{{ $t('home.console.research.toggleLabel') }}</strong>
+                  <span class="kairos-toggle-hint">
+                    {{ $t('home.console.research.toggleHint') }}
+                  </span>
+                </span>
+              </label>
+
               <TopicResearchPanel
+                v-if="researchEnabled"
                 :session-id="researchSessionId"
                 :status="researchStatus"
                 :result="researchResult"
@@ -313,6 +331,13 @@
                 <span v-else>{{ $t('home.console.initializing') }}</span>
                 <span class="btn-arrow">→</span>
               </button>
+              <p
+                v-if="canSubmitReason"
+                class="start-engine-reason"
+                data-testid="start-disabled-reason"
+              >
+                ⓘ {{ canSubmitReason }}
+              </p>
             </div>
           </div>
         </div>
@@ -408,6 +433,24 @@ const canSubmit = computed(() => {
   return formData.value.simulationRequirement.trim() !== '' &&
     (files.value.length > 0 || urlDocs.value.length > 0)
 })
+
+// US-B04.1 — message explicatif quand canSubmit est false. Permet d'éviter
+// que l'utilisateur clique « Lancer » dans le vide sans savoir pourquoi
+// le bouton est grisé.
+const canSubmitReason = computed(() => {
+  if (canSubmit.value || loading.value) return null
+  const hasMatiere = files.value.length > 0 || urlDocs.value.length > 0
+  if (!hasMatiere) return t('home.console.disabledReason.noSeeds')
+  if (!formData.value.simulationRequirement.trim()) {
+    return t('home.console.disabledReason.noPrompt')
+  }
+  return null
+})
+
+// US-B04.1 — toggle pour activer/désactiver la consommation Kairos.
+// Par défaut activé. Si désactivé : aucun appel POST/GET vers
+// /api/research/* — le panel reste idle.
+const researchEnabled = ref(true)
 
 const triggerFileInput = () => {
   if (!loading.value) {
@@ -752,47 +795,61 @@ const _triggerResearch = async (seed) => {
   }
 }
 
+// US-B04.1 — la recherche Kairos consomme la matière de 01 (files +
+// URLs + ask docs) plutôt que le prompt 02. Sémantiquement, la graine
+// = ce que l'utilisateur a déjà déposé, pas son intention de simulation.
+// On watch directement scenarioSuggestPreview qui agrège déjà ces 3 sources.
 watch(
-  () => formData.value.simulationRequirement,
-  (next) => {
+  () => [scenarioSuggestPreview.value, researchEnabled.value],
+  ([seedRaw, enabled]) => {
     if (researchDebounceTimer) {
       clearTimeout(researchDebounceTimer)
       researchDebounceTimer = null
     }
-    const seed = (next || '').trim()
+    // Toggle off → on ne déclenche jamais. On laisse un éventuel
+    // résultat précédent visible (le user décide de le purger en
+    // toggle on/off).
+    if (!enabled) return
+    const seed = (seedRaw || '').trim()
     // Tant qu'un pipeline est actif, on ne (re)déclenche pas — laisse-le
-    // finir. L'utilisateur peut continuer à éditer le texte sans casser
+    // finir. L'utilisateur peut continuer à enrichir 01 sans casser
     // le polling courant.
     if (_isPipelineActive()) return
-    if (seed.length < RESEARCH_SEED_MIN_CHARS) {
-      // Reset state si l'user a effacé la graine ; ça masque le panel
-      // (shouldRender redevient false) sans interrompre un completed
-      // déjà affiché — on garde le dernier résultat tant que la graine
-      // était suffisante.
-      if (researchStatus.value !== 'idle' && lastTriggeredSeed.value !== seed) {
-        // On ne purge pas le result du précédent succès — il reste
-        // utile à l'utilisateur même s'il édite légèrement sa seed.
-      }
-      return
-    }
+    if (seed.length < RESEARCH_SEED_MIN_CHARS) return
     researchDebounceTimer = setTimeout(() => {
       _triggerResearch(seed)
     }, RESEARCH_DEBOUNCE_MS)
   },
+  { immediate: true },
 )
 
 /**
- * US-B04 — handler du nouveau workflow multi-select.
- * Le composant TopicResearchPanel a déjà composé le prompt (potentiellement
- * édité par l'user dans sa textarea) et l'envoie clé en main. On le pose
- * dans la console + on aligne lastTriggeredSeed pour éviter qu'il
- * redéclenche un pipeline sur la même valeur.
+ * US-B04.1 — le brief composé est de la MATIÈRE (= 01 / Graines de
+ * réalité), pas le prompt 02. On crée donc un urlDoc synthétique avec
+ * url `bassira://research/...` (idem pattern Ask mode), qui apparaît
+ * dans la liste 01 et est inclus dans le payload de simulation.
+ *
+ * Le textarea 02 reste à l'utilisateur de formuler — typiquement
+ * « Simule la réaction des acteurs concernés au scénario ci-dessus ».
  */
-const handleResearchCompose = ({ prompt }) => {
+const handleResearchCompose = ({ prompt, selections }) => {
   const compiled = (prompt || '').trim()
   if (!compiled) return
-  formData.value.simulationRequirement = compiled
-  lastTriggeredSeed.value = compiled
+  const firstSel = Array.isArray(selections) && selections.length > 0 ? selections[0] : null
+  const labelHead = firstSel?.topic_label ? firstSel.topic_label.slice(0, 60) : 'composé'
+  const synthUrl = `bassira://research/${Date.now().toString(36)}`
+  const payload = {
+    title: t('home.console.research.briefDocTitle', { topic: labelHead }),
+    url: synthUrl,
+    text: compiled,
+    char_count: compiled.length,
+  }
+  urlDocs.value.push(payload)
+  // L'aperçu 01 incluant la nouvelle entrée va re-trigger
+  // scenarioSuggestPreview → mais comme on a aligné lastTriggeredSeed
+  // sur la NOUVELLE matière, le watcher ne refait pas le pipeline pour
+  // rien (idempotence).
+  lastTriggeredSeed.value = (scenarioSuggestPreview.value || '').trim()
 }
 
 onBeforeUnmount(() => {
@@ -1195,6 +1252,53 @@ const startSimulation = () => {
   cursor: not-allowed;
   border-color: var(--ms-border);
   box-shadow: none;
+}
+.start-engine-reason {
+  margin: var(--ms-space-2) 0 0 0;
+  font-size: 12px;
+  color: var(--wi-primary-container);
+  text-align: center;
+  font-style: italic;
+}
+
+/* US-B04.1 — Toggle Kairos juste après la textarea 02. */
+.kairos-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px var(--ms-space-3);
+  margin-top: var(--ms-space-3);
+  background: var(--wi-surface-container-low);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-md, 8px);
+  cursor: pointer;
+  transition: border-color var(--ms-transition-fast);
+}
+.kairos-toggle:hover {
+  border-color: var(--wi-primary-container);
+}
+.kairos-toggle-input {
+  margin-top: 3px;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--wi-primary-container);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.kairos-toggle-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.kairos-toggle-text strong {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--wi-on-surface);
+}
+.kairos-toggle-hint {
+  font-size: 12px;
+  color: var(--wi-on-surface-variant);
+  font-style: italic;
 }
 
 .url-section { padding-top: 0; }
