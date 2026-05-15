@@ -487,6 +487,19 @@
     "coverageGap": "{n} angle sans signal direct",
     "coverageGapPlural": "{n} angles sans signal direct",
     "noBriefSelected": "Choisissez un angle pour ce topic.",
+    "compose": {
+      "instructions": "Cochez les briefs pertinents — combinez plusieurs angles cross-topics pour composer le prompt final.",
+      "variantsAriaLabel": "Variantes de brief pour {topic}",
+      "rationaleLabel": "Pourquoi cet angle",
+      "charsAbbr": "car.",
+      "sourcesCount": "{n} sources",
+      "heading": "Prompt composé",
+      "selectedCount": "{count} brief sélectionné | {count} briefs sélectionnés",
+      "empty": "Sélectionnez un ou plusieurs briefs ci-dessus pour assembler votre prompt.",
+      "textareaAriaLabel": "Prompt composé éditable",
+      "reset": "Régénérer auto",
+      "insert": "Insérer dans la console"
+    },
     "errors": {
       "generic": "Une erreur est survenue.",
       "notConfigured": "Service de recherche non configuré.",

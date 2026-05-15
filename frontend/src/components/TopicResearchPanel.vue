@@ -73,73 +73,108 @@
       </ul>
     </template>
 
-    <!-- État completed : cards + verdict + coverage -->
+    <!-- État completed : topics + multi-select briefs + composition zone -->
     <template v-else-if="isCompleted && topics.length > 0">
+      <p class="trp-instructions">
+        {{ $t('research.compose.instructions') }}
+      </p>
+
       <div class="trp-grid">
         <article
           v-for="(topic, ti) in topics"
           :key="`${topic.label}-${ti}`"
           class="trp-card"
-          :class="{ 'trp-card--devil': topic.is_devil_advocate }"
+          :class="{ 'trp-card--devil': isDevilTopic(topic) }"
         >
           <header class="trp-card-head">
             <h4 class="trp-card-title">{{ topic.label }}</h4>
             <span
-              v-if="topic.is_devil_advocate"
+              v-if="isDevilTopic(topic)"
               class="trp-devil-badge"
             >{{ $t('research.devilAdvocate') }}</span>
           </header>
 
           <p v-if="topic.summary" class="trp-card-summary">{{ topic.summary }}</p>
 
-          <!-- Variantes de brief : radio pills -->
-          <div
+          <!-- Variantes de brief : multi-select checkboxes + texte intégral -->
+          <ul
             v-if="hasBriefVariants(topic)"
-            class="trp-variants"
-            role="radiogroup"
-            :aria-label="topic.label"
+            class="trp-variants-list"
+            :aria-label="$t('research.compose.variantsAriaLabel', { topic: topic.label })"
           >
-            <button
+            <li
               v-for="(variant, vi) in topic.brief_variants"
               :key="`${ti}-${vi}`"
-              type="button"
-              class="trp-variant"
-              :class="{ 'trp-variant--active': isVariantActive(ti, vi) }"
-              :aria-checked="isVariantActive(ti, vi)"
-              role="radio"
-              @click="selectVariant(ti, vi)"
+              class="trp-variant-item"
+              :class="{ 'trp-variant-item--selected': isVariantSelected(ti, vi) }"
             >
-              <span class="trp-variant-label">{{ briefVariantTitle(variant) }}</span>
-              <span
-                v-if="variant.framework_hint"
-                class="trp-variant-framework"
-              >{{ frameworkLabel(variant.framework_hint) }}</span>
-            </button>
-          </div>
+              <label class="trp-variant-row">
+                <input
+                  type="checkbox"
+                  class="trp-variant-checkbox"
+                  :checked="isVariantSelected(ti, vi)"
+                  @change="toggleVariant(ti, vi)"
+                />
+                <div class="trp-variant-body">
+                  <div class="trp-variant-header">
+                    <span
+                      v-if="variant.framework_hint"
+                      class="trp-variant-framework"
+                    >{{ frameworkLabel(variant.framework_hint) }}</span>
+                    <span class="trp-variant-charcount">
+                      {{ variantBriefText(variant).length }} {{ $t('research.compose.charsAbbr') }}
+                    </span>
+                  </div>
+                  <p class="trp-variant-brief">{{ variantBriefText(variant) }}</p>
+                  <p
+                    v-if="variant.rationale"
+                    class="trp-variant-rationale"
+                  >
+                    <em>{{ $t('research.compose.rationaleLabel') }} : {{ variant.rationale }}</em>
+                  </p>
+                </div>
+              </label>
+            </li>
+          </ul>
 
-          <footer class="trp-card-foot">
-            <button
-              v-if="activeVariantFor(ti)"
-              type="button"
-              class="trp-use-btn"
-              @click="emitSelection(ti)"
-            >
-              {{ $t('research.useThisBrief') }}
-              <span class="trp-arrow">→</span>
-            </button>
-            <span v-else class="trp-card-hint">
-              {{ $t('research.noBriefSelected') }}
-            </span>
-            <button
-              v-if="hasSources(topic)"
-              type="button"
-              class="trp-sources-btn"
-              :aria-expanded="openSourcesIndex === ti"
-              @click="toggleSources(ti)"
-            >
-              {{ openSourcesIndex === ti ? $t('research.hideSources') : $t('research.viewSources') }}
-            </button>
-          </footer>
+          <!-- Sources inline (details/summary native HTML) -->
+          <details v-if="hasSources(topic)" class="trp-sources-inline">
+            <summary>
+              📎 {{ $t('research.compose.sourcesCount', { n: topic.key_signals.length }) }}
+            </summary>
+            <ul class="trp-sources-list">
+              <li
+                v-for="(src, si) in topic.key_signals"
+                :key="`src-${ti}-${si}`"
+                class="trp-source-row"
+              >
+                <img
+                  v-if="src.url"
+                  :src="faviconUrl(src.url)"
+                  :alt="''"
+                  class="trp-source-favicon"
+                  loading="lazy"
+                  width="16"
+                  height="16"
+                  @error="onFaviconError"
+                />
+                <span class="trp-source-name">{{ src.source_name || src.name || '—' }}</span>
+                <span
+                  v-if="typeof src.score === 'number'"
+                  class="trp-source-score"
+                  :title="src.score.toFixed(2)"
+                >{{ src.score.toFixed(2) }}</span>
+                <a
+                  v-if="src.url"
+                  :href="src.url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="trp-source-url"
+                  :title="src.url"
+                >{{ truncateUrl(src.url) }} ↗</a>
+              </li>
+            </ul>
+          </details>
         </article>
       </div>
 
@@ -154,60 +189,74 @@
           {{ coverageGapsLabel }}
         </span>
       </div>
-    </template>
 
-    <!-- Sliding panel sources -->
-    <transition name="trp-slide">
-      <aside
-        v-if="openSourcesIndex !== null && activeSources.length > 0"
-        class="trp-sources-panel"
-      >
-        <header class="trp-sources-head">
-          <h5>{{ $t('research.sourcesTitle') }}</h5>
-          <button
-            type="button"
-            class="trp-sources-close"
-            :aria-label="$t('research.hideSources')"
-            @click="openSourcesIndex = null"
-          >×</button>
+      <!-- Composition zone : preview éditable + insert -->
+      <section class="trp-compose">
+        <header class="trp-compose-head">
+          <h5 class="trp-compose-title">
+            🧪 {{ $t('research.compose.heading') }}
+          </h5>
+          <span class="trp-compose-count">
+            {{ $t('research.compose.selectedCount', { count: selectedCount }) }}
+          </span>
         </header>
-        <ul class="trp-sources-list">
-          <li
-            v-for="(src, si) in activeSources"
-            :key="`src-${openSourcesIndex}-${si}`"
-            class="trp-source-row"
-          >
-            <span class="trp-source-name">{{ src.source_name || src.name || src.url }}</span>
-            <span
-              v-if="typeof src.score === 'number'"
-              class="trp-source-score"
-              :title="src.score.toFixed(2)"
-            >{{ src.score.toFixed(2) }}</span>
-            <a
-              v-if="src.url"
-              :href="src.url"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="trp-source-url"
-            >{{ truncateUrl(src.url) }}</a>
-          </li>
-        </ul>
-      </aside>
-    </transition>
+
+        <p v-if="selectedCount === 0" class="trp-compose-empty">
+          {{ $t('research.compose.empty') }}
+        </p>
+
+        <template v-else>
+          <textarea
+            v-model="composedPromptEdited"
+            class="trp-compose-textarea"
+            :rows="composedTextareaRows"
+            :aria-label="$t('research.compose.textareaAriaLabel')"
+            data-testid="composed-prompt"
+          ></textarea>
+          <div class="trp-compose-actions">
+            <button
+              type="button"
+              class="trp-compose-reset"
+              :disabled="composedPromptEdited === composedPromptAuto"
+              @click="resetComposedToAuto"
+            >
+              {{ $t('research.compose.reset') }}
+            </button>
+            <button
+              type="button"
+              class="trp-compose-insert"
+              :disabled="!composedPromptEdited.trim()"
+              data-testid="compose-insert-btn"
+              @click="insertComposed"
+            >
+              {{ $t('research.compose.insert') }} →
+            </button>
+          </div>
+        </template>
+      </section>
+    </template>
   </div>
 </template>
 
 <script setup>
 /**
- * US-B02 — TopicResearchPanel.
+ * US-B04 — TopicResearchPanel refondu (multi-select cross-topics).
  *
- * Composant cards topics + brief_variants picker + sliding panel sources,
- * piloté par ConsoleView (US-B03). N'effectue PAS le polling lui-même :
- * il consomme `status` / `result` reçus en props et émet `select` quand
- * l'utilisateur choisit un brief à instancier en simulation.
+ * Workflow type NotebookLM :
+ *   1. Le pipeline Kairos retourne N topics, chacun avec 1-3
+ *      brief_variants.
+ *   2. L'utilisateur visualise le TEXTE INTÉGRAL de chaque brief
+ *      (200-300 chars) + sa rationale.
+ *   3. Il coche les variants qu'il trouve pertinents (multi-select
+ *      cross-topics — pas de limite « 1 par topic »).
+ *   4. Une zone de composition assemble automatiquement les briefs
+ *      sélectionnés en un prompt éditable.
+ *   5. Bouton « Insérer dans la console » → émet `compose` event au
+ *      parent (ConsoleView) qui remplace formData.simulationRequirement.
  *
  * Émet :
- *   - `select` : { topic, variant, framework_hint, signals_refs }
+ *   - `compose` : { prompt, selections: [{topic, variant, framework_hint,
+ *     signals_refs}] }
  */
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -216,26 +265,20 @@ import { researchErrorKeyForCode } from '../api/research'
 const { t } = useI18n()
 
 const props = defineProps({
-  /** UUID Kairos — null tant que pas de POST envoyé. */
   sessionId: { type: String, default: null },
-  /** Cycle d'état piloté par le parent. */
   status: {
     type: String,
     default: 'idle',
     validator: (v) =>
       ['idle', 'starting', 'running', 'completed', 'failed', 'timeout', 'error'].includes(v),
   },
-  /** Payload Kairos complet quand status=completed. */
   result: { type: Object, default: null },
-  /** Code d'erreur backend (KAIROS_TIMEOUT, …) à mapper en message. */
   errorCode: { type: String, default: null },
-  /** Secondes écoulées depuis le lancement (affichage status pendant running). */
   elapsedSeconds: { type: Number, default: 0 },
-  /** True si la réponse vient du cache 1h / 24h. */
   cached: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['select'])
+const emit = defineEmits(['compose'])
 
 // ─── Computed status ────────────────────────────────────────────────────────
 
@@ -243,7 +286,6 @@ const isRunning = computed(() => ['starting', 'running'].includes(props.status))
 const isLoading = computed(() => isRunning.value)
 const isCompleted = computed(() => props.status === 'completed')
 const isError = computed(() => ['failed', 'timeout', 'error'].includes(props.status))
-
 const shouldRender = computed(() => props.status !== 'idle')
 
 // ─── Topics + result extraction ─────────────────────────────────────────────
@@ -254,8 +296,8 @@ const topics = computed(() => {
 })
 
 const totalSources = computed(() => {
-  return topics.value.reduce((sum, t) => {
-    const sigs = Array.isArray(t.key_signals) ? t.key_signals.length : 0
+  return topics.value.reduce((sum, topic) => {
+    const sigs = Array.isArray(topic.key_signals) ? topic.key_signals.length : 0
     return sum + sigs
   }, 0)
 })
@@ -282,8 +324,7 @@ const footerHasContent = computed(
   () => verdict.value || coverageGapsCount.value > 0,
 )
 
-// F3 mode dégradé synthesizer — quand quality_warning='synthesizer_unavailable'
-// et que Kairos a retourné scored_signals_top en fallback.
+// F3 mode dégradé synthesizer
 const qualityWarning = computed(() => props.result?.quality_warning || null)
 const isDegradedSynthesizer = computed(
   () => qualityWarning.value === 'synthesizer_unavailable',
@@ -296,7 +337,7 @@ const synthesizerFailureType = computed(
   () => props.result?.synthesizer_failure_type || null,
 )
 
-// ─── Status line affichée à droite du label ─────────────────────────────────
+// ─── Status line ────────────────────────────────────────────────────────────
 
 const statusLine = computed(() => {
   switch (props.status) {
@@ -323,35 +364,21 @@ const statusLine = computed(() => {
   }
 })
 
-// ─── Erreur ─────────────────────────────────────────────────────────────────
-
 const errorKey = computed(() => researchErrorKeyForCode(props.errorCode))
 
-// ─── Brief variants : selection state ───────────────────────────────────────
-
-// Map "topicIndex" → "variantIndex actif". Permet à l'user de tester
-// plusieurs angles avant de confirmer "Use this brief".
-const activeVariantByTopic = ref({})
-
-const isVariantActive = (ti, vi) => activeVariantByTopic.value[ti] === vi
-
-const selectVariant = (ti, vi) => {
-  activeVariantByTopic.value = { ...activeVariantByTopic.value, [ti]: vi }
-}
-
-const activeVariantFor = (ti) => {
-  const vi = activeVariantByTopic.value[ti]
-  if (vi === undefined) return null
-  const variants = topics.value[ti]?.brief_variants
-  return Array.isArray(variants) ? variants[vi] || null : null
-}
+// ─── Helpers topics / variants ──────────────────────────────────────────────
 
 const hasBriefVariants = (topic) =>
   Array.isArray(topic?.brief_variants) && topic.brief_variants.length > 0
 
-const briefVariantTitle = (variant) => {
+const isDevilTopic = (topic) =>
+  topic?.type === 'devil_advocate' || !!topic?.is_devil_advocate
+
+const variantBriefText = (variant) => {
   if (!variant) return ''
-  return variant.label || variant.title || variant.summary || ''
+  // Le contrat Kairos K05 expose `brief` (250-300 chars). On garde des
+  // fallbacks défensifs au cas où un caller produit `summary` ou `label`.
+  return variant.brief || variant.summary || variant.label || variant.title || ''
 }
 
 const frameworkLabel = (hint) => {
@@ -361,21 +388,122 @@ const frameworkLabel = (hint) => {
   return known.includes(norm) ? t(`research.framework.${norm}`) : hint
 }
 
-// ─── Sources panel ──────────────────────────────────────────────────────────
-
-const openSourcesIndex = ref(null)
-
 const hasSources = (topic) =>
   Array.isArray(topic?.key_signals) && topic.key_signals.length > 0
 
-const activeSources = computed(() => {
-  if (openSourcesIndex.value === null) return []
-  const t = topics.value[openSourcesIndex.value]
-  return Array.isArray(t?.key_signals) ? t.key_signals : []
+// ─── Multi-select state ─────────────────────────────────────────────────────
+
+// Set de clés "ti-vi" — un Set est immutable-friendly avec Vue 3 reactivity.
+const selectedVariantKeys = ref(new Set())
+
+const keyOf = (ti, vi) => `${ti}-${vi}`
+
+const isVariantSelected = (ti, vi) => selectedVariantKeys.value.has(keyOf(ti, vi))
+
+const toggleVariant = (ti, vi) => {
+  const k = keyOf(ti, vi)
+  const next = new Set(selectedVariantKeys.value)
+  if (next.has(k)) next.delete(k)
+  else next.add(k)
+  selectedVariantKeys.value = next
+}
+
+const selectedCount = computed(() => selectedVariantKeys.value.size)
+
+const selectedVariantsDetails = computed(() => {
+  const out = []
+  for (const k of selectedVariantKeys.value) {
+    const idx = k.indexOf('-')
+    if (idx < 0) continue
+    const ti = Number(k.slice(0, idx))
+    const vi = Number(k.slice(idx + 1))
+    const topic = topics.value[ti]
+    if (!topic) continue
+    const variant = topic.brief_variants?.[vi]
+    if (!variant) continue
+    out.push({ ti, vi, topic, variant })
+  }
+  return out
 })
 
-const toggleSources = (ti) => {
-  openSourcesIndex.value = openSourcesIndex.value === ti ? null : ti
+// ─── Composition prompt ─────────────────────────────────────────────────────
+
+/**
+ * Compose le prompt à partir des variants cochés. Format Markdown léger,
+ * éditable par l'utilisateur dans la textarea juste après.
+ */
+const composedPromptAuto = computed(() => {
+  const parts = selectedVariantsDetails.value.map(({ topic, variant }) => {
+    const fwk = variant.framework_hint ? ` [${frameworkLabel(variant.framework_hint)}]` : ''
+    const head = `# ${topic.label}${fwk}`
+    const body = variantBriefText(variant).trim()
+    const rationale = variant.rationale ? `\n\n_Pourquoi cet angle : ${variant.rationale.trim()}_` : ''
+    return `${head}\n\n${body}${rationale}`
+  })
+  return parts.join('\n\n---\n\n')
+})
+
+const composedPromptEdited = ref('')
+
+// Quand l'auto-compose change (user coche/décoche), on PROPOSE la nouvelle
+// version sans écraser une édition manuelle SAUF si l'edited est vide ou
+// strictement identique à l'ancien auto. Cas typique : user édite le
+// prompt après sélection, puis ajoute un brief → on append plutôt qu'on
+// écrase.
+let lastAuto = ''
+watch(
+  composedPromptAuto,
+  (next) => {
+    const prev = lastAuto
+    lastAuto = next
+    if (!composedPromptEdited.value || composedPromptEdited.value === prev) {
+      composedPromptEdited.value = next
+    }
+    // Sinon : l'utilisateur a édité manuellement, on ne touche pas. Le
+    // bouton « Régénérer auto » permet de revenir à la version computed.
+  },
+  { immediate: true },
+)
+
+const composedTextareaRows = computed(() => {
+  const lines = composedPromptEdited.value.split('\n').length
+  return Math.min(Math.max(lines + 1, 6), 20)
+})
+
+const resetComposedToAuto = () => {
+  composedPromptEdited.value = composedPromptAuto.value
+}
+
+const insertComposed = () => {
+  const prompt = composedPromptEdited.value.trim()
+  if (!prompt) return
+  emit('compose', {
+    prompt,
+    selections: selectedVariantsDetails.value.map(({ topic, variant }) => ({
+      topic_label: topic.label,
+      topic_summary: topic.summary,
+      is_devil_advocate: isDevilTopic(topic),
+      brief_variant: variant,
+      framework_hint: variant.framework_hint || null,
+      signals_refs: Array.isArray(variant.signals_refs) ? variant.signals_refs : [],
+    })),
+  })
+}
+
+// ─── Sources : favicon helper ──────────────────────────────────────────────
+
+const faviconUrl = (url) => {
+  try {
+    const u = new URL(url)
+    return `https://www.google.com/s2/favicons?domain=${u.hostname}&sz=32`
+  } catch {
+    return ''
+  }
+}
+
+const onFaviconError = (e) => {
+  // Cache l'image cassée plutôt que d'afficher un placeholder broken.
+  e.target.style.visibility = 'hidden'
 }
 
 const truncateUrl = (url) => {
@@ -388,35 +516,20 @@ const truncateUrl = (url) => {
   }
 }
 
-// ─── Emit selection ─────────────────────────────────────────────────────────
-
-const emitSelection = (ti) => {
-  const topic = topics.value[ti]
-  const variant = activeVariantFor(ti)
-  if (!topic || !variant) return
-  emit('select', {
-    topic_label: topic.label,
-    topic_summary: topic.summary,
-    is_devil_advocate: !!topic.is_devil_advocate,
-    brief_variant: variant,
-    framework_hint: variant.framework_hint || null,
-    signals_refs: Array.isArray(variant.signals_refs) ? variant.signals_refs : [],
-  })
-}
-
-// ─── Reset sélection quand on charge un nouveau résultat ────────────────────
+// ─── Reset quand nouveau résultat ───────────────────────────────────────────
 
 watch(
   () => props.result,
   () => {
-    activeVariantByTopic.value = {}
-    openSourcesIndex.value = null
+    selectedVariantKeys.value = new Set()
+    composedPromptEdited.value = ''
+    lastAuto = ''
   },
 )
 </script>
 
 <style scoped>
-/* ─── Warm Intelligence — TopicResearchPanel (US-B02) ─── */
+/* ─── Warm Intelligence — TopicResearchPanel (US-B04 refonte) ─── */
 .trp-wrap {
   margin-top: var(--wi-space-md);
   padding: var(--wi-space-md);
@@ -428,7 +541,6 @@ watch(
   box-shadow: var(--wi-shadow-sm);
 }
 
-/* ─── Header ─── */
 .trp-head {
   display: flex;
   justify-content: space-between;
@@ -450,7 +562,6 @@ watch(
 .trp-dot {
   color: var(--wi-primary-container);
   font-size: 14px;
-  display: inline-block;
 }
 
 .trp-dot--pulse {
@@ -464,14 +575,12 @@ watch(
 
 .trp-sub {
   color: var(--wi-on-surface-variant);
-  font-family: var(--wi-font-body);
   font-size: var(--wi-caption);
   font-weight: 500;
   margin-left: 4px;
 }
 
 .trp-cached-badge {
-  font-family: var(--wi-font-body);
   font-size: var(--wi-caption);
   color: var(--wi-on-surface-variant);
   padding: 2px 8px;
@@ -480,7 +589,6 @@ watch(
   border: 1px solid var(--wi-outline-variant);
 }
 
-/* ─── Loading state ─── */
 .trp-loading {
   font-size: var(--wi-body-md);
   color: var(--wi-on-surface-variant);
@@ -498,7 +606,6 @@ watch(
   border: 2px solid var(--wi-primary-soft);
   border-top-color: var(--wi-primary-container);
   border-radius: 50%;
-  display: inline-block;
   animation: trp-spin 0.8s linear infinite;
 }
 
@@ -506,7 +613,6 @@ watch(
   to { transform: rotate(360deg); }
 }
 
-/* ─── Error state ─── */
 .trp-error {
   font-size: var(--wi-body-md);
   color: var(--wi-on-error-container, #8b1f1f);
@@ -516,11 +622,19 @@ watch(
   border: 1px solid var(--wi-error, #d8696b);
 }
 
+.trp-instructions {
+  font-size: 13px;
+  color: var(--wi-on-surface-variant);
+  margin: 0 0 var(--wi-space-sm) 0;
+  font-style: italic;
+}
+
 /* ─── Grid + cards ─── */
 .trp-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
   gap: var(--wi-space-sm);
+  margin-bottom: var(--wi-space-md);
 }
 
 .trp-card {
@@ -531,16 +645,7 @@ watch(
   display: flex;
   flex-direction: column;
   gap: 10px;
-  transition: border-color var(--ms-transition),
-              box-shadow var(--ms-transition),
-              transform var(--ms-transition);
   box-shadow: var(--wi-shadow-sm);
-}
-
-.trp-card:hover {
-  border-color: var(--wi-primary-container);
-  transform: translateY(-2px);
-  box-shadow: var(--wi-shadow-orange);
 }
 
 .trp-card--devil {
@@ -566,7 +671,6 @@ watch(
 }
 
 .trp-devil-badge {
-  font-family: var(--wi-font-body);
   font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
@@ -584,141 +688,185 @@ watch(
   line-height: 1.5;
   color: var(--wi-on-surface-variant);
   margin: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
-/* ─── Variants pills ─── */
-.trp-variants {
+/* ─── Variants list (multi-select) ─── */
+.trp-variants-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 6px;
 }
 
-.trp-variant {
-  background: transparent;
+.trp-variant-item {
   border: 1px solid var(--wi-outline-variant);
-  border-radius: var(--wi-radius-pill);
-  padding: 4px 10px;
-  font-family: inherit;
-  font-size: var(--wi-caption);
-  color: var(--wi-on-surface);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  border-radius: var(--wi-radius-md);
+  background: var(--wi-surface-container-low);
   transition: background var(--ms-transition-fast),
-              border-color var(--ms-transition-fast),
-              color var(--ms-transition-fast);
+              border-color var(--ms-transition-fast);
 }
 
-.trp-variant:hover {
+.trp-variant-item:hover {
   border-color: var(--wi-primary-container);
-  color: var(--wi-on-primary-container);
 }
 
-.trp-variant--active {
-  background: var(--wi-on-primary-container);
-  color: var(--wi-on-primary);
+.trp-variant-item--selected {
   border-color: var(--wi-on-primary-container);
+  background: var(--wi-primary-soft);
 }
 
-.trp-variant-label {
-  font-weight: 600;
+.trp-variant-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  padding: 10px;
+  cursor: pointer;
+  align-items: start;
+}
+
+.trp-variant-checkbox {
+  margin-top: 2px;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--wi-on-primary-container);
+  cursor: pointer;
+}
+
+.trp-variant-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.trp-variant-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
 }
 
 .trp-variant-framework {
   font-size: 10px;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
-  padding: 1px 6px;
-  border-radius: var(--wi-radius-pill);
-  background: var(--wi-surface-container-low);
-  color: var(--wi-on-surface-variant);
-}
-
-.trp-variant--active .trp-variant-framework {
-  background: rgb(255 255 255 / 18%);
-  color: var(--wi-on-primary);
-}
-
-/* ─── Footer card ─── */
-.trp-card-foot {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  margin-top: auto;
-}
-
-.trp-use-btn {
-  background: transparent;
-  border: 1px solid var(--wi-on-primary-container);
-  color: var(--wi-on-primary-container);
-  font-family: var(--wi-font-heading);
-  font-size: var(--wi-caption);
+  letter-spacing: 0.4px;
   font-weight: 600;
-  padding: 4px 10px;
+  padding: 2px 8px;
   border-radius: var(--wi-radius-pill);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  transition: background var(--ms-transition-fast),
-              color var(--ms-transition-fast);
-}
-
-.trp-use-btn:hover {
   background: var(--wi-on-primary-container);
   color: var(--wi-on-primary);
 }
 
-.trp-arrow {
+.trp-variant-charcount {
+  font-size: 11px;
+  color: var(--wi-on-surface-variant);
+  font-family: var(--wi-font-mono, monospace);
+}
+
+.trp-variant-brief {
+  margin: 0;
   font-size: 13px;
+  line-height: 1.5;
+  color: var(--wi-on-surface);
 }
 
-.trp-card-hint {
-  font-size: var(--wi-caption);
+.trp-variant-rationale {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
   color: var(--wi-on-surface-variant);
-  font-style: italic;
 }
 
-.trp-sources-btn {
-  background: transparent;
-  border: none;
-  color: var(--wi-on-surface-variant);
-  font-family: inherit;
-  font-size: var(--wi-caption);
-  text-decoration: underline;
-  text-underline-offset: 2px;
+/* ─── Sources inline (details/summary) ─── */
+.trp-sources-inline {
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.trp-sources-inline summary {
   cursor: pointer;
-  padding: 0;
-  transition: color var(--ms-transition-fast);
+  color: var(--wi-on-surface-variant);
+  padding: 4px 0;
+  user-select: none;
 }
 
-.trp-sources-btn:hover {
+.trp-sources-inline summary:hover {
+  color: var(--wi-on-primary-container);
+}
+
+.trp-sources-list {
+  list-style: none;
+  padding: 6px 0 0 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.trp-source-row {
+  display: grid;
+  grid-template-columns: 16px 1fr auto;
+  grid-template-areas:
+    "fav name score"
+    ". url url";
+  gap: 4px 8px;
+  align-items: center;
+  padding: 4px 6px;
+  background: var(--wi-surface);
+  border-radius: var(--wi-radius-sm, 6px);
+}
+
+.trp-source-favicon {
+  grid-area: fav;
+  flex-shrink: 0;
+}
+
+.trp-source-name {
+  grid-area: name;
+  font-weight: 600;
+  color: var(--wi-on-surface);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trp-source-score {
+  grid-area: score;
+  font-family: var(--wi-font-mono, monospace);
+  color: var(--wi-on-primary-container);
+  font-size: 11px;
+}
+
+.trp-source-url {
+  grid-area: url;
+  color: var(--wi-on-surface-variant);
+  text-decoration: none;
+  font-size: 11px;
+  word-break: break-all;
+}
+
+.trp-source-url:hover {
+  text-decoration: underline;
   color: var(--wi-on-primary-container);
 }
 
 /* ─── Footer verdict + coverage ─── */
 .trp-foot {
-  margin-top: var(--wi-space-sm);
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  margin-bottom: var(--wi-space-sm);
 }
 
 .trp-verdict {
-  font-family: var(--wi-font-body);
   font-size: var(--wi-caption);
   font-weight: 600;
   text-transform: lowercase;
   padding: 3px 10px;
   border-radius: var(--wi-radius-pill);
-  letter-spacing: 0.2px;
 }
 
 .trp-verdict--pass {
@@ -747,248 +895,113 @@ watch(
   font-style: italic;
 }
 
-/* ─── Sources sliding panel ─── */
-.trp-sources-panel {
-  position: absolute;
-  top: 0;
-  inset-inline-end: 0;
-  bottom: 0;
-  width: min(340px, 90%);
-  background: var(--wi-surface);
-  border-inline-start: 1px solid var(--wi-outline-variant);
-  border-radius: 0 var(--wi-radius-card) var(--wi-radius-card) 0;
-  padding: var(--wi-space-sm);
-  overflow-y: auto;
-  z-index: 5;
-  box-shadow: -8px 0 24px rgb(0 0 0 / 8%);
+/* ─── Composition zone ─── */
+.trp-compose {
+  border-top: 1px dashed var(--wi-outline-variant);
+  padding-top: var(--wi-space-md);
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-/* RTL : la bordure et l'ombre se collent à gauche, le slide vient de gauche. */
-:dir(rtl) .trp-sources-panel {
-  border-radius: var(--wi-radius-card) 0 0 var(--wi-radius-card);
-  box-shadow: 8px 0 24px rgb(0 0 0 / 8%);
-}
-
-.trp-sources-head {
+.trp-compose-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
 }
 
-.trp-sources-head h5 {
+.trp-compose-title {
   margin: 0;
   font-family: var(--wi-font-heading);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--wi-on-surface);
 }
 
-.trp-sources-close {
-  background: transparent;
-  border: none;
-  font-size: 20px;
-  line-height: 1;
+.trp-compose-count {
+  font-size: 12px;
   color: var(--wi-on-surface-variant);
-  cursor: pointer;
-  padding: 0 4px;
+  font-family: var(--wi-font-mono, monospace);
 }
 
-.trp-sources-list {
-  list-style: none;
-  padding: 0;
+.trp-compose-empty {
+  font-size: 13px;
+  color: var(--wi-on-surface-variant);
+  font-style: italic;
   margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.trp-source-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  grid-template-rows: auto auto;
-  column-gap: 8px;
-  font-size: var(--wi-caption);
-  padding: 8px;
+  padding: var(--wi-space-sm);
   background: var(--wi-surface-container-low);
   border-radius: var(--wi-radius-md);
 }
 
-.trp-source-name {
-  font-weight: 600;
-  color: var(--wi-on-surface);
-}
-
-.trp-source-score {
-  font-family: var(--wi-font-mono, monospace);
-  color: var(--wi-on-primary-container);
-  text-align: end;
-}
-
-.trp-source-url {
-  grid-column: 1 / -1;
-  color: var(--wi-on-surface-variant);
-  text-decoration: none;
-  word-break: break-all;
-}
-
-.trp-source-url:hover {
-  text-decoration: underline;
-}
-
-/* ─── Slide transition ─── */
-.trp-slide-enter-active,
-.trp-slide-leave-active {
-  transition: transform var(--ms-transition), opacity var(--ms-transition);
-}
-
-.trp-slide-enter-from,
-.trp-slide-leave-to {
-  transform: translateX(20%);
-  opacity: 0;
-}
-
-:dir(rtl) .trp-slide-enter-from,
-:dir(rtl) .trp-slide-leave-to {
-  transform: translateX(-20%);
-}
-
-/* ─── F3 Degraded mode (synthesizer_unavailable) ─── */
-.trp-degraded-banner {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 10px 12px;
-  background: var(--wi-warning-container, #fdf2dc);
-  color: var(--wi-on-warning-container, #8a5a14);
-  border: 1px solid var(--wi-warning, #e6b350);
-  border-radius: var(--wi-radius-md);
-  margin-bottom: var(--wi-space-sm);
-  font-size: var(--wi-body-md);
-  line-height: 1.45;
-}
-
-.trp-degraded-banner p {
-  margin: 0;
-}
-
-.trp-degraded-icon {
-  font-size: 16px;
-  line-height: 1;
-}
-
-.trp-degraded-heading {
-  font-family: var(--wi-font-heading);
+.trp-compose-textarea {
+  width: 100%;
+  font-family: var(--wi-font-mono, ui-monospace, monospace);
   font-size: 13px;
-  font-weight: 600;
-  color: var(--wi-on-surface);
-  margin: 0 0 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-}
-
-.trp-degraded-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-height: 480px;
-  overflow-y: auto;
-}
-
-.trp-degraded-item {
+  line-height: 1.5;
   padding: 10px;
-  background: var(--wi-surface);
   border: 1px solid var(--wi-outline-variant);
   border-radius: var(--wi-radius-md);
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  transition: border-color var(--ms-transition-fast);
-}
-
-.trp-degraded-item:hover {
-  border-color: var(--wi-primary-container);
-}
-
-.trp-degraded-item-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 8px;
-}
-
-.trp-degraded-item-title {
-  font-family: var(--wi-font-heading);
-  font-size: 13px;
-  font-weight: 600;
+  background: var(--wi-surface);
   color: var(--wi-on-surface);
-  text-decoration: none;
-  line-height: 1.3;
+  resize: vertical;
+  min-height: 120px;
 }
 
-.trp-degraded-item-title:hover {
-  color: var(--wi-on-primary-container);
-  text-decoration: underline;
+.trp-compose-textarea:focus {
+  outline: none;
+  border-color: var(--wi-on-primary-container);
+  box-shadow: 0 0 0 3px var(--wi-primary-soft);
 }
 
-.trp-degraded-score {
-  font-family: var(--wi-font-mono, monospace);
-  font-size: var(--wi-caption);
-  color: var(--wi-on-surface-variant);
-  flex-shrink: 0;
-  padding: 1px 6px;
-  background: var(--wi-surface-container-low);
-  border-radius: var(--wi-radius-pill);
-}
-
-.trp-degraded-item-meta {
+.trp-compose-actions {
   display: flex;
   gap: 8px;
-  align-items: center;
-  font-size: var(--wi-caption);
-  color: var(--wi-on-surface-variant);
+  justify-content: flex-end;
   flex-wrap: wrap;
 }
 
-.trp-degraded-source {
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  font-size: 10px;
-  padding: 1px 6px;
-  background: var(--wi-surface-container-low);
-  border-radius: var(--wi-radius-pill);
-}
-
-.trp-degraded-lang {
-  font-family: var(--wi-font-mono, monospace);
-  font-size: 10px;
-  text-transform: uppercase;
-}
-
-.trp-degraded-url {
+.trp-compose-reset,
+.trp-compose-insert {
+  font-family: var(--wi-font-heading);
   font-size: var(--wi-caption);
-  color: var(--wi-on-surface-variant);
-  font-style: italic;
-  flex: 1 1 auto;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: var(--wi-radius-pill);
+  cursor: pointer;
+  transition: background var(--ms-transition-fast),
+              color var(--ms-transition-fast);
 }
 
-.trp-degraded-excerpt {
-  margin: 4px 0 0;
-  font-size: 12px;
-  line-height: 1.4;
+.trp-compose-reset {
+  background: transparent;
+  border: 1px solid var(--wi-outline-variant);
   color: var(--wi-on-surface-variant);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+}
+
+.trp-compose-reset:hover:not(:disabled) {
+  border-color: var(--wi-on-surface);
+  color: var(--wi-on-surface);
+}
+
+.trp-compose-reset:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.trp-compose-insert {
+  background: var(--wi-on-primary-container);
+  border: 1px solid var(--wi-on-primary-container);
+  color: var(--wi-on-primary);
+}
+
+.trp-compose-insert:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+.trp-compose-insert:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 </style>

@@ -299,7 +299,7 @@
                 :elapsed-seconds="researchElapsed"
                 :cached="researchCached"
                 data-testid="research-panel"
-                @select="handleResearchSelect"
+                @compose="handleResearchCompose"
               />
             </div>
 
@@ -781,21 +781,18 @@ watch(
   },
 )
 
-const handleResearchSelect = ({ topic_label, brief_variant, framework_hint }) => {
-  if (!brief_variant) return
-  const angleLabel = brief_variant.label || brief_variant.title || ''
-  const briefBody = brief_variant.summary || brief_variant.body || ''
-  const frameworkLine = framework_hint ? ` [${framework_hint}]` : ''
-  const topicLine = topic_label ? `# ${topic_label}${frameworkLine}\n\n` : ''
-  const compiled = `${topicLine}${angleLabel ? angleLabel + '\n\n' : ''}${briefBody}`
-    .trim()
-  if (compiled) {
-    formData.value.simulationRequirement = compiled
-    // Aligne lastTriggeredSeed sur la nouvelle valeur pour éviter
-    // qu'elle redéclenche un pipeline (la sélection est elle-même
-    // dérivée du pipeline qu'on vient d'exécuter).
-    lastTriggeredSeed.value = compiled.trim()
-  }
+/**
+ * US-B04 — handler du nouveau workflow multi-select.
+ * Le composant TopicResearchPanel a déjà composé le prompt (potentiellement
+ * édité par l'user dans sa textarea) et l'envoie clé en main. On le pose
+ * dans la console + on aligne lastTriggeredSeed pour éviter qu'il
+ * redéclenche un pipeline sur la même valeur.
+ */
+const handleResearchCompose = ({ prompt }) => {
+  const compiled = (prompt || '').trim()
+  if (!compiled) return
+  formData.value.simulationRequirement = compiled
+  lastTriggeredSeed.value = compiled
 }
 
 onBeforeUnmount(() => {

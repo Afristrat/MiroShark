@@ -487,6 +487,19 @@
     "coverageGap": "{n} زاوية بدون إشارة مباشرة",
     "coverageGapPlural": "{n} زوايا بدون إشارة مباشرة",
     "noBriefSelected": "اختر زاوية لهذا الموضوع.",
+    "compose": {
+      "instructions": "حدّد الموجزات المناسبة — اجمع زوايا من مواضيع متعددة لتركيب الموجه النهائي.",
+      "variantsAriaLabel": "موجزات الموضوع {topic}",
+      "rationaleLabel": "لماذا هذه الزاوية",
+      "charsAbbr": "حرف",
+      "sourcesCount": "{n} مصادر",
+      "heading": "الموجه المُركَّب",
+      "selectedCount": "{count} موجز محدّد | {count} موجزات محدّدة",
+      "empty": "حدّد موجزًا أو أكثر أعلاه لتركيب موجهك.",
+      "textareaAriaLabel": "الموجه المُركَّب قابل للتحرير",
+      "reset": "إعادة توليد تلقائي",
+      "insert": "إدراج في المنصة"
+    },
     "errors": {
       "generic": "حدث خطأ.",
       "notConfigured": "خدمة البحث غير مُهيّأة.",

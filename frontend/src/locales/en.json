@@ -487,6 +487,19 @@
     "coverageGap": "{n} angle with no direct signal",
     "coverageGapPlural": "{n} angles with no direct signal",
     "noBriefSelected": "Pick an angle for this topic.",
+    "compose": {
+      "instructions": "Tick the briefs you find relevant — combine angles across topics to compose your final prompt.",
+      "variantsAriaLabel": "Brief variants for {topic}",
+      "rationaleLabel": "Why this angle",
+      "charsAbbr": "chars",
+      "sourcesCount": "{n} sources",
+      "heading": "Composed prompt",
+      "selectedCount": "{count} brief selected | {count} briefs selected",
+      "empty": "Tick one or more briefs above to assemble your prompt.",
+      "textareaAriaLabel": "Editable composed prompt",
+      "reset": "Regenerate auto",
+      "insert": "Insert into console"
+    },
     "errors": {
       "generic": "Something went wrong.",
       "notConfigured": "Research service not configured.",
