@@ -20,10 +20,16 @@ import client from './client'
  * POST /api/research/from-seed — soumet une graine au pipeline Kairos.
  *
  * @param {Object} payload
- * @param {string} payload.seed - 60-3000 caractères
+ * @param {string} payload.seed - 50-3000 caractères
  * @param {'fr'|'en'|'ar'} payload.lang
  * @param {string} [payload.sector_hint]
  * @param {0|1|2} [payload.depth_hint]
+ * @param {string} [payload.scope_profile] - nom d'un scope_profile pré-curé
+ *   côté Kairos (ex: 'morocco-tech', 'mena-business'). Force la coverage
+ *   sur des sources spécialisées.
+ * @param {{x_handles?: string[], reddit_subs?: string[], arxiv_categories?: string[], rss_keywords?: string[]}} [payload.hints_override]
+ *   Sources fournies directement par l'utilisateur (mergées avec celles
+ *   émises par research-strategist + scope_profile).
  * @returns {Promise<{success: boolean, data?: {session_id, status, cached, message}, error_code?: string, error?: string}>}
  */
 export function postResearchFromSeed(payload) {

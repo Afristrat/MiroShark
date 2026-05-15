@@ -25,6 +25,54 @@
       ⚠ {{ $t(errorKey) }}
     </div>
 
+    <!-- F3 mode dégradé : synthesizer indisponible → on affiche les
+         scored_signals_top retournés par Kairos en fallback. -->
+    <template v-else-if="isCompleted && isDegradedSynthesizer && scoredSignalsTop.length > 0">
+      <div class="trp-degraded-banner" role="status">
+        <span class="trp-degraded-icon">⚠</span>
+        <p>
+          {{ $t('research.degraded.synthesizerUnavailable', {
+            reason: synthesizerFailureType || 'unknown',
+            count: scoredSignalsTop.length,
+          }) }}
+        </p>
+      </div>
+      <h5 class="trp-degraded-heading">
+        {{ $t('research.degraded.rawSignalsHeading', { count: scoredSignalsTop.length }) }}
+      </h5>
+      <ul class="trp-degraded-list">
+        <li
+          v-for="(sig, i) in scoredSignalsTop"
+          :key="`raw-${sig.id || i}`"
+          class="trp-degraded-item"
+        >
+          <div class="trp-degraded-item-head">
+            <a
+              v-if="sig.url"
+              :href="sig.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="trp-degraded-item-title"
+            >{{ sig.title || sig.url }}</a>
+            <span v-else class="trp-degraded-item-title">{{ sig.title || '—' }}</span>
+            <span
+              v-if="typeof sig.score === 'number'"
+              class="trp-degraded-score"
+              :title="$t('research.degraded.scoreLabel')"
+            >{{ sig.score }}</span>
+          </div>
+          <div class="trp-degraded-item-meta">
+            <span v-if="sig.source" class="trp-degraded-source">{{ sig.source }}</span>
+            <span v-if="sig.lang" class="trp-degraded-lang">{{ sig.lang }}</span>
+            <span v-if="sig.url" class="trp-degraded-url" :title="sig.url">
+              {{ truncateUrl(sig.url) }}
+            </span>
+          </div>
+          <p v-if="sig.excerpt" class="trp-degraded-excerpt">{{ sig.excerpt }}</p>
+        </li>
+      </ul>
+    </template>
+
     <!-- État completed : cards + verdict + coverage -->
     <template v-else-if="isCompleted && topics.length > 0">
       <div class="trp-grid">
@@ -232,6 +280,20 @@ const coverageGapsLabel = computed(() => {
 
 const footerHasContent = computed(
   () => verdict.value || coverageGapsCount.value > 0,
+)
+
+// F3 mode dégradé synthesizer — quand quality_warning='synthesizer_unavailable'
+// et que Kairos a retourné scored_signals_top en fallback.
+const qualityWarning = computed(() => props.result?.quality_warning || null)
+const isDegradedSynthesizer = computed(
+  () => qualityWarning.value === 'synthesizer_unavailable',
+)
+const scoredSignalsTop = computed(() => {
+  const arr = props.result?.scored_signals_top
+  return Array.isArray(arr) ? arr : []
+})
+const synthesizerFailureType = computed(
+  () => props.result?.synthesizer_failure_type || null,
 )
 
 // ─── Status line affichée à droite du label ─────────────────────────────────
@@ -791,5 +853,142 @@ watch(
 :dir(rtl) .trp-slide-enter-from,
 :dir(rtl) .trp-slide-leave-to {
   transform: translateX(-20%);
+}
+
+/* ─── F3 Degraded mode (synthesizer_unavailable) ─── */
+.trp-degraded-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--wi-warning-container, #fdf2dc);
+  color: var(--wi-on-warning-container, #8a5a14);
+  border: 1px solid var(--wi-warning, #e6b350);
+  border-radius: var(--wi-radius-md);
+  margin-bottom: var(--wi-space-sm);
+  font-size: var(--wi-body-md);
+  line-height: 1.45;
+}
+
+.trp-degraded-banner p {
+  margin: 0;
+}
+
+.trp-degraded-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.trp-degraded-heading {
+  font-family: var(--wi-font-heading);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--wi-on-surface);
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.trp-degraded-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+.trp-degraded-item {
+  padding: 10px;
+  background: var(--wi-surface);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: border-color var(--ms-transition-fast);
+}
+
+.trp-degraded-item:hover {
+  border-color: var(--wi-primary-container);
+}
+
+.trp-degraded-item-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.trp-degraded-item-title {
+  font-family: var(--wi-font-heading);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--wi-on-surface);
+  text-decoration: none;
+  line-height: 1.3;
+}
+
+.trp-degraded-item-title:hover {
+  color: var(--wi-on-primary-container);
+  text-decoration: underline;
+}
+
+.trp-degraded-score {
+  font-family: var(--wi-font-mono, monospace);
+  font-size: var(--wi-caption);
+  color: var(--wi-on-surface-variant);
+  flex-shrink: 0;
+  padding: 1px 6px;
+  background: var(--wi-surface-container-low);
+  border-radius: var(--wi-radius-pill);
+}
+
+.trp-degraded-item-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: var(--wi-caption);
+  color: var(--wi-on-surface-variant);
+  flex-wrap: wrap;
+}
+
+.trp-degraded-source {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-size: 10px;
+  padding: 1px 6px;
+  background: var(--wi-surface-container-low);
+  border-radius: var(--wi-radius-pill);
+}
+
+.trp-degraded-lang {
+  font-family: var(--wi-font-mono, monospace);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.trp-degraded-url {
+  font-size: var(--wi-caption);
+  color: var(--wi-on-surface-variant);
+  font-style: italic;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trp-degraded-excerpt {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--wi-on-surface-variant);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 </style>

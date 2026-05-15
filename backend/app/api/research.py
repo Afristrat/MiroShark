@@ -43,6 +43,7 @@ logger = logging.getLogger("miroshark.api.research")
 _ALLOWED_LANGS = frozenset({"fr", "en", "ar"})
 _SEED_MIN = 50
 _SEED_MAX = 3000
+_SCOPE_PROFILE_RE = __import__("re").compile(r"^[a-zA-Z0-9_-]{1,80}$")
 
 
 def _err(code: str, message: str, status: int, detail: Optional[Dict] = None):
@@ -52,12 +53,26 @@ def _err(code: str, message: str, status: int, detail: Optional[Dict] = None):
     return jsonify(body), status
 
 
-def _parse_seed_payload(payload: Dict[str, Any]) -> Tuple[str, str, Optional[str], Optional[int]]:
-    """Valide les 4 champs attendus, lève KairosError 400 si invalide."""
+def _parse_seed_payload(
+    payload: Dict[str, Any],
+) -> Tuple[
+    str,
+    str,
+    Optional[str],
+    Optional[int],
+    Optional[str],
+    Optional[Dict[str, Any]],
+]:
+    """Valide les champs attendus, lève KairosError 400 si invalide.
+
+    Retourne (seed, lang, sector_hint, depth_hint, scope_profile, hints_override).
+    """
     seed = (payload.get("seed") or "").strip()
     lang = (payload.get("lang") or "").strip().lower()
     sector = payload.get("sector_hint")
     depth = payload.get("depth_hint")
+    scope_profile = payload.get("scope_profile")
+    hints_override = payload.get("hints_override")
 
     if not seed:
         raise kx.KairosError("SEED_REQUIRED", "seed is required.", 400)
@@ -98,7 +113,48 @@ def _parse_seed_payload(payload: Dict[str, Any]) -> Tuple[str, str, Optional[str
                 "depth_hint must be 0, 1, or 2.",
                 400,
             )
-    return seed, lang, sector_str, depth_int
+
+    scope_profile_str: Optional[str] = None
+    if scope_profile is not None:
+        if not isinstance(scope_profile, str):
+            raise kx.KairosError(
+                "SCOPE_PROFILE_INVALID",
+                "scope_profile must be a string (name or uuid).",
+                400,
+            )
+        scope_profile_clean = scope_profile.strip()
+        if scope_profile_clean and not _SCOPE_PROFILE_RE.match(scope_profile_clean):
+            raise kx.KairosError(
+                "SCOPE_PROFILE_INVALID",
+                "scope_profile must match [a-zA-Z0-9_-]{1,80}.",
+                400,
+            )
+        scope_profile_str = scope_profile_clean or None
+
+    hints_override_clean: Optional[Dict[str, Any]] = None
+    if hints_override is not None:
+        if not isinstance(hints_override, dict):
+            raise kx.KairosError(
+                "HINTS_OVERRIDE_INVALID",
+                "hints_override must be an object.",
+                400,
+            )
+        # Validation surface — Kairos refait sa propre validation détaillée.
+        allowed_keys = {"x_handles", "reddit_subs", "arxiv_categories", "rss_keywords"}
+        for k, v in hints_override.items():
+            if k not in allowed_keys:
+                continue  # Ignore silencieusement les clés non reconnues.
+            if not isinstance(v, list) or not all(isinstance(x, str) for x in v):
+                raise kx.KairosError(
+                    "HINTS_OVERRIDE_INVALID",
+                    f"hints_override.{k} must be a list of strings.",
+                    400,
+                )
+        hints_override_clean = {
+            k: v for k, v in hints_override.items() if k in allowed_keys and isinstance(v, list) and v
+        } or None
+
+    return seed, lang, sector_str, depth_int, scope_profile_str, hints_override_clean
 
 
 # ─── Routes ───────────────────────────────────────────────────────────────────
@@ -110,12 +166,19 @@ def post_from_seed():
     """Soumet une graine au pipeline Kairos. Retourne un session_id en <1 s."""
     payload = request.get_json(silent=True) or {}
     try:
-        seed, lang, sector, depth = _parse_seed_payload(payload)
+        seed, lang, sector, depth, scope_profile, hints_override = _parse_seed_payload(payload)
     except kx.KairosError as exc:
         return _err(exc.error_code, exc.message, exc.status, exc.detail)
 
     try:
-        data = kx.post_from_seed(seed, lang, sector_hint=sector, depth_hint=depth)
+        data = kx.post_from_seed(
+            seed,
+            lang,
+            sector_hint=sector,
+            depth_hint=depth,
+            scope_profile=scope_profile,
+            hints_override=hints_override,
+        )
     except kx.KairosError as exc:
         # Trace utile pour debug coté Coolify logs sans leaker la clé.
         logger.warning(

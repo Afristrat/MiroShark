@@ -183,7 +183,15 @@
       "launch": "Launch Simulation",
       "initializing": "Initializing...",
       "pdfScanTitle": "Unreadable PDF",
-      "pdfScanHint": "This file appears to be a scanned image without text. The graph may be empty. Use 'Just Ask' to describe its content or import a version with a text layer."
+      "pdfScanHint": "This file appears to be a scanned image without text. The graph may be empty. Use 'Just Ask' to describe its content or import a version with a text layer.",
+      "scopeProfile": {
+        "label": "Source scope",
+        "auto": "Automatic",
+        "moroccoTech": "Morocco tech / AI",
+        "menaBusiness": "MENA business / fintech",
+        "autoDetected": "auto-detected: {profile}",
+        "autoDetectedTooltip": "Detected from seed keywords. Pick explicitly to override."
+      }
     }
   },
   "scenarios": {
@@ -489,6 +497,14 @@
       "invalidKey": "Access key rejected by the service.",
       "seedTooShort": "Seed too short (60 characters minimum).",
       "seedTooLong": "Seed too long (3000 characters maximum)."
+    },
+    "degraded": {
+      "synthesizerUnavailable": "AI synthesis did not converge ({reason}). Here are the top {count} raw signals for this seed.",
+      "auditorUnavailable": "Quality audit unavailable — synthesis delivered without check.",
+      "rawSignalsHeading": "Scraped signals (top {count})",
+      "openSource": "Open",
+      "scoreLabel": "Score",
+      "sourceLabel": "Source"
     }
   },
   "templates": {

@@ -254,6 +254,32 @@
                 :simulation-prompt="formData.simulationRequirement"
                 @use="handleSuggestionUse"
               />
+              <!-- F-Profile 2026-05-15 : selector scope_profile -->
+              <div class="scope-profile-row">
+                <label class="scope-profile-label" for="scope-profile-select">
+                  {{ $t('home.console.scopeProfile.label') }}
+                </label>
+                <select
+                  id="scope-profile-select"
+                  v-model="selectedScopeProfile"
+                  class="scope-profile-select"
+                  :disabled="loading"
+                  data-testid="scope-profile-select"
+                >
+                  <option
+                    v-for="opt in availableScopeProfiles"
+                    :key="opt.value || 'auto'"
+                    :value="opt.value"
+                  >{{ $t(opt.label) }}</option>
+                </select>
+                <span
+                  v-if="!selectedScopeProfile && autoScopeProfile"
+                  class="scope-profile-hint"
+                  :title="$t('home.console.scopeProfile.autoDetectedTooltip')"
+                >
+                  {{ $t('home.console.scopeProfile.autoDetected', { profile: autoScopeProfile }) }}
+                </span>
+              </div>
               <div class="input-wrapper">
                 <textarea
                   v-model="formData.simulationRequirement"
@@ -588,6 +614,33 @@ const fetchedDocs = computed(() =>
 
 // ─── US-B03 — Recherche dynamique : watcher + polling ──────────────────────
 
+// F-Profile 2026-05-15 — l'utilisateur peut forcer un scope_profile
+// pré-curé côté Kairos (table scope_profiles). null = pas de sélection
+// manuelle ; on retombe sur autoScopeProfile.
+const selectedScopeProfile = ref(null)
+
+// Liste statique des profils disponibles. Devrait idéalement venir d'un
+// endpoint Kairos /scope-profiles, mais pour démarrer rapide on hardcode
+// les 2 profils seeds publics (cf. migration 20260515100001_scope_profiles).
+const availableScopeProfiles = [
+  { value: null, label: 'home.console.scopeProfile.auto' },
+  { value: 'morocco-tech', label: 'home.console.scopeProfile.moroccoTech' },
+  { value: 'mena-business', label: 'home.console.scopeProfile.menaBusiness' },
+]
+
+// Auto-détection à partir du seed : mots-clés Maroc → morocco-tech,
+// mots-clés MENA / Maghreb / GCC → mena-business. Évite à l'utilisateur
+// d'oublier le selector.
+const autoScopeProfile = computed(() => {
+  const seed = String(formData.value?.simulationRequirement || '').toLowerCase()
+  if (!seed || seed.length < 10) return null
+  const moroccoKeywords = ['maroc', 'morocco', 'casablanca', 'rabat', 'marrakech', 'tanger', 'marocain']
+  const menaKeywords = ['mena', 'maghreb', 'tunisi', 'algéri', 'egypt', 'égypt', 'gcc', 'gulf', 'arabie', 'émirat', 'eau', 'uae', 'qatar', 'arab']
+  if (moroccoKeywords.some(k => seed.includes(k))) return 'morocco-tech'
+  if (menaKeywords.some(k => seed.includes(k))) return 'mena-business'
+  return null
+})
+
 const _stopResearchTimers = () => {
   if (researchPollTimer) {
     clearTimeout(researchPollTimer)
@@ -666,7 +719,13 @@ const _triggerResearch = async (seed) => {
     researchElapsed.value = Math.floor((Date.now() - researchStartedAt) / 1000)
   }, 1000)
   try {
-    const res = await postResearchFromSeed({ seed, lang: _pickLang() })
+    // F-Profile 2026-05-15 — laisser l'utilisateur forcer un scope_profile
+    // ('morocco-tech', 'mena-business') via select UI, sinon auto-détection
+    // par mots-clés du seed.
+    const effectiveProfile = selectedScopeProfile.value || autoScopeProfile.value || null
+    const reqBody = { seed, lang: _pickLang() }
+    if (effectiveProfile) reqBody.scope_profile = effectiveProfile
+    const res = await postResearchFromSeed(reqBody)
     if (!res || res.success === false) {
       researchStatus.value = 'error'
       researchErrorCode.value = res?.error_code || 'UNKNOWN'
@@ -1040,6 +1099,47 @@ const startSimulation = () => {
 .input-wrapper:focus-within {
   border-color: var(--wi-primary-container);
   box-shadow: 0 0 0 3px var(--ms-orange-soft);
+}
+
+/* F-Profile : selector scope_profile au-dessus de la textarea */
+.scope-profile-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 8px;
+  flex-wrap: wrap;
+  font-family: var(--ms-font-mono);
+  font-size: 12px;
+}
+.scope-profile-label {
+  color: var(--ms-text-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.scope-profile-select {
+  font-family: inherit;
+  font-size: 12px;
+  padding: 3px 8px;
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--ms-radius-md);
+  background: var(--wi-surface-container-low);
+  color: var(--wi-on-surface);
+  cursor: pointer;
+  transition: var(--ms-transition-fast);
+}
+.scope-profile-select:hover,
+.scope-profile-select:focus {
+  border-color: var(--wi-primary-container);
+  outline: none;
+}
+.scope-profile-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.scope-profile-hint {
+  color: var(--wi-on-primary-container, #b34a1f);
+  font-style: italic;
+  font-size: 11px;
 }
 .code-input {
   width: 100%;

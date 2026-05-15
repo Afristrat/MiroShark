@@ -183,7 +183,15 @@
       "launch": "Lancer la simulation",
       "initializing": "Initialisation…",
       "pdfScanTitle": "PDF non lisible",
-      "pdfScanHint": "Ce fichier semble être un scan (image sans texte). Le graphe risque d'être vide. Utilisez « Posez simplement » pour décrire son contenu ou importez une version avec couche texte."
+      "pdfScanHint": "Ce fichier semble être un scan (image sans texte). Le graphe risque d'être vide. Utilisez « Posez simplement » pour décrire son contenu ou importez une version avec couche texte.",
+      "scopeProfile": {
+        "label": "Cadrage des sources",
+        "auto": "Automatique",
+        "moroccoTech": "Maroc tech / IA",
+        "menaBusiness": "MENA business / fintech",
+        "autoDetected": "auto-détecté : {profile}",
+        "autoDetectedTooltip": "Détecté à partir des mots-clés de la graine. Sélectionnez explicitement pour forcer un autre cadrage."
+      }
     }
   },
   "scenarios": {
@@ -489,6 +497,14 @@
       "invalidKey": "Clé d’accès rejetée par le service.",
       "seedTooShort": "Graine trop courte (60 caractères minimum).",
       "seedTooLong": "Graine trop longue (3000 caractères maximum)."
+    },
+    "degraded": {
+      "synthesizerUnavailable": "La synthèse IA n’a pas convergé ({reason}). Voici les {count} signaux bruts les plus pertinents pour cette graine.",
+      "auditorUnavailable": "Audit qualité indisponible — la synthèse est livrée sans contrôle.",
+      "rawSignalsHeading": "Signaux scrapés (top {count})",
+      "openSource": "Ouvrir",
+      "scoreLabel": "Score",
+      "sourceLabel": "Source"
     }
   },
   "templates": {

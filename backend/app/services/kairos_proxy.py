@@ -222,18 +222,31 @@ def post_from_seed(
     lang: str,
     sector_hint: Optional[str] = None,
     depth_hint: Optional[int] = None,
+    scope_profile: Optional[str] = None,
+    hints_override: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """POST {KAIROS_API_URL}/research-from-seed.
 
     Retourne le payload Kairos ``{ok, session_id, status, message}``.
     Lève ``KairosError`` sur erreur (timeout, 401, 429, 5xx).
 
-    Cache : si la même (seed, lang, sector, depth) a été soumise depuis
-    moins d'1h et que la session est toujours valide côté Kairos (TTL
-    24h), on retourne la session_id cachée sans re-frapper Kairos.
+    Cache : si la même (seed, lang, sector, depth, scope_profile) a été
+    soumise depuis moins d'1h et que la session est toujours valide côté
+    Kairos (TTL 24h), on retourne la session_id cachée sans re-frapper
+    Kairos. scope_profile et hints_override font partie de la clé cache
+    car ils changent le résultat attendu.
     """
     url_base, api_key = _require_config()
+    cache_extra = scope_profile or ""
+    if hints_override:
+        # Hash stable des hints pour incorporer dans la clé sans bloater.
+        import hashlib as _h
+        cache_extra += "|" + _h.sha256(
+            json.dumps(hints_override, sort_keys=True, ensure_ascii=False).encode("utf-8")
+        ).hexdigest()[:16]
     key = cache_key_from_seed(seed, lang, sector_hint, depth_hint)
+    if cache_extra:
+        key = key + "|" + cache_extra
     cached = _cache().get(f"seed:{key}")
     if cached:
         # Marqué pour que l'endpoint puisse indiquer cached:true au frontend.
@@ -245,6 +258,10 @@ def post_from_seed(
         body["sector_hint"] = sector_hint
     if depth_hint is not None:
         body["depth_hint"] = depth_hint
+    if scope_profile:
+        body["scope_profile"] = scope_profile
+    if hints_override:
+        body["hints_override"] = hints_override
 
     try:
         resp = requests.post(
