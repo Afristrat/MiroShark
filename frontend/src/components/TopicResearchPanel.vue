@@ -651,7 +651,9 @@ watch(
 .trp-card--devil {
   border-color: var(--wi-primary-container);
   border-width: 2px;
-  background: var(--wi-secondary-container, var(--wi-surface));
+  /* Pas de background coloré : on garde le surface dark theme et la
+     bordure orange suffit à signaler le devil's advocate. */
+  box-shadow: 0 0 0 1px rgb(255 133 81 / 25%) inset;
 }
 
 .trp-card-head {
@@ -672,11 +674,12 @@ watch(
 
 .trp-devil-badge {
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.4px;
-  color: var(--wi-on-primary);
+  /* Badge vif orange + texte sombre — lisible sur dark theme. */
   background: var(--wi-primary-container);
+  color: #1a1d27;
   padding: 2px 8px;
   border-radius: var(--wi-radius-pill);
   white-space: nowrap;
@@ -713,8 +716,9 @@ watch(
 }
 
 .trp-variant-item--selected {
-  border-color: var(--wi-on-primary-container);
-  background: var(--wi-primary-soft);
+  /* Orange vif pour la bordure + tint visible sur dark theme. */
+  border-color: var(--wi-primary-container);
+  background: rgb(255 133 81 / 12%);
 }
 
 .trp-variant-row {
@@ -752,16 +756,17 @@ watch(
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.4px;
-  font-weight: 600;
+  font-weight: 700;
   padding: 2px 8px;
   border-radius: var(--wi-radius-pill);
-  background: var(--wi-on-primary-container);
-  color: var(--wi-on-primary);
+  /* Vif orange + texte dark theme bg pour lisibilité maximale. */
+  background: var(--wi-primary-container);
+  color: #1a1d27;
 }
 
 .trp-variant-charcount {
   font-size: 11px;
-  color: var(--wi-on-surface-variant);
+  color: var(--wi-outline, #8a90ad);
   font-family: var(--wi-font-mono, monospace);
 }
 
@@ -793,7 +798,7 @@ watch(
 }
 
 .trp-sources-inline summary:hover {
-  color: var(--wi-on-primary-container);
+  color: var(--wi-primary-container);
 }
 
 .trp-sources-list {
@@ -821,6 +826,12 @@ watch(
 .trp-source-favicon {
   grid-area: fav;
   flex-shrink: 0;
+  /* Favicons Google sont conçus fond clair → padding blanc pour
+     les rendre visibles sur dark theme. */
+  background: white;
+  border-radius: 2px;
+  padding: 1px;
+  box-sizing: content-box;
 }
 
 .trp-source-name {
@@ -835,8 +846,9 @@ watch(
 .trp-source-score {
   grid-area: score;
   font-family: var(--wi-font-mono, monospace);
-  color: var(--wi-on-primary-container);
+  color: var(--wi-primary-container);
   font-size: 11px;
+  font-weight: 600;
 }
 
 .trp-source-url {
@@ -849,7 +861,7 @@ watch(
 
 .trp-source-url:hover {
   text-decoration: underline;
-  color: var(--wi-on-primary-container);
+  color: var(--wi-primary-container);
 }
 
 /* ─── Footer verdict + coverage ─── */
@@ -863,30 +875,31 @@ watch(
 
 .trp-verdict {
   font-size: var(--wi-caption);
-  font-weight: 600;
+  font-weight: 700;
   text-transform: lowercase;
   padding: 3px 10px;
   border-radius: var(--wi-radius-pill);
 }
 
+/* Dark-theme aware : background tint + texte clair pour lisibilité. */
 .trp-verdict--pass {
-  background: var(--wi-success-container, #e2f2e0);
-  color: var(--wi-on-success-container, #1e5a2a);
+  background: rgb(81 200 120 / 18%);
+  color: #6fdb96;
 }
 
 .trp-verdict--warn {
-  background: var(--wi-warning-container, #fdf2dc);
-  color: var(--wi-on-warning-container, #8a5a14);
+  background: rgb(255 196 81 / 18%);
+  color: #ffc451;
 }
 
 .trp-verdict--deepen {
-  background: var(--wi-primary-soft, #ffe3d6);
-  color: var(--wi-on-primary-container, #b34a1f);
+  background: rgb(255 133 81 / 18%);
+  color: var(--wi-primary-container);
 }
 
 .trp-verdict--fail {
-  background: var(--wi-error-container, #fbe9e9);
-  color: var(--wi-on-error-container, #8b1f1f);
+  background: rgb(255 100 100 / 18%);
+  color: #ff8c8c;
 }
 
 .trp-coverage {
@@ -991,13 +1004,15 @@ watch(
 }
 
 .trp-compose-insert {
-  background: var(--wi-on-primary-container);
-  border: 1px solid var(--wi-on-primary-container);
-  color: var(--wi-on-primary);
+  /* CTA principal : orange vif + texte dark theme — bien contrasté. */
+  background: var(--wi-primary-container);
+  border: 1px solid var(--wi-primary-container);
+  color: #1a1d27;
 }
 
 .trp-compose-insert:hover:not(:disabled) {
-  filter: brightness(1.05);
+  filter: brightness(1.1);
+  box-shadow: 0 2px 8px rgb(255 133 81 / 35%);
 }
 
 .trp-compose-insert:disabled {
