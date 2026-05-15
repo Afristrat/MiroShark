@@ -114,6 +114,18 @@ class _TtlCache:
         with self._lock:
             self._memory[full] = (time.time() + ttl_s, raw)
 
+    def delete(self, key: str) -> None:
+        """F5 2026-05-15 — invalidation explicite d'une entrée.
+        Best-effort : ne pète pas si la clé n'existe pas ou si Redis down."""
+        full = self.PREFIX + key
+        if self._client is not None:
+            try:
+                self._client.delete(full)
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("redis delete(%s) failed: %s", full, exc)
+        with self._lock:
+            self._memory.pop(full, None)
+
     def purge_expired(self) -> int:
         """Nettoie les entrées expirées du cache in-process (no-op en Redis)."""
         if self._client is not None:
@@ -329,6 +341,15 @@ def _handle_kairos_response(
             },
             ttl_s=3600,  # 1h
         )
+        # F5 2026-05-15 — index inverse session_id → cache_key pour
+        # invalider la cache seed quand le poll status découvre que
+        # la session a fini en failed/timeout. Sinon Bassira retourne
+        # le même session_id mort pendant 1h.
+        _cache().set(
+            f"session:{session_id}",
+            {"cache_key": cache_key},
+            ttl_s=3600,
+        )
     return data
 
 
@@ -405,6 +426,22 @@ def get_status(session_id: str) -> Dict[str, Any]:
             status=502,
         ) from exc
 
-    if (data.get("status") or "").lower() == "completed":
+    status_lower = (data.get("status") or "").lower()
+    if status_lower == "completed":
         _cache().set(f"status:{session_id}", data, ttl_s=24 * 3600)
+    elif status_lower in ("failed", "timeout"):
+        # F5 2026-05-15 — la session est morte : invalider la cache
+        # seed:{cache_key} pour que le prochain POST avec la même graine
+        # déclenche un VRAI nouveau pipeline au lieu de retourner le
+        # session_id zombie pendant 1h. Couvre RC-6.
+        reverse = _cache().get(f"session:{session_id}")
+        if isinstance(reverse, dict):
+            ck = reverse.get("cache_key")
+            if isinstance(ck, str) and ck:
+                _cache().delete(f"seed:{ck}")
+                _cache().delete(f"session:{session_id}")
+                logger.info(
+                    "kairos_proxy: invalidated seed cache for session=%s status=%s",
+                    session_id, status_lower,
+                )
     return data
