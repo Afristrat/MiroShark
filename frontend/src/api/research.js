@@ -37,6 +37,16 @@ export function postResearchFromSeed(payload) {
 }
 
 /**
+ * GET /api/research/scope-profiles — liste les profils de coverage publics
+ * disponibles côté Kairos (morocco-tech, mena-business, etc.).
+ *
+ * @returns {Promise<{success: boolean, data?: {profiles: Array<{name, description, reddit_subs, arxiv_categories, rss_keywords}>, count, cached}, error_code?: string}>}
+ */
+export function getScopeProfiles() {
+  return client.get('/api/research/scope-profiles')
+}
+
+/**
  * GET /api/research/status?session_id=… — polling.
  *
  * @param {string} sessionId - UUID Kairos

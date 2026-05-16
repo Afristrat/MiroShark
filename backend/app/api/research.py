@@ -201,6 +201,37 @@ def post_from_seed():
     }), 200
 
 
+@research_bp.route("/scope-profiles", methods=["GET"])
+@require_auth
+def list_scope_profiles():
+    """GET /api/research/scope-profiles — proxy vers Kairos GET /scope-profiles.
+
+    Permet à l'UI Bassira de fetch dynamiquement la liste des profils de
+    coverage disponibles au lieu d'une liste hardcodée. Cache 1h côté
+    kairos_proxy (la liste change rarement).
+    """
+    try:
+        data = kx.get_scope_profiles()
+    except kx.KairosError as exc:
+        logger.warning(
+            "research.scope-profiles kairos error: %s (%s) status=%s",
+            exc.error_code, exc.message[:120], exc.status,
+        )
+        return _err(exc.error_code, exc.message, exc.status, exc.detail)
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("research.scope-profiles unexpected: %s", exc)
+        return _err("UNKNOWN", str(exc), 500)
+
+    return jsonify({
+        "success": True,
+        "data": {
+            "profiles": data.get("profiles", []),
+            "count": data.get("count", 0),
+            "cached": bool(data.get("cached")),
+        },
+    }), 200
+
+
 @research_bp.route("/status", methods=["GET"])
 @require_auth
 def get_status():

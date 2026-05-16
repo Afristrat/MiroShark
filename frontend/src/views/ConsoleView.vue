@@ -270,7 +270,7 @@
                     v-for="opt in availableScopeProfiles"
                     :key="opt.value || 'auto'"
                     :value="opt.value"
-                  >{{ $t(opt.label) }}</option>
+                  >{{ opt.labelKey ? $t(opt.labelKey) : opt.text }}</option>
                 </select>
                 <span
                   v-if="!selectedScopeProfile && autoScopeProfile"
@@ -367,7 +367,11 @@ import TrendingTopics from '../components/TrendingTopics.vue'
 import TopicResearchPanel from '../components/TopicResearchPanel.vue'
 import { fetchUrl } from '../api/graph'
 import { askMode, enrichAsk } from '../api/simulation'
-import { postResearchFromSeed, getResearchStatus } from '../api/research'
+import {
+  getResearchStatus,
+  getScopeProfiles,
+  postResearchFromSeed,
+} from '../api/research'
 
 const { t, locale } = useI18n()
 const router = useRouter()
@@ -421,11 +425,23 @@ const isDragOver = ref(false)
 const fileInput = ref(null)
 
 // Pré-remplir l'URL si ?url= présent (depuis TrendingTopics ailleurs)
-onMounted(() => {
+onMounted(async () => {
   const preloadUrl = route.query.url
   if (preloadUrl && typeof preloadUrl === 'string') {
     urlInput.value = preloadUrl
     fetchUrlDoc()
+  }
+  // A8 2026-05-16 — fetch dynamiquement la liste des scope_profiles depuis Kairos.
+  // En cas d'échec, la liste fallback hardcodée reste affichée (cf. availableScopeProfiles).
+  try {
+    const res = await getScopeProfiles()
+    if (res?.success && Array.isArray(res.data?.profiles)) {
+      fetchedScopeProfiles.value = res.data.profiles
+    }
+  } catch (err) {
+    // best-effort : log côté console mais ne pas bloquer l'UI
+    // eslint-disable-next-line no-console
+    console.warn('[ConsoleView] getScopeProfiles failed, falling back to hardcoded list:', err)
   }
 })
 
@@ -662,14 +678,36 @@ const fetchedDocs = computed(() =>
 // manuelle ; on retombe sur autoScopeProfile.
 const selectedScopeProfile = ref(null)
 
-// Liste statique des profils disponibles. Devrait idéalement venir d'un
-// endpoint Kairos /scope-profiles, mais pour démarrer rapide on hardcode
-// les 2 profils seeds publics (cf. migration 20260515100001_scope_profiles).
-const availableScopeProfiles = [
-  { value: null, label: 'home.console.scopeProfile.auto' },
-  { value: 'morocco-tech', label: 'home.console.scopeProfile.moroccoTech' },
-  { value: 'mena-business', label: 'home.console.scopeProfile.menaBusiness' },
-]
+// A8 2026-05-16 — profils fetchés dynamiquement depuis Kairos au mount.
+// Fallback sur la liste hardcodée si fetch échoue (Kairos indispo, etc.).
+const fetchedScopeProfiles = ref([])
+
+const availableScopeProfiles = computed(() => {
+  const auto = { value: null, labelKey: 'home.console.scopeProfile.auto', text: null }
+  const out = [auto]
+  if (fetchedScopeProfiles.value.length > 0) {
+    for (const p of fetchedScopeProfiles.value) {
+      out.push({
+        value: p.name,
+        labelKey: null,
+        text: p.description || p.name,
+      })
+    }
+  } else {
+    // Fallback baseline (correspond aux 2 profils seedés côté Kairos)
+    out.push({
+      value: 'morocco-tech',
+      labelKey: 'home.console.scopeProfile.moroccoTech',
+      text: null,
+    })
+    out.push({
+      value: 'mena-business',
+      labelKey: 'home.console.scopeProfile.menaBusiness',
+      text: null,
+    })
+  }
+  return out
+})
 
 // Auto-détection à partir du seed : mots-clés Maroc → morocco-tech,
 // mots-clés MENA / Maghreb / GCC → mena-business. Évite à l'utilisateur

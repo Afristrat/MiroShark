@@ -370,6 +370,66 @@ def _handle_kairos_response(
     return data
 
 
+def get_scope_profiles() -> Dict[str, Any]:
+    """GET {KAIROS_API_URL}/scope-profiles — liste les profils de coverage
+    publics disponibles côté Kairos. Lecture seule, cachée 1h pour limiter
+    les calls (la liste change rarement).
+    """
+    url_base, api_key = _require_config()
+    cached = _cache().get("scope_profiles:public")
+    if cached:
+        return {**cached, "cached": True}
+
+    try:
+        resp = requests.get(
+            f"{url_base}/scope-profiles",
+            headers={
+                "x-api-key": api_key,
+                "Accept": "application/json",
+            },
+            timeout=Config.KAIROS_GET_TIMEOUT_S,
+        )
+    except requests.exceptions.Timeout as exc:
+        raise KairosError(
+            error_code="KAIROS_TIMEOUT",
+            message=f"Kairos GET /scope-profiles timed out after {Config.KAIROS_GET_TIMEOUT_S}s.",
+            status=504,
+        ) from exc
+    except requests.exceptions.ConnectionError as exc:
+        raise KairosError(
+            error_code="KAIROS_UNREACHABLE",
+            message="Could not reach Kairos.",
+            status=502,
+            detail={"reason": str(exc)[:200]},
+        ) from exc
+
+    if resp.status_code == 401:
+        raise KairosError(
+            error_code="KAIROS_INVALID_KEY",
+            message="x-api-key rejetée par Kairos.",
+            status=502,
+        )
+    if resp.status_code != 200:
+        raise KairosError(
+            error_code="KAIROS_SERVER_ERROR",
+            message=f"Kairos a répondu {resp.status_code} sur /scope-profiles.",
+            status=502,
+        )
+
+    try:
+        data = resp.json()
+    except ValueError as exc:
+        raise KairosError(
+            error_code="KAIROS_INVALID_RESPONSE",
+            message="Kairos a répondu sans JSON valide.",
+            status=502,
+        ) from exc
+
+    # Cache 1h (liste statique, change rarement)
+    _cache().set("scope_profiles:public", data, ttl_s=3600)
+    return data
+
+
 def get_status(session_id: str) -> Dict[str, Any]:
     """GET {KAIROS_API_URL}/research-from-seed?session_id=<uuid>.
 
