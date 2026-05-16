@@ -470,6 +470,7 @@
     "subStarting": "// تشغيل خط الأنابيب…",
     "subRunning": "// جارٍ التحليل… {elapsed} ث",
     "subCompleted": "{topics} مواضيع · {sources} مصادر · {verdict}",
+    "subDegradedCompleted": "{count} إشارة خام مُسترجَعة · وضع منخفض ({reason})",
     "subCached": "نتيجة مخبّأة",
     "subFailed": "// فشل خط الأنابيب",
     "subTimeout": "// انتهت المهلة — حسّن البذرة وأعد المحاولة",
@@ -505,9 +506,14 @@
       "heading": "الموجه المُركَّب",
       "selectedCount": "{count} موجز محدّد | {count} موجزات محدّدة",
       "empty": "حدّد موجزًا أو أكثر أعلاه لتركيب موجهك.",
+      "emptyDegraded": "حدّد مصدرًا أو أكثر أعلاه لتركيب موجهك.",
       "textareaAriaLabel": "الموجه المُركَّب قابل للتحرير",
       "reset": "إعادة توليد تلقائي",
-      "insert": "إدراج في المنصة"
+      "insert": "إدراج في المنصة",
+      "insertWithSources": "أدرج الموجز + {n} مصدر/مصادر في 01",
+      "selectAllSources": "حدّد الكل",
+      "deselectAllSources": "إلغاء التحديد",
+      "sourcesSelectedCount": "{n} مصدر/مصادر محدّدة"
     },
     "errors": {
       "generic": "حدث خطأ.",

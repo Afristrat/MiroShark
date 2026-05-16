@@ -862,31 +862,57 @@ watch(
 )
 
 /**
- * US-B04.1 — le brief composé est de la MATIÈRE (= 01 / Graines de
- * réalité), pas le prompt 02. On crée donc un urlDoc synthétique avec
- * url `bassira://research/...` (idem pattern Ask mode), qui apparaît
- * dans la liste 01 et est inclus dans le payload de simulation.
+ * US-B04.2 — quand l'user clique « Insérer », le panel envoie :
+ *   - prompt   : le markdown composé éditable (devient 1er urlDoc)
+ *   - selections : variants Kairos sélectionnés (mode complet)
+ *   - sources  : signaux cochés avec leurs URLs → 1 urlDoc par source
  *
- * Le textarea 02 reste à l'utilisateur de formuler — typiquement
- * « Simule la réaction des acteurs concernés au scénario ci-dessus ».
+ * Pourquoi N urlDocs au lieu d'un seul markdown : le backend simulation
+ * Bassira ingère chaque urlDoc comme matière séparée (graphe Neo4j,
+ * embedding, etc.). En réduisant tout à du markdown, les URLs des
+ * sources ne sont pas réellement fetchées/comptées. En les exposant
+ * comme urlDocs distincts, elles deviennent de vraies entrées 01.
+ *
+ * Déduplication : on ne ré-insère pas une URL déjà présente dans urlDocs.
  */
-const handleResearchCompose = ({ prompt, selections }) => {
+const handleResearchCompose = ({ prompt, selections, sources }) => {
   const compiled = (prompt || '').trim()
   if (!compiled) return
+
+  // 1) Le brief composé (markdown éditable) — toujours créé en 01.
   const firstSel = Array.isArray(selections) && selections.length > 0 ? selections[0] : null
   const labelHead = firstSel?.topic_label ? firstSel.topic_label.slice(0, 60) : 'composé'
-  const synthUrl = `bassira://research/${Date.now().toString(36)}`
-  const payload = {
+  const briefUrl = `bassira://research/${Date.now().toString(36)}`
+  urlDocs.value.push({
     title: t('home.console.research.briefDocTitle', { topic: labelHead }),
-    url: synthUrl,
+    url: briefUrl,
     text: compiled,
     char_count: compiled.length,
+  })
+
+  // 2) Chaque source cochée devient un urlDoc indépendant — pour que la
+  // simulation ingère vraiment les liens (et pas seulement la mention
+  // markdown).
+  const sourcesArr = Array.isArray(sources) ? sources : []
+  const existingUrls = new Set(urlDocs.value.map((d) => d.url))
+  for (const src of sourcesArr) {
+    if (!src || !src.url || existingUrls.has(src.url)) continue
+    const titleParts = []
+    if (src.title) titleParts.push(src.title)
+    else if (src.source) titleParts.push(src.source)
+    else titleParts.push(src.url)
+    const text = src.excerpt || src.title || src.url
+    urlDocs.value.push({
+      title: titleParts.join(' — ').slice(0, 200),
+      url: src.url,
+      text,
+      char_count: text.length,
+    })
+    existingUrls.add(src.url)
   }
-  urlDocs.value.push(payload)
-  // L'aperçu 01 incluant la nouvelle entrée va re-trigger
-  // scenarioSuggestPreview → mais comme on a aligné lastTriggeredSeed
-  // sur la NOUVELLE matière, le watcher ne refait pas le pipeline pour
-  // rien (idempotence).
+
+  // L'aperçu 01 va re-trigger scenarioSuggestPreview → on aligne
+  // lastTriggeredSeed pour éviter qu'on relance un pipeline.
   lastTriggeredSeed.value = (scenarioSuggestPreview.value || '').trim()
 }
 

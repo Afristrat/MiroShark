@@ -26,7 +26,8 @@
     </div>
 
     <!-- F3 mode dégradé : synthesizer indisponible → on affiche les
-         scored_signals_top retournés par Kairos en fallback. -->
+         scored_signals_top retournés par Kairos en fallback.
+         US-B04.2 : checkboxes par source + toggle all + compose zone. -->
     <template v-else-if="isCompleted && isDegradedSynthesizer && scoredSignalsTop.length > 0">
       <div class="trp-degraded-banner" role="status">
         <span class="trp-degraded-icon">⚠</span>
@@ -37,40 +38,108 @@
           }) }}
         </p>
       </div>
-      <h5 class="trp-degraded-heading">
-        {{ $t('research.degraded.rawSignalsHeading', { count: scoredSignalsTop.length }) }}
-      </h5>
+
+      <div class="trp-degraded-toolbar">
+        <h5 class="trp-degraded-heading">
+          {{ $t('research.degraded.rawSignalsHeading', { count: scoredSignalsTop.length }) }}
+        </h5>
+        <button
+          type="button"
+          class="trp-degraded-toggle-all"
+          @click="toggleAllSources"
+        >
+          {{ allSourcesSelected
+            ? $t('research.compose.deselectAllSources')
+            : $t('research.compose.selectAllSources') }}
+        </button>
+      </div>
+
       <ul class="trp-degraded-list">
         <li
           v-for="(sig, i) in scoredSignalsTop"
-          :key="`raw-${sig.id || i}`"
+          :key="`raw-${sig.url || sig.id || i}`"
           class="trp-degraded-item"
+          :class="{ 'trp-degraded-item--unselected': sig.url && !isSourceSelected(sig.url) }"
         >
-          <div class="trp-degraded-item-head">
-            <a
-              v-if="sig.url"
-              :href="sig.url"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="trp-degraded-item-title"
-            >{{ sig.title || sig.url }}</a>
-            <span v-else class="trp-degraded-item-title">{{ sig.title || '—' }}</span>
-            <span
-              v-if="typeof sig.score === 'number'"
-              class="trp-degraded-score"
-              :title="$t('research.degraded.scoreLabel')"
-            >{{ sig.score }}</span>
-          </div>
-          <div class="trp-degraded-item-meta">
-            <span v-if="sig.source" class="trp-degraded-source">{{ sig.source }}</span>
-            <span v-if="sig.lang" class="trp-degraded-lang">{{ sig.lang }}</span>
-            <span v-if="sig.url" class="trp-degraded-url" :title="sig.url">
-              {{ truncateUrl(sig.url) }}
-            </span>
-          </div>
-          <p v-if="sig.excerpt" class="trp-degraded-excerpt">{{ sig.excerpt }}</p>
+          <label class="trp-degraded-item-row">
+            <input
+              type="checkbox"
+              class="trp-degraded-checkbox"
+              :checked="!sig.url || isSourceSelected(sig.url)"
+              :disabled="!sig.url"
+              @change="sig.url && toggleSource(sig.url)"
+            />
+            <div class="trp-degraded-item-body">
+              <div class="trp-degraded-item-head">
+                <a
+                  v-if="sig.url"
+                  :href="sig.url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="trp-degraded-item-title"
+                  @click.stop
+                >{{ sig.title || sig.url }} ↗</a>
+                <span v-else class="trp-degraded-item-title">{{ sig.title || '—' }}</span>
+                <span
+                  v-if="typeof sig.score === 'number'"
+                  class="trp-degraded-score"
+                  :title="$t('research.degraded.scoreLabel')"
+                >{{ sig.score }}</span>
+              </div>
+              <div class="trp-degraded-item-meta">
+                <span v-if="sig.source" class="trp-degraded-source">{{ sig.source }}</span>
+                <span v-if="sig.lang" class="trp-degraded-lang">{{ sig.lang }}</span>
+                <span v-if="sig.url" class="trp-degraded-url" :title="sig.url">
+                  {{ truncateUrl(sig.url) }}
+                </span>
+              </div>
+              <p v-if="sig.excerpt" class="trp-degraded-excerpt">{{ sig.excerpt }}</p>
+            </div>
+          </label>
         </li>
       </ul>
+
+      <!-- Compose zone (mode dégradé) — réutilise les mêmes éléments que
+           le mode complet, mais le content est tiré de selectedSignalsDetails. -->
+      <section class="trp-compose">
+        <header class="trp-compose-head">
+          <h5 class="trp-compose-title">🧪 {{ $t('research.compose.heading') }}</h5>
+          <span class="trp-compose-count">
+            {{ $t('research.compose.sourcesSelectedCount', { n: selectedSourcesCount }) }}
+          </span>
+        </header>
+        <p v-if="selectedSourcesCount === 0" class="trp-compose-empty">
+          {{ $t('research.compose.emptyDegraded') }}
+        </p>
+        <template v-else>
+          <textarea
+            v-model="composedPromptEdited"
+            class="trp-compose-textarea"
+            :rows="composedTextareaRows"
+            :aria-label="$t('research.compose.textareaAriaLabel')"
+            data-testid="composed-prompt"
+          ></textarea>
+          <div class="trp-compose-actions">
+            <button
+              type="button"
+              class="trp-compose-reset"
+              :disabled="composedPromptEdited === composedPromptAuto"
+              @click="resetComposedToAuto"
+            >
+              {{ $t('research.compose.reset') }}
+            </button>
+            <button
+              type="button"
+              class="trp-compose-insert"
+              :disabled="!composedPromptEdited.trim()"
+              data-testid="compose-insert-btn"
+              @click="insertComposed"
+            >
+              {{ $t('research.compose.insertWithSources', { n: selectedSourcesCount }) }} →
+            </button>
+          </div>
+        </template>
+      </section>
     </template>
 
     <!-- État completed : topics + multi-select briefs + composition zone -->
@@ -137,17 +206,26 @@
             </li>
           </ul>
 
-          <!-- Sources inline (details/summary native HTML) -->
-          <details v-if="hasSources(topic)" class="trp-sources-inline">
+          <!-- Sources inline avec checkbox par source (US-B04.2) -->
+          <details v-if="hasSources(topic)" class="trp-sources-inline" open>
             <summary>
               📎 {{ $t('research.compose.sourcesCount', { n: topic.key_signals.length }) }}
             </summary>
             <ul class="trp-sources-list">
               <li
                 v-for="(src, si) in topic.key_signals"
-                :key="`src-${ti}-${si}`"
+                :key="`src-${ti}-${src.url || si}`"
                 class="trp-source-row"
+                :class="{ 'trp-source-row--unselected': src.url && !isSourceSelected(src.url) }"
               >
+                <input
+                  type="checkbox"
+                  class="trp-source-checkbox"
+                  :checked="!src.url || isSourceSelected(src.url)"
+                  :disabled="!src.url"
+                  :aria-label="src.source_name || src.url || ''"
+                  @change="src.url && toggleSource(src.url)"
+                />
                 <img
                   v-if="src.url"
                   :src="faviconUrl(src.url)"
@@ -171,6 +249,7 @@
                   rel="noopener noreferrer"
                   class="trp-source-url"
                   :title="src.url"
+                  @click.stop
                 >{{ truncateUrl(src.url) }} ↗</a>
               </li>
             </ul>
@@ -198,6 +277,8 @@
           </h5>
           <span class="trp-compose-count">
             {{ $t('research.compose.selectedCount', { count: selectedCount }) }}
+            ·
+            {{ $t('research.compose.sourcesSelectedCount', { n: selectedSourcesCount }) }}
           </span>
         </header>
 
@@ -229,7 +310,7 @@
               data-testid="compose-insert-btn"
               @click="insertComposed"
             >
-              {{ $t('research.compose.insert') }} →
+              {{ $t('research.compose.insertWithSources', { n: selectedSourcesCount }) }} →
             </button>
           </div>
         </template>
@@ -346,6 +427,15 @@ const statusLine = computed(() => {
     case 'running':
       return t('research.subRunning', { elapsed: props.elapsedSeconds })
     case 'completed': {
+      // US-B04.2 — status line dédiée mode dégradé : sinon afficher
+      // "0 topics · 0 sources" alors qu'on a 30 signaux bruts à dispo
+      // est trompeur (cf. session prod 2026-05-16).
+      if (isDegradedSynthesizer.value) {
+        return t('research.subDegradedCompleted', {
+          count: scoredSignalsTop.value.length,
+          reason: synthesizerFailureType.value || 'unknown',
+        })
+      }
       const verdictText = verdict.value ? t(`research.verdict.${verdict.value}`) : ''
       return t('research.subCompleted', {
         topics: topics.value.length,
@@ -396,6 +486,76 @@ const hasSources = (topic) =>
 // Set de clés "ti-vi" — un Set est immutable-friendly avec Vue 3 reactivity.
 const selectedVariantKeys = ref(new Set())
 
+// US-B04.2 — set d'URLs cochés. Partagé entre mode complet (sources de
+// chaque topic) et mode dégradé (scored_signals_top). Permet une UX
+// uniforme : « coche les sources que tu veux ingérer dans la simu ».
+const selectedSourceUrls = ref(new Set())
+
+const isSourceSelected = (url) => selectedSourceUrls.value.has(url)
+
+const toggleSource = (url) => {
+  if (!url) return
+  const next = new Set(selectedSourceUrls.value)
+  if (next.has(url)) next.delete(url)
+  else next.add(url)
+  selectedSourceUrls.value = next
+}
+
+const _allSourceUrls = computed(() => {
+  if (isDegradedSynthesizer.value) {
+    return scoredSignalsTop.value
+      .map((s) => s.url)
+      .filter(Boolean)
+  }
+  const out = []
+  for (const topic of topics.value) {
+    if (!Array.isArray(topic.key_signals)) continue
+    for (const sig of topic.key_signals) {
+      if (sig.url) out.push(sig.url)
+    }
+  }
+  return out
+})
+
+const allSourcesSelected = computed(() => {
+  const all = _allSourceUrls.value
+  if (all.length === 0) return false
+  return all.every((u) => selectedSourceUrls.value.has(u))
+})
+
+const toggleAllSources = () => {
+  if (allSourcesSelected.value) {
+    selectedSourceUrls.value = new Set()
+  } else {
+    selectedSourceUrls.value = new Set(_allSourceUrls.value)
+  }
+}
+
+const selectedSignalsDetails = computed(() => {
+  const urls = selectedSourceUrls.value
+  if (urls.size === 0) return []
+  const out = []
+  if (isDegradedSynthesizer.value) {
+    for (const sig of scoredSignalsTop.value) {
+      if (sig.url && urls.has(sig.url)) out.push(sig)
+    }
+  } else {
+    const seen = new Set()
+    for (const topic of topics.value) {
+      if (!Array.isArray(topic.key_signals)) continue
+      for (const sig of topic.key_signals) {
+        if (sig.url && urls.has(sig.url) && !seen.has(sig.url)) {
+          seen.add(sig.url)
+          out.push(sig)
+        }
+      }
+    }
+  }
+  return out
+})
+
+const selectedSourcesCount = computed(() => selectedSignalsDetails.value.length)
+
 const keyOf = (ti, vi) => `${ti}-${vi}`
 
 const isVariantSelected = (ti, vi) => selectedVariantKeys.value.has(keyOf(ti, vi))
@@ -429,10 +589,27 @@ const selectedVariantsDetails = computed(() => {
 // ─── Composition prompt ─────────────────────────────────────────────────────
 
 /**
- * Compose le prompt à partir des variants cochés. Format Markdown léger,
- * éditable par l'utilisateur dans la textarea juste après.
+ * Compose le prompt. Deux modes :
+ *   - Mode complet : briefs variants sélectionnés (existant US-B04)
+ *   - Mode dégradé : signaux bruts sélectionnés (US-B04.2) — format
+ *     Markdown listant title/source/url/excerpt pour donner du
+ *     contexte au LLM en aval lors de la simulation.
  */
 const composedPromptAuto = computed(() => {
+  if (isDegradedSynthesizer.value) {
+    const parts = selectedSignalsDetails.value.map((sig) => {
+      const title = sig.title || sig.source || sig.url || '—'
+      const meta = []
+      if (sig.source) meta.push(`Source: ${sig.source}`)
+      if (sig.lang) meta.push(`Lang: ${sig.lang}`)
+      if (typeof sig.score === 'number') meta.push(`Score: ${sig.score}`)
+      const metaLine = meta.length > 0 ? `\n${meta.join(' · ')}` : ''
+      const excerpt = sig.excerpt ? `\n\n${sig.excerpt.trim()}` : ''
+      const url = sig.url ? `\n\n${sig.url}` : ''
+      return `## ${title}${metaLine}${url}${excerpt}`
+    })
+    return parts.join('\n\n---\n\n')
+  }
   const parts = selectedVariantsDetails.value.map(({ topic, variant }) => {
     const fwk = variant.framework_hint ? ` [${frameworkLabel(variant.framework_hint)}]` : ''
     const head = `# ${topic.label}${fwk}`
@@ -477,6 +654,9 @@ const resetComposedToAuto = () => {
 const insertComposed = () => {
   const prompt = composedPromptEdited.value.trim()
   if (!prompt) return
+  // US-B04.2 — émet aussi `sources` (signaux cochés). Le parent
+  // (ConsoleView) crée 1 urlDoc « Brief composé » + 1 urlDoc par source
+  // → la simulation ingère vraiment les liens.
   emit('compose', {
     prompt,
     selections: selectedVariantsDetails.value.map(({ topic, variant }) => ({
@@ -486,6 +666,14 @@ const insertComposed = () => {
       brief_variant: variant,
       framework_hint: variant.framework_hint || null,
       signals_refs: Array.isArray(variant.signals_refs) ? variant.signals_refs : [],
+    })),
+    sources: selectedSignalsDetails.value.map((sig) => ({
+      url: sig.url || null,
+      title: sig.title || null,
+      source: sig.source || null,
+      excerpt: sig.excerpt || null,
+      lang: sig.lang || null,
+      score: typeof sig.score === 'number' ? sig.score : null,
     })),
   })
 }
@@ -524,7 +712,11 @@ watch(
     selectedVariantKeys.value = new Set()
     composedPromptEdited.value = ''
     lastAuto = ''
+    // US-B04.2 — option (c) : tout coché par défaut. L'user décoche
+    // ce qu'il ne veut pas inclure dans la simulation.
+    selectedSourceUrls.value = new Set(_allSourceUrls.value)
   },
+  { immediate: true },
 )
 </script>
 
@@ -812,15 +1004,31 @@ watch(
 
 .trp-source-row {
   display: grid;
-  grid-template-columns: 16px 1fr auto;
+  grid-template-columns: 18px 16px 1fr auto;
   grid-template-areas:
-    "fav name score"
-    ". url url";
+    "cb fav name score"
+    ". . url url";
   gap: 4px 8px;
   align-items: center;
   padding: 4px 6px;
   background: var(--wi-surface);
   border-radius: var(--wi-radius-sm, 6px);
+  transition: opacity var(--ms-transition-fast);
+}
+.trp-source-row--unselected {
+  opacity: 0.4;
+}
+.trp-source-checkbox {
+  grid-area: cb;
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: var(--wi-primary-container);
+  cursor: pointer;
+}
+.trp-source-checkbox:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .trp-source-favicon {
@@ -1018,5 +1226,155 @@ watch(
 .trp-compose-insert:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+/* ─── Mode dégradé (US-B04.2) ─── */
+.trp-degraded-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgb(255 196 81 / 12%);
+  border: 1px solid rgb(255 196 81 / 40%);
+  border-radius: var(--wi-radius-md, 8px);
+  margin-bottom: var(--wi-space-sm);
+}
+.trp-degraded-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  color: #ffc451;
+}
+.trp-degraded-banner p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--wi-on-surface);
+}
+.trp-degraded-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 10px;
+}
+.trp-degraded-heading {
+  margin: 0;
+  font-family: var(--wi-font-heading);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--wi-on-surface);
+}
+.trp-degraded-toggle-all {
+  background: transparent;
+  border: 1px solid var(--wi-outline-variant);
+  color: var(--wi-on-surface-variant);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--wi-radius-pill);
+  cursor: pointer;
+  transition: border-color var(--ms-transition-fast), color var(--ms-transition-fast);
+}
+.trp-degraded-toggle-all:hover {
+  border-color: var(--wi-primary-container);
+  color: var(--wi-primary-container);
+}
+.trp-degraded-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--wi-space-md) 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 480px;
+  overflow-y: auto;
+}
+.trp-degraded-item {
+  background: var(--wi-surface-container-low);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-md, 8px);
+  transition: opacity var(--ms-transition-fast), border-color var(--ms-transition-fast);
+}
+.trp-degraded-item:hover {
+  border-color: var(--wi-primary-container);
+}
+.trp-degraded-item--unselected {
+  opacity: 0.45;
+}
+.trp-degraded-item-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  padding: 10px;
+  cursor: pointer;
+  align-items: start;
+}
+.trp-degraded-checkbox {
+  margin-top: 3px;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--wi-primary-container);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.trp-degraded-item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.trp-degraded-item-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.trp-degraded-item-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--wi-on-surface);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.trp-degraded-item-title:hover {
+  color: var(--wi-primary-container);
+  text-decoration: underline;
+}
+.trp-degraded-score {
+  font-family: var(--wi-font-mono, monospace);
+  font-size: 11px;
+  color: var(--wi-primary-container);
+  font-weight: 600;
+  background: rgb(255 133 81 / 15%);
+  padding: 1px 6px;
+  border-radius: var(--wi-radius-pill);
+}
+.trp-degraded-item-meta {
+  display: flex;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--wi-on-surface-variant);
+  flex-wrap: wrap;
+}
+.trp-degraded-source {
+  font-weight: 600;
+}
+.trp-degraded-lang {
+  background: var(--wi-surface);
+  padding: 1px 6px;
+  border-radius: var(--wi-radius-pill);
+  text-transform: uppercase;
+  font-size: 10px;
+}
+.trp-degraded-url {
+  word-break: break-all;
+  opacity: 0.7;
+}
+.trp-degraded-excerpt {
+  margin: 4px 0 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--wi-on-surface-variant);
 }
 </style>

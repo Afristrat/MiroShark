@@ -470,6 +470,7 @@
     "subStarting": "// initialisation du pipeline…",
     "subRunning": "// analyse en cours… {elapsed}s",
     "subCompleted": "{topics} topics · {sources} sources · {verdict}",
+    "subDegradedCompleted": "{count} signaux bruts récupérés · mode dégradé ({reason})",
     "subCached": "résultat en cache",
     "subFailed": "// pipeline échoué",
     "subTimeout": "// délai dépassé — affinez la graine et réessayez",
@@ -505,9 +506,14 @@
       "heading": "Prompt composé",
       "selectedCount": "{count} brief sélectionné | {count} briefs sélectionnés",
       "empty": "Sélectionnez un ou plusieurs briefs ci-dessus pour assembler votre prompt.",
+      "emptyDegraded": "Cochez une ou plusieurs sources ci-dessus pour assembler votre prompt.",
       "textareaAriaLabel": "Prompt composé éditable",
       "reset": "Régénérer auto",
-      "insert": "Insérer dans la console"
+      "insert": "Insérer dans la console",
+      "insertWithSources": "Insérer brief + {n} source(s) en 01",
+      "selectAllSources": "Tout cocher",
+      "deselectAllSources": "Tout décocher",
+      "sourcesSelectedCount": "{n} source(s) sélectionnée(s)"
     },
     "errors": {
       "generic": "Une erreur est survenue.",

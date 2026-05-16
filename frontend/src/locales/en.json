@@ -470,6 +470,7 @@
     "subStarting": "// kicking off the pipeline…",
     "subRunning": "// analyzing… {elapsed}s",
     "subCompleted": "{topics} topics · {sources} sources · {verdict}",
+    "subDegradedCompleted": "{count} raw signals retrieved · degraded mode ({reason})",
     "subCached": "cached result",
     "subFailed": "// pipeline failed",
     "subTimeout": "// timed out — refine the seed and retry",
@@ -505,9 +506,14 @@
       "heading": "Composed prompt",
       "selectedCount": "{count} brief selected | {count} briefs selected",
       "empty": "Tick one or more briefs above to assemble your prompt.",
+      "emptyDegraded": "Tick one or more sources above to assemble your prompt.",
       "textareaAriaLabel": "Editable composed prompt",
       "reset": "Regenerate auto",
-      "insert": "Insert into console"
+      "insert": "Insert into console",
+      "insertWithSources": "Insert brief + {n} source(s) into 01",
+      "selectAllSources": "Tick all",
+      "deselectAllSources": "Untick all",
+      "sourcesSelectedCount": "{n} source(s) selected"
     },
     "errors": {
       "generic": "Something went wrong.",
