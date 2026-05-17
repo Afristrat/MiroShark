@@ -489,7 +489,253 @@ class ChartFactory:
         fig.tight_layout()
         return _fig_to_png(fig)
 
-    # ── 5. Interaction network ────────────────────────────────────────────────
+    # ── 5. Influence × Posture matrix (quadrant tactique C-level) ─────────────
+
+    def influence_posture_matrix(self) -> bytes:
+        """
+        Scatter plot 2D : axe X = influence (variations de score induites),
+        axe Y = score final. Quatre quadrants :
+            Champions          (haut + droite)  — influence forte + adhésion
+            Sceptiques bruyants (haut + gauche)  — influence forte + résistance
+            Adoptants discrets  (bas  + droite)  — influence faible + adhésion
+            Indifférents        (bas  + gauche)  — influence faible + résistance
+
+        Lecture C-level : le CEO sait immédiatement sur qui investir son
+        temps de conviction (sceptiques bruyants à convertir) et qui
+        amplifier (champions à promouvoir comme témoins).
+        """
+        apply_causse_style()
+
+        ctx = self._ctx
+        if ctx.trajectory is None or not ctx.trajectory.rounds:
+            return _placeholder_png("Trajectoire indisponible\n(matrice influence × posture)")
+
+        # Score final + variations cumulées par agent
+        agent_final: dict[str, float] = {}
+        agent_influence: dict[str, float] = {}
+        agent_name: dict[str, str] = {}
+
+        prev_scores: dict[str, float] = {}
+        for rnd in ctx.trajectory.rounds:
+            for a in rnd.agents:
+                key = a.agent_id or a.name
+                if not key:
+                    continue
+                agent_name[key] = a.name or key
+                if key in prev_scores:
+                    agent_influence[key] = agent_influence.get(key, 0.0) + abs(a.score - prev_scores[key])
+                prev_scores[key] = a.score
+                agent_final[key] = a.score
+
+        if not agent_final:
+            return _placeholder_png("Aucun agent\n(matrice influence × posture)")
+
+        # Garde les 20 agents les plus actifs (influence cumulée la plus haute)
+        sorted_keys = sorted(agent_influence.keys(), key=lambda k: agent_influence.get(k, 0), reverse=True)[:20]
+        if not sorted_keys:
+            sorted_keys = list(agent_final.keys())[:20]
+
+        xs = [agent_influence.get(k, 0.0) for k in sorted_keys]
+        ys = [agent_final.get(k, 0.0) for k in sorted_keys]
+        labels = [agent_name.get(k, k)[:14] for k in sorted_keys]
+
+        # Couleur par quadrant
+        colors = []
+        for x, y in zip(xs, ys):
+            if y >= 0 and x >= (sum(xs) / len(xs) if xs else 0):
+                colors.append(WI_MINT)         # Champions
+            elif y < 0 and x >= (sum(xs) / len(xs) if xs else 0):
+                colors.append(WI_TERRA)        # Sceptiques bruyants
+            elif y >= 0:
+                colors.append(WI_SAND)         # Adoptants discrets
+            else:
+                colors.append(WI_CHARCOAL)     # Indifférents/silencieux
+
+        fig, ax = plt.subplots(figsize=(7, 4.5))
+        ax.set_title("Matrice Influence × Posture finale", pad=10)
+
+        # Axes croisés au centre (mean(x), 0)
+        mean_x = sum(xs) / len(xs) if xs else 0
+        ax.axvline(x=mean_x, color=WI_CHARCOAL, linestyle="--", linewidth=0.6, alpha=0.5)
+        ax.axhline(y=0,      color=WI_CHARCOAL, linestyle="--", linewidth=0.6, alpha=0.5)
+
+        ax.scatter(xs, ys, c=colors, s=80, alpha=0.85, edgecolors="white", linewidth=0.8)
+        for x, y, lab in zip(xs, ys, labels):
+            ax.annotate(lab, (x, y), xytext=(4, 4), textcoords="offset points", fontsize=6, color=WI_CHARCOAL)
+
+        # Annotations quadrant
+        xlim = ax.get_xlim()
+        ylim = ax.get_ylim()
+        ax.text(xlim[1] * 0.98, ylim[1] * 0.92, "Champions",            ha="right", va="top",    fontsize=7, color=WI_MINT,     alpha=0.7)
+        ax.text(xlim[0] * 0.98 if xlim[0] < 0 else mean_x * 0.05, ylim[1] * 0.92, "Sceptiques bruyants", ha="left",  va="top",    fontsize=7, color=WI_TERRA,    alpha=0.7)
+        ax.text(xlim[1] * 0.98, ylim[0] * 0.92 if ylim[0] < 0 else 0,  "Adoptants discrets",  ha="right", va="bottom", fontsize=7, color=WI_SAND,     alpha=0.85)
+        ax.text(xlim[0] * 0.98 if xlim[0] < 0 else mean_x * 0.05, ylim[0] * 0.92 if ylim[0] < 0 else 0,  "Indifférents",        ha="left",  va="bottom", fontsize=7, color=WI_CHARCOAL, alpha=0.7)
+
+        ax.set_xlabel("Influence cumulée (somme des |Δ score| sur la trajectoire)")
+        ax.set_ylabel("Posture finale (score)")
+
+        fig.tight_layout()
+        return _fig_to_png(fig)
+
+    # ── 6. Cinétique de bascule (Sankey simplifié 3 colonnes) ─────────────────
+
+    def stance_flow_sankey(self) -> bytes:
+        """
+        Sankey simplifié à 3 colonnes (Début / Milieu / Fin) qui montre comment
+        les agents migrent entre les trois postures Adhésion / Résistance /
+        En observation au fil de la simulation.
+
+        Lecture C-level : la cinétique de conversion. À quel moment la majorité
+        bascule ? Y a-t-il des reculs (Adhésion → Résistance) qui signalent
+        un incident ?
+        """
+        apply_causse_style()
+
+        ctx = self._ctx
+        if ctx.trajectory is None or not ctx.trajectory.rounds:
+            return _placeholder_png("Trajectoire indisponible\n(cinétique de bascule)")
+
+        rounds = ctx.trajectory.rounds
+        n = len(rounds)
+        snapshots_idx = [0, n // 2, n - 1]
+        snapshot_labels = ["Début", "Milieu", "Fin"]
+
+        # Compter agents par posture à chaque snapshot
+        def _classify(agents):
+            adhesion = sum(1 for a in agents if a.score >  0.10)
+            resistance = sum(1 for a in agents if a.score < -0.10)
+            observation = len(agents) - adhesion - resistance
+            return [adhesion, resistance, observation]
+
+        counts = [_classify(rounds[i].agents) for i in snapshots_idx]
+
+        fig, ax = plt.subplots(figsize=(7, 4.0))
+        ax.set_title("Cinétique de bascule des postures (Début → Milieu → Fin)", pad=10)
+        ax.set_xlim(-0.5, 2.5)
+        ax.set_ylim(-0.05, 1.05)
+        ax.axis("off")
+
+        category_colors = [WI_MINT, WI_TERRA, WI_SAND]
+        category_labels = ["Adhésion", "Résistance", "En observation"]
+
+        # Empiler les blocs proportionnels par snapshot
+        bar_width = 0.18
+        block_positions: list[list[tuple[float, float]]] = []  # (y_low, y_high) par catégorie
+        for col_idx, col_counts in enumerate(counts):
+            total = sum(col_counts) or 1
+            y = 0.0
+            positions = []
+            for cat_idx, cnt in enumerate(col_counts):
+                height = cnt / total
+                ax.add_patch(mpatches.Rectangle(
+                    (col_idx - bar_width / 2, y),
+                    bar_width,
+                    height,
+                    facecolor=category_colors[cat_idx],
+                    edgecolor="white",
+                    linewidth=0.8,
+                    alpha=0.9,
+                ))
+                if height > 0.06:
+                    ax.text(col_idx, y + height / 2, f"{int(cnt)}", ha="center", va="center", fontsize=7, color="white", fontweight="bold")
+                positions.append((y, y + height))
+                y += height
+            block_positions.append(positions)
+            ax.text(col_idx, -0.04, snapshot_labels[col_idx], ha="center", va="top", fontsize=8, color=WI_CHARCOAL, fontweight="bold")
+
+        # Tirer des bandes de flux entre snapshots (approximation Sankey)
+        for src in range(len(snapshots_idx) - 1):
+            for cat in range(3):
+                y1_low, y1_high = block_positions[src][cat]
+                y2_low, y2_high = block_positions[src + 1][cat]
+                xs = [src + bar_width / 2, src + 1 - bar_width / 2]
+                ys_low  = [y1_low,  y2_low]
+                ys_high = [y1_high, y2_high]
+                ax.fill_between(xs, ys_low, ys_high, color=category_colors[cat], alpha=0.18, linewidth=0)
+
+        # Légende
+        legend_patches = [mpatches.Patch(color=c, label=l) for c, l in zip(category_colors, category_labels)]
+        ax.legend(handles=legend_patches, loc="upper right", fontsize=7, framealpha=0.9)
+
+        fig.tight_layout()
+        return _fig_to_png(fig)
+
+    # ── 7. Heatmap d'engagement agent × round ─────────────────────────────────
+
+    def agent_engagement_heatmap(self) -> bytes:
+        """
+        Grille colorée agent × round. Permet d'identifier les agents
+        passifs (lignes pâles), les champions persistants (vert intense),
+        les résistants persistants (rouge intense) et les bascules tardives.
+
+        Lecture C-level : qui s'engage quand. Précieux pour distinguer
+        les "convaincus de la première heure" des "convaincus tardifs" —
+        leur valeur de témoignage interne n'est pas la même.
+        """
+        apply_causse_style()
+
+        ctx = self._ctx
+        if ctx.trajectory is None or not ctx.trajectory.rounds:
+            return _placeholder_png("Trajectoire indisponible\n(heatmap engagement)")
+
+        rounds = ctx.trajectory.rounds
+        n_rounds = len(rounds)
+
+        # Collecter scores par agent × round
+        agent_scores: dict[str, dict[int, float]] = {}
+        agent_name: dict[str, str] = {}
+        for rnd in rounds:
+            for a in rnd.agents:
+                key = a.agent_id or a.name
+                if not key:
+                    continue
+                agent_name[key] = a.name or key
+                agent_scores.setdefault(key, {})[rnd.round_idx] = a.score
+
+        if not agent_scores:
+            return _placeholder_png("Aucun agent\n(heatmap engagement)")
+
+        # Top 20 agents par activité (somme des |score|)
+        ranked = sorted(
+            agent_scores.keys(),
+            key=lambda k: sum(abs(v) for v in agent_scores[k].values()),
+            reverse=True,
+        )[:20]
+
+        round_indices = sorted({r.round_idx for r in rounds})
+        # Matrice (n_agents, n_rounds)
+        import numpy as np  # local import pour éviter pénalité au boot
+        matrix = np.zeros((len(ranked), len(round_indices)))
+        for i, agent_key in enumerate(ranked):
+            for j, ridx in enumerate(round_indices):
+                matrix[i, j] = agent_scores[agent_key].get(ridx, 0.0)
+
+        fig, ax = plt.subplots(figsize=(7, max(3.0, len(ranked) * 0.25)))
+        ax.set_title("Engagement agent × round (vert = adhésion, rouge = résistance)", pad=10)
+
+        # Colormap divergente custom : rouge → blanc → vert (WI_TERRA → cream → WI_MINT)
+        from matplotlib.colors import LinearSegmentedColormap
+        cmap = LinearSegmentedColormap.from_list("posture", [WI_TERRA, WI_CREAM, WI_MINT], N=256)
+
+        vmax = max(abs(matrix.min()), abs(matrix.max()), 0.5)
+        im = ax.imshow(matrix, aspect="auto", cmap=cmap, vmin=-vmax, vmax=vmax, interpolation="nearest")
+
+        ax.set_yticks(range(len(ranked)))
+        ax.set_yticklabels([agent_name.get(k, k)[:18] for k in ranked], fontsize=6)
+        # Ticks rounds : pas trop de labels (1 sur 5)
+        tick_step = max(1, len(round_indices) // 12)
+        ax.set_xticks(range(0, len(round_indices), tick_step))
+        ax.set_xticklabels([str(round_indices[i]) for i in range(0, len(round_indices), tick_step)], fontsize=6)
+        ax.set_xlabel("Round de discussion")
+
+        cbar = fig.colorbar(im, ax=ax, fraction=0.025, pad=0.02)
+        cbar.set_label("Score de posture", fontsize=7)
+        cbar.ax.tick_params(labelsize=6)
+
+        fig.tight_layout()
+        return _fig_to_png(fig)
+
+    # ── 8. Interaction network (déjà existant — coalition map) ────────────────
 
     def interaction_network(self) -> bytes:
         """

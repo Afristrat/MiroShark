@@ -109,6 +109,9 @@ _CHART_IDS: Tuple[str, ...] = (
     "demographic_pyramid",
     "influence_leaderboard",
     "interaction_network",
+    "influence_posture_matrix",
+    "stance_flow_sankey",
+    "agent_engagement_heatmap",
 )
 
 _LLM_FALLBACK = "Analyse non disponible. Voir données brutes ci-dessous."
@@ -756,6 +759,73 @@ class Enricher:
                 n_edges = len(ctx.social_network.edges)
                 return f"Réseau social: {n_nodes} nœuds, {n_edges} arêtes."
             return "Réseau social absent."
+
+        if chart_id == "influence_posture_matrix":
+            if ctx.trajectory and ctx.trajectory.rounds:
+                # Compter agents par quadrant (champions / sceptiques bruyants /
+                # adoptants discrets / indifférents) sur les 20 plus actifs
+                agent_final: Dict[str, float] = {}
+                agent_inf: Dict[str, float] = {}
+                prev: Dict[str, float] = {}
+                for rnd in ctx.trajectory.rounds:
+                    for a in rnd.agents:
+                        k = a.agent_id or a.name
+                        if not k:
+                            continue
+                        if k in prev:
+                            agent_inf[k] = agent_inf.get(k, 0.0) + abs(a.score - prev[k])
+                        prev[k] = a.score
+                        agent_final[k] = a.score
+                if not agent_final:
+                    return "Aucun agent."
+                top = sorted(agent_inf.keys(), key=lambda k: agent_inf.get(k, 0), reverse=True)[:20]
+                if not top:
+                    return "Aucun agent influent."
+                mean_inf = sum(agent_inf.get(k, 0) for k in top) / len(top)
+                champ = sum(1 for k in top if agent_final.get(k, 0) >= 0 and agent_inf.get(k, 0) >= mean_inf)
+                scept = sum(1 for k in top if agent_final.get(k, 0) <  0 and agent_inf.get(k, 0) >= mean_inf)
+                disc  = sum(1 for k in top if agent_final.get(k, 0) >= 0 and agent_inf.get(k, 0) <  mean_inf)
+                indif = len(top) - champ - scept - disc
+                return (
+                    f"Matrice 20 agents les + actifs : champions={champ}, "
+                    f"sceptiques bruyants={scept}, adoptants discrets={disc}, "
+                    f"indifférents={indif}."
+                )
+            return "Trajectoire absente."
+
+        if chart_id == "stance_flow_sankey":
+            if ctx.trajectory and ctx.trajectory.rounds:
+                rounds = ctx.trajectory.rounds
+                n = len(rounds)
+                def _cnt(agents):
+                    a = sum(1 for x in agents if x.score >  0.10)
+                    r = sum(1 for x in agents if x.score < -0.10)
+                    return a, r, len(agents) - a - r
+                d_a, d_r, d_o = _cnt(rounds[0].agents)
+                m_a, m_r, m_o = _cnt(rounds[n // 2].agents)
+                f_a, f_r, f_o = _cnt(rounds[-1].agents)
+                return (
+                    f"Cinétique 3 jalons : Début (A={d_a}, R={d_r}, O={d_o}) "
+                    f"→ Milieu (A={m_a}, R={m_r}, O={m_o}) "
+                    f"→ Fin (A={f_a}, R={f_r}, O={f_o})."
+                )
+            return "Trajectoire absente."
+
+        if chart_id == "agent_engagement_heatmap":
+            if ctx.trajectory and ctx.trajectory.rounds:
+                # Activité = somme |score| par agent
+                activity: Dict[str, float] = {}
+                for rnd in ctx.trajectory.rounds:
+                    for a in rnd.agents:
+                        k = a.agent_id or a.name
+                        if k:
+                            activity[k] = activity.get(k, 0.0) + abs(a.score)
+                if not activity:
+                    return "Aucun agent."
+                top = sorted(activity.items(), key=lambda kv: kv[1], reverse=True)[:5]
+                names = [k[:20] for k, _ in top]
+                return f"Top 5 agents engagés (activité cumulée) : {', '.join(names)}."
+            return "Trajectoire absente."
 
         return f"Chart {chart_id}: données non disponibles."
 

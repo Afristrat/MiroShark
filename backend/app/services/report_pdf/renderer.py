@@ -54,6 +54,10 @@ _CHART_METHODS = [
     "demographic_pyramid",
     "influence_leaderboard",
     "interaction_network",
+    # Nouveaux outils de simulation C-level (refonte vocabulaire & viz)
+    "influence_posture_matrix",
+    "stance_flow_sankey",
+    "agent_engagement_heatmap",
 ]
 
 # Variantes de rapport disponibles (US-131)

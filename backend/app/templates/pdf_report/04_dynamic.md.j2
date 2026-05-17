@@ -1,24 +1,26 @@
 {% from '_macros.md.j2' import chart_with_narrative, pull_quote, callout %}
 
-## 4. Dynamique Observée
+## 4. Dynamique observée
 
-### Évolution des Convictions par Round
+Cette section décode la **mécanique de bascule** observée dans la simulation, sous quatre angles complémentaires : la trajectoire temporelle, la cinétique de conversion, le positionnement tactique des agents-clés, et la cartographie de leurs influences réciproques.
+
+---
+
+### 4.1 Évolution des convictions au fil des rounds
 
 {{ chart_with_narrative(
     chart_filename='belief_drift.png',
-    alt='Évolution des convictions (Belief Drift) par round',
-    caption='Figure 4a — Scores moyens d\'adhésion, de résistance et d\'observation par round.',
-    narrative_text='Ce graphique montre comment les positions des agents évoluent au fil des rounds. Les courbes représentent les trois postures observées (adhésion, résistance, en observation). Les marqueurs verticaux signalent les moments-clés où un événement a fait basculer une partie significative de la population.'
+    alt='Évolution des convictions par round',
+    caption='Figure 4.1 — Scores moyens d\'adhésion, de résistance et d\'observation par round.',
+    narrative_text='Ce graphique montre comment les positions des agents évoluent au fil des rounds de discussion. Les courbes représentent les trois postures observées (adhésion, résistance, en observation). Les marqueurs verticaux signalent les moments-clés où un événement a fait basculer une partie significative de la population.'
 ) }}
 
 {% if context.pivotal_moments %}
 
 <div class="pivots-section">
 
-#### Moments Pivots Identifiés
+#### Moments-clés identifiés
 
-{# Limite à 30 lignes les plus marquantes pour éviter une annexe de 4 pages
-   sans intérêt narratif (bug B9 : tableau de 76 lignes peu différencié). #}
 {% set sorted_pivots = context.pivotal_moments | sort(attribute='delta_score', reverse=True) %}
 {% set top_pos = sorted_pivots[:15] %}
 {% set top_neg = (context.pivotal_moments | sort(attribute='delta_score'))[:15] %}
@@ -40,30 +42,51 @@
 
 ---
 
-### Évolution comparative adhésion / résistance
+### 4.2 Cinétique de bascule (Début → Milieu → Fin)
 
 {{ chart_with_narrative(
-    chart_filename='polymarket_curves.png',
-    alt='Courbes comparatives d\'adhésion et de résistance par round',
-    caption='Figure 4b — Part d\'adhésion et part de résistance par round.',
-    narrative_text='Ces courbes mesurent à chaque round la part de la population qui adhère (favorable) et la part qui résiste (défavorable). L\'écart entre les deux indique la marge de manœuvre pour faire basculer un déploiement ou une décision. Les annotations finales correspondent aux valeurs canoniques retenues pour la lecture stratégique.'
+    chart_filename='stance_flow_sankey.png',
+    alt='Cinétique de bascule des postures entre trois jalons de la simulation',
+    caption='Figure 4.2 — Migration des agents entre les postures Adhésion / Résistance / En observation, mesurée à trois jalons (Début, Milieu, Fin).',
+    narrative_text='Cette vue répond à une question concrète de COMEX : à quel moment la majorité bascule, et combien d\'agents font le chemin inverse (adhésion → résistance) ? La hauteur de chaque bloc est proportionnelle au nombre d\'agents dans la posture à cet instant. Les bandes intermédiaires matérialisent les flux de conversion entre jalons.'
 ) }}
+
+> **Lecture C-Level.** Si le bloc « Adhésion » double entre le début et le milieu mais stagne entre le milieu et la fin, l'effet d'entraînement s'est essoufflé — il faut un événement nouveau (audit, démo, signature client) pour relancer la dynamique. Si le bloc « Résistance » grossit entre le milieu et la fin, un incident a entamé la crédibilité du déploiement et il faut un message correctif **avant** la prochaine itération.
 
 ---
 
-### Top Influenceurs
+### 4.3 Matrice Influence × Posture finale
+
+{{ chart_with_narrative(
+    chart_filename='influence_posture_matrix.png',
+    alt='Matrice à quatre quadrants positionnant chaque agent selon son influence cumulée et sa posture finale',
+    caption='Figure 4.3 — Quadrant tactique des 20 agents les plus actifs. Axe X : influence cumulée (somme des variations de score induites). Axe Y : posture finale.',
+    narrative_text='Cette matrice est la carte tactique d\'un projet de transformation. Chaque agent est placé selon deux critères : combien il a fait bouger la dynamique collective (influence) et où il se situe en fin de simulation (posture).'
+) }}
+
+**Quatre quadrants à arbitrer :**
+
+| Quadrant | Profil | Que faire en pratique |
+| --- | --- | --- |
+| Haut-droit — **Champions** | Influence forte, adhésion forte | À **amplifier** : transformer en témoins internes, leur donner la parole en COMEX, en faire des relais pour la majorité indécise. |
+| Haut-gauche — **Sceptiques bruyants** | Influence forte, résistance forte | À **convertir en priorité** : ils sont écoutés. Une démo personnalisée sur leur propre dossier vaut dix slides génériques. |
+| Bas-droit — **Adoptants discrets** | Influence faible, adhésion forte | À **valoriser** : leur témoignage rassure les indécis sans menacer l'autorité des seniors. Cibler les communications internes asynchrones (Slack, Notion, mémo). |
+| Bas-gauche — **Indifférents / silencieux** | Influence faible, posture faible | À **laisser** sur ce sprint. Coût de conviction trop élevé pour un retour limité ; ils basculeront mécaniquement quand la majorité aura basculé. |
+
+---
+
+### 4.4 Top influenceurs et verbatim
 
 {{ chart_with_narrative(
     chart_filename='influence_leaderboard.png',
-    alt='Classement des agents par score de conviction maximal',
-    caption='Figure 4c — Top agents classés par score de conviction maximal atteint sur la trajectoire.',
+    alt='Classement des agents par conviction maximale atteinte',
+    caption='Figure 4.4 — Top agents classés par conviction maximale atteinte sur la trajectoire.',
     narrative_text='Ce classement identifie les agents ayant pesé le plus dans la dynamique collective, mesuré par leur conviction maximale atteinte. La couleur indique la posture dominante de chaque agent (adhésion, résistance, en observation).'
 ) }}
 
-{# Top-3 influenceurs : dédoublonnage par agent_id/name, score max absolu
-   (bug B10 corrigeait l'apparition triplée du même agent 34 (neutral)).
+{# Top-3 influenceurs : dédoublonnage par agent_id/name, score max absolu.
    Citation : verbatim depuis interview/article si dispo, sinon dernier message
-   non vide depuis la trajectoire (bug B11). #}
+   non vide depuis la trajectoire. #}
 {% if context.trajectory and context.trajectory.rounds %}
 {% set agent_best = {} %}
 {% for rnd in context.trajectory.rounds %}
@@ -82,7 +105,7 @@
 {% set top3 = top3[:3] %}
 
 {% if top3 %}
-#### Citations des Top 3 Agents
+#### Verbatim des Top 3 agents
 
 {% for agent in top3 %}
 {% set verbatim = '' %}
@@ -118,7 +141,38 @@
 
 ---
 
-### Posts Critiques et Interprétation
+### 4.5 Engagement individuel agent × round
+
+{{ chart_with_narrative(
+    chart_filename='agent_engagement_heatmap.png',
+    alt='Heatmap montrant l\'engagement de chaque agent à chaque round, vert pour adhésion, rouge pour résistance',
+    caption='Figure 4.5 — Engagement individuel des 20 agents les plus actifs, round par round. Vert = adhésion, rouge = résistance, blanc = en observation.',
+    narrative_text='Cette grille révèle qui s\'engage et quand. Un agent dont la ligne reste pâle tout au long de la simulation est passif (à ne pas confondre avec un sceptique actif). Un agent dont la ligne passe brusquement du rouge au vert au round 14 est une bascule tardive : précieuse en interne car son cheminement crédibilise la décision auprès des indécis.'
+) }}
+
+> **Lecture C-Level.** Repérez trois profils opérationnels :
+> - **Lignes vertes constantes** dès les premiers rounds → vos *early adopters* à promouvoir comme témoins.
+> - **Lignes qui changent de couleur en cours de route** → bascules narratives, à intégrer dans la communication interne (« voici ce qui les a convaincus »).
+> - **Lignes pâles sur toute la durée** → agents passifs. Ne pas les confondre avec des résistants : ils sont juste hors-jeu, à activer par un autre canal (1-1 manager, formation dédiée).
+
+---
+
+{% if context.social_network and context.social_network.nodes %}
+### 4.6 Cartographie des coalitions
+
+{{ chart_with_narrative(
+    chart_filename='interaction_network.png',
+    alt='Graphe des interactions entre agents, taille du nœud proportionnelle à l\'influence',
+    caption='Figure 4.6 — Réseau d\'influences entre agents. Taille du nœud = poids dans le réseau. Couleur de l\'arête : vert = interaction favorable, rouge = défavorable.',
+    narrative_text='Cette cartographie montre les sous-coalitions, les ponts entre groupes et les leaders d\'opinion. Un nœud large connecté à de nombreux autres est un relais incontournable : convaincre cette personne déclenche un effet en cascade sur ses connexions.'
+) }}
+
+> **Lecture C-Level.** Concentrez l'effort sur **les ponts** (nœuds qui relient deux clusters distincts) plutôt que sur les hubs déjà acquis. Un pont converti propage l'adhésion à un sous-groupe entier qui était isolé du reste de l'organisation.
+
+---
+{% endif %}
+
+### 4.7 Posts critiques et interprétation
 
 {% set action_source = context.agent_log if context.agent_log else [] %}
 {# Filtrer les entrées qui ont au moins un message ou un contenu non vide #}
@@ -134,14 +188,14 @@
 | Round | Agent | Plateforme | Message (extrait) |
 | --- | --- | --- | --- |
 {% for entry in critical_posts[:10] %}
-| {{ entry.get('round', '—') }} | {{ entry.get('agent_name', entry.get('name', '—')) | normalize(context.lang) }} | {{ entry.get('platform', '—') }} | {{ (entry.get('message', entry.get('content', ''))[:80] + '…') | normalize(context.lang) }} |
+| {{ entry.get('round', '—') }} | {{ entry.get('agent_name', entry.get('name', '—')) | humanize_agent | normalize(context.lang) }} | {{ entry.get('platform', '—') }} | {{ (entry.get('message', entry.get('content', ''))[:80] + '…') | normalize(context.lang) }} |
 {% endfor %}
 
 {% elif context.articles %}
-| Round | Agent | Plateforme | Titre Article |
+| Round | Agent | Plateforme | Titre |
 | --- | --- | --- | --- |
 {% for article in context.articles[:10] %}
-| {{ article.round | default('—') }} | {{ article.agent_name | default('—') | normalize(context.lang) }} | {{ article.platform | default('—') }} | {{ article.title | default('Sans titre') | normalize(context.lang) }} |
+| {{ article.round | default('—') }} | {{ article.agent_name | default('—') | humanize_agent | normalize(context.lang) }} | {{ article.platform | default('—') }} | {{ article.title | default('Sans titre') | normalize(context.lang) }} |
 {% endfor %}
 
 {% else %}
@@ -149,7 +203,7 @@
 >
 > La trajectoire de simulation ne contient pas de posts publiés.
 > Cette section est alimentée par `actions.jsonl` quand le framework
-> active la diffusion sociale (Reddit/Twitter agents).
+> active la diffusion sociale (canaux de communication interne simulés).
 {% endif %}
 
 ---
