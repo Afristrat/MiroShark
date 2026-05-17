@@ -1,40 +1,40 @@
 {% from '_macros.md.j2' import kpi_card, callout %}
 
-## 5. Verdict et Scénarios
+## 5. Lecture stratégique et scénarios
 
-### Verdict Probabiliste
+### Lecture stratégique
 
 {% if context.outcome %}
 {{ kpi_card(
-    label='Verdict de Simulation',
+    label='Lecture stratégique',
     value=context.outcome.verdict | normalize(context.lang),
     unit='',
     color='primary'
 ) }}
 
-| Métrique de Confiance | Valeur |
+| Indicateur | Valeur |
 | --- | --- |
-| Score de confiance global | {{ (context.outcome.confidence * 100) | round(1) }} % |
-| Bullish final | {{ context.outcome.bullish_pct | round(1) }} % |
-| Bearish final | {{ context.outcome.bearish_pct | round(1) }} % |
-| Rounds totaux | {{ context.outcome.nb_rounds }} |
+| Niveau d'alignement | {{ (context.outcome.confidence * 100) | round(1) }} % |
+| Adhésion en fin de simulation | {{ context.outcome.bullish_pct | round(1) }} % |
+| Résistance en fin de simulation | {{ context.outcome.bearish_pct | round(1) }} % |
+| Rounds simulés | {{ context.outcome.nb_rounds }} |
 | Consensus atteint | {{ 'Oui ✓' if context.outcome.consensus_reached else 'Non ✗' }} |
 {% if context.outcome.scenario_winner %}
-| Camp dominant | {{ context.outcome.scenario_winner }} |
+| Position dominante | {{ context.outcome.scenario_winner | position_label }} |
 {% endif %}
 
 {% if context.kpi_hero and context.kpi_hero.scenario_distribution %}
-#### Distribution des Scénarios
+#### Répartition des positions
 
-| Scénario | Probabilité |
+| Position | Part de la population |
 | --- | --- |
 {% for camp, pct in context.kpi_hero.scenario_distribution.items() %}
-| {{ camp | capitalize }} | {{ pct | round(1) }} % |
+| {{ camp | position_label }} | {{ pct | round(1) }} % |
 {% endfor %}
 
 {% endif %}
 {% else %}
-{{ callout('warning', 'Verdict non disponible', 'Le verdict de simulation n\'a pas encore été calculé. Veuillez vous assurer que la simulation est complète (statut : completed).') }}
+{{ callout('warning', 'Lecture stratégique non disponible', 'La lecture stratégique n\'a pas encore été calculée. Veuillez vous assurer que la simulation est complète (statut : completed).') }}
 {% endif %}
 
 ---
@@ -71,7 +71,7 @@
 #### Article — Round {{ article.round | default('—') }} — *{{ article.agent_name | default('') | normalize(context.lang) }}*
 
 **Titre :** {{ article.title | default('Sans titre') | normalize(context.lang) }}
-**Plateforme :** {{ article.platform | default('—') }} | **Stance :** {{ article.stance | default('neutre') }}
+**Plateforme :** {{ article.platform | default('—') }} | **Position :** {{ (article.stance or 'neutral') | position_label }}
 
 {{ (article.content | default(''))[:300] | normalize(context.lang) }}{% if article.content and article.content | length > 300 %}…{% endif %}
 

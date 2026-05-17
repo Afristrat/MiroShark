@@ -80,14 +80,14 @@ branding_version: {{ branding_version | default('default') }}
 
 <div class="one-pager-verdict">
 
-## Verdict
+## Lecture stratégique
 
 {% if context.outcome and context.outcome.verdict %}
 **{{ context.outcome.verdict | normalize(context.lang) }}**
 
-Bullish : **{{ context.outcome.bullish_pct | round(1) }} %** · Bearish : **{{ context.outcome.bearish_pct | round(1) }} %**
+Adhésion : **{{ context.outcome.bullish_pct | round(1) }} %** · Résistance : **{{ context.outcome.bearish_pct | round(1) }} %**
 {% else %}
-{{ callout('warning', 'Verdict', 'Verdict non disponible.') }}
+{{ callout('warning', 'Lecture stratégique', 'Lecture stratégique non disponible.') }}
 {% endif %}
 
 </div>

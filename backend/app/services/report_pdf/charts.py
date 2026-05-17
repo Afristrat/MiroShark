@@ -173,6 +173,14 @@ class ChartFactory:
         ax.set_xlabel("Round")
         ax.set_ylabel("Score moyen de conviction")
 
+        # Mapping stance interne → libellé C-level pour la légende
+        _STANCE_LABEL = {
+            "bullish": "Adhésion",
+            "bearish": "Résistance",
+            "neutral": "En observation",
+            "neutre":  "En observation",
+        }
+
         color_map: dict[str, str] = {}
         for i, (stance, round_data) in enumerate(sorted(stance_scores.items())):
             color = CAUSSE_PALETTE[i % len(CAUSSE_PALETTE)]
@@ -185,7 +193,8 @@ class ChartFactory:
                     xs.append(idx)
                     ys.append(sum(scores) / len(scores))
             if xs:
-                ax.plot(xs, ys, marker="o", markersize=4, label=stance.capitalize(), color=color)
+                label_fr = _STANCE_LABEL.get((stance or "").lower(), (stance or "").capitalize())
+                ax.plot(xs, ys, marker="o", markersize=4, label=label_fr, color=color)
 
         # Callouts pivotal_moments
         for pm in ctx.pivotal_moments:
@@ -249,14 +258,14 @@ class ChartFactory:
             return _placeholder_png("Aucun agent dans les rounds\n(polymarket curves)")
 
         fig, ax = plt.subplots(figsize=(7, 3.8))
-        ax.set_title("Distribution des positions par round (style prédictif)", pad=10)
+        ax.set_title("Évolution comparative adhésion / résistance par round", pad=10)
         ax.set_xlabel("Round")
-        ax.set_ylabel("% agents")
+        ax.set_ylabel("% des agents")
         ax.set_ylim(0, 105)
 
-        ax.plot(xs, bullish_series, marker="o", markersize=4, label="Bullish", color=WI_MINT, linewidth=2)
-        ax.plot(xs, bearish_series, marker="o", markersize=4, label="Bearish", color=WI_TERRA, linewidth=2)
-        ax.plot(xs, neutral_series, marker="o", markersize=4, label="Neutral", color=WI_SAND, linewidth=1.5, linestyle="--")
+        ax.plot(xs, bullish_series, marker="o", markersize=4, label="Adhésion", color=WI_MINT, linewidth=2)
+        ax.plot(xs, bearish_series, marker="o", markersize=4, label="Résistance", color=WI_TERRA, linewidth=2)
+        ax.plot(xs, neutral_series, marker="o", markersize=4, label="En observation", color=WI_SAND, linewidth=1.5, linestyle="--")
 
         ax.fill_between(xs, bullish_series, alpha=0.08, color=WI_MINT)
         ax.fill_between(xs, bearish_series, alpha=0.08, color=WI_TERRA)
@@ -264,7 +273,7 @@ class ChartFactory:
         # Annotation valeur finale depuis outcome si disponible
         if ctx.outcome is not None:
             ax.annotate(
-                f"Final Bullish : {ctx.outcome.bullish_pct:.0f}%",
+                f"Adhésion finale : {ctx.outcome.bullish_pct:.0f} %",
                 xy=(xs[-1], bullish_series[-1]),
                 xytext=(xs[-1] - 0.5, bullish_series[-1] + 6),
                 fontsize=6,
@@ -272,7 +281,7 @@ class ChartFactory:
                 arrowprops={"arrowstyle": "->", "color": WI_MINT, "lw": 0.7},
             )
             ax.annotate(
-                f"Final Bearish : {ctx.outcome.bearish_pct:.0f}%",
+                f"Résistance finale : {ctx.outcome.bearish_pct:.0f} %",
                 xy=(xs[-1], bearish_series[-1]),
                 xytext=(xs[-1] - 0.5, bearish_series[-1] - 10),
                 fontsize=6,
@@ -450,14 +459,14 @@ class ChartFactory:
             bar_colors.append(stance_color_map.get(dominant.lower(), WI_ORANGE))
 
         fig, ax = plt.subplots(figsize=(6.5, max(3.0, len(names) * 0.45)))
-        ax.set_title("Top agents par score de conviction", pad=8)
+        ax.set_title("Top agents par conviction maximale atteinte", pad=8)
 
         # Ordre croissant pour la lisibilité (meilleur en haut)
         ypos = range(len(names))
         bars = ax.barh(list(ypos), scores[::-1], color=list(reversed(bar_colors)), alpha=0.85)
         ax.set_yticks(list(ypos))
         ax.set_yticklabels([n[:22] for n in reversed(names)], fontsize=7)
-        ax.set_xlabel("Score de conviction")
+        ax.set_xlabel("Conviction maximale")
 
         for bar, val in zip(bars, reversed(scores)):
             ax.text(
@@ -469,11 +478,11 @@ class ChartFactory:
                 color=WI_CHARCOAL,
             )
 
-        # Légende stance
+        # Légende posture (vocabulaire C-level, plus de bullish/bearish)
         legend_patches = [
-            mpatches.Patch(color=WI_MINT, label="Bullish"),
-            mpatches.Patch(color=WI_TERRA, label="Bearish"),
-            mpatches.Patch(color=WI_ORANGE, label="Neutral"),
+            mpatches.Patch(color=WI_MINT, label="Adhésion"),
+            mpatches.Patch(color=WI_TERRA, label="Résistance"),
+            mpatches.Patch(color=WI_ORANGE, label="En observation"),
         ]
         ax.legend(handles=legend_patches, loc="lower right", fontsize=6)
 

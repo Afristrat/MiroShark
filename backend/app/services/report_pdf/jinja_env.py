@@ -207,6 +207,47 @@ def get_jinja_env() -> Environment:
 
     env.filters["humanize_agent"] = _humanize_agent_filter
 
+    # ── Filter |position_label ─────────────────────────────────────────────────
+    # Mappe les stances internes (bullish/bearish/neutral, héritées du framework
+    # Cerberus inspiré des marchés prédictifs) vers un vocabulaire lisible par
+    # un C-level TPE/PME/GE Maroc-Afrique :
+    #   bullish  → "Adhésion"
+    #   bearish  → "Résistance"
+    #   neutral  → "En observation"
+    # Pour un dirigeant qui pilote un déploiement, "Bullish 95 %" n'a pas de
+    # sens — "Adhésion 95 %" est immédiatement actionnable.
+    _POSITION_LABEL_FR = {
+        "bullish":  "Adhésion",
+        "bearish":  "Résistance",
+        "neutral":  "En observation",
+        "neutre":   "En observation",
+        "adoption": "Adhésion",
+        "support":  "Adhésion",
+        "oppose":   "Résistance",
+        "opposed":  "Résistance",
+        "watch":    "En observation",
+    }
+
+    def _position_label_filter(value: object) -> str:
+        if value is None:
+            return ""
+        key = str(value).strip().lower()
+        return _POSITION_LABEL_FR.get(key, key.capitalize() if key else "")
+
+    env.filters["position_label"] = _position_label_filter
+
+    # ── Filter |reliability_pct ────────────────────────────────────────────────
+    # Convertit un Brier score [0, 1] en "Indice de fiabilité" % lisible.
+    # Brier 0 = parfait → 100 %. Brier 1 = totalement faux → 0 %.
+    def _reliability_pct_filter(brier: object) -> float:
+        try:
+            b = float(brier)
+        except (TypeError, ValueError):
+            return 0.0
+        return round(max(0.0, min(1.0, 1.0 - b)) * 100.0, 1)
+
+    env.filters["reliability_pct"] = _reliability_pct_filter
+
     # ── Filter |format_date ────────────────────────────────────────────────────
     # Appelé depuis les templates via {{ generated_at | format_date(lang=context.lang) }}
     env.filters["format_date"] = _format_date_filter

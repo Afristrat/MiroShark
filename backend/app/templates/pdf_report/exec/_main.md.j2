@@ -72,15 +72,15 @@ branding_version: {{ branding_version | default('default') }}
     color='primary'
 ) }}
 
-| Métrique | Valeur |
+| Indicateur | Valeur |
 | --- | --- |
-| Confiance | {{ (context.outcome.confidence * 100) | round(1) }} % |
-| Bullish | {{ context.outcome.bullish_pct | round(1) }} % |
-| Bearish | {{ context.outcome.bearish_pct | round(1) }} % |
-| Rounds | {{ context.outcome.nb_rounds }} |
+| Niveau d'alignement | {{ (context.outcome.confidence * 100) | round(1) }} % |
+| Adhésion | {{ context.outcome.bullish_pct | round(1) }} % |
+| Résistance | {{ context.outcome.bearish_pct | round(1) }} % |
+| Rounds simulés | {{ context.outcome.nb_rounds }} |
 | Consensus | {{ 'Oui ✓' if context.outcome.consensus_reached else 'Non ✗' }} |
 {% if context.outcome.scenario_winner %}
-| Camp dominant | {{ context.outcome.scenario_winner }} |
+| Position dominante | {{ context.outcome.scenario_winner | position_label }} |
 {% endif %}
 
 {% else %}

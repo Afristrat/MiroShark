@@ -28,12 +28,12 @@
 
 | Métrique | Valeur |
 | --- | --- |
-| Confiance | {{ (context.outcome.confidence * 100) | round(1) }} % |
-| Bullish | {{ context.outcome.bullish_pct | round(1) }} % |
-| Bearish | {{ context.outcome.bearish_pct | round(1) }} % |
+| Niveau d'alignement | {{ (context.outcome.confidence * 100) | round(1) }} % |
+| Adhésion | {{ context.outcome.bullish_pct | round(1) }} % |
+| Résistance | {{ context.outcome.bearish_pct | round(1) }} % |
 | Consensus atteint | {{ 'Oui' if context.outcome.consensus_reached else 'Non' }} |
 {% if context.outcome.scenario_winner %}
-| Camp dominant | {{ context.outcome.scenario_winner }} |
+| Position dominante | {{ context.outcome.scenario_winner | position_label }} |
 {% endif %}
 
 {% else %}
@@ -48,7 +48,7 @@
     chart_filename='belief_drift.png',
     alt='Graphique d\'évolution des convictions par round',
     caption='Figure 1 — Évolution des scores de conviction des agents par round de simulation.',
-    narrative_text='Ce graphique illustre la dynamique d\'opinion au fil des rounds. Les lignes représentent les scores moyens de conviction par position (bullish, bearish, neutre). Les marqueurs verticaux indiquent les moments pivots identifiés dans la trajectoire.'
+    narrative_text='Ce graphique illustre l\'évolution de l\'opinion des agents au fil des rounds de discussion. Les lignes représentent les scores moyens d\'adhésion, de résistance et d\'observation. Les marqueurs verticaux indiquent les moments-clés où une partie significative de la population a basculé.'
 ) }}
 
 ---

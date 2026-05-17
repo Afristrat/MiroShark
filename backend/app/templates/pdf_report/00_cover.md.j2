@@ -24,10 +24,10 @@
 
 | Indicateur | Valeur |
 | --- | --- |
-| Confiance | {{ context.kpi_hero.confidence_pct | round(1) }} % |
-| Score de Brier | {{ context.kpi_hero.brier | round(3) }} |
+| Niveau d'alignement | {{ context.kpi_hero.confidence_pct | round(1) }} % |
+| Indice de fiabilité | {{ context.kpi_hero.brier | reliability_pct }} % |
 {% for camp, pct in context.kpi_hero.scenario_distribution.items() %}
-| {{ camp | capitalize }} | {{ pct | round(1) }} % |
+| {{ camp | position_label }} | {{ pct | round(1) }} % |
 {% endfor %}
 
 {% if context.kpi_hero.verdict %}

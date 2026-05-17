@@ -11,7 +11,7 @@ Bassira utilise un cadre de simulation multi-agents (framework **{{ context.fram
 1. **Extraction de connaissances** — Analyse documentaire et extraction d'entités via un graphe de connaissances Neo4j.
 2. **Génération de profils** — Création de profils agents Wonderwall (archétypes, biais cognitifs, stances initiales) adaptés au contexte.
 3. **Simulation multi-rounds** — Exécution de rounds d'interaction où les agents échangent des arguments et mettent à jour leurs convictions.
-4. **Analyse et verdict** — Calcul du verdict probabiliste, du score de Brier, et identification des moments pivots.
+4. **Lecture stratégique** — Calcul du niveau d'alignement, de l'indice de fiabilité (dérivé du Brier) et identification des moments-clés de bascule.
 5. **Génération du rapport** — Assemblage du rapport via les templates Jinja2 Bassira (version template : 1.0.0).
 
 **Métriques de qualité :**
@@ -58,7 +58,7 @@ trajectoire observée.*
 {% for interview in context.interviews %}
 ##### Agent : {{ interview.agent_name | normalize(context.lang) }} ({{ interview.archetype }})
 
-**Position finale :** {{ interview.final_stance }}
+**Position finale :** {{ interview.final_stance | position_label }}
 
 {% if interview.questions and interview.answers %}
 {% for i in range([interview.questions | length, interview.answers | length] | min) %}
@@ -81,10 +81,10 @@ trajectoire observée.*
 {% set has_archetype = context.agent_profiles | selectattr('archetype') | list | length > 0 %}
 {% set has_platform = context.agent_profiles | selectattr('platform') | list | length > 0 %}
 {% set has_biais = context.agent_profiles | selectattr('biais') | list | length > 0 %}
-| Nom {% if has_archetype %}| Archétype {% endif %}| Stance Initiale {% if has_platform %}| Plateforme {% endif %}{% if has_biais %}| Biais cognitifs {% endif %}|
+| Nom {% if has_archetype %}| Archétype {% endif %}| Position initiale {% if has_platform %}| Plateforme {% endif %}{% if has_biais %}| Biais cognitifs {% endif %}|
 | --- {% if has_archetype %}| --- {% endif %}| --- {% if has_platform %}| --- {% endif %}{% if has_biais %}| --- {% endif %}|
 {% for profile in context.agent_profiles %}
-| {{ profile.name | humanize_agent | normalize(context.lang) }} {% if has_archetype %}| {{ profile.archetype or '—' }} {% endif %}| {{ profile.stance or 'neutre' }} {% if has_platform %}| {{ profile.platform or '—' }} {% endif %}{% if has_biais %}| {{ (profile.biais | join(', ')) if profile.biais else '—' }} {% endif %}|
+| {{ profile.name | humanize_agent | normalize(context.lang) }} {% if has_archetype %}| {{ profile.archetype or '—' }} {% endif %}| {{ (profile.stance or 'neutral') | position_label }} {% if has_platform %}| {{ profile.platform or '—' }} {% endif %}{% if has_biais %}| {{ (profile.biais | join(', ')) if profile.biais else '—' }} {% endif %}|
 {% endfor %}
 
 </div>
@@ -100,15 +100,16 @@ trajectoire observée.*
 | Terme | Définition |
 | --- | --- |
 | **Agent** | Entité simulée représentant un acteur (individu, organisation, média) avec un profil comportemental défini. |
-| **Belief Drift** | Évolution du score de conviction d'un agent ou d'une population au fil des rounds. |
-| **Brier Score** | Mesure de l'exactitude d'une prévision probabiliste (0 = parfait, 1 = totalement faux). |
-| **Bullish** | Position optimiste d'un agent vis-à-vis du scénario simulé. |
-| **Bearish** | Position pessimiste d'un agent vis-à-vis du scénario simulé. |
-| **Contrefactuel** | Scénario hypothétique injecté pendant la simulation pour mesurer l'impact d'un événement alternatif. |
-| **Framework** | Cadre analytique structurant la simulation (Cerberus, Market, Crisis, Policy, Decision). |
-| **Moment Pivot** | Événement ou interaction qui a significativement modifié la dynamique collective de la simulation. |
-| **Round** | Unité temporelle de la simulation durant laquelle chaque agent produit une action et met à jour sa conviction. |
-| **Stance** | Position déclarée d'un agent (bullish, bearish, neutre, ou spécifique au framework). |
+| **Évolution des convictions** | Suivi du score de conviction de chaque agent au fil des rounds (anciennement "belief drift"). |
+| **Indice de fiabilité** | Indicateur synthétique de la qualité de la simulation, dérivé du score de Brier. 100 % = prévision parfaitement calibrée, 0 % = prévision totalement infirmée par la trajectoire observée. |
+| **Adhésion** | Posture favorable d'un agent vis-à-vis de la décision ou de l'outil simulé. |
+| **Résistance** | Posture défavorable d'un agent : refus, scepticisme actif, opposition documentée. |
+| **En observation** | Posture neutre : l'agent ne s'est encore prononcé ni pour ni contre, il attend des éléments supplémentaires. |
+| **Contrefactuel** | Scénario hypothétique injecté en cours de simulation pour mesurer l'impact d'un événement alternatif (« et si… »). |
+| **Framework** | Cadre analytique structurant la simulation (Cerberus, Market, Crisis, Policy, Decision). Le rapport courant utilise Cerberus. |
+| **Moment-clé (pivot)** | Événement ou interaction qui a fait basculer une partie significative de la population dans la simulation. |
+| **Niveau d'alignement** | Pourcentage moyen de conviction agrégée à l'issue de la simulation. Plus le niveau est élevé, plus les agents ont une position tranchée (qu'elle soit favorable ou défavorable). |
+| **Round** | Unité temporelle de la simulation pendant laquelle chaque agent produit une action et met à jour sa position. |
 | **Wonderwall** | Système de génération de profils agents de Bassira. |
 
 ---
