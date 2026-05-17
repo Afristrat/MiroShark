@@ -524,7 +524,8 @@
       "sessionNotFound": "Session expired. Resubmit your seed.",
       "invalidKey": "Access key rejected by the service.",
       "seedTooShort": "Seed too short (60 characters minimum).",
-      "seedTooLong": "Seed too long (3000 characters maximum)."
+      "seedTooLong": "Seed too long (3000 characters maximum).",
+      "sessionExpired": "Your session expired during research. Sign in again and retry — the 1h cache will return the same session_id if Kairos is still working on it."
     },
     "degraded": {
       "synthesizerUnavailable": "AI synthesis did not converge ({reason}). Here are the top {count} raw signals for this seed.",

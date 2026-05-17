@@ -372,6 +372,7 @@ import {
   getScopeProfiles,
   postResearchFromSeed,
 } from '../api/research'
+import { supabase } from '../lib/supabase'
 
 const { t, locale } = useI18n()
 const router = useRouter()
@@ -743,6 +744,53 @@ const _pickLang = () => {
   return 'fr'
 }
 
+/**
+ * US-B04.3 — résilience aux 401 pendant le polling/POST.
+ *
+ * Le JWT Supabase expire après 1h. Un pipeline Kairos long (3-4 min de
+ * polling) qui démarre 50 min après le login va hit le 401 en plein
+ * vol → axios reject → on affichait « Une erreur est survenue »
+ * opaque alors que le pipeline tournait toujours côté Kairos.
+ *
+ * Stratégie :
+ *   1. Tenter l'appel normalement
+ *   2. Si HTTP 401 → tenter UN refresh session via supabase-js
+ *   3. Si refresh OK → retry l'appel une fois
+ *   4. Si refresh ou retry échoue → throw SESSION_EXPIRED (errorCode
+ *      mappé vers research.errors.sessionExpired côté i18n).
+ */
+const _withAuthRetry = async (fn) => {
+  try {
+    return await fn()
+  } catch (err) {
+    const status = err?.response?.status
+    if (status !== 401) throw err
+    try {
+      const { error: refreshErr } = await supabase.auth.refreshSession()
+      if (refreshErr) {
+        const e = new Error('session_expired')
+        e._sessionExpired = true
+        throw e
+      }
+    } catch {
+      const e = new Error('session_expired')
+      e._sessionExpired = true
+      throw e
+    }
+    // Refresh OK — re-tente UNE fois (pas de boucle infinie)
+    try {
+      return await fn()
+    } catch (err2) {
+      if (err2?.response?.status === 401) {
+        const e = new Error('session_expired')
+        e._sessionExpired = true
+        throw e
+      }
+      throw err2
+    }
+  }
+}
+
 const _pollResearch = async () => {
   if (!researchSessionId.value) return
   if (Date.now() > researchPollDeadline) {
@@ -751,7 +799,7 @@ const _pollResearch = async () => {
     return
   }
   try {
-    const res = await getResearchStatus(researchSessionId.value)
+    const res = await _withAuthRetry(() => getResearchStatus(researchSessionId.value))
     if (!res || res.success === false) {
       researchStatus.value = 'error'
       researchErrorCode.value = res?.error_code || 'UNKNOWN'
@@ -777,7 +825,9 @@ const _pollResearch = async () => {
     researchPollTimer = setTimeout(_pollResearch, RESEARCH_POLL_INTERVAL_MS)
   } catch (err) {
     researchStatus.value = 'error'
-    researchErrorCode.value = err?.response?.data?.error_code || 'UNKNOWN'
+    researchErrorCode.value = err?._sessionExpired
+      ? 'SESSION_EXPIRED'
+      : (err?.response?.data?.error_code || 'UNKNOWN')
     _stopResearchTimers()
   }
 }
@@ -806,7 +856,7 @@ const _triggerResearch = async (seed) => {
     const effectiveProfile = selectedScopeProfile.value || autoScopeProfile.value || null
     const reqBody = { seed, lang: _pickLang() }
     if (effectiveProfile) reqBody.scope_profile = effectiveProfile
-    const res = await postResearchFromSeed(reqBody)
+    const res = await _withAuthRetry(() => postResearchFromSeed(reqBody))
     if (!res || res.success === false) {
       researchStatus.value = 'error'
       researchErrorCode.value = res?.error_code || 'UNKNOWN'
@@ -828,7 +878,9 @@ const _triggerResearch = async (seed) => {
     researchPollTimer = setTimeout(_pollResearch, 1000)
   } catch (err) {
     researchStatus.value = 'error'
-    researchErrorCode.value = err?.response?.data?.error_code || 'UNKNOWN'
+    researchErrorCode.value = err?._sessionExpired
+      ? 'SESSION_EXPIRED'
+      : (err?.response?.data?.error_code || 'UNKNOWN')
     _stopResearchTimers()
   }
 }

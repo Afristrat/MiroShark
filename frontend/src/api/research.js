@@ -76,6 +76,10 @@ export function researchErrorKeyForCode(code) {
     SESSION_NOT_FOUND: 'research.errors.sessionNotFound',
     SEED_TOO_SHORT: 'research.errors.seedTooShort',
     SEED_TOO_LONG: 'research.errors.seedTooLong',
+    // US-B04.3 — auth refresh tenté + échoué (frontend-only)
+    SESSION_EXPIRED: 'research.errors.sessionExpired',
+    // Pas de session_id retourné par /from-seed
+    NO_SESSION_ID: 'research.errors.generic',
   }
   return map[code] || 'research.errors.generic'
 }

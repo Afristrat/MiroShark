@@ -524,7 +524,8 @@
       "sessionNotFound": "Session expirée. Relancez avec votre graine.",
       "invalidKey": "Clé d’accès rejetée par le service.",
       "seedTooShort": "Graine trop courte (60 caractères minimum).",
-      "seedTooLong": "Graine trop longue (3000 caractères maximum)."
+      "seedTooLong": "Graine trop longue (3000 caractères maximum).",
+      "sessionExpired": "Votre session a expiré pendant la recherche. Reconnectez-vous puis relancez — le cache 1h vous redonnera la même session_id si elle est encore en cours côté Kairos."
     },
     "degraded": {
       "synthesizerUnavailable": "La synthèse IA n’a pas convergé ({reason}). Voici les {count} signaux bruts les plus pertinents pour cette graine.",

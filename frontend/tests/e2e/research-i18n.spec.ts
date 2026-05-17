@@ -84,6 +84,7 @@ const REQUIRED_KEYS = [
   'errors.invalidKey',
   'errors.seedTooShort',
   'errors.seedTooLong',
+  'errors.sessionExpired',
 ] as const
 
 function loadLocale(locale: Locale): Record<string, unknown> {
