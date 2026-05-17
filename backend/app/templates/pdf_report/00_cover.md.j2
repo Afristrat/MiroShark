@@ -1,7 +1,7 @@
 {% from '_macros.md.j2' import kpi_card, callout %}
 # {{ context.title | normalize(context.lang) }}
 
-**Framework d'analyse :** {{ context.framework | upper }} — **Package :** {{ context.package }}
+**Framework d'analyse :** {{ context.framework | upper }}{% if context.package %} — **Package :** {{ context.package }}{% endif %}
 
 **Date de génération :** {{ generated_at | format_date(lang=context.lang) }}
 
@@ -14,10 +14,12 @@
 {% if context.kpi_hero %}
 ## KPI Héro
 
+{# Le label de la KPI Héro est intentionnellement court : on évite de réinjecter
+   le verdict complet (souvent une phrase longue qui rendait illisible la carte). #}
 {{ kpi_card(
-    label=context.kpi_hero.verdict | normalize(context.lang),
+    label='Confiance globale',
     value=(context.kpi_hero.confidence_pct | round(1) | string) + ' %',
-    unit='de confiance'
+    unit='de conviction agrégée'
 ) }}
 
 | Indicateur | Valeur |
@@ -25,8 +27,13 @@
 | Confiance | {{ context.kpi_hero.confidence_pct | round(1) }} % |
 | Score de Brier | {{ context.kpi_hero.brier | round(3) }} |
 {% for camp, pct in context.kpi_hero.scenario_distribution.items() %}
-| {{ camp | capitalize }} | {{ (pct * 100) | round(1) }} % |
+| {{ camp | capitalize }} | {{ pct | round(1) }} % |
 {% endfor %}
+
+{% if context.kpi_hero.verdict %}
+
+**Verdict synthétique :** {{ context.kpi_hero.verdict | normalize(context.lang) }}
+{% endif %}
 
 {% endif %}
 

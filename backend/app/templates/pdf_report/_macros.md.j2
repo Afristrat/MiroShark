@@ -12,12 +12,17 @@
 #}
 
 {# ─── KPI Card ──────────────────────────────────────────────────────────────── #}
+{# Émis comme bloc HTML inline pour garantir un rendu uniforme dans le PDF,
+   sans dépendre de l'interprétation du blockquote markdown qui laissait des
+   ">" parasites coller au texte (bug B1). #}
 {% macro kpi_card(label, value, unit='', color='primary') %}
-> **{{ label }}**
->
-> # {{ value }}{% if unit %} {{ unit }}{% endif %}
->
-> *— Bassira Intelligence —*
+
+<div class="kpi-card kpi-card-{{ color }}">
+{% if label %}<div class="kpi-card-label">{{ label }}</div>{% endif %}
+<div class="kpi-card-value">{{ value }}{% if unit %} <span class="kpi-card-unit">{{ unit }}</span>{% endif %}</div>
+<div class="kpi-card-footer">— Bassira Intelligence —</div>
+</div>
+
 {% endmacro %}
 
 {# ─── Callout / Admonition ──────────────────────────────────────────────────── #}
@@ -36,9 +41,12 @@
 
 {# ─── Pull Quote ────────────────────────────────────────────────────────────── #}
 {% macro pull_quote(text, author) %}
-> {{ text }}
->
-> — *{{ author }}*
+
+<blockquote class="pull-quote">
+<p>{{ text }}</p>
+<footer>— <em>{{ author }}</em></footer>
+</blockquote>
+
 {% endmacro %}
 
 {# ─── Table from data ───────────────────────────────────────────────────────── #}

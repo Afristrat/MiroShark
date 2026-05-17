@@ -162,6 +162,51 @@ def get_jinja_env() -> Environment:
 
     env.filters["normalize"] = _normalize_filter
 
+    # ── Filter |humanize_agent ─────────────────────────────────────────────────
+    # Transforme un identifiant snake_case_NNN en libellé lisible :
+    #   "whisperx_largev3_841"      → "WhisperX large-v3 (#841)"
+    #   "amine_mansouri_idrissi_441" → "Amine Mansouri Idrissi (#441)"
+    #   "Restic_289"                 → "Restic (#289)"
+    # Si l'input est déjà un nom propre (espaces, capitales), retourne tel quel.
+    import re as _re
+
+    _SUFFIX_NUM_RE = _re.compile(r"_(\d{2,5})$")
+    _LARGE_V_RE = _re.compile(r"\blargev(\d+)\b", _re.IGNORECASE)
+
+    def _humanize_agent_filter(value: object) -> str:
+        if value is None:
+            return ""
+        text = str(value).strip()
+        if not text:
+            return ""
+        # Si déjà un nom propre (espaces ou majuscules + min mélangées sans _)
+        if " " in text and "_" not in text:
+            return text
+        # Suffixe numérique → on l'extrait pour l'afficher en ID
+        m = _SUFFIX_NUM_RE.search(text)
+        suffix = ""
+        if m:
+            suffix = f" (#{m.group(1)})"
+            text = text[: m.start()]
+        # _ → espaces
+        text = text.replace("_", " ").strip()
+        # largev3 → large-v3
+        text = _LARGE_V_RE.sub(lambda mm: f"large-v{mm.group(1)}", text)
+        # capitalize premier mot, garde les acronymes (mots > 2 chars en lowercase
+        # avec mix de chiffres seulement)
+        parts = text.split(" ")
+        capitalized = []
+        for p in parts:
+            if not p:
+                continue
+            if any(c.isdigit() for c in p) or p.isupper():
+                capitalized.append(p)
+            else:
+                capitalized.append(p[0].upper() + p[1:])
+        return " ".join(capitalized) + suffix
+
+    env.filters["humanize_agent"] = _humanize_agent_filter
+
     # ── Filter |format_date ────────────────────────────────────────────────────
     # Appelé depuis les templates via {{ generated_at | format_date(lang=context.lang) }}
     env.filters["format_date"] = _format_date_filter

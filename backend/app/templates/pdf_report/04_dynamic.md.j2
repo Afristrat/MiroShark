@@ -12,13 +12,29 @@
 ) }}
 
 {% if context.pivotal_moments %}
+
+<div class="pivots-section">
+
 #### Moments Pivots Identifiés
 
-| Round | Agent Déclencheur | Événement | Δ Score |
+{# Limite à 30 lignes les plus marquantes pour éviter une annexe de 4 pages
+   sans intérêt narratif (bug B9 : tableau de 76 lignes peu différencié). #}
+{% set sorted_pivots = context.pivotal_moments | sort(attribute='delta_score', reverse=True) %}
+{% set top_pos = sorted_pivots[:15] %}
+{% set top_neg = (context.pivotal_moments | sort(attribute='delta_score'))[:15] %}
+{% set top_pivots = (top_pos + top_neg) | sort(attribute='round') %}
+
+| Round | Agent déclencheur | Événement | Δ Score |
 | --- | --- | --- | --- |
-{% for pm in context.pivotal_moments %}
-| {{ pm.round }} | {{ pm.agent | normalize(context.lang) }} | {{ pm.event | normalize(context.lang) }} | {{ '%+.2f' | format(pm.delta_score) }} |
+{% for pm in top_pivots %}
+| {{ pm.round }} | {{ pm.agent | humanize_agent | normalize(context.lang) }} | {{ pm.event | normalize(context.lang) }} | {{ '%+.2f' | format(pm.delta_score) }} |
 {% endfor %}
+
+{% if context.pivotal_moments | length > top_pivots | length %}
+*Affichage des {{ top_pivots | length }} bascules les plus marquantes sur {{ context.pivotal_moments | length }} détectées (seuil |Δ| ≥ 0,20).*
+{% endif %}
+
+</div>
 
 {% endif %}
 
@@ -44,24 +60,56 @@
     narrative_text='Ce classement identifie les agents ayant exercé la plus forte influence au cours de la simulation, mesurée par leur score de conviction maximal. La couleur indique la stance dominante de chaque agent.'
 ) }}
 
+{# Top-3 influenceurs : dédoublonnage par agent_id/name, score max absolu
+   (bug B10 corrigeait l'apparition triplée du même agent 34 (neutral)).
+   Citation : verbatim depuis interview/article si dispo, sinon dernier message
+   non vide depuis la trajectoire (bug B11). #}
 {% if context.trajectory and context.trajectory.rounds %}
-{% set all_agents = [] %}
+{% set agent_best = {} %}
 {% for rnd in context.trajectory.rounds %}
 {% for agent in rnd.agents %}
-{% if all_agents.append({'name': agent.name, 'score': agent.score, 'stance': agent.stance}) %}{% endif %}
+{% set key = agent.agent_id or agent.name %}
+{% if key %}
+{% set prev = agent_best.get(key) %}
+{% if (prev is none) or (agent.score | abs) > (prev.score | abs) %}
+{% set _ = agent_best.update({key: {'name': agent.name, 'agent_id': agent.agent_id, 'score': agent.score, 'stance': agent.stance, 'message': agent.message}}) %}
+{% endif %}
+{% endif %}
 {% endfor %}
 {% endfor %}
 
-{% set sorted_agents = all_agents | sort(attribute='score', reverse=True) %}
-{% set top3 = sorted_agents[:3] %}
+{% set top3 = agent_best.values() | sort(attribute='score', reverse=True) | list %}
+{% set top3 = top3[:3] %}
 
 {% if top3 %}
 #### Citations des Top 3 Agents
 
 {% for agent in top3 %}
+{% set verbatim = '' %}
+{% if context.interviews %}
+{% for itv in context.interviews %}
+{% if itv.agent_name == agent.name and itv.answers and not verbatim %}
+{% set verbatim = itv.answers[0] %}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if not verbatim and context.articles %}
+{% for art in context.articles %}
+{% if art.agent_name == agent.name and art.content and not verbatim %}
+{% set verbatim = (art.content[:280] + ('…' if art.content | length > 280 else '')) %}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if not verbatim and agent.message %}
+{% set verbatim = (agent.message[:280] + ('…' if agent.message | length > 280 else '')) %}
+{% endif %}
+{% if not verbatim %}
+{% set verbatim = 'Conviction agrégée — score atteint ' ~ (agent.score | round(2)) ~ ' au pic de la trajectoire.' %}
+{% endif %}
+
 {{ pull_quote(
-    text='Agent simulé — score de conviction : ' + (agent.score | round(2) | string),
-    author=agent.name | normalize(context.lang) + ' (' + agent.stance + ')'
+    text=verbatim | normalize(context.lang),
+    author=((agent.name or ('Agent #' ~ (agent.agent_id or '?'))) | humanize_agent | normalize(context.lang)) + ' — score max ' + (agent.score | round(2) | string) + ' (' + agent.stance + ')'
 ) }}
 
 {% endfor %}

@@ -170,25 +170,216 @@ class Enricher:
         """Enrichit le contexte in-place et le retourne (chainable).
 
         Séquence :
-        1. KPI héro        (pure computation, aucun LLM)
-        2. Pivotal moments (pure computation, aucun LLM)
-        3. Chart narratives (LLM, cache 24h)
-        4. Executive takeaways (LLM, cache 24h)
-        5. Pass TextNormalizer sur tous textes générés
+        1. Synthèse outcome depuis trajectory si absent (pure computation)
+        2. Synthèse sim_state depuis trajectory si counters manquants
+        3. KPI héro        (pure computation, aucun LLM)
+        4. Pivotal moments (pure computation, aucun LLM)
+        5. Chart narratives (LLM, cache 24h)
+        6. Executive takeaways (LLM, cache 24h)
+        7. Promotion d'une recommandation lisible si outcome.recommendations vide
+        8. Pass TextNormalizer sur tous textes générés
 
         Returns
         -------
         PDFReportContext
             Le même objet muté (return pour chaînage).
         """
+        self._synthesize_outcome_from_trajectory()
+        self._synthesize_sim_state_from_trajectory()
         self._compute_kpi_hero()
         self._detect_pivotal_moments()
         self._generate_chart_narratives()
         self._extract_executive_takeaways()
+        self._promote_recommendation_from_raw_md()
         self._pass_through_normalizer()
         return self.context
 
     # ── Méthodes privées ──────────────────────────────────────────────────────
+
+    def _synthesize_outcome_from_trajectory(self) -> None:
+        """Synthétise un Outcome minimal si absent mais trajectory présent.
+
+        Quand la simulation termine sans avoir produit ``outcome.json``, le
+        rapport affichait "Verdict non disponible" partout (bug B18). On
+        reconstruit ici :
+        - ``bullish_pct`` / ``bearish_pct`` depuis le dernier round
+          (signe du score >0/<0)
+        - ``confidence`` = moyenne des |score| du dernier round, sur [0, 1]
+        - ``verdict`` court : "Convergence partielle" ou "Polarisation
+          structurelle" selon la dispersion finale
+        - ``nb_rounds`` depuis len(rounds)
+        - ``consensus_reached`` vrai si > 70 % du même signe et écart-type
+          < 0.25
+
+        Aucun appel LLM ici, calcul pur et déterministe.
+        """
+        from .schema import Outcome  # import local pour éviter cycle
+
+        ctx = self.context
+        if ctx.outcome is not None and ctx.outcome.verdict:
+            return  # outcome déjà fourni — rien à faire
+
+        if ctx.trajectory is None or not ctx.trajectory.rounds:
+            return
+
+        last_round = ctx.trajectory.rounds[-1]
+        agents = [a for a in last_round.agents if a.agent_id or a.name]
+        if not agents:
+            return
+
+        n = len(agents)
+        bullish_n = sum(1 for a in agents if a.score > 0.05)
+        bearish_n = sum(1 for a in agents if a.score < -0.05)
+        bullish_pct = round(100.0 * bullish_n / n, 1)
+        bearish_pct = round(100.0 * bearish_n / n, 1)
+
+        avg_abs = sum(abs(a.score) for a in agents) / n
+        confidence = min(1.0, max(0.0, avg_abs))
+
+        mean_score = sum(a.score for a in agents) / n
+        variance = sum((a.score - mean_score) ** 2 for a in agents) / n
+        std = variance ** 0.5
+        consensus_reached = (
+            max(bullish_pct, bearish_pct) > 70.0 and std < 0.25
+        )
+
+        if consensus_reached and bullish_pct > bearish_pct:
+            verdict = "Convergence majoritaire vers une position constructive"
+            scenario_winner = "bullish"
+        elif consensus_reached and bearish_pct > bullish_pct:
+            verdict = "Convergence majoritaire vers une position de retrait"
+            scenario_winner = "bearish"
+        elif std >= 0.30:
+            verdict = "Polarisation structurelle — pas de consensus"
+            scenario_winner = None
+        else:
+            verdict = "Convergence partielle, signal exploitable mais à valider"
+            scenario_winner = "bullish" if mean_score > 0 else "bearish" if mean_score < 0 else None
+
+        existing = ctx.outcome if ctx.outcome is not None else Outcome()
+        # Hydrate uniquement les champs vides — préserve ce que la sim a fourni.
+        if not existing.verdict:
+            existing.verdict = verdict
+        if existing.bullish_pct == 0.0:
+            existing.bullish_pct = bullish_pct
+        if existing.bearish_pct == 0.0:
+            existing.bearish_pct = bearish_pct
+        if existing.confidence == 0.0:
+            existing.confidence = round(confidence, 4)
+        if existing.nb_rounds == 0:
+            existing.nb_rounds = len(ctx.trajectory.rounds)
+        if not existing.consensus_reached:
+            existing.consensus_reached = consensus_reached
+        if existing.scenario_winner is None and scenario_winner is not None:
+            existing.scenario_winner = scenario_winner
+
+        ctx.outcome = existing
+        logger.info(
+            "Outcome synthétisé depuis trajectory : verdict=%r conf=%.2f bullish=%.1f%% bearish=%.1f%% rounds=%d",
+            verdict, confidence, bullish_pct, bearish_pct, len(ctx.trajectory.rounds),
+        )
+
+    def _synthesize_sim_state_from_trajectory(self) -> None:
+        """Hydrate ``sim_state.current_round`` et ``profiles_count`` si vides.
+
+        Le diagnostic affichait "Rounds exécutés : 0" alors que la trajectoire
+        contenait 71 rounds (bug B6). On rabote la valeur depuis la trajectoire
+        et le nombre d'agents distincts vus dans la simulation.
+        """
+        from .schema import SimState
+
+        ctx = self.context
+        if ctx.trajectory is None or not ctx.trajectory.rounds:
+            return
+
+        sim_state = ctx.sim_state if ctx.sim_state is not None else SimState()
+
+        nb_rounds = len(ctx.trajectory.rounds)
+        if sim_state.current_round == 0:
+            sim_state.current_round = nb_rounds
+
+        if sim_state.profiles_count == 0:
+            # Compte les agents distincts via leur agent_id (ou name si pas d'id)
+            seen: set = set()
+            for rnd in ctx.trajectory.rounds:
+                for a in rnd.agents:
+                    key = a.agent_id or a.name
+                    if key:
+                        seen.add(key)
+            if seen:
+                sim_state.profiles_count = len(seen)
+
+        # entities_count doit refléter le graphe d'entités, pas les agents.
+        # Si on n'a pas d'info plus fine, on laisse à 0 plutôt que dupliquer
+        # profiles_count (bug B7).
+
+        ctx.sim_state = sim_state
+
+    def _promote_recommendation_from_raw_md(self) -> None:
+        """Si ``outcome.recommendations`` est vide, tente d'extraire une
+        "Recommandation unique pour le décideur" du markdown brut (bug B12).
+
+        Le ReportAgent produit parfois un markdown narratif (annexe 7.3)
+        contenant en clair ::
+
+            **Recommandation unique pour le décideur :**
+            Ne produisez aucune slide supplémentaire ; …
+
+        Cette information ne remontait jamais dans la section 6
+        "Recommandations C-Level" qui affichait "Aucune recommandation".
+        Ici on parse le markdown brut et on remplit ``recommendations``.
+        """
+        from .schema import Outcome
+
+        ctx = self.context
+        outcome = ctx.outcome if ctx.outcome is not None else Outcome()
+        if outcome.recommendations:
+            return  # déjà rempli
+
+        raw_md = ctx.full_report_md or ""
+        if not raw_md:
+            return
+
+        # Cherche les blocs "Recommandation …:" ou "Recommandations:" suivis
+        # d'un texte. On capture jusqu'au prochain titre de section ou ligne
+        # vide doublée.
+        patterns = (
+            re.compile(
+                r"\*\*Recommandation(?:s)?\s*(?:unique\s+)?(?:pour\s+le\s+d[ée]cideur)?\s*:?\*\*\s*\n+(.+?)(?=\n\s*\n|\n#)",
+                re.DOTALL | re.IGNORECASE,
+            ),
+            re.compile(
+                r"^##+\s*Recommandation[s]?[^\n]*\n+(.+?)(?=\n##|\Z)",
+                re.DOTALL | re.MULTILINE | re.IGNORECASE,
+            ),
+        )
+
+        extracted: List[str] = []
+        for pat in patterns:
+            for m in pat.finditer(raw_md):
+                text = m.group(1).strip()
+                # Strip bullets et numéros en début de ligne
+                lines = [
+                    re.sub(r"^[\s\-\*•·]+|^\d+[\.\)]\s*", "", line).strip()
+                    for line in text.splitlines()
+                    if line.strip()
+                ]
+                # Reflow en une seule phrase si court, sinon garder structure
+                joined = " ".join(lines).strip()
+                if joined and len(joined) > 20:
+                    # Limite à ~600 chars pour rester actionnable et lisible
+                    if len(joined) > 600:
+                        joined = joined[:597].rstrip() + "…"
+                    extracted.append(joined)
+                if len(extracted) >= 5:
+                    break
+            if extracted:
+                break
+
+        if extracted:
+            outcome.recommendations = extracted
+            ctx.outcome = outcome
+            logger.info("Promu %d recommandation(s) depuis full_report_md.", len(extracted))
 
     def _compute_kpi_hero(self) -> None:
         """Calcule et stocke le KPIHero dans context.kpi_hero.
@@ -213,9 +404,12 @@ class Enricher:
         if outcome is not None:
             verdict = outcome.verdict
 
-            # Confidence : depuis bullish_pct (représente la conviction directionnelle
-            # réelle des agents) — bearish_pct utilisé en fallback si bullish absent.
-            if outcome.bullish_pct is not None and outcome.bullish_pct > 0.0:
+            # Confidence : préférence donnée à outcome.confidence (calculée comme
+            # moyenne des |score| par _synthesize_outcome_from_trajectory en
+            # absence de verdict explicite), puis fallback sur bullish_pct.
+            if outcome.confidence is not None and outcome.confidence > 0.0:
+                confidence_pct = round(float(outcome.confidence) * 100.0, 1)
+            elif outcome.bullish_pct is not None and outcome.bullish_pct > 0.0:
                 confidence_pct = round(float(outcome.bullish_pct), 1)
             elif outcome.bearish_pct is not None and outcome.bearish_pct > 0.0:
                 confidence_pct = round(100.0 - float(outcome.bearish_pct), 1)
@@ -223,22 +417,24 @@ class Enricher:
                 confidence_pct = 0.0
 
             # Brier score : préfère brier_score explicite si disponible (extension future
-            # du schéma QualityMetrics), sinon proxy 1-coherence (valeur [0,1],
-            # 0 = prédiction parfaite).
+            # du schéma QualityMetrics), sinon proxy 1-coherence si coherence > 0
+            # (sinon on laisse à 0.0 plutôt que de produire un Brier=1.0 trompeur
+            # qui ferait croire à une prédiction "totalement fausse").
             qm = outcome.quality_metrics
-            if qm is not None:
-                brier_score_attr = getattr(qm, "brier_score", None)
+            qm_alt = self.context.quality_metrics
+            qm_effective = qm if qm is not None else qm_alt
+            if qm_effective is not None:
+                brier_score_attr = getattr(qm_effective, "brier_score", None)
                 if brier_score_attr is not None:
                     brier = round(float(brier_score_attr), 4)
+                elif qm_effective.coherence > 0:
+                    brier = round(1.0 - qm_effective.coherence, 4)
                 else:
-                    brier = round(1.0 - qm.coherence, 4)
-            elif self.context.quality_metrics is not None:
-                qm_ctx = self.context.quality_metrics
-                brier_score_attr = getattr(qm_ctx, "brier_score", None)
-                if brier_score_attr is not None:
-                    brier = round(float(brier_score_attr), 4)
-                else:
-                    brier = round(1.0 - qm_ctx.coherence, 4)
+                    # Pas de signal qualité disponible → fallback Brier dérivé
+                    # de l'écart-type des scores finaux (proxy raisonnable).
+                    brier = self._brier_from_trajectory_dispersion()
+            else:
+                brier = self._brier_from_trajectory_dispersion()
 
             # Distribution des scénarios : bullish / bearish / neutral (déduit)
             bullish = outcome.bullish_pct
@@ -259,12 +455,42 @@ class Enricher:
         )
         logger.debug("KPIHero calculé : verdict=%r confidence=%.1f%%", verdict, confidence_pct)
 
+    def _brier_from_trajectory_dispersion(self) -> float:
+        """Proxy Brier dérivé de la dispersion des scores finaux.
+
+        Si la simulation ne fournit pas de ``quality_metrics``, on utilise
+        l'écart-type des scores au dernier round comme indicateur de
+        fiabilité. Plus la dispersion est élevée, plus l'incertitude (et
+        donc le Brier) est grande.
+
+        Échelle : std ∈ [0, ~1] → Brier ∈ [0, ~0.5]. On clamp à [0, 1].
+        Si la trajectoire est vide → renvoie 0.0 (au lieu de 1.0 qui
+        suggérerait à tort une prédiction totalement fausse).
+        """
+        if self.context.trajectory is None or not self.context.trajectory.rounds:
+            return 0.0
+        last = self.context.trajectory.rounds[-1]
+        scores = [a.score for a in last.agents if a.agent_id or a.name]
+        if not scores:
+            return 0.0
+        mean = sum(scores) / len(scores)
+        variance = sum((s - mean) ** 2 for s in scores) / len(scores)
+        std = variance ** 0.5
+        # Mapping std → Brier sur [0, 0.5]
+        brier = min(1.0, max(0.0, std * 0.5))
+        return round(brier, 4)
+
     def _detect_pivotal_moments(self) -> None:
         """Scanne la trajectoire et détecte les bascules de score > SEUIL=0.20.
 
         Pour chaque agent, compare son score au round N avec son score au round N-1.
         Si la variation absolue dépasse ``_PIVOTAL_THRESHOLD``, un PivotalMoment est
         créé et ajouté à context.pivotal_moments.
+
+        Améliorations bug B9 :
+        - Résolution du nom lisible via ``agent_profiles`` + suffixe ID si nécessaire
+        - Description d'événement contextualisée ("bascule positive ⟶ adhésion",
+          "bascule négative ⟶ retrait") au lieu du libellé générique "bascule".
 
         La liste finale est triée par round ascendant.
         """
@@ -274,6 +500,8 @@ class Enricher:
         rounds = self.context.trajectory.rounds
         if len(rounds) < 2:
             return
+
+        name_lookup = self._build_agent_name_lookup()
 
         # Index : agent_id → score au round précédent
         prev_scores: Dict[str, float] = {}
@@ -288,18 +516,22 @@ class Enricher:
                 if prev_score is not None:
                     delta = current_score - prev_score
                     if abs(delta) >= _PIVOTAL_THRESHOLD:
+                        display_name = self._resolve_agent_display_name(
+                            agent_state.name, agent_id, name_lookup
+                        )
+                        event_label = self._pivot_event_label(delta)
                         moments.append(
                             PivotalMoment(
                                 round=rnd.round_idx,
-                                agent=agent_state.name or agent_id,
-                                event="bascule",
+                                agent=display_name,
+                                event=event_label,
                                 delta_score=round(delta, 4),
                             )
                         )
                         logger.debug(
                             "Pivotal moment détecté : round=%d agent=%r delta=%.4f",
                             rnd.round_idx,
-                            agent_state.name,
+                            display_name,
                             delta,
                         )
 
@@ -307,6 +539,57 @@ class Enricher:
 
         moments.sort(key=lambda m: m.round)
         self.context.pivotal_moments = moments
+
+    def _build_agent_name_lookup(self) -> Dict[str, str]:
+        """Construit un index ``agent_id → nom lisible`` depuis profiles + trajectory.
+
+        Préférence : profile.name s'il est non vide, sinon le premier name
+        rencontré dans la trajectoire pour cet agent_id.
+        """
+        lookup: Dict[str, str] = {}
+        for profile in self.context.agent_profiles:
+            if profile.name:
+                # Les profiles n'ont pas d'agent_id explicite — on indexe par nom
+                # pour permettre la résolution inverse via les états trajectoire
+                # qui partagent ce même nom.
+                lookup[profile.name] = profile.name
+
+        if self.context.trajectory:
+            for rnd in self.context.trajectory.rounds:
+                for a in rnd.agents:
+                    if a.agent_id and a.name and a.agent_id not in lookup:
+                        lookup[a.agent_id] = a.name
+        return lookup
+
+    @staticmethod
+    def _resolve_agent_display_name(
+        name: str, agent_id: str, lookup: Dict[str, str]
+    ) -> str:
+        """Retourne un nom lisible : ``name`` si présent, sinon résolution via
+        lookup, sinon agent_id préfixé d'un ``#`` pour signaler que c'est un ID.
+        """
+        if name and not name.isdigit() and len(name) > 2:
+            # Cas idéal : déjà un vrai nom
+            return name
+        resolved = lookup.get(agent_id) or lookup.get(name)
+        if resolved:
+            return resolved
+        if agent_id:
+            return f"Agent #{agent_id}"
+        return f"Agent #{name}" if name else "Agent anonyme"
+
+    @staticmethod
+    def _pivot_event_label(delta: float) -> str:
+        """Étiquette descriptive d'une bascule selon son signe et son ampleur."""
+        if delta >= 0.30:
+            return "bascule forte ⟶ adhésion"
+        if delta >= _PIVOTAL_THRESHOLD:
+            return "bascule positive"
+        if delta <= -0.30:
+            return "bascule forte ⟶ retrait"
+        if delta <= -_PIVOTAL_THRESHOLD:
+            return "bascule négative"
+        return "bascule"
 
     def _generate_chart_narratives(self) -> None:
         """Génère une narrative ~80 mots pour chacun des 5 charts via LLM.
@@ -552,26 +835,65 @@ class Enricher:
             return self._fallback_takeaways_from_summary(summary)
 
     def _fallback_takeaways_from_summary(self, summary: str) -> List[str]:
-        """Fallback gracieux : extrait 3 phrases depuis outline.summary.
+        """Fallback gracieux : 3 takeaways dérivés du verdict + de la trajectoire
+        si le résumé outline est absent.
 
-        Si le résumé est absent ou trop court, retourne 3 fois _LLM_FALLBACK.
+        Ordre de préférence :
+        1. Extraction de phrases depuis ``outline.summary`` (3 premières).
+        2. Sinon, takeaways synthétisés depuis l'outcome + pivots.
+        3. Sinon, message générique unique (pas répété trois fois).
         """
-        if not summary or not summary.strip():
-            return [_LLM_FALLBACK, _LLM_FALLBACK, _LLM_FALLBACK]
+        if summary and summary.strip():
+            sentences = [
+                s.strip()
+                for s in re.split(r"[.!?;]+", summary)
+                if s.strip() and len(s.strip()) > 10
+            ]
+            if len(sentences) >= 3:
+                return sentences[:3]
 
-        # Découpe sur les séparateurs de phrases communs
-        sentences = [
-            s.strip()
-            for s in re.split(r"[.!?;]+", summary)
-            if s.strip() and len(s.strip()) > 10
-        ]
+        # Synthèse depuis l'outcome et la trajectoire (toujours dispos après
+        # _synthesize_outcome_from_trajectory).
+        ctx = self.context
+        outcome = ctx.outcome
+        synth: List[str] = []
 
-        result: List[str] = []
-        for s in sentences[:3]:
-            result.append(s)
-        while len(result) < 3:
-            result.append(_LLM_FALLBACK)
-        return result
+        if outcome and outcome.verdict:
+            synth.append(outcome.verdict)
+
+        if outcome and outcome.nb_rounds:
+            if outcome.bullish_pct > outcome.bearish_pct:
+                tilt = f"Le camp positif domine la dernière étape ({outcome.bullish_pct:.0f} % contre {outcome.bearish_pct:.0f} %)."
+            elif outcome.bearish_pct > outcome.bullish_pct:
+                tilt = f"Le camp défensif l'emporte au dernier round ({outcome.bearish_pct:.0f} % contre {outcome.bullish_pct:.0f} %)."
+            else:
+                tilt = "Aucun camp ne s'impose clairement à l'issue de la simulation."
+            synth.append(tilt)
+
+        pivots = ctx.pivotal_moments
+        if pivots:
+            top_pivot = max(pivots, key=lambda p: abs(p.delta_score))
+            synth.append(
+                f"Bascule la plus marquante : {top_pivot.agent} au round {top_pivot.round} "
+                f"(Δ {top_pivot.delta_score:+.2f})."
+            )
+
+        # Compléter si nécessaire avec un message unique non répété
+        if not synth:
+            return [
+                _LLM_FALLBACK,
+                "Les takeaways exécutifs nécessitent une analyse humaine complémentaire.",
+                "Voir la section 4 « Dynamique observée » pour les détails par round.",
+            ]
+        while len(synth) < 3:
+            # Petits compléments contextuels variés
+            extras = [
+                "Voir la section 4 « Dynamique observée » pour les détails par round.",
+                "Les takeaways exécutifs gagneront en précision avec un LLM analytique connecté.",
+                "Les recommandations C-Level se trouvent en section 6.",
+            ]
+            synth.append(extras[len(synth) - 1])
+        return synth[:3]
 
 
 # ─── Factory helper ───────────────────────────────────────────────────────────

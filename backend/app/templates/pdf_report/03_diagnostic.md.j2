@@ -19,17 +19,19 @@
 | Paramètre | Valeur |
 | --- | --- |
 | Framework analytique | {{ context.framework | upper }} |
-| Package commandé | {{ context.package if context.package else '—' }} |
-| Langue du rendu | {{ context.lang | upper }} |
-{% if context.outcome %}
-| Score de Brier | {{ context.outcome.quality_metrics.plausibility | round(3) if context.outcome.quality_metrics else '—' }} |
-| Cohérence | {{ (context.outcome.quality_metrics.coherence * 100) | round(1) if context.outcome.quality_metrics else '—' }} % |
-| Diversité agents | {{ (context.outcome.quality_metrics.diversity * 100) | round(1) if context.outcome.quality_metrics else '—' }} % |
+{% if context.package %}| Package commandé | {{ context.package }} |
+{% endif %}| Langue du rendu | {{ context.lang | upper }} |
+{% if context.outcome and context.outcome.quality_metrics and (context.outcome.quality_metrics.coherence > 0 or context.outcome.quality_metrics.diversity > 0) %}
+| Score de Brier | {{ context.outcome.quality_metrics.plausibility | round(3) }} |
+| Cohérence | {{ (context.outcome.quality_metrics.coherence * 100) | round(1) }} % |
+| Diversité agents | {{ (context.outcome.quality_metrics.diversity * 100) | round(1) }} % |
 {% endif %}
 {% if context.sim_state %}
 | Rounds exécutés | {{ context.sim_state.current_round }} |
 | Agents simulés | {{ context.sim_state.profiles_count }} |
-| Entités extraites | {{ context.sim_state.entities_count }} |
+{% if context.sim_state.entities_count and context.sim_state.entities_count != context.sim_state.profiles_count %}
+| Entités extraites du corpus | {{ context.sim_state.entities_count }} |
+{% endif %}
 {% endif %}
 
 ---

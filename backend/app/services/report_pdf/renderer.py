@@ -167,6 +167,11 @@ class Renderer:
         #    (markdown-it ne parse pas le YAML, il le traiterait comme du texte)
         md_clean = _strip_frontmatter(md_text)
 
+        # 2b. Convertir les admonitions GFM (> [!WARNING] / [!NOTE] / [!CAUTION])
+        #     en HTML callouts <div class="callout callout-*"> avant markdown-it,
+        #     que commonmark ne reconnaît pas nativement.
+        md_clean = _convert_gfm_admonitions(md_clean)
+
         # 3. Conversion Markdown → HTML via markdown-it-py
         html_body = _md_to_html(md_clean)
 
@@ -287,6 +292,102 @@ def _embed_charts_md(md_text: str, charts_factory: Any) -> str:
     return md_text
 
 
+# Regex GFM admonition : un blockquote dont la première ligne est [!TYPE]
+# (NOTE, TIP, IMPORTANT, WARNING, CAUTION). Le bloc s'étend tant que les
+# lignes commencent par ">".
+_ADMONITION_BLOCK_RE = re.compile(
+    r"(?:^|\n)((?:[ \t]*>[^\n]*(?:\n|$))+)",
+    re.MULTILINE,
+)
+_ADMONITION_TYPE_RE = re.compile(
+    r"^[ \t]*>[ \t]*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\][ \t]*\n?",
+    re.IGNORECASE,
+)
+
+_ADMONITION_CSS_CLASS = {
+    "NOTE": "callout callout-info",
+    "TIP": "callout callout-info",
+    "IMPORTANT": "callout callout-info",
+    "WARNING": "callout callout-warning",
+    "CAUTION": "callout callout-critical",
+}
+_ADMONITION_LABEL_FR = {
+    "NOTE": "Note",
+    "TIP": "Astuce",
+    "IMPORTANT": "Important",
+    "WARNING": "Avertissement",
+    "CAUTION": "Critique",
+}
+
+
+def _convert_gfm_admonitions(md_text: str) -> str:
+    """Convertit les admonitions GFM en blocs HTML inline.
+
+    Transforme ::
+
+        > [!WARNING]
+        > **Verdict non disponible**
+        > Le verdict n'a pas été calculé.
+
+    en ::
+
+        <div class="callout callout-warning"><div class="callout-label">Avertissement</div>
+        <p><strong>Verdict non disponible</strong></p>
+        <p>Le verdict n'a pas été calculé.</p>
+        </div>
+
+    Cette conversion est nécessaire car ``markdown-it-py`` en mode commonmark
+    ne reconnaît pas les admonitions GFM et les rend littéralement comme du
+    texte (``[!WARNING] Verdict non disponible``), bug visible dans le PDF.
+    """
+
+    def _replace(match: "re.Match[str]") -> str:
+        block_raw = match.group(1)
+        # Récupère la ligne avec [!TYPE]
+        type_match = _ADMONITION_TYPE_RE.match(block_raw)
+        if not type_match:
+            return match.group(0)  # pas une admonition, on garde tel quel
+
+        admo_type = type_match.group(1).upper()
+        css_class = _ADMONITION_CSS_CLASS.get(admo_type, "callout callout-info")
+        label = _ADMONITION_LABEL_FR.get(admo_type, admo_type.capitalize())
+
+        # Strip la ligne [!TYPE] et retire les ">" + 1 espace de chaque ligne suivante
+        remainder = block_raw[type_match.end():]
+        inner_lines = []
+        for line in remainder.splitlines():
+            stripped = re.sub(r"^[ \t]*>[ \t]?", "", line)
+            inner_lines.append(stripped)
+        inner_md = "\n".join(inner_lines).strip()
+
+        # Inline simple : convertir **gras** et *italique* + paragraphes.
+        # On délègue à markdown-it pour l'inner, mais en injectant un placeholder.
+        # Stratégie : on rendra l'admonition comme un raw HTML block avec
+        # paragraphes manuels — markdown-it laisse les blocs HTML intacts.
+        paragraphs = [p.strip() for p in re.split(r"\n\s*\n", inner_md) if p.strip()]
+        html_paragraphs = []
+        for p in paragraphs:
+            # gras
+            p = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", p)
+            # italique
+            p = re.sub(r"(?<!\*)\*([^*]+)\*(?!\*)", r"<em>\1</em>", p)
+            # backticks code
+            p = re.sub(r"`([^`]+)`", r"<code>\1</code>", p)
+            # newlines internes → espaces simples
+            p = p.replace("\n", " ")
+            html_paragraphs.append(f"<p>{p}</p>")
+        inner_html = "\n".join(html_paragraphs)
+
+        return (
+            f"\n\n<div class=\"{css_class}\">"
+            f"<div class=\"callout-label\">{label}</div>\n"
+            f"{inner_html}\n"
+            f"</div>\n\n"
+        )
+
+    return _ADMONITION_BLOCK_RE.sub(_replace, md_text)
+
+
 def _strip_frontmatter(md_text: str) -> str:
     """Retire le front-matter YAML (blocs délimités par ---) du Markdown.
 
@@ -346,40 +447,44 @@ def _md_to_html(md_text: str) -> str:
 def _embed_charts(html_body: str, charts_factory: Any) -> str:
     """Remplace les placeholders img charts par des data URIs base64.
 
-    Cherche dans html_body les balises du type :
-        <img alt="belief_drift" src="charts/belief_drift.png">
-    et remplace src par un data URI base64 du PNG généré par charts_factory.
-
-    Args:
-        html_body:      HTML fragment après rendu markdown-it.
-        charts_factory: Instance de ChartFactory avec les méthodes chart.
-
-    Returns:
-        HTML fragment avec les charts embarqués en base64.
+    Le macro Jinja2 ``chart_with_narrative`` génère ``![alt](belief_drift.png)``
+    sans préfixe ``charts/``. Après conversion markdown-it, le HTML produit
+    ``<img alt="…" src="belief_drift.png">``. On accepte donc les deux formes
+    (``src="belief_drift.png"`` et ``src="charts/belief_drift.png"``) pour
+    rester compatible avec d'éventuels rapports historiques préfixés.
     """
     for method_name in _CHART_METHODS:
-        # Le placeholder src= peut être "charts/<name>.png"
-        placeholder = f'src="charts/{method_name}.png"'
-        if placeholder not in html_body:
-            continue
+        png_bytes: Optional[bytes] = None
 
-        try:
+        def _ensure_png() -> Optional[bytes]:
             chart_method = getattr(charts_factory, method_name, None)
             if chart_method is None:
                 logger.warning("ChartFactory.%s() non trouvé — placeholder conservé.", method_name)
-                continue
+                return None
+            try:
+                return chart_method()
+            except Exception as exc:
+                logger.warning(
+                    "Génération chart %s échouée : %s — placeholder conservé.",
+                    method_name,
+                    exc,
+                )
+                return None
 
-            png_bytes: bytes = chart_method()
+        for placeholder in (
+            f'src="{method_name}.png"',
+            f'src="charts/{method_name}.png"',
+        ):
+            if placeholder not in html_body:
+                continue
+            if png_bytes is None:
+                png_bytes = _ensure_png()
+                if png_bytes is None:
+                    break
             b64 = base64.b64encode(png_bytes).decode("ascii")
             data_uri = f'src="data:image/png;base64,{b64}"'
             html_body = html_body.replace(placeholder, data_uri)
             logger.debug("Chart %s embarqué (%d bytes PNG).", method_name, len(png_bytes))
-        except Exception as exc:
-            logger.warning(
-                "Génération chart %s échouée : %s — placeholder conservé.",
-                method_name,
-                exc,
-            )
 
     return html_body
 

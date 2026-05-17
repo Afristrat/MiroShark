@@ -16,14 +16,34 @@ Bassira utilise un cadre de simulation multi-agents (framework **{{ context.fram
 
 **Métriques de qualité :**
 
-{% if context.outcome and context.outcome.quality_metrics %}
+{% set qm = context.outcome.quality_metrics if context.outcome else None %}
+{% if qm and (qm.coherence > 0 or qm.diversity > 0 or qm.plausibility > 0 or qm.alignment > 0) %}
 | Métrique | Score | Interprétation |
 | --- | --- | --- |
-| Cohérence interne | {{ (context.outcome.quality_metrics.coherence * 100) | round(1) }} % | Cohérence du scénario simulé |
-| Diversité des opinions | {{ (context.outcome.quality_metrics.diversity * 100) | round(1) }} % | Hétérogénéité des positions agents |
-| Plausibilité | {{ (context.outcome.quality_metrics.plausibility * 100) | round(1) }} % | Vraisemblance des dynamiques |
-| Alignement sources | {{ (context.outcome.quality_metrics.alignment * 100) | round(1) }} % | Fidélité aux données documentaires |
+| Cohérence interne | {{ (qm.coherence * 100) | round(1) }} % | Cohérence du scénario simulé |
+| Diversité des opinions | {{ (qm.diversity * 100) | round(1) }} % | Hétérogénéité des positions agents |
+| Plausibilité | {{ (qm.plausibility * 100) | round(1) }} % | Vraisemblance des dynamiques |
+| Alignement sources | {{ (qm.alignment * 100) | round(1) }} % | Fidélité aux données documentaires |
+{% elif context.trajectory and context.trajectory.rounds %}
+{# Fallback : métriques dérivées de la trajectoire si l'outcome
+   n'a pas produit de quality_metrics explicites. #}
+{% set nb_rounds = context.trajectory.rounds | length %}
+{% set nb_pivots = context.pivotal_moments | length %}
+{% set agents_in_pivots = context.pivotal_moments | map(attribute='agent') | unique | list | length %}
+{% set nb_agents = context.sim_state.profiles_count if context.sim_state and context.sim_state.profiles_count else (context.agent_profiles | length) %}
+{% set engagement_pct = (100.0 * agents_in_pivots / nb_agents) if nb_agents > 0 else 0 %}
 
+| Métrique dérivée | Valeur | Interprétation |
+| --- | --- | --- |
+| Rounds exécutés | {{ nb_rounds }} | Profondeur de simulation |
+| Bascules détectées | {{ nb_pivots }} | Variations de score \|Δ\| ≥ 0,20 |
+| Agents engagés dans une bascule | {{ agents_in_pivots }} / {{ nb_agents }} ({{ engagement_pct | round(0) }} %) | Couverture dynamique |
+| Bascules par round (moyenne) | {{ (nb_pivots / nb_rounds) | round(2) if nb_rounds > 0 else '—' }} | Intensité conversationnelle |
+
+*Note : les métriques canoniques (cohérence, diversité, plausibilité,
+alignement) n'ont pas été calculées par le moteur de simulation pour ce
+rapport. Les indicateurs ci-dessus sont dérivés directement de la
+trajectoire observée.*
 {% else %}
 *Métriques de qualité non disponibles pour cette simulation.*
 {% endif %}
@@ -53,15 +73,21 @@ Bassira utilise un cadre de simulation multi-agents (framework **{{ context.fram
 {% endfor %}
 
 {% elif context.agent_profiles %}
+
+<div class="agent-table-section">
+
 #### Profils des Agents Simulés
 
 {% set has_archetype = context.agent_profiles | selectattr('archetype') | list | length > 0 %}
 {% set has_platform = context.agent_profiles | selectattr('platform') | list | length > 0 %}
-| Nom {% if has_archetype %}| Archétype {% endif %}| Stance Initiale {% if has_platform %}| Plateforme {% endif %}|
-| --- {% if has_archetype %}| --- {% endif %}| --- {% if has_platform %}| --- {% endif %}|
+{% set has_biais = context.agent_profiles | selectattr('biais') | list | length > 0 %}
+| Nom {% if has_archetype %}| Archétype {% endif %}| Stance Initiale {% if has_platform %}| Plateforme {% endif %}{% if has_biais %}| Biais cognitifs {% endif %}|
+| --- {% if has_archetype %}| --- {% endif %}| --- {% if has_platform %}| --- {% endif %}{% if has_biais %}| --- {% endif %}|
 {% for profile in context.agent_profiles %}
-| {{ profile.name | normalize(context.lang) }} {% if has_archetype %}| {{ profile.archetype | default('—') }} {% endif %}| {{ profile.stance | default('neutre') }} {% if has_platform %}| {{ profile.platform | default('—') }} {% endif %}|
+| {{ profile.name | humanize_agent | normalize(context.lang) }} {% if has_archetype %}| {{ profile.archetype or '—' }} {% endif %}| {{ profile.stance or 'neutre' }} {% if has_platform %}| {{ profile.platform or '—' }} {% endif %}{% if has_biais %}| {{ (profile.biais | join(', ')) if profile.biais else '—' }} {% endif %}|
 {% endfor %}
+
+</div>
 
 {% else %}
 {{ callout('info', 'Agents', 'Les données d\'interview ou de profil des agents ne sont pas disponibles pour cette simulation.') }}
@@ -69,26 +95,7 @@ Bassira utilise un cadre de simulation multi-agents (framework **{{ context.fram
 
 ---
 
-### 7.3 Rapport Complet (Markdown Brut)
-
-{% if context.full_report_md %}
-
-> **Note technique :** Le contenu suivant est le markdown brut généré par le ReportAgent, inclus ici comme annexe de référence.
-
-<details>
-<summary>Rapport Markdown Brut (cliquer pour développer)</summary>
-
-{{ context.full_report_md }}
-
-</details>
-
-{% else %}
-{{ callout('info', 'Rapport brut', 'Le markdown complet du rapport n\'est pas disponible dans ce contexte PDF.') }}
-{% endif %}
-
----
-
-### 7.4 Glossaire
+### 7.3 Glossaire
 
 | Terme | Définition |
 | --- | --- |
@@ -106,7 +113,7 @@ Bassira utilise un cadre de simulation multi-agents (framework **{{ context.fram
 
 ---
 
-### 7.5 Disclaimer Légal
+### 7.4 Disclaimer Légal
 
 Ce rapport est généré automatiquement par le système Bassira d'AIMPOWER. Il est fondé sur des données simulées par des agents artificiels et ne constitue en aucun cas :
 
