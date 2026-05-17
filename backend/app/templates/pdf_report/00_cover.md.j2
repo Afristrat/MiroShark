@@ -17,9 +17,9 @@
 {# Le label de la KPI Héro est intentionnellement court : on évite de réinjecter
    le verdict complet (souvent une phrase longue qui rendait illisible la carte). #}
 {{ kpi_card(
-    label='Confiance globale',
+    label='Niveau d\'alignement',
     value=(context.kpi_hero.confidence_pct | round(1) | string) + ' %',
-    unit='de conviction agrégée'
+    unit='de conviction agrégée des agents'
 ) }}
 
 | Indicateur | Valeur |

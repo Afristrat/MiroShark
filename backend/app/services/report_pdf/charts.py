@@ -169,8 +169,8 @@ class ChartFactory:
 
         # ── Figure ──
         fig, ax = plt.subplots(figsize=(7, 3.8))
-        ax.set_title("Évolution des convictions par round", pad=10)
-        ax.set_xlabel("Round")
+        ax.set_title("Évolution des convictions au fil des rounds", pad=10)
+        ax.set_xlabel("Round de discussion")
         ax.set_ylabel("Score moyen de conviction")
 
         # Mapping stance interne → libellé C-level pour la légende
