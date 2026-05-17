@@ -1,3 +1,211 @@
+== PASSATION MiroShark/Bassira+Kairos 2026-05-17T18:00:00+01:00 ==
+
+[ETAT]
+- branche Bassira `main` `e6ff1f6` à jour origin (9 commits depuis la passation 2026-05-13)
+- branche Kairos `main` `6cbe4a3` à jour origin (15+ commits — hotfix pipeline + page /admin/api-inbound)
+- prod Bassira ONLINE https://prospectives.ai-mpower.com — Coolify auto-deploy sur main via webhook GitHub
+- prod Kairos ONLINE https://scrap.ai-mpower.com (frontend) + `crplceoptyeslqyfcqvj.supabase.co/functions/v1` (edge fns) — pipeline stable mais fragile sur graines complexes
+- npm run build Bassira : OK, 941 modules
+- Playwright research-i18n : 5/5 verts (clés research.* étendues à ~30 entrées)
+- Clé API Kairos préfixe `bsr_7123` (rotée le 15 mai, env var Coolify `KAIROS_API_KEY`)
+
+[FAIT cette session — 5 chantiers Bassira + récap Kairos]
+
+### Chantier 1 — Refonte UX TopicResearchPanel multi-select (US-B04 → B04.3)
+
+Avant : 1 radio par topic, brief invisible (juste label DÉCISION/CRISE), sources cachées dans slide-over. Amine a tapé du poing sur la table → refonte totale.
+
+| Commit | Fix |
+|---|---|
+| `bbdb4a2` US-B04 | Multi-select checkboxes cross-topics, texte intégral du brief (`variant.brief`) + rationale + framework badge, sources inline `<details>` avec favicon + lien `target=_blank`, zone compose Markdown éditable avec « Régénérer auto » + « Insérer dans la console », devil's advocate fix (`type === 'devil_advocate' \|\| is_devil_advocate`) |
+| `6f5e336` colors | Page Bassira en DARK THEME (`--wi-bg: #1a1d27`) — j'avais designé pour cream → contraste catastrophique. Fix : badges orange vif sur dark bg, verdict pills avec tints 18% + couleurs claires, favicons sur padding blanc, devil's advocate sans fond vert menthe |
+| `1e61f82` US-B04.1 | Toggle « Activer la recherche dynamique Kairos » au-dessus du panel (default ON), recherche déclenchée sur la matière 01 (= `scenarioSuggestPreview` = files preview + URLs fetched + ask docs) au lieu du textarea 02, insertion du brief dans 01 (créer un urlDoc `bassira://research/<ts>`) au lieu d'écraser 02, message disabled clair sous le bouton Lancer (« Ajoutez au moins une graine en 01 » / « Rédigez votre invite en 02 ») |
+| `f8ae845` US-B04.2 | Mode dégradé `synthesizer_unavailable` : status line ne dit plus « 0 topics · 0 sources » mais « 30 signaux bruts récupérés · mode dégradé (timeout) ». Checkbox par signal (tous cochés par défaut — option (c) validée Amine), toolbar « Tout cocher / Tout décocher », zone compose Markdown listant les sources cochées. Mode complet : aussi checkboxes par source dans le `<details>`. Insertion = 1 urlDoc « Brief composé » + 1 urlDoc par source cochée (déduplication URL) → la simulation backend ingère vraiment les liens et non juste le markdown |
+| `e6ff1f6` US-B04.3 | Helper `_withAuthRetry(fn)` autour des appels POST/GET research. Sur HTTP 401 → tente `supabase.auth.refreshSession()` puis retry l'appel. Si refresh KO → errorCode `SESSION_EXPIRED` mappé vers `research.errors.sessionExpired` (i18n FR/EN/AR : « Votre session a expiré pendant la recherche… le cache 1h vous redonnera la même session_id ») |
+
+### Chantier 2 — Brief technique passé à Claude Kairos (par Amine)
+
+Amine a copié mes 2 briefs dans une autre instance Claude Code Kairos :
+
+1. **Page /admin/api-inbound** : observabilité live des sessions `research-from-seed`. Livré côté Kairos (commits `5331ba7` + `d395ead`). URL : https://scrap.ai-mpower.com/admin/api-inbound — utilisé toute la session pour debug. Affiche STATUT/CRÉÉE/CLÉ/LANG/PROFIL/DURÉE/STAGE KO/SEED + drawer détail avec stages + JSON result + logs liés.
+
+2. **Améliorer coverage scrapers MENA** (presse économique Maroc en FR/AR, boost lang locale, Perplexity fallback). PAS encore livré côté Kairos (à confirmer prochaine session). Sans ce fix, les graines politico-sociales Maroc retournent verdict `deepen` avec topics IA-générique ArXiv.
+
+### Chantier 3 — Brief Kairos topics_of_interest + pgvector
+
+Amine a pivoté la vision produit : **veille mensuelle continue** au lieu de one-shot live. Kairos doit devenir un **knowledge graph vivant** :
+- Table `topics_of_interest` (sujets de veille permanents par user)
+- Cron `watchlist-collector` (collecte quotidienne/hebdo automatique)
+- Endpoint `POST /topics-search` (vector match seed → cache hit instantané)
+- Table `topics_archive` (TTL 30j, indexée pgvector)
+
+Brief rédigé + passé à Amine (à coller dans Claude Kairos quand prêt). Décision : **embedding model = `nomic-embed-text` via Ollama** en bootstrap (déjà installé côté MiroShark backend), migration vers **Qwen3-Embedding** quand machine livrée (3-4 semaines). pgvector à activer en migration Supabase (1 ligne).
+
+### Chantier 4 — Hardware recommendation (machine workstation)
+
+Amine commande dans 3-4 semaines. Budget 250k DH, chez lui, OS Ubuntu Server 24.04 LTS, prévoir extension 4 GPU futur. Reco livrée :
+
+| Composant | Modèle | Prix DH |
+|---|---|---|
+| CPU | AMD Threadripper Pro 7975WX (32 cores) | 35 000 |
+| MB | ASUS Pro WS WRX90E-SAGE SE (7× PCIe Gen5 x16) | 12 000 |
+| RAM | 8× 64 GB DDR5-5600 ECC RDIMM (512 GB) | 30 000 |
+| GPU | **NVIDIA RTX PRO 6000 Blackwell 96 GB GDDR7** (atlasgaming.ma) | 95 000 |
+| Stockage | 2× Samsung 990 Pro 8 TB NVMe + 2× Seagate Exos X18 16 TB | 33 000 |
+| Alim/Boîtier/Cooling/UPS/Cables | Corsair AX1600i + Fractal Define 7 XL + Noctua NH-U14S TR5-SP6 + APC Smart-UPS SRT 2200VA | 27 000 |
+| Marge import + assemblage | linksolutions.ma + workstation.ma + atlasgaming.ma | 17 500 |
+| **TOTAL** | | **~250 000 DH** ✅ |
+
+Pour Manahil ingestion massive + Qalem formation : couvre 3 projets actuels + 3-5 ans de croissance. Note : alim 1600W tient 2 GPU ; pour 4 GPU futur → upgrade alim 2200W + water cooling.
+
+### Chantier 5 — Alternative cloud pas cher (validé pour démarrer Manahil immédiatement)
+
+Recommandé V1 : **Tier 1 Cloud pay-as-you-go ~$30-50/mois** vs build local 25k$ (break-even ~25 ans sur scope actuel) :
+- LLM 70B inference : **DeepSeek BYOK actuel** (déjà ok) ou DeepInfra Llama 3.3 70B ($0.23/$0.40 per M tokens)
+- Embedding multilingue : **Mistral Embed** ($0.10/M tokens, souverain FR) ou Cohere Embed v3 multilingual
+- DB + pgvector : **Supabase Pro $25/mois** (déjà en place)
+- Stockage froid >100GB : Backblaze B2 ($0.005/GB/mois)
+- GPU on-demand ponctuel : RunPod RTX 4090 $0.34/h ou A100 $1.19/h
+
+Alternative souveraine EU si besoin 24/7 dédié : Hetzner GEX44 RTX 4000 Ada 20GB ~€250/mois (après hausse avril 2026), ou Scaleway H100 SXM Paris ~€2.50/h.
+
+[VALIDÉ EN PROD]
+- Pipeline Kairos `research-from-seed` retourne `TERMINÉ` sur graines simples (fintech Maroc → 4 topics + verdict `deepen`)
+- Mode dégradé `synthesizer_unavailable` fonctionne : Bassira affiche les 30 signaux bruts avec checkboxes
+- Insertion N urlDocs en 01 marche : chaque source cochée devient une entrée 01 distincte (texte composé + sources individuelles)
+- Coolify auto-deploy via webhook GitHub : 5 commits successifs deployed sans intervention
+- Page /admin/api-inbound Kairos : 5+ sessions visibles avec clé `bsr_7123`, drawer détail OK
+- Test E2E live le 2026-05-15 : graine fintech Maroc → completed en ~22s (cache POST + signaux ArXiv pré-existants), 4 topics rendus avec brief 200-300 chars + 2 framework variants
+- Test 2026-05-17 : refresh session 401 → polling reprend automatiquement (US-B04.3 fix résilience)
+
+[BLOQUÉ — actions humaines pendantes]
+- !! **REDIS_URL non posée** côté Coolify (Amine a dit « en cours de déploiement » le 13 mai mais jamais confirmé). Sans Redis : cache Bassira `kairos_proxy` fallback in-process (1 worker Gunicorn = OK, mais perd cache au restart). Le code détecte auto au boot, pas bloquant fonctionnellement.
+- !! **2 briefs Kairos non encore livrés** côté Claude Kairos :
+  1. Coverage scrapers MENA (presse économique FR/AR, boost lang locale, Perplexity fallback)
+  2. topics_of_interest + cron watchlist + pgvector + nomic-embed
+- !! **Machine workstation** : Amine commande next week, livraison 3-4 semaines = mi-juin
+- !! **Test browser US-B04.2 + B04.3** pas vérifié visuellement sur prod après le push `e6ff1f6` — Amine doit hard-refresh `/console`, reconnecter, retester
+
+[ALERTE]
+!! **DeepSeek-v4-flash sur task `enrichment` reste fragile** sur graines complexes (politico-sociales Maroc). 10 hotfixes Kairos K05/K06 cette session (truncate, normalize, lower bounds 1/1/1, max_tokens 8000-16000, etc.) ont stabilisé MAIS pipeline peut encore tomber en mode dégradé `synthesizer_unavailable`. Le frontend Bassira US-B04.2 gère ça proprement avec scored_signals_top + checkboxes.
+
+!! **Cache POST Bassira 1h** : si tu reposes la MÊME seed dans la même heure, Kairos renvoie la même `session_id`. C'est utile pour récupérer après une session expirée (US-B04.3) mais peut surprendre en test.
+
+!! **Devil's advocate seuils relâchés** : `MIN_TOPICS=1`, `KEY_SIGNALS_MIN=1` côté validator synthesizer (commit Kairos `6cbe4a3`). Permet aux pipeline de passer même avec très peu de matière. Si la qualité dégrade trop, remonter à 3.
+
+!! **JWT Supabase expire 1h** : pipeline Kairos peut prendre 3-4 min, mais si la session démarre 50 min après login → 401 en plein vol. US-B04.3 a fix le refresh automatique, mais le pattern reste fragile pour des sessions très longues (future v2 : token refresh proactif avant chaque appel critique).
+
+[PARTIEL]
+
+### Brief Kairos topics_of_interest (architecture cible)
+- ⏳ Brief rédigé, donné à Amine, **PAS implémenté côté Kairos**
+- Quand prêt : permettra workflow vision Amine (veille mensuelle, DB lookup d'abord, simulation 1×/mois par sujet)
+- Decision tech : nomic-embed-text bootstrap + migration Qwen3-Embedding plus tard
+
+### Brief Kairos coverage scrapers MENA
+- ⏳ Idem : rédigé, donné, PAS implémenté
+- Sans ce fix : graines Maroc/MENA continuent à retourner verdict `deepen` avec topics ArXiv off-topic
+
+### Tests E2E checkbox sources Bassira
+- ⏳ Test visuel manuel pas refait après US-B04.2 + B04.3 (Coolify deploy live à 18h, Amine va restart terminal)
+- Quand Amine retest : vérifier que checkboxes mode complet ET dégradé fonctionnent + insertion N urlDocs visible dans 01
+
+[NEXT — chantiers prêts à attaquer en nouvelle session]
+
+### Prio P0 — Validation visuelle US-B04.2 + B04.3 en prod
+1. Hard-refresh https://prospectives.ai-mpower.com/console (Ctrl+Shift+R)
+2. Reconnecter via Google (cookies probable expirés)
+3. Activer toggle « Recherche dynamique Kairos »
+4. Pose un fichier ou URL ou ask doc dans 01 (≥60 chars de matière)
+5. Attendre 1.5s debounce + pipeline 3-4 min
+6. Vérifier :
+   - Status line correcte (« N topics · M sources · {verdict} » OU « N signaux bruts · mode dégradé »)
+   - Checkboxes visibles + tous cochés par défaut
+   - « Tout cocher / Tout décocher » fonctionne
+   - Bouton « Insérer brief + N source(s) en 01 » crée N+1 entrées 01 (1 brief + 1 par source)
+   - Bouton « Lancer la simulation » devient enabled
+
+### Prio P0 — Faire avancer Kairos topics_of_interest
+- Si Amine veut démarrer Manahil rapidement → coller le 2e brief Kairos (`topics_of_interest + pgvector`) dans l'autre instance Claude Code
+- Vérifier que pgvector est activé Supabase Kairos : `CREATE EXTENSION IF NOT EXISTS vector;`
+- nomic-embed-text déjà dispo via Ollama backend Bassira → réutiliser même infra côté Kairos via dispatch-llm task=embedding
+
+### Prio P1 — Améliorer coverage scrapers Kairos MENA
+- Coller le 1er brief Kairos (coverage) dans Claude Kairos
+- Cible : graine fintech Maroc → verdict `pass` avec sources `.ma`/`.dz`/`.tn`
+- Tester avec : « Évolution des fintech au Maroc en 2026 : adoption mobile money par les TPE et stratégie BAM contre l'informel. » → attendre que `coverage_map` ait au moins 3/5 subjects couverts
+
+### Prio P1 — Connecter Bassira au /topics-search Kairos (US-B05, ~1j)
+Quand Kairos `/topics-search` sera dispo :
+- Bassira appelle `/topics-search` AVANT pipeline live (au mount du panel ou au 1er trigger)
+- Si match → render directement topics archivés en <1s
+- Si no match → 2 CTA : « Collecte rapide 3 min » OU « Créer sujet de veille permanent »
+- Nouvelle page `/admin/topics-of-interest` Bassira pour CRUD watchlist + lister sujets + lancer simulation mensuelle
+
+### Prio P2 — Hardware workstation Maroc (livraison ~mi-juin 2026)
+- Confirmer commande chez 3 revendeurs : linksolutions.ma (CPU/MB/RAM), atlasgaming.ma (RTX PRO 6000 Blackwell), workstation.ma (assemblage + burn-in)
+- Préparer Ubuntu Server 24.04 LTS install script (NVIDIA driver 560+ + CUDA 12.6 + Docker NVIDIA Container Toolkit + Ollama + vLLM)
+- Migrer embeddings nomic → Qwen3-Embedding-0.6B (CPU-friendly) dès machine livrée
+
+### Prio P3 — Bloqué humain (reporté de la passation précédente)
+- US-113 Stripe credentials (toujours pas posés Coolify) — Amine prend en charge
+- Témoignages partenaires NDA — Amine prend en charge
+
+[CTX session]
+- ~3 jours intensifs (2026-05-15 → 2026-05-17), session marathon
+- 7 commits Bassira pushed sur main : `1faafea`, `a86942f`, `bbdb4a2`, `6f5e336`, `1e61f82`, `f8ae845`, `e6ff1f6` (+ `c241769` qui était entre les 2)
+- 15+ commits Kairos sur `Afristrat/scrapping` cette session (hotfix K05/K06 + K10 admin page)
+- ~300+ tool calls (browser MCP Edge + git + npm/deno tests + édits)
+- Modèle : Opus 4.7 (1M context) toute la session
+- Coût LLM smoke tests : ~$0 (DeepSeek-v4-flash très bon marché)
+- Coolify auto-deploy fluide via webhook GitHub, ~2 min par cycle build+deploy
+
+[MEMO inter-sessions]
+
+### Architecture cible Kairos (à implémenter — vision Amine)
+- **Knowledge graph vivant** : sujets de veille permanents (`topics_of_interest`) collectés en continu via cron
+- **API `/topics-search`** : vector match seed → cache hit instantané ; fallback pipeline live
+- **Workflow user** : créer N sujets, Kairos collecte 24/7, simulations mensuelles par sujet
+- Embeddings : nomic bootstrap → Qwen3-Embedding souverain quand machine livrée
+
+### Stack technique confirmée
+- Bassira : Vue 3 + Vite + axios + Supabase Auth + Pinia (dark theme `--wi-bg: #1a1d27`)
+- Kairos : Supabase Edge Functions (Deno) + DeepSeek BYOK + pgvector (à activer)
+- Backend Bassira : Flask + Blueprints (pas FastAPI)
+- Bassira API client : `frontend/src/api/client.js` (axios + Bearer Supabase auto-injecté)
+- Polling research : 3s interval, max 6 min timeout
+
+### Patterns durables installés
+- `_withAuthRetry(fn)` ConsoleView : auto-refresh Supabase sur 401 puis retry — réutiliser pour tout call API privatif long
+- Insertion brief Kairos dans 01 (urlDoc synthétique `bassira://research/<ts>`) — pattern à propager à toute « matière générée IA » à venir
+- Mode dégradé `synthesizer_unavailable` + `scored_signals_top` fallback côté Kairos : permet de toujours retourner quelque chose même si LLM plante. Pattern à généraliser sur les autres stages (rubric-architect fallback, auditor fallback déjà fait)
+- Checkboxes multi-select avec Set<string> + watch `immediate: true` pour pré-cocher (option C par défaut, déselection explicite par l'user)
+
+### Memories projet ajoutées
+- `reference_kairos_pipeline_v2.md` : nouveau contrat Kairos POST/GET + scope_profiles + mode dégradé (créée 13 mai)
+- `feedback_kairos_constraints.md` : ne JAMAIS toucher BYOK DeepSeek-v4-flash, ne JAMAIS toucher `--no-verify-jwt`, ne JAMAIS corriger lang forwarding scored_signals_top
+- `feedback_repo_scope.md` : dans le repo Bassira, parler Bassira ; Kairos = contrat API externe
+
+### URLs critiques
+- Bassira prod : https://prospectives.ai-mpower.com
+- Kairos prod (frontend) : https://scrap.ai-mpower.com
+- Kairos /admin/api-inbound : https://scrap.ai-mpower.com/admin/api-inbound
+- Kairos API endpoints : https://crplceoptyeslqyfcqvj.supabase.co/functions/v1
+- Coolify Bassira : http://192.168.100.3:8000/project/e6kerffaobuwy2uo9n5sdihu/...u6pn5mr2pgi88s13un55pkzb
+- GitHub repos : `Afristrat/MiroShark` (Bassira), `Afristrat/scrapping` (Kairos)
+
+[Recommandations pour la nouvelle session]
+
+1. **Démarrer par test browser US-B04.2 + B04.3** (validation visuelle Coolify deploy)
+2. **Décider quel brief Kairos passer en priorité** : coverage scrapers (gain qualité immédiat) OU topics_of_interest (gain stratégique long-terme veille mensuelle)
+3. **Ne pas re-toucher au pipeline Kairos** : les 10 hotfixes K05/K06 sont stabilisés, ne pas régresser
+4. **Si l'user revient sur l'idée build local 250k DH** : rappeler que cloud Tier 1 à $30-50/mois est de loin meilleur tant que volumes < $500/mois
+5. **Si brief tronqué côté Kairos** : c'est probablement DeepSeek qui plante sur prompts longs. Pipeline mode dégradé `synthesizer_unavailable` → frontend Bassira affiche 30 signaux bruts (déjà géré US-B04.2)
+
+— fin passation 2026-05-17 — UX TopicResearchPanel refondu (multi-select + brief visible + sources ouvrables + insertion N urlDocs + résilience 401). Reste : 2 briefs Kairos à passer + validation visuelle prod.
+
+---
+
 == PASSATION MiroShark/Bassira+Kairos 2026-05-13T01:00:00+01:00 ==
 
 [ETAT]
