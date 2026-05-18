@@ -1,8 +1,7 @@
 """Unit tests for US-065 — GET /api/admin/analytics.
 
-Pure offline tests — Flask test client, monkeypatched ``Config``
-paths pointed at a ``tmp_path`` filesystem. No real disk outside the
-fixture, no Neo4j boot, no network.
+Pure offline tests — Flask test client + mocked Supabase client.
+No filesystem, no Neo4j boot, no network.
 
 Three behaviours pinned here:
 
@@ -12,24 +11,25 @@ Three behaviours pinned here:
      distinction matters because 503 means "operator forgot to set the
      secret"; we don't want to confuse that with "client didn't send a
      header".
-  2. ``test_with_token_returns_200_kpis`` — happy path. With the
-     correct bearer token and a populated ``tmp_path`` simulating a
-     fresh-but-active deploy (one running sim, one completed sim, one
-     persisted quote), the endpoint returns 200 and the KPI counters
-     reflect what's on disk.
+  2. ``test_with_token_returns_200_kpis`` — happy path. With the correct
+     bearer token and a mocked Supabase responding with one running sim,
+     one completed sim and one quote, the endpoint returns 200 and the
+     KPI counters reflect what the mock returns.
   3. ``test_kpis_keys_present`` — schema-shape pin. Every key the
      SPA renders (``kpis``, ``funnel``, ``time_series``,
-     ``top_packages``) must be present, with the documented
-     sub-shape. A drift here would crash the dashboard, not just
-     hide a column.
+     ``top_packages``) must be present, with the documented sub-shape.
+     A drift here would crash the dashboard, not just hide a column.
+  4. ``test_supabase_unconfigured_returns_zeros`` — fail-soft contract.
+     When Supabase is unconfigured the dashboard renders zero rather
+     than crashing — exactly what a fresh deploy should look like.
 """
 
 from __future__ import annotations
 
-import json
 import sys
-import time
+from datetime import datetime, timezone
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -39,75 +39,75 @@ if str(_BACKEND) not in sys.path:
     sys.path.insert(0, str(_BACKEND))
 
 
-# ─── Shared fixtures ─────────────────────────────────────────────────────────
+# ─── Mock Supabase plumbing ──────────────────────────────────────────────────
+
+
+class _MockQuery:
+    """Mimics the fluent chain used by ``app.api.admin``.
+
+    Supports ``select(...) [.limit(n)] .execute()`` for both
+    ``simulation_ownership`` (full scan) and ``quote_ownership``
+    (count='exact').
+    """
+
+    def __init__(self, rows, count=None):
+        self._rows = rows
+        self._count = count
+
+    def select(self, *_args, **kwargs):
+        if kwargs.get("count") == "exact":
+            return _MockQuery(self._rows, count=len(self._rows))
+        return self
+
+    def limit(self, _n):
+        return self
+
+    def execute(self):
+        return SimpleNamespace(data=self._rows, count=self._count)
+
+
+class _MockClient:
+    def __init__(self, sim_rows, quote_rows):
+        self._sim_rows = sim_rows
+        self._quote_rows = quote_rows
+
+    def table(self, name):
+        if name == "simulation_ownership":
+            return _MockQuery(self._sim_rows)
+        if name == "quote_ownership":
+            return _MockQuery(self._quote_rows)
+        raise AssertionError(f"unexpected table: {name}")
 
 
 @pytest.fixture
-def isolated_data_dirs(tmp_path, monkeypatch):
-    """Point Config at a throwaway ``tmp_path/uploads`` tree.
+def populated_supabase(monkeypatch):
+    """Install a Supabase mock with one running sim + one completed + one quote."""
+    from app.api import admin as admin_module
 
-    Layout::
+    now_iso = datetime.now(timezone.utc).isoformat()
+    sim_rows = [
+        {
+            "simulation_id": "sim_running",
+            "created_at": now_iso,
+            "package_id": "crisis_24h_brand",
+            "is_published": False,
+            "outcome": None,
+            "brier_score": None,
+        },
+        {
+            "simulation_id": "sim_done",
+            "created_at": now_iso,
+            "package_id": "crisis_24h_brand",
+            "is_published": True,
+            "outcome": {"label": "called_it"},
+            "brier_score": 0.12,
+        },
+    ]
+    quote_rows = [{"quote_id": "q_abcd1234"}]
 
-        tmp_path/uploads/
-            simulations/
-                sim_running/                       # no outcome.json
-                    simulation_config.json         # template_id="crisis_24h_brand"
-                sim_done/
-                    outcome.json                   # mtime = now (last 30d)
-                    simulation_config.json         # template_id="crisis_24h_brand"
-            quotes/
-                quote_<ts>_<id>.json
-    """
-    from app import config as config_module
-
-    base = tmp_path / "uploads"
-    sims_dir = base / "simulations"
-    quotes_dir = base / "quotes"
-    sims_dir.mkdir(parents=True, exist_ok=True)
-    quotes_dir.mkdir(parents=True, exist_ok=True)
-
-    # Running simulation: config but no outcome — should count toward
-    # ``total`` but not toward ``completed``.
-    sim_running = sims_dir / "sim_running"
-    sim_running.mkdir()
-    (sim_running / "simulation_config.json").write_text(
-        json.dumps({"template_id": "crisis_24h_brand"}),
-        encoding="utf-8",
-    )
-
-    # Completed simulation: counts toward both ``total`` and ``completed``,
-    # plus the 30-day window since mtime is "now".
-    sim_done = sims_dir / "sim_done"
-    sim_done.mkdir()
-    (sim_done / "simulation_config.json").write_text(
-        json.dumps({"template_id": "crisis_24h_brand"}),
-        encoding="utf-8",
-    )
-    outcome_path = sim_done / "outcome.json"
-    outcome_path.write_text(
-        json.dumps({"label": "correct"}),
-        encoding="utf-8",
-    )
-
-    # One persisted quote so ``quotes`` is non-zero.
-    (quotes_dir / "quote_20260501T000000_abcd1234.json").write_text(
-        json.dumps({"full_name": "test"}),
-        encoding="utf-8",
-    )
-
-    monkeypatch.setattr(
-        config_module.Config,
-        "WONDERWALL_SIMULATION_DATA_DIR",
-        str(sims_dir),
-        raising=False,
-    )
-    monkeypatch.setattr(
-        config_module.Config,
-        "WONDERWALL_DATA_DIR",
-        str(base),
-        raising=False,
-    )
-    return base
+    mock = _MockClient(sim_rows, quote_rows)
+    monkeypatch.setattr(admin_module, "get_supabase_admin", lambda: mock)
+    return mock
 
 
 def _make_app():
@@ -130,7 +130,7 @@ def _make_app():
 # ─── Tests ───────────────────────────────────────────────────────────────────
 
 
-def test_no_token_returns_401(isolated_data_dirs, monkeypatch):
+def test_no_token_returns_401(populated_supabase, monkeypatch):
     """Without an Authorization header, the endpoint must return 401.
 
     The env var is set so we're testing "client didn't send a token",
@@ -145,12 +145,10 @@ def test_no_token_returns_401(isolated_data_dirs, monkeypatch):
     assert body["error"] == "Unauthorized"
 
 
-def test_with_token_returns_200_kpis(isolated_data_dirs, monkeypatch):
-    """Happy path — correct token, populated tmp filesystem.
-
-    The fixture sets up exactly two simulations (one running, one
-    completed) and one quote. Verify every counter matches what we
-    seeded.
+def test_with_token_returns_200_kpis(populated_supabase, monkeypatch):
+    """Happy path — correct token, mocked Supabase with one running sim,
+    one completed sim and one quote. Verify every counter matches what
+    the mock returned.
     """
     monkeypatch.setenv("BASSIRA_ADMIN_TOKEN", "right-token")
     app = _make_app()
@@ -165,18 +163,18 @@ def test_with_token_returns_200_kpis(isolated_data_dirs, monkeypatch):
     kpis = body["data"]["kpis"]
     assert kpis["total"] == 2
     assert kpis["completed"] == 1
-    # outcome.json was just written → its mtime is "now" → in window.
-    assert kpis["last_30d"] == 1
+    # created_at = "now" → both sims fall in the 30-day window.
+    assert kpis["last_30d"] == 2
     assert kpis["quotes"] == 1
 
-    # Top packages aggregated from simulation_config.json.
+    # Top packages aggregated from package_id.
     top = body["data"]["top_packages"]
-    assert top, "top_packages should not be empty when sims carry template_id"
+    assert top, "top_packages should not be empty when sims carry package_id"
     assert top[0]["package"] == "crisis_24h_brand"
     assert top[0]["n"] == 2
 
 
-def test_kpis_keys_present(isolated_data_dirs, monkeypatch):
+def test_kpis_keys_present(populated_supabase, monkeypatch):
     """Schema-shape pin — the SPA renders all four sections.
 
     A missing ``time_series`` array (or a renamed key) would crash
@@ -223,3 +221,38 @@ def test_kpis_keys_present(isolated_data_dirs, monkeypatch):
     assert isinstance(data["top_packages"], list)
     for entry in data["top_packages"]:
         assert "package" in entry and "n" in entry
+
+
+def test_supabase_unconfigured_returns_zeros(monkeypatch):
+    """Fail-soft contract — Supabase outage degrades to zero values.
+
+    When ``get_supabase_admin()`` raises ``SupabaseConfigError`` (fresh
+    deploy, missing env vars), the analytics endpoint MUST still return
+    a well-formed 200 with zero counters rather than 500. The dashboard
+    needs a stable signal even when the data layer is down.
+    """
+    from app.api import admin as admin_module
+    from app.auth.supabase_client import SupabaseConfigError
+
+    def _raise():
+        raise SupabaseConfigError("not configured")
+
+    monkeypatch.setattr(admin_module, "get_supabase_admin", _raise)
+    monkeypatch.setenv("BASSIRA_ADMIN_TOKEN", "right-token")
+
+    app = _make_app()
+    res = app.test_client().get(
+        "/api/admin/analytics",
+        headers={"Authorization": "Bearer right-token"},
+    )
+    assert res.status_code == 200
+    data = res.get_json()["data"]
+    assert data["kpis"] == {
+        "total": 0,
+        "completed": 0,
+        "last_30d": 0,
+        "quotes": 0,
+    }
+    assert data["top_packages"] == []
+    assert len(data["time_series"]) == 30
+    assert all(entry["completed"] == 0 for entry in data["time_series"])

@@ -6,18 +6,25 @@ on the SPA. The dashboard's audience is the Bassira team itself
 (Amine + co-operators), and the goal is "read the platform state in
 30 seconds". So the endpoint computes everything in one pass:
 
-  * **KPIs** — total simulations on disk, completed (``outcome.json``
-    present), completed in the last 30 days, and total persisted
-    quote requests (``WONDERWALL_DATA_DIR/quotes/quote_*.json``).
+  * **KPIs** — total simulations recorded in Supabase
+    ``simulation_ownership``, completed (``outcome`` jsonb non-null),
+    created in the last 30 days, and total quote requests recorded
+    in ``quote_ownership``.
   * **Funnel** — coarse acquisition → activation → completion shape
-    derived from the same disk inputs (visits is reported as ``null``
-    until we wire a real analytics provider; the dashboard renders
-    "—" rather than fabricating a number).
-  * **30-day time series** — daily ``completed`` count keyed by the
-    ``mtime`` of each ``outcome.json``. Sparse on a fresh deploy,
-    which is the desired behaviour (the chart should be honest).
-  * **Top packages** — top 5 ``template_id`` values across every
-    simulation that carries one in ``simulation_config.json``.
+    derived from the same Supabase aggregates (visits is reported as
+    ``null`` until we wire a real analytics provider; the dashboard
+    renders "—" rather than fabricating a number).
+  * **30-day time series** — daily simulation count keyed by
+    ``created_at``. Always 30 buckets; days without activity are 0.
+  * **Top packages** — top 5 ``package_id`` values across every
+    simulation row (filesystem ``template_id`` was deprecated in
+    favour of the ``package_id`` column populated at create time).
+
+Data source: **Supabase** (``simulation_ownership`` + ``quote_ownership``)
+is the authoritative store since US-114. The previous filesystem
+scan (``WONDERWALL_SIMULATION_DATA_DIR``) was decoupled from the
+real platform state on ephemeral Coolify volumes and produced
+stale numbers — replaced here by Supabase aggregation queries.
 
 Auth: gated on ``BASSIRA_ADMIN_TOKEN`` via the shared
 ``require_admin_token`` decorator from ``app.api.simulation`` —
@@ -25,22 +32,19 @@ same fail-closed semantics as ``POST /publish`` / ``POST /resolve``
 / ``POST /outcome``. Internal-only by design; never expose to
 unauthenticated clients.
 
-Robustness contract: when the data dirs are missing (fresh install,
-test env without ``uploads/``), every counter/list resolves to
-``0`` / ``[]`` rather than raising. A 500 here would brick the
-ops dashboard, which is exactly when we *most* want a signal.
+Robustness contract: when Supabase is unreachable or unconfigured,
+every counter/list resolves to ``0`` / ``[]`` rather than raising.
+A 500 here would brick the ops dashboard, which is exactly when we
+*most* want a signal.
 """
 
 from __future__ import annotations
 
-import json
-import os
 import re
-import time
 import traceback
 from collections import Counter
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 from flask import Blueprint, g, jsonify, request
 
@@ -54,7 +58,6 @@ from ..auth.supabase_client import (
     get_supabase_admin,
     set_org_self_service_enabled,
 )
-from ..config import Config
 from ..utils.logger import get_logger
 
 from .simulation import require_admin_token
@@ -64,125 +67,138 @@ admin_bp = Blueprint("admin", __name__)
 logger = get_logger("miroshark.api.admin")
 
 
-# ─── Path helpers ────────────────────────────────────────────────────────────
+# ─── Supabase fetch helpers (defensive — never raise) ────────────────────────
 
 
-def _simulations_dir() -> str:
-    """Return the directory containing per-simulation subfolders.
+_SIM_FIELDS = "simulation_id, created_at, package_id, is_published, outcome, brier_score"
 
-    Resolved per-call so a test that monkeypatches ``Config`` after
-    module import still sees the override.
+
+def _fetch_all_simulation_rows() -> List[Dict[str, Any]]:
+    """Read every row from ``simulation_ownership`` for aggregation.
+
+    Returns an empty list on any failure (Supabase unconfigured, network
+    error, table missing). The dashboard is read-only ops UI — a hard
+    500 here would brick the operator's view of the platform at exactly
+    the moment a real signal is most useful.
+
+    Volumes are still small enough (< 10k rows expected mid-term) that a
+    full table read in one pass is the simplest correct implementation.
+    When we cross that threshold we add pagination + a single materialised
+    view; until then SQL aggregation is premature optimisation.
     """
-    return getattr(Config, "WONDERWALL_SIMULATION_DATA_DIR", "") or ""
-
-
-def _quotes_dir() -> str:
-    """Return the directory where quote payloads are persisted.
-
-    Mirrors the resolution logic in ``app.services.quote_service`` so
-    a deployment that sets ``WONDERWALL_DATA_DIR`` (sibling
-    ``quotes/``) and one that only sets the simulation dir both work
-    out of the box.
-    """
-    base_dir = getattr(Config, "WONDERWALL_DATA_DIR", None)
-    if not base_dir:
-        sim_dir = _simulations_dir()
-        if sim_dir:
-            base_dir = os.path.dirname(sim_dir)
-    if not base_dir:
-        return ""
-    return os.path.join(base_dir, "quotes")
-
-
-# ─── Disk scans (defensive — never raise) ────────────────────────────────────
-
-
-def _list_simulation_dirs() -> List[str]:
-    """Return absolute paths to every simulation subdirectory.
-
-    A simulation is any direct subdir of
-    ``WONDERWALL_SIMULATION_DATA_DIR``. Hidden / dotfile entries are
-    skipped so a stray ``.DS_Store`` does not inflate the count.
-    """
-    sims_root = _simulations_dir()
-    if not sims_root or not os.path.isdir(sims_root):
+    try:
+        cli = get_supabase_admin()
+    except SupabaseConfigError as exc:
+        logger.warning("admin analytics: Supabase not configured (%s)", exc)
         return []
-    out: List[str] = []
+    except Exception as exc:  # noqa: BLE001
+        logger.error(
+            "admin analytics: get_supabase_admin failed (%s)",
+            exc.__class__.__name__,
+        )
+        return []
+
     try:
-        for name in os.listdir(sims_root):
-            if name.startswith("."):
-                continue
-            path = os.path.join(sims_root, name)
-            if os.path.isdir(path):
-                out.append(path)
-    except OSError as exc:
-        logger.warning("Could not scan simulations dir %s: %s", sims_root, exc)
-    return out
+        resp = (
+            cli.table("simulation_ownership")
+            .select(_SIM_FIELDS)
+            .execute()
+        )
+        rows = getattr(resp, "data", None) or []
+        return [r for r in rows if isinstance(r, dict)]
+    except Exception as exc:  # noqa: BLE001
+        logger.error(
+            "admin analytics: simulation_ownership scan failed (%s)",
+            exc.__class__.__name__,
+        )
+        return []
 
 
-def _outcome_mtime(sim_dir: str) -> Optional[float]:
-    """Return the ``mtime`` of ``<sim_dir>/outcome.json`` or ``None``."""
-    path = os.path.join(sim_dir, "outcome.json")
-    try:
-        return os.path.getmtime(path)
-    except OSError:
-        return None
+def _fetch_quote_count() -> int:
+    """Return the total number of rows in ``quote_ownership``.
 
-
-def _read_template_id(sim_dir: str) -> Optional[str]:
-    """Return the ``template_id`` from ``simulation_config.json``.
-
-    Defensive: parse failures or missing keys resolve to ``None`` so a
-    single corrupt file does not poison the aggregation.
+    Best-effort : 0 on any failure (Supabase unreachable, table missing).
+    Mirrors the simulation fetch contract — never raise.
     """
-    cfg_path = os.path.join(sim_dir, "simulation_config.json")
-    if not os.path.isfile(cfg_path):
-        return None
     try:
-        with open(cfg_path, "r", encoding="utf-8") as f:
-            cfg = json.load(f) or {}
-    except (OSError, json.JSONDecodeError):
-        return None
-    tid = cfg.get("template_id")
-    if not isinstance(tid, str):
-        return None
-    tid = tid.strip()
-    return tid or None
-
-
-def _count_quotes() -> int:
-    """Count ``quote_*.json`` files persisted under the quotes dir."""
-    qdir = _quotes_dir()
-    if not qdir or not os.path.isdir(qdir):
+        cli = get_supabase_admin()
+    except SupabaseConfigError as exc:
+        logger.warning("admin analytics quotes: Supabase not configured (%s)", exc)
         return 0
-    n = 0
+    except Exception as exc:  # noqa: BLE001
+        logger.error(
+            "admin analytics quotes: get_supabase_admin failed (%s)",
+            exc.__class__.__name__,
+        )
+        return 0
+
     try:
-        for name in os.listdir(qdir):
-            if name.startswith("quote_") and name.endswith(".json"):
-                n += 1
-    except OSError as exc:
-        logger.warning("Could not scan quotes dir %s: %s", qdir, exc)
-    return n
+        resp = (
+            cli.table("quote_ownership")
+            .select("quote_id", count="exact")
+            .limit(1)
+            .execute()
+        )
+        total = getattr(resp, "count", None)
+        if isinstance(total, int) and total >= 0:
+            return total
+        rows = getattr(resp, "data", None) or []
+        return len(rows)
+    except Exception as exc:  # noqa: BLE001
+        logger.error(
+            "admin analytics quotes: quote_ownership count failed (%s)",
+            exc.__class__.__name__,
+        )
+        return 0
 
 
-# ─── Aggregation ─────────────────────────────────────────────────────────────
+# ─── Aggregation (pure functions, no I/O) ────────────────────────────────────
 
 
-def _build_time_series_30d(completed_mtimes: List[float]) -> List[Dict[str, Any]]:
+def _parse_iso_date(iso_str: Optional[str]) -> Optional[datetime]:
+    """Parse a Supabase ``timestamptz`` ISO string into an aware datetime.
+
+    Returns ``None`` for ``None`` / malformed input so a single bad row
+    can't poison the aggregation.
+    """
+    if not iso_str or not isinstance(iso_str, str):
+        return None
+    s = iso_str.strip()
+    if not s:
+        return None
+    # Supabase returns ``2026-05-18T14:30:00.123456+00:00`` — Python 3.11+
+    # ``fromisoformat`` parses that natively; for older shapes (``Z`` suffix)
+    # we normalise here defensively.
+    if s.endswith("Z"):
+        s = s[:-1] + "+00:00"
+    try:
+        return datetime.fromisoformat(s)
+    except (TypeError, ValueError):
+        return None
+
+
+def _build_time_series_30d(sim_rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """Return a 30-element list ``[{date: YYYY-MM-DD, completed: n}, …]``.
 
-    Always 30 entries (one per day, oldest → today) so the frontend can
-    render a stable bar chart even when no completions exist that day.
-    Dates are computed in UTC to keep the series deterministic across
-    operator timezones.
+    The ``completed`` field name is historical — semantically this is the
+    daily count of simulations *created* over the last 30 days (the most
+    useful activity signal). The shape is preserved for frontend
+    backward-compat.
+
+    Always 30 entries (one per day, oldest → today) so the bar chart
+    renders stable axes even on quiet days. Dates are in UTC to keep
+    the series deterministic across operator timezones.
     """
     today = datetime.now(timezone.utc).date()
+    cutoff = datetime.now(timezone.utc).timestamp() - 30 * 86400
     bucket: Dict[str, int] = {}
-    cutoff = time.time() - 30 * 86400
-    for mtime in completed_mtimes:
-        if mtime < cutoff:
+    for row in sim_rows:
+        dt = _parse_iso_date(row.get("created_at"))
+        if dt is None:
             continue
-        day = datetime.fromtimestamp(mtime, tz=timezone.utc).date().isoformat()
+        if dt.timestamp() < cutoff:
+            continue
+        day = dt.astimezone(timezone.utc).date().isoformat()
         bucket[day] = bucket.get(day, 0) + 1
     series: List[Dict[str, Any]] = []
     for offset in range(29, -1, -1):
@@ -191,27 +207,45 @@ def _build_time_series_30d(completed_mtimes: List[float]) -> List[Dict[str, Any]
     return series
 
 
-def _build_top_packages(sim_dirs: List[str], limit: int = 5) -> List[Dict[str, Any]]:
-    """Aggregate ``template_id`` across every simulation, top ``limit``."""
+def _build_top_packages(
+    sim_rows: List[Dict[str, Any]],
+    limit: int = 5,
+) -> List[Dict[str, Any]]:
+    """Aggregate the ``package_id`` column across every simulation row."""
     counter: Counter = Counter()
-    for sd in sim_dirs:
-        tid = _read_template_id(sd)
-        if tid:
-            counter[tid] += 1
+    for row in sim_rows:
+        pid = row.get("package_id")
+        if isinstance(pid, str) and pid.strip():
+            counter[pid.strip()] += 1
     return [{"package": pkg, "n": n} for pkg, n in counter.most_common(limit)]
 
 
 def _build_kpis(
-    sim_dirs: List[str],
-    completed_mtimes: List[float],
+    sim_rows: List[Dict[str, Any]],
     quotes_count: int,
 ) -> Dict[str, int]:
-    """Compute the four headline numbers shown in the KPI row."""
-    cutoff = time.time() - 30 * 86400
-    last_30d = sum(1 for m in completed_mtimes if m >= cutoff)
+    """Compute the four headline numbers shown in the KPI row.
+
+    * ``total``    — total simulation rows.
+    * ``completed`` — simulations with a non-null ``outcome`` JSON.
+    * ``last_30d`` — simulations created in the last 30 days (activity
+      signal — the previous file-based "completed in 30d" rarely fired
+      because outcome marking is async).
+    * ``quotes``   — total quote_ownership rows.
+    """
+    cutoff = datetime.now(timezone.utc).timestamp() - 30 * 86400
+    completed = 0
+    last_30d = 0
+    for row in sim_rows:
+        outcome = row.get("outcome")
+        if isinstance(outcome, dict) and outcome:
+            completed += 1
+        dt = _parse_iso_date(row.get("created_at"))
+        if dt is not None and dt.timestamp() >= cutoff:
+            last_30d += 1
     return {
-        "total": len(sim_dirs),
-        "completed": len(completed_mtimes),
+        "total": len(sim_rows),
+        "completed": completed,
         "last_30d": last_30d,
         "quotes": quotes_count,
     }
@@ -252,22 +286,18 @@ def get_admin_analytics():
           }
         }
 
-    Never raises 500 from a missing dir — fresh installs render zero,
-    and that is a valid (and correct) state.
+    Data source: Supabase ``simulation_ownership`` + ``quote_ownership``.
+    Never raises 500 — Supabase outage degrades to zero values rather
+    than bricking the ops view.
     """
     try:
-        sim_dirs = _list_simulation_dirs()
-        completed_mtimes: List[float] = []
-        for sd in sim_dirs:
-            mtime = _outcome_mtime(sd)
-            if mtime is not None:
-                completed_mtimes.append(mtime)
+        sim_rows = _fetch_all_simulation_rows()
+        quotes_count = _fetch_quote_count()
 
-        quotes_count = _count_quotes()
-        kpis = _build_kpis(sim_dirs, completed_mtimes, quotes_count)
+        kpis = _build_kpis(sim_rows, quotes_count)
         funnel = _build_funnel(kpis)
-        time_series = _build_time_series_30d(completed_mtimes)
-        top_packages = _build_top_packages(sim_dirs)
+        time_series = _build_time_series_30d(sim_rows)
+        top_packages = _build_top_packages(sim_rows)
 
         return jsonify({
             "success": True,

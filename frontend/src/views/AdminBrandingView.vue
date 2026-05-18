@@ -27,22 +27,40 @@
       </section>
 
       <!-- Contrôles : org selector + bouton nouveau -->
+      <!-- Bug 3 — remplacement de l'input UUID brut par un vrai <select>
+           peuplé depuis /api/admin/organizations (super-admin) ou
+           auth.orgs (org admin). Évite la saisie manuelle d'UUID. -->
       <section class="ab-controls">
         <div class="ab-field ab-field--inline">
-          <label for="ab-org-id">Org ID</label>
-          <input
-            id="ab-org-id"
-            v-model.trim="orgId"
-            type="text"
-            placeholder="uuid de l'organisation"
-            class="ab-input ab-input--mono"
-            @keyup.enter="loadBrandings"
-          />
+          <label for="ab-org-select">{{ $t('adminBranding.org') || 'Organisation' }}</label>
+          <select
+            v-if="orgOptions.length > 0"
+            id="ab-org-select"
+            v-model="orgId"
+            class="ab-input"
+            :disabled="orgsLoading"
+            @change="loadBrandings"
+          >
+            <option value="" disabled>
+              {{ orgsLoading
+                ? ($t('adminBranding.orgsLoading') || 'Chargement…')
+                : ($t('adminBranding.selectOrg') || 'Sélectionner une organisation') }}
+            </option>
+            <option v-for="o in orgOptions" :key="o.id" :value="o.id">
+              {{ o.name || o.slug || o.id }}<span v-if="o.slug && o.name"> · {{ o.slug }}</span>
+            </option>
+          </select>
+          <p v-else-if="orgsLoading" class="ab-state">
+            {{ $t('adminBranding.orgsLoading') || 'Chargement des organisations…' }}
+          </p>
+          <p v-else class="ab-state ab-state--error">
+            {{ orgsError || $t('adminBranding.noOrgs') || 'Aucune organisation disponible.' }}
+          </p>
         </div>
-        <button type="button" class="ab-btn ab-btn--secondary" @click="loadBrandings">
-          {{ $t('adminBranding.loading') ? '↻' : '↻' }} Charger
+        <button type="button" class="ab-btn ab-btn--secondary" :disabled="!orgId" @click="loadBrandings">
+          ↻ {{ $t('adminBranding.refresh') || 'Recharger' }}
         </button>
-        <button type="button" class="ab-btn ab-btn--primary" @click="openCreateModal">
+        <button type="button" class="ab-btn ab-btn--primary" :disabled="!orgId" @click="openCreateModal">
           + {{ $t('adminBranding.newBranding') || 'Nouveau branding' }}
         </button>
       </section>
@@ -52,9 +70,19 @@
         {{ $t('adminBranding.loading') || 'Chargement des brandings…' }}
       </p>
       <p v-else-if="loadError" class="ab-state ab-state--error" role="alert">{{ loadError }}</p>
-      <p v-else-if="brandings.length === 0 && orgId" class="ab-state">
-        {{ $t('adminBranding.empty') || 'Aucun branding configuré.' }}
-      </p>
+      <!-- Bug 3 — explication du fallback : tant qu'aucun row n'existe en DB,
+           le PDF utilise les défauts de la palette Bassira (orange/vert
+           institutionnel) — ce que l'utilisateur perçoit comme « hard-codé ».
+           Créer un branding ici remplace ce fallback. -->
+      <div v-else-if="brandings.length === 0 && orgId" class="ab-empty-card">
+        <p class="ab-empty-title">
+          {{ $t('adminBranding.empty') || 'Aucun branding configuré pour cette organisation.' }}
+        </p>
+        <p class="ab-empty-help">
+          {{ $t('adminBranding.emptyHelp')
+            || 'Tant qu\'aucune configuration n\'est créée, les rapports PDF utilisent la palette Bassira par défaut (orange/vert institutionnel). Cliquez sur « Nouveau branding » pour personnaliser logo, couleurs, en-têtes et disclaimer.' }}
+        </p>
+      </div>
 
       <!-- Table des brandings -->
       <section v-if="brandings.length > 0" class="ab-table-card">
@@ -331,6 +359,7 @@ import {
   createAdminBranding,
   patchAdminBranding,
   previewAdminBranding,
+  fetchAllOrganizations,
 } from '../api/client'
 
 const authStore = useAuthStore()
@@ -341,6 +370,46 @@ const orgId = ref(authStore.currentOrg?.id || authStore.orgs?.[0]?.id || '')
 const brandings = ref([])
 const loading = ref(false)
 const loadError = ref('')
+
+// Bug 3 — Liste des organisations disponibles pour le sélecteur.
+//   - Super-admin Bassira : toutes les orgs de la plateforme via
+//     /api/admin/organizations (le backend de branding exige org_id
+//     explicite pour les super-admins, cf. _resolve_org_id).
+//   - Org admin/owner non super-admin : ses propres orgs depuis le store.
+const orgOptions = ref([])
+const orgsLoading = ref(false)
+const orgsError = ref('')
+
+async function loadOrgOptions() {
+  orgsLoading.value = true
+  orgsError.value = ''
+  try {
+    if (authStore.isSuperAdmin) {
+      const res = await fetchAllOrganizations()
+      const payload = res?.data || res
+      orgOptions.value = Array.isArray(payload?.organizations)
+        ? payload.organizations
+        : []
+    } else {
+      orgOptions.value = (authStore.orgs || []).filter(
+        (o) => o.role === 'owner' || o.role === 'admin'
+      )
+    }
+    // Si l'orgId préchargée n'est plus dans la liste, on prend la 1ère.
+    if (orgOptions.value.length > 0) {
+      const stillValid = orgOptions.value.some((o) => o.id === orgId.value)
+      if (!stillValid) orgId.value = orgOptions.value[0].id
+    } else {
+      orgId.value = ''
+    }
+  } catch (err) {
+    orgOptions.value = []
+    orgsError.value =
+      err?.response?.data?.error || err?.message || 'Impossible de charger les organisations.'
+  } finally {
+    orgsLoading.value = false
+  }
+}
 
 // ── Modal état ──────────────────────────────────────────────────────────────
 
@@ -581,7 +650,18 @@ async function triggerPreview() {
 
 // ── Lifecycle ────────────────────────────────────────────────────────────────
 
-onMounted(() => {
+onMounted(async () => {
+  // Bug 3 — Si super-admin et que le flag n'est pas encore résolu, on
+  // déclenche la vérification côté backend avant de décider quelle
+  // source d'orgs charger (whitelist email côté serveur).
+  if (authStore.isAuthenticated && !authStore.superAdminLoaded) {
+    try {
+      await authStore.fetchSuperStatus()
+    } catch {
+      /* fail-soft */
+    }
+  }
+  await loadOrgOptions()
   if (orgId.value) {
     loadBrandings()
   }
@@ -693,6 +773,29 @@ onMounted(() => {
 }
 .ab-state--error {
   color: var(--wi-error, #ba1a1a);
+}
+
+/* ── Empty card (Bug 3 — état vide explicite) ──────────────────────── */
+.ab-empty-card {
+  background: var(--wi-surface-container-low, #fff1ec);
+  border: 1px dashed var(--wi-outline-variant, #dec0b6);
+  border-radius: var(--wi-radius-card, 24px);
+  padding: 24px 28px;
+  margin-block-end: 24px;
+}
+.ab-empty-title {
+  font-family: var(--wi-font-heading, 'Outfit', system-ui);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--wi-on-surface, #241915);
+  margin: 0 0 8px 0;
+}
+.ab-empty-help {
+  font-size: 13px;
+  color: var(--wi-on-surface-variant, #57423a);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 720px;
 }
 
 /* ── Table ────────────────────────────────────────────────────────────── */

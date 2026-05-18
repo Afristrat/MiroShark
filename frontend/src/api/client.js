@@ -32,7 +32,7 @@ const client = axios.create({
   }
 })
 
-// Interceptor request : Bearer token + locale.
+// Interceptor request : Bearer token + locale + X-Org-Id.
 client.interceptors.request.use(
   (config) => {
     try {
@@ -41,6 +41,17 @@ client.interceptors.request.use(
       if (token) {
         config.headers = config.headers || {}
         config.headers['Authorization'] = `Bearer ${token}`
+      }
+      // Bug 2 — propage l'org courante au backend pour les endpoints
+      // multi-tenant (@require_org_membership) qui rejettent les users
+      // multi-org sans hint explicite. Le header est ignoré par les
+      // endpoints qui n'en ont pas besoin.
+      const orgId = auth.currentOrgId
+      if (orgId) {
+        config.headers = config.headers || {}
+        if (!config.headers['X-Org-Id']) {
+          config.headers['X-Org-Id'] = orgId
+        }
       }
     } catch (_) {
       // Pinia pas encore initialisé (rarissime au boot) — on continue

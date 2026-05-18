@@ -34,6 +34,25 @@
         </p>
       </section>
 
+      <!-- Bug 2 — Sélecteur d'org pour les users multi-org (incluant super-admin
+           qui appartient à plusieurs orgs). Le backend require_org_membership
+           exige X-Org-Id quand l'user a >1 org. -->
+      <section v-if="orgs.length > 1" class="dash-org-switcher" aria-label="Sélection d'organisation">
+        <label for="dash-org-select" class="dash-org-switcher-label">
+          {{ $t('client.dashboard.orgSwitcher.label', 'Organisation active') }}
+        </label>
+        <select
+          id="dash-org-select"
+          class="dash-org-switcher-select"
+          :value="auth.currentOrgId"
+          @change="onChangeOrg($event.target.value)"
+        >
+          <option v-for="o in orgs" :key="o.id" :value="o.id">
+            {{ o.name || o.slug }} · {{ o.role }}
+          </option>
+        </select>
+      </section>
+
       <!-- ── Banner : pas encore d'org ── -->
       <div v-if="orgs.length === 0 && !loading" class="dash-banner" role="status">
         <div class="dash-banner-icon">
@@ -469,6 +488,15 @@ async function onLogout() {
   router.push('/')
 }
 
+// Bug 2 — bascule l'org courante et rafraîchit la liste des simulations.
+// Le store met à jour currentOrgId, l'interceptor axios récupère
+// la nouvelle valeur au prochain appel.
+async function onChangeOrg(orgId) {
+  if (!orgId || orgId === auth.currentOrgId) return
+  auth.setCurrentOrg(orgId)
+  await fetchSimulations()
+}
+
 onMounted(async () => {
   // Charge le profil si pas encore fait (cas où le user vient juste
   // de se connecter et la session était déjà persistée).
@@ -614,6 +642,43 @@ onMounted(async () => {
   text-transform: uppercase;
   letter-spacing: 0.04em;
   font-size: 13px;
+}
+
+/* ── Org switcher (Bug 2 — multi-org) ─────────────────── */
+.dash-org-switcher {
+  margin-block-start: var(--wi-space-md);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--wi-surface);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-card);
+  padding: var(--wi-space-md);
+}
+.dash-org-switcher-label {
+  font-family: var(--wi-font-heading);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--wi-on-surface-variant);
+}
+.dash-org-switcher-select {
+  padding: 10px 14px;
+  border-radius: var(--wi-radius-interactive);
+  border: 1px solid var(--wi-outline-variant);
+  background: var(--wi-surface-container-low, #fff);
+  color: var(--wi-on-surface);
+  font-family: inherit;
+  font-size: var(--wi-body-md);
+  cursor: pointer;
+  min-width: 280px;
+  max-width: 480px;
+}
+.dash-org-switcher-select:focus {
+  outline: 2px solid var(--wi-primary-container, #ff8551);
+  outline-offset: 1px;
+  border-color: var(--wi-primary-container, #ff8551);
 }
 
 /* ── Banner ───────────────────────────────────────────── */
