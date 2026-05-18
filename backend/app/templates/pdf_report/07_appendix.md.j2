@@ -6,13 +6,21 @@
 
 Bassira utilise un cadre de simulation multi-agents (framework **{{ context.framework | upper }}**) pour modéliser la dynamique d'opinion et de décision au sein d'une population synthétique d'agents.
 
+**Justification du framework choisi :**
+
+{% if context.framework == 'cerberus' %}
+Le framework **CERBERUS** est structuré autour de trois têtes décisionnelles complémentaires : le **Champion** (porteur de l'initiative, ancré sur le « pourquoi »), le **Sceptique compétent** (gardien évidentiaire, ancré sur le « montre-moi »), et l'**Indifférent rationnel** (silencieux pondérateur, ancré sur le « quand ce sera utile »). Un quatrième archétype, le **Garde-fou réglementaire**, est activé lorsque le contexte fait apparaître une autorité de conformité. Ce cadre est adapté aux décisions qui se jouent entre un porteur fort et une diaspora technique exigeante, et est non substituable par MARKET (dynamique de prix), CRISIS (choc exogène) ou POLICY (arbitrage réglementaire) sur ce type de périmètre.
+{% else %}
+Le framework **{{ context.framework | upper }}** structure la simulation autour d'archétypes décisionnels propres à ce cadre. Voir la documentation Bassira pour le détail des têtes décisionnelles activées.
+{% endif %}
+
 **Étapes du pipeline de simulation :**
 
-1. **Extraction de connaissances** — Analyse documentaire et extraction d'entités via un graphe de connaissances Neo4j.
+1. **Extraction de connaissances** — Analyse documentaire et extraction d'entités à partir des sources fournies (signaux Kairos, briefs, références sectorielles).
 2. **Génération de profils** — Création de profils agents Wonderwall (archétypes, biais cognitifs, stances initiales) adaptés au contexte.
 3. **Simulation multi-rounds** — Exécution de rounds d'interaction où les agents échangent des arguments et mettent à jour leurs convictions.
 4. **Lecture stratégique** — Calcul du niveau d'alignement, de l'indice de fiabilité (dérivé du Brier) et identification des moments-clés de bascule.
-5. **Génération du rapport** — Assemblage du rapport via les templates Jinja2 Bassira (version template : 1.0.0).
+5. **Génération du rapport** — Assemblage du rapport éditorial à partir de la trajectoire et des artefacts simulation.
 
 **Métriques de qualité :**
 
@@ -100,7 +108,7 @@ trajectoire observée.*
 | Terme | Définition |
 | --- | --- |
 | **Agent** | Entité simulée représentant un acteur (individu, organisation, média) avec un profil comportemental défini. |
-| **Évolution des convictions** | Suivi du score de conviction de chaque agent au fil des rounds (anciennement "belief drift"). |
+| **Évolution des convictions** *(Belief Drift)* | Suivi du score de conviction de chaque agent au fil des rounds (terme historique anglo-saxon : Belief Drift). |
 | **Indice de fiabilité** | Indicateur synthétique de la qualité de la simulation, dérivé du score de Brier. 100 % = prévision parfaitement calibrée, 0 % = prévision totalement infirmée par la trajectoire observée. |
 | **Adhésion** | Posture favorable d'un agent vis-à-vis de la décision ou de l'outil simulé. |
 | **Résistance** | Posture défavorable d'un agent : refus, scepticisme actif, opposition documentée. |
@@ -114,7 +122,25 @@ trajectoire observée.*
 
 ---
 
-### 7.4 Disclaimer Légal
+{% if context.full_report_md %}
+### 7.4 Rapport complet (markdown brut)
+
+*Pour archivage et audit, voici la version markdown brut du rapport complet
+généré par le ReportAgent avant le rendu Jinja2.*
+
+```markdown
+{{ context.full_report_md }}
+```
+
+---
+
+{% else %}
+{{ callout('info', 'Rapport brut', 'Le markdown brut du rapport complet n\'est pas disponible pour cette simulation.') }}
+
+---
+
+{% endif %}
+### 7.{% if context.full_report_md %}5{% else %}4{% endif %} Disclaimer Légal
 
 Ce rapport est généré automatiquement par le système Bassira d'AIMPOWER. Il est fondé sur des données simulées par des agents artificiels et ne constitue en aucun cas :
 

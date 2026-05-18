@@ -151,7 +151,10 @@ def clear_enricher_caches():
 def test_compute_kpi_hero_champs_corrects():
     """Test 01 — KPIHero rempli avec champs corrects depuis outcome.
 
-    US-135 : confidence_pct dérivé de bullish_pct (62.5), pas de confidence (0.78).
+    Sémantique L99 v2 (corrigée vs US-135 originale) :
+        confidence_pct = outcome.confidence × 100 SI confidence > 0,
+        sinon fallback sur bullish_pct.
+    Ici outcome.confidence = 0.78 (explicite) → confidence_pct = 78.0.
     """
     ctx = _make_context(with_outcome=True)
     enricher = Enricher(ctx, llm_client=_make_mock_llm())
@@ -161,8 +164,8 @@ def test_compute_kpi_hero_champs_corrects():
     assert hero is not None
     assert isinstance(hero, KPIHero)
     assert hero.verdict == "Le marché demeure haussier malgré la pression réglementaire."
-    # US-135 : confidence_pct vient de bullish_pct=62.5, pas de confidence=0.78*100
-    assert abs(hero.confidence_pct - 62.5) < 0.1
+    # outcome.confidence = 0.78 est explicite et prime sur bullish_pct
+    assert abs(hero.confidence_pct - 78.0) < 0.1
     assert 0.0 <= hero.brier <= 1.0
     assert "bullish" in hero.scenario_distribution
     assert "bearish" in hero.scenario_distribution
@@ -204,7 +207,13 @@ def test_compute_kpi_hero_brier_from_coherence():
 
 
 def test_detect_pivotal_moments_bascule_detectee():
-    """Test 04 — Détecte une bascule artificielle > 0.20 entre round 0 et round 1."""
+    """Test 04 — Détecte une bascule artificielle > 0.20 entre round 0 et round 1.
+
+    L99 v2 — Le libellé d'événement est désormais contextualisé selon l'ampleur
+    et le signe de la bascule ("bascule forte ⟶ adhésion", "bascule positive",
+    "bascule négative", "bascule forte ⟶ retrait") via _pivot_event_label.
+    Ici delta=+0.40 → bascule forte vers adhésion.
+    """
     ctx = _make_context()
     # Round 0 : Alice score 0.10 ; Round 1 : Alice score 0.50 (delta = +0.40 > seuil)
     ctx.trajectory = Trajectory(
@@ -227,7 +236,8 @@ def test_detect_pivotal_moments_bascule_detectee():
     pm = ctx.pivotal_moments[0]
     assert pm.round == 1
     assert pm.agent == "Alice"
-    assert pm.event == "bascule"
+    # L99 v2 : le label commence par "bascule" et peut être étoffé (positive/forte/⟶ adhésion)
+    assert pm.event.startswith("bascule")
     assert abs(pm.delta_score - 0.40) < 0.001
 
 
@@ -293,20 +303,30 @@ def test_detect_pivotal_moments_tris_par_round():
 
 
 def test_generate_chart_narratives_cinq_entrees():
-    """Test 07 — 5 entrées dans interpretations après _generate_chart_narratives."""
+    """Test 07 — Toutes les entrées chart sont produites après _generate_chart_narratives.
+
+    L99 v2 — Le pipeline a été étendu à 8 charts (5 historiques + 3 nouveaux outils
+    de viz C-Level : influence_posture_matrix, stance_flow_sankey,
+    agent_engagement_heatmap). Le test vérifie que TOUS les charts présents dans
+    _CHART_IDS reçoivent une narrative, peu importe leur nombre exact.
+    """
+    from app.services.report_pdf.enricher import _CHART_IDS
+
     ctx = _make_context(with_outcome=True, with_trajectory=True)
     enricher = Enricher(ctx, llm_client=_make_mock_llm("Marché stable, haussiers en avance."))
     enricher._generate_chart_narratives()
 
-    assert len(ctx.interpretations) == 5
-    expected_keys = {
+    assert len(ctx.interpretations) == len(_CHART_IDS)
+    assert set(ctx.interpretations.keys()) == set(_CHART_IDS)
+    # Les 5 charts historiques doivent être présents (garde non-régression)
+    historical_keys = {
         "belief_drift",
         "polymarket_curves",
         "demographic_pyramid",
         "influence_leaderboard",
         "interaction_network",
     }
-    assert set(ctx.interpretations.keys()) == expected_keys
+    assert historical_keys.issubset(set(ctx.interpretations.keys()))
     for narrative in ctx.interpretations.values():
         assert isinstance(narrative, str)
         assert len(narrative) > 0
@@ -334,7 +354,12 @@ def test_generate_chart_narratives_cache_lru_un_seul_appel():
 
 
 def test_fallback_llm_down_texte_generique():
-    """Test 09 — Fallback LLM down : raise géré, texte fallback présent dans interpretations."""
+    """Test 09 — Fallback LLM down : raise géré, texte fallback présent dans interpretations.
+
+    L99 v2 — 8 charts au lieu de 5 (cf. _CHART_IDS).
+    """
+    from app.services.report_pdf.enricher import _CHART_IDS
+
     ctx = _make_context(with_outcome=True)
 
     mock_llm = MagicMock()
@@ -343,8 +368,8 @@ def test_fallback_llm_down_texte_generique():
     enricher = Enricher(ctx, llm_client=mock_llm)
     enricher._generate_chart_narratives()
 
-    # Pas de crash, 5 entrées avec fallback
-    assert len(ctx.interpretations) == 5
+    # Pas de crash, toutes les entrées avec fallback
+    assert len(ctx.interpretations) == len(_CHART_IDS)
     for narrative in ctx.interpretations.values():
         assert narrative == _LLM_FALLBACK
 
@@ -437,6 +462,8 @@ def test_pass_through_normalizer_etat_accent():
 
 def test_enrich_retourne_le_contexte():
     """Test 13 — enrich() retourne bien le contexte (chaînage)."""
+    from app.services.report_pdf.enricher import _CHART_IDS
+
     ctx = _make_context(with_outcome=True, with_trajectory=True)
     llm_response = "1. Takeaway A.\n2. Takeaway B.\n3. Takeaway C."
     enricher = Enricher(ctx, llm_client=_make_mock_llm(llm_response))
@@ -446,18 +473,26 @@ def test_enrich_retourne_le_contexte():
     assert result is ctx
     assert result.kpi_hero is not None
     assert isinstance(result.pivotal_moments, list)
-    assert len(result.interpretations) == 5
+    assert len(result.interpretations) == len(_CHART_IDS)
     assert len(result.executive_takeaways) == 3
+    # L99 v2 : recommandations scorées ZOPA/BATNA/MESO/WATNA générées
+    assert len(result.scored_recommendations) == 3
+    for rec in result.scored_recommendations:
+        assert 0.0 <= rec.composite <= 10.0
+        assert rec.title
 
 
 def test_enrich_llm_none_pas_de_crash():
     """Test 14 — Fallback LLM=None (client non configuré) → texte générique, pas de crash.
 
-    US-135 : les chart narratives retournent _LLM_FALLBACK. Les executive takeaways
-    utilisent maintenant le fallback summary (outline.summary découpé en phrases)
-    plutôt que 3× _LLM_FALLBACK — ce qui garantit un livrable client lisible même
-    quand le LLM est indisponible.
+    US-135 + L99 v2 : les chart narratives retournent _LLM_FALLBACK pour les
+    8 charts. Les executive takeaways utilisent le fallback summary (outline.summary
+    découpé en phrases) plutôt que 3× _LLM_FALLBACK — ce qui garantit un livrable
+    client lisible même quand le LLM est indisponible. Les scored_recommendations
+    sont déterministes (aucun LLM nécessaire).
     """
+    from app.services.report_pdf.enricher import _CHART_IDS
+
     ctx = _make_context(with_outcome=True, with_trajectory=True)
     enricher = Enricher(ctx, llm_client=None)
 
@@ -465,7 +500,7 @@ def test_enrich_llm_none_pas_de_crash():
     result = enricher.enrich()
 
     assert result.kpi_hero is not None
-    assert len(result.interpretations) == 5
+    assert len(result.interpretations) == len(_CHART_IDS)
     for narrative in result.interpretations.values():
         assert narrative == _LLM_FALLBACK
     # Takeaways : au moins 3 éléments (fallback summary ou _LLM_FALLBACK)
@@ -473,3 +508,5 @@ def test_enrich_llm_none_pas_de_crash():
     for t in result.executive_takeaways:
         assert isinstance(t, str)
         assert len(t) > 0
+    # L99 v2 — recommandations scorées générées de façon déterministe
+    assert len(result.scored_recommendations) == 3

@@ -1,6 +1,6 @@
 {% from '_macros.md.j2' import chart_with_narrative, pull_quote, callout %}
 
-## 4. Dynamique observée
+## 4. Dynamique Observée
 
 Cette section décode la **mécanique de bascule** observée dans la simulation, sous quatre angles complémentaires : la trajectoire temporelle, la cinétique de conversion, le positionnement tactique des agents-clés, et la cartographie de leurs influences réciproques.
 
@@ -21,10 +21,23 @@ Cette section décode la **mécanique de bascule** observée dans la simulation,
 
 #### Moments-clés identifiés
 
-{% set sorted_pivots = context.pivotal_moments | sort(attribute='delta_score', reverse=True) %}
-{% set top_pos = sorted_pivots[:15] %}
+{# L99 v2 — Déduplication par (round, agent, delta_score) avant tri.
+   Bug fix : auparavant `top_pos + top_neg` produisait des doublons quand un
+   même pivot apparaissait dans les deux listes (cas observé sim_76570b79 p.7
+   avec Round 10/agent 15, Round 12/agent 8, Round 14/agent 8 affichés en double). #}
+{% set pivots_sorted = context.pivotal_moments | sort(attribute='delta_score', reverse=True) %}
+{% set top_pos = pivots_sorted[:15] %}
 {% set top_neg = (context.pivotal_moments | sort(attribute='delta_score'))[:15] %}
-{% set top_pivots = (top_pos + top_neg) | sort(attribute='round') %}
+{% set seen_keys = [] %}
+{% set unique_pivots = [] %}
+{% for pm in (top_pos + top_neg) %}
+{% set key = pm.round ~ '|' ~ pm.agent ~ '|' ~ ('%+.4f' | format(pm.delta_score)) %}
+{% if key not in seen_keys %}
+{% set _ = seen_keys.append(key) %}
+{% set _ = unique_pivots.append(pm) %}
+{% endif %}
+{% endfor %}
+{% set top_pivots = unique_pivots | sort(attribute='round') %}
 
 | Round | Agent déclencheur | Événement | Δ Score |
 | --- | --- | --- | --- |
@@ -85,17 +98,26 @@ Cette section décode la **mécanique de bascule** observée dans la simulation,
 ) }}
 
 {# Top-3 influenceurs : dédoublonnage par agent_id/name, score max absolu.
-   Citation : verbatim depuis interview/article si dispo, sinon dernier message
-   non vide depuis la trajectoire. #}
+   Citation L99 v2 : verbatim depuis interview/article si dispo, sinon le
+   message le plus long et significatif (pas le dernier non vide) depuis la
+   trajectoire. Fallback narratif au lieu du "score atteint 0.82" trivial. #}
 {% if context.trajectory and context.trajectory.rounds %}
 {% set agent_best = {} %}
+{% set agent_messages = {} %}
 {% for rnd in context.trajectory.rounds %}
 {% for agent in rnd.agents %}
 {% set key = agent.agent_id or agent.name %}
 {% if key %}
 {% set prev = agent_best.get(key) %}
 {% if (prev is none) or (agent.score | abs) > (prev.score | abs) %}
-{% set _ = agent_best.update({key: {'name': agent.name, 'agent_id': agent.agent_id, 'score': agent.score, 'stance': agent.stance, 'message': agent.message}}) %}
+{% set _ = agent_best.update({key: {'name': agent.name, 'agent_id': agent.agent_id, 'score': agent.score, 'stance': agent.stance, 'message': agent.message, 'round': rnd.round_idx}}) %}
+{% endif %}
+{# Collecte du message le plus long pour cet agent — utile pour le verbatim. #}
+{% if agent.message and agent.message | trim | length > 20 %}
+{% set best_msg = agent_messages.get(key) %}
+{% if (best_msg is none) or (agent.message | length > best_msg.message | length) %}
+{% set _ = agent_messages.update({key: {'message': agent.message, 'round': rnd.round_idx}}) %}
+{% endif %}
 {% endif %}
 {% endif %}
 {% endfor %}
@@ -109,30 +131,46 @@ Cette section décode la **mécanique de bascule** observée dans la simulation,
 
 {% for agent in top3 %}
 {% set verbatim = '' %}
+{% set verbatim_source = '' %}
+{# 1. Interview de l'agent (préférée — plus narratif et structuré). #}
 {% if context.interviews %}
 {% for itv in context.interviews %}
 {% if itv.agent_name == agent.name and itv.answers and not verbatim %}
 {% set verbatim = itv.answers[0] %}
+{% set verbatim_source = 'interview post-simulation' %}
 {% endif %}
 {% endfor %}
 {% endif %}
+{# 2. Article publié par l'agent (contenu narratif riche). #}
 {% if not verbatim and context.articles %}
 {% for art in context.articles %}
 {% if art.agent_name == agent.name and art.content and not verbatim %}
-{% set verbatim = (art.content[:280] + ('…' if art.content | length > 280 else '')) %}
+{% set verbatim = (art.content[:340] + ('…' if art.content | length > 340 else '')) %}
+{% set verbatim_source = 'article ' ~ (art.platform or 'simulé') ~ ', round ' ~ (art.round | default('—')) %}
 {% endif %}
 {% endfor %}
 {% endif %}
-{% if not verbatim and agent.message %}
-{% set verbatim = (agent.message[:280] + ('…' if agent.message | length > 280 else '')) %}
+{# 3. Message le plus long de l'agent dans la trajectoire. #}
+{% set agent_key = agent.agent_id or agent.name %}
+{% if not verbatim and agent_messages.get(agent_key) %}
+{% set best = agent_messages[agent_key] %}
+{% set verbatim = (best.message[:340] + ('…' if best.message | length > 340 else '')) %}
+{% set verbatim_source = 'canal interne, round ' ~ best.round %}
 {% endif %}
+{# 4. Dernier message non vide (legacy). #}
+{% if not verbatim and agent.message %}
+{% set verbatim = (agent.message[:340] + ('…' if agent.message | length > 340 else '')) %}
+{% set verbatim_source = 'round ' ~ agent.round %}
+{% endif %}
+{# 5. Fallback narratif — pas de chiffre brut isolé. #}
 {% if not verbatim %}
-{% set verbatim = 'Conviction agrégée — score atteint ' ~ (agent.score | round(2)) ~ ' au pic de la trajectoire.' %}
+{% set verbatim = 'Conviction maximale atteinte au round ' ~ agent.round ~ ' avec un score de ' ~ (agent.score | round(2)) ~ '. Acteur dont la dynamique a pesé sur la trajectoire sans laisser de verbatim transcrit dans les artefacts de simulation.' %}
+{% set verbatim_source = 'synthèse trajectoire' %}
 {% endif %}
 
 {{ pull_quote(
     text=verbatim | normalize(context.lang),
-    author=((agent.name or ('Agent #' ~ (agent.agent_id or '?'))) | humanize_agent | normalize(context.lang)) + ' — conviction max ' + (agent.score | round(2) | string) + ' · ' + (agent.stance | position_label)
+    author=((agent.name or ('Agent #' ~ (agent.agent_id or '?'))) | humanize_agent | normalize(context.lang)) + ' — conviction max ' + (agent.score | round(2) | string) + ' · ' + (agent.stance | position_label) + ' · ' + verbatim_source
 ) }}
 
 {% endfor %}

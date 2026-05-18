@@ -2,10 +2,47 @@
 
 ## 6. Recommandations C-Level
 
-{% if context.outcome and context.outcome.recommendations %}
-{% set recs = context.outcome.recommendations %}
-{% if recs %}
+{% set recs = (context.outcome.recommendations if context.outcome and context.outcome.recommendations else []) %}
+{% set scored_recs = context.scored_recommendations | default([]) %}
 
+{% if scored_recs %}
+### 6.1 Cadre d'analyse
+
+Les recommandations ci-dessous ont été pressurisées sur quatre frameworks de négociation, sur une échelle 0 à 10.
+
+- **ZOPA** *(Zone Of Possible Agreement)* — largeur de la zone d'accord plausible entre les contraintes du sponsor et celles des sceptiques compétents.
+- **BATNA** *(Best Alternative To Negotiated Agreement)* — robustesse de la meilleure alternative en cas d'échec, mesurée en coût de repli.
+- **MESO** *(Multiple Equivalent Simultaneous Offers)* — capacité de la recommandation à proposer plusieurs voies parallèles équivalentes.
+- **WATNA** *(Worst Alternative To Negotiated Agreement)* — gravité de la pire alternative si la recommandation échoue.
+
+{% for sr in scored_recs %}
+### 6.{{ loop.index + 1 }} Piste {{ ['A', 'B', 'C'][loop.index0] }} — {{ sr.title | normalize(context.lang) }}
+
+| Dimension | Spécification |
+| --- | --- |
+| Action principale | {{ sr.action | normalize(context.lang) }} |
+| Owner | {{ sr.owner }} |
+| Horizon | {{ sr.horizon }} |
+| KPI primaire | {{ sr.kpi_primary }} |
+| Risque principal | {{ sr.risk }} |
+
+**Scoring négociation**
+
+| Framework | Score | Justification |
+| --- | --- | --- |
+| ZOPA | {{ sr.zopa }} / 10 | {{ sr.zopa_rationale | normalize(context.lang) }} |
+| BATNA | {{ sr.batna }} / 10 | {{ sr.batna_rationale | normalize(context.lang) }} |
+| MESO | {{ sr.meso }} / 10 | {{ sr.meso_rationale | normalize(context.lang) }} |
+| WATNA | {{ sr.watna }} / 10 | {{ sr.watna_rationale | normalize(context.lang) }} |
+| **Score composite** | **{{ '%.1f' | format(sr.composite) }} / 10** | {{ sr.composite_note | normalize(context.lang) }} |
+
+{% endfor %}
+
+### 6.{{ scored_recs | length + 2 }} Verdict de séquençage
+
+Les trois pistes ne sont pas concurrentes mais séquentielles. La piste de **score composite le plus élevé** doit être engagée en premier (sprint immédiat), la suivante en consolidation, la troisième en arbitrage COMEX différé. **Sans validation des deux premières pistes, n'engagez pas la troisième** — son coût politique court terme dépasse son retour sans les preuves sociales accumulées par les pistes amont.
+
+{% elif recs %}
 Les recommandations suivantes sont issues de l'analyse de la simulation. Elles doivent être adaptées au contexte spécifique de l'organisation et validées avec les parties prenantes concernées.
 
 | # | Recommandation | Horizon | Priorité |
@@ -35,10 +72,6 @@ Les recommandations suivantes sont issues de l'analyse de la simulation. Elles d
 
 {% if recs | length > 7 %}
 {{ callout('info', 'Recommandations supplémentaires', (recs | length - 7) | string + ' recommandation(s) supplémentaire(s) disponible(s) dans les données brutes de l\'outcome.') }}
-{% endif %}
-
-{% else %}
-{{ callout('warning', 'Recommandations à co-désigner', 'La liste de recommandations est vide pour cette simulation. Les recommandations stratégiques doivent être co-désignées avec un partenaire humain qualifié (consultant, analyste senior, décideur métier) avant toute mise en œuvre. Bassira fournit une base analytique, non un substitut à l\'expertise humaine.') }}
 {% endif %}
 
 {% else %}

@@ -140,8 +140,18 @@ class ChartFactory:
         """
         Line chart : évolution du score de conviction par round.
 
+        L99 v2 — classification par SCORE (pas par AgentState.stance string)
+        ===================================================================
+        Bug fix observé sur sim_76570b79 : tous les agents portaient
+        ``stance="neutral"`` dans la trajectoire, ce qui produisait une
+        seule courbe « En observation » au lieu des trois promises
+        (Adhésion / Résistance / Observation). On reclasse désormais via
+        le score numérique au seuil ±0,10 (cohérent avec stance_flow_sankey)
+        pour garantir que les trois postures soient toujours tracées.
+
         X = round_idx (Round.round_idx)
-        Y = score moyen par stance à ce round (AgentState.score groupé par stance)
+        Y = score moyen par posture-via-score à ce round
+        Seuils : score > +0,10 → Adhésion, < -0,10 → Résistance, sinon Observation
 
         Callouts verticaux sur les PivotalMoment (PivotalMoment.round,
         PivotalMoment.agent, PivotalMoment.event).
@@ -156,16 +166,27 @@ class ChartFactory:
 
         rounds = sorted(ctx.trajectory.rounds, key=lambda r: r.round_idx)
 
-        # Collecte : pour chaque round, score moyen par stance
-        stance_scores: dict[str, dict[int, list[float]]] = defaultdict(lambda: defaultdict(list))
+        # ── Collecte : score moyen par posture (classifiée via score), par round ──
+        # Classification : score > +0,10 → Adhésion, < -0,10 → Résistance, sinon Observation.
+        # On collecte les scores de chaque bucket SÉPARÉMENT de toute notion
+        # d'agent.stance string, qui est régulièrement à "neutral" pour tous.
+        posture_scores: dict[str, dict[int, list[float]]] = {
+            "Adhésion":       defaultdict(list),
+            "Résistance":     defaultdict(list),
+            "En observation": defaultdict(list),
+        }
         for rnd in rounds:
             for agent in rnd.agents:
-                stance_scores[agent.stance][rnd.round_idx].append(agent.score)
-
-        if not stance_scores:
-            return _placeholder_png("Aucun agent dans la trajectoire\n(belief drift)")
+                if agent.score > 0.10:
+                    posture_scores["Adhésion"][rnd.round_idx].append(agent.score)
+                elif agent.score < -0.10:
+                    posture_scores["Résistance"][rnd.round_idx].append(agent.score)
+                else:
+                    posture_scores["En observation"][rnd.round_idx].append(agent.score)
 
         round_indices = sorted({r.round_idx for r in rounds})
+        if not round_indices:
+            return _placeholder_png("Aucun round\n(belief drift)")
 
         # ── Figure ──
         fig, ax = plt.subplots(figsize=(7, 3.8))
@@ -173,34 +194,43 @@ class ChartFactory:
         ax.set_xlabel("Round de discussion")
         ax.set_ylabel("Score moyen de conviction")
 
-        # Mapping stance interne → libellé C-level pour la légende
-        _STANCE_LABEL = {
-            "bullish": "Adhésion",
-            "bearish": "Résistance",
-            "neutral": "En observation",
-            "neutre":  "En observation",
+        # Mapping posture → couleur cohérente (vert/rouge/sable)
+        _POSTURE_COLOR = {
+            "Adhésion":       WI_MINT,
+            "Résistance":     WI_TERRA,
+            "En observation": WI_ORANGE,
         }
 
-        color_map: dict[str, str] = {}
-        for i, (stance, round_data) in enumerate(sorted(stance_scores.items())):
-            color = CAUSSE_PALETTE[i % len(CAUSSE_PALETTE)]
-            color_map[stance] = color
-            xs = []
-            ys = []
+        # Pour chaque posture, tracer une courbe (en plottant 0 quand bucket vide
+        # pour ne pas casser la lisibilité visuelle).
+        for posture, round_data in posture_scores.items():
+            xs, ys = [], []
             for idx in round_indices:
-                scores = round_data.get(idx)
+                scores = round_data.get(idx, [])
                 if scores:
                     xs.append(idx)
                     ys.append(sum(scores) / len(scores))
             if xs:
-                label_fr = _STANCE_LABEL.get((stance or "").lower(), (stance or "").capitalize())
-                ax.plot(xs, ys, marker="o", markersize=4, label=label_fr, color=color)
+                ax.plot(
+                    xs, ys,
+                    marker="o", markersize=4,
+                    label=posture,
+                    color=_POSTURE_COLOR[posture],
+                    linewidth=1.5,
+                )
 
-        # Callouts pivotal_moments
+        # Callouts pivotal_moments (déduplication par (round, agent) pour ne pas
+        # tracer 10 fois la même verticale quand un agent bascule plusieurs fois
+        # au même round).
+        seen_pivot_keys: set = set()
         for pm in ctx.pivotal_moments:
+            key = (pm.round, pm.agent)
+            if key in seen_pivot_keys:
+                continue
+            seen_pivot_keys.add(key)
             ax.axvline(x=pm.round, color=WI_TERRA, linestyle="--", linewidth=0.8, alpha=0.6)
             ymax = ax.get_ylim()[1] if ax.get_ylim()[1] != 0 else 1.0
-            label_text = pm.agent[:12] if pm.agent else "Pivot"
+            label_text = (pm.agent or "Pivot")[:12]
             ax.text(
                 pm.round + 0.05,
                 ymax * 0.92,
@@ -212,7 +242,7 @@ class ChartFactory:
                 alpha=0.8,
             )
 
-        ax.legend(loc="best", ncol=2)
+        ax.legend(loc="best", ncol=3, fontsize=7)
         ax.set_xticks(round_indices)
         fig.tight_layout()
         return _fig_to_png(fig)
@@ -421,13 +451,29 @@ class ChartFactory:
         if ctx.trajectory is None or not ctx.trajectory.rounds:
             return _placeholder_png("Trajectoire non disponible\n(influence leaderboard)")
 
-        # Agréger score max et stance dominante par agent name
+        # L99 v2 — Lookup ordinal → nom propre depuis agent_profiles
+        profile_name_by_ordinal: dict[str, str] = {}
+        for idx, profile in enumerate(ctx.agent_profiles or []):
+            if profile.name and not profile.name.isdigit():
+                profile_name_by_ordinal[str(idx)] = profile.name
+
+        # Agréger score max et stance dominante par agent key (preference name lisible)
         agent_max_score: dict[str, float] = {}
         agent_stance_count: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
+        agent_display: dict[str, str] = {}
 
         for rnd in ctx.trajectory.rounds:
             for agent in rnd.agents:
-                key = agent.name or agent.agent_id
+                key = agent.agent_id or agent.name
+                if not key:
+                    continue
+                # Résolution stricte du nom propre
+                if agent.name and not agent.name.isdigit():
+                    agent_display[key] = agent.name
+                elif key in profile_name_by_ordinal:
+                    agent_display[key] = profile_name_by_ordinal[key]
+                elif key not in agent_display:
+                    agent_display[key] = f"Agent #{key}"
                 if key not in agent_max_score or agent.score > agent_max_score[key]:
                     agent_max_score[key] = agent.score
                 agent_stance_count[key][agent.stance] += 1
@@ -435,9 +481,9 @@ class ChartFactory:
         if not agent_max_score:
             return _placeholder_png("Aucun agent dans la trajectoire\n(influence leaderboard)")
 
-        # Top 10 par score max décroissant
+        # Top 10 par score max décroissant — projeter sur les noms display
         top10 = sorted(agent_max_score.items(), key=lambda kv: kv[1], reverse=True)[:10]
-        names = [item[0] for item in top10]
+        names = [agent_display.get(k, k) for k, _ in top10]
         scores = [item[1] for item in top10]
 
         # Stance dominante pour la couleur
@@ -453,19 +499,19 @@ class ChartFactory:
         }
 
         bar_colors = []
-        for name in names:
-            stance_counts = agent_stance_count.get(name, {})
+        for key, _ in top10:
+            stance_counts = agent_stance_count.get(key, {})
             dominant = max(stance_counts, key=lambda s: stance_counts[s]) if stance_counts else "neutral"
             bar_colors.append(stance_color_map.get(dominant.lower(), WI_ORANGE))
 
-        fig, ax = plt.subplots(figsize=(6.5, max(3.0, len(names) * 0.45)))
+        fig, ax = plt.subplots(figsize=(7.0, max(3.0, len(names) * 0.45)))
         ax.set_title("Top agents par conviction maximale atteinte", pad=8)
 
         # Ordre croissant pour la lisibilité (meilleur en haut)
         ypos = range(len(names))
         bars = ax.barh(list(ypos), scores[::-1], color=list(reversed(bar_colors)), alpha=0.85)
         ax.set_yticks(list(ypos))
-        ax.set_yticklabels([n[:22] for n in reversed(names)], fontsize=7)
+        ax.set_yticklabels([n[:32] for n in reversed(names)], fontsize=7)
         ax.set_xlabel("Conviction maximale")
 
         for bar, val in zip(bars, reversed(scores)):
@@ -500,6 +546,13 @@ class ChartFactory:
             Adoptants discrets  (bas  + droite)  — influence faible + adhésion
             Indifférents        (bas  + gauche)  — influence faible + résistance
 
+        L99 v2 — Améliorations :
+        - Labels d'agents plus longs (22 chars au lieu de 14) pour lisibilité
+        - Résolution prioritaire du nom propre via agent.name (pas agent_id)
+        - Si name est purement numérique (artefact moteur), tente fallback sur
+          agent_profiles[ordinal].name pour reconstituer le vrai nom
+        - Annotations quadrants avec position fixe (plus de jitter sur xlim/ylim)
+
         Lecture C-level : le CEO sait immédiatement sur qui investir son
         temps de conviction (sceptiques bruyants à convertir) et qui
         amplifier (champions à promouvoir comme témoins).
@@ -509,6 +562,12 @@ class ChartFactory:
         ctx = self._ctx
         if ctx.trajectory is None or not ctx.trajectory.rounds:
             return _placeholder_png("Trajectoire indisponible\n(matrice influence × posture)")
+
+        # Lookup ordinal → nom propre depuis agent_profiles (L99 v2 fix)
+        profile_name_by_ordinal: dict[str, str] = {}
+        for idx, profile in enumerate(ctx.agent_profiles or []):
+            if profile.name and not profile.name.isdigit():
+                profile_name_by_ordinal[str(idx)] = profile.name
 
         # Score final + variations cumulées par agent
         agent_final: dict[str, float] = {}
@@ -521,7 +580,13 @@ class ChartFactory:
                 key = a.agent_id or a.name
                 if not key:
                     continue
-                agent_name[key] = a.name or key
+                # Préférence stricte au nom non-numérique
+                if a.name and not a.name.isdigit():
+                    agent_name[key] = a.name
+                elif key in profile_name_by_ordinal:
+                    agent_name[key] = profile_name_by_ordinal[key]
+                elif key not in agent_name:
+                    agent_name[key] = a.name or key
                 if key in prev_scores:
                     agent_influence[key] = agent_influence.get(key, 0.0) + abs(a.score - prev_scores[key])
                 prev_scores[key] = a.score
@@ -537,39 +602,45 @@ class ChartFactory:
 
         xs = [agent_influence.get(k, 0.0) for k in sorted_keys]
         ys = [agent_final.get(k, 0.0) for k in sorted_keys]
-        labels = [agent_name.get(k, k)[:14] for k in sorted_keys]
+        labels = [agent_name.get(k, k)[:22] for k in sorted_keys]
 
         # Couleur par quadrant
+        mean_x = sum(xs) / len(xs) if xs else 0
         colors = []
         for x, y in zip(xs, ys):
-            if y >= 0 and x >= (sum(xs) / len(xs) if xs else 0):
+            if y >= 0 and x >= mean_x:
                 colors.append(WI_MINT)         # Champions
-            elif y < 0 and x >= (sum(xs) / len(xs) if xs else 0):
+            elif y < 0 and x >= mean_x:
                 colors.append(WI_TERRA)        # Sceptiques bruyants
             elif y >= 0:
                 colors.append(WI_SAND)         # Adoptants discrets
             else:
                 colors.append(WI_CHARCOAL)     # Indifférents/silencieux
 
-        fig, ax = plt.subplots(figsize=(7, 4.5))
+        fig, ax = plt.subplots(figsize=(7.5, 5.0))
         ax.set_title("Matrice Influence × Posture finale", pad=10)
 
         # Axes croisés au centre (mean(x), 0)
-        mean_x = sum(xs) / len(xs) if xs else 0
         ax.axvline(x=mean_x, color=WI_CHARCOAL, linestyle="--", linewidth=0.6, alpha=0.5)
         ax.axhline(y=0,      color=WI_CHARCOAL, linestyle="--", linewidth=0.6, alpha=0.5)
 
-        ax.scatter(xs, ys, c=colors, s=80, alpha=0.85, edgecolors="white", linewidth=0.8)
+        ax.scatter(xs, ys, c=colors, s=90, alpha=0.85, edgecolors="white", linewidth=0.8)
         for x, y, lab in zip(xs, ys, labels):
-            ax.annotate(lab, (x, y), xytext=(4, 4), textcoords="offset points", fontsize=6, color=WI_CHARCOAL)
+            ax.annotate(lab, (x, y), xytext=(5, 5), textcoords="offset points", fontsize=6.5, color=WI_CHARCOAL)
 
-        # Annotations quadrant
+        # Annotations quadrant — positions fixes basées sur xlim/ylim après scatter
         xlim = ax.get_xlim()
         ylim = ax.get_ylim()
-        ax.text(xlim[1] * 0.98, ylim[1] * 0.92, "Champions",            ha="right", va="top",    fontsize=7, color=WI_MINT,     alpha=0.7)
-        ax.text(xlim[0] * 0.98 if xlim[0] < 0 else mean_x * 0.05, ylim[1] * 0.92, "Sceptiques bruyants", ha="left",  va="top",    fontsize=7, color=WI_TERRA,    alpha=0.7)
-        ax.text(xlim[1] * 0.98, ylim[0] * 0.92 if ylim[0] < 0 else 0,  "Adoptants discrets",  ha="right", va="bottom", fontsize=7, color=WI_SAND,     alpha=0.85)
-        ax.text(xlim[0] * 0.98 if xlim[0] < 0 else mean_x * 0.05, ylim[0] * 0.92 if ylim[0] < 0 else 0,  "Indifférents",        ha="left",  va="bottom", fontsize=7, color=WI_CHARCOAL, alpha=0.7)
+        # Pad léger pour éviter de toucher les bords
+        x_left  = xlim[0] + 0.03 * (xlim[1] - xlim[0])
+        x_right = xlim[1] - 0.03 * (xlim[1] - xlim[0])
+        y_top   = ylim[1] - 0.05 * (ylim[1] - ylim[0])
+        y_bot   = ylim[0] + 0.05 * (ylim[1] - ylim[0])
+
+        ax.text(x_right, y_top, "Champions",            ha="right", va="top",    fontsize=8, color=WI_MINT,     alpha=0.85, fontweight="bold")
+        ax.text(x_left,  y_top, "Sceptiques bruyants",  ha="left",  va="top",    fontsize=8, color=WI_TERRA,    alpha=0.85, fontweight="bold")
+        ax.text(x_right, y_bot, "Adoptants discrets",   ha="right", va="bottom", fontsize=8, color=WI_SAND,     alpha=0.95, fontweight="bold")
+        ax.text(x_left,  y_bot, "Indifférents",         ha="left",  va="bottom", fontsize=8, color=WI_CHARCOAL, alpha=0.85, fontweight="bold")
 
         ax.set_xlabel("Influence cumulée (somme des |Δ score| sur la trajectoire)")
         ax.set_ylabel("Posture finale (score)")
@@ -681,6 +752,12 @@ class ChartFactory:
         rounds = ctx.trajectory.rounds
         n_rounds = len(rounds)
 
+        # L99 v2 — Lookup ordinal → nom propre
+        profile_name_by_ordinal: dict[str, str] = {}
+        for idx, profile in enumerate(ctx.agent_profiles or []):
+            if profile.name and not profile.name.isdigit():
+                profile_name_by_ordinal[str(idx)] = profile.name
+
         # Collecter scores par agent × round
         agent_scores: dict[str, dict[int, float]] = {}
         agent_name: dict[str, str] = {}
@@ -689,7 +766,12 @@ class ChartFactory:
                 key = a.agent_id or a.name
                 if not key:
                     continue
-                agent_name[key] = a.name or key
+                if a.name and not a.name.isdigit():
+                    agent_name[key] = a.name
+                elif key in profile_name_by_ordinal:
+                    agent_name[key] = profile_name_by_ordinal[key]
+                elif key not in agent_name:
+                    agent_name[key] = a.name or key
                 agent_scores.setdefault(key, {})[rnd.round_idx] = a.score
 
         if not agent_scores:
@@ -721,7 +803,7 @@ class ChartFactory:
         im = ax.imshow(matrix, aspect="auto", cmap=cmap, vmin=-vmax, vmax=vmax, interpolation="nearest")
 
         ax.set_yticks(range(len(ranked)))
-        ax.set_yticklabels([agent_name.get(k, k)[:18] for k in ranked], fontsize=6)
+        ax.set_yticklabels([agent_name.get(k, k)[:26] for k in ranked], fontsize=6)
         # Ticks rounds : pas trop de labels (1 sur 5)
         tick_step = max(1, len(round_indices) // 12)
         ax.set_xticks(range(0, len(round_indices), tick_step))

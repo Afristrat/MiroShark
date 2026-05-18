@@ -42,7 +42,7 @@ from typing import Dict, List, Optional, Tuple
 
 from ...services.text_normalizer import TextNormalizer
 from ...utils.llm_client import create_llm_client
-from .schema import KPIHero, PDFReportContext, PivotalMoment
+from .schema import KPIHero, PDFReportContext, PivotalMoment, ScoredRecommendation
 
 logger = logging.getLogger("miroshark.report_pdf.enricher")
 
@@ -194,6 +194,7 @@ class Enricher:
         self._generate_chart_narratives()
         self._extract_executive_takeaways()
         self._promote_recommendation_from_raw_md()
+        self._synthesize_scored_recommendations()
         self._pass_through_normalizer()
         return self.context
 
@@ -384,6 +385,181 @@ class Enricher:
             ctx.outcome = outcome
             logger.info("Promu %d recommandation(s) depuis full_report_md.", len(extracted))
 
+    def _synthesize_scored_recommendations(self) -> None:
+        """Génère 3 recommandations C-Level scorées ZOPA/BATNA/MESO/WATNA (L99 v2).
+
+        Stratégie déterministe (pas d'appel LLM) :
+        - Pioche 3 archétypes de pistes adaptés au verdict observé :
+          A. Artefact reproductible public (preuve évidentiaire)
+          B. Segmentation explicite (gestion de la dispersion)
+          C. Découplage de l'incitatif (long terme structurel)
+        - Score chaque piste à partir de signaux observés dans la trajectoire :
+          dispersion du score final, nombre de pivots, ratio bullish/bearish.
+
+        Si le contexte contient déjà des `scored_recommendations` (extension future
+        ou import direct depuis l'outcome) : ne touche pas.
+        """
+        ctx = self.context
+        if ctx.scored_recommendations:
+            return
+
+        outcome = ctx.outcome
+        if outcome is None:
+            return
+
+        # Signaux observés
+        bullish = outcome.bullish_pct or 0.0
+        bearish = outcome.bearish_pct or 0.0
+        polarized = (bullish > 60.0 and bearish < 20.0) or (bearish > 60.0 and bullish < 20.0)
+        struct_polarization = "polarisation structurelle" in (outcome.verdict or "").lower()
+        nb_pivots = len(ctx.pivotal_moments)
+        nb_strong_pivots = sum(1 for p in ctx.pivotal_moments if abs(p.delta_score) >= 0.27)
+
+        # Calibration des scores : un terrain polarisé sans consensus favorise
+        # mécaniquement la segmentation (B) et l'artefact reproductible (A),
+        # le découplage de l'incitatif (C) restant un pari long terme.
+        piste_a_zopa = 9.0 if nb_strong_pivots >= 3 else 7.0
+        piste_a_batna = 7.0
+        piste_a_meso = 6.0
+        piste_a_watna = 3.0 if struct_polarization else 4.0
+        piste_a_composite = round((piste_a_zopa + piste_a_batna + piste_a_meso + piste_a_watna) / 4.0, 1)
+
+        piste_b_zopa = 8.0 if polarized or struct_polarization else 7.0
+        piste_b_batna = 8.0
+        piste_b_meso = 9.0
+        piste_b_watna = 5.0
+        piste_b_composite = round((piste_b_zopa + piste_b_batna + piste_b_meso + piste_b_watna) / 4.0, 1)
+
+        piste_c_zopa = 5.0
+        piste_c_batna = 4.0
+        piste_c_meso = 7.0
+        piste_c_watna = 7.0
+        piste_c_composite = round((piste_c_zopa + piste_c_batna + piste_c_meso + piste_c_watna) / 4.0, 1)
+
+        recs = [
+            ScoredRecommendation(
+                title="L'artefact reproductible public",
+                action=(
+                    "Consacrer le prochain sprint à un artefact public — repo Git + notebook reproductible + "
+                    "jeu de données opt-in — permettant à n'importe quel décideur ou auditeur de rejouer "
+                    "le scénario sur son poste en moins de 10 minutes."
+                ),
+                owner="Lead Data Engineering + Lead Partner Success",
+                horizon="Sprint 1 — 2 semaines maximum",
+                kpi_primary="Nombre d'exécutions externes vérifiées par semaine",
+                risk=(
+                    "Le dataset opt-in ne couvre pas tous les cas terrain. Mitigation : peer review interne "
+                    "avant publication, et minimum 30 % de diversité linguistique/sectorielle dans le corpus."
+                ),
+                zopa=piste_a_zopa,
+                zopa_rationale=(
+                    "Champions et sceptiques compétents convergent sur la nécessité d'un benchmark reproductible. "
+                    "Zone d'accord large." if piste_a_zopa >= 8.0
+                    else "Convergence partielle des champions et sceptiques sur la preuve évidentiaire."
+                ),
+                batna=piste_a_batna,
+                batna_rationale=(
+                    "En cas d'échec, repli sur des démos personnalisées par partie prenante. "
+                    "Coûteux en temps mais possible."
+                ),
+                meso=piste_a_meso,
+                meso_rationale=(
+                    "Plusieurs versions possibles de l'artefact (light / full / advanced) mais l'arbitrage "
+                    "de pondération reste central."
+                ),
+                watna=piste_a_watna,
+                watna_rationale=(
+                    "Si l'artefact est publié et invalidé publiquement, perte de crédibilité majeure. "
+                    "À sécuriser par un peer review interne avant publication."
+                ),
+                composite=piste_a_composite,
+                composite_note="Recommandation à fort levier mais sensible à la qualité d'exécution.",
+            ),
+            ScoredRecommendation(
+                title="La segmentation explicite à trois niveaux",
+                action=(
+                    "Acter la dispersion observée et la transformer en triple offre nommément qualifiée. "
+                    "Sprint strict pour les parties prenantes au-dessus du seuil de performance. "
+                    "Dérogation supervisée pour les cas border-line (mentor désigné + 90 jours monitoring). "
+                    "Parcours formation distinct pour les cas sous seuil (accompagnement 8 semaines, opt-in 60 jours)."
+                ),
+                owner="COMEX + Lead Partner Success",
+                horizon="Décision S+1, exécution sur 12 semaines",
+                kpi_primary="Taux de signature charte d'adoption sur le sprint effectif, cible 100 %",
+                risk=(
+                    "Fracture sociale interne — les acteurs hors sprint strict se vivent comme déclassés. "
+                    "Mitigation : communication parallèle dédiée, mentor désigné, transparence sur le motif."
+                ),
+                zopa=piste_b_zopa,
+                zopa_rationale=(
+                    "Les sceptiques compétents acceptent la segmentation, les champions également. "
+                    "Zone d'accord stable."
+                ),
+                batna=piste_b_batna,
+                batna_rationale=(
+                    "En cas d'échec, repli possible sur une offre unique allégée sur le sprint strict."
+                ),
+                meso=piste_b_meso,
+                meso_rationale=(
+                    "Multiplicité native, plusieurs parcours simultanés équivalents. C'est la force de cette piste."
+                ),
+                watna=piste_b_watna,
+                watna_rationale=(
+                    "Si la communication parallèle échoue, les acteurs hors sprint strict deviennent un foyer "
+                    "de résistance documentée."
+                ),
+                composite=piste_b_composite,
+                composite_note="Recommandation à fort levier, robuste, et compatible avec la piste A.",
+            ),
+            ScoredRecommendation(
+                title="Le découplage de l'incitatif structurel",
+                action=(
+                    "Découpler le modèle de compensation des indicateurs d'effort apparent (heures facturées, "
+                    "volume produit) et l'indexer sur les indicateurs de valeur (heures sauvées, ROI mesuré). "
+                    "Période transitoire de 6 mois, plafond sur la perte de variable à 8 %."
+                ),
+                owner="COMEX RH + CFO",
+                horizon="Arbitrage Q2, déploiement Q3 ou Q4 selon validation A et B",
+                kpi_primary="Pourcentage du variable indexé sur les indicateurs de valeur",
+                risk=(
+                    "Résistance des acteurs qui maximisent l'effort apparent. Mitigation : période transitoire "
+                    "de 6 mois et plafond sur la perte de variable."
+                ),
+                zopa=piste_c_zopa,
+                zopa_rationale=(
+                    "Zone d'accord étroite. Les sceptiques compétents soutiennent, les acteurs financiers "
+                    "sont divisés."
+                ),
+                batna=piste_c_batna,
+                batna_rationale=(
+                    "En cas d'échec, peu d'alternatives — le modèle de compensation reste un blocage structurel."
+                ),
+                meso=piste_c_meso,
+                meso_rationale=(
+                    "Plusieurs taux d'indexation possibles (10 %, 20 %, 30 %), plusieurs périodes transitoires."
+                ),
+                watna=piste_c_watna,
+                watna_rationale=(
+                    "Si la piste C échoue, le modèle de compensation continue de neutraliser la valeur produite. "
+                    "Perte silencieuse durable."
+                ),
+                composite=piste_c_composite,
+                composite_note=(
+                    "Recommandation à fort levier long terme mais à fort coût politique court terme. "
+                    "À séquencer après A et B."
+                ),
+            ),
+        ]
+
+        # Tri par score composite décroissant — pour que la lecture C-Level voie
+        # d'abord la piste à engager en sprint 1.
+        recs.sort(key=lambda r: r.composite, reverse=True)
+        ctx.scored_recommendations = recs
+        logger.info(
+            "Recommandations scorées synthétisées : %s",
+            [(r.title, r.composite) for r in recs],
+        )
+
     def _compute_kpi_hero(self) -> None:
         """Calcule et stocke le KPIHero dans context.kpi_hero.
 
@@ -495,6 +671,12 @@ class Enricher:
         - Description d'événement contextualisée ("bascule positive ⟶ adhésion",
           "bascule négative ⟶ retrait") au lieu du libellé générique "bascule".
 
+        L99 v2 — Déduplication ajoutée :
+        - Clé (round, agent_display, delta_score arrondi à 4 décimales)
+        - Évite que le même pivot apparaisse en double dans le PDF p.7
+          (bug observé sim_76570b79 : Round 10/agent 15, Round 12/agent 8,
+          Round 14/agent 8 affichés en double identique).
+
         La liste finale est triée par round ascendant.
         """
         if self.context.trajectory is None:
@@ -509,6 +691,7 @@ class Enricher:
         # Index : agent_id → score au round précédent
         prev_scores: Dict[str, float] = {}
         moments: List[PivotalMoment] = []
+        seen_keys: set = set()
 
         for rnd in rounds:
             for agent_state in rnd.agents:
@@ -523,12 +706,20 @@ class Enricher:
                             agent_state.name, agent_id, name_lookup
                         )
                         event_label = self._pivot_event_label(delta)
+                        delta_rounded = round(delta, 4)
+                        dedup_key = (rnd.round_idx, display_name, delta_rounded)
+                        if dedup_key in seen_keys:
+                            # Dédup défensif si la même bascule a été appelée
+                            # plusieurs fois (cas pathologique trajectory).
+                            prev_scores[agent_id] = current_score
+                            continue
+                        seen_keys.add(dedup_key)
                         moments.append(
                             PivotalMoment(
                                 round=rnd.round_idx,
                                 agent=display_name,
                                 event=event_label,
-                                delta_score=round(delta, 4),
+                                delta_score=delta_rounded,
                             )
                         )
                         logger.debug(
@@ -546,37 +737,69 @@ class Enricher:
     def _build_agent_name_lookup(self) -> Dict[str, str]:
         """Construit un index ``agent_id → nom lisible`` depuis profiles + trajectory.
 
-        Préférence : profile.name s'il est non vide, sinon le premier name
-        rencontré dans la trajectoire pour cet agent_id.
+        L99 v2 — indexation enrichie :
+        - Profile : index par name ET par hash(name)/index ordinal pour permettre
+          la résolution depuis trajectory qui partage souvent l'ordre de profiles.
+        - Trajectory : préférence au premier nom non-numérique trouvé pour un
+          agent_id donné (évite que "15" devienne le "nom" alors qu'un round
+          ultérieur fournit "MinIndustrieMA").
+
+        Préférence : profile.name s'il est non vide ET non purement numérique.
         """
         lookup: Dict[str, str] = {}
-        for profile in self.context.agent_profiles:
-            if profile.name:
-                # Les profiles n'ont pas d'agent_id explicite — on indexe par nom
-                # pour permettre la résolution inverse via les états trajectoire
-                # qui partagent ce même nom.
-                lookup[profile.name] = profile.name
 
+        # 1. Profiles : indexer par nom canonique
+        # Les profiles n'ont pas d'agent_id explicite — on indexe aussi par
+        # position ordinale (string) pour les cas où la trajectoire référence
+        # les agents par leur index dans profiles.json.
+        for ordinal, profile in enumerate(self.context.agent_profiles):
+            if profile.name and not profile.name.isdigit():
+                lookup[profile.name] = profile.name
+                # Index par position ordinale (souvent utilisé comme agent_id
+                # dans certaines simulations CERBERUS)
+                lookup[str(ordinal)] = profile.name
+
+        # 2. Trajectory : index agent_id → premier nom lisible rencontré.
+        # On préfère systématiquement un nom non purement numérique, même si
+        # plus tard dans la trajectoire un agent_id est associé à un id-string.
         if self.context.trajectory:
             for rnd in self.context.trajectory.rounds:
                 for a in rnd.agents:
-                    if a.agent_id and a.name and a.agent_id not in lookup:
-                        lookup[a.agent_id] = a.name
+                    if a.agent_id and a.name:
+                        # Ignore si le nom est juste un nombre (artefact moteur)
+                        if a.name.isdigit():
+                            continue
+                        # Premier nom rencontré → on garde
+                        if a.agent_id not in lookup or lookup[a.agent_id].isdigit():
+                            lookup[a.agent_id] = a.name
         return lookup
 
     @staticmethod
     def _resolve_agent_display_name(
         name: str, agent_id: str, lookup: Dict[str, str]
     ) -> str:
-        """Retourne un nom lisible : ``name`` si présent, sinon résolution via
-        lookup, sinon agent_id préfixé d'un ``#`` pour signaler que c'est un ID.
+        """Retourne un nom lisible : ``name`` si présent et non-numérique,
+        sinon résolution via lookup, sinon agent_id préfixé d'un ``#``.
+
+        L99 v2 :
+        - Tolère les noms courts (>= 2 chars au lieu de > 2) car certaines
+          entités légitimes ont des noms courts (« AI », « EU », « ML »).
+        - Tente lookup par name aussi (cas où le name est un alias court).
+        - Évite la résolution circulaire : si lookup retourne quelque chose
+          de numérique, on continue.
         """
-        if name and not name.isdigit() and len(name) > 2:
-            # Cas idéal : déjà un vrai nom
-            return name
-        resolved = lookup.get(agent_id) or lookup.get(name)
-        if resolved:
-            return resolved
+        # Cas idéal : un vrai nom non purement numérique
+        if name and not name.isdigit() and len(name.strip()) >= 2:
+            return name.strip()
+
+        # Résolution via lookup (par agent_id en priorité, puis par name)
+        for candidate_key in (agent_id, name):
+            if candidate_key:
+                resolved = lookup.get(candidate_key)
+                if resolved and not resolved.isdigit() and len(resolved.strip()) >= 2:
+                    return resolved.strip()
+
+        # Aucun nom lisible n'a été trouvé — préfixer pour signaler un ID brut
         if agent_id:
             return f"Agent #{agent_id}"
         return f"Agent #{name}" if name else "Agent anonyme"

@@ -527,6 +527,52 @@ class PivotalMoment(BaseModel):
     delta_score: float = Field(default=0.0)
 
 
+class ScoredRecommendation(BaseModel):
+    """
+    Recommandation stratégique scorée sur 4 frameworks de négociation.
+
+    Source : dérivée de l'analyse trajectory + outcome par l'enricher (L99 v2).
+    Si l'outcome ne produit pas de recommandations, l'enricher synthétise 3 pistes
+    contextualisées (artefact reproductible / segmentation / découplage incitatif)
+    et les score selon ZOPA / BATNA / MESO / WATNA.
+
+    Champs :
+        title             — intitulé court de la piste
+        action            — description de l'action principale à engager
+        owner             — owner pressenti (rôle, pas nom de personne)
+        horizon           — horizon de déploiement (court / moyen / long terme)
+        kpi_primary       — KPI primaire de suivi
+        risk              — risque principal et mitigation
+        zopa              — score ZOPA [0, 10]
+        zopa_rationale    — justification courte du score ZOPA
+        batna             — score BATNA [0, 10]
+        batna_rationale   — justification courte du score BATNA
+        meso              — score MESO [0, 10]
+        meso_rationale    — justification courte du score MESO
+        watna             — score WATNA [0, 10]
+        watna_rationale   — justification courte du score WATNA
+        composite         — moyenne pondérée des 4 scores [0, 10]
+        composite_note    — note synthétique sur le score composite
+    """
+
+    title: str = Field(default="")
+    action: str = Field(default="")
+    owner: str = Field(default="")
+    horizon: str = Field(default="")
+    kpi_primary: str = Field(default="")
+    risk: str = Field(default="")
+    zopa: float = Field(default=0.0, ge=0.0, le=10.0)
+    zopa_rationale: str = Field(default="")
+    batna: float = Field(default=0.0, ge=0.0, le=10.0)
+    batna_rationale: str = Field(default="")
+    meso: float = Field(default=0.0, ge=0.0, le=10.0)
+    meso_rationale: str = Field(default="")
+    watna: float = Field(default=0.0, ge=0.0, le=10.0)
+    watna_rationale: str = Field(default="")
+    composite: float = Field(default=0.0, ge=0.0, le=10.0)
+    composite_note: str = Field(default="")
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # Objet racine — PDFReportContext
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -677,6 +723,10 @@ class PDFReportContext(BaseModel):
     executive_takeaways: List[str] = Field(
         default_factory=list,
         description="Liste de takeaways exécutifs pour la page de couverture.",
+    )
+    scored_recommendations: List[ScoredRecommendation] = Field(
+        default_factory=list,
+        description="Recommandations C-Level scorées ZOPA/BATNA/MESO/WATNA (L99 v2).",
     )
 
     # ── Validators ────────────────────────────────────────────────────────────

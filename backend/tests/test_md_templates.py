@@ -352,12 +352,21 @@ def test_render_section_03_diagnostic(full_context: PDFReportContext) -> None:
 # ─── Test 7 — Section 04 dynamic ─────────────────────────────────────────────
 
 def test_render_section_04_dynamic(full_context: PDFReportContext) -> None:
-    """La section 04_dynamic.md.j2 affiche les charts et les pivots."""
+    """La section 04_dynamic.md.j2 affiche les charts et les pivots.
+
+    L99 v2 — La section §4 a été refondue pour le COMEX-readiness : on n'affiche
+    plus polymarket_curves (qui est utile en framework MARKET mais redondant
+    avec belief_drift en framework CERBERUS). À la place : belief_drift,
+    stance_flow_sankey, influence_posture_matrix, influence_leaderboard,
+    agent_engagement_heatmap, interaction_network.
+    """
     result = render_section("04_dynamic.md.j2", full_context, generated_at=GENERATED_AT)
     assert "Dynamique Observée" in result
     assert "belief_drift.png" in result
-    assert "polymarket_curves.png" in result
     assert "influence_leaderboard.png" in result
+    # L99 v2 — Trois nouveaux outils de viz COMEX-ready
+    assert "stance_flow_sankey.png" in result
+    assert "influence_posture_matrix.png" in result
     # Le moment pivot doit apparaître
     assert "Publication OCDE" in result or "Khalil" in result
 

@@ -14,21 +14,50 @@
 {% if context.kpi_hero %}
 ## KPI Héro
 
-{# Le label de la KPI Héro est intentionnellement court : on évite de réinjecter
-   le verdict complet (souvent une phrase longue qui rendait illisible la carte). #}
+{# L99 v2 : on affiche le SIGNAL LE PLUS SAILLANT (la posture dominante)
+   au lieu du niveau d'alignement qui est souvent le plus bas et le moins
+   parlant pour un C-Level. La posture dominante est calculée en enricher.py
+   comme la plus haute valeur de scenario_distribution. Fallback sur
+   confidence_pct si scenario_distribution est vide. #}
+{%- set scen = context.kpi_hero.scenario_distribution or {} -%}
+{%- if scen -%}
+  {%- set sorted_scen = scen.items() | list | sort(attribute=1, reverse=true) -%}
+  {%- set dominant_label = sorted_scen[0][0] -%}
+  {%- set dominant_pct = sorted_scen[0][1] -%}
+{%- else -%}
+  {%- set dominant_label = 'bullish' -%}
+  {%- set dominant_pct = context.kpi_hero.confidence_pct -%}
+{%- endif -%}
+
 {{ kpi_card(
-    label='Niveau d\'alignement',
-    value=(context.kpi_hero.confidence_pct | round(1) | string) + ' %',
-    unit='de conviction agrégée des agents'
+    label=(dominant_label | position_label) + ' en fin de simulation',
+    value=(dominant_pct | round(1) | string) + ' %',
+    unit='posture dominante — signal C-Level saillant'
 ) }}
 
-| Indicateur | Valeur |
-| --- | --- |
-| Niveau d'alignement | {{ context.kpi_hero.confidence_pct | round(1) }} % |
-| Indice de fiabilité | {{ context.kpi_hero.brier | reliability_pct }} % |
-{% for camp, pct in context.kpi_hero.scenario_distribution.items() %}
-| {{ camp | position_label }} | {{ pct | round(1) }} % |
-{% endfor %}
+{# Tableau enrichi avec interprétation par ligne, formulée en lecture C-Level. #}
+{%- set nb_pivots = context.pivotal_moments | length -%}
+{%- set nb_strong_pivots = (context.pivotal_moments | selectattr('delta_score', 'ge', 0.27) | list | length) + (context.pivotal_moments | selectattr('delta_score', 'le', -0.27) | list | length) -%}
+
+| Indicateur | Valeur | Lecture immédiate |
+| --- | --- | --- |
+{% for camp, pct in (sorted_scen if scen else []) -%}
+{% if loop.first -%}
+| **{{ camp | position_label }} en fin de simulation** | **{{ pct | round(1) }} %** | **Signal saillant — c'est sur cette posture que le déploiement se joue.** |
+{% elif loop.index == 2 -%}
+| {{ camp | position_label }} en fin de simulation | {{ pct | round(1) }} % | Posture secondaire — à surveiller comme zone de basculement potentiel. |
+{% else -%}
+| {{ camp | position_label }} en fin de simulation | {{ pct | round(1) }} % | Posture résiduelle — neutre dans la dynamique observée. |
+{% endif -%}
+{% endfor -%}
+| Niveau d'alignement agrégé | {{ context.kpi_hero.confidence_pct | round(1) }} % | Conviction moyenne pondérée par le moteur — lecture complémentaire de la posture dominante. |
+| Indice de fiabilité (dérivé Brier inversé) | {{ context.kpi_hero.brier | reliability_pct }} % | Dispersion finale faible = scénario reproductible sous perturbation. |
+{% if context.outcome and context.outcome.nb_rounds -%}
+| Rounds exécutés | {{ context.outcome.nb_rounds }} | Profondeur de simulation (benchmark interne Bassira : 60 à 80 rounds pour CERBERUS). |
+{% endif -%}
+{% if nb_pivots -%}
+| Bascules détectées \|Δ\| ≥ 0,20 | {{ nb_pivots }} | Intensité conversationnelle{% if nb_strong_pivots %} — dont {{ nb_strong_pivots }} bascules fortes \|Δ\| ≥ 0,27{% endif %}. |
+{% endif %}
 
 {% if context.kpi_hero.verdict %}
 
