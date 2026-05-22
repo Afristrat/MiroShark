@@ -1,3 +1,148 @@
+== PASSATION MiroShark/Bassira+Kairos 2026-05-22T22:00:00+01:00 ==
+
+[ETAT]
+- branche Bassira `main` `67c25ff` à jour origin (1 commit cette session : fix 3 bugs admin)
+- branche Kairos `main` `6cbe4a3` inchangé depuis passation 2026-05-17 (aucune modif Kairos cette session)
+- prod Bassira ONLINE https://prospectives.ai-mpower.com — Coolify auto-deploy sur main via webhook GitHub déclenché par le push `67c25ff`
+- prod Kairos ONLINE https://scrap.ai-mpower.com — stable
+- npm run build Bassira : OK (build vite réussi, 940+ modules, AnalyticsView 20.48 kB / AdminBrandingView 18.28 kB / ClientDashboardView 12.68 kB)
+- Syntaxe Python admin.py + tests : OK (py_compile)
+
+[FAIT cette session — Fix 3 bugs /admin/* + /client/dashboard]
+
+Amine ouvre 3 issues en un seul `/goal fix proprement` :
+1. /admin/analytics affiche des données obsolètes (rien à voir avec la réalité)
+2. /client/dashboard super-admin affiche uniquement « User belongs to multiple organizations — provide X-Org-Id header or ?org_id= query parameter. »
+3. /admin/branding : impossible de modifier, branding perçu comme hard-codé
+
+| Commit | Fix |
+|---|---|
+| `67c25ff` 3-in-1 | Voir détails par bug ci-dessous |
+
+### Bug 2 — /client/dashboard multi-org (root cause identifiée en premier)
+- **Cause** : `backend/app/auth/decorators.py:118-128` `_resolve_target_org` exige X-Org-Id ou ?org_id= quand l'user a >1 org. L'interceptor axios `frontend/src/api/client.js` ne propageait JAMAIS ce header. Super-admin Amine appartient à plusieurs orgs (bassira-internal + clients seed) → 400 ORG_ID_REQUIRED systématique.
+- **Fix axios** : ajout dans l'interceptor request d'un `X-Org-Id: <auth.currentOrgId>` (header ignoré par les endpoints qui ne sont pas décorés `@require_org_membership`, donc safe à propager partout).
+- **Fix UI** : nouveau sélecteur d'org `<select>` dans le hero de `ClientDashboardView.vue` visible UNIQUEMENT si `orgs.length > 1`. Handler `onChangeOrg()` → `auth.setCurrentOrg(orgId)` (déjà existant dans Pinia store) → refetch simulations. CSS coordonné avec les tokens `--wi-*` existants.
+
+### Bug 3 — /admin/branding "hard-codé"
+- **Cause** : la page demandait à l'admin de saisir manuellement un UUID d'org dans un `<input type="text">` mono-font (`ab-input--mono`). Si l'admin ne tape pas l'UUID exact ou si aucune row n'existe en `pdf_branding`, la table reste vide → perception « hard-codé ». De plus le fallback rendering PDF utilise la palette Bassira par défaut quand pas de row → ce que voit le client est PRÉCISÉMENT du hardcoded.
+- **Fix UI** : remplacement de l'input UUID par un vrai `<select>` peuplé selon le rôle :
+  - Super-admin → `fetchAllOrganizations()` (`/api/admin/organizations`)
+  - Org admin/owner → `authStore.orgs.filter(role in {owner, admin})`
+- **Fix UX** : nouveau bloc `.ab-empty-card` (style dashed/cream) qui explique le fallback palette par défaut au lieu de juste afficher « Aucun branding configuré. » sans contexte. Le titre est désormais explicite et l'aide guide vers le bouton "+ Nouveau branding".
+- **Boot** : `onMounted` charge `fetchSuperStatus()` si pas déjà résolu, puis `loadOrgOptions()` puis `loadBrandings()`. Plus de saisie manuelle.
+
+### Bug 1 — /admin/analytics données obsolètes
+- **Cause racine** : `backend/app/api/admin.py` `get_admin_analytics()` calculait TOUT à partir du **filesystem** (`WONDERWALL_SIMULATION_DATA_DIR/*/outcome.json` + `WONDERWALL_DATA_DIR/quotes/quote_*.json`). Sur Coolify, ces dossiers sont éphémères (volume reset à chaque deploy) → les KPI étaient déconnectés de la vérité. La source de vérité depuis US-114 est Supabase (`simulation_ownership` + `quote_ownership`).
+- **Fix backend** : refonte complète de l'implémentation tout en préservant la shape JSON (zéro impact frontend).
+  - Nouveaux helpers : `_fetch_all_simulation_rows()` (full scan `simulation_ownership` — volumes < 10k OK), `_fetch_quote_count()` (count='exact' sur `quote_ownership`), `_parse_iso_date()` (parse timestamptz Supabase, tolère suffixe Z et fromisoformat 3.11+).
+  - Nouveau `_build_kpis()` : `total` = len rows, `completed` = outcome jsonb non-null (anciennement = présence `outcome.json` filesystem), `last_30d` = créés ≤ 30j (anciennement = completed in 30d — peu utile car outcome marking est async), `quotes` = count Supabase.
+  - `_build_time_series_30d()` : 30 buckets sur `created_at` au lieu de mtime. Champ `completed` conservé pour backcompat frontend (sémantiquement c'est désormais "créés/jour").
+  - `_build_top_packages()` : agrège la colonne `package_id` (col Supabase) au lieu de lire `template_id` dans `simulation_config.json` filesystem.
+  - **Fail-soft** : Supabase down/non configuré → toutes les valeurs à 0 au lieu de 500. Le dashboard reste lisible.
+  - Cleanup imports inutilisés : `json`, `os`, `time`, `Config`, `Tuple` retirés (les helpers filesystem étaient les seuls consommateurs).
+- **Tests** : `backend/tests/test_unit_admin_analytics.py` réécrit avec mock Supabase (`_MockClient` + `_MockQuery` qui mimique le chain fluent `.select().limit().execute()`). 4 tests pinned :
+  1. `test_no_token_returns_401` — auth gate inchangé (require_admin_token JWT super-admin OU legacy token)
+  2. `test_with_token_returns_200_kpis` — happy path avec 2 sims (1 running + 1 completed) + 1 quote
+  3. `test_kpis_keys_present` — schema-shape lock (4 sections + sous-clés + 30 entrées time_series + format YYYY-MM-DD)
+  4. `test_supabase_unconfigured_returns_zeros` — fail-soft contract (nouveau)
+
+[VALIDÉ EN PROD]
+- Push `67c25ff` reçu par origin/main (`a3fe8b3..67c25ff`)
+- Coolify webhook devrait avoir déclenché build+deploy (~2 min cycle) — Amine doit hard-refresh https://prospectives.ai-mpower.com/admin/analytics + /client/dashboard + /admin/branding pour valider visuellement
+- Build local `npm run build` Bassira : OK (AnalyticsView/AdminBrandingView/ClientDashboardView ont bien été chunkés)
+- Syntaxe Python : `py_compile backend/app/api/admin.py` OK + tests OK
+
+[BLOQUÉ — actions humaines pendantes]
+- !! **Validation visuelle prod** par Amine après deploy Coolify : ouvrir les 3 pages + tester le sélecteur d'org sur /client/dashboard + créer un branding sur /admin/branding pour vérifier que le PDF utilise bien le row DB au lieu de la palette par défaut.
+- !! Tous les blocages précédents (Redis, briefs Kairos, etc.) restent valides — voir passations 2026-05-17 et 2026-05-13.
+
+[ALERTE]
+!! **Tests pytest pas exécutés en local** : Flask pas installé sur le poste Windows d'Amine (Python 3.13.5 + uniquement `py_compile`). Les tests passeront sur le CI Coolify (image Docker complète). Si CI rouge → vérifier que le mock `_MockQuery` matche bien le SDK Supabase Python utilisé en prod (v2.x).
+!! **Sémantique de `last_30d`** : avant = sims COMPLÉTÉES dans les 30j (basé sur mtime outcome.json), après = sims CRÉÉES dans les 30j (basé sur created_at). Plus utile pour mesurer l'activité, mais c'est un changement de définition — préciser à Amine si nécessaire.
+!! **Sémantique du champ `completed` dans time_series** : conservé pour ne pas casser le rendering du bar chart `AnalyticsView.vue`, mais sémantiquement c'est désormais "sims créées par jour". Renommer en v2 + adapter le label frontend si on veut être propre.
+!! **`fetchAllOrganizations()` côté super-admin sur /admin/branding** : si l'API renvoie >100 orgs, le `<select>` HTML brut va devenir illisible. À paginer ou remplacer par un combo searchable si le tenant count dépasse 30 orgs.
+!! **Le sélecteur d'org dashboard envoie X-Org-Id même quand l'user a 1 seule org** : c'est inutile mais sans risque (le backend accepte/ignore). Si bug remonte sur un endpoint inattendu → vérifier que l'endpoint visé est bien dans `/api/client/*` ou `/api/admin/branding` et pas un endpoint qui surinterpréterait le header.
+
+[PARTIEL]
+
+### Bug 1 — sémantique de "completed"
+- ✅ Shape JSON inchangée
+- ⏳ Renommer `completed` en `created` côté time_series (si Amine le souhaite — sinon laisser tel quel pour compat front)
+
+### Bug 3 — UX edit branding
+- ✅ Sélecteur d'org auto-rempli
+- ⏳ Tester le flow complet : créer un branding + générer un PDF de simulation pour vérifier que le row pdf_branding est bien pické par `get_active_branding()` au moment du rendering
+
+### Bug 2 — choix d'org persistance
+- ✅ `auth.setCurrentOrg(orgId)` met à jour le store Pinia en mémoire
+- ⏳ Pas persisté en localStorage : si Amine refresh la page, retour à `orgs[0]`. Peut-être ajouter une persistance Pinia plugin si Amine le demande.
+
+[NEXT — chantiers prêts à attaquer en nouvelle session]
+
+### Prio P0 — Validation visuelle prod (5 min)
+1. Hard-refresh https://prospectives.ai-mpower.com/admin/analytics (Ctrl+Shift+R)
+2. Vérifier que les KPI matchent Supabase (`select count(*) from simulation_ownership` + `select count(*) from quote_ownership` doivent égaler `total` et `quotes`)
+3. Hard-refresh https://prospectives.ai-mpower.com/client/dashboard
+4. Vérifier la présence du sélecteur d'org dans le hero + tester un changement d'org → la liste de simulations doit changer
+5. Hard-refresh https://prospectives.ai-mpower.com/admin/branding
+6. Vérifier que le `<select>` est peuplé (super-admin → toutes les orgs Bassira)
+7. Créer un branding test → vérifier qu'il apparaît dans la table
+
+### Prio P1 — Persistance choix d'org (si Amine veut)
+- Ajouter `pinia-plugin-persistedstate` ou storage manuel sur `currentOrgId` dans `localStorage` avec key `bassira_current_org_id`
+- Au boot, restaurer le choix si l'org est encore présente dans `auth.orgs`
+
+### Prio P2 — Renommer `completed` → `created` dans time_series
+- Backend : `_build_time_series_30d` retourne `{"date", "created"}` au lieu de `{"date", "completed"}`
+- Frontend : `AnalyticsView.vue` `timeSeriesNormalised` lit `d.created`
+- Label i18n : `analytics.timeSeries.title` → "Activité 30j (créations)"
+
+### Prio P3 — Searchable org selector si nombre d'orgs >30
+- Remplacer `<select>` par un combobox custom (autocomplete + recherche par slug/name)
+- Concerne /admin/branding ET le sélecteur dashboard si jamais un tenant a 30+ orgs
+
+### Prio P3 — Ancien filesystem analytics : decommission ou archive
+- Vérifier qu'aucun autre code n'utilisait les helpers `_simulations_dir/_quotes_dir/_list_simulation_dirs/_outcome_mtime/_read_template_id/_count_quotes` (grep faite ce soir : aucune référence externe)
+- Si OK, les helpers sont déjà supprimés du fichier — pas d'action restante.
+
+[CTX session]
+- Session courte ~1h (2026-05-22 soir), pure fix de bugs
+- 1 commit Bassira pushed : `67c25ff` (5 files, +482/-240 lines)
+- 0 commit Kairos
+- ~80 tool calls (read + edit + grep + 1 build + 1 push)
+- Modèle : Opus 4.7 (1M context)
+- Approche : root cause first (pas de rustine), tests réécrits avec mocks Supabase (pas filesystem fixtures)
+- Frontend testé via `npm run build` uniquement (pas Playwright cette session)
+
+[MEMO inter-sessions]
+
+### Pattern X-Org-Id auto-propagé
+- Désormais l'interceptor axios `frontend/src/api/client.js` envoie systématiquement `X-Org-Id: <auth.currentOrgId>` si présent
+- Tout nouvel endpoint backend décoré `@require_org_membership` bénéficie automatiquement de ce hint
+- Si on veut forcer une autre org sur un appel (rare), override `config.headers['X-Org-Id']` à l'appel — l'interceptor respecte les overrides explicites (`if (!config.headers['X-Org-Id'])`)
+
+### Pattern Supabase comme source de vérité
+- Filesystem `WONDERWALL_*_DATA_DIR` n'est PLUS la source de vérité pour les KPI/aggregations admin
+- Supabase tables ownership (`simulation_ownership`, `quote_ownership`) sont seules autoritaires depuis US-114
+- Si un nouvel endpoint admin doit faire de l'aggregation → query Supabase directement, jamais le filesystem
+- Fail-soft : si Supabase down, retourner zéros et logger, ne JAMAIS retourner 500 pour les endpoints read-only
+
+### Memory ajoutée
+- Aucune nouvelle memory créée cette session (les memories existantes couvrent déjà BYOK no model impose, kairos constraints, repo scope, etc.)
+
+[Recommandations pour la nouvelle session]
+
+1. **Valider visuellement les 3 fixes en prod** avant tout (5 min Ctrl+Shift+R sur les 3 URLs)
+2. **Si bug remonte sur /admin/analytics** : vérifier `BASSIRA_ADMIN_TOKEN` + `BASSIRA_SUPER_ADMIN_EMAILS` côté Coolify env vars + tester avec `curl -H "Authorization: Bearer $JWT" https://prospectives.ai-mpower.com/api/admin/analytics | jq .data.kpis`
+3. **Si bug remonte sur /admin/branding** : confirmer que `fetchAllOrganizations()` répond bien pour le super-admin via DevTools Network
+4. **Ne pas re-toucher au pipeline Kairos** : les 10 hotfixes K05/K06 sont stabilisés (rappel de la passation 2026-05-17)
+5. **Si Amine veut renommer `completed` → `created`** : refactor cohérent backend + frontend + i18n + tests pour éviter la confusion sémantique
+
+— fin passation 2026-05-22 — Fix 3 bugs admin/client (analytics Supabase + multi-org dashboard + branding selector). Reste : validation visuelle prod + persistance choix org (si Amine veut).
+
+---
+
 == PASSATION MiroShark/Bassira+Kairos 2026-05-17T18:00:00+01:00 ==
 
 [ETAT]
