@@ -1,3 +1,84 @@
+== PASSATION MiroShark/Bassira 2026-07-08 (suite nuit) — US-204 code+infra fait, bassira.ma routé en prod ==
+
+[ETAT]
+- branche `main`, poussée à jour : `1b3bbdf` (dernier commit). Prod
+  https://prospectives.ai-mpower.com **ET** https://bassira.ma : **UP, 200 sur les deux**
+  (vérifié après déploiement auto Coolify sur le commit `1b3bbdf`, image
+  `u6pn5mr2pgi88s13un55pkzb_miroshark:1b3bbdf...`).
+- **US-204 (Resend/bassira.ma)** : code complet ET infra domaine réglée, mais **passes:false**
+  encore — 3 actions restantes listées dans [BLOQUÉ]. Détail technique complet dans
+  `.ralph/progress.md` (section "Suite US-204").
+- **US-201/202/206** : toujours `passes:true` (inchangé depuis la passation précédente).
+- **US-203/205/207/208** : toujours `pending`/bloquées, inchangé.
+
+[FAIT cette session]
+1. US-204 : migration SQL `20260707_002_footer_bassira_ma.sql` (footer_right default +
+   backfill), fallbacks code (`admin_branding.py`, `AdminBrandingView.vue`), liens marketing
+   des 5 templates email + lien méthodologie + footer PDF devis → `bassira.ma`. `.env.example`
+   documente RESEND_API_KEY/RESEND_FROM_EMAIL/EMAIL_*.
+2. **Découverte + fix infra domaine bassira.ma en 3 couches** (avec confirmation Amine à
+   chaque étape à risque) :
+   - Ingress local `~/.cloudflared/config-nahda.yml` (serveur `serveuria@192.168.100.11`) :
+     backup + ajout `bassira.ma → localhost:80`.
+   - Coolify : app `miro-shark` (uuid `u6pn5mr2pgi88s13un55pkzb`) — domaine ajouté via
+     `docker_compose_domains` (API, format `{"<service>":{"name":...,"domain":"a,b"}}`) +
+     `POST /restart` (régénère les labels Traefik).
+   - **Cause racine réelle** : le tunnel Cloudflare `7156c3f9-...` est **remote-managed**
+     (`source: "cloudflare"` sur `GET .../cfd_tunnel/{id}/configurations`) — le fichier local
+     `config-nahda.yml` est ignoré par le process en cours d'exécution malgré `--config`. Fix :
+     `PUT .../cfd_tunnel/{id}/configurations` avec l'ingress complet (version 113).
+   - Effet de bord : process `cloudflared` orphelin (lancé 2026-07-06, hors systemd) tué après
+     confirmation — ce tunnel sert ~15 apps d'autres projets (nizam-os, rami, taqwim, hafiz,
+     tamkin, saqr, nahda, mem...), non-régression vérifiée sur 3 d'entre elles.
+3. Correction collatérale : CRLF introduit par erreur sur 3 fichiers lors des Edit (`.env.example`,
+   `org_invitation.html`, `InteractionView.vue`) — détecté via diff anormalement large, corrigé
+   dans un commit séparé avant push.
+4. Push vers `origin/main` → déploiement auto Coolify confirmé sur le nouveau commit.
+
+[ALERTE]
+- ⚠️ **Secrets prod vus en clair pendant le diagnostic Coolify** (réponse API `GET
+  /applications/{uuid}` inclut `docker_compose` en clair : `SECRET_KEY`, `NEO4J_PASSWORD`,
+  `LLM_API_KEY`, `manual_webhook_secret_*`, `sentinel_token`). Fichier scratch local supprimé
+  immédiatement, aucune valeur affichée dans la conversation. Si Amine considère que le fait
+  qu'un agent IA ait pu LIRE ces valeurs via l'API constitue une exposition suffisante →
+  envisager rotation (SECRET_KEY, LLM_API_KEY notamment).
+- ⚠️ Les liens FONCTIONNELS (`invite_url` dans `invitations.py:162`, `BASSIRA_PUBLIC_URL`/
+  `download_url` dans `report_delivery.py:233,381`, `CORS_ORIGINS` default dans
+  `app/__init__.py:47`, `cta_link` PDF dans `models.py:153,188,222`) sont VOLONTAIREMENT restés
+  sur `prospectives.ai-mpower.com` — plus aucune raison technique de ne pas les migrer
+  maintenant que bassira.ma route correctement (vérifié), mais c'est un choix de scope à
+  trancher par Amine, pas fait unilatéralement. Prévoir une story dédiée (US-210 suggérée).
+
+[BLOQUÉ — actions restantes US-204]
+- !! Poser `RESEND_API_KEY` en env Coolify (nom seulement, pas fait — coffre local l'a déjà).
+- !! Appliquer `supabase/migrations/20260707_002_footer_bassira_ma.sql` en prod (comme US-203).
+- !! Devis test réel en prod pour vérifier réception email < 2 min avec liens bassira.ma.
+- (US-203 : migration `20260707_001_quote_payload.sql` toujours pas appliquée non plus — les 2
+  migrations en attente peuvent être posées dans la même session SQL par Amine.)
+
+[NEXT]
+1. Poser les 2 migrations SQL en attente (US-203 + US-204) + `RESEND_API_KEY` Coolify → ferme
+   US-204 (et débloque la vérification finale US-203).
+2. Continuer Bloc A : US-205 (Stripe, credentials manquants → sauter si toujours absents) →
+   US-207 (WSGI prod) → US-208 (Redis, dépend US-207).
+3. Envisager une story US-210 "domain cutover" pour migrer les 4 liens fonctionnels restants
+   vers bassira.ma maintenant que l'infra est prête (cf. [ALERTE]).
+
+[MEMO inter-sessions]
+- **Cloudflare Tunnel remote-managed — piège** : toujours vérifier `GET
+  /accounts/{id}/cfd_tunnel/{tunnel}/configurations` → champ `source`. `"cloudflare"` = éditer
+  le fichier local ne sert à rien pour le routage réel (juste `ingress validate` pour tester la
+  syntaxe) ; il faut `PUT` la config complète via l'API. Détail complet + gabarit PowerShell
+  dans `.ralph/progress.md`.
+- **Coolify docker-compose apps** : domaines dans `docker_compose_domains` (pas `fqdn`), format
+  `{"<service>": {"name": "<service>", "domain": "url1,url2"}}`, `name` requis (422 sinon).
+  `POST /restart` suffit pour régénérer les labels Traefik + recréer le conteneur (pas besoin
+  de push git pour un simple changement de domaine).
+- **Bash tool + PowerShell imbriqué** : TOUJOURS échapper `\$` pour CHAQUE variable PowerShell
+  dans un `-Command` passé depuis Bash — un seul `$var` non échappé se fait expand par Bash
+  AVANT d'atteindre PowerShell (piège rencontré ~4 fois cette session, y compris `$_` qui est
+  une variable spéciale Bash).
+
 == PASSATION MiroShark/Bassira 2026-07-07 (nuit) — Cadrage V2 ratifié + Ralph loop Bloc A en cours ==
 
 [ETAT]
