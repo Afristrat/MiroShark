@@ -443,3 +443,84 @@ class TestRenderPdfVariants:
         pdf_bytes = renderer.render_pdf(variant="public")
         assert isinstance(pdf_bytes, bytes)
         assert pdf_bytes[:4] == b"%PDF"
+
+
+# ── US-202 : encart « Méthode et limites » + marquage synthétique ─────────────
+
+
+class TestMethodLimits:
+    """L'encart de transparence est présent dans CHAQUE variante et chaque langue."""
+
+    TITLES = {
+        "fr": "Méthode et limites",
+        "en": "Method and limits",
+        "ar": "المنهجية والحدود",
+    }
+
+    @pytest.mark.parametrize("variant", list(_VARIANT_TEMPLATE))
+    @pytest.mark.parametrize("lang", ["fr", "en", "ar"])
+    def test_encart_present_toutes_variantes_et_langues(self, variant: str, lang: str) -> None:
+        rend = Renderer(context=_make_context(lang=lang), branding=None)
+        md = rend.render_md(variant=variant)
+        assert 'class="method-limits"' in md, f"encart absent ({variant}/{lang})"
+        assert self.TITLES[lang] in md, f"titre localisé absent ({variant}/{lang})"
+        assert "method-limits-marking" in md
+
+    @pytest.mark.parametrize("variant", list(_VARIANT_TEMPLATE))
+    def test_encart_rtl_pour_arabe(self, variant: str) -> None:
+        md = Renderer(context=_make_context(lang="ar"), branding=None).render_md(variant=variant)
+        assert '<div class="method-limits" dir="rtl">' in md
+
+    @pytest.mark.parametrize("variant", list(_VARIANT_TEMPLATE))
+    def test_encart_avant_le_corps(self, variant: str) -> None:
+        """L'encart arrive en tête de document (après la couverture), pas en annexe."""
+        md = Renderer(context=_make_context(), branding=None).render_md(variant=variant)
+        pos = md.find('class="method-limits"')
+        assert 0 < pos < len(md) * 0.5
+
+
+class TestSyntheticContentMarking:
+    """mark_synthetic_content écrit les métadonnées machine-readable (AI Act art. 50)."""
+
+    @staticmethod
+    def _blank_pdf() -> bytes:
+        from io import BytesIO
+        from pypdf import PdfWriter
+
+        w = PdfWriter()
+        w.add_blank_page(width=72, height=72)
+        buf = BytesIO()
+        w.write(buf)
+        return buf.getvalue()
+
+    def test_metadonnees_synthetic_true(self) -> None:
+        from io import BytesIO
+        from pypdf import PdfReader
+        from app.services.report_pdf.renderer import mark_synthetic_content
+
+        marked = mark_synthetic_content(self._blank_pdf())
+        meta = PdfReader(BytesIO(marked)).metadata
+        assert meta.get("/SyntheticContent") == "true"
+        assert meta.get("/AIGenerated") == "true"
+
+    def test_metadonnees_existantes_preservees(self) -> None:
+        from io import BytesIO
+        from pypdf import PdfReader, PdfWriter
+        from app.services.report_pdf.renderer import mark_synthetic_content
+
+        w = PdfWriter()
+        w.add_blank_page(width=72, height=72)
+        w.add_metadata({"/Producer": "test-producer"})
+        buf = BytesIO()
+        w.write(buf)
+
+        marked = mark_synthetic_content(buf.getvalue())
+        meta = PdfReader(BytesIO(marked)).metadata
+        assert meta.get("/Producer") == "test-producer"
+        assert meta.get("/SyntheticContent") == "true"
+
+    def test_sortie_est_un_pdf_valide(self) -> None:
+        from app.services.report_pdf.renderer import mark_synthetic_content
+
+        marked = mark_synthetic_content(self._blank_pdf())
+        assert marked[:4] == b"%PDF"

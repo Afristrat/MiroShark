@@ -294,6 +294,38 @@ blockquote {
 .callout-critical{ border-left-color: #B0260F;          background-color: #FBEEEA; }
 .callout-critical .callout-label { color: #B0260F; }
 
+/* ── Encart « Méthode et limites » (US-202, transparence AI Act art. 50) ────── */
+.method-limits {
+  margin: 14pt 0;
+  padding: 10pt 14pt 10pt 18pt;
+  border-left: 4pt solid var(--wi-mint);
+  background-color: #F0F7F3;
+  border-radius: 2pt;
+  page-break-inside: avoid;
+  font-size: 9pt;
+}
+
+.method-limits p {
+  margin: 4pt 0;
+  color: var(--wi-charcoal);
+}
+
+.method-limits-marking {
+  display: block;
+  margin-top: 6pt;
+  font-size: 8pt;
+  letter-spacing: 0.3pt;
+  text-transform: uppercase;
+  color: var(--wi-mint);
+}
+
+/* En RTL (dir posé sur le div par le template), la bordure passe à droite. */
+.method-limits[dir="rtl"] {
+  border-left: none;
+  border-right: 4pt solid var(--wi-mint);
+  padding: 10pt 18pt 10pt 14pt;
+}
+
 /* ── Pull quotes (citations agents, B11) ────────────────────────────────────── */
 .pull-quote {
   margin: 12pt 0;

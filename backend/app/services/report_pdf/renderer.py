@@ -219,6 +219,10 @@ class Renderer:
         # 7. Rendu WeasyPrint
         pdf_bytes = _render_weasyprint(full_html, css_text, self.context)
 
+        # 8. Marquage machine-readable du contenu synthétique (US-202,
+        #    EU AI Act art. 50) — lisible par pypdf/pikepdf/exiftool.
+        pdf_bytes = mark_synthetic_content(pdf_bytes)
+
         return pdf_bytes
 
     # ── Méthodes privées ───────────────────────────────────────────────────────
@@ -557,3 +561,41 @@ def _escape_html(text: str) -> str:
         .replace('"', "&quot;")
         .replace("'", "&#x27;")
     )
+
+
+def mark_synthetic_content(pdf_bytes: bytes) -> bytes:
+    """Marque un PDF comme contenu synthétique dans ses métadonnées (US-202).
+
+    Obligation de transparence (EU AI Act art. 50) : le document doit être
+    détectable comme généré artificiellement dans un format machine-readable.
+    Écrit dans le dictionnaire Info du PDF (lisible par pypdf, pikepdf,
+    exiftool) :
+        /SyntheticContent = true
+        /AIGenerated      = true
+    Les métadonnées existantes (Producer WeasyPrint, etc.) sont préservées.
+
+    Args:
+        pdf_bytes: Bytes d'un PDF valide.
+
+    Returns:
+        Bytes du même PDF avec les métadonnées de marquage ajoutées.
+
+    Raises:
+        ImportError: Si pypdf n'est pas installé (même dépendance que le
+                     filigrane, cf. watermark.py).
+    """
+    from io import BytesIO
+
+    try:
+        from pypdf import PdfWriter
+    except ImportError as exc:  # pragma: no cover - dépendance déjà requise
+        raise ImportError("pypdf >= 4 est requis pour le marquage synthétique") from exc
+
+    writer = PdfWriter(clone_from=BytesIO(pdf_bytes))
+    writer.add_metadata({
+        "/SyntheticContent": "true",
+        "/AIGenerated": "true",
+    })
+    out = BytesIO()
+    writer.write(out)
+    return out.getvalue()

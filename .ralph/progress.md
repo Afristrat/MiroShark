@@ -52,6 +52,21 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 
 ## Log d'itérations
 
+### 2026-07-07 — US-202 Encart « Méthode et limites » + marquage synthétique (V2-A-blocA)
+
+- **Statut** : passes:true. pytest 1660 passed / 0 failed (23 nouveaux tests) + ruff clean.
+- **Fait** : partiel `_method_limits.md.j2` trilingue (fr/en/ar, dict Jinja sélectionné
+  par context.lang, dir=rtl explicite pour l'arabe) inclus dans les 4 variantes
+  (_full après cover, exec/public après l'intro, one-pager compact dans le header) ;
+  CSS `.method-limits` dans pdf_brand.css.j2 (pattern callout-info, bordure droite en
+  RTL) ; `mark_synthetic_content()` dans renderer.py — étape 8 de render_pdf, écrit
+  /SyntheticContent=true + /AIGenerated=true dans le dict Info via pypdf
+  (clone_from préserve les métadonnées existantes) — conformité AI Act art. 50.
+- **Patterns utiles** : render_md() est testable SANS WeasyPrint (sortie Markdown) —
+  toujours tester les templates à ce niveau ; pypdf PdfWriter().add_blank_page() permet
+  de tester le post-processing PDF sans GTK ; les templates .md.j2 acceptent le HTML
+  brut (markdown-it le laisse passer) → les blocs stylés passent par des div+classes.
+
 ### 2026-07-07 — US-201 Repositionnement « stress-test de décision » (chantier V2-A-blocA)
 
 - **Statut** : passes:true. Build vite OK (36,9 s) + pytest backend 1637 passed / 0 failed
@@ -75,6 +90,13 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
   scratchpad us201_locales.py.
 - **Piège évité** : le hook bash-guard bloque les heredocs contenant des motifs grep —
   passer par un fichier .py dans le scratchpad.
+- **Addendum (même commit)** : le hook pre-commit exécute Ruff sur TOUT le repo → la
+  dette Python pré-existante (319 erreurs) bloquait tout commit. Soldée : ruff.toml créé
+  (per-file-ignores E402 justifiés scripts/tests/app __init__), 190 auto-fix, 4 F821 =
+  annotations forward jamais importées → imports TYPE_CHECKING, E741 l→ln, F841 (binding
+  retiré si l'appel a un effet de bord, ligne supprimée si littéral pur), variable morte
+  in_blank (9 écritures, 0 lecture) purgée. `ruff check .` = All checks passed → devient
+  un gate de facto pour toutes les stories suivantes. pytest re-passé : 1637 OK.
 
 ### 2026-05-05 — US-109 + US-110 + US-111 + US-112 Fix ReportView + timeline + chat + agents (worktree agent-aa6c11cd)
 

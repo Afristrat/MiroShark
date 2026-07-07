@@ -26,6 +26,8 @@ branding_version: {{ branding_version | default('default') }}
 
 ---
 
+{% include '_method_limits.md.j2' %}
+
 ## 3 Enseignements Clés
 
 {% set takeaways = context.executive_takeaways if context.executive_takeaways else [] %}

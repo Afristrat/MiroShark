@@ -22,6 +22,8 @@ branding_version: {{ branding_version | default('default') }}
 
 ---
 
+{% include '_method_limits.md.j2' %}
+
 {% if context.kpi_hero %}
 ## KPI Héro
 

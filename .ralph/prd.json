@@ -4526,15 +4526,17 @@
         "Encart rendu correctement en RTL pour la variante arabe",
         "Tests backend pytest verts"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-201"
       ],
       "metadata": {
         "origin": "docs/04-feature-backlog.md (cadrage V2 2026-07-07, verdict ratifié)",
-        "adr": "docs/08-decisions-log.md"
+        "adr": "docs/08-decisions-log.md",
+        "validation": "pytest 1660 passed/0 failed (23 nouveaux tests : encart 4 variantes × 3 langues + RTL + position + marquage pypdf) + ruff clean",
+        "note": "One-pager (1 page par nature) : encart compact intégré à la page unique — la « page 2 » ne s'applique qu'aux variantes multi-pages"
       },
-      "completedAt": null
+      "completedAt": "2026-07-07T20:15:00+01:00"
     },
     {
       "id": "US-203",

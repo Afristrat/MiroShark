@@ -20,6 +20,8 @@ branding_version: {{ branding_version | default('default') }}
 
 **{{ context.framework | upper }}** · **{{ context.package }}** · {{ generated_at | format_date(lang=context.lang) }} · *Bassira / AIMPOWER*
 
+{% include '_method_limits.md.j2' %}
+
 </div>
 
 ---
