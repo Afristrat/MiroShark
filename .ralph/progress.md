@@ -1509,3 +1509,51 @@ Première validation visuelle live d'une simulation propre (Réforme Code du Tra
 - **Ne jamais éditer une migration déjà appliquée en prod** : même un simple changement de défaut
   de colonne part sur une nouvelle migration numérotée, avec backfill explicite des rows actives
   si le bug affecte des données déjà écrites.
+
+### Suite US-204 (même session) — résolution complète du routing bassira.ma
+
+**Diagnostic en 3 couches, chacune corrigée puis re-testée avant de passer à la suivante** :
+1. **Ingress cloudflared local** (`~/.cloudflared/config-nahda.yml` sur `serveuria@192.168.100.11`,
+   service `cloudflared-nahda.service`) — ajout `hostname: bassira.ma → http://localhost:80`
+   (backup timestampé avant édition, convention déjà en place dans ce dossier :
+   `config-nahda.yml.bak-YYYYMMDD-HHMMSS-<raison>`).
+2. **Coolify Traefik** — l'app `miro-shark` (uuid `u6pn5mr2pgi88s13un55pkzb`, build_pack
+   `dockercompose`) stocke ses domaines dans le champ `docker_compose_domains` (PAS `fqdn`/`domains`,
+   ceux-là sont pour les apps non-compose). Format attendu par l'API PATCH
+   `/api/v1/applications/{uuid}` : `{"docker_compose_domains": {"<service>": {"name": "<service>",
+   "domain": "http://a.com:PORT,http://b.com:PORT"}}}` — le champ `name` est requis (erreur 422 sinon).
+   Après PATCH, un `POST /api/v1/applications/{uuid}/restart` régénère les labels Traefik +
+   recrée le conteneur (nouveau nom `-<timestamp>`) — un simple `docker restart` n'aurait PAS
+   régénéré les labels (ils sont embarqués dans le compose au moment du `deploy`).
+3. **CAUSE RACINE réelle (les 2 couches ci-dessus étaient nécessaires mais pas suffisantes)** :
+   le tunnel Cloudflare `7156c3f9-...` est en **mode remote-managed** — `GET
+   /accounts/{id}/cfd_tunnel/{tunnel}/configurations` renvoie `"source": "cloudflare"`. Dans ce
+   mode, cloudflared **ignore le bloc `ingress:` du fichier local** malgré `--config
+   config-nahda.yml` explicite ; il charge l'ingress poussé via l'API (confirmé par
+   `journalctl -u cloudflared-nahda | grep "Updated to new configuration"` qui affichait l'ancienne
+   liste SANS bassira.ma, alors que `cloudflared tunnel --config ... ingress validate` sur le
+   fichier local validait bien la nouvelle règle — deux sources de vérité désynchronisées). Fix :
+   `PUT /accounts/{id}/cfd_tunnel/{tunnel}/configurations` avec le tableau `ingress` complet
+   (récupéré via GET, entrée insérée, repoussé tel quel — **jamais retaper l'ingress à la main**,
+   57 entrées, une seule oubliée = outage sur une autre app du tunnel partagé).
+4. **Effet de bord découvert en chemin** : un process `cloudflared` **orphelin** tournait depuis
+   la veille (`ps aux` montrait 2 process pour `config-nahda.yml`, l'un lancé via `systemctl`,
+   l'autre via un `bash -c ... >>nahda-reload.log` hors service, PID vivant depuis 2026-07-06) —
+   con inoffensif tant qu'il servait le même contenu, mais un doublon de connecteur pour un tunnel
+   remote-managed peut server une version différente s'il a démarré avant un push distant. Tué
+   après confirmation explicite (le tunnel sert ~15 apps d'autres projets — nizam-os, rami, taqwim,
+   hafiz, tamkin, saqr, nahda, mem...).
+
+**Pattern à retenir** : sur une infra Cloudflare Tunnel partagée entre projets, **toujours vérifier
+`GET .../cfd_tunnel/{id}/configurations` → champ `source`** avant de supposer qu'éditer le fichier
+`config-nahda.yml` local suffit. `source: "cloudflare"` = remote-managed = le fichier local ne sert
+plus qu'à documenter/tester (`ingress validate`), pas à router — il faut pousser via l'API. Ne
+jamais partir du principe qu'une convention d'édition de fichier observée dans l'historique
+(nombreux `.bak-*`) est encore le mécanisme actif : le mode remote-managed a pu être activé plus
+tard (ici confirmé `created_at` du jour même de la session, avant mes propres modifications).
+
+**Validation finale** : `curl -D -` sur `https://bassira.ma/` renvoie les mêmes headers que
+`prospectives.ai-mpower.com` (Content-Type, Cache-Control, Vary — preuve qu'on atteint bien Flask,
+pas un 404 d'edge Cloudflare ni de Traefik). Non-régression vérifiée sur `nizam-os.com`, `saqr.ma`,
+`prospectives.ai-mpower.com` (tous 200 après chaque étape risquée : édition ingress, redeploy
+Coolify, kill du process orphelin, push de la config distante).
