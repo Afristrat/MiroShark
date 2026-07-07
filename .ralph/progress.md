@@ -52,6 +52,24 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 
 ## Log d'itérations
 
+### 2026-07-07 — US-206 Fermeture IDOR /api/report/* (V2-A-blocA)
+
+- **Statut** : passes:true. pytest 1688/1689 (1 flaky sans lien, cf. errors-log) + ruff clean.
+- **Fait** : `_authorize_simulation_access(simulation_id, allow_published)` dans
+  report.py — pattern « legacy si Supabase absent / sim non trackée, public si
+  is_published + allow_published=True, sinon JWT + super-admin OU membre org, 401/403
+  sinon ». Appliqué à get_report, download_report, get_report_by_simulation
+  (allow_published=True — préserve galerie /explore et share cards) ; generate_report,
+  chat_with_report_agent (allow_published=False — jamais public, ce sont des actions).
+  33 tests nouveaux dans test_idor.py (fermeture + préservation des chemins publics +
+  legacy + Supabase down).
+- **Piège évité** : `get_report_by_simulation` est un chemin de contournement de
+  `get_report` (même donnée, autre clé) — sans garde dessus aussi, l'IDOR restait ouvert
+  par la porte à côté.
+- **Hors scope volontaire** : /api/report/tools/search et /tools/statistics (mentionnés
+  dans l'audit) non gardés — ce sont des endpoints d'introspection graphe, pas de lecture
+  de rapport ; à traiter dans une story dédiée si besoin confirmé.
+
 ### 2026-07-07 — US-203 Payload devis → Supabase (code COMPLET, passes=false — action prod requise)
 
 - **Statut** : code complet et gates verts (pytest 1677/0, ruff clean) mais **passes=false**

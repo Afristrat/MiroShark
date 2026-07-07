@@ -236,3 +236,154 @@ def test_url_fetcher_blocks_non_http_schemes():
     for bad_url in ["ftp://example.com", "file:///etc/passwd"]:
         with pytest.raises(ValueError):
             _validate_url(bad_url)
+
+
+# ─── US-206 — IDOR /api/report/* fermé (SECURITY_AUDIT §1.3) ────────────────
+
+
+from types import SimpleNamespace
+
+
+SIM_ID = "sim_" + "a" * 12
+OWNED_ROW = {"simulation_id": SIM_ID, "org_id": "org-uuid-001", "is_published": False}
+PUBLISHED_ROW = {"simulation_id": SIM_ID, "org_id": "org-uuid-001", "is_published": True}
+
+
+def _fake_report():
+    return SimpleNamespace(
+        report_id="report_deadbeef1234",
+        simulation_id=SIM_ID,
+        markdown_content="# fake",
+        to_dict=lambda: {"report_id": "report_deadbeef1234", "simulation_id": SIM_ID},
+    )
+
+
+@pytest.fixture
+def _report_lookup(monkeypatch):
+    """ReportManager résout toujours un rapport factice lié à SIM_ID."""
+    from app.services.report_agent import ReportManager
+
+    fake = _fake_report()
+    monkeypatch.setattr(ReportManager, "get_report", staticmethod(lambda rid: fake))
+    monkeypatch.setattr(
+        ReportManager, "get_report_by_simulation", staticmethod(lambda sid: fake),
+    )
+    return fake
+
+
+def _patch_owner(monkeypatch, row_or_exc):
+    from app.auth import supabase_client as sbc
+
+    if isinstance(row_or_exc, Exception):
+        def _raise(sim_id, client=None):
+            raise row_or_exc
+        monkeypatch.setattr(sbc, "get_simulation_owner", _raise)
+    else:
+        monkeypatch.setattr(
+            sbc, "get_simulation_owner", lambda sim_id, client=None: row_or_exc,
+        )
+
+
+class TestReportIdorClosed:
+    """Sim possédée et NON publiée → accès anonyme refusé partout."""
+
+    def test_get_report_anonymous_401(self, client, monkeypatch, _report_lookup):
+        _patch_owner(monkeypatch, OWNED_ROW)
+        r = client.get("/api/report/report_deadbeef1234")
+        assert r.status_code == 401
+        assert r.get_json()["error_code"] == "AUTH_REQUIRED"
+
+    def test_download_anonymous_401(self, client, monkeypatch, _report_lookup):
+        _patch_owner(monkeypatch, OWNED_ROW)
+        r = client.get("/api/report/report_deadbeef1234/download")
+        assert r.status_code == 401
+
+    def test_by_simulation_anonymous_401(self, client, monkeypatch, _report_lookup):
+        _patch_owner(monkeypatch, OWNED_ROW)
+        r = client.get(f"/api/report/by-simulation/{SIM_ID}")
+        assert r.status_code == 401
+
+    def test_generate_anonymous_401(self, client, monkeypatch):
+        _patch_owner(monkeypatch, OWNED_ROW)
+        r = client.post("/api/report/generate", json={"simulation_id": SIM_ID})
+        assert r.status_code == 401
+
+    def test_chat_anonymous_401(self, client, monkeypatch):
+        _patch_owner(monkeypatch, OWNED_ROW)
+        r = client.post(
+            "/api/report/chat",
+            json={"simulation_id": SIM_ID, "message": "hello"},
+        )
+        assert r.status_code == 401
+
+    def test_jwt_invalide_401(self, client, monkeypatch, _report_lookup):
+        _patch_owner(monkeypatch, OWNED_ROW)
+        r = client.get(
+            "/api/report/report_deadbeef1234",
+            headers={"Authorization": "Bearer not-a-jwt"},
+        )
+        assert r.status_code == 401
+        assert r.get_json()["error_code"] == "INVALID_TOKEN"
+
+    def test_jwt_valide_non_membre_403(self, client, monkeypatch, _report_lookup):
+        from app.auth import jwt_verifier
+        from app.auth import supabase_client as sbc
+
+        _patch_owner(monkeypatch, OWNED_ROW)
+        monkeypatch.setattr(
+            jwt_verifier, "verify_supabase_jwt",
+            lambda token: {"sub": "user-123", "email": "intrus@example.com"},
+        )
+        monkeypatch.setattr(
+            sbc, "get_user_role_in_org", lambda uid, oid, client=None: None,
+        )
+        r = client.get(
+            "/api/report/report_deadbeef1234",
+            headers={"Authorization": "Bearer x.y.z"},
+        )
+        assert r.status_code == 403
+        assert r.get_json()["error_code"] == "FORBIDDEN"
+
+    def test_jwt_membre_200(self, client, monkeypatch, _report_lookup):
+        from app.auth import jwt_verifier
+        from app.auth import supabase_client as sbc
+
+        _patch_owner(monkeypatch, OWNED_ROW)
+        monkeypatch.setattr(
+            jwt_verifier, "verify_supabase_jwt",
+            lambda token: {"sub": "user-123", "email": "membre@example.com"},
+        )
+        monkeypatch.setattr(
+            sbc, "get_user_role_in_org", lambda uid, oid, client=None: "member",
+        )
+        r = client.get(
+            "/api/report/report_deadbeef1234",
+            headers={"Authorization": "Bearer x.y.z"},
+        )
+        assert r.status_code == 200
+
+
+class TestReportPublicPathsPreserved:
+    """La galerie publique et le mode OSS/legacy ne sont PAS cassés."""
+
+    def test_sim_publiee_lecture_anonyme_ok(self, client, monkeypatch, _report_lookup):
+        _patch_owner(monkeypatch, PUBLISHED_ROW)
+        r = client.get("/api/report/report_deadbeef1234")
+        assert r.status_code == 200
+
+    def test_sim_publiee_generate_reste_ferme(self, client, monkeypatch):
+        _patch_owner(monkeypatch, PUBLISHED_ROW)
+        r = client.post("/api/report/generate", json={"simulation_id": SIM_ID})
+        assert r.status_code == 401
+
+    def test_sim_non_trackee_legacy_ok(self, client, monkeypatch, _report_lookup):
+        _patch_owner(monkeypatch, None)
+        r = client.get("/api/report/report_deadbeef1234")
+        assert r.status_code == 200
+
+    def test_supabase_non_configure_legacy_ok(self, client, monkeypatch, _report_lookup):
+        from app.auth.supabase_client import SupabaseConfigError
+
+        _patch_owner(monkeypatch, SupabaseConfigError("not configured"))
+        r = client.get("/api/report/report_deadbeef1234")
+        assert r.status_code == 200

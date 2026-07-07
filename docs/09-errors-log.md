@@ -16,6 +16,18 @@
 
 ## Entrées (amorcées depuis les erreurs déjà payées en v1 — passations)
 
+### 2026-07-07 — test_md_hash_stable_with_deterministic_enricher flaky en suite complète
+- **Contexte** : `uv run pytest tests/` (gate US-206) — 1 failed sur 1689, mais **passe seul**
+  (`pytest tests/test_pdf_pipeline_e2e.py::...::test_md_hash_stable... -q` → 1 passed).
+- **Cause RACINE** : non identifiée — signature d'un problème d'isolation entre tests
+  (état partagé, mock qui fuit d'un test voisin, ou horodatage/hash sensible à l'ordre).
+  `report.py` (seul fichier touché par US-206) n'a aucun lien avec le pipeline PDF —
+  écarté comme cause.
+- **Fix** : aucun — non bloquant pour US-206, à investiguer si la flakiness persiste.
+- **Leçon généralisable** : avant d'imputer un échec pytest à un changement, le
+  re-lancer ISOLÉMENT — un échec en suite complète mais pas en isolé pointe vers une
+  fuite d'état inter-tests, pas vers le code applicatif modifié.
+
 ### 2026-05-22 — /admin/analytics affichait des KPI déconnectés de la réalité
 - **Contexte** : dashboard admin en prod Coolify.
 - **Cause RACINE** : KPI calculés depuis le filesystem (`outcome.json`, `quote_*.json`)

@@ -20,6 +20,93 @@ from ..utils.validation import validate_simulation_id
 logger = get_logger('miroshark.api.report')
 
 
+def _authorize_simulation_access(simulation_id, *, allow_published: bool):
+    """Contrôle d'accès des endpoints rapport (US-206 — ferme l'IDOR §1.3
+    du SECURITY_AUDIT_2026-05).
+
+    Règles :
+      1. Supabase non configuré (mode OSS/dev sans multitenant) → accès
+         legacy inchangé.
+      2. Simulation absente de ``simulation_ownership`` → legacy publique
+         (même sémantique que ``is_user_authorized_to_read``).
+      3. Simulation publiée + ``allow_published`` → accès public (galerie
+         /explore, embeds, share cards — à ne pas casser, cf. audit).
+      4. Sinon : JWT Supabase requis — super-admin OK, membre de l'org
+         propriétaire OK, tout le reste 403. Sans JWT : 401.
+
+    La livraison externe par lien signé n'emprunte PAS ces endpoints
+    (blueprint dédié ``/r/<token>``, report_delivery.py) — non affectée.
+
+    Returns:
+        ``None`` si l'accès est autorisé, sinon un tuple Flask
+        ``(jsonify(...), status)`` prêt à être retourné.
+    """
+    from ..auth import supabase_client as sbc
+    from ..auth import jwt_verifier
+    from ..auth.decorators import is_super_admin_email
+
+    def _deny(code: str, message: str, status: int):
+        return jsonify({
+            "success": False,
+            "error_code": code,
+            "error": message,
+        }), status
+
+    try:
+        owner = sbc.get_simulation_owner(simulation_id)
+    except sbc.SupabaseConfigError:
+        # Règle 1 — déploiement sans Supabase : comportement legacy.
+        return None
+    except Exception as exc:  # noqa: BLE001 — fail-closed (audit)
+        logger.error(
+            "report access check failed for sim=%s: %s",
+            simulation_id, exc.__class__.__name__,
+        )
+        return _deny("ACCESS_CHECK_FAILED", "Authorization check failed.", 403)
+
+    if owner is None:
+        # Règle 2 — sim non trackée = legacy publique.
+        return None
+
+    if allow_published and bool(owner.get("is_published")):
+        # Règle 3 — contenu volontairement public.
+        return None
+
+    # Règle 4 — JWT obligatoire.
+    auth_header = request.headers.get("Authorization", "")
+    token = auth_header[7:].strip() if auth_header.startswith("Bearer ") else ""
+    if not token:
+        return _deny(
+            "AUTH_REQUIRED",
+            "Authentication is required to access this report.",
+            401,
+        )
+    try:
+        claims = jwt_verifier.verify_supabase_jwt(token)
+    except Exception:  # noqa: BLE001 — InvalidTokenError et variantes
+        return _deny("INVALID_TOKEN", "Invalid or expired token.", 401)
+
+    email = claims.get("email") or ""
+    if is_super_admin_email(email):
+        return None
+
+    user_id = claims.get("sub") or ""
+    org_id = owner.get("org_id")
+    if user_id and org_id:
+        try:
+            role = sbc.get_user_role_in_org(user_id, str(org_id))
+        except Exception:  # noqa: BLE001 — fail-closed
+            role = None
+        if role:
+            return None
+
+    return _deny(
+        "FORBIDDEN",
+        "You are not authorized to access this report.",
+        403,
+    )
+
+
 @report_bp.before_request
 def _validate_url_simulation_id():
     """Reject requests whose URL-derived simulation_id could cause path traversal."""
@@ -81,6 +168,12 @@ def generate_report():
                 "error_code": "INVALID_SIMULATION_ID",
                 "error": str(exc)
             }), 400
+
+        denied = _authorize_simulation_access(
+            simulation_id, allow_published=False,
+        )
+        if denied is not None:
+            return denied
 
         force_regenerate = data.get('force_regenerate', False)
 
@@ -360,6 +453,12 @@ def get_report(report_id: str):
                 "error": f"Report not found: {report_id}"
             }), 404
 
+        denied = _authorize_simulation_access(
+            report.simulation_id, allow_published=True,
+        )
+        if denied is not None:
+            return denied
+
         return jsonify({
             "success": True,
             "data": report.to_dict()
@@ -389,6 +488,14 @@ def get_report_by_simulation(simulation_id: str):
         }
     """
     try:
+        # Même objet que get_report par une autre clé — même garde (US-206),
+        # sinon la fermeture de l'IDOR serait contournable par ce chemin.
+        denied = _authorize_simulation_access(
+            simulation_id, allow_published=True,
+        )
+        if denied is not None:
+            return denied
+
         report = ReportManager.get_report_by_simulation(simulation_id)
 
         if not report:
@@ -430,6 +537,12 @@ def download_report(report_id: str):
                 "error_code": "REPORT_NOT_FOUND",
                 "error": f"Report not found: {report_id}"
             }), 404
+
+        denied = _authorize_simulation_access(
+            report.simulation_id, allow_published=True,
+        )
+        if denied is not None:
+            return denied
 
         md_path = ReportManager._get_report_markdown_path(report_id)
 
@@ -545,6 +658,12 @@ def chat_with_report_agent():
                 "error_code": "MISSING_FIELD",
                 "error": "Please provide message"
             }), 400
+
+        denied = _authorize_simulation_access(
+            simulation_id, allow_published=False,
+        )
+        if denied is not None:
+            return denied
 
         # Get simulation and project info
         manager = SimulationManager()

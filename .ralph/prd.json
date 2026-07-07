@@ -4607,13 +4607,14 @@
         "backend/tests/test_idor.py étendu pour couvrir les 4 endpoints, vert",
         "Le flux de delivery par URL signée (report_deliveries) fonctionne toujours (non-régression)"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [],
       "metadata": {
         "origin": "docs/04-feature-backlog.md (cadrage V2 2026-07-07, verdict ratifié)",
-        "adr": "docs/08-decisions-log.md"
+        "adr": "docs/08-decisions-log.md",
+        "validation": "pytest 1688 passed (33 nouveaux tests IDOR) + ruff clean. 1 flaky test_md_hash_stable... sans lien (passe isolé) — consigné docs/09-errors-log.md"
       },
-      "completedAt": null
+      "completedAt": "2026-07-07T21:40:00+01:00"
     },
     {
       "id": "US-207",
