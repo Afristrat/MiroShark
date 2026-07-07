@@ -7,8 +7,11 @@ Uses preset scripts + LLM-powered configuration parameter generation
 import os
 import json
 import shutil
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, TYPE_CHECKING
 from dataclasses import dataclass, field
+
+if TYPE_CHECKING:
+    from ..storage.graph_storage import GraphStorage
 from datetime import datetime
 from enum import Enum
 

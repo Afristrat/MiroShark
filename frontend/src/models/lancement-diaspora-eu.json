@@ -105,8 +105,17 @@
       "يُحدث الأثر الفيروسي لفيديو مؤثر طعام حلال متوسط (أكثر من مليون مشترك) عادةً نفاد مخزون محلياً لكنه لا يُحرّك الاختراق هيكلياً إلا إذا استوعبت السلسلة اللوجستية الذروة · نفاد المخزون بحدّ ذاته أثر سلبي قصير الأمد."
     ]
   },
-  "brier_illustrative": 0.20,
-  "tags": ["marketing", "lancement", "diaspora", "MENA", "Europe", "halal", "bio", "GD", "export"],
+  "tags": [
+    "marketing",
+    "lancement",
+    "diaspora",
+    "MENA",
+    "Europe",
+    "halal",
+    "bio",
+    "GD",
+    "export"
+  ],
   "cta_label": {
     "fr": "Commander une simulation pour votre lancement diaspora ou export",
     "en": "Order a simulation for your diaspora or export launch",

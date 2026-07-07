@@ -246,7 +246,7 @@ class Neo4jStorage(GraphStorage):
 
         entity_embeddings = all_embeddings[:len(entities)]
         relation_embeddings = all_embeddings[len(entities):]
-        logger.info(f"[add_text] Embedding done, writing to Neo4j...")
+        logger.info("[add_text] Embedding done, writing to Neo4j...")
 
         with self._driver.session() as session:
             # Create episode node
@@ -884,7 +884,7 @@ class Neo4jStorage(GraphStorage):
         return {
             "uuid": props.get("uuid", ""),
             "name": props.get("name", ""),
-            "labels": [l for l in labels if l != "Entity"] if labels else [],
+            "labels": [ln for ln in labels if ln != "Entity"] if labels else [],
             "summary": props.get("summary", ""),
             "attributes": attributes,
             "created_at": props.get("created_at"),

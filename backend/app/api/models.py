@@ -352,7 +352,6 @@ def _build_pdf(model: Dict[str, Any], lang: str) -> bytes:  # noqa: C901
     orange  = Color(*_COLOR_ORANGE)
     terra   = Color(*_COLOR_TERRACOTA)
     green   = Color(*_COLOR_GREEN)
-    cream   = Color(*_COLOR_CREAM)
     ink     = Color(*_COLOR_INK)
     muted   = Color(*_COLOR_MUTED)
     cream_hex      = HexColor("#FAF7F2")
@@ -385,7 +384,7 @@ def _build_pdf(model: Dict[str, Any], lang: str) -> bytes:  # noqa: C901
                         spaceAfter=14*mm, alignment=align_default)
     cover_meta_lab  = S("CML", fontSize=8,  fontName=font_bold,    textColor=muted,
                         spaceAfter=1*mm, alignment=align_default)
-    cover_meta_val  = S("CMV", fontSize=11, fontName=font_bold,    textColor=ink,
+    S("CMV", fontSize=11, fontName=font_bold,    textColor=ink,
                         spaceAfter=6*mm, alignment=align_default)
     cover_footer    = S("CF",  fontSize=8,  fontName=font_regular, textColor=muted, leading=12,
                         alignment=align_default)
@@ -399,7 +398,7 @@ def _build_pdf(model: Dict[str, Any], lang: str) -> bytes:  # noqa: C901
                         spaceAfter=4*mm, alignment=align_justify)
     body_md         = S("BM",  fontSize=10, fontName=font_regular, textColor=ink, leading=15,
                         spaceAfter=3*mm, alignment=align_justify)
-    body_sm         = S("BS",  fontSize=9,  fontName=font_regular, textColor=muted, leading=13,
+    S("BS",  fontSize=9,  fontName=font_regular, textColor=muted, leading=13,
                         spaceAfter=2*mm, alignment=align_default)
     bullet_md       = S("BUL", fontSize=10, fontName=font_regular, textColor=ink, leading=15,
                         leftIndent=14, spaceAfter=3*mm, alignment=align_default)

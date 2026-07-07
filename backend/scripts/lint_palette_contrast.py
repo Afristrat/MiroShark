@@ -217,7 +217,7 @@ def main() -> int:
 
     print("=" * 60)
     print("lint_palette_contrast — WCAG AA Contrast Check")
-    print(f"Palette source : app/services/report_pdf/_style.py")
+    print("Palette source : app/services/report_pdf/_style.py")
     print("=" * 60)
 
     if args.verbose:

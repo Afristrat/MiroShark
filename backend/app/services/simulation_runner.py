@@ -11,11 +11,14 @@ import threading
 import subprocess
 import signal
 import atexit
-from typing import Dict, Any, List, Optional, TextIO
+from typing import Dict, Any, List, Optional, TextIO, TYPE_CHECKING
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from queue import Queue
+
+if TYPE_CHECKING:
+    from ..storage.graph_storage import GraphStorage
 
 from ..utils.logger import get_logger
 from ..utils.validation import validate_simulation_id
@@ -498,7 +501,7 @@ class SimulationRunner:
         config_path = os.path.join(sim_dir, "simulation_config.json")
         
         if not os.path.exists(config_path):
-            raise ValueError(f"Simulation config does not exist, please call /prepare endpoint first")
+            raise ValueError("Simulation config does not exist, please call /prepare endpoint first")
         
         with open(config_path, 'r', encoding='utf-8') as f:
             config = json.load(f)

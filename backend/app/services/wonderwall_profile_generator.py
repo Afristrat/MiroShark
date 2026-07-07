@@ -666,7 +666,7 @@ class WonderwallProfileGenerator:
         }
 
         if not self.graph_id:
-            logger.debug(f"Skip knowledge graph search: graph_id not set")
+            logger.debug("Skip knowledge graph search: graph_id not set")
             return results
 
         comprehensive_query = f"All information, activities, events, relationships and background about {entity_name}"
@@ -772,7 +772,7 @@ class WonderwallProfileGenerator:
                 node_summary = node.get("summary", "")
                 
                 # Filter out default labels
-                custom_labels = [l for l in node_labels if l not in ["Entity", "Node"]]
+                custom_labels = [ln for ln in node_labels if ln not in ["Entity", "Node"]]
                 label_str = f" ({', '.join(custom_labels)})" if custom_labels else ""
                 
                 if node_summary:
@@ -986,7 +986,7 @@ class WonderwallProfileGenerator:
         
         # If meaningful content was extracted, mark as fixed
         if bio_match or persona_match:
-            logger.info(f"Extracted partial information from corrupted JSON")
+            logger.info("Extracted partial information from corrupted JSON")
             return {
                 "bio": bio,
                 "persona": persona,
@@ -994,7 +994,7 @@ class WonderwallProfileGenerator:
             }
         
         # 7. Complete failure, return basic structure
-        logger.warning(f"JSON fix failed, returning basic structure")
+        logger.warning("JSON fix failed, returning basic structure")
         return {
             "bio": entity_summary[:200] if entity_summary else f"{entity_type}: {entity_name}",
             "persona": entity_summary or f"{entity_name} is a {entity_type}."
@@ -1137,7 +1137,7 @@ IMPORTANT: Do NOT include karma, friend_count, follower_count, or statuses_count
         
         elif entity_type_lower in ["publicfigure", "expert", "faculty"]:
             return {
-                "bio": f"Expert and thought leader in their field.",
+                "bio": "Expert and thought leader in their field.",
                 "persona": f"{entity_name} is a recognized {entity_type.lower()} who shares insights and opinions on important matters. They are known for their expertise and influence in public discourse.",
                 "age": random.randint(35, 60),
                 "gender": random.choice(["male", "female"]),
@@ -1332,7 +1332,7 @@ IMPORTANT: Do NOT include karma, friend_count, follower_count, or statuses_count
                     user_name=self._generate_username(entity.name),
                     name=entity.name,
                     bio=f"{entity_type}: {entity.name}",
-                    persona=entity.summary or f"A participant in social discussions.",
+                    persona=entity.summary or "A participant in social discussions.",
                     source_entity_uuid=entity.uuid,
                     source_entity_type=entity_type,
                 )
@@ -1418,14 +1418,14 @@ IMPORTANT: Do NOT include karma, friend_count, follower_count, or statuses_count
             f"[Generated] {entity_name} ({entity_type})",
             f"{separator}",
             f"Username: {profile.user_name}",
-            f"",
-            f"[Bio]",
+            "",
+            "[Bio]",
             f"{profile.bio}",
-            f"",
-            f"[Detailed Persona]",
+            "",
+            "[Detailed Persona]",
             f"{profile.persona}",
-            f"",
-            f"[Basic Attributes]",
+            "",
+            "[Basic Attributes]",
             f"Age: {profile.age} | Gender: {profile.gender} | MBTI: {profile.mbti}",
             f"Profession: {profile.profession} | Country: {profile.country}",
             f"Interested Topics: {topics_str}",

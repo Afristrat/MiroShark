@@ -97,8 +97,16 @@
       "نادراً ما تتقارب أصوات اللجنة النهائية في المسارات المُحاكاة على خيار واحد: نمط شائع هو تخصيص 60-40 بين الخيار المهيمن واستثمار تنويعي أقلّي."
     ]
   },
-  "brier_illustrative": 0.19,
-  "tags": ["fonds-souverain", "investissement", "MENA", "Afrique", "M&A", "infrastructure", "agritech", "hydrogène-vert"],
+  "tags": [
+    "fonds-souverain",
+    "investissement",
+    "MENA",
+    "Afrique",
+    "M&A",
+    "infrastructure",
+    "agritech",
+    "hydrogène-vert"
+  ],
   "cta_label": {
     "fr": "Commander une simulation pour votre comité d'investissement",
     "en": "Order a simulation for your investment committee",

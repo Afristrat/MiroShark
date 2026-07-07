@@ -33,7 +33,6 @@ US-138 — fixes critiques découverts en validation prod 2026-05-07 :
 from __future__ import annotations
 
 import json
-import os
 import traceback
 from typing import Optional
 

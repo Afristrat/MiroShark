@@ -1,3 +1,83 @@
+== PASSATION MiroShark/Bassira 2026-07-07 — Cadrage V2 (np) + deep explore + fix 404 ==
+
+[ETAT]
+- branche `main` : commits de session = documents uniquement (aucun code touché — consigne
+  explicite d'Amine « je ne veux pas que tu codes »)
+- **10 documents de fondation V2 générés et validés** (validate_foundation.py : 0 erreur) :
+  docs/np-cadrage.md (journal + stress-test + verdict) · docs/01-app-spec.md ·
+  docs/02-data-dictionary.md · CLAUDE.md (racine, nouveau) · docs/04-feature-backlog.md ·
+  docs/05-integrations.md · docs/06-brand-brief.md · docs/07-legal-compliance.md ·
+  docs/08-decisions-log.md (9 ADR) · docs/09-errors-log.md · docs/10-execution-prompts.md
+- prod https://prospectives.ai-mpower.com : **404 RÉSOLU ce jour** (vérifié : racine 200,
+  /explore 200). Down silencieux depuis le 2026-07-01 : crash-loop au reboot serveur
+  (22 restarts > plafond 10) → conteneurs supprimés par le cleanup Docker quotidien →
+  404 Traefik. Redeploy via API Coolify + suppression d'un ollama orphelin. Cause du
+  crash initial non récupérable (hypothèse forte : OOM — swap hôte à 100 %, aucune
+  limite mémoire par conteneur). Détail complet : docs/09-errors-log.md entrée 2026-07-07.
+
+[FAIT cette session]
+- Deep explore par 5 sous-agents (backend, frontend, data/infra, produit/docs, recherche
+  marché sourcée ~13 URLs lues) — synthèses consolidées dans docs/np-cadrage.md
+- Flow np complet en mode autonome (réponses dérivées des preuves système) :
+  Phase 0→3 + validation. Niveau L6.
+- **VERDICT : GO conditionnel** — 3 conditions bloquantes AVANT investissement V2 :
+  1. AGPL-3.0 du fork à statuer (ADR-003 OUVERTE — publier/négocier/réécrire)
+  2. Abandon du claim prédictif (« Brier 0,18 vérifié » invérifiable) → positionnement
+     « stress-test de décision » (ADR-002, sourcée Bisbee 2024 + Simile)
+  3. P0 opérationnels : payload devis PII sur volume éphémère + SMTP absent + IDOR
+     /api/report + serveur dev Werkzeug en prod + Stripe US-113 jamais finie
+- Rapport skill understand-anything (v2.8.2) livré en début de session (pipeline 7 phases,
+  artefacts .understand-anything/, pièges) — matière pour une future SOP
+
+[BLOQUÉ — actions humaines]
+- !! **Ratifier le verdict GO conditionnel + le contre-argument 2.4** (np-cadrage § Phase 2)
+- !! **Questions dérangeantes 2.3** : (1) combien de clients payants réels ? (2) réponse à
+  « sur quelles données réelles ancrez-vous ces personas ? » (3) prêt à publier ou
+  négocier l'AGPL ?
+- !! EU AI Act Art. 50 applicable le **2026-08-02** (J-26) — US-202
+- !! Rapport 404 à intégrer (sous-agent fix-404-prod)
+
+[DIRECTIVES AMINE 2026-07-07 — post-livraison, TOUTES intégrées aux 10 documents]
+Voir docs/np-cadrage.md § « Directives d'Amine — 2026-07-07 » (12 points). Essentiel :
+Kairos→**Saqr** (Saqr et Nahda CONSOMMENT les sorties Bassira, US-218) · SearXNG non
+fiable → alternative headless en validation (ADR-012) · marché de prédiction inadapté
+Africa/ME → arènes configurables (ADR-011, US-216) · polyglotte intégral N langues
+front+back+livrables (US-217) · réécriture mono-stack OUVERTE (ADR-010) · LLM = LiteLLM
++ DeepSeek v4 Flash + fallback (ADR-004) · Resend via email AI-MPower, liens
+**bassira.ma toujours** (ADR-013) · pricing Stripe à créer (US-205) · dossier licence =
+domaine EXCLUSIF d'Amine, position : lignée MiroFish, sujet clos côté IA (ADR-003) ·
+vérifier dernière version MiroShark avant de coder · **MiroFish à faire cohabiter**
+(Bassira=B2B, canal MiroFish=B2G/grandes missions, pour Nahda). 3 agents de recherche
+RENTRÉS et intégrés (voir np-cadrage § Retours d'enquête) : ADR-012 tranché = OpenSERP
+self-hosted (+repli Serper) · ADR-011 outillé = 5 arènes sourcées + Delphi normalisateur
++ profils régionaux · ADR-004 confirmé (LiteLLM deepseek/ + fallbacks natifs, vigilance
+bug #26395) · upstream = 181 commits de retard (arbitrage US-220) · faits MiroFish remis
+à Amine dans ADR-003 (aucun lien technique MiroFish↔MiroShark trouvé à ce stade, les
+deux en AGPL-3.0, Zep Cloud = point souveraineté). Mémoire projet mise à jour (Saqr,
+périmètre juridique, SearXNG→OpenSERP, LiteLLM).
+
+[RATIFICATION AMINE 2026-07-07 SOIR — verdict GO, Bloc A LANCÉ]
+- ✓ ADR-012 validée (« ok pour les deux options ») : OpenSERP local + Serper.dev repli ;
+  ordre de déprovisionner SearXNG partout, codebase par codebase → **SOP-002 créée,
+  validée (check OK), commitée et POUSSÉE** sur Afristrat/sop (fc44c2e..4726450, branche
+  feat/sop-forge-v2, brouillon 0.1.0 — approbation Amine la passera en 1.0.0)
+- ✓ US-220 : MERGE SÉLECTIF upstream décidé → ADR-014 (priorités : sécurité Dependabot,
+  fix compose #238, fixes moteur ; i18n FR upstream arbitrée au cas par cas)
+- ✓ ADR-010 : cap mono-stack ACCEPTÉ (« go ») — Bloc A d'abord sur l'existant, stack
+  cible tranchée par Amine au démarrage du chantier réécriture
+- ✓ **Bloc A injecté dans .ralph/prd.json v2.0.0** : US-201→US-208 (chantier V2-A-blocA),
+  142 stories, 9 pending ; US-113 fermée administrativement (supersededBy US-205)
+- Question d'Amine en attente de réponse pédagogique : « arènes de simulation » (fournie
+  dans le message de session, à re-expliquer si besoin)
+
+[NEXT]
+1. Lancer le Ralph loop sur le chantier V2-A-blocA (US-201→US-208, ordre : 201→202,
+   203, 204, 205, 206, 207→208)
+2. Lancer moat-hunter avec 01-app-spec en input (recommandé AVANT gel définitif du backlog)
+3. Le plus petit test (2.7) : framing A/B « prédiction vs stress-test » sur 3 prospects
+   Apollo + email aaronjmars (licence) — 1 semaine, 0 €
+4. SOP « cadrage V2 d'une codebase existante » à capturer (/sop-new)
+
 == PASSATION MiroShark/Bassira+Kairos 2026-05-22T22:00:00+01:00 ==
 
 [ETAT]

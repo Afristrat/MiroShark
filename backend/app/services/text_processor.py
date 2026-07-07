@@ -123,7 +123,7 @@ class TextProcessor:
 
         raw_lines = text.split('\n')
         # Mark each line as citation-like or not
-        is_cite = [_looks_like_citation(l) for l in raw_lines]
+        is_cite = [_looks_like_citation(ln) for ln in raw_lines]
         # Only strip citation lines that are part of a run of 2+
         # (blank lines between citations count as part of the run)
         keep = [True] * len(raw_lines)
@@ -148,7 +148,7 @@ class TextProcessor:
                 for idx in range(i, j):
                     keep[idx] = False
             i = j
-        text = '\n'.join(l for l, k in zip(raw_lines, keep) if k)
+        text = '\n'.join(ln for ln, k in zip(raw_lines, keep) if k)
         text = re.sub(r'\n{3,}', '\n\n', text)
 
         # --- Deduplicate repeated lines (e.g. headers/footers in PDFs) ---

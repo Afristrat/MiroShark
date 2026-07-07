@@ -412,7 +412,6 @@ class Enricher:
         bearish = outcome.bearish_pct or 0.0
         polarized = (bullish > 60.0 and bearish < 20.0) or (bearish > 60.0 and bullish < 20.0)
         struct_polarization = "polarisation structurelle" in (outcome.verdict or "").lower()
-        nb_pivots = len(ctx.pivotal_moments)
         nb_strong_pivots = sum(1 for p in ctx.pivotal_moments if abs(p.delta_score) >= 0.27)
 
         # Calibration des scores : un terrain polarisé sans consensus favorise
@@ -1117,7 +1116,7 @@ class Enricher:
                 if line.strip() and not line.strip().startswith("#")
             ]
             # Filtre les lignes vides après sanitize
-            lines = [l for l in lines if l]
+            lines = [ln for ln in lines if ln]
             # Garde exactement 3 takeaways ; complète ou tronque si besoin
             while len(lines) < 3:
                 lines.append(_LLM_FALLBACK)

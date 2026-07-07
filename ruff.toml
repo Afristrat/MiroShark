@@ -1,0 +1,11 @@
+# Outillage qualité Python — amorce d'US-212 (posé le 2026-07-07 avec le hook pre-commit).
+# Règles : défauts Ruff (E4/E7/E9/F). Élargissement (isort, mypy, eslint front) → US-212.
+
+[lint.per-file-ignores]
+# Idiome assumé : sys.path / variables d'environnement configurés AVANT les imports
+# projet — réordonner casserait ces scripts et fixtures.
+"backend/scripts/*" = ["E402"]
+"backend/tests/*" = ["E402"]
+"scripts/*" = ["E402"]
+# warnings.filterwarnings doit précéder les imports tiers (commentaire en tête de fichier).
+"backend/app/__init__.py" = ["E402"]

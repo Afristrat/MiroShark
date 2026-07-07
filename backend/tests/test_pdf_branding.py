@@ -331,7 +331,6 @@ class TestUpdateBranding:
         assert result["name"] == "V2"
 
     def test_raises_on_not_found(self):
-        call_count = {"count": 0}
 
         def _table(name):
             chain = MagicMock()

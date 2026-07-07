@@ -24,7 +24,6 @@ from __future__ import annotations
 
 import os
 import sys
-import time
 from datetime import datetime
 from pathlib import Path
 
@@ -193,7 +192,6 @@ class TestGetRunStateOrphanIntegration:
         sim_id = "sim_aabbcc112233"
         sim_dir = tmp_path / sim_id
         sim_dir.mkdir()
-        state_file = sim_dir / "run_state.json"
         # Construis directement le state via _save_run_state sur un state mort
         state = runner.SimulationRunState(
             simulation_id=sim_id,

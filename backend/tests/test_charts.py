@@ -35,12 +35,8 @@ if str(_BACKEND) not in sys.path:
 
 # ── Import du module sous test ────────────────────────────────────────────────
 from app.services.report_pdf._style import (
-    WI_CHARCOAL,
     WI_CREAM,
-    WI_MINT,
-    WI_ORANGE,
     WI_SAND,
-    WI_TERRA,
     apply_causse_style,
 )
 from app.services.report_pdf.charts import ChartFactory, _placeholder_png

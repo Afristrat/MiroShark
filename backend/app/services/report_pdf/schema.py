@@ -37,7 +37,7 @@ from __future__ import annotations
 import re
 from typing import Any, Dict, List, Literal, Optional
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, Field, field_validator
 
 # ─── Regexes de validation des identifiants ──────────────────────────────────
 # Formats générés dans simulation_manager.py et report_agent.py :

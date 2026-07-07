@@ -137,7 +137,7 @@ def _wrap_text(
         lines.append(cur)
 
     # If we ran out of room, mark the last line with an ellipsis.
-    if len(lines) >= max_lines and len(words) > sum(len(l.split()) for l in lines):
+    if len(lines) >= max_lines and len(words) > sum(len(ln.split()) for ln in lines):
         last = lines[-1]
         while last and _text_width(draw, last + "…", font) > max_width:
             last = last[:-1].rstrip()
@@ -248,13 +248,11 @@ def render_share_card(summary: dict) -> bytes:
 
     # Fonts — sized for 1200px width.
     f_brand = _load_font(28, bold=True)
-    f_section = _load_font(18, bold=True)
     f_scenario = _load_font(48, bold=True)
     f_scenario_sm = _load_font(40, bold=True)  # used when text wraps to 3+ lines
     f_metric_label = _load_font(16, bold=True)
     f_metric_value = _load_font(36, bold=True)
     f_pct = _load_font(20, bold=True)
-    f_pct_label = _load_font(16, bold=True)
     f_footer = _load_font(18, bold=False)
     f_pill = _load_font(15, bold=True)
 

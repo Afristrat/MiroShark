@@ -21,7 +21,6 @@ from reportlab.platypus import (
     Paragraph,
     SimpleDocTemplate,
     Spacer,
-    PageBreak,
     HRFlowable,
 )
 
@@ -114,7 +113,6 @@ def md_inline_to_html(text: str) -> str:
 def parse_md_to_flowables(md_path: Path):
     flowables = []
     lines = md_path.read_text(encoding="utf-8").splitlines()
-    in_blank = True
     paragraph_buf = []
 
     def flush_paragraph():
@@ -141,26 +139,22 @@ def parse_md_to_flowables(md_path: Path):
                     spaceAfter=8,
                 )
             )
-            in_blank = True
             continue
 
         # Heading 1 (#)
         if line.startswith("# "):
             flush_paragraph()
             flowables.append(Paragraph(md_inline_to_html(line[2:].strip()), H1))
-            in_blank = True
             continue
         # Heading 2 (##)
         if line.startswith("## "):
             flush_paragraph()
             flowables.append(Paragraph(md_inline_to_html(line[3:].strip()), H2))
-            in_blank = True
             continue
         # Heading 3 (###) collapsed to H2 visually
         if line.startswith("### "):
             flush_paragraph()
             flowables.append(Paragraph(md_inline_to_html(line[4:].strip()), H2))
-            in_blank = True
             continue
 
         # Bullet (- or *)
@@ -170,7 +164,6 @@ def parse_md_to_flowables(md_path: Path):
             flowables.append(
                 Paragraph("• " + md_inline_to_html(m.group(2).strip()), BULLET)
             )
-            in_blank = False
             continue
 
         # Numbered list (1.)
@@ -180,25 +173,21 @@ def parse_md_to_flowables(md_path: Path):
             flowables.append(
                 Paragraph(md_inline_to_html(line.strip()), BULLET)
             )
-            in_blank = False
             continue
 
         # Italic-only one-line (« — sent via … »)
         if line.startswith("— *") or line.startswith("*— "):
             flush_paragraph()
             flowables.append(Paragraph(md_inline_to_html(line.strip()), META))
-            in_blank = True
             continue
 
         # Blank line → flush paragraph
         if line.strip() == "":
             flush_paragraph()
-            in_blank = True
             continue
 
         # Regular line → accumulate paragraph
         paragraph_buf.append(line)
-        in_blank = False
 
     flush_paragraph()
     return flowables

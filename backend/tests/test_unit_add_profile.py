@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -30,7 +30,7 @@ if str(_BACKEND) not in sys.path:
 def _make_app(monkeypatch: pytest.MonkeyPatch):
     """Build a minimal Flask app with the ``add_simulation_profile`` view."""
     from flask import Flask
-    from app.api.simulation import add_simulation_profile, simulation_bp
+    from app.api.simulation import simulation_bp
 
     app = Flask(__name__)
     app.register_blueprint(simulation_bp, url_prefix="/api/simulation")

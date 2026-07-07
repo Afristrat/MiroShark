@@ -24,11 +24,8 @@ Couvre :
 
 from __future__ import annotations
 
-import json
-import time
 from datetime import datetime, timezone, timedelta
-from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 from unittest.mock import MagicMock, patch
 
 import pytest

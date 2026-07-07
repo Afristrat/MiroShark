@@ -13,7 +13,6 @@ Règles appliquées (dans l'ordre) :
 from __future__ import annotations
 
 import re
-import unicodedata
 
 # ---------------------------------------------------------------------------
 # Constantes typographiques

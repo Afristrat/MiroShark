@@ -22,8 +22,8 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
-from unittest.mock import MagicMock, patch
+from typing import Dict, List
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -36,7 +36,6 @@ if str(_BACKEND) not in sys.path:
 from app.services.report_pdf.enricher import (
     Enricher,
     _LLM_FALLBACK,
-    _PIVOTAL_THRESHOLD,
     _narrative_cache,
     _takeaway_cache,
 )
@@ -46,7 +45,6 @@ from app.services.report_pdf.schema import (
     Outcome,
     Outline,
     PDFReportContext,
-    PivotalMoment,
     QualityMetrics,
     Round,
     Trajectory,

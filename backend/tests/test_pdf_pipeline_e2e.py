@@ -23,9 +23,7 @@ Dépendances optionnelles (skip si absent) :
 from __future__ import annotations
 
 import sys
-import hashlib
 from pathlib import Path
-from typing import Any, Optional
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -88,7 +86,6 @@ def mock_languagetool():
 @pytest.fixture
 def mock_enricher():
     """Remplace l'Enricher par un stub déterministe (pas d'appels LLM)."""
-    from app.services.report_pdf.schema import KPIHero
 
     with patch("app.services.report_pdf.renderer.Enricher") as MockEnricher:
         instance = MagicMock()
@@ -162,7 +159,7 @@ class TestPipelineMarkdown:
 
         ctx = _load_ctx(lang="fr")
         md = Renderer(ctx).render_md()
-        fm = extract_frontmatter(md)
+        extract_frontmatter(md)
         # lang doit être fr dans le front-matter ou le contexte
         assert ctx.lang == "fr"
         assert md.startswith("---")  # front-matter présent

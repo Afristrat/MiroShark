@@ -97,8 +97,16 @@
       "يُضاعف تصريح علني من سلطة تنظيمية عند H+8 التفاعلات المتراكمة بمعامل 2 إلى 4 في المسارات المُحاكاة · فتح قناة اتصال مخصّصة مع السلطة التنظيمية عند H+2 يُخفّض هذا الخطر."
     ]
   },
-  "brier_illustrative": 0.21,
-  "tags": ["communication", "crise", "DirCom", "réputation", "social-media", "MENA", "Europe", "24h"],
+  "tags": [
+    "communication",
+    "crise",
+    "DirCom",
+    "réputation",
+    "social-media",
+    "MENA",
+    "Europe",
+    "24h"
+  ],
   "cta_label": {
     "fr": "Commander un drill personnalisé pour votre marque",
     "en": "Order a tailored drill for your brand",

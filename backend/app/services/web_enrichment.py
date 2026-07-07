@@ -183,7 +183,7 @@ class WebEnricher:
         use it. If not, it draws from training data.
         """
         # Build the research prompt
-        parts = [f"Research this entity for a simulation persona:\n"]
+        parts = ["Research this entity for a simulation persona:\n"]
         parts.append(f"**Name:** {entity_name}")
         parts.append(f"**Type:** {entity_type}")
 

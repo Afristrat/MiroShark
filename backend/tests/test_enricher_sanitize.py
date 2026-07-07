@@ -38,7 +38,6 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import List
 from unittest.mock import MagicMock
 
 import pytest
@@ -58,11 +57,9 @@ from app.services.report_pdf.enricher import (
 )
 from app.services.report_pdf.schema import (
     AgentState,
-    KPIHero,
     Outcome,
     Outline,
     PDFReportContext,
-    PivotalMoment,
     QualityMetrics,
     Round,
     Trajectory,

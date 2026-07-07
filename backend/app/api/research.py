@@ -27,7 +27,7 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, Optional, Tuple
 
-from flask import Blueprint, g, jsonify, request
+from flask import Blueprint, jsonify, request
 
 from ..auth.decorators import require_auth
 from ..services import kairos_proxy as kx

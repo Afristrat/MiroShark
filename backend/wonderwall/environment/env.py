@@ -17,7 +17,10 @@ import asyncio
 import logging
 import os
 from datetime import datetime
-from typing import List, Union
+from typing import List, Union, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from wonderwall.simulations.base import BasePlatform, SimulationConfig
 
 from wonderwall.environment.env_action import LLMAction, ManualAction
 from wonderwall.social_agent.agent import SocialAgent

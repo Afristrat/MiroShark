@@ -28,7 +28,7 @@ import json
 import uuid as _uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 from ..utils.logger import get_logger
 

@@ -26,13 +26,10 @@ We cover:
 
 from __future__ import annotations
 
-import json
 import re
 import sys
 from pathlib import Path
-from typing import Iterable
 
-import pytest
 
 
 _BACKEND = Path(__file__).resolve().parent.parent
@@ -246,7 +243,7 @@ def test_documented_paths_exist_in_flask():
 
     phantom = documented - flask_routes
     assert not phantom, (
-        f"OpenAPI spec advertises paths that do not exist as Flask routes:\n  "
+        "OpenAPI spec advertises paths that do not exist as Flask routes:\n  "
         + "\n  ".join(sorted(phantom))
     )
 
@@ -267,7 +264,7 @@ def test_flask_routes_are_documented_or_allowlisted():
 
     undocumented = flask_paths_oai - documented - allowlisted
     assert not undocumented, (
-        f"Flask routes missing from openapi.yaml (add to spec OR allowlist):\n  "
+        "Flask routes missing from openapi.yaml (add to spec OR allowlist):\n  "
         + "\n  ".join(sorted(undocumented))
     )
 

@@ -1698,7 +1698,7 @@ class ReportAgent:
             return f"Failed to read trajectory data: {str(e)}"
 
         lines = []
-        lines.append(f"=== Belief Trajectory Analysis ===")
+        lines.append("=== Belief Trajectory Analysis ===")
         lines.append(f"Topics tracked: {', '.join(data.get('topics', []))}")
         lines.append(f"Total rounds: {data.get('total_rounds', 0)}")
         lines.append("")
@@ -1897,8 +1897,10 @@ class ReportAgent:
                     if len(strat) < 2:
                         return "?"
                     hold_p = float(strat[0])
-                    if hold_p > 0.95: return "HOLD (pure)"
-                    if hold_p < 0.05: return "CONCEDE (pure)"
+                    if hold_p > 0.95:
+                        return "HOLD (pure)"
+                    if hold_p < 0.05:
+                        return "CONCEDE (pure)"
                     return f"HOLD with prob {hold_p:.2f}"
                 out_lines.append(
                     f"  #{idx}: bull → {_describe(bull_strat)}, bear → {_describe(bear_strat)}"
@@ -1995,7 +1997,7 @@ class ReportAgent:
 
             try:
                 with open(actions_path, 'r', encoding='utf-8') as f:
-                    all_entries = [json.loads(l) for l in f if l.strip()]
+                    all_entries = [json.loads(ln) for ln in f if ln.strip()]
             except Exception:
                 continue
 
@@ -2062,7 +2064,7 @@ class ReportAgent:
                 for jsonl_file in found_jsonl:
                     try:
                         with open(jsonl_file, 'r', encoding='utf-8') as f:
-                            all_entries = [json.loads(l) for l in f if l.strip()]
+                            all_entries = [json.loads(ln) for ln in f if ln.strip()]
                         actions = [a for a in all_entries if 'action_type' in a]
 
                         if round_filter is not None:
@@ -2110,7 +2112,7 @@ class ReportAgent:
 
             # If still no actions after recursive search, return a clear error
             if total_actions == 0:
-                lines.append(f"\n[ERROR] No simulation action data found. The simulation may not have completed successfully.")
+                lines.append("\n[ERROR] No simulation action data found. The simulation may not have completed successfully.")
                 lines.append(f"Searched directory: {sim_dir}")
                 if found_jsonl:
                     lines.append(f"Found {len(found_jsonl)} .jsonl file(s) but none contained matching action data.")
@@ -2166,7 +2168,7 @@ class ReportAgent:
                     )
 
             # Portfolios with P&L
-            lines.append(f"\n**Trader P&L:**")
+            lines.append("\n**Trader P&L:**")
             for row in conn.execute(
                 "SELECT p.user_id, p.balance, u.user_name FROM portfolio p "
                 "LEFT JOIN user u ON p.user_id = u.user_id ORDER BY p.user_id"
@@ -2724,7 +2726,7 @@ class ReportAgent:
         # Check if LLM returned None during forced finish
         if response is None:
             logger.error(f"Section {section.title} LLM returned None during forced finish, using default error message")
-            final_answer = f"(This section generation failed: LLM returned empty response, please retry later)"
+            final_answer = "(This section generation failed: LLM returned empty response, please retry later)"
         elif "Final Answer:" in response:
             final_answer = response.split("Final Answer:")[-1].strip()
         else:
@@ -3622,7 +3624,7 @@ class ReportManager:
         # Build report header
         md_content = f"# {outline.title}\n\n"
         md_content += f"> {outline.summary}\n\n"
-        md_content += f"---\n\n"
+        md_content += "---\n\n"
         
         # Read all section files in order
         sections = cls.get_generated_sections(report_id)

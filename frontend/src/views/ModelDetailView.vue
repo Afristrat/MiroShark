@@ -34,11 +34,6 @@
           >
             {{ $t(`models.cards.sector.${model.sector}`) }}
           </span>
-          <span class="md-brier-pill">
-            <span class="md-brier-dot" aria-hidden="true">●</span>
-            <span class="md-brier-label">{{ $t('models.list.brierShort') }}</span>
-            <span class="md-brier-value">{{ brierLabel }}</span>
-          </span>
         </div>
 
         <h1 :id="heroId" class="md-h1">
@@ -328,12 +323,6 @@ const orderLabel = computed(() => {
   if (!model.value) return ''
   return model.value.cta_label[locale.value] || model.value.cta_label.fr
 })
-const brierLabel = computed(() => {
-  if (!model.value) return '—'
-  const v = model.value.brier_illustrative
-  if (typeof v !== 'number' || !Number.isFinite(v)) return '—'
-  return v.toFixed(2)
-})
 
 // Mapping modèle → situation radio QuoteView (réutilise la mécanique US-085).
 // US-090 — étendu aux 18 modèles. Le formulaire QuoteView expose trois
@@ -601,34 +590,6 @@ function agentRoleLabel (roleKey) {
   background: color-mix(in srgb, var(--wi-secondary-container) 40%, var(--wi-surface));
   color: var(--wi-on-secondary-container);
 }
-.md-brier-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding-inline: 10px;
-  padding-block: 4px;
-  border-radius: var(--wi-radius-pill);
-  background: var(--wi-surface-container-low);
-  border: 1px solid var(--wi-outline-variant);
-  font-family: var(--wi-font-heading);
-  font-size: 11px;
-  color: var(--wi-on-surface-variant);
-}
-.md-brier-dot {
-  color: var(--wi-secondary);
-  font-size: 8px;
-}
-.md-brier-label {
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-.md-brier-value {
-  font-weight: 700;
-  color: var(--wi-on-surface);
-  font-variant-numeric: tabular-nums;
-}
-
 .md-h1 {
   font-family: var(--wi-font-heading);
   font-weight: var(--wi-h1-weight);

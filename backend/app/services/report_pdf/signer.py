@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import logging
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 logger = logging.getLogger("miroshark.signer")
@@ -157,7 +157,6 @@ def _do_sign(pdf_bytes: bytes, cfg: SigningConfig) -> bytes:
 
     from pyhanko.sign import signers, fields as sign_fields
     from pyhanko.sign.signers.pdf_signer import PdfSignatureMetadata
-    from pyhanko_certvalidator import CertificateValidator
     from pyhanko.pdf_utils.incremental_writer import IncrementalPdfFileWriter
 
     # Chargement du certificat P12

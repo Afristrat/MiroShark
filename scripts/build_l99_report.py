@@ -47,7 +47,6 @@ from reportlab.platypus import (
     Frame,
     HRFlowable,
     Image,
-    KeepTogether,
     PageBreak,
     PageTemplate,
     Paragraph,
@@ -384,7 +383,7 @@ def chart_kpi_donut() -> bytes:
         color="#2A2A35",
     )
 
-    leg = ax.legend(
+    ax.legend(
         wedges,
         [f"{lbl} : {val:.1f} %" for lbl, val in zip(labels, sizes)],
         loc="lower center",
@@ -469,10 +468,10 @@ def chart_belief_drift() -> bytes:
     ax.set_xticks([1, 7, 14, 21, 28, 36, 45, 52, 60, 68, 72])
     ax.grid(True, alpha=0.25, linestyle="--")
     # Légende pivot dans la légende principale
-    pivot_open = mpatches.Circle(
+    mpatches.Circle(
         (0, 0), 0.3, facecolor="white", edgecolor="#C95E2A", linewidth=1.5, label="Bascule à enjeu"
     )
-    pivot_filled = mpatches.RegularPolygon(
+    mpatches.RegularPolygon(
         (0, 0), 4, radius=0.3, facecolor="#C95E2A", edgecolor="#C95E2A", label="Bascule pivot"
     )
     ax.legend(loc="upper left", fontsize=8, framealpha=0.92, ncol=2)
@@ -2023,7 +2022,7 @@ def build_document():
 
     flowables.append(Paragraph("6.5 Arbre de décision exécutif", H2))
     # Visuel sous forme de tableau 3 colonnes, chaque colonne = une piste
-    tree_node_style = ParagraphStyle(
+    ParagraphStyle(
         "TreeNode",
         fontName="Helvetica",
         fontSize=9,
@@ -2032,7 +2031,7 @@ def build_document():
         alignment=TA_CENTER,
         spaceAfter=2,
     )
-    tree_label_style = ParagraphStyle(
+    ParagraphStyle(
         "TreeLabel",
         fontName="Helvetica-Bold",
         fontSize=8.5,

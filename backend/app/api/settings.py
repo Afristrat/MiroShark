@@ -197,31 +197,46 @@ def update_settings():
         _apply_preset(preset_id, body.get('preset_api_key', ''))
 
     llm = body.get('llm') or {}
-    if llm.get('provider'): Config.LLM_PROVIDER = llm['provider']
-    if llm.get('base_url') is not None: Config.LLM_BASE_URL = llm['base_url']
-    if llm.get('model_name') is not None: Config.LLM_MODEL_NAME = llm['model_name']
-    if llm.get('api_key'): Config.LLM_API_KEY = llm['api_key']
+    if llm.get('provider'):
+        Config.LLM_PROVIDER = llm['provider']
+    if llm.get('base_url') is not None:
+        Config.LLM_BASE_URL = llm['base_url']
+    if llm.get('model_name') is not None:
+        Config.LLM_MODEL_NAME = llm['model_name']
+    if llm.get('api_key'):
+        Config.LLM_API_KEY = llm['api_key']
 
     smart = body.get('smart') or {}
-    if smart.get('provider') is not None: Config.SMART_PROVIDER = smart['provider']
-    if smart.get('base_url') is not None: Config.SMART_BASE_URL = smart['base_url']
-    if smart.get('model_name') is not None: Config.SMART_MODEL_NAME = smart['model_name']
-    if smart.get('api_key'): Config.SMART_API_KEY = smart['api_key']
+    if smart.get('provider') is not None:
+        Config.SMART_PROVIDER = smart['provider']
+    if smart.get('base_url') is not None:
+        Config.SMART_BASE_URL = smart['base_url']
+    if smart.get('model_name') is not None:
+        Config.SMART_MODEL_NAME = smart['model_name']
+    if smart.get('api_key'):
+        Config.SMART_API_KEY = smart['api_key']
 
     ner = body.get('ner') or {}
-    if ner.get('base_url') is not None: Config.NER_BASE_URL = ner['base_url']
-    if ner.get('model_name') is not None: Config.NER_MODEL_NAME = ner['model_name']
-    if ner.get('api_key'): Config.NER_API_KEY = ner['api_key']
+    if ner.get('base_url') is not None:
+        Config.NER_BASE_URL = ner['base_url']
+    if ner.get('model_name') is not None:
+        Config.NER_MODEL_NAME = ner['model_name']
+    if ner.get('api_key'):
+        Config.NER_API_KEY = ner['api_key']
 
     wonderwall = body.get('wonderwall') or {}
     if wonderwall.get('model_name') is not None:
         Config.WONDERWALL_MODEL_NAME = wonderwall['model_name']
 
     embedding = body.get('embedding') or {}
-    if embedding.get('provider') is not None: Config.EMBEDDING_PROVIDER = embedding['provider']
-    if embedding.get('base_url') is not None: Config.EMBEDDING_BASE_URL = embedding['base_url']
-    if embedding.get('model_name') is not None: Config.EMBEDDING_MODEL = embedding['model_name']
-    if embedding.get('api_key'): Config.EMBEDDING_API_KEY = embedding['api_key']
+    if embedding.get('provider') is not None:
+        Config.EMBEDDING_PROVIDER = embedding['provider']
+    if embedding.get('base_url') is not None:
+        Config.EMBEDDING_BASE_URL = embedding['base_url']
+    if embedding.get('model_name') is not None:
+        Config.EMBEDDING_MODEL = embedding['model_name']
+    if embedding.get('api_key'):
+        Config.EMBEDDING_API_KEY = embedding['api_key']
     if embedding.get('dimensions') is not None:
         try:
             Config.EMBEDDING_DIMENSIONS = int(embedding['dimensions'])
@@ -232,9 +247,12 @@ def update_settings():
         Config.WEB_SEARCH_MODEL = body['web_search_model']
 
     neo4j = body.get('neo4j') or {}
-    if neo4j.get('uri'): Config.NEO4J_URI = neo4j['uri']
-    if neo4j.get('user'): Config.NEO4J_USER = neo4j['user']
-    if neo4j.get('password'): Config.NEO4J_PASSWORD = neo4j['password']
+    if neo4j.get('uri'):
+        Config.NEO4J_URI = neo4j['uri']
+    if neo4j.get('user'):
+        Config.NEO4J_USER = neo4j['user']
+    if neo4j.get('password'):
+        Config.NEO4J_PASSWORD = neo4j['password']
 
     integrations = body.get('integrations') or {}
     webhook = integrations.get('webhook') or {}

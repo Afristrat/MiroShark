@@ -677,7 +677,8 @@ def file_preview():
             "data": { "text": str, "char_count": int, "filename": str }
         }
     """
-    import tempfile, os as _os
+    import tempfile
+    import os as _os
 
     client_ip = _client_ip()
     if _sliding_window_rate_limited(
@@ -8733,7 +8734,6 @@ def get_demographic_breakdown(simulation_id: str):
             # that has only a handle.
             display_name = p.get('name') or ''
             handle = p.get('user_name') or p.get('username') or ''
-            user_name = display_name or handle
 
             age_bucket = _demo_age_bucket(p.get('age'))
             gender_raw = p.get('gender') or 'unknown'

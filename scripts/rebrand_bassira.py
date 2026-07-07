@@ -8,7 +8,6 @@ Run from project root: `python scripts/rebrand_bassira.py`
 """
 from pathlib import Path
 import re
-import sys
 
 ROOT = Path(__file__).resolve().parent.parent
 TARGET_DIRS = [

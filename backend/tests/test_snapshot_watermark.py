@@ -29,8 +29,6 @@ from __future__ import annotations
 import io
 import json
 import os
-import shutil
-import tempfile
 from pathlib import Path
 from typing import Any, Dict
 from unittest.mock import MagicMock, patch
@@ -427,7 +425,6 @@ class TestApproveEndpoint:
         }
 
         # Appel direct de la fonction métier sous le décorateur
-        from app.api.admin_reports import approve_report  # accès à la fonction wrappée
 
         app = Flask(__name__)
         app.config["TESTING"] = True
@@ -487,7 +484,6 @@ class TestApproveEndpoint:
     def test_approve_full_flow_mocked(self, tmp_path, minimal_pdf):
         """Test 19+20 — flow complet mocké : watermark + sign → 200."""
         from flask import Flask, g
-        from functools import wraps
 
         from app.api.admin_reports import admin_reports_bp
 

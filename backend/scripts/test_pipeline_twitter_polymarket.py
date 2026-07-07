@@ -163,7 +163,7 @@ def setup_simulation():
     config_path = os.path.join(SIM_DIR, 'simulation_config.json')
     with open(config_path, 'w') as f:
         json.dump(config, f, ensure_ascii=False, indent=2)
-    print(f"  Config saved")
+    print("  Config saved")
 
     return config_path
 
@@ -229,7 +229,7 @@ def analyze_results():
             continue
 
         with open(actions_path) as f:
-            all_lines = [json.loads(l) for l in f if l.strip()]
+            all_lines = [json.loads(ln) for ln in f if ln.strip()]
 
         # Separate metadata from real actions
         actions = [a for a in all_lines if 'action_type' in a]
@@ -239,7 +239,7 @@ def analyze_results():
         types = Counter(a['action_type'] for a in actions)
 
         print(f"\n  [{platform.upper()}] {len(actions)} actions, {len(metadata)} metadata events")
-        print(f"  Action breakdown:")
+        print("  Action breakdown:")
         for t, c in types.most_common():
             print(f"    {t}: {c}")
 
@@ -294,7 +294,7 @@ def analyze_results():
         conn = sqlite3.connect(pm_db)
         conn.row_factory = sqlite3.Row
 
-        print(f"\n  [POLYMARKET MARKETS]")
+        print("\n  [POLYMARKET MARKETS]")
         for row in conn.execute("SELECT * FROM market"):
             ra, rb = row['reserve_a'], row['reserve_b']
             total = ra + rb
@@ -302,7 +302,7 @@ def analyze_results():
             print(f"    #{row['market_id']}: \"{row['question']}\"")
             print(f"      YES: ${price_yes:.3f}, trades: {conn.execute('SELECT COUNT(*) FROM trade WHERE market_id=?', (row['market_id'],)).fetchone()[0]}")
 
-        print(f"\n  [POLYMARKET PORTFOLIOS]")
+        print("\n  [POLYMARKET PORTFOLIOS]")
         for row in conn.execute("SELECT p.user_id, p.balance, u.user_name FROM portfolio p JOIN user u ON p.user_id = u.user_id"):
             print(f"    {row['user_name']}: ${row['balance']:.2f}")
 
@@ -311,7 +311,7 @@ def analyze_results():
 
 def main():
     print(f"\n{'#'*60}")
-    print(f"  MiroShark — Full 3-Platform Simulation Test")
+    print("  MiroShark — Full 3-Platform Simulation Test")
     print(f"  Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"{'#'*60}")
 

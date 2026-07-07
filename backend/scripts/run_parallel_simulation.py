@@ -2886,7 +2886,7 @@ async def main():
     minutes_per_round = time_config.get('minutes_per_round', 30)
     config_total_rounds = (total_hours * 60) // minutes_per_round
     
-    log_manager.info(f"Simulation parameters:")
+    log_manager.info("Simulation parameters:")
     log_manager.info(f"  - Total simulation duration: {total_hours} hours")
     log_manager.info(f"  - Time per round: {minutes_per_round} minutes")
     log_manager.info(f"  - Configured total rounds: {config_total_rounds}")
@@ -2897,10 +2897,10 @@ async def main():
     log_manager.info(f"  - Number of Agents: {len(config.get('agent_configs', []))}")
 
     log_manager.info("Log structure:")
-    log_manager.info(f"  - Main log: simulation.log")
-    log_manager.info(f"  - Twitter actions: twitter/actions.jsonl")
-    log_manager.info(f"  - Reddit actions: reddit/actions.jsonl")
-    log_manager.info(f"  - Polymarket actions: polymarket/actions.jsonl")
+    log_manager.info("  - Main log: simulation.log")
+    log_manager.info("  - Twitter actions: twitter/actions.jsonl")
+    log_manager.info("  - Reddit actions: reddit/actions.jsonl")
+    log_manager.info("  - Polymarket actions: polymarket/actions.jsonl")
     log_manager.info("=" * 60)
 
     start_time = datetime.now()
@@ -3048,8 +3048,8 @@ async def main():
         log_manager.info("[Reddit] Environment closed")
     
     log_manager.info("=" * 60)
-    log_manager.info(f"All done!")
-    log_manager.info(f"Log files:")
+    log_manager.info("All done!")
+    log_manager.info("Log files:")
     log_manager.info(f"  - {os.path.join(simulation_dir, 'simulation.log')}")
     log_manager.info(f"  - {os.path.join(simulation_dir, 'twitter', 'actions.jsonl')}")
     log_manager.info(f"  - {os.path.join(simulation_dir, 'reddit', 'actions.jsonl')}")

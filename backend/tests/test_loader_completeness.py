@@ -36,7 +36,7 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 import pytest
 
@@ -47,7 +47,6 @@ if str(_BACKEND) not in sys.path:
 
 from app.services.report_pdf.loader import (
     PDFContextLoader,
-    PDFContextLoaderError,
     _SIMULATIONS_DIR,
 )
 from app.services.report_pdf.schema import PDFReportContext
@@ -605,7 +604,7 @@ class TestProductionCriticalPosts:
 
     def test_no_crash_when_no_actions(self, tmp_path):
         """Absence d'actions.jsonl → agent_log sans critical_posts, pas de crash."""
-        sim_dir = _minimal_sim_dir(tmp_path)
+        _minimal_sim_dir(tmp_path)
         ctx = PDFContextLoader.load(
             simulation_id=_TEST_SIM_ID,
             sim_base_dir=tmp_path,

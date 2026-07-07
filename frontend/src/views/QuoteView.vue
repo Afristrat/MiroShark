@@ -613,7 +613,7 @@ onMounted(() => {
   align-items: center;
   padding: 16px 32px;
   /* Réserve la place pour le LanguageSwitcher floating top-right
-     (z-index 1500) — cohérent avec OffersView / CalibrationView. */
+     (z-index 1500) — cohérent avec OffersView / MethodologieView. */
   padding-inline-end: 110px;
   border-bottom: 1px solid var(--stitch-stepper-line);
   background: var(--stitch-page-bg);

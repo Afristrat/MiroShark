@@ -21,12 +21,10 @@ Couvre :
 
 from __future__ import annotations
 
-import io
 import os
-import time
 from pathlib import Path
-from typing import Any, Dict, Optional
-from unittest.mock import MagicMock, patch, call
+from typing import Any, Dict
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -245,7 +243,6 @@ class TestGeneratePdfJob:
         from app.workers.pdf_generation_worker import (
             generate_pdf_job,
             _PDF_CACHE,
-            _cache_key,
         )
 
         # Nettoyer le cache avant le test

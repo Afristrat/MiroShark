@@ -23,11 +23,9 @@ from __future__ import annotations
 
 import csv
 import json
-import os
 import sys
 from pathlib import Path
-from typing import Any, Dict
-from unittest.mock import patch
+from typing import Any
 
 import pytest
 
@@ -40,7 +38,6 @@ from app.services.report_pdf.loader import (
     PDFContextLoader,
     PDFContextLoaderError,
     _SIMULATIONS_DIR,
-    _REPORTS_DIR,
 )
 from app.services.report_pdf.schema import PDFReportContext
 

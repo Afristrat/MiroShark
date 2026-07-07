@@ -139,8 +139,8 @@ def setup():
         json.dump(config, f, ensure_ascii=False, indent=2)
 
     print(f"  Agents: {len(agent_configs)}")
-    print(f"  Platforms: Twitter + Reddit + Polymarket")
-    print(f"  Rounds: 8")
+    print("  Platforms: Twitter + Reddit + Polymarket")
+    print("  Rounds: 8")
     return config_path, markets
 
 
@@ -190,7 +190,7 @@ def analyze():
             continue
 
         with open(path) as f:
-            all_lines = [json.loads(l) for l in f if l.strip()]
+            all_lines = [json.loads(ln) for ln in f if ln.strip()]
         actions = [a for a in all_lines if 'action_type' in a]
 
         from collections import Counter
@@ -219,7 +219,7 @@ def analyze():
         conn = sqlite3.connect(db)
         conn.row_factory = sqlite3.Row
 
-        print(f"\n  [MARKET STATE]")
+        print("\n  [MARKET STATE]")
         for row in conn.execute("SELECT * FROM market"):
             ra, rb = row['reserve_a'], row['reserve_b']
             total = ra + rb
@@ -228,13 +228,13 @@ def analyze():
             print(f"    \"{row['question'][:70]}\"")
             print(f"    YES: ${price_yes:.3f} | Trades: {trades}")
 
-        print(f"\n  [TRADES]")
+        print("\n  [TRADES]")
         for t in conn.execute("SELECT t.*, u.user_name FROM trade t JOIN user u ON t.user_id=u.user_id ORDER BY t.rowid"):
             agent = t['user_name'] or f"Agent_{t['user_id']}"
             side = t['side'].upper()
             print(f"    {side:4s} {agent:30s} {t['outcome']:3s} {t['shares']:6.0f} shares @ ${t['price']:.3f}")
 
-        print(f"\n  [P&L]")
+        print("\n  [P&L]")
         for row in conn.execute("SELECT p.user_id, p.balance, u.user_name FROM portfolio p JOIN user u ON p.user_id=u.user_id"):
             pv = 0
             for pos in conn.execute(
@@ -270,7 +270,7 @@ def analyze():
         if not os.path.exists(path):
             continue
         with open(path) as f:
-            actions = [json.loads(l) for l in f if l.strip()]
+            actions = [json.loads(ln) for ln in f if ln.strip()]
         posts = [a for a in actions if a.get('action_type') in ('CREATE_POST', 'CREATE_COMMENT', 'QUOTE_POST')]
         market_refs = [p for p in posts if any(kw in (p.get('action_args', {}).get('content', '') or '').lower()
                        for kw in ['market', 'price', '$0.', 'yes', 'shares', 'betting', 'polymarket', 'prediction'])]
@@ -296,7 +296,7 @@ def analyze():
     if os.path.exists(trajectory):
         with open(trajectory) as f:
             traj = json.load(f)
-        print(f"\n  [BELIEF TRACKING]")
+        print("\n  [BELIEF TRACKING]")
         print(f"    Topics: {traj.get('topics', [])}")
         print(f"    Rounds tracked: {traj.get('total_rounds', 0)}")
         convergence = traj.get('opinion_convergence', {})
@@ -312,7 +312,7 @@ def analyze():
 
 def main():
     print(f"\n{'#'*60}")
-    print(f"  3-Platform Interconnected Simulation Test")
+    print("  3-Platform Interconnected Simulation Test")
     print(f"  {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"{'#'*60}")
 

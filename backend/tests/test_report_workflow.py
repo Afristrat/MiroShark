@@ -28,7 +28,7 @@ import time
 import uuid
 from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, List, Optional
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, patch
 
 import jwt as pyjwt
 import pytest
@@ -41,7 +41,6 @@ from app.services.report_workflow import (
     LockedReportError,
     WorkflowError,
     LEGAL_TRANSITIONS,
-    LOCK_TIMEOUT_MIN,
 )
 
 
@@ -407,7 +406,7 @@ class TestAuditLog:
             {"id": "a2", "report_id": "r1", "to_state": "IN_REVIEW",  "created_at": "2026-05-06T11:00:00+00:00"},
             {"id": "a1", "report_id": "r1", "to_state": "DRAFT",      "created_at": "2026-05-06T10:00:00+00:00"},
         ]
-        cli = _make_supabase_client(audit_rows=audit_rows)
+        _make_supabase_client(audit_rows=audit_rows)
 
         # On s'assure que le mock chain retourne bien les rows d'audit
         def _resp(data):
@@ -653,7 +652,7 @@ class TestInitReportState:
 
         cli.table.side_effect = lambda name: sc if name == "report_states" else ac
 
-        result = rw.init_report_state("r-new", "org-uuid-001", client=cli)
+        rw.init_report_state("r-new", "org-uuid-001", client=cli)
         assert insert_calls  # Une insertion a eu lieu
         assert insert_calls[0]["state"] == "GENERATING"
 

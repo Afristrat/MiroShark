@@ -29,11 +29,9 @@ Les tests 03, 04, 07, 08 ne nécessitent pas WeasyPrint.
 
 from __future__ import annotations
 
-import json
 import os
 import sys
 from pathlib import Path
-from typing import Optional
 from unittest.mock import MagicMock, patch
 
 import pytest

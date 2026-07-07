@@ -105,8 +105,16 @@
       "للرأي العام المُقاس باستطلاع IPSOS في الجولة 6 أثر ضعيف على التصويت في اللجنة لكنه هيكلي على الاتصال بعد جلسة الاستماع · الاستراتيجية الإعلامية الفائزة هي تحضير الردّ قبل صدور الاستطلاع."
     ]
   },
-  "brier_illustrative": 0.22,
-  "tags": ["politique-publique", "régulation", "fintech", "stress-test", "Afrique", "MENA", "UEMOA", "banque-centrale"],
+  "tags": [
+    "politique-publique",
+    "régulation",
+    "fintech",
+    "stress-test",
+    "Afrique",
+    "MENA",
+    "UEMOA",
+    "banque-centrale"
+  ],
   "cta_label": {
     "fr": "Commander un stress test pour votre projet de loi ou réglementation",
     "en": "Order a stress test for your bill or regulation",

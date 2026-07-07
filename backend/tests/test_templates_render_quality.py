@@ -41,7 +41,7 @@ from app.services.report_pdf.schema import (
     Section,
     Trajectory,
 )
-from app.services.report_pdf.jinja_env import get_jinja_env, render_section, render_full_report
+from app.services.report_pdf.jinja_env import get_jinja_env, render_section
 from app.services.report_pdf.renderer import Renderer
 
 

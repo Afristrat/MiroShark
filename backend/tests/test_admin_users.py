@@ -620,9 +620,9 @@ class TestAdminUsersStats:
         assert resp.status_code == 200
         data = resp.get_json()["data"]
         assert data["total_users"] == 3, (
-            f"total_users doit refléter auth.users (3), pas la membership count "
-            f"(1) — Avant fix US-138 ce champ valait 1, contredisant active_7d/"
-            f"new_30d qui voient 3."
+            "total_users doit refléter auth.users (3), pas la membership count "
+            "(1) — Avant fix US-138 ce champ valait 1, contredisant active_7d/"
+            "new_30d qui voient 3."
         )
         assert data.get("users_with_org") == 1, (
             "users_with_org doit refléter le nombre d'utilisateurs avec membership."

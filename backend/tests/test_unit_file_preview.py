@@ -1,7 +1,7 @@
 """Tests for POST /api/simulation/file-preview."""
 import io
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from app import create_app
 
 

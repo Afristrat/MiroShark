@@ -27,7 +27,7 @@ import os
 import uuid
 from typing import Any, Dict, Optional
 
-from flask import Blueprint, Response, g, jsonify, request, send_file
+from flask import Blueprint, Response, jsonify, request
 
 from ..auth.decorators import require_auth, require_super_admin
 
@@ -158,7 +158,6 @@ def preview_report(report_id: str) -> Response:
              "error": result.get("error", "Génération preview échouée.")}
         ), 500
 
-    import io
     from pathlib import Path
 
     pdf_path = Path(result["pdf_path"])

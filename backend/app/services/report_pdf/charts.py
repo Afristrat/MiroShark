@@ -27,7 +27,6 @@ from __future__ import annotations
 
 import io
 from collections import defaultdict
-from typing import Optional
 
 import matplotlib
 
@@ -725,7 +724,7 @@ class ChartFactory:
                 ax.fill_between(xs, ys_low, ys_high, color=category_colors[cat], alpha=0.18, linewidth=0)
 
         # Légende
-        legend_patches = [mpatches.Patch(color=c, label=l) for c, l in zip(category_colors, category_labels)]
+        legend_patches = [mpatches.Patch(color=c, label=ln) for c, ln in zip(category_colors, category_labels)]
         ax.legend(handles=legend_patches, loc="upper right", fontsize=7, framealpha=0.9)
 
         fig.tight_layout()
@@ -750,7 +749,6 @@ class ChartFactory:
             return _placeholder_png("Trajectoire indisponible\n(heatmap engagement)")
 
         rounds = ctx.trajectory.rounds
-        n_rounds = len(rounds)
 
         # L99 v2 — Lookup ordinal → nom propre
         profile_name_by_ordinal: dict[str, str] = {}

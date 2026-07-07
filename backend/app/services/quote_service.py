@@ -55,7 +55,6 @@ from pathlib import Path
 from threading import Lock
 from typing import Any, Dict, List, Optional, Tuple
 
-from ..config import Config
 
 
 logger = logging.getLogger("miroshark.quote")

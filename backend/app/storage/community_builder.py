@@ -92,7 +92,7 @@ class CommunityBuilder:
         kept = kept[: Config.COMMUNITY_MAX_COUNT]
 
         if not kept:
-            logger.info(f"[community_builder] No clusters met size threshold")
+            logger.info("[community_builder] No clusters met size threshold")
             self._delete_existing(graph_id)
             return {
                 "clusters_found": clusters_found,
@@ -104,7 +104,7 @@ class CommunityBuilder:
         entity_data = self._load_entity_metadata(graph_id, kept)
         labels = self._summarize(kept, entity_data)
         embeddings = self._embedding.embed_batch(
-            [f"{l['title']}. {l['summary']}" for l in labels]
+            [f"{ln['title']}. {ln['summary']}" for ln in labels]
         )
 
         # Replace in one transaction

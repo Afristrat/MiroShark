@@ -152,7 +152,7 @@ def test_live_simulation(markets):
         json.dump(config, f, ensure_ascii=False, indent=2)
 
     print(f"  {len(pm_profiles)} traders, {len(markets)} markets, 5 rounds")
-    print(f"  Markets seeded:")
+    print("  Markets seeded:")
     for m in markets:
         prob = m['initial_probability']
         print(f"    \"{m['question'][:60]}...\" @ YES ${prob:.2f}")
@@ -224,7 +224,7 @@ def analyze_market_results(markets):
         print(f"  {q_short:<55} ${start_price:.2f}  ${final_price:.2f}  {direction}{abs(move):.2f}   {trades:>4}")
 
     # Trade details
-    print(f"\n  All trades:")
+    print("\n  All trades:")
     for t in conn.execute("""
         SELECT t.*, u.user_name FROM trade t
         JOIN user u ON t.user_id = u.user_id
@@ -244,7 +244,7 @@ def analyze_market_results(markets):
             print(f"    {side:4s} | {agent:35s} | M#{mid} {shares:6.1f} {outcome:3s} @ ${price:.3f} | +${cost:.2f}")
 
     # Portfolio P&L
-    print(f"\n  Trader P&L:")
+    print("\n  Trader P&L:")
     for row in conn.execute("""
         SELECT p.user_id, p.balance, u.user_name FROM portfolio p
         JOIN user u ON p.user_id = u.user_id ORDER BY p.user_id
@@ -295,7 +295,7 @@ def analyze_market_results(markets):
 
 def main():
     print(f"\n{'#'*60}")
-    print(f"  Market Generation + Pricing Test")
+    print("  Market Generation + Pricing Test")
     print(f"  {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"{'#'*60}")
 

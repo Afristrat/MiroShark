@@ -11,7 +11,6 @@
  *   - POST   /api/client/simulations
  *   - POST   /api/client/simulations/:id/outcome
  *   - POST   /api/client/simulations/:id/publish
- *   - GET    /api/calibration/aggregates  (public, sans bearer)
  *
  * NB : on réutilise pas l'axios de api/index.js car ce dernier a une
  * logique d'interceptor d'erreur qui rejette quand `success: false`,
@@ -122,15 +121,6 @@ export function publishSimulation(simulationId, payload = { is_published: true }
     `/api/client/simulations/${encodeURIComponent(simulationId)}/publish`,
     payload
   )
-}
-
-/**
- * GET /api/calibration/aggregates — vue publique k-anonymity n≥5.
- * Pas de bearer requis (route publique). On utilise le même client
- * pour cohérence (l'interceptor n'ajoute le token que s'il existe).
- */
-export function fetchPublicCalibrationAggregates() {
-  return client.get('/api/calibration/aggregates')
 }
 
 // ───── Super-admin Bassira (US-095) ──────────────────────────────────

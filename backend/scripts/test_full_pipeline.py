@@ -255,7 +255,7 @@ def phase5_config(document_text, ontology, profiles):
     elapsed = time.time() - t0
     config = result if isinstance(result, dict) else result.to_dict() if hasattr(result, 'to_dict') else {}
 
-    print(f"\n  Time config:")
+    print("\n  Time config:")
     tc = config.get('time_config', {})
     print(f"    Total hours: {tc.get('total_simulation_hours')}")
     print(f"    Minutes per round: {tc.get('minutes_per_round')}")
@@ -265,7 +265,7 @@ def phase5_config(document_text, ontology, profiles):
         print(f"    - {ac.get('entity_name', '?')}: activity={ac.get('activity_level')}, "
               f"stance={ac.get('stance')}, sentiment={ac.get('sentiment_bias')}")
 
-    print(f"  Event config:")
+    print("  Event config:")
     ec = config.get('event_config', {})
     print(f"    Initial posts: {len(ec.get('initial_posts', []))}")
     for ip in ec.get('initial_posts', [])[:2]:
@@ -279,7 +279,7 @@ def phase5_config(document_text, ontology, profiles):
 
 def main():
     print(f"\n{'#'*60}")
-    print(f"  MiroShark Full Pipeline Test")
+    print("  MiroShark Full Pipeline Test")
     print(f"  PDF: {os.path.basename(PDF_PATH)}")
     print(f"  Requirement: {SIMULATION_REQUIREMENT[:80]}...")
     print(f"  Model: {Config.LLM_MODEL_NAME}")
@@ -309,7 +309,7 @@ def main():
     banner("PIPELINE COMPLETE")
     print(f"  Total time: {total_elapsed:.1f}s")
     print(f"  Output dir: {OUT_DIR}")
-    print(f"  Files generated:")
+    print("  Files generated:")
     for f in sorted(os.listdir(OUT_DIR)):
         size = os.path.getsize(os.path.join(OUT_DIR, f))
         print(f"    {f} ({size:,} bytes)")

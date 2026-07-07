@@ -20,7 +20,7 @@ blueprint `calibration_bp` séparé (cf. `api/calibration.py`).
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from flask import Blueprint, g, jsonify, request
 

@@ -10,7 +10,7 @@
     "offersTitle": "Voir nos packages de stress-test (3 formats)",
     "scenarios": "Scénarios",
     "scenariosTitle": "Voir la galerie de scénarios prêts à lancer",
-    "calibrationTitle": "Voir notre track-record prédictif (Brier score)",
+    "calibrationTitle": "Voir notre méthodologie",
     "home": "Accueil",
     "homeTitle": "Retour à l'accueil Bassira",
     "models": "Modèles",
@@ -115,7 +115,7 @@
       "slogan": "Ne prédisez pas l’avenir. Simulez-le",
       "cta": "Lancer une simulation",
       "trust": {
-        "brier": "Brier 0,18 vérifié",
+        "brier": "Stress-test de décision",
         "sims": "Méthodologie publique",
         "iso": "Données souveraines"
       },
@@ -178,7 +178,7 @@
       "askFailed": "Échec du mode question.",
       "params": "Paramètres d’entrée",
       "promptLabel": ">_ 02 / Invite de simulation",
-      "promptPlaceholder": "// Décrivez vos exigences de simulation ou de prédiction en langage naturel (ex. : si une université annonce la levée d’une sanction disciplinaire contre un étudiant, quelles tendances d’opinion publique vont émerger ?)",
+      "promptPlaceholder": "// Décrivez vos exigences de simulation ou de prospective en langage naturel (ex. : si une université annonce la levée d’une sanction disciplinaire contre un étudiant, quelles tendances d’opinion publique vont émerger ?)",
       "engine": "Moteur : Bassira-V1.0",
       "launch": "Lancer la simulation",
       "initializing": "Initialisation…",
@@ -568,7 +568,7 @@
       "variantA": "Replay",
       "variantATitle": "Variant A · Ground Truth Replay (1 run, 10 semaines, 50 agents) : compare la trajectoire Bassira à la cohorte She Start réelle.",
       "variantB": "Twin",
-      "variantBTitle": "Variant B · Cohort Twin (5 runs parallèles, 10 semaines) : mesure la stabilité statistique des prédictions.",
+      "variantBTitle": "Variant B · Cohort Twin (5 runs parallèles, 10 semaines) : mesure la stabilité statistique des scénarios.",
       "variantC": "Blind Spot",
       "variantCTitle": "Variant C · Blind Spot Hunt (1 run, 5 leaders réelles retirées) : détecte les angles morts du modèle."
     }
@@ -1317,7 +1317,7 @@
         "title": "Supprimer la simulation",
         "confirmTitle": "Supprimer cette simulation ?",
         "confirmBody": "La simulation {id} et toutes ses données (profils d’agents, configuration, trajectoire, rapport, intervieuws) seront supprimés définitivement. Cette action est irréversible.",
-        "publicCalibrationWarning": "Attention : cette simulation est publique et a un verdict enregistré. La supprimer la retirera de la page /calibration et impactera le score Brier affiché.",
+        "publicCalibrationWarning": "Attention : cette simulation est publique et a un verdict enregistré. La supprimer la retirera de la page /verified.",
         "cancel": "Annuler",
         "confirm": "Supprimer définitivement",
         "deleting": "Suppression…"
@@ -1414,109 +1414,6 @@
   "calibration": {
     "nav": {
       "backTitle": "Retour à l’accueil"
-    },
-    "eyebrow": "Crédibilité vérifiée",
-    "hero": {
-      "headline": "On note chaque prédiction. Voici notre score.",
-      "sub": "Score de Brier calculé sur l’ensemble des simulations marquées « vérifiées » · plus c’est bas, mieux c’est. Mis à jour en continu.",
-      "label": "Score de Brier",
-      "help": "0 = parfait, 0,25 = pile ou face",
-      "brierTitle": "Score de Brier moyen sur les simulations vérifiées"
-    },
-    "stats": {
-      "total": "Total vérifié",
-      "calledIt": "Bien anticipé",
-      "partial": "Partiel",
-      "wrong": "Manqué"
-    },
-    "badges": {
-      "success": "Réussi",
-      "partial": "Partiel",
-      "wrong": "Manqué"
-    },
-    "plot": {
-      "title": "Prédit contre observé",
-      "explainer": "Chaque point représente un intervalle de probabilité. La diagonale en pointillé correspond à une calibration parfaite · un point au-dessus signifie qu’on a sous-estimé, un point en-dessous qu’on a surestimé.",
-      "xAxis": "Probabilité prédite",
-      "yAxis": "Fréquence observée"
-    },
-    "tooltip": {
-      "predicted": "Prédit",
-      "observed": "Observé",
-      "n": "n"
-    },
-    "filters": {
-      "title": "Filtrer les résultats",
-      "template": "Modèle",
-      "allTemplates": "Tous les modèles",
-      "from": "Du",
-      "to": "Au",
-      "publicOnly": "Seules les simulations publiques entrent dans le calcul.",
-      "apply": "Appliquer",
-      "reset": "Réinitialiser"
-    },
-    "empty": {
-      "title": "Bassira en early access institutionnel",
-      "message": "Le score de Brier ne s’affichera ici qu’une fois 5 simulations vérifiées publiées (événement réel observé puis labellisé). Cette transparence est volontaire : nous publions le score à partir du premier vrai cas, pas avant. La méthodologie reste vérifiable sur ce document.",
-      "helper": "Score affiché à partir de 5 simulations vérifiées."
-    },
-    "error": {
-      "title": "Impossible de charger les données de calibration"
-    },
-    "methodology": {
-      "title": "Comment on compte",
-      "p1": "Le score de Brier mesure la distance moyenne au carré entre la probabilité que nous avions annoncée et le résultat réel observé. Concrètement : on prend la part d’agents qui ont basculé en « bullish » sur le dernier round de la simulation, on la compare à 1 si l’événement s’est réellement produit, à 0 sinon · et on fait la moyenne de l’erreur quadratique sur toutes les simulations vérifiées. Plus le chiffre est bas, plus nos probabilités collent au monde réel ; 0,25 est la baseline d’une pièce non biaisée.",
-      "p2": "Chaque résultat est annoté manuellement dans une des trois cases « bien anticipé », « partiel » ou « manqué ». « Bien anticipé » correspond à un événement qui s’est passé exactement comme prédit, « partiel » signale qu’on a vu venir la dynamique mais raté l’ampleur ou le calendrier, « manqué » couvre les cas où la réalité a divergé franchement du consensus de la simulation. Cette classification est doublée d’une URL de preuve publique pour chaque sim · on n’ajoute rien aux statistiques sans source vérifiable.",
-      "p3": "Pour entrer dans le calcul, une simulation doit être publique (visible dans /verified), avoir une trajectoire complète permettant d’extraire la probabilité finale, et avoir reçu une annotation d’issue. Les simulations privées ou non terminées sont ignorées : elles n’influencent jamais la note publique. Cette page est rafraîchie à la volée à chaque visite · il n’y a pas de cache statique masquant un mauvais run."
-    },
-    "cta": {
-      "title": "Envie de défier nos sims ?",
-      "body": "Soumets-nous un événement à simuler et on s’engage à publier la prédiction avant le verdict réel. Si on se trompe, ça apparaîtra ici.",
-      "button": "Soumettre un événement"
-    },
-    "evaluables": {
-      "title": "Sims à évaluer",
-      "intro": "Marque chaque simulation publique avec un verdict pour faire bouger le score de Brier en temps réel. L’URL de preuve est optionnelle mais recommandée.",
-      "filterPending": "À évaluer",
-      "filterEvaluated": "Déjà évaluées",
-      "filterAll": "Toutes",
-      "markCalledIt": "Bien anticipé",
-      "markPartial": "Partiel",
-      "markWrong": "Manqué",
-      "markNA": "N/A",
-      "urlPlaceholder": "URL de preuve (https://…)",
-      "predictedLabel": "Prédiction haussière",
-      "currentOutcome": "Verdict actuel",
-      "empty": "Aucune simulation à évaluer pour le moment.",
-      "errorLoad": "Impossible de charger les simulations.",
-      "errorMark": "Impossible d’enregistrer le verdict.",
-      "previous": "Précédent",
-      "next": "Suivant",
-      "toastSuccess": "Verdict enregistré.",
-      "toastError": "Échec · verdict non enregistré.",
-      "relativeTimeJustNow": "à l’instant",
-      "relativeTimeMinutesAgo": "il y a {count} min",
-      "relativeTimeHoursAgo": "il y a {count} h",
-      "relativeTimeDaysAgo": "il y a {count} j",
-      "loading": "Chargement…",
-      "savingNotice": "Enregistrement en cours…",
-      "invalidUrl": "URL invalide · utilise http(s)://"
-    },
-    "howto": {
-      "title": "Comment fonctionne la page Calibration",
-      "step1": "1. Lancez une simulation depuis la page d'accueil et laissez-la se terminer.",
-      "step2": "2. Ouvrez le dialogue d'intégration (icône ⌘) et cochez « Public » pour rendre la simulation visible dans l'inbox ci-dessous.",
-      "step3": "3. Activez le mode admin (🔑) avec votre token BASSIRA_ADMIN_TOKEN pour débloquer les boutons de notation.",
-      "step4": "4. Notez chaque prédiction : « Bien anticipé » si l'événement s'est produit, « Partiel » si partiellement correct, « Manqué » sinon.",
-      "note": "Le score de Brier se met à jour en temps réel après chaque notation. Un score < 0,25 indique une calibration excellente."
-    },
-    "adminToken": {
-      "activate": "🔑 Mode admin",
-      "placeholder": "Token BASSIRA_ADMIN_TOKEN",
-      "confirm": "Activer",
-      "active": "Admin ✓",
-      "deactivate": "Déverrouiller",
-      "requiresAdmin": "Activez le mode admin pour noter les prédictions"
     }
   },
   "errors": {
@@ -1590,7 +1487,7 @@
     "nav": {
       "backTitle": "Retour à l’accueil"
     },
-    "eyebrow": "Prédisez avant que ça arrive",
+    "eyebrow": "Stress-testez avant de décider",
     "hero": {
       "title": "Les protocoles d’intelligence stratégique pour ceux qui décident.",
       "subtitle": "Dix modalités d’engagement · du test de résilience express à la simulation de jumeaux numériques. MAD / USD, livraison sous 24 h à 4 semaines."
@@ -1724,7 +1621,7 @@
         "sectorBadge": "Recherche & ONG",
         "name": "Cohort Replay",
         "delay": "10 semaines",
-        "description": "Réplique scientifique d’une cohorte réelle (incubateur, programme, accélérateur) sur 10 semaines avec 3 variants A/B/C pour mesurer la fidélité prédictive.",
+        "description": "Réplique scientifique d’une cohorte réelle (incubateur, programme, accélérateur) sur 10 semaines avec 3 variants A/B/C pour mesurer la stabilité des scénarios.",
         "cta": "Réserver une cohorte",
         "fineprint": "Vente B2B/B2G · incubateurs, bailleurs, fonds",
         "variantsLabel": "Taille de cohorte",
@@ -1746,13 +1643,13 @@
         "sectorBadge": "Directions générales",
         "name": "Crisis Watch",
         "delay": "Engagement annuel",
-        "description": "Veille permanente DirCom et monitoring 24/7. Crisis Drill 1×/mois inclus + alerte prédictive sur signaux faibles.",
+        "description": "Veille permanente DirCom et monitoring 24/7. Crisis Drill 1×/mois inclus + alerte précoce sur signaux faibles.",
         "cta": "Activer Crisis Watch",
         "fineprint": "Engagement minimum 6 mois",
         "bullets": {
           "b1": "Crisis Drill 1×/mois inclus",
           "b2": "Monitoring 24/7 des signaux faibles",
-          "b3": "Alertes prédictives 48 h avant impact",
+          "b3": "Alertes précoces 48 h avant impact",
           "b4": "Brief mensuel sur l’état d’esprit du public",
           "b5": "SLA de réponse < 4 h en cas d’incident",
           "b6": "Hotline DirCom dédiée"
@@ -1792,11 +1689,11 @@
       }
     },
     "trust": {
-      "title": "Pourquoi nos prédictions tombent juste",
+      "title": "Pourquoi nos stress-tests tiennent la route",
       "items": {
         "brier": {
-          "title": "Score de Brier 0,18",
-          "body": "Précision prédictive validée empiriquement face aux résultats observés."
+          "title": "Méthode transparente",
+          "body": "Chaque rapport publie sa méthode et ses limites — ce que la simulation couvre, et ce qu’elle ne prédit pas."
         },
         "multiLocale": {
           "title": "Multilingue FR / AR / EN",
@@ -1825,7 +1722,7 @@
         },
         "accuracy": {
           "question": "Concrètement, à quel point la simulation est-elle fiable ?",
-          "answer": "Nos simulations atteignent une précision élevée grâce à des systèmes multi-agents qui modélisent la complexité du réel. Les indicateurs de performance et les méthodes de validation sont publiés sur la page /calibration."
+          "answer": "Nos simulations ne prédisent pas le réel : elles stress-testent une décision en modélisant finement les dynamiques d’opinion multi-agents. La méthodologie complète et ses limites sont publiées sur la page /methodologie."
         },
         "africaGroundedData": {
           "question": "Que signifie réellement « données ancrées en Afrique » ?",
@@ -2030,7 +1927,7 @@
   "landing": {
     "nav": {
       "ariaLabel": "Navigation principale",
-      "calibration": "Brier score",
+      "calibration": "Méthodologie",
       "pricing": "Tarifs",
       "demo": "Demander une démo",
       "models": "Modèles"
@@ -2058,7 +1955,7 @@
       },
       "cost": {
         "quote": "Les cabinets de conseil facturent six chiffres pour des slides d’hypothèses non vérifiables.",
-        "solution": "Obtenez une rigueur institutionnelle, des prédictions horodatées et un Brier score public, à une fraction du coût."
+        "solution": "Obtenez une rigueur institutionnelle, des stress-tests horodatés et une méthodologie publique, à une fraction du coût."
       }
     },
     "product": {
@@ -2080,11 +1977,11 @@
     },
     "proof": {
       "kicker": "Preuve, pas promesse",
-      "title": "Brier score 0,18 · vérifié, horodaté, public.",
-      "metric": "Brier score moyen",
-      "context": "94 prédictions horodatées · 2024-2026",
-      "body": "Le Brier score mesure la calibration probabiliste d’un modèle prédictif. Plus il est bas, plus le modèle est fiable. 0,18 nous place devant la majorité des cabinets traditionnels · et nous le prouvons publiquement, prédiction par prédiction.",
-      "cta": "Voir le track-record complet"
+      "title": "Méthode publiée · limites documentées · vérifiable.",
+      "metric": "Transparence méthodologique",
+      "context": "Encart « Méthode et limites » dans chaque rapport",
+      "body": "Une simulation Bassira ne prédit pas le réel : elle stress-teste votre décision — objections, dynamiques d’opinion, scénarios de dérapage. La méthode complète et ses limites sont publiées, et chaque rapport les embarque.",
+      "cta": "Découvrir la méthodologie"
     },
     "pricing": {
       "kicker": "Tarifs",
@@ -2191,9 +2088,6 @@
         "meta": "Méthodologie publique · Calibration vérifiée · Données souveraines"
       },
       "gridHeading": "Liste des modèles stratégiques",
-      "brierShort": "Brier",
-      "brierTooltip": "Score de Brier illustratif de la précision prédictive du modèle (plus bas = mieux calibré).",
-      "brierAriaLabel": "Score de Brier illustratif : {value}",
       "cta": {
         "viewModel": "Voir le modèle",
         "viewModelAria": "Voir le modèle : {title}"
@@ -2203,7 +2097,7 @@
         "methodology": "Méthodologie publique",
         "calibration": "Calibration vérifiée",
         "sovereign": "Données souveraines",
-        "calibrationLink": "Consulter le score de Brier global",
+        "calibrationLink": "Consulter notre méthodologie",
         "customLink": "Demander un modèle sur mesure"
       },
       "footer": {
@@ -2252,8 +2146,8 @@
         "methodology": {
           "kicker": "MÉTHODOLOGIE",
           "title": "Comment ce modèle est calibré et audité",
-          "body": "Chaque modèle expose ses agents, ses director events injectés et son verdict shape attendu. Le score de Brier global de la plateforme est publié sans filtre, mis à jour à chaque simulation publique résolue. Les données utilisées dans le cadre d'un mandat client restent souveraines, hébergées sous NDA renforcé.",
-          "calibrationLink": "Consulter le score de Brier global",
+          "body": "Chaque modèle expose ses agents, ses director events injectés et son verdict shape attendu. La méthodologie complète — et ses limites — est publiée et vérifiable. Les données utilisées dans le cadre d’un mandat client restent souveraines, hébergées sous NDA renforcé.",
+          "calibrationLink": "Consulter notre méthodologie",
           "allModelsLink": "Revenir à la liste des modèles"
         }
       },
@@ -2742,6 +2636,47 @@
       "load": "Erreur de chargement des utilisateurs.",
       "stats": "Erreur de chargement des statistiques.",
       "simulations": "Erreur de chargement des simulations."
+    }
+  },
+  "methodologie": {
+    "kicker": "Méthodologie",
+    "title": "Comment fonctionne une simulation Bassira",
+    "sub": "Transparence intégrale : ce que la simulation fait, comment, et où s’arrêtent ses conclusions.",
+    "pipeline": {
+      "title": "De votre document au rapport",
+      "step1": "Votre document ou votre question est transformé en graphe de connaissances (entités, relations, contexte).",
+      "step2": "Des centaines de personas IA sont générées et calibrées sur le scénario.",
+      "step3": "Elles interagissent heure par heure dans des arènes simulées : réseaux sociaux, débats, dynamiques d’opinion.",
+      "step4": "Les signaux sont agrégés en cartographie des réactions, objections et lignes de fracture.",
+      "step5": "Un rapport exécutif est rédigé, avec son encart « Méthode et limites » intégré."
+    },
+    "get": {
+      "title": "Ce que vous obtenez",
+      "c1t": "Stress-test de votre décision",
+      "c1b": "Les objections et angles d’attaque qui émergeront probablement — avant de les rencontrer dans le réel.",
+      "c2t": "Cartographie des réactions",
+      "c2b": "Qui s’oppose, qui adhère, qui bascule, et autour de quels arguments.",
+      "c3t": "Dynamiques de polarisation",
+      "c3b": "Comment le débat se structure et où se forment les lignes de fracture.",
+      "c4t": "Scénarios contrefactuels",
+      "c4b": "Forkez la simulation (« et si… ? ») pour comparer plusieurs versions de votre décision."
+    },
+    "not": {
+      "title": "Ce que Bassira ne fait pas",
+      "n1t": "Prédire l’avenir",
+      "n1b": "Des personas synthétiques ne remplacent pas le monde réel. La simulation explore des possibles ; elle n’annonce pas ce qui arrivera.",
+      "n2t": "Remplacer l’étude terrain",
+      "n2b": "Le stress-test complète les enquêtes et entretiens réels ; il ne s’y substitue pas pour une décision engageante.",
+      "n3t": "Garantir un chiffre",
+      "n3b": "Les résultats varient selon le modèle d’IA utilisé et le paramétrage. Chaque rapport documente ses conditions et ses limites."
+    },
+    "anchor": {
+      "title": "Ancrage sur données réelles (optionnel)",
+      "body": "Une simulation peut être calibrée avec des signaux réels (veille, données de marché) et vos propres données (sondage court, entretiens). Le rapport indique alors précisément sur quoi elle s’ancre."
+    },
+    "cta": {
+      "title": "Stress-testez votre prochaine décision",
+      "button": "Demander un devis"
     }
   }
 }

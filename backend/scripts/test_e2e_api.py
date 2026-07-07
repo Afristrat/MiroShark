@@ -306,7 +306,7 @@ def phase4_prepare(simulation_id):
         body={'task_id': task_id, 'simulation_id': simulation_id}
     )
 
-    ok(f"Preparation complete")
+    ok("Preparation complete")
     ok(f"Time: {time.time()-t0:.1f}s")
 
     # Fetch profiles and config for verification
@@ -437,7 +437,7 @@ def phase7_retrieve_report(report_id):
 
 def main():
     print(f"\n{Colors.BOLD}{'#'*60}")
-    print(f"  MiroShark — End-to-End API Test")
+    print("  MiroShark — End-to-End API Test")
     print(f"  API: {BASE_URL}")
     print(f"  PDF: {os.path.basename(PDF_PATH)}")
     print(f"  Rounds: {MAX_SIM_ROUNDS}")
@@ -479,7 +479,7 @@ def main():
     # ── Summary ──
     total_elapsed = time.time() - total_t0
     print(f"\n{Colors.BOLD}{'='*60}")
-    print(f"  END-TO-END TEST COMPLETE")
+    print("  END-TO-END TEST COMPLETE")
     print(f"{'='*60}{Colors.RESET}")
     ok(f"Total time: {total_elapsed:.1f}s ({total_elapsed/60:.1f} min)")
     ok(f"Project:    {project_id}")
@@ -487,7 +487,7 @@ def main():
     ok(f"Simulation: {simulation_id}")
     ok(f"Report:     {report_id}")
     print()
-    ok(f"Output files:")
+    ok("Output files:")
     for f in sorted(os.listdir(OUT_DIR)):
         size = os.path.getsize(os.path.join(OUT_DIR, f))
         info(f"  {f} ({size:,} bytes)")

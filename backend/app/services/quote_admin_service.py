@@ -45,7 +45,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from ..config import Config
 
 
 logger = logging.getLogger("miroshark.quote_admin")

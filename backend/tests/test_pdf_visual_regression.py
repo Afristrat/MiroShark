@@ -174,7 +174,7 @@ def _load_or_record_hash(name: str, pdf_bytes: bytes) -> tuple[str, bool]:
         golden_path.write_text(current_hash, encoding="utf-8")
         return current_hash, True
 
-    golden_hash = golden_path.read_text(encoding="utf-8").strip()
+    golden_path.read_text(encoding="utf-8").strip()
     return current_hash, False
 
 

@@ -58,7 +58,6 @@ def apply_watermark_to_pdf(
 
     try:
         from reportlab.pdfgen import canvas
-        from reportlab.lib.pagesizes import A4
         from reportlab.lib.colors import HexColor
     except ImportError as exc:
         raise ImportError("reportlab >= 4.5 est requis pour le filigrane") from exc

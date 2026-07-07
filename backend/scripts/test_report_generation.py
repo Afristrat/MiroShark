@@ -36,7 +36,7 @@ def banner(title):
 
 def main():
     print(f"\n{'#'*60}")
-    print(f"  Report Generation Test")
+    print("  Report Generation Test")
     print(f"  {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"{'#'*60}")
 
@@ -112,9 +112,9 @@ def main():
         log_path = os.path.join(report_dir, 'agent_log.jsonl')
         if os.path.exists(log_path):
             with open(log_path) as f:
-                log_lines = [json.loads(l) for l in f if l.strip()]
+                log_lines = [json.loads(ln) for ln in f if ln.strip()]
             print(f"\n  Agent log: {len(log_lines)} entries")
-            tool_calls = [l for l in log_lines if l.get('type') == 'tool_call']
+            tool_calls = [ln for ln in log_lines if ln.get('type') == 'tool_call']
             tool_types = {}
             for tc in tool_calls:
                 name = tc.get('tool_name', 'unknown')
@@ -124,8 +124,8 @@ def main():
                 print(f"    {name}: {count}")
 
             # Check for interview failures
-            interview_calls = [l for l in log_lines if 'interview' in str(l.get('tool_name', '')).lower()]
-            interview_errors = [l for l in log_lines if 'interview' in str(l.get('message', '')).lower() and 'fail' in str(l.get('message', '')).lower()]
+            interview_calls = [ln for ln in log_lines if 'interview' in str(ln.get('tool_name', '')).lower()]
+            interview_errors = [ln for ln in log_lines if 'interview' in str(ln.get('message', '')).lower() and 'fail' in str(ln.get('message', '')).lower()]
             if interview_calls:
                 print(f"\n  Interview calls: {len(interview_calls)}")
             if interview_errors:

@@ -8,7 +8,7 @@ en HS256 avec un secret fourni via `monkeypatch.setenv("SUPABASE_JWT_SECRET", ..
 from __future__ import annotations
 
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 from unittest.mock import MagicMock
 
 import jwt as pyjwt

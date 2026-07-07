@@ -27,12 +27,9 @@ Couvre :
 from __future__ import annotations
 
 import io
-import sys
-from typing import Any, Optional
 from unittest.mock import MagicMock, patch
 
 import pytest
-import yaml
 
 # ── Détection WeasyPrint disponible (GTK requis sur Linux/Windows) ────────────
 def _weasyprint_available() -> bool:

@@ -19,14 +19,11 @@ from unittest.mock import MagicMock
 
 import jwt as pyjwt
 import pytest
-from flask import Blueprint, Flask, jsonify
+from flask import Blueprint, jsonify
 
 from app import create_app
 from app.auth import (
-    decorators as auth_decorators,
     soft_check_self_service,
-    require_org_membership,
-    require_self_service_enabled,
 )
 from app.auth import jwt_verifier
 from app.auth import supabase_client

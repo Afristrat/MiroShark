@@ -66,15 +66,6 @@
               >
                 {{ $t(`models.cards.sector.${m.sector}`) }}
               </span>
-              <span
-                class="ml-brier-pill"
-                :title="$t('models.list.brierTooltip')"
-                :aria-label="$t('models.list.brierAriaLabel', { value: brierLabel(m.brier_illustrative) })"
-              >
-                <span class="ml-brier-dot" aria-hidden="true">●</span>
-                <span class="ml-brier-label">{{ $t('models.list.brierShort') }}</span>
-                <span class="ml-brier-value">{{ brierLabel(m.brier_illustrative) }}</span>
-              </span>
             </header>
 
             <h3 class="ml-card-title">
@@ -206,11 +197,6 @@ const heroHeadingId = 'ml-hero-h'
 const gridHeadingId = 'ml-grid-h'
 const trustHeadingId = 'ml-trust-h'
 
-// Format Brier court (0.18) — typographie courte mais préfixée 0. pour rester lisible.
-function brierLabel (value) {
-  if (typeof value !== 'number' || !Number.isFinite(value)) return '—'
-  return value.toFixed(2)
-}
 </script>
 
 <style scoped>
@@ -509,34 +495,6 @@ function brierLabel (value) {
 .ml-sector-pill--programme-entrepreneurial {
   background: color-mix(in srgb, var(--wi-secondary-container) 40%, var(--wi-surface));
   color: var(--wi-on-secondary-container);
-}
-
-.ml-brier-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding-inline: 10px;
-  padding-block: 4px;
-  border-radius: var(--wi-radius-pill);
-  background: var(--wi-surface-container-low);
-  border: 1px solid var(--wi-outline-variant);
-  font-family: var(--wi-font-heading);
-  font-size: 11px;
-  color: var(--wi-on-surface-variant);
-}
-.ml-brier-dot {
-  color: var(--wi-secondary);
-  font-size: 8px;
-}
-.ml-brier-label {
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-.ml-brier-value {
-  font-weight: 700;
-  color: var(--wi-on-surface);
-  font-variant-numeric: tabular-nums;
 }
 
 .ml-card-title {

@@ -82,11 +82,14 @@ const routes = [
     props: { verifiedOnly: true }
   },
   {
-    // Public calibration page — Brier score + calibration plot served
-    // as the commercial argument. No auth wall by design (US-021).
-    path: '/calibration',
-    name: 'Calibration',
-    component: () => import('../views/CalibrationView.vue')
+    // Public methodology page — remplace l'ancienne page calibration
+    // (US-201, ADR-002) : la transparence méthode + limites EST l'argument
+    // commercial ; plus aucun claim chiffré non étayé. Alias conservé pour
+    // les liens externes historiques vers /calibration.
+    path: '/methodologie',
+    alias: '/calibration',
+    name: 'Methodologie',
+    component: () => import('../views/MethodologieView.vue')
   },
   {
     // Public commercial landing — 3 service packages (US-023). Pas de

@@ -301,8 +301,8 @@ def _render_markdown(s: Dict[str, Any]) -> str:
     # Overview
     lines.append("## Overview")
     lines.append("")
-    lines.append(f"| Metric | Value |")
-    lines.append(f"|--------|-------|")
+    lines.append("| Metric | Value |")
+    lines.append("|--------|-------|")
     lines.append(f"| Total LLM calls | {s['total_calls']} |")
     lines.append(f"| Errors | {s['total_errors']} |")
     lines.append(f"| Estimated cost | **${s['total_cost']:.4f}** |")

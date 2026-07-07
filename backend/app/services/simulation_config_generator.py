@@ -1193,7 +1193,7 @@ Context:
             logger.warning(f"Prediction market generation failed: {e}")
             # Fallback: derive a market from the simulation requirement
             return [{
-                "question": f"Will the scenario described have a net positive public reaction?",
+                "question": "Will the scenario described have a net positive public reaction?",
                 "outcome_a": "YES",
                 "outcome_b": "NO",
                 "initial_probability": 0.55,

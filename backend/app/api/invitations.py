@@ -38,8 +38,6 @@ from flask import Blueprint, g, jsonify, request
 from ..auth.decorators import (
     is_super_admin_email,
     require_auth,
-    require_org_membership,
-    require_owner_or_admin,
 )
 from ..auth.supabase_client import (
     SupabaseConfigError,

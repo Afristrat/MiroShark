@@ -140,7 +140,7 @@ def _wrap_text(
     if cur and len(lines) < max_lines:
         lines.append(cur)
 
-    if len(lines) >= max_lines and len(words) > sum(len(l.split()) for l in lines):
+    if len(lines) >= max_lines and len(words) > sum(len(ln.split()) for ln in lines):
         last = lines[-1]
         while last and _text_width(draw, last + "…", font) > max_width:
             last = last[:-1].rstrip()

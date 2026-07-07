@@ -1,6 +1,6 @@
 {
   "project": "MiroShark — chantiers post-déploiement",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "createdAt": "2026-04-29",
   "owner": "Med Amine MANSOURI IDRISSI",
   "qualityGates": {
@@ -3472,8 +3472,8 @@
     {
       "id": "US-113",
       "chantier": "R-stripe-native",
-      "title": "Stripe Checkout API native (Payment Sessions + webhook)",
-      "description": "Remplacer le bridge manuel Stripe Payment Link (US-104) par l'API native : création de Payment Sessions via `stripe.checkout.sessions.create` avec metadata quote_id + email + amount. Webhook `checkout.session.completed` côté backend qui marque le quote en `paid` et envoie automatiquement l'email `quote_payment_confirmation.html` au client. Nécessite STRIPE_SECRET_KEY + STRIPE_WEBHOOK_SECRET dans Coolify. Story BLOQUÉE tant que Amine n'a pas créé le compte Stripe et fourni les clés.",
+      "title": "[REMPLACÉE PAR US-205 — ne pas exécuter] Stripe Checkout API native (Payment Sessions + webhook)",
+      "description": "OBSOLÈTE (2026-07-07) : périmètre repris et étendu par US-205 (chantier V2-A-blocA, pricing inclus). Fermée administrativement, pas implémentée. Remplacer le bridge manuel Stripe Payment Link (US-104) par l'API native : création de Payment Sessions via `stripe.checkout.sessions.create` avec metadata quote_id + email + amount. Webhook `checkout.session.completed` côté backend qui marque le quote en `paid` et envoie automatiquement l'email `quote_payment_confirmation.html` au client. Nécessite STRIPE_SECRET_KEY + STRIPE_WEBHOOK_SECRET dans Coolify. Story BLOQUÉE tant que Amine n'a pas créé le compte Stripe et fourni les clés.",
       "acceptanceCriteria": [
         "Module backend/app/services/stripe_service.py avec create_checkout_session(quote_id, amount, currency, customer_email)",
         "Endpoint POST /api/admin/quotes/<id>/create-checkout-session (super-admin)",
@@ -3482,14 +3482,17 @@
         "Frontend AdminQuotesView : bouton 'Créer Stripe Checkout' (à la place du Payment Link manuel quand mode native dispo)",
         "Tests pytest mocked pour webhook (signature valide + invalide)"
       ],
-      "passes": false,
+      "passes": true,
       "blocked": true,
       "blocked_reason": "Amine doit créer compte Stripe + poser STRIPE_SECRET_KEY + STRIPE_WEBHOOK_SECRET dans Coolify",
       "dependencies": [],
       "metadata": {
         "estimated_hours": 4,
-        "priority": "P1"
-      }
+        "priority": "P1",
+        "supersededBy": "US-205",
+        "supersededAt": "2026-07-07"
+      },
+      "completedAt": "2026-07-07T00:00:00Z"
     },
     {
       "id": "US-114",
@@ -4491,6 +4494,162 @@
         "ralph_session": "2026-05-07"
       },
       "completedAt": "2026-05-07T01:55:00Z"
+    },
+    {
+      "id": "US-201",
+      "chantier": "V2-A-blocA",
+      "title": "Repositionnement « stress-test de décision » : purge du claim prédictif",
+      "description": "ADR-002. Retirer « prédiction »/« Brier 0,18 vérifié » de tout le copy commercial (3 locales fr/en/ar), Home trust strip, /calibration (devient page Méthodologie, cf. EP-03 de docs/10-execution-prompts.md), templates PDF. Le mot « prédiction » disparaît du vocabulaire commercial tant que < 20 outcomes réels publics.",
+      "acceptanceCriteria": [
+        "Recherche insensible à la casse des motifs 'prédi' et 'Brier' dans frontend/src/locales et backend/app/services/report_pdf : 0 occurrence commerciale non étayée (mentions techniques internes du moteur polymarket tolérées)",
+        "Page /calibration remplacée par une page Méthodologie sans claim chiffré inventé, avec section « Ce que Bassira ne fait pas »",
+        "Parité i18n 3 locales préservée (mêmes clés)",
+        "cd frontend && npm run build OK"
+      ],
+      "passes": true,
+      "dependencies": [],
+      "metadata": {
+        "origin": "docs/04-feature-backlog.md (cadrage V2 2026-07-07, verdict ratifié)",
+        "adr": "docs/08-decisions-log.md",
+        "validation": "npm run build OK (36.9s) + pytest 1637 passed/0 failed + parité i18n 2305 clés × 3 locales vérifiée par script"
+      },
+      "completedAt": "2026-07-07T19:30:00+01:00"
+    },
+    {
+      "id": "US-202",
+      "chantier": "V2-A-blocA",
+      "title": "Encart « Méthode et limites » PDF + marquage machine-readable (AI Act Art. 50)",
+      "description": "ADR-002 + échéance 2026-08-02. Chaque variante PDF (exec/full/public/one-pager) embarque en page 2 un encart trilingue Méthode & limites (personas synthétiques, non-prédictif, arènes utilisées, ancrage éventuel) + métadonnée PDF/XMP synthetic_content=true détectable machine.",
+      "acceptanceCriteria": [
+        "Les 4 variantes PDF générées contiennent l'encart (test pipeline E2E existant étendu)",
+        "pikepdf/exiftool lit la métadonnée synthetic_content=true sur un PDF généré",
+        "Encart rendu correctement en RTL pour la variante arabe",
+        "Tests backend pytest verts"
+      ],
+      "passes": false,
+      "dependencies": [
+        "US-201"
+      ],
+      "metadata": {
+        "origin": "docs/04-feature-backlog.md (cadrage V2 2026-07-07, verdict ratifié)",
+        "adr": "docs/08-decisions-log.md"
+      },
+      "completedAt": null
+    },
+    {
+      "id": "US-203",
+      "chantier": "V2-A-blocA",
+      "title": "Migration payload riche devis → Supabase + volume uploads persistant",
+      "description": "ADR-005, P0 perte de données. Le payload complet du devis (full_name, message, geo_focus…) actuellement en JSON filesystem (backend/uploads/quotes/) passe en Supabase (table quote_payloads avec RLS org). Vérifier/monter un volume persistant Coolify pour uploads/ en mesure transitoire pour les artefacts de simulation.",
+      "acceptanceCriteria": [
+        "Nouvelle migration SQL avec RLS activée + docs/02-data-dictionary.md mis à jour DANS LE MÊME COMMIT",
+        "Un devis soumis en préprod survit à un redeploy complet (preuve : redeploy + relecture)",
+        "L'admin /admin/quotes lit le payload depuis Supabase",
+        "pytest verts"
+      ],
+      "passes": false,
+      "dependencies": [],
+      "metadata": {
+        "origin": "docs/04-feature-backlog.md (cadrage V2 2026-07-07, verdict ratifié)",
+        "adr": "docs/08-decisions-log.md"
+      },
+      "completedAt": null
+    },
+    {
+      "id": "US-204",
+      "chantier": "V2-A-blocA",
+      "title": "Resend opérationnel en prod : notifications devis + liens bassira.ma",
+      "description": "ADR-013. Expéditeur = adresse AI-MPower ; TOUS les liens de renvoi = bassira.ma. Corriger le défaut SQL pdf_branding.footer_right ('bassira.ai' → 'bassira.ma') par migration + fallback code. Notification email à chaque devis reçu.",
+      "acceptanceCriteria": [
+        "RESEND_API_KEY documentée dans .env.example et posée en env Coolify (nom seulement, jamais la valeur)",
+        "Devis test en prod → email reçu < 2 min, expéditeur AI-MPower, liens vérifiés bassira.ma",
+        "Migration SQL footer_right='bassira.ma' + aucune occurrence active de bassira.ai dans code et SQL (hors historique git)",
+        "pytest verts"
+      ],
+      "passes": false,
+      "dependencies": [],
+      "metadata": {
+        "origin": "docs/04-feature-backlog.md (cadrage V2 2026-07-07, verdict ratifié)",
+        "adr": "docs/08-decisions-log.md"
+      },
+      "completedAt": null
+    },
+    {
+      "id": "US-205",
+      "chantier": "V2-A-blocA",
+      "title": "Stripe : pricing (products/prices) + Checkout natif + webhook",
+      "description": "Reprend et remplace US-113 (v1). Créer les products/prices Stripe des packages (MAD/USD, JAMAIS EUR), câbler Payment Sessions sur /offres, webhook de confirmation → quote_ownership.status='paid'.",
+      "acceptanceCriteria": [
+        "Products/prices visibles dans le dashboard Stripe (test mode) pour les 3 packages",
+        "Paiement test mode complet → status='paid' automatique via webhook (signature vérifiée)",
+        "Aucun secret Stripe hardcodé (env uniquement)",
+        "pytest + build verts"
+      ],
+      "passes": false,
+      "dependencies": [],
+      "metadata": {
+        "origin": "docs/04-feature-backlog.md (cadrage V2 2026-07-07, verdict ratifié)",
+        "adr": "docs/08-decisions-log.md"
+      },
+      "completedAt": null
+    },
+    {
+      "id": "US-206",
+      "chantier": "V2-A-blocA",
+      "title": "Fermer l'IDOR /api/report/<id> : auth sur get/download/generate/chat",
+      "description": "P0 sécurité documenté SECURITY_AUDIT_2026-05.md:52-71, jamais fermé. Ajouter le contrôle d'accès (org membership ou lien signé) sur get_report, download, generate, chat.",
+      "acceptanceCriteria": [
+        "Accès anonyme aux 4 endpoints → 401/403 (sauf lien de delivery signé valide)",
+        "backend/tests/test_idor.py étendu pour couvrir les 4 endpoints, vert",
+        "Le flux de delivery par URL signée (report_deliveries) fonctionne toujours (non-régression)"
+      ],
+      "passes": false,
+      "dependencies": [],
+      "metadata": {
+        "origin": "docs/04-feature-backlog.md (cadrage V2 2026-07-07, verdict ratifié)",
+        "adr": "docs/08-decisions-log.md"
+      },
+      "completedAt": null
+    },
+    {
+      "id": "US-207",
+      "chantier": "V2-A-blocA",
+      "title": "Serveur WSGI de production + Config.validate() fail-closed",
+      "description": "ADR-006. Remplacer app.run() (Werkzeug dev, backend/run.py:45) par gunicorn/waitress en prod. Config.validate() refuse de booter si NEO4J_PASSWORD == 'miroshark' (défaut connu) ou FLASK_DEBUG actif en prod.",
+      "acceptanceCriteria": [
+        "Le conteneur prod démarre sur le serveur WSGI (preuve : logs de boot)",
+        "Boot refusé avec message explicite si NEO4J_PASSWORD défaut ou FLASK_DEBUG=true en prod (test unitaire)",
+        "Parcours critique fonctionnel après bascule (smoke Playwright)",
+        "pytest verts"
+      ],
+      "passes": false,
+      "dependencies": [],
+      "metadata": {
+        "origin": "docs/04-feature-backlog.md (cadrage V2 2026-07-07, verdict ratifié)",
+        "adr": "docs/08-decisions-log.md"
+      },
+      "completedAt": null
+    },
+    {
+      "id": "US-208",
+      "chantier": "V2-A-blocA",
+      "title": "Redis + worker RQ PDF actifs en prod",
+      "description": "Le worker async existe (pdf_generation_worker.py) mais retombe en sync faute de REDIS_URL. Déclarer Redis dans le compose Coolify + service worker ; le fallback sync loggue WARNING.",
+      "acceptanceCriteria": [
+        "REDIS_URL et service worker déclarés dans le compose (sans container_name — piège Coolify)",
+        "Une génération full PDF en préprod passe par la queue (preuve : logs job async)",
+        "Fallback sync loggé WARNING si Redis absent (test)",
+        "pytest verts"
+      ],
+      "passes": false,
+      "dependencies": [
+        "US-207"
+      ],
+      "metadata": {
+        "origin": "docs/04-feature-backlog.md (cadrage V2 2026-07-07, verdict ratifié)",
+        "adr": "docs/08-decisions-log.md"
+      },
+      "completedAt": null
     }
   ]
 }

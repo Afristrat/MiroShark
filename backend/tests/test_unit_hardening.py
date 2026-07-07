@@ -10,9 +10,7 @@ Ces tests vérifient que :
 from __future__ import annotations
 
 import importlib
-import os
 
-import pytest
 
 
 def _reload_config():
@@ -94,7 +92,6 @@ def test_cors_origins_default_includes_prod_and_local(monkeypatch):
     flask_app = app.create_app()
 
     # Récupère les origins effectives via flask-cors (stockées sur l'app)
-    cors_config = flask_app.extensions.get('cors')
     # flask-cors stocke la config sous _options ou via app.config
     # On lit plutôt via la requête pour valider en bout de chaîne :
     client = flask_app.test_client()

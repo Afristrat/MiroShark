@@ -31,7 +31,6 @@ from __future__ import annotations
 import csv
 import json
 import logging
-import os
 import re
 import uuid
 from pathlib import Path
@@ -41,20 +40,15 @@ from .schema import (
     AgentProfile,
     Counterfactual,
     Demographics,
-    DemographicSegment,
     DirectorEvent,
     GeneratedArticle,
     Outline,
     Outcome,
     PDFReportContext,
     QualityMetrics,
-    Round,
-    Section,
     SimConfig,
     SimState,
-    SocialEdge,
     SocialNetwork,
-    SocialNode,
     Trajectory,
 )
 
@@ -743,7 +737,7 @@ def _normalize_article_dict(item: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     article_text = normalized.get("article_text")
     if article_text and isinstance(article_text, str):
         # Extraire le titre : première ligne non vide
-        lines = [l.strip() for l in article_text.splitlines() if l.strip()]
+        lines = [ln.strip() for ln in article_text.splitlines() if ln.strip()]
         title_line = lines[0] if lines else ""
         # Supprimer le # Markdown si présent
         if title_line.startswith("#"):

@@ -24,7 +24,7 @@
         >
           {{ $t('nav.models') }}
         </router-link>
-        <router-link to="/calibration" class="app-header__link" :title="$t('nav.calibrationTitle')">
+        <router-link to="/methodologie" class="app-header__link" :title="$t('nav.calibrationTitle')">
           {{ $t('nav.calibration') }}
         </router-link>
         <router-link to="/offres" class="app-header__link" :title="$t('nav.offersTitle')">

@@ -114,7 +114,7 @@ def phase5_config(graph_id, document_text):
     # SimulationParameters has a to_dict method
     config = result.to_dict() if hasattr(result, 'to_dict') else result
 
-    print(f"\n  Time config:")
+    print("\n  Time config:")
     tc = config.get('time_config', {})
     print(f"    Total hours: {tc.get('total_simulation_hours')}")
     print(f"    Minutes per round: {tc.get('minutes_per_round')}")
@@ -125,7 +125,7 @@ def phase5_config(graph_id, document_text):
               f"stance={ac.get('stance')}, sentiment={ac.get('sentiment_bias')}, "
               f"influence={ac.get('influence_weight')}")
 
-    print(f"  Event config:")
+    print("  Event config:")
     ec = config.get('event_config', {})
     posts = ec.get('initial_posts', [])
     print(f"    Initial posts: {len(posts)}")
@@ -214,10 +214,10 @@ def phase6_simulation(config, storage, graph_id):
     config['simulation_requirement'] = SIMULATION_REQUIREMENT
     with open(config_path, 'w') as f:
         json.dump(config, f, ensure_ascii=False, indent=2)
-    print(f"  Wrote simulation config")
+    print("  Wrote simulation config")
 
     # Run Reddit-only simulation (simplest, no CSV needed)
-    print(f"\n  Starting Reddit-only simulation (3 rounds)...")
+    print("\n  Starting Reddit-only simulation (3 rounds)...")
     print(f"  Config: {len(agent_configs)} agents, 3 rounds, 60 min/round")
 
     import subprocess
@@ -281,11 +281,11 @@ def phase6_simulation(config, storage, graph_id):
                 })
 
         print(f"  Agents active: {len(agents_active)}")
-        print(f"  Action breakdown:")
+        print("  Action breakdown:")
         for at, count in sorted(action_types.items(), key=lambda x: -x[1]):
             print(f"    {at}: {count}")
 
-        print(f"\n  Sample posts:")
+        print("\n  Sample posts:")
         for p in posts[:5]:
             print(f"    [R{p['round']}] {p['agent']}: {p['content'][:150]}")
 
@@ -310,7 +310,7 @@ def phase6_simulation(config, storage, graph_id):
 
 def main():
     print(f"\n{'#'*60}")
-    print(f"  MiroShark Pipeline Test — Phases 5-6")
+    print("  MiroShark Pipeline Test — Phases 5-6")
     print(f"  Model: {Config.LLM_MODEL_NAME}")
     print(f"  Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"{'#'*60}")
