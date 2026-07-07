@@ -164,7 +164,14 @@ def _safe_load_json(path: Path) -> Optional[Dict[str, Any]]:
 
 
 def read_quote_payload(quote_id: str) -> Optional[Dict[str, Any]]:
-    """Lit le payload original d'un devis depuis le filesystem."""
+    """Lit le payload original d'un devis — Supabase d'abord (US-203),
+    filesystem en repli (devis pré-US-203 non backfillés, dev local).
+    """
+    from . import quote_ownership as qo
+
+    payload = qo.get_quote_payload_from_supabase(quote_id)
+    if payload is not None:
+        return payload
     qdir = quotes_dir()
     payload_path = _quote_payload_path(qdir, quote_id)
     if payload_path is None:
@@ -220,7 +227,16 @@ def list_quotes(
     Retourne ``(items, total)`` où ``items`` est la page demandée (avec
     ``payload`` + ``status``) et ``total`` est le nombre total de devis
     correspondant au filtre.
+
+    US-203 : Supabase d'abord (source de vérité du payload) ; le listing
+    filesystem legacy ne sert plus que de repli (Supabase non configuré
+    ou en erreur). Les extras du sidecar (history, payment_link, notes)
+    sont fusionnés best-effort depuis le filesystem quand il est présent.
     """
+    supabase_page = _list_quotes_supabase(limit, offset, status_filter)
+    if supabase_page is not None:
+        return supabase_page
+
     qdir = quotes_dir()
     if not qdir.exists():
         return [], 0
@@ -280,6 +296,79 @@ def list_quotes(
     total = len(items)
     page = items[offset : offset + limit]
     return page, total
+
+
+def _list_quotes_supabase(
+    limit: int,
+    offset: int,
+    status_filter: Optional[str],
+) -> Optional[Tuple[List[Dict[str, Any]], int]]:
+    """Listing Supabase-first (US-203). ``None`` → repli filesystem.
+
+    Shape de sortie identique au listing legacy (``payload`` + ``status``
+    dict). ``filename`` vaut ``None`` (aucun consommateur — vérifié) ;
+    les extras du sidecar filesystem (history, payment_link, notes,
+    delivered_url) sont fusionnés best-effort quand le fichier existe
+    encore (devis émis avant un éventuel reset de volume).
+    """
+    from . import quote_ownership as qo
+
+    page = qo.list_quotes_with_payload(
+        limit=limit, offset=offset, status_filter=status_filter,
+    )
+    if page is None:
+        return None
+
+    qdir = quotes_dir()
+    # Le dossier peut ne pas exister (volume réinitialisé — le scénario même
+    # que US-203 corrige) : dans ce cas, zéro accès filesystem.
+    fs_available = qdir.exists()
+    items: List[Dict[str, Any]] = []
+    for row in page["items"]:
+        quote_id = row.get("quote_id") or ""
+        payload = row.get("payload")
+        if not isinstance(payload, dict) or not payload:
+            # Devis pré-US-203 : payload seulement sur le filesystem.
+            payload_path = (
+                _quote_payload_path(qdir, quote_id) if fs_available else None
+            )
+            payload = (
+                _safe_load_json(payload_path) if payload_path else None
+            ) or {
+                "quote_id": quote_id,
+                "email": row.get("customer_email"),
+                "package": row.get("package_id"),
+            }
+
+        # Extras sidecar best-effort (le statut, lui, vient de Supabase).
+        status_data = _default_status_payload()
+        if fs_available:
+            payload_path = _quote_payload_path(qdir, quote_id)
+            if payload_path is not None:
+                sidecar = _status_sidecar_path(payload_path)
+                if sidecar.exists():
+                    status_data = _safe_load_json(sidecar) or status_data
+
+        current_status = (
+            row.get("status")
+            if row.get("status") in VALID_STATUSES
+            else DEFAULT_STATUS
+        )
+        items.append({
+            "quote_id": quote_id,
+            "filename": None,
+            "submitted_at": payload.get("submitted_at") or row.get("created_at"),
+            "payload": payload,
+            "status": {
+                "status": current_status,
+                "history": status_data.get("history") or [],
+                "payment_link": status_data.get("payment_link"),
+                "last_email_sent_at": status_data.get("last_email_sent_at"),
+                "notes": status_data.get("notes"),
+                "delivered_url": status_data.get("delivered_url"),
+            },
+        })
+    return items, page["total"]
 
 
 def _quote_id_from_filename(filename: str) -> str:

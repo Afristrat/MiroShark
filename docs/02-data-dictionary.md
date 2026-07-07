@@ -62,8 +62,9 @@ Métadonnées légères ; le payload riche (profils, trajectoire, state.json) vi
 | metadata | jsonb | not null, default '{}' | | non |
 
 ## `quote_ownership`
-⚠️ Le payload riche du devis (full_name, message, geo_focus…) est **filesystem-only**
-(`backend/uploads/quotes/`) — PII sur volume éphémère = risque de perte P0 (ADR-005).
+✅ US-203 (migration 20260707_001) : la colonne `payload` fait de Supabase la **source
+de vérité** du devis complet ; `backend/uploads/quotes/` est rétrogradé en cache
+best-effort (le bug P0 « leads PII sur volume éphémère » est corrigé à la racine).
 | Colonne | Type | Contraintes | Description | PII |
 |---|---|---|---|---|
 | quote_id | text | pk | ex. q_abc12345 | non |
@@ -73,6 +74,7 @@ Métadonnées légères ; le payload riche (profils, trajectoire, state.json) vi
 | status | text | not null, check in (received, reviewing, quoted, declined, paid, in_progress, delivered) | | non |
 | created_at | timestamptz | not null, default now() | | non |
 | metadata | jsonb | not null, default '{}' | | non |
+| payload | jsonb | not null, default '{}' | payload complet à la soumission (full_name, phone, message, geo_focus…) — source de vérité US-203 | **oui** (full_name, email, phone, client_ip) |
 
 ## `org_invitations`
 | Colonne | Type | Contraintes | Description | PII |

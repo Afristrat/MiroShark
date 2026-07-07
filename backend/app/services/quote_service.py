@@ -522,20 +522,24 @@ def _send_client_confirmation(record: Dict[str, Any]) -> None:
         )
 
 
-def _link_quote_ownership_best_effort(
+def _persist_quote_supabase(
     quote_id: str,
     record: Dict[str, Any],
     org_id: Optional[str],
-) -> None:
-    """Lien best-effort ``quote_id → org_id`` dans Supabase (US-114).
+) -> bool:
+    """Persiste le devis COMPLET (payload inclus) dans Supabase (US-203).
+
+    Depuis US-203, Supabase est la SOURCE DE VÉRITÉ du payload — le
+    fichier ``quotes/quote_*.json`` n'est plus qu'un cache best-effort
+    (volume Coolify éphémère : bug de perte de leads corrigé à la racine).
 
     - Si ``org_id`` explicite fourni → on linke à celui-ci.
     - Sinon → fallback vers l'org par défaut Bassira (``aimpower-bassira``).
-    - Si Supabase n'est pas configuré (dev local) → no-op silencieux,
-      le filesystem reste source de vérité.
 
-    Cette fonction ne lève jamais : les devis pré-US-114 ou les
-    déploiements sans Supabase doivent rester fonctionnels.
+    Returns:
+        ``True`` si la ligne (avec payload) est écrite dans Supabase,
+        ``False`` sinon (non configuré, org introuvable, erreur) — le
+        caller décide alors si le cache filesystem suffit.
     """
     try:
         from .quote_ownership import link_quote_to_org
@@ -550,22 +554,22 @@ def _link_quote_ownership_best_effort(
                 target_org_id = get_default_super_admin_org_id()
             except SupabaseConfigError:
                 logger.info(
-                    "quote_ownership skipped for %s: Supabase not configured.",
+                    "quote Supabase persist skipped for %s: not configured.",
                     quote_id,
                 )
-                return
+                return False
             except Exception as exc:  # noqa: BLE001
                 logger.warning(
-                    "quote_ownership default-org lookup failed for %s: %s",
+                    "quote default-org lookup failed for %s: %s",
                     quote_id, exc.__class__.__name__,
                 )
-                return
+                return False
         if not target_org_id:
             logger.info(
-                "quote_ownership skipped for %s: no default org available.",
+                "quote Supabase persist skipped for %s: no default org.",
                 quote_id,
             )
-            return
+            return False
 
         link_quote_to_org(
             quote_id,
@@ -573,12 +577,15 @@ def _link_quote_ownership_best_effort(
             customer_email=record.get("email") or None,
             package_id=record.get("package") or None,
             status="received",
+            payload=record,
         )
-    except Exception as exc:  # noqa: BLE001 — best-effort by design
+        return True
+    except Exception as exc:  # noqa: BLE001 — le caller arbitre
         logger.warning(
-            "quote_ownership link failed for %s: %s",
+            "quote Supabase persist failed for %s: %s",
             quote_id, exc.__class__.__name__,
         )
+        return False
 
 
 def submit_quote(
@@ -614,21 +621,33 @@ def submit_quote(
         user_agent=user_agent,
     )
 
+    # US-203 — Supabase est la source de vérité du payload ; le fichier
+    # local n'est plus qu'un cache best-effort (volume Coolify éphémère).
+    # Le devis est considéré perdu (500) UNIQUEMENT si les DEUX
+    # persistances échouent.
+    supabase_ok = _persist_quote_supabase(quote_id, record, org_id)
+
+    file_ok = True
     try:
         _write_record(record)
     except OSError as exc:
-        # Disk-write failure is the one thing that *should* surface as a
-        # 500 — there is no other place the lead is captured. The
-        # frontend will show the user a retry prompt.
-        logger.error("Failed to persist quote %s: %s", quote_id, exc)
+        file_ok = False
+        level = logger.warning if supabase_ok else logger.error
+        level("Filesystem cache write failed for quote %s: %s", quote_id, exc)
+
+    if not supabase_ok and not file_ok:
+        # Aucune persistance n'a abouti — le lead serait perdu sans trace.
         return 500, {
             "success": False,
             "error_code": "STORAGE_ERROR",
             "error": "Could not persist the quote. Please retry.",
         }
-
-    # US-114 — lien Supabase best-effort (jamais bloquant).
-    _link_quote_ownership_best_effort(quote_id, record, org_id)
+    if not supabase_ok:
+        logger.warning(
+            "Quote %s persisted on filesystem ONLY (Supabase down/absent) — "
+            "risque de perte au prochain redeploy si non backfillé.",
+            quote_id,
+        )
 
     # Best-effort emails — never block success.
     _send_email(record)            # internal sales notification (legacy)

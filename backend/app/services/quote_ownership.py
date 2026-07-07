@@ -60,6 +60,7 @@ def link_quote_to_org(
     customer_email: Optional[str] = None,
     package_id: Optional[str] = None,
     status: str = "received",
+    payload: Optional[Dict[str, Any]] = None,
     client: Any = None,
 ) -> bool:
     """INSERT idempotent dans ``public.quote_ownership``.
@@ -70,6 +71,8 @@ def link_quote_to_org(
         customer_email : email saisi à la soumission (peut être None).
         package_id : valeur de ``payload.package`` à la soumission.
         status : statut courant (default ``'received'``).
+        payload : payload complet du devis (US-203 — source de vérité
+                  Supabase ; le filesystem n'est plus qu'un cache).
         client : client Supabase injecté (pour tests).
 
     Returns:
@@ -87,18 +90,20 @@ def link_quote_to_org(
         raise ValueError(f"Invalid status: {status!r}")
 
     cli = client or get_supabase_admin()
-    payload: Dict[str, Any] = {
+    row: Dict[str, Any] = {
         "quote_id": quote_id,
         "org_id": org_id,
         "status": status,
     }
     if customer_email:
-        payload["customer_email"] = customer_email
+        row["customer_email"] = customer_email
     if package_id:
-        payload["package_id"] = package_id
+        row["package_id"] = package_id
+    if payload:
+        row["payload"] = payload
 
     try:
-        cli.table("quote_ownership").insert(payload).execute()
+        cli.table("quote_ownership").insert(row).execute()
         return True
     except Exception as exc:  # noqa: BLE001 — duplicate key, etc.
         msg = str(exc)
@@ -224,6 +229,91 @@ def update_quote_status_in_supabase(
             quote_id, exc.__class__.__name__,
         )
         return False
+
+
+def get_quote_payload_from_supabase(
+    quote_id: str,
+    *,
+    client: Any = None,
+) -> Optional[Dict[str, Any]]:
+    """Retourne le payload complet du devis depuis Supabase (US-203).
+
+    Returns ``None`` si la ligne n'existe pas, si le payload est vide
+    (``{}`` — devis pré-US-203 jamais backfillé) ou sur erreur Supabase
+    (fail-soft : le caller bascule sur le cache filesystem).
+    """
+    if not quote_id or not isinstance(quote_id, str):
+        return None
+    try:
+        cli = client or get_supabase_admin()
+        response = (
+            cli.table("quote_ownership")
+            .select("payload")
+            .eq("quote_id", quote_id)
+            .limit(1)
+            .execute()
+        )
+        rows = getattr(response, "data", None) or []
+        if not rows:
+            return None
+        payload = rows[0].get("payload")
+        if isinstance(payload, dict) and payload:
+            return payload
+        return None
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(
+            "get_quote_payload_from_supabase failed for %s: %s",
+            quote_id, exc.__class__.__name__,
+        )
+        return None
+
+
+def list_quotes_with_payload(
+    *,
+    limit: int = 50,
+    offset: int = 0,
+    status_filter: Optional[str] = None,
+    client: Any = None,
+) -> Optional[Dict[str, Any]]:
+    """Liste paginée des devis AVEC payload, pour la console admin (US-203).
+
+    Vue super-admin (service_role — voit toutes les orgs). Retourne
+    ``{"items": [rows], "total": int}`` où chaque row contient
+    ``quote_id, org_id, customer_email, package_id, status, created_at,
+    payload``. Retourne ``None`` sur erreur/non-configuré (fail-soft :
+    le caller bascule sur le listing filesystem legacy).
+    """
+    limit = max(1, min(int(limit), 500))
+    offset = max(0, int(offset))
+    try:
+        cli = client or get_supabase_admin()
+        query = (
+            cli.table("quote_ownership")
+            .select(
+                "quote_id, org_id, customer_email, package_id, status, "
+                "created_at, payload",
+                count="exact",
+            )
+        )
+        if status_filter and status_filter in _VALID_STATUSES:
+            query = query.eq("status", status_filter)
+        response = (
+            query
+            .order("created_at", desc=True)
+            .range(offset, offset + limit - 1)
+            .execute()
+        )
+        rows = getattr(response, "data", None) or []
+        total = getattr(response, "count", None)
+        if total is None:
+            total = offset + len(rows)
+        return {"items": list(rows), "total": int(total)}
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(
+            "list_quotes_with_payload failed: %s",
+            exc.__class__.__name__,
+        )
+        return None
 
 
 def list_quotes_for_orgs(

@@ -52,6 +52,25 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 
 ## Log d'itérations
 
+### 2026-07-07 — US-203 Payload devis → Supabase (code COMPLET, passes=false — action prod requise)
+
+- **Statut** : code complet et gates verts (pytest 1677/0, ruff clean) mais **passes=false**
+  jusqu'à : (1) migration `20260707_001_quote_payload.sql` appliquée sur le Supabase
+  self-hosted, (2) preuve devis-survit-redeploy en prod. Design FAIL-SOFT : déployable
+  avant la migration (insert payload échoue → fallback filesystem + WARNING, zéro casse).
+- **Fait** : colonne `payload jsonb` sur quote_ownership (source de vérité) ;
+  `link_quote_to_org(payload=...)` + `get_quote_payload_from_supabase` +
+  `list_quotes_with_payload` (count exact, fail-soft → None) ; `submit_quote` inversé —
+  Supabase = persistance primaire, fichier = cache best-effort, 500 UNIQUEMENT si les
+  deux échouent ; admin `read_quote_payload`/`list_quotes` Supabase-first avec repli
+  legacy ; compose : volume NOMMÉ `miroshark_uploads` (le bind mount du build context
+  était effacé au redeploy) ; data-dictionary màj même commit.
+- **Piège corrigé en route** : `get_supabase_admin()` lève SupabaseConfigError — dans
+  les helpers fail-soft, l'acquérir DANS le try (sinon les environnements non configurés
+  crashent au lieu de replier). Et `_quote_payload_path` sur un dossier absent →
+  FileNotFoundError : toujours garder `qdir.exists()` avant tout accès (c'est le
+  scénario volume-effacé qu'on corrige).
+
 ### 2026-07-07 — US-202 Encart « Méthode et limites » + marquage synthétique (V2-A-blocA)
 
 - **Statut** : passes:true. pytest 1660 passed / 0 failed (23 nouveaux tests) + ruff clean.

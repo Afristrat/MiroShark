@@ -4553,7 +4553,9 @@
       "dependencies": [],
       "metadata": {
         "origin": "docs/04-feature-backlog.md (cadrage V2 2026-07-07, verdict ratifié)",
-        "adr": "docs/08-decisions-log.md"
+        "adr": "docs/08-decisions-log.md",
+        "code_complete": "2026-07-07 — migration SQL écrite + write path Supabase-primaire (fail-soft) + read path admin Supabase-first + volume nommé compose + 17 tests (1677 verts) + data-dictionary màj même commit",
+        "blocked_on": "ACTIONS PROD RESTANTES : (1) appliquer supabase/migrations/20260707_001_quote_payload.sql sur le Supabase self-hosted (SQL editor/psql) ; (2) preuve devis-survit-redeploy en prod. Le code est fail-soft : déployable AVANT la migration sans casse (fallback filesystem loggé WARNING)."
       },
       "completedAt": null
     },

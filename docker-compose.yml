@@ -65,8 +65,13 @@ services:
       - ollama
     restart: unless-stopped
     volumes:
-      - ./backend/uploads:/app/backend/uploads
+      # US-203 : volume NOMMÉ (survit à la recréation du conteneur, y compris
+      # sous Coolify) — l'ancien bind mount du build context était effacé à
+      # chaque redeploy. Le payload des devis vit désormais dans Supabase ;
+      # ce volume protège les artefacts de simulation (state, profils, PDF).
+      - miroshark_uploads:/app/backend/uploads
 
 volumes:
   neo4j_data_v2:
   ollama_data:
+  miroshark_uploads:
