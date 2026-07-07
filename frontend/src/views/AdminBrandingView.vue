@@ -437,7 +437,7 @@ const DEFAULT_FORM = {
   header_right: 'Page {{page}}/{{total}}',
   footer_left: '{{report_id}} · CONFIDENTIEL',
   footer_center: '{{generated_at}}',
-  footer_right: 'bassira.ai',
+  footer_right: 'bassira.ma',
   palette_primary: '#FF8551',
   palette_secondary: '#006D44',
   palette_text: '#241915',

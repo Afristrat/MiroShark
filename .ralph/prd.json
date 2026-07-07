@@ -4574,7 +4574,9 @@
       "dependencies": [],
       "metadata": {
         "origin": "docs/04-feature-backlog.md (cadrage V2 2026-07-07, verdict ratifié)",
-        "adr": "docs/08-decisions-log.md"
+        "adr": "docs/08-decisions-log.md",
+        "code_status": "complete",
+        "blocked_on": "Actions humaines prod : (1) poser RESEND_API_KEY en env Coolify ; (2) appliquer supabase/migrations/20260707_002_footer_bassira_ma.sql ; (3) NOUVEAU BLOCAGE DECOUVERT : bassira.ma resout (Cloudflare) mais renvoie HTTP 404 -- domaine pas encore route vers l app Coolify. Tant que ce nest pas corrige, le lien bassira.ma insere dans les emails (footer marketing) menera a un 404 ; ne PAS migrer les liens FONCTIONNELS (invite_url dans invitations.py, BASSIRA_PUBLIC_URL/download_url dans report_delivery.py, CORS_ORIGINS default dans app/__init__.py, cta_link dans models.py) tant que le routing n est pas confirme -- casserait invites/downloads/CORS en prod. (4) devis test reel en prod pour verifier reception email < 2 min."
       },
       "completedAt": null
     },

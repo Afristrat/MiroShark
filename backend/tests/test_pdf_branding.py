@@ -319,7 +319,7 @@ class TestUpdateBranding:
     def test_creates_new_version(self):
         existing = {"id": "old-id", "org_id": "org1", "name": "V1", "valid_to": None,
                     "header_left": "{{logo}}", "header_center": "{{section}}", "header_right": "{{page}}/{{total}}",
-                    "footer_left": "{{report_id}}", "footer_center": "{{generated_at}}", "footer_right": "bassira.ai",
+                    "footer_left": "{{report_id}}", "footer_center": "{{generated_at}}", "footer_right": "bassira.ma",
                     "palette_primary": "#FF8551", "palette_secondary": "#006D44",
                     "palette_text": "#241915", "palette_background": "#FAF7F2",
                     "font_titles": "Outfit", "font_body": "Manrope", "font_mono": "JetBrains Mono",
@@ -355,7 +355,7 @@ class TestUpdateBranding:
     def test_raises_on_invalid_placeholder(self):
         existing = {"id": "old-id", "org_id": "org1", "name": "V1",
                     "header_left": "{{logo}}", "header_center": "{{section}}", "header_right": "Page {{page}}",
-                    "footer_left": "CONF", "footer_center": "Date", "footer_right": "bassira.ai",
+                    "footer_left": "CONF", "footer_center": "Date", "footer_right": "bassira.ma",
                     "palette_primary": "#FF8551", "palette_secondary": "#006D44",
                     "palette_text": "#241915", "palette_background": "#FAF7F2",
                     "font_titles": "Outfit", "font_body": "Manrope", "font_mono": "JetBrains Mono",
@@ -609,7 +609,7 @@ class TestAdminBrandingPreviewEndpoint:
             "header_right": "Page {{page}}/{{total}}",
             "footer_left": "{{report_id}} · CONFIDENTIEL",
             "footer_center": "{{generated_at}}",
-            "footer_right": "bassira.ai",
+            "footer_right": "bassira.ma",
             "disclaimer_text": {"fr": "Confidentiel", "en": "Confidential", "ar": "سري"},
         }
         with patch("app.api.admin_branding.get_supabase_admin") as mock_cli_fn:

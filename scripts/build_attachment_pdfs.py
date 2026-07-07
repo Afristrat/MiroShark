@@ -221,7 +221,7 @@ def add_page_decoration(canv, doc):
     canv.drawRightString(
         A4[0] - 2 * cm,
         1.2 * cm,
-        "bassira.ai-mpower.com  ·  formulaire /devis",
+        "bassira.ma  ·  formulaire /devis",
     )
     canv.line(2 * cm, 1.5 * cm, A4[0] - 2 * cm, 1.5 * cm)
 

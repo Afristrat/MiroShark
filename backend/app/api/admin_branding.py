@@ -184,7 +184,7 @@ def _build_preview_svg(branding: Dict[str, Any], lang: str = "fr") -> str:
     header_right = resolve(branding.get("header_right") or "Page {{page}}/{{total}}")
     footer_left = resolve(branding.get("footer_left") or "{{report_id}} · CONFIDENTIEL")
     footer_center = resolve(branding.get("footer_center") or "{{generated_at}}")
-    footer_right = resolve(branding.get("footer_right") or "bassira.ai")
+    footer_right = resolve(branding.get("footer_right") or "bassira.ma")
 
     # Disclaimer multilingue
     disclaimer_text = ""

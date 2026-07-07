@@ -98,7 +98,7 @@ Versionné temporellement (valid_from/valid_to, null = actif). Défauts = palett
 | name | text | not null | | non |
 | logo_url | text | | | non |
 | header_left/center/right | text | not null, defaults ({{logo}}, {{section}}, Page {{page}}/{{total}}) | templates | non |
-| footer_left/center/right | text | not null, defaults ({{report_id}} · CONFIDENTIEL, {{generated_at}}, bassira.ai) — ⚠️ défaut 'bassira.ai' à corriger en **bassira.ma** (ADR-013, directive Amine 2026-07-07) | | non |
+| footer_left/center/right | text | not null, defaults ({{report_id}} · CONFIDENTIEL, {{generated_at}}, bassira.ma) — défaut corrigé en bassira.ma par la migration 20260707_002 (ADR-013, US-204) | | non |
 | palette_primary | text | not null, default '#FF8551' | | non |
 | palette_secondary | text | not null, default '#006D44' | | non |
 | palette_text | text | not null, default '#241915' | | non |

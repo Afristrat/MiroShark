@@ -212,7 +212,7 @@
           </p>
           <a
             class="iv-methodology-link"
-            href="https://docs.bassira.ai/methodology"
+            href="https://docs.bassira.ma/methodology"
             target="_blank"
             rel="noopener"
           >

@@ -1464,3 +1464,48 @@ Première validation visuelle live d'une simulation propre (Réforme Code du Tra
 - pytest `test_locale_prompt.py` (NEW) : **8/8 PASSED**
 - pytest full suite : **1604 PASSED, 59 SKIPPED** (vs 1571 PASSED baseline US-137 — +33 tests, 0 régression)
 - frontend `npm run build` : **OK** (zéro warning Vue, build en 14.29s)
+
+## US-204 — Resend/bassira.ma (2026-07-07, code complet — passes:false, actions prod restantes)
+
+### Fait
+- Défaut SQL `pdf_branding.footer_right` : nouvelle migration `20260707_002_footer_bassira_ma.sql`
+  (ALTER COLUMN DEFAULT + UPDATE backfill des rows actives `valid_to is null`) — pas d'édition de
+  la migration `20260506_001` déjà appliquée en prod (règle : jamais modifier une migration livrée).
+- Fallback code `bassira.ai` → `bassira.ma` : `admin_branding.py:187`, `AdminBrandingView.vue:440`.
+- Liens marketing (footer des 5 templates email `backend/app/templates/emails/*.html`) :
+  `prospectives.ai-mpower.com` → `bassira.ma`. `mailto:contact@ai-mpower.com` inchangé (expéditeur
+  reste AI-MPower, ADR-013 ne demande pas de changer l'adresse de contact).
+- `InteractionView.vue:215` (lien méthodologie) et `scripts/build_attachment_pdfs.py:224` (footer PDF
+  devis) : même correction de domaine.
+- `.env.example` : section RESEND_API_KEY/RESEND_FROM_EMAIL/EMAIL_SMTP_*/EMAIL_FROM/EMAIL_TO ajoutée
+  (absente jusqu'ici — noms seulement, aucune valeur).
+- Le flux de notification "email à chaque devis reçu" (`_send_email` interne + `_send_client_confirmation`
+  via Resend) existait déjà depuis US-025/US-104 — rien à créer, seulement les liens à corriger.
+- Tests `test_pdf_branding.py` (3 fixtures `footer_right`) alignés sur le nouveau défaut.
+- `docs/02-data-dictionary.md` mis à jour (défaut corrigé, plus de ⚠️).
+
+### PAS touché (risque de casse prod, hors scope AC US-204)
+- **Découverte en cours de story** : `bassira.ma` résout bien (Cloudflare, `nslookup` OK) mais
+  `curl https://bassira.ma` renvoie **HTTP 404** — le domaine n'est PAS encore routé vers l'app
+  Coolify. Sur la base de ce constat, je n'ai PAS migré les liens **fonctionnels** (par opposition
+  aux liens marketing/footer) qui casseraient réellement des parcours utilisateurs en prod si
+  déployés maintenant : `invite_url` dans `invitations.py:162` (accept invitation), `BASSIRA_PUBLIC_URL`/
+  `download_url` dans `report_delivery.py:233,381` (lien de téléchargement rapport), `CORS_ORIGINS`
+  default dans `app/__init__.py:47`, `cta_link` dans `models.py:153,188,222` (PDF modèles). Ces 4
+  points restent sur `prospectives.ai-mpower.com` intentionnellement — à migrer dans une story dédiée
+  une fois le routing Coolify de bassira.ma confirmé (l'ADR-013 mentionne "rattaché US-204/US-210" —
+  US-210 n'existe pas encore dans prd.json, à créer si Amine veut la suite du cutover domaine).
+- Emails fake `@bassira.ai` dans les fixtures de tests super-admin (`test_admin_users.py`,
+  `test_pdf_async.py`, `test_snapshot_watermark.py`) : laissés tels quels, ce sont des adresses
+  arbitraires sans lien avec le bug de marque (pas des URLs publiques).
+
+### Patterns appris
+- **Toujours vérifier la résolution DNS/HTTP réelle d'un domaine avant de migrer des liens vers
+  lui** (`nslookup` + `curl -o /dev/null -w "%{http_code}"`) — un ADR de rebranding peut être
+  ratifié avant que l'infra (Coolify domain routing) suive. Distinguer liens **marketing** (footer,
+  bas de page — 404 temporaire = UX dégradée mais pas de perte fonctionnelle) des liens
+  **fonctionnels** (invite, download, CORS — 404/CORS reject = feature cassée en prod, régression
+  active sur un SaaS payant avec auto-deploy sur push main).
+- **Ne jamais éditer une migration déjà appliquée en prod** : même un simple changement de défaut
+  de colonne part sur une nouvelle migration numérotée, avec backfill explicite des rows actives
+  si le bug affecte des données déjà écrites.
