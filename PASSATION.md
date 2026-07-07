@@ -50,11 +50,16 @@
   trancher par Amine, pas fait unilatéralement. Prévoir une story dédiée (US-210 suggérée).
 
 [BLOQUÉ — actions restantes US-204]
-- !! Poser `RESEND_API_KEY` en env Coolify (nom seulement, pas fait — coffre local l'a déjà).
-- !! Appliquer `supabase/migrations/20260707_002_footer_bassira_ma.sql` en prod (comme US-203).
-- !! Devis test réel en prod pour vérifier réception email < 2 min avec liens bassira.ma.
-- (US-203 : migration `20260707_001_quote_payload.sql` toujours pas appliquée non plus — les 2
-  migrations en attente peuvent être posées dans la même session SQL par Amine.)
+- ✓ `RESEND_API_KEY` déjà posée en env Coolify (confirmé 2026-07-08 — présente, non affichée).
+- ✓ Migrations `20260707_001_quote_payload.sql` (US-203) et `20260707_002_footer_bassira_ma.sql`
+  (US-204) **appliquées en prod le 2026-07-08** sur `supabase-miroshark`
+  (`supabase-db-dgybi9q5e2ggkjtaxlu2ukai`, via `docker exec` direct — voir `.ralph/progress.md`
+  pour la procédure complète, y compris pourquoi `SUPABASE_DB_URL` de Coolify était un piège
+  — pointe vers un projet Supabase Cloud stale/inutilisé, la vraie base est le service Coolify
+  self-hosted `supabase-miroshark`).
+- !! Reste UNIQUEMENT : devis test réel en prod (US-203 et US-204) pour vérifier persistance
+  + réception email < 2 min avec liens bassira.ma — pas fait, crée une donnée prod réelle +
+  envoie un vrai email, à faire sur demande explicite d'Amine.
 
 [NEXT]
 1. Poser les 2 migrations SQL en attente (US-203 + US-204) + `RESEND_API_KEY` Coolify → ferme
