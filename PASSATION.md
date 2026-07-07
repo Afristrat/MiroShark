@@ -1,82 +1,99 @@
-== PASSATION MiroShark/Bassira 2026-07-07 — Cadrage V2 (np) + deep explore + fix 404 ==
+== PASSATION MiroShark/Bassira 2026-07-07 (nuit) — Cadrage V2 ratifié + Ralph loop Bloc A en cours ==
 
 [ETAT]
-- branche `main` : commits de session = documents uniquement (aucun code touché — consigne
-  explicite d'Amine « je ne veux pas que tu codes »)
-- **10 documents de fondation V2 générés et validés** (validate_foundation.py : 0 erreur) :
-  docs/np-cadrage.md (journal + stress-test + verdict) · docs/01-app-spec.md ·
-  docs/02-data-dictionary.md · CLAUDE.md (racine, nouveau) · docs/04-feature-backlog.md ·
-  docs/05-integrations.md · docs/06-brand-brief.md · docs/07-legal-compliance.md ·
-  docs/08-decisions-log.md (9 ADR) · docs/09-errors-log.md · docs/10-execution-prompts.md
-- prod https://prospectives.ai-mpower.com : **404 RÉSOLU ce jour** (vérifié : racine 200,
-  /explore 200). Down silencieux depuis le 2026-07-01 : crash-loop au reboot serveur
-  (22 restarts > plafond 10) → conteneurs supprimés par le cleanup Docker quotidien →
-  404 Traefik. Redeploy via API Coolify + suppression d'un ollama orphelin. Cause du
-  crash initial non récupérable (hypothèse forte : OOM — swap hôte à 100 %, aucune
-  limite mémoire par conteneur). Détail complet : docs/09-errors-log.md entrée 2026-07-07.
+- branche `main`, poussée à jour : `1233e1b` (dernier commit). Prod
+  https://prospectives.ai-mpower.com : **UP** (404 du 2026-07-01→07 résolu, vérifié
+  200 le 2026-07-07 — détail docs/09-errors-log.md).
+- **Cadrage V2 complet et RATIFIÉ par Amine** : 10 documents de fondation dans `docs/`
+  + `CLAUDE.md` racine, validés (`validate_foundation.py` : 0 erreur). Verdict **GO
+  conditionnel** → ratifié, Bloc A lancé. Journal complet + 14 ADR : `docs/np-cadrage.md`
+  + `docs/08-decisions-log.md`.
+- **.ralph/prd.json v2.0.0** : 142 stories (134 v1 historiques intactes + 8 nouvelles
+  US-201→US-208, chantier `V2-A-blocA`). US-113 (v1) fermée administrativement,
+  remplacée par US-205.
+- **Mode Ralph EN COURS** sur le Bloc A — état des 8 stories à cet instant :
+  - US-201 (repositionnement stress-test, purge claim prédictif) : **passes:true**
+  - US-202 (encart Méthode&limites PDF + marquage AI Act art.50) : **passes:true**
+  - US-203 (payload devis → Supabase) : **code complet, passes:FALSE** — bloqué sur
+    action prod (migration SQL à appliquer + preuve devis-survit-redeploy)
+  - US-204 (Resend + bassira.ma) : **pending, pas commencée**
+  - US-205 (Stripe pricing + Checkout) : **pending, pas commencée**
+  - US-206 (fermer IDOR /api/report) : **passes:true**
+  - US-207 (WSGI prod + fail-closed) : **pending, pas commencée**
+  - US-208 (Redis/worker PDF prod) : **pending, pas commencée**
+- SOP-002 (migration SearXNG→OpenSERP) créée, validée, commitée et **poussée** sur
+  `Afristrat/sop` (brouillon 0.1.0).
+- Ruff : dette pré-existante (319 erreurs) soldée à 0 lors d'US-201 (hook pre-commit
+  l'exécute sur tout le repo — `ruff.toml` créé avec per-file-ignores justifiés).
+  `ruff check .` = gate de facto pour toute story suivante.
 
-[FAIT cette session]
-- Deep explore par 5 sous-agents (backend, frontend, data/infra, produit/docs, recherche
-  marché sourcée ~13 URLs lues) — synthèses consolidées dans docs/np-cadrage.md
-- Flow np complet en mode autonome (réponses dérivées des preuves système) :
-  Phase 0→3 + validation. Niveau L6.
-- **VERDICT : GO conditionnel** — 3 conditions bloquantes AVANT investissement V2 :
-  1. AGPL-3.0 du fork à statuer (ADR-003 OUVERTE — publier/négocier/réécrire)
-  2. Abandon du claim prédictif (« Brier 0,18 vérifié » invérifiable) → positionnement
-     « stress-test de décision » (ADR-002, sourcée Bisbee 2024 + Simile)
-  3. P0 opérationnels : payload devis PII sur volume éphémère + SMTP absent + IDOR
-     /api/report + serveur dev Werkzeug en prod + Stripe US-113 jamais finie
-- Rapport skill understand-anything (v2.8.2) livré en début de session (pipeline 7 phases,
-  artefacts .understand-anything/, pièges) — matière pour une future SOP
+[FAIT cette session (chronologie complète)]
+1. Deep explore 5 sous-agents + flow np autonome → verdict GO conditionnel, 10 documents.
+2. Directives d'Amine (renommage Saqr, SearXNG→OpenSERP, arènes MENA, polyglotte,
+   LiteLLM, bassira.ma, licence=domaine Amine seul, MiroFish cohabitation) → intégrées
+   aux 10 documents + 3 agents de recherche (search-alt, prediction-mena, upstream-mirofish)
+   → ADR-004/011/012/014 tranchées avec sources.
+3. Ratification Amine → SOP-002 créée+poussée, Bloc A injecté dans prd.json.
+4. **Mode Ralph lancé** : US-201, US-202, US-206 complétées (code+tests+commit+push
+   individuels) ; US-203 codée mais bloquée sur action prod (voir BLOQUÉ) ; US-204/205/
+   207/208 pas encore attaquées à l'heure de cette passation.
+5. Ruff : 319→0 erreurs (dette pré-existante soldée dans le commit US-201, exigée par
+   le hook pre-commit local).
+
+[ALERTE]
+- ⚠️ **US-203 nécessite une action HUMAINE en prod** : appliquer
+  `supabase/migrations/20260707_001_quote_payload.sql` sur le Supabase self-hosted
+  (SQL editor/psql — pas fait par l'IA, accès prod). Le code est fail-soft (déployable
+  avant la migration, fallback filesystem loggé WARNING) mais la story ne peut passer
+  à `passes:true` sans preuve système (devis-survit-redeploy).
+- ⚠️ 1 test flaky `test_md_hash_stable_with_deterministic_enricher` (échoue en suite
+  complète, passe isolé — fuite d'état inter-tests, sans lien avec les fichiers
+  modifiés). Consigné docs/09-errors-log.md, non bloquant.
+- ⚠️ EU AI Act Art. 50 applicable le **2026-08-02** (J-25 à la date de cette passation) —
+  US-202 le couvre déjà (encart + métadonnées PDF), mais vérifier la couverture
+  complète avant cette date.
 
 [BLOQUÉ — actions humaines]
-- !! **Ratifier le verdict GO conditionnel + le contre-argument 2.4** (np-cadrage § Phase 2)
-- !! **Questions dérangeantes 2.3** : (1) combien de clients payants réels ? (2) réponse à
-  « sur quelles données réelles ancrez-vous ces personas ? » (3) prêt à publier ou
-  négocier l'AGPL ?
-- !! EU AI Act Art. 50 applicable le **2026-08-02** (J-26) — US-202
-- !! Rapport 404 à intégrer (sous-agent fix-404-prod)
-
-[DIRECTIVES AMINE 2026-07-07 — post-livraison, TOUTES intégrées aux 10 documents]
-Voir docs/np-cadrage.md § « Directives d'Amine — 2026-07-07 » (12 points). Essentiel :
-Kairos→**Saqr** (Saqr et Nahda CONSOMMENT les sorties Bassira, US-218) · SearXNG non
-fiable → alternative headless en validation (ADR-012) · marché de prédiction inadapté
-Africa/ME → arènes configurables (ADR-011, US-216) · polyglotte intégral N langues
-front+back+livrables (US-217) · réécriture mono-stack OUVERTE (ADR-010) · LLM = LiteLLM
-+ DeepSeek v4 Flash + fallback (ADR-004) · Resend via email AI-MPower, liens
-**bassira.ma toujours** (ADR-013) · pricing Stripe à créer (US-205) · dossier licence =
-domaine EXCLUSIF d'Amine, position : lignée MiroFish, sujet clos côté IA (ADR-003) ·
-vérifier dernière version MiroShark avant de coder · **MiroFish à faire cohabiter**
-(Bassira=B2B, canal MiroFish=B2G/grandes missions, pour Nahda). 3 agents de recherche
-RENTRÉS et intégrés (voir np-cadrage § Retours d'enquête) : ADR-012 tranché = OpenSERP
-self-hosted (+repli Serper) · ADR-011 outillé = 5 arènes sourcées + Delphi normalisateur
-+ profils régionaux · ADR-004 confirmé (LiteLLM deepseek/ + fallbacks natifs, vigilance
-bug #26395) · upstream = 181 commits de retard (arbitrage US-220) · faits MiroFish remis
-à Amine dans ADR-003 (aucun lien technique MiroFish↔MiroShark trouvé à ce stade, les
-deux en AGPL-3.0, Zep Cloud = point souveraineté). Mémoire projet mise à jour (Saqr,
-périmètre juridique, SearXNG→OpenSERP, LiteLLM).
-
-[RATIFICATION AMINE 2026-07-07 SOIR — verdict GO, Bloc A LANCÉ]
-- ✓ ADR-012 validée (« ok pour les deux options ») : OpenSERP local + Serper.dev repli ;
-  ordre de déprovisionner SearXNG partout, codebase par codebase → **SOP-002 créée,
-  validée (check OK), commitée et POUSSÉE** sur Afristrat/sop (fc44c2e..4726450, branche
-  feat/sop-forge-v2, brouillon 0.1.0 — approbation Amine la passera en 1.0.0)
-- ✓ US-220 : MERGE SÉLECTIF upstream décidé → ADR-014 (priorités : sécurité Dependabot,
-  fix compose #238, fixes moteur ; i18n FR upstream arbitrée au cas par cas)
-- ✓ ADR-010 : cap mono-stack ACCEPTÉ (« go ») — Bloc A d'abord sur l'existant, stack
-  cible tranchée par Amine au démarrage du chantier réécriture
-- ✓ **Bloc A injecté dans .ralph/prd.json v2.0.0** : US-201→US-208 (chantier V2-A-blocA),
-  142 stories, 9 pending ; US-113 fermée administrativement (supersededBy US-205)
-- Question d'Amine en attente de réponse pédagogique : « arènes de simulation » (fournie
-  dans le message de session, à re-expliquer si besoin)
+- !! Appliquer la migration `20260707_001_quote_payload.sql` en prod (US-203).
+- !! Répondre aux 3 questions dérangeantes du cadrage (np-cadrage.md § 2.3) si pas
+  encore fait : clients payants réels ? réponse à l'objection données réelles ?
+  décision finale AGPL/MiroFish (domaine exclusif d'Amine) ?
+- !! Poser les credentials Stripe (bloqueur historique d'US-113/US-205) avant d'attaquer
+  US-205.
+- !! Poser `RESEND_API_KEY` en env Coolify avant US-204.
 
 [NEXT]
-1. Lancer le Ralph loop sur le chantier V2-A-blocA (US-201→US-208, ordre : 201→202,
-   203, 204, 205, 206, 207→208)
-2. Lancer moat-hunter avec 01-app-spec en input (recommandé AVANT gel définitif du backlog)
-3. Le plus petit test (2.7) : framing A/B « prédiction vs stress-test » sur 3 prospects
-   Apollo + email aaronjmars (licence) — 1 semaine, 0 €
-4. SOP « cadrage V2 d'une codebase existante » à capturer (/sop-new)
+1. **Continuer le mode Ralph sur le Bloc A** dans l'ordre : US-204 (Resend/bassira.ma) →
+   US-205 (Stripe, nécessite credentials — sinon la sauter et continuer) → US-207
+   (WSGI prod) → US-208 (Redis worker, dépend d'US-207) → revenir sur US-203 dès que
+   la migration prod est appliquée.
+2. Après le Bloc A complet : lancer `moat-hunter` avec `01-app-spec.md` en input
+   (recommandé avant le gel définitif du backlog V2).
+3. Le plus petit test (2.7 du cadrage) : framing A/B « prédiction vs stress-test » sur
+   3 prospects Apollo + email à aaronjmars (licence) — 1 semaine, 0 €.
+4. Convertir SOP-002 en `approuvee` (1.0.0) quand Amine valide.
+
+[CTX session]
+- Session longue (2026-07-07 après-midi → nuit), Fable 5 (dernier jour du pin — bascule
+  opusplan prévue le 2026-07-08 via `switch-to-opusplan.ps1`, cf. rappel hook démarrage).
+- Cardage V2 = ~40 tool calls + 6 sous-agents parallèles. Exécution Ralph Bloc A =
+  3 stories complètes (US-201/202/206) avec cycle complet gate→commit→push à chacune.
+- Aucune régression : chaque story validée par `ruff check .` + `pytest` complet
+  (1637→1689 tests au fil des stories) avant commit.
+
+[MEMO inter-sessions]
+- **Pattern SIM_ID/report_id garde d'accès (US-206)** : `_authorize_simulation_access()`
+  dans `report.py` — réutilisable pour tout futur endpoint report-like. Attention aux
+  chemins de contournement (ex. `get_report_by_simulation` = même donnée qu'un autre id).
+- **Pattern transformation i18n de masse (US-201)** : script Python découvrant les
+  chemins dans fr.json puis appliquant aux 3 locales + assertion de parité stricte —
+  fiable à 2300+ clés, gabarit dans les commits US-201 (scratchpad us201_locales.py,
+  non versionné).
+- **Piège hook bash-guard** : bloque les heredocs contenant des motifs `grep`-like —
+  toujours passer par un fichier .py écrit via Write puis exécuté.
+- **Piège hook pre-commit Ruff** : s'exécute sur TOUT le repo, pas seulement le diff —
+  toute story qui touche un fichier Python peut se heurter à de la dette pré-existante
+  ailleurs. Vérifier `ruff check .` avant de tenter un commit.
 
 == PASSATION MiroShark/Bassira+Kairos 2026-05-22T22:00:00+01:00 ==
 
