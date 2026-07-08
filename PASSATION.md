@@ -1,3 +1,26 @@
+== PASSATION MiroShark/Bassira 2026-07-08 (après-midi) — INCIDENT « Erreur réseau » login RÉSOLU : règle ingress db-miroshark manquante dans le tunnel ==
+
+[INCIDENT + FIX]
+- Symptôme : « Erreur réseau. Vérifiez votre connexion et réessayez. » au login/signup sur
+  bassira.ma (clés i18n `auth.login.errors.network` / `auth.signup.errors.network`, déclenchées
+  sur `failed to fetch` de l'appel Supabase Auth).
+- **Cause racine prouvée** : le bundle frontend ET le backend (`SUPABASE_URL`) pointent vers
+  `https://db-miroshark.ai-mpower.com` (nouvelle base Supabase self-hosted, stack Coolify
+  `dgybi9q5e2ggkjtaxlu2ukai` — les 12 tables Bassira vérifiées par psql). Or l'ingress du tunnel
+  Cloudflare remote-managed (57 règles, v113) n'avait AUCUNE règle pour ce hostname → catch-all
+  `http_status:404` → réponse sans CORS → `failed to fetch` navigateur. Côté serveur tout était
+  déjà prêt (Traefik `Host(db-miroshark.ai-mpower.com)` → Kong dgybi, 401 en local = vivant).
+- **Fix** : PUT API tunnel `7156c3f9…` — insertion `db-miroshark.ai-mpower.com → http://localhost:80`
+  avant le catch-all (**version 114, 58 règles**) + sync documentaire `config-nahda.yml`
+  (backup horodaté, `ingress validate` OK).
+- **Preuves** : préflight CORS 200 (`ACAO: *`) depuis Origin bassira.ma ; POST GoTrue
+  `/auth/v1/token` avec clé anon du bundle + créds bidon → 400 invalid credentials (chaîne
+  complète Kong→GoTrue→DB) ; non-régression : bassira.ma, prospectives, nahda.ma, tamkin.ma
+  tous HTTP 200.
+- **Pièges notés** : `dp7p66…` (kong exposé :8210) = stack TAMKIN, pas Bassira — ne jamais
+  router dessus. Hors LAN : serveur joignable via **Tailscale `100.124.187.2`** (mêmes clés SSH).
+  Mémoire `reference_serveurai_infra.md` corrigée (« Supabase Cloud » périmé → self-hosted dgybi).
+
 == PASSATION MiroShark/Bassira 2026-07-08 (nuit) — US-204 CLOS côté infra/code, migrations prod appliquées, reste le test réel ==
 
 [ETAT]
