@@ -21,6 +21,32 @@
   router dessus. Hors LAN : serveur joignable via **Tailscale `100.124.187.2`** (mêmes clés SSH).
   Mémoire `reference_serveurai_infra.md` corrigée (« Supabase Cloud » périmé → self-hosted dgybi).
 
+[POINT D'ÉTAPE 2026-07-08 soir (suite) — Resend réparé, Supabase indépendante confirmée, Stripe bloqué, 2 fixes UI]
+- ✓ **RESEND_API_KEY corrigée** : celle déployée sur Coolify était invalide (401 « API key is
+  invalid » constaté par appel direct à l'API Resend). Remplacée par la clé valide du coffre
+  DPAPI (domaine `ai-mpower.com` vérifié, région eu-west-1) via PATCH API Coolify + restart.
+  **Vérifié par un envoi réel post-rebuild** : HTTP 200, id Resend `52409253-…` retourné.
+  Cause du « je ne reçois aucun mail » — rien à voir avec le code, juste une clé Coolify périmée.
+- ✓ **Indépendance Supabase CONFIRMÉE** : scan des 28 apps Coolify + envs — aucune app hors
+  miroshark (et ses sidecars neo4j/ollama du même groupe compose) ne référence
+  `db-miroshark.ai-mpower.com`. La stack `dgybi9q5e2ggkjtaxlu2ukai` est exclusive à Bassira.
+- ! **Stripe (US-205) reste BLOQUÉ** — aucune clé `STRIPE_SECRET_KEY`/`STRIPE_WEBHOOK_SECRET`
+  dans le coffre. Périmètre exact : products/prices Stripe (MAD/USD, jamais EUR) + Checkout
+  Sessions sur /offres + webhook `checkout.session.completed` signé → `quote_ownership.status=
+  'paid'`. Amine doit créer/donner accès au compte Stripe et fournir les 2 clés avant toute
+  implémentation (pas de code spéculatif non testable — violerait zéro-dette + vérification
+  avant complétude).
+- ✓ **2 bugs UI corrigés en LOCAL, build frontend vert, NON commités/poussés** (attente
+  confirmation Amine) :
+  - `frontend/src/components/AppHeader.vue` : lien nav « Modèles » portait en dur
+    `app-header__link--featured`, dont le CSS est identique à `.router-link-active` → confusion
+    avec un état de page active permanent. Classe retirée, seul le routeur détermine l'état actif.
+  - `frontend/src/views/OffersView.vue` : l'opacité des cartes d'offres (effet « floues sauf
+    une ») était pilotée par `activeIndex` (état de carrousel, init à 0 → 1ʳᵉ carte toujours
+    nette), pas par le survol souris. `.offers-slide--active { opacity:1 }` remplacé par
+    `.offers-slide:hover { opacity:1 }` — le scale/glow du carrousel (`--active` sur
+    `--featured`) reste inchangé, seule la clarté est désormais liée au hover.
+
 [POINT D'ÉTAPE 2026-07-08 soir — EN ATTENTE DU RETOUR D'AMINE]
 - ✓ **Login bassira.ma CONFIRMÉ PAR AMINE** (compte `medamine.mansouriidrissi@gmail.com`, owner AIMPOWER).
 - > Amine règle LUI-MÊME « le bug de l'email » (périmètre non précisé — probablement l'envoi
