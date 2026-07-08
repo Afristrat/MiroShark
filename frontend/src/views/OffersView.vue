@@ -993,7 +993,7 @@ onBeforeUnmount(() => {
   transition: opacity 0.3s ease, transform 0.4s ease;
   opacity: 0.6;
 }
-.offers-slide--active {
+.offers-slide:hover {
   opacity: 1;
 }
 

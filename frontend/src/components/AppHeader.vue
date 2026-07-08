@@ -19,7 +19,7 @@
         </router-link>
         <router-link
           to="/models"
-          class="app-header__link app-header__link--featured"
+          class="app-header__link"
           :title="$t('nav.modelsTitle')"
         >
           {{ $t('nav.models') }}
