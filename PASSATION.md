@@ -21,6 +21,22 @@
   router dessus. Hors LAN : serveur joignable via **Tailscale `100.124.187.2`** (mêmes clés SSH).
   Mémoire `reference_serveurai_infra.md` corrigée (« Supabase Cloud » périmé → self-hosted dgybi).
 
+[POINT D'ÉTAPE 2026-07-08 soir — EN ATTENTE DU RETOUR D'AMINE]
+- ✓ **Login bassira.ma CONFIRMÉ PAR AMINE** (compte `medamine.mansouriidrissi@gmail.com`, owner AIMPOWER).
+- > Amine règle LUI-MÊME « le bug de l'email » (périmètre non précisé — probablement l'envoi
+  Resend ou GoTrue) — ne pas y toucher depuis cette session tant qu'il n'a pas rendu la main.
+- ! En attente de sa confirmation « tout marche » pour : push des 2 commits locaux de passation
+  (chaque push = rebuild Coolify ~15 min), suppression éventuelle du compte `test@bassira.ma`,
+  et acter le DÉPART PROPRE de la nouvelle base (décision prise : pas de migration des données
+  « ventures », conditionnée à sa validation).
+- ! Rotation `COOLIFY_API_TOKEN` dans le coffre DPAPI toujours à faire (valeur prête sur le
+  serveur : `/home/serveuria/.credentials/coolify-api-token-claude-20260708`).
+- ✓ Cartographie `/understand` complète : `.understand-anything/knowledge-graph.json` (1 441
+  nœuds, 2 468 arêtes, 10 couches, tour 14 étapes, 554 fichiers) — dashboard local
+  `http://127.0.0.1:5173/?token=…` (process de session, à relancer via /understand-dashboard).
+  3 angles morts signalés : simulation.py 8 875 lignes/69 endpoints ; catalogue 18 modèles
+  dupliqué backend/frontend ; vestiges (railway/render/backlog.yaml, FK `tweet` fantôme).
+
 [SUITE même session (après-midi) — fetchProfile 503 + compte Amine]
 - **2e incident résolu** : `fetchProfile 503 AUTH_NOT_CONFIGURED` après login. Cause : la
   nouvelle base self-hosted signe ses JWT en **HS256** (prouvé : en-tête de la clé anon), or le
