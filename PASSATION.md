@@ -21,6 +21,27 @@
   router dessus. Hors LAN : serveur joignable via **Tailscale `100.124.187.2`** (mêmes clés SSH).
   Mémoire `reference_serveurai_infra.md` corrigée (« Supabase Cloud » périmé → self-hosted dgybi).
 
+[SUITE même session (après-midi) — fetchProfile 503 + compte Amine]
+- **2e incident résolu** : `fetchProfile 503 AUTH_NOT_CONFIGURED` après login. Cause : la
+  nouvelle base self-hosted signe ses JWT en **HS256** (prouvé : en-tête de la clé anon), or le
+  backend (`app/auth/jwt_verifier.py`) exige `SUPABASE_JWT_SECRET` pour HS256 — variable absente
+  de l'app Coolify (l'ancienne base Cloud passait par JWKS asymétrique). Fix : copie de
+  `GOTRUE_JWT_SECRET` (stack dgybi) vers l'env Coolify de l'app (`SUPABASE_JWT_SECRET`) + restart
+  (≈15 min, rebuild complet). Preuve E2E : login + `GET /api/client/auth/me` → HTTP 200.
+- **`COOLIFY_API_TOKEN` du coffre DPAPI : PÉRIMÉ** (401 sur `GET /api/v1/version`). Nouveau token
+  généré directement en base Coolify (Sanctum, ligne id=10, abilities root, nom
+  `claude-rotation-2026-07-08`) — valeur JAMAIS affichée, stockée sur le serveur :
+  `/home/serveuria/.credentials/coolify-api-token-claude-20260708` (600). **À reporter dans le
+  coffre DPAPI** (session sans accès au dossier secrets ; SOP-001 brouillon).
+- **Comptes créés dans la nouvelle base** (via API admin GoTrue, email confirmé d'office) :
+  `test@bassira.ma` (sans org) et `medamine.mansouriidrissi@gmail.com` (**owner** d'AIMPOWER,
+  org `f7abf22e-…`). Mot de passe d'Amine : généré serveur, stocké
+  `/home/serveuria/.credentials/bassira-amine-pw-20260708` (600) — presse-papier du poste
+  verrouillé (session remote control), transfert à faire au retour d'Amine.
+- **Rappel important** : la nouvelle base ne contient AUCUNE donnée migrée (auth.users était à 0 ;
+  organizations=1, le reste vide). Décision à prendre : repartir propre ou migrer depuis
+  l'ancienne base « ventures ».
+
 == PASSATION MiroShark/Bassira 2026-07-08 (nuit) — US-204 CLOS côté infra/code, migrations prod appliquées, reste le test réel ==
 
 [ETAT]
