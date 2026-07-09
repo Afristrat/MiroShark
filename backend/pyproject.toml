@@ -64,6 +64,7 @@ dependencies = [
     "rq>=1.15",
     # US-136 : Formatage des dates en langage naturel (fr/en/ar) dans les templates PDF
     "babel>=2.14",
+    "gunicorn>=26.0.0",
 ]
 
 [project.optional-dependencies]

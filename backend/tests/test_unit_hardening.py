@@ -1,10 +1,12 @@
-"""Tests pour le hardening prod (US-031, US-032, US-033).
+"""Tests pour le hardening prod (US-031, US-032, US-033, US-207).
 
 Ces tests vérifient que :
 - Config.DEBUG défaut à False (US-033)
 - Config.validate() refuse de booter sans SECRET_KEY en mode production (US-031)
 - Config.validate() tolère SECRET_KEY absent en FLASK_ENV=development (US-031)
 - CORS lit CORS_ORIGINS depuis l'env (US-032)
+- Config.validate() refuse de booter sur NEO4J_PASSWORD/FLASK_DEBUG par défaut
+  dangereux hors développement (US-207, ADR-006)
 """
 
 from __future__ import annotations
@@ -81,6 +83,71 @@ def test_validate_accepts_explicit_secret_key(monkeypatch):
     Config = _reload_config()
     errors = Config.validate()
     assert not any('SECRET_KEY' in e for e in errors)
+
+
+def test_validate_refuses_default_neo4j_password_outside_dev(monkeypatch):
+    """US-207/ADR-006 : NEO4J_PASSWORD='miroshark' (défaut connu) hors dev
+    doit bloquer le boot."""
+    monkeypatch.delenv('NEO4J_PASSWORD', raising=False)
+    monkeypatch.setenv('FLASK_ENV', 'production')
+    monkeypatch.setenv('LLM_API_KEY', 'dummy')
+    monkeypatch.setenv('NEO4J_URI', 'bolt://localhost:7687')
+    Config = _reload_config()
+    assert Config.NEO4J_PASSWORD == 'miroshark'
+    errors = Config.validate()
+    assert any('NEO4J_PASSWORD' in e and 'default' in e for e in errors), (
+        f"NEO4J_PASSWORD par défaut doit être bloquant en production, got {errors!r}"
+    )
+
+
+def test_validate_tolerates_default_neo4j_password_in_dev(monkeypatch):
+    """US-207/ADR-006 : le même défaut est toléré en FLASK_ENV=development
+    (docker-compose.yml et .env locaux s'appuient dessus)."""
+    monkeypatch.delenv('NEO4J_PASSWORD', raising=False)
+    monkeypatch.setenv('FLASK_ENV', 'development')
+    monkeypatch.setenv('LLM_API_KEY', 'dummy')
+    monkeypatch.setenv('NEO4J_URI', 'bolt://localhost:7687')
+    Config = _reload_config()
+    errors = Config.validate()
+    assert not any('NEO4J_PASSWORD' in e and 'default' in e for e in errors)
+
+
+def test_validate_accepts_non_default_neo4j_password_in_prod(monkeypatch):
+    """US-207/ADR-006 : un mot de passe non-défaut passe sans erreur en prod."""
+    monkeypatch.setenv('NEO4J_PASSWORD', 'a-real-secret')
+    monkeypatch.setenv('FLASK_ENV', 'production')
+    monkeypatch.setenv('LLM_API_KEY', 'dummy')
+    monkeypatch.setenv('NEO4J_URI', 'bolt://localhost:7687')
+    Config = _reload_config()
+    errors = Config.validate()
+    assert not any('NEO4J_PASSWORD' in e for e in errors)
+
+
+def test_validate_refuses_flask_debug_outside_dev(monkeypatch):
+    """US-207/ADR-006 : FLASK_DEBUG=true hors dev doit bloquer le boot
+    (pattern restart-loop déjà payé, cf. progress.md)."""
+    monkeypatch.setenv('FLASK_DEBUG', 'true')
+    monkeypatch.setenv('FLASK_ENV', 'production')
+    monkeypatch.setenv('LLM_API_KEY', 'dummy')
+    monkeypatch.setenv('NEO4J_URI', 'bolt://localhost:7687')
+    monkeypatch.setenv('NEO4J_PASSWORD', 'a-real-secret')
+    Config = _reload_config()
+    errors = Config.validate()
+    assert any('FLASK_DEBUG' in e for e in errors), (
+        f"FLASK_DEBUG=true doit être bloquant en production, got {errors!r}"
+    )
+
+
+def test_validate_tolerates_flask_debug_in_dev(monkeypatch):
+    """US-207/ADR-006 : FLASK_DEBUG=true reste toléré en développement."""
+    monkeypatch.setenv('FLASK_DEBUG', 'true')
+    monkeypatch.setenv('FLASK_ENV', 'development')
+    monkeypatch.setenv('LLM_API_KEY', 'dummy')
+    monkeypatch.setenv('NEO4J_URI', 'bolt://localhost:7687')
+    monkeypatch.setenv('NEO4J_PASSWORD', 'a-real-secret')
+    Config = _reload_config()
+    errors = Config.validate()
+    assert not any('FLASK_DEBUG' in e for e in errors)
 
 
 def test_cors_origins_default_includes_prod_and_local(monkeypatch):

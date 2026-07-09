@@ -4591,13 +4591,13 @@
         "Aucun secret Stripe hardcodé (env uniquement)",
         "pytest + build verts"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [],
       "metadata": {
         "origin": "docs/04-feature-backlog.md (cadrage V2 2026-07-07, verdict ratifié)",
         "adr": "docs/08-decisions-log.md"
       },
-      "completedAt": null
+      "completedAt": "2026-07-09T00:18:27.108Z"
     },
     {
       "id": "US-206",

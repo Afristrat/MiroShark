@@ -52,6 +52,74 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 
 ## Log d'itérations
 
+### 2026-07-09 — US-207 Serveur WSGI prod + Config.validate() fail-closed (V2-A-blocA)
+
+- **Statut** : code complet + gates locaux verts (pytest 1694 passed/0 failed, ruff clean,
+  build OK) mais **passes:false** jusqu'à preuve de boot en prod + smoke test post-déploiement.
+- **Fait** :
+  - `Config.validate()` (config.py) : 2 nouveaux checks fail-closed, actifs uniquement hors
+    `FLASK_ENV=development` — `NEO4J_PASSWORD == 'miroshark'` (défaut connu, config.py:76) et
+    `FLASK_DEBUG` actif. L'exemption dev est nécessaire : `docker-compose.yml` local et les
+    `.env` de dev s'appuient légitimement sur ce défaut.
+  - `backend/wsgi.py` (nouveau) : entrypoint gunicorn — appelle `Config.validate()` au niveau
+    module (pas dans une fonction) pour qu'avec `--preload`, une config invalide fasse
+    avorter le process **master** avant tout fork de worker, plutôt qu'une boucle de workers
+    qui échouent un par un à répétition.
+  - `gunicorn` ajouté aux dépendances backend (`uv add gunicorn`) — package pur Python,
+    s'installe sans problème sous Windows mais ne peut **pas tourner** sous Windows (pas de
+    `fork()`) : réservé au conteneur Docker/Linux.
+  - `package.json` : nouveau script `backend:prod` (gunicorn, 1 worker × 4 threads gthread,
+    `--timeout 180`, `--preload`, bind `0.0.0.0:5001`) ; `start` (utilisé uniquement par le
+    `CMD` du Dockerfile) pointe désormais dessus. `dev`/`backend` INCHANGÉS — toujours
+    `uv run python run.py` (Werkzeug), car c'est ce qu'utilise `npm run dev` en local sur le
+    poste Windows d'Amine.
+  - 5 tests ajoutés dans `test_unit_hardening.py` (US-207) : refus/tolérance NEO4J_PASSWORD
+    défaut selon FLASK_ENV, refus/tolérance FLASK_DEBUG selon FLASK_ENV, acceptation d'un mot
+    de passe non-défaut.
+- **Décision non spécifiée par l'AC — 1 worker plutôt que plusieurs** : REDIS_URL n'est pas
+  encore câblé (US-208, dépend de cette story) et plusieurs caches in-process existants
+  (rate-limit dicts, cache admin token, etc.) supposent un seul process. Passer à plusieurs
+  workers gunicorn AVANT US-208 casserait silencieusement leur cohérence. `--threads 4`
+  préserve la concurrence qu'offrait `threaded=True` sous Werkzeug.
+- **`--timeout 180`** : la génération PDF synchrone (fallback sans Redis, cf. US-208) peut
+  dépasser le défaut gunicorn de 30 s — timeout généreux en attendant l'async réel.
+- **Vérifié en amont, avant d'écrire le check fail-closed** : `NEO4J_PASSWORD` en prod
+  (Coolify) n'est PAS le défaut `'miroshark'` (confirmé par longueur uniquement via SSH,
+  jamais la valeur affichée) — le nouveau check ne casse donc pas le boot actuel.
+- **Next dans cette story** : push sur `main` → rebuild Coolify (~15 min) → `docker logs` du
+  conteneur prouvant `gunicorn` (pas `Werkzeug`) → smoke test parcours critique → `passes:true`.
+
+### 2026-07-09 — US-205 Stripe Checkout self-service — test E2E réel (V2-A-blocA)
+
+- **Statut** : passes:true (code posé le 2026-07-08, vérification E2E faite ce jour).
+- **Test 1 — Checkout Session réelle** : `POST https://bassira.ma/api/stripe/create-checkout-session`
+  `{"package_id":"pmf_discovery","currency":"mad"}` → HTTP 200, `checkout_url` réelle
+  `https://checkout.stripe.com/c/pay/cs_live_...` (session non complétée — mode live, aucune
+  carte utilisée).
+- **Test 2 — Webhook signé** : script Python one-shot (`hmac`+`hashlib` stdlib, même algo que
+  `verify_webhook_signature`) exécuté **dans le conteneur backend** via
+  `/app/backend/.venv/bin/python3` (le venv système n'a pas `requests` installé — piège noté),
+  qui lit `STRIPE_WEBHOOK_SECRET` depuis `os.environ` (jamais affiché) et POST un événement
+  `checkout.session.completed` synthétique sur `http://localhost:5001/api/stripe/webhook`
+  (port interne du conteneur, trouvé via `/proc/net/tcp` — `netstat`/`ss` absents de l'image).
+  → HTTP 200 `{"received":true}`.
+- **Test 3 — Preuve DB** : `docker exec supabase-db-dgybi9q5e2ggkjtaxlu2ukai psql` confirme la
+  ligne `quote_ownership` insérée avec `status='paid'`, `package_id='pmf_discovery'`,
+  `org_id` = fallback `aimpower-bassira`, `customer_email` = celui du payload synthétique.
+  Ligne supprimée immédiatement après vérification (`DELETE 1`) pour ne pas polluer
+  `/admin/quotes` d'un faux paiement.
+- **Écart assumé vs. acceptance criteria** : l'AC dit « products/prices visibles en mode
+  **test** » / « paiement **test mode** » — le catalogue et le webhook tournent en réalité en
+  **mode live** (décision explicite Amine du 2026-07-08, sandbox OAuth jamais obtenu, cf.
+  passation MEMO). Le test E2E ci-dessus reproduit donc l'équivalent en live (Checkout Session
+  réelle non complétée + webhook synthétique signé) plutôt qu'un vrai paiement carte de test,
+  qui n'existe pas en mode live.
+- **`pytest`/build** : déjà verts depuis le commit `b729078` (1689 passed, 0 failed) — aucun
+  code touché dans cette itération, uniquement vérification runtime.
+- **Piège consolidé** : le conteneur backend a DEUX Python — `/usr/local/bin/python3` (système,
+  sans dépendances projet) et `/app/backend/.venv/bin/python3` (le vrai, avec `requests` etc.).
+  Toujours cibler le venv pour tout script exécuté via `docker exec`.
+
 ### 2026-07-07 — US-206 Fermeture IDOR /api/report/* (V2-A-blocA)
 
 - **Statut** : passes:true. pytest 1688/1689 (1 flaky sans lien, cf. errors-log) + ruff clean.

@@ -256,6 +256,23 @@ class Config:
         if not cls.NEO4J_PASSWORD:
             errors.append("NEO4J_PASSWORD is not configured")
 
+        # ADR-006: fail-closed on known-dangerous defaults outside dev. The
+        # dev-only exemption exists because docker-compose.yml and local
+        # .env files legitimately use these defaults for throwaway state.
+        if cls.FLASK_ENV != 'development':
+            if cls.NEO4J_PASSWORD == 'miroshark':
+                errors.append(
+                    "NEO4J_PASSWORD is set to the known default value "
+                    "'miroshark' outside development (FLASK_ENV=%s) — "
+                    "refusing to boot with an insecure default." % cls.FLASK_ENV
+                )
+            if cls.DEBUG:
+                errors.append(
+                    "FLASK_DEBUG is enabled outside development "
+                    "(FLASK_ENV=%s) — refusing to boot with debug mode "
+                    "active in production." % cls.FLASK_ENV
+                )
+
         # Production: warn loudly when SECRET_KEY isn't set (sessions won't
         # survive restarts), but don't refuse to boot — Coolify env-var
         # injection across docker-compose interpolation has been flaky and
