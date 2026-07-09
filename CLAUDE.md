@@ -38,9 +38,11 @@ push `main`). Cible : C-Level et institutions MENA, vente sur devis (MAD/USD, ja
   jamais toucher son code depuis ce repo ; ne jamais modifier le flag `--no-verify-jwt`
   ni le lang forwarding. **Saqr et Nahda CONSOMMENT les sorties de Bassira** — contrat
   API sortant à définir (US-218).
-- **URLs publiques et liens de renvoi : bassira.ma TOUJOURS** (le défaut SQL
-  `pdf_branding.footer_right='bassira.ai'` est à corriger — ADR-013). Emails via Resend
-  sur l'adresse AI-MPower, liens pointant bassira.ma.
+- **URLs publiques et liens de renvoi : bassira.ma TOUJOURS** (ADR-013). Le défaut SQL
+  `pdf_branding.footer_right` était sur `'bassira.ai'` — corrigé par la migration
+  `20260707_002_footer_bassira_ma.sql`, vérifié appliqué en base live le 2026-07-09
+  (`column_default = 'bassira.ma'`, 0 row active encore sur `bassira.ai`). Emails via
+  Resend sur l'adresse AI-MPower, liens pointant bassira.ma.
 - Écriture de données de simulation : Supabase est la source de vérité des métadonnées
   (`simulation_ownership`) ; toute nouvelle donnée métier persistante va en Supabase,
   PAS sur `backend/uploads/` (volume éphémère — bug analytics déjà payé, admin.py:24-27).

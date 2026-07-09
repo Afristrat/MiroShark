@@ -277,11 +277,13 @@ procédure standardisée dans **SOP-002** (bibliothèque SOP du poste).
 **Date** : 2026-07-07 (directive Amine) · **Statut** : accepté · réversible
 **Quoi** : toute URL publique et tout lien de renvoi (emails, PDF, share cards) pointe
 **bassira.ma** ; l'expéditeur Resend est l'adresse AI-MPower.
-**Pourquoi** : décision de marque d'Amine ; le défaut SQL actuel
-`pdf_branding.footer_right='bassira.ai'` (migration 20260506_001) et tout lien résiduel
-divergent sont des bugs de marque à corriger (rattaché US-204/US-210).
+**Pourquoi** : décision de marque d'Amine ; le défaut SQL initial
+`pdf_branding.footer_right='bassira.ai'` (migration 20260506_001) était un bug de marque
+— **corrigé** par la migration `20260707_002_footer_bassira_ma.sql` (rattaché US-204/US-210),
+vérifié appliqué en base live le 2026-07-09 (`column_default='bassira.ma'`, 0 row active
+résiduelle sur `bassira.ai`).
 **Sources** : directive Amine 2026-07-07.
-**Alternatives rejetées** : bassira.ai (défaut SQL actuel — non retenu par Amine).
+**Alternatives rejetées** : bassira.ai (défaut SQL initial — non retenu par Amine).
 **Signal de réexamen** : acquisition d'un autre domaine par Amine.
 
 ## ADR-014 — Stripe Checkout self-service limité au palier d'entrée + ajout EUR
