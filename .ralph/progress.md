@@ -54,8 +54,7 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 
 ### 2026-07-09 — US-207 Serveur WSGI prod + Config.validate() fail-closed (V2-A-blocA)
 
-- **Statut** : code complet + gates locaux verts (pytest 1694 passed/0 failed, ruff clean,
-  build OK) mais **passes:false** jusqu'à preuve de boot en prod + smoke test post-déploiement.
+- **Statut** : passes:true — code posé, déployé et vérifié en prod ce jour.
 - **Fait** :
   - `Config.validate()` (config.py) : 2 nouveaux checks fail-closed, actifs uniquement hors
     `FLASK_ENV=development` — `NEO4J_PASSWORD == 'miroshark'` (défaut connu, config.py:76) et
@@ -86,8 +85,37 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 - **Vérifié en amont, avant d'écrire le check fail-closed** : `NEO4J_PASSWORD` en prod
   (Coolify) n'est PAS le défaut `'miroshark'` (confirmé par longueur uniquement via SSH,
   jamais la valeur affichée) — le nouveau check ne casse donc pas le boot actuel.
-- **Next dans cette story** : push sur `main` → rebuild Coolify (~15 min) → `docker logs` du
-  conteneur prouvant `gunicorn` (pas `Werkzeug`) → smoke test parcours critique → `passes:true`.
+- **Déploiement (preuve de boot)** : commit `e486bcf` poussé sur `main`. 1er build Coolify
+  (`aqh4zji8jokaz6nlidm2lu6f`) **échoué** à l'étape `exporting to image` (`exit code 255`,
+  sans détail applicatif) — le build Docker lui-même (npm build, `uv sync` incluant
+  `gunicorn`) s'était terminé sans erreur, incident transitoire côté BuildKit/registre
+  Coolify (disque serveur à 24 % d'usage, donc pas un problème d'espace). Redéploiement
+  déclenché via `POST /api/v1/deploy?uuid=...` (API Coolify) → `n1xy63nfbbck6zhub3wmj4fs`
+  **finished**. Nouveau conteneur `miroshark-u6pn5mr2pgi88s13un55pkzb-004914637641`, logs de
+  boot confirmant gunicorn (pas Werkzeug) :
+  ```
+  [backend] > cd backend && uv run gunicorn --preload --workers 1 --threads 4 --worker-class gthread --timeout 180 --bind 0.0.0.0:5001 wsgi:app
+  [backend] [2026-07-09 00:52:33 +0000] [120] [INFO] Starting gunicorn 26.0.0
+  [backend] [2026-07-09 00:52:33 +0000] [120] [INFO] Listening at: http://0.0.0.0:5001 (120)
+  [backend] [2026-07-09 00:52:33 +0000] [149] [INFO] Booting worker with pid: 149
+  ```
+  Conteneur stable (aucune boucle de restart observée).
+- **Smoke test post-déploiement** : `curl` — `/` 200, `/offres` 200, `/models` 200,
+  `/api/stripe/create-checkout-session` toujours 200 avec une vraie URL `checkout.stripe.com`
+  (non-régression Stripe US-205). Puis suite Playwright ciblée AC (« smoke Playwright ») :
+  `smoke-fr/en/ar.spec.ts` contre `https://bassira.ma` → **15/15 passed**.
+- **Dette découverte et corrigée au passage (pas liée au WSGI)** : les 3 specs smoke
+  attendaient `.cal-stat-card, .cal-stats article, svg` sur `/calibration` — markup de
+  l'ancienne `CalibrationView` supprimée en US-201 (2026-07-07, remplacée par
+  `MethodologieView` qui n'a ni stat card ni SVG D3). Ces 3 tests étaient cassés depuis
+  US-201 sans être détectés (le gate `ui` Playwright n'est pas systématiquement lancé à
+  chaque story). Sélecteur corrigé en `.mt-card` (les cartes de contenu réelles de
+  `MethodologieView.vue`) dans `smoke-fr.spec.ts`/`smoke-en.spec.ts`/`smoke-ar.spec.ts`.
+- **Piège consolidé — API Coolify pour l'historique de déploiement** : l'endpoint utile
+  n'est PAS `/api/v1/deployments/{uuid_app}` (404) ni `/api/v1/deployments?application_uuid=`
+  (toujours vide) mais `/api/v1/deployments/applications/{uuid_app}` (historique complet) et
+  `/api/v1/deployments/{deployment_uuid}` (détail + logs d'un déploiement précis). Retrigger
+  via `GET /api/v1/deploy?uuid={uuid_app}`.
 
 ### 2026-07-09 — US-205 Stripe Checkout self-service — test E2E réel (V2-A-blocA)
 

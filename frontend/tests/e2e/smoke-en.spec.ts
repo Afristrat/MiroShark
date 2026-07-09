@@ -35,7 +35,9 @@ test.describe('EN — smoke', () => {
 
     await expect(page.locator('h1')).toBeVisible()
 
-    const statCards = page.locator('.cal-stat-card, .cal-stats article, svg')
+    // /calibration alias MethodologieView (US-201, ADR-002) : at least one
+    // content card (`.mt-card`) must be present.
+    const statCards = page.locator('.mt-card')
     await expect(statCards.first()).toBeVisible({ timeout: 15_000 })
   })
 

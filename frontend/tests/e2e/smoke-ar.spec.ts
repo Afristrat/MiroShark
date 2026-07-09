@@ -50,7 +50,9 @@ test.describe('AR — smoke + RTL', () => {
     await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
     await expect(page.locator('h1')).toBeVisible()
 
-    const statCards = page.locator('.cal-stat-card, .cal-stats article, svg')
+    // /calibration alias MethodologieView (US-201, ADR-002) : au moins une
+    // carte de contenu (`.mt-card`) doit être présente.
+    const statCards = page.locator('.mt-card')
     await expect(statCards.first()).toBeVisible({ timeout: 15_000 })
   })
 

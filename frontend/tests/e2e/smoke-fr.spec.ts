@@ -41,8 +41,9 @@ test.describe('FR — smoke', () => {
     // Le hero du calibration affiche le headline et le brand.
     await expect(page.locator('h1')).toBeVisible()
 
-    // Au moins une stat card (`.cal-stat-card`) ou un SVG D3 doit être présent.
-    const statCards = page.locator('.cal-stat-card, .cal-stats article, svg')
+    // /calibration alias MethodologieView (US-201, ADR-002) : au moins une
+    // carte de contenu (`.mt-card`) doit être présente.
+    const statCards = page.locator('.mt-card')
     await expect(statCards.first()).toBeVisible({ timeout: 15_000 })
   })
 
