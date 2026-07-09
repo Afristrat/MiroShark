@@ -40,6 +40,7 @@ from ..auth.supabase_client import (
 from ..services.quote_service import check_rate_limit, submit_quote
 from ..services import quote_admin_service as qa
 from ..services import quote_ownership as qo
+from ..services import intake_service
 
 
 quote_bp = Blueprint("quote", __name__)
@@ -269,12 +270,33 @@ def get_quote_admin(quote_id: str):
     if payload is None:
         return _err("QUOTE_NOT_FOUND", "Quote not found.", 404)
     status_payload = qa.read_quote_status(quote_id)
+
+    # US-IQ-03 (branche entretien) : les sujets confidentiels flaggés doivent
+    # être récupérables via l'API admin — best-effort, n'échoue jamais le
+    # détail du devis si la session intake est absente/injoignable.
+    intake_summary = None
+    intake_session_id = (payload or {}).get("intake_session_id")
+    if intake_session_id:
+        try:
+            session = intake_service.get_session(intake_session_id)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("get_quote_admin: intake session lookup failed for %s: %s", intake_session_id, exc.__class__.__name__)
+            session = None
+        if session:
+            intake_summary = {
+                "session_id": intake_session_id,
+                "state": session.get("state"),
+                "route": session.get("route"),
+                "confidential_flags": session.get("confidential_flags") or [],
+            }
+
     return jsonify({
         "success": True,
         "data": {
             "quote_id": quote_id,
             "payload": payload,
             "status": status_payload,
+            "intake": intake_summary,
         },
     }), 200
 

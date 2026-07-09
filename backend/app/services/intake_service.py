@@ -229,6 +229,13 @@ def _get_session(session_id: str, *, client: Any) -> Optional[Dict[str, Any]]:
     return rows[0] if rows else None
 
 
+def get_session(session_id: str, *, client: Any = None) -> Optional[Dict[str, Any]]:
+    """Wrapper public de ``_get_session`` — utilisé par d'autres modules
+    (ex. l'admin devis, pour exposer les sujets confidentiels flaggés)."""
+    cli = client or get_supabase_admin()
+    return _get_session(session_id, client=cli)
+
+
 def submit_form(
     session_id: str,
     payload: Dict[str, Any],
@@ -326,5 +333,137 @@ def submit_form(
             "session_id": session_id,
             "state": "form_submitted",
             "quote_id": quote_id if quote_linked else None,
+        },
+    }
+
+
+# ─── Étape 3 : routage à 3 branches (étape C, US-IQ-03) ──────────────────────
+#
+# Règles déterministes de docs/intake/01-intake-spec.md §3.C (ADR-IQ-02) —
+# AUCUN LLM dans le routage. Priorité : entretien d'abord (ses critères sont
+# des seuils de risque qui doivent l'emporter sur tout le reste), puis
+# self-service (fenêtre étroite explicitement définie), puis devis 48h en
+# repli (« enjeu moyen, pas de gouvernance lourde » = tout ce qui n'est ni
+# l'un ni l'autre).
+
+_MEETING_GOVERNANCE = {"conseil_administration", "tutelle", "investisseurs"}
+_MEETING_BUDGET_BRACKETS = {"10_100m", "gt_100m"}
+_SELF_SERVICE_BUDGET_BRACKET = "lt_1m"
+_SELF_SERVICE_EXPOSURE = {"interne", "sectorielle"}
+_SELF_SERVICE_MIN_DAYS_OUT = 14
+
+_ROUTE_SELF_SERVICE = "self_service"
+_ROUTE_QUOTE_48H = "quote_48h"
+_ROUTE_MEETING = "meeting"
+
+
+def _deadline_far_enough(deadline: Dict[str, Any]) -> bool:
+    """« échéance > 2 semaines » (A3) — faux par défaut sur toute donnée
+    absente/invalide (repli sûr : bascule vers devis 48h, jamais self-service
+    par erreur de parsing)."""
+    if not isinstance(deadline, dict) or deadline.get("overdue"):
+        return False
+    date_raw = deadline.get("date")
+    if not isinstance(date_raw, str) or not date_raw:
+        return False
+    try:
+        target_date = datetime.strptime(date_raw[:10], "%Y-%m-%d").date()
+    except ValueError:
+        return False
+    today = datetime.now(timezone.utc).date()
+    return (target_date - today).days > _SELF_SERVICE_MIN_DAYS_OUT
+
+
+def _decide_route(brief: Dict[str, Any], confidential_flags: Optional[List[Any]]) -> str:
+    """Calcule la branche de sortie (self_service | quote_48h | meeting).
+
+    Fonction pure, sans effet de bord — testée par table de vérité exhaustive
+    dans ``test_unit_intake.py``.
+    """
+    stakes = brief.get("stakes") or {}
+    governance = brief.get("governance")
+    budget_bracket = stakes.get("budget_bracket")
+    exposure = stakes.get("exposure")
+
+    if (
+        governance in _MEETING_GOVERNANCE
+        or budget_bracket in _MEETING_BUDGET_BRACKETS
+        or len(confidential_flags or []) >= 1
+    ):
+        return _ROUTE_MEETING
+
+    if (
+        budget_bracket == _SELF_SERVICE_BUDGET_BRACKET
+        and exposure in _SELF_SERVICE_EXPOSURE
+        and _deadline_far_enough(brief.get("deadline") or {})
+    ):
+        return _ROUTE_SELF_SERVICE
+
+    return _ROUTE_QUOTE_48H
+
+
+_ROUTABLE_STATES = {"form_submitted", "agent_active"}
+
+
+def complete_routing(session_id: str, *, client: Any = None) -> Tuple[int, Dict[str, Any]]:
+    """Calcule la branche de sortie et clôture la session (state → 'completed').
+
+    Ne gère PAS l'email de confirmation ni la réservation Cal.com (étape D,
+    US-IQ-04, qui dépend de cette story) — uniquement le calcul déterministe
+    de la route et sa persistance. Pour la branche self-service, la Checkout
+    Session Stripe elle-même est créée par le flux existant
+    (``POST /api/stripe/create-checkout-session``, US-205) ; ce module se
+    contente de renvoyer ``route`` au client pour qu'il propage
+    ``intake_session_id`` à cet appel (metadata Stripe, cf. 05-integrations.md
+    — le webhook existant n'est pas modifié).
+    """
+    if not session_id or not isinstance(session_id, str):
+        return 400, {"success": False, "error_code": "MISSING_FIELD", "error": "session_id is required."}
+
+    cli = client or get_supabase_admin()
+
+    try:
+        session = _get_session(session_id, client=cli)
+    except Exception as exc:  # noqa: BLE001
+        logger.error("complete_routing: session lookup failed for %s: %s", session_id, exc.__class__.__name__)
+        return 503, {"success": False, "error_code": "SUPABASE_UNAVAILABLE", "error": "Could not reach storage."}
+
+    if session is None:
+        return 404, {"success": False, "error_code": "SESSION_NOT_FOUND", "error": "Intake session not found."}
+
+    if session["state"] not in _ROUTABLE_STATES:
+        return 409, {
+            "success": False,
+            "error_code": "INVALID_STATE",
+            "error": f"Session is in state {session['state']!r}, expected one of {sorted(_ROUTABLE_STATES)}.",
+        }
+
+    brief = session.get("brief")
+    if not isinstance(brief, dict) or not brief:
+        return 409, {
+            "success": False,
+            "error_code": "BRIEF_MISSING",
+            "error": "Session has no brief to route on — submit the form first.",
+        }
+
+    route = _decide_route(brief, session.get("confidential_flags"))
+
+    update_row = {
+        "state": "completed",
+        "route": route,
+        "completed_at": datetime.now(timezone.utc).isoformat(),
+    }
+    try:
+        cli.table("intake_sessions").update(update_row).eq("id", session_id).execute()
+    except Exception as exc:  # noqa: BLE001
+        logger.error("complete_routing: intake_sessions update failed for %s: %s", session_id, exc.__class__.__name__)
+        return 503, {"success": False, "error_code": "SUPABASE_UNAVAILABLE", "error": "Could not persist the routing decision."}
+
+    return 200, {
+        "success": True,
+        "data": {
+            "session_id": session_id,
+            "state": "completed",
+            "route": route,
         },
     }

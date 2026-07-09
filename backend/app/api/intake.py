@@ -1,9 +1,11 @@
-"""Intake endpoints (US-IQ-01) — parcours de qualification /devis « 3 temps ».
+"""Intake endpoints (US-IQ-01, US-IQ-03) — parcours de qualification /devis.
 
   * ``POST /api/intake/session`` — démarre un parcours (state='started').
   * ``POST /api/intake/session/<id>/form`` — soumet le formulaire A1-A8 +
     identité (state → 'form_submitted'), écrit aussi ``quote_ownership``
     (rétrocompatibilité admin console).
+  * ``POST /api/intake/session/<id>/complete`` — calcule la branche de sortie
+    (routage déterministe, étape C) et clôture la session (US-IQ-03).
 
 Public, non authentifié — même limiteur de débit que ``/api/quote``
 (``quote_service.check_rate_limit``, partagé par IP).
@@ -71,6 +73,23 @@ def post_submit_form(session_id: str):
         return jsonify(body), status
     except Exception:  # noqa: BLE001
         logger.exception("intake form submit: unexpected failure")
+        return jsonify({
+            "success": False,
+            "error_code": "UNKNOWN",
+            "error": "Internal server error.",
+        }), 500
+
+
+@intake_bp.route("/session/<session_id>/complete", methods=["POST"])
+def post_complete_session(session_id: str):
+    """Calcule la branche de sortie (self_service | quote_48h | meeting) et
+    clôture la session. Ne gère PAS l'email ni la réservation Cal.com
+    (US-IQ-04) — voir ``intake_service.complete_routing``."""
+    try:
+        status, body = intake_service.complete_routing(session_id)
+        return jsonify(body), status
+    except Exception:  # noqa: BLE001
+        logger.exception("intake session complete: unexpected failure")
         return jsonify({
             "success": False,
             "error_code": "UNKNOWN",

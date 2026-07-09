@@ -17,8 +17,10 @@ mémoire — aucune dépendance live.
 
 from __future__ import annotations
 
+import itertools
 import sys
 import uuid
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -315,3 +317,228 @@ class TestIntakeEndpoints:
         resp = client.post("/api/intake/session/sess-1/form", json={"decision": "x"})
         assert resp.status_code == 400
         assert resp.get_json()["error_code"] == "A1_TOO_SHORT"
+
+    def test_post_complete_delegates_to_service(self, client, monkeypatch):
+        from app.api import intake as intake_api
+
+        def _fake_complete(session_id, **_kw):
+            assert session_id == "sess-1"
+            return 200, {
+                "success": True,
+                "data": {"session_id": "sess-1", "state": "completed", "route": "meeting"},
+            }
+
+        monkeypatch.setattr(intake_api.intake_service, "complete_routing", _fake_complete)
+        resp = client.post("/api/intake/session/sess-1/complete")
+        assert resp.status_code == 200
+        assert resp.get_json()["data"]["route"] == "meeting"
+
+
+# ─── _decide_route — table de vérité exhaustive (US-IQ-03, étape C) ─────────
+#
+# Règles de docs/intake/01-intake-spec.md §3.C (ADR-IQ-02, 100% déterministe,
+# aucun LLM). ``_expected_route`` ci-dessous est une réimplémentation
+# INDÉPENDANTE de la spec — pas un appel à ``svc._decide_route`` — pour que
+# le test vérifie vraiment le comportement contre la spec, pas contre
+# lui-même.
+
+_FAR_DATE = (datetime.now(timezone.utc) + timedelta(days=30)).strftime("%Y-%m-%d")
+_NEAR_DATE = (datetime.now(timezone.utc) + timedelta(days=5)).strftime("%Y-%m-%d")
+
+_DEADLINES = {
+    "far": {"date": _FAR_DATE, "overdue": False},
+    "near": {"date": _NEAR_DATE, "overdue": False},
+    "overdue": {"date": None, "overdue": True},
+    "unset": {"date": None, "overdue": False},
+}
+
+# (budget_bracket, exposure) — axe « enjeu » (A6), couvrant les frontières
+# des deux règles qui en dépendent : self-service (budget lt_1m + exposure
+# interne/sectorielle) et entretien (budget >= 10_100m, quelle que soit
+# l'exposition).
+_ENJEUX = [
+    ("lt_1m", "interne"),
+    ("lt_1m", "sectorielle"),
+    ("lt_1m", "nationale"),
+    ("lt_1m", "internationale"),
+    ("1_10m", "interne"),
+    ("1_10m", "sectorielle"),
+    ("1_10m", "nationale"),
+    ("1_10m", "internationale"),
+    ("10_100m", "interne"),
+    ("gt_100m", "internationale"),
+]
+
+_GOVERNANCES = ["solo", "comite_direction", "conseil_administration", "tutelle", "investisseurs"]
+
+_FLAG_SETS = {
+    "none": [],
+    "one": [{"topic_label": "structure actionnariale", "flagged_at": "2026-07-10T10:00:00Z"}],
+}
+
+
+def _expected_route(budget_bracket, exposure, governance, deadline_key, flags_key) -> str:
+    has_flag = flags_key == "one"
+    if governance in ("conseil_administration", "tutelle", "investisseurs"):
+        return "meeting"
+    if budget_bracket in ("10_100m", "gt_100m"):
+        return "meeting"
+    if has_flag:
+        return "meeting"
+    if budget_bracket == "lt_1m" and exposure in ("interne", "sectorielle") and deadline_key == "far":
+        return "self_service"
+    return "quote_48h"
+
+
+_TRUTH_TABLE_CASES = [
+    (budget_bracket, exposure, governance, deadline_key, flags_key)
+    for (budget_bracket, exposure), governance, deadline_key, flags_key in itertools.product(
+        _ENJEUX, _GOVERNANCES, _DEADLINES.keys(), _FLAG_SETS.keys()
+    )
+]
+
+
+class TestRouteDecisionTruthTable:
+    @pytest.mark.parametrize(
+        "budget_bracket,exposure,governance,deadline_key,flags_key", _TRUTH_TABLE_CASES
+    )
+    def test_matches_expected_route(self, budget_bracket, exposure, governance, deadline_key, flags_key):
+        brief = {
+            "governance": governance,
+            "deadline": _DEADLINES[deadline_key],
+            "stakes": {"budget_bracket": budget_bracket, "exposure": exposure},
+        }
+        confidential_flags = _FLAG_SETS[flags_key]
+        expected = _expected_route(budget_bracket, exposure, governance, deadline_key, flags_key)
+        assert svc._decide_route(brief, confidential_flags) == expected
+
+
+class TestDeadlineBoundary:
+    def test_exactly_14_days_is_not_far_enough(self):
+        date_14 = (datetime.now(timezone.utc).date() + timedelta(days=14)).strftime("%Y-%m-%d")
+        brief = {
+            "governance": "solo",
+            "deadline": {"date": date_14, "overdue": False},
+            "stakes": {"budget_bracket": "lt_1m", "exposure": "interne"},
+        }
+        assert svc._decide_route(brief, []) == "quote_48h"
+
+    def test_15_days_is_far_enough(self):
+        date_15 = (datetime.now(timezone.utc).date() + timedelta(days=15)).strftime("%Y-%m-%d")
+        brief = {
+            "governance": "solo",
+            "deadline": {"date": date_15, "overdue": False},
+            "stakes": {"budget_bracket": "lt_1m", "exposure": "interne"},
+        }
+        assert svc._decide_route(brief, []) == "self_service"
+
+    def test_malformed_date_falls_back_to_quote_48h(self):
+        brief = {
+            "governance": "solo",
+            "deadline": {"date": "not-a-date", "overdue": False},
+            "stakes": {"budget_bracket": "lt_1m", "exposure": "interne"},
+        }
+        assert svc._decide_route(brief, []) == "quote_48h"
+
+
+# ─── complete_routing — service + machine à états ────────────────────────────
+
+
+class TestCompleteRouting:
+    def _session_ready(
+        self,
+        fake_client,
+        *,
+        brief_overrides: Dict[str, Any] | None = None,
+        confidential_flags: List[Any] | None = None,
+        state: str = "form_submitted",
+    ) -> str:
+        sid = svc.start_session(client=fake_client)["session_id"]
+        svc.submit_form(sid, _valid_payload(brief_overrides=brief_overrides or {}), client=fake_client)
+        update: Dict[str, Any] = {}
+        if confidential_flags is not None:
+            update["confidential_flags"] = confidential_flags
+        if state != "form_submitted":
+            update["state"] = state
+        if update:
+            fake_client.table("intake_sessions").update(update).eq("id", sid).execute()
+        return sid
+
+    def test_routes_to_meeting_for_high_governance(self, fake_client):
+        sid = self._session_ready(fake_client, brief_overrides={"governance": "conseil_administration"})
+        status, body = svc.complete_routing(sid, client=fake_client)
+        assert status == 200
+        assert body["data"]["route"] == "meeting"
+        assert body["data"]["state"] == "completed"
+
+    def test_routes_to_self_service_for_low_stakes_far_deadline(self, fake_client):
+        sid = self._session_ready(
+            fake_client,
+            brief_overrides={
+                "governance": "solo",
+                "deadline": {"date": _FAR_DATE, "overdue": False},
+                "stakes": {"budget_bracket": "lt_1m", "exposure": "interne"},
+            },
+        )
+        status, body = svc.complete_routing(sid, client=fake_client)
+        assert status == 200
+        assert body["data"]["route"] == "self_service"
+
+    def test_routes_to_quote_48h_by_default(self, fake_client):
+        sid = self._session_ready(
+            fake_client,
+            brief_overrides={
+                "governance": "comite_direction",
+                "stakes": {"budget_bracket": "1_10m", "exposure": "sectorielle"},
+            },
+        )
+        status, body = svc.complete_routing(sid, client=fake_client)
+        assert status == 200
+        assert body["data"]["route"] == "quote_48h"
+
+    def test_meeting_route_triggered_by_confidential_flag_alone(self, fake_client):
+        sid = self._session_ready(
+            fake_client,
+            brief_overrides={
+                "governance": "solo",
+                "deadline": {"date": _FAR_DATE, "overdue": False},
+                "stakes": {"budget_bracket": "lt_1m", "exposure": "interne"},
+            },
+            confidential_flags=[{"topic_label": "conflit associés", "flagged_at": "2026-07-10T10:00:00Z"}],
+        )
+        status, body = svc.complete_routing(sid, client=fake_client)
+        assert status == 200
+        assert body["data"]["route"] == "meeting"
+
+    def test_persists_route_and_completed_state(self, fake_client):
+        sid = self._session_ready(fake_client, brief_overrides={"governance": "conseil_administration"})
+        svc.complete_routing(sid, client=fake_client)
+        session = svc.get_session(sid, client=fake_client)
+        assert session["state"] == "completed"
+        assert session["route"] == "meeting"
+        assert session["completed_at"] is not None
+
+    def test_session_not_found_returns_404(self, fake_client):
+        status, body = svc.complete_routing("does-not-exist", client=fake_client)
+        assert status == 404
+        assert body["error_code"] == "SESSION_NOT_FOUND"
+
+    def test_wrong_state_returns_409(self, fake_client):
+        sid = svc.start_session(client=fake_client)["session_id"]  # 'started', pas de brief
+        status, body = svc.complete_routing(sid, client=fake_client)
+        assert status == 409
+        assert body["error_code"] == "INVALID_STATE"
+
+    def test_already_completed_returns_409(self, fake_client):
+        sid = self._session_ready(fake_client, brief_overrides={"governance": "conseil_administration"})
+        svc.complete_routing(sid, client=fake_client)
+        status, body = svc.complete_routing(sid, client=fake_client)
+        assert status == 409
+        assert body["error_code"] == "INVALID_STATE"
+
+    def test_agent_active_state_is_routable(self, fake_client):
+        sid = self._session_ready(
+            fake_client, brief_overrides={"governance": "conseil_administration"}, state="agent_active"
+        )
+        status, _body = svc.complete_routing(sid, client=fake_client)
+        assert status == 200
