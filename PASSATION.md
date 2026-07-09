@@ -1,149 +1,193 @@
-== PASSATION NUCLÉAIRE MiroShark/Bassira — 2026-07-08 (soir, contexte <60%) ==
+== PASSATION NUCLÉAIRE MiroShark/Bassira — 2026-07-09 ==
 Synthèse complète et autonome — ne suppose la lecture d'aucune passation antérieure.
 
 [ETAT]
-- Branche `main`, poussée à jour : `e89696a` (dernier commit, code). Prod https://bassira.ma
-  **UP, HTTP 200**, conteneur `miroshark-u6pn5mr2pgi88s13un55pkzb-194734237493` tourne sur
-  l'image taguée exactement `e89696a…` (vérifié `docker ps` sur le serveur — déploiement
-  auto Coolify confirmé, pas juste supposé).
+- Commit `b729078` poussé sur `main` (câblage Stripe complet) — **DÉPLOIEMENT CONFIRMÉ** :
+  conteneur `miroshark-u6pn5mr2pgi88s13un55pkzb-000517664243` tourne sur l'image taguée
+  exactement `b729078ca528ba44f8906569aa7e2d1abf018f0c`, `STRIPE_SECRET_KEY` et
+  `STRIPE_WEBHOOK_SECRET` présentes dans son env, `bassira.ma` HTTP 200 (vérifié
+  post-rebuild). Les routes `/api/stripe/create-checkout-session` et `/api/stripe/webhook`
+  sont donc en prod, MAIS le test E2E réel (Checkout Session + webhook) n'est PAS encore
+  fait (cf. [BLOQUÉ]).
 - Base Supabase de Bassira = **self-hosted sur le serveur**, stack Coolify
-  `dgybi9q5e2ggkjtaxlu2ukai`, URL publique `https://db-miroshark.ai-mpower.com`. **Migration
-  hors de l'ancienne base « ventures » actée** — décision confirmée : repartir propre, PAS de
-  migration des anciennes données. Base actuellement quasi vide (2 comptes de test créés
-  cette session, `organizations`=1, le reste des tables métier à 0 lignes — normal,
-  pré-lancement).
+  `dgybi9q5e2ggkjtaxlu2ukai`, URL publique `https://db-miroshark.ai-mpower.com`. Migration
+  hors de l'ancienne base « ventures » actée par Amine — repartir propre, pas de migration
+  des anciennes données. Base quasi vide (2 comptes de test, `organizations`=1, reste à 0
+  lignes — normal, pré-lancement).
+- **Stripe connecté en MODE LIVE** (compte `acct_1PHxGdHM2FpoSxES`, « AI-MPower, L.L.C. »)
+  — décision explicite d'Amine après échec répété de bascule en sandbox via MCP (cf.
+  [MEMO]). Aucune boutique live active actuellement (confirmé par Amine), risque accepté.
 - `.ralph/prd.json` v2.0.0, chantier `V2-A-blocA` : US-201/202/206 `passes:true`. US-203
   (payload devis→Supabase) et US-204 (Resend+bassira.ma) : code+infra faits mais
-  `passes:false` — il manque toujours la preuve d'un devis test réel survivant à un redeploy
-  (reporté par Amine, jamais refait depuis). US-207 (WSGI prod) et US-208 (Redis/worker PDF)
-  `pending`, pas commencées. US-205 (Stripe) : voir [BLOQUÉ].
+  `passes:false` — il manque toujours la preuve d'un devis test réel survivant à un
+  redeploy (reporté par Amine il y a plusieurs jours, jamais refait depuis). US-205
+  (Stripe) : code fait, `passes:false` en attente de vérification E2E (cf. [BLOQUÉ]).
+  US-207 (WSGI prod) et US-208 (Redis/worker PDF) : `pending`, pas commencées.
 - Cartographie complète du projet disponible : `.understand-anything/knowledge-graph.json`
   (1441 nœuds, 2468 arêtes, 10 couches, tour guidé 14 étapes, 554 fichiers analysés).
-  Dashboard interactif lancé via skill `/understand-dashboard` (process de session, mort au
-  `/clear` — relancer si besoin, le graphe lui est déjà sauvegardé de façon permanente).
+  Dashboard relançable via skill `/understand-dashboard` (process de session, mort au
+  `/clear` — le graphe lui est permanent).
 
-[FAIT cette session]
-1. **Incident « Erreur réseau » login RÉSOLU** : l'ingress du tunnel Cloudflare remote-managed
-   n'avait aucune règle pour `db-miroshark.ai-mpower.com` (catch-all 404, donc pas de CORS,
-   donc `failed to fetch` navigateur). Fix : `PUT` de l'ingress complet du tunnel
-   `7156c3f9-07a4-472d-963a-efaf59769d40` avec la règle ajoutée (version 114, 58 règles) +
-   sync `config-nahda.yml` sur le serveur. Non-régression vérifiée sur bassira.ma,
-   prospectives, nahda.ma, tamkin.ma.
-2. **Incident `fetchProfile 503 AUTH_NOT_CONFIGURED` RÉSOLU** : la base self-hosted signe ses
-   JWT en HS256 (pas JWKS asymétrique comme l'ancienne base Cloud) → le backend exigeait
-   `SUPABASE_JWT_SECRET`, absente de l'env Coolify. Copié depuis `GOTRUE_JWT_SECRET` de la
-   stack `dgybi…` vers l'env Coolify de l'app + restart. Preuve E2E : login réel +
-   `GET /api/client/auth/me` → HTTP 200, org AIMPOWER/owner renvoyée.
-3. **Comptes créés** (API admin GoTrue, email confirmé d'office) : `test@bassira.ma` (sans
-   org, existence à trancher) et `medamine.mansouriidrissi@gmail.com` (**owner** org AIMPOWER
-   `f7abf22e-a0f0-49ad-9e47-484787924c0f`). **Login confirmé fonctionnel par Amine.**
-4. **`COOLIFY_API_TOKEN` du coffre DPAPI découvert PÉRIMÉ** (401 sur l'API). Nouveau token
-   généré directement en base Coolify (Sanctum, id=10, abilities root, nom
-   `claude-rotation-2026-07-08`) — valeur stockée UNIQUEMENT sur le serveur :
-   `/home/serveuria/.credentials/coolify-api-token-claude-20260708` (chmod 600). **Rotation
-   dans le coffre DPAPI toujours PAS faite** (session sans accès à `~/.claude/secrets`).
-5. **`RESEND_API_KEY` corrigée** : la clé déployée sur Coolify était invalide (401 « API key is
-   invalid » constaté par appel direct à l'API Resend). Remplacée par la clé valide du coffre
-   (domaine `ai-mpower.com` vérifié, région eu-west-1) + restart. **Vérifié par un envoi réel
-   post-rebuild : HTTP 200, id Resend `52409253-4343-4dc3-a96c-452801a83a3f`.** Cause du
-   « je ne reçois aucun mail » signalé par Amine — aucun rapport avec le code applicatif.
-6. **Indépendance de la base Supabase CONFIRMÉE** : scan des 28 apps Coolify — aucune app hors
-   miroshark (et ses sidecars neo4j/ollama du même groupe docker-compose) ne référence
-   `db-miroshark.ai-mpower.com`. La stack `dgybi…` est exclusive à Bassira.
-7. **2 bugs UI corrigés, commités, POUSSÉS et DÉPLOYÉS** (commit `e89696a`, vérifié en prod) :
-   - `frontend/src/components/AppHeader.vue` : le lien nav « Modèles » portait en dur la
-     classe `app-header__link--featured`, dont le CSS était identique à
-     `.router-link-active` → paraissait actif sur toutes les pages. Classe retirée.
-   - `frontend/src/views/OffersView.vue` : la netteté des cartes d'offres suivait
-     `activeIndex` (état de carrousel initialisé à 0 → 1ʳᵉ carte toujours nette), pas le
-     survol. `.offers-slide--active { opacity:1 }` → `.offers-slide:hover { opacity:1 }`
-     (le scale/glow du carrousel sur `--active`/`--featured` reste inchangé).
-   Build frontend vérifié vert avant commit.
-8. **Outillage navigateur installé** : `dev-browser` (npm global, CLI Sawyer Hood, MIT,
-   légitime — vérifié via `npm view` avant install) car l'extension Claude-in-Chrome n'est
-   PAS connectée sur ce poste (`tabs_context_mcp` → « Browser extension is not connected »).
-   `dev-browser` pilote un Chromium local géré par un démon (`dev-browser status`/`browsers`).
+[FAIT — session 2026-07-09 (Stripe)]
+1. Connexion Stripe MCP établie (`mcp__plugin_stripe_stripe__*`) après plusieurs
+   déblocages (extension Claude-in-Chrome non connectée → repli `dev-browser` → retour
+   Chrome natif via `/mcp` de Claude Code, tapé par Amine). `dev-browser` (npm, CLI Sawyer
+   Hood, MIT, légitime) installé sur ce poste — **réservé aux tâches non sensibles**,
+   Chrome/Claude-in-Chrome reste la référence pour banques/paiements (préférence Amine,
+   mémoire `feedback_browser_tool_choice.md`).
+2. ADR-014 rédigée (`docs/08-decisions-log.md`) : Stripe self-service limité aux 3
+   packages d'entrée (PMF Discovery, Crisis Drill 24h, Adcheck Lite) — les 6 paliers
+   supérieurs restent sur le circuit devis manuel (confirme/resserre ADR-007, ne le
+   contredit pas). Ajout d'une 3e devise EUR (contredit consciemment le « jamais EUR »
+   d'ADR-007 pour CES 3 packages uniquement) — montants EUR = parité nominale avec l'USD
+   (1000/2000/1500), décision explicite Amine.
+3. Catalogue Stripe créé et VÉRIFIÉ (mode live) — 3 produits, chacun un seul objet Price
+   portant les 3 devises en `currency_options` :
+   - PMF Discovery `prod_UqkLY0kI0DSQJy` / Price actif `price_1Tr4hBHM2FpoSxESlmb3WXlR` —
+     10 000 MAD / 1 000 USD / 1 000 EUR
+   - Crisis Drill 24h `prod_UqmDV3PoJTKwtD` / Price actif `price_1Tr4hCHM2FpoSxESlD4heCqI` —
+     20 000 MAD / 2 000 USD / 2 000 EUR
+   - Adcheck Lite `prod_UqmDJa4ZnBnc8M` / Price actif `price_1Tr4hEHM2FpoSxESig2ZeeD1` —
+     15 000 MAD / 1 500 USD / 1 500 EUR
+   Incident corrigé en cours de route : 1ʳᵉ tentative avait mis le même montant sur les 3
+   devises (MAD 10× trop bas) — repéré par Amine, corrigé par remplacement des Price (les
+   anciens désactivés, pas supprimés — Stripe interdit de modifier `unit_amount`/`currency`
+   d'un Price existant).
+4. Backend écrit et vérifié techniquement (build + `uv run pytest -m "not integration"` →
+   **1689 passed, 0 failed** ; `py_compile` + boot Flask + `url_map` confirmant les 2
+   routes) :
+   - `backend/app/services/stripe_service.py` — `create_checkout_session()` (devise
+     explicite via param `currency` sur la Session) + `verify_webhook_signature()`
+     (HMAC-SHA256 stdlib, PAS le SDK `stripe` — `requests` déjà dépendance).
+   - `backend/app/api/stripe_checkout.py` — `POST /api/stripe/create-checkout-session`
+     (public) + `POST /api/stripe/webhook` (signature vérifiée) → sur
+     `checkout.session.completed`, insère `quote_ownership` avec `status='paid'`
+     directement (quote_id = `stripe_<checkout_session_id>`, org = fallback interne
+     `aimpower-bassira`, résolue par slug).
+5. Frontend câblé (`frontend/src/views/OffersView.vue`) : les 3 packages d'entrée ont
+   `selfService:true` → clic CTA appelle `createCheckoutSession()` et redirige vers l'URL
+   Stripe hébergée. Toggle devise étendu à 3 boutons MAD/USD/EUR (`displayCurrency(pkg)`
+   avec repli gracieux sur USD pour les 7 packages sans `priceEUR`). États loading/erreur
+   scopés par carte.
+6. Secrets posés en env Coolify (jamais affichés, presse-papier → script stdin → purge
+   immédiate) : `STRIPE_SECRET_KEY` (clé RESTREINTE, Checkout Sessions write uniquement,
+   créée par Amine) et `STRIPE_WEBHOOK_SECRET` (endpoint `https://bassira.ma/api/stripe/webhook`
+   sur `checkout.session.completed`, créé par Amine). Les deux confirmés HTTP 201.
+7. i18n polyglotte respecté : 4 clés d'erreur (`UNKNOWN_PACKAGE`, `INVALID_REQUEST`,
+   `STRIPE_NOT_CONFIGURED`, `STRIPE_API_ERROR`) + `offers.checkout.loading` ajoutées en
+   fr/en/ar, JSON validé. `docs/02-data-dictionary.md` mis à jour (format `quote_id`
+   étendu).
+
+[FAIT — session 2026-07-08 (infra + UI, tout déployé et vérifié)]
+1. Incident « Erreur réseau » login résolu : ingress du tunnel Cloudflare remote-managed
+   sans règle pour `db-miroshark.ai-mpower.com` (catch-all 404 → pas de CORS → `failed to
+   fetch`). Fix : `PUT` de l'ingress complet (version 114, 58 règles) + sync
+   `config-nahda.yml`. Non-régression vérifiée sur 4 hostnames du tunnel partagé.
+2. Incident `fetchProfile 503 AUTH_NOT_CONFIGURED` résolu : la base self-hosted signe ses
+   JWT en HS256 (pas JWKS comme l'ancienne base Cloud) → `SUPABASE_JWT_SECRET` copiée
+   depuis `GOTRUE_JWT_SECRET` de la stack `dgybi…` vers l'env Coolify. Preuve E2E : login
+   réel + `GET /api/client/auth/me` → HTTP 200.
+3. Comptes créés (API admin GoTrue) : `test@bassira.ma` (sans org) et
+   `medamine.mansouriidrissi@gmail.com` (owner org AIMPOWER `f7abf22e-…`). Login confirmé
+   fonctionnel par Amine.
+4. `RESEND_API_KEY` corrigée : celle déployée était invalide (401 « API key is invalid »
+   direct API Resend). Remplacée par la clé valide du coffre + restart. Vérifié par un
+   envoi réel post-rebuild : HTTP 200, id Resend `52409253-…`.
+5. Indépendance de la base Supabase confirmée : scan des 28 apps Coolify, aucune hors
+   miroshark (et ses sidecars neo4j/ollama) ne référence `db-miroshark.ai-mpower.com`.
+6. 2 bugs UI corrigés, déployés (commit `e89696a`, vérifié en prod) : lien nav « Modèles »
+   qui gardait un style actif permanent (classe `--featured` codée en dur, retirée) ;
+   netteté des cartes `/offres` pilotée par `activeIndex` au lieu du survol
+   (`.offers-slide:hover` remplace `.offers-slide--active` pour l'opacité).
 
 [ALERTE]
-- ⚠️ **`COOLIFY_API_TOKEN` du coffre DPAPI toujours périmé** — toute session future utilisant
-  `. load-secrets.ps1` puis l'API Coolify échouera en 401 tant que la rotation n'est pas
-  faite. Valeur de remplacement prête sur le serveur (point 4 ci-dessus) ; il faut soit une
-  session avec accès à `~/.claude/secrets`, soit qu'Amine la reporte lui-même (SOP-001
-  brouillon, procédure de rotation).
-- ⚠️ Le mot de passe généré pour `medamine.mansouriidrissi@gmail.com` a été transmis via le
-  presse-papier Windows en fin de session précédente — normalement déjà utilisé/changé par
-  Amine (login confirmé fonctionnel), mais pas de confirmation qu'il l'a changé depuis.
-- ⚠️ Compte `test@bassira.ma` toujours existant, sans organisation — décision de suppression
-  jamais explicitement demandée par Amine, à trancher.
-- ⚠️ Dashboard `/understand` (vite dev server, port 5173) tournait en process de session —
-  mourra au `/clear`. Le graphe (`knowledge-graph.json`) lui est permanent, relancer via
-  `/understand-dashboard` suffit si Amine veut y revenir.
+- ⚠️ **`COOLIFY_API_TOKEN` du coffre DPAPI toujours périmé** (401 constaté). Nouveau token
+  généré directement en base Coolify (Sanctum id=10, root), stocké UNIQUEMENT sur le
+  serveur : `/home/serveuria/.credentials/coolify-api-token-claude-20260708` (chmod 600).
+  **Rotation dans le coffre DPAPI toujours pas faite** — nécessite une session avec accès
+  à `~/.claude/secrets`, ou qu'Amine la fasse lui-même (SOP-001 brouillon).
+- ⚠️ Stripe en mode live sans sandbox fonctionnel — tout test doit utiliser de vraies
+  Checkout Sessions (jamais complétées avec une vraie carte) plutôt que des cartes de
+  test, qui n'existent qu'en sandbox.
+- ⚠️ Compte `test@bassira.ma` toujours existant, sans organisation — décision de
+  suppression jamais explicitement demandée par Amine.
+- ⚠️ Mot de passe de `medamine.mansouriidrissi@gmail.com` transmis via presse-papier
+  Windows il y a plusieurs jours — login confirmé fonctionnel depuis, probablement changé
+  par Amine mais pas reconfirmé.
 
-[BLOQUÉ]
-- !! **Stripe (US-205) EN COURS DE DÉBLOCAGE, PAS TERMINÉ.** Aucune clé
-  `STRIPE_SECRET_KEY`/`STRIPE_WEBHOOK_SECRET` dans le coffre — code non écrit (pas de dette
-  spéculative non testable). Amine a demandé de câbler Stripe via le **serveur MCP officiel
-  Stripe** (`mcp__plugin_stripe_stripe__*`, pas du code custom directement). Flux OAuth
-  démarré (`mcp__plugin_stripe_stripe__authenticate`) → URL d'autorisation ouverte dans
-  `dev-browser` (page named "stripe-auth") → Amine était en train de se connecter à
-  dashboard.stripe.com (email autofillé `a.mansouri@afrique…`, cookies déjà rejetés par moi)
-  **au moment où le hook de passation s'est déclenché — état exact de l'autorisation
-  INCONNU à la reprise, à vérifier en premier.**
-- Périmètre exact US-205 une fois débloqué : créer products/prices Stripe des 3 packages
-  (MAD/USD, **jamais EUR**), câbler Checkout Sessions sur `/offres`, webhook
-  `checkout.session.completed` signé → `quote_ownership.status='paid'` automatique. AC :
-  products/prices visibles dashboard Stripe test mode + paiement test complet automatique +
-  aucun secret hardcodé + pytest/build verts.
+[BLOQUÉ / EN COURS]
+- !! **Test E2E Stripe réel PAS fait** (déploiement lui CONFIRMÉ, cf. [ETAT]) : appeler
+  `/api/stripe/create-checkout-session` pour un des 3 packages → vérifier une vraie URL
+  Stripe renvoyée (NE PAS compléter le paiement avec une vraie carte, mode live). Pour le
+  webhook : calculer la signature HMAC ENTIÈREMENT côté serveur (lire
+  `STRIPE_WEBHOOK_SECRET` de l'env du conteneur, ne jamais la faire transiter par le chat)
+  sur un payload `checkout.session.completed` synthétique, curler
+  `/api/stripe/webhook` en local sur le serveur, vérifier la ligne `quote_ownership`
+  insérée avec `status='paid'`.
+- !! **Devis test réel US-203/US-204 PAS fait** (reporté par Amine il y a plusieurs
+  jours) : soumettre un devis via le formulaire public → vérifier (a) la row apparaît
+  dans `quote_ownership` avec `payload` rempli, (b) email Resend reçu <2min avec liens
+  bassira.ma, idéalement (c) survie à un redeploy entre les deux. Clôt US-203 ET US-204
+  d'un coup si succès.
+- ! US-205 pas encore marquée `passes:true` dans `.ralph/prd.json` — attendre la
+  vérification E2E réelle avant (jamais de claim sans preuve).
 
 [NEXT]
-1. **EN PREMIER** : vérifier l'état de la connexion `dev-browser` page "stripe-auth"
-   (`dev-browser <<'EOF' const page = await browser.getPage("stripe-auth"); console.log(page.url()); EOF`)
-   — si sur `access.stripe.com/mcp/oauth2/authorize`, redemander à Amine de cliquer
-   « Autoriser » ; si sur une page de callback en erreur (`localhost:3118/callback?...`),
-   récupérer l'URL complète et appeler `mcp__plugin_stripe_stripe__complete_authentication`
-   avec. Si déjà connecté, les outils `mcp__plugin_stripe_stripe__*` réels apparaîtront.
-2. Une fois le MCP Stripe connecté : implémenter US-205 (products/prices MAD/USD, Checkout
-   Sessions `/offres`, webhook signé, tests), marquer `passes:true` dans `.ralph/prd.json`
-   après vérification E2E réelle (pas de claim sans test).
-3. Rotation `COOLIFY_API_TOKEN` dans le coffre DPAPI (valeur prête côté serveur, cf. [ALERTE]).
-4. Relancer avec Amine le test réel de devis (US-203/US-204, `passes:false` depuis plusieurs
-   jours) — un devis soumis doit survivre à un redeploy ET déclencher un email Resend reçu
-   <2min avec liens bassira.ma. Marquer les deux `passes:true` si succès.
-5. Trancher le sort de `test@bassira.ma` (garder/supprimer).
-6. Poursuivre Bloc A : US-207 (WSGI prod) → US-208 (Redis/worker PDF, dépend US-207).
-7. Amine réglait aussi « un bug email » de son côté (périmètre non précisé) — vérifier où il
-   en est ; ne pas y toucher sans qu'il ait explicitement rendu la main dessus.
+1. **EN PREMIER** : test E2E Stripe réel (Checkout Session + webhook signé, cf. [BLOQUÉ])
+   → si succès, marquer US-205 `passes:true` dans `.ralph/prd.json`.
+2. Rotation `COOLIFY_API_TOKEN` dans le coffre DPAPI (valeur prête côté serveur).
+3. Relancer avec Amine le devis test réel US-203/US-204 (cf. [BLOQUÉ]).
+4. Trancher le sort de `test@bassira.ma` (garder/supprimer).
+5. Poursuivre Bloc A : US-207 (WSGI prod) → US-208 (Redis/worker PDF, dépend US-207).
 
 [CTX]
-- Accès serveur (hors LAN) : Tailscale `100.124.187.2`, `ssh -i ~/.ssh/serveurai_mnemo
-  serveuria@100.124.187.2` (user `serveuria`, PAS `serveurai`).
+- Accès serveur (hors LAN) : Tailscale `100.124.187.2`,
+  `ssh -i ~/.ssh/serveurai_mnemo serveuria@100.124.187.2` (user `serveuria`, PAS
+  `serveurai`).
 - App Coolify miroshark : uuid `u6pn5mr2pgi88s13un55pkzb`, build_pack `dockercompose`.
-- Tunnel Cloudflare partagé (~58 hostnames, ~15 projets) : `7156c3f9-07a4-472d-963a-efaf59769d40`,
-  **remote-managed** (le fichier local `config-nahda.yml` est cosmétique, la vraie source de
-  vérité est l'API `GET/PUT .../cfd_tunnel/{id}/configurations`).
+- Tunnel Cloudflare partagé (~58 hostnames, ~15 projets) :
+  `7156c3f9-07a4-472d-963a-efaf59769d40`, **remote-managed** (le fichier local
+  `config-nahda.yml` est cosmétique, la vraie source de vérité est l'API
+  `GET/PUT .../cfd_tunnel/{id}/configurations`).
 - Stack Supabase Bassira = `dgybi9q5e2ggkjtaxlu2ukai` (PAS `dp7p66…` = Tamkin, piège déjà
   rencontré). Kong exposé en local `:8210` = Tamkin, ne jamais router dessus par erreur.
 - Repo GitHub : `Afristrat/MiroShark`, push direct sur `main` déclenche un rebuild Coolify
   complet (~15 min), pas juste un restart léger — à anticiper avant chaque push pendant
   qu'Amine teste en direct.
+- Compte Stripe : `acct_1PHxGdHM2FpoSxES` (« AI-MPower, L.L.C. »), mode live.
 
 [MEMO inter-sessions]
-- **Cloudflare Tunnel remote-managed** : ne jamais supposer qu'éditer le YAML local + restart
-  suffit — toujours vérifier le champ `source` de `GET .../configurations` ; si `"cloudflare"`,
-  il faut `PUT` le tableau `ingress` complet (récupéré, modifié, repoussé tel quel — jamais
-  retapé à la main).
+- **Cloudflare Tunnel remote-managed** : ne jamais supposer qu'éditer le YAML local +
+  restart suffit — toujours vérifier le champ `source` de `GET .../configurations` ; si
+  `"cloudflare"`, `PUT` le tableau `ingress` complet (récupéré, modifié, repoussé tel
+  quel — jamais retapé à la main).
 - **Supabase self-hosted multi-projets sur le serveur** : ~10 stacks différentes
-  (`supabase-db-<hash>`), ne jamais deviner laquelle — vérifier via `VITE_SUPABASE_URL` de
-  l'app concernée avant toute opération SQL.
-- **Toute opération d'infra (Docker, psql, CLI d'admin) → TOUJOURS sur le serveur via SSH**,
-  jamais en local sur le poste Windows d'Amine.
-- **Hook bash-guard** : bloque grep/heredocs non ancrés sur des sources sensibles (réponses API
-  Coolify, tokens) — toujours passer par un script `.sh`/`.py` écrit via Write puis exécuté via
-  scp+ssh, jamais de commande inline avec `cat`/grep large sur une sortie contenant un secret.
-- **`dev-browser`** (nouvel outil, installé cette session) : CLI légitime (Sawyer Hood, MIT) qui
-  pilote un Chromium local via un démon — utile quand Claude-in-Chrome n'est pas connecté.
-  Pages nommées persistent entre invocations (`browser.getPage("nom")`).
-- Amine veut être RECONNECTÉ pour piloter son navigateur normalement : installer l'extension
-  Claude sur Chrome (claude.ai/chrome) + relancer Chrome résoudrait ça pour la prochaine fois.
+  (`supabase-db-<hash>`), ne jamais deviner laquelle — vérifier via `VITE_SUPABASE_URL`
+  de l'app concernée avant toute opération SQL.
+- **Toute opération d'infra (Docker, psql, CLI d'admin) → TOUJOURS sur le serveur via
+  SSH**, jamais en local sur le poste Windows d'Amine.
+- **Hook bash-guard** : bloque grep/heredocs non ancrés sur des sources sensibles —
+  toujours passer par un script `.sh`/`.py` écrit via Write puis exécuté via scp+ssh,
+  jamais de commande inline avec `cat`/grep large sur une sortie contenant un secret. Idem
+  pour un `git commit -m` avec heredoc `<<'EOF'` dans le message : passer par
+  `git commit -F <fichier>`.
+- **`dev-browser`** : CLI légitime (Sawyer Hood, MIT) qui pilote un Chromium local via un
+  démon — utile quand Claude-in-Chrome n'est pas connecté, mais réservé aux tâches NON
+  sensibles (jamais banques/paiements — préférence Amine). Pages nommées persistent entre
+  invocations (`browser.getPage("nom")`).
+- **OAuth Stripe MCP et mode sandbox** : l'autorisation se scope au mode (live/sandbox)
+  actif dans le dashboard Stripe au moment du clic « Autoriser » — la bascule vers sandbox
+  a échoué plusieurs fois malgré la procédure documentée (Amine a tranché : rester en
+  live). Piège : après révocation d'une session OAuth
+  (dashboard.stripe.com/settings/user), l'outil `authenticate` peut disparaître de la
+  liste d'outils sans revenir — la commande native Claude Code **`/mcp`** (tapée par
+  Amine) force la reconnexion.
+- **Stripe Price = immuable sur `unit_amount`/`currency`** : pour corriger un montant,
+  créer un NOUVEAU Price, le poser en `default_price` du Product, désactiver l'ancien
+  (jamais de suppression possible si déjà attaché).
+- **`currency_options` sur un Price** : un seul objet Price peut porter plusieurs devises
+  (`default_price_data.currency_options[usd][unit_amount]=...`). La Checkout Session
+  choisit la devise effective via son paramètre top-level `currency=` — sinon Stripe
+  auto-détecte via la géoloc du client (Adaptive Pricing).
 
 — fin passation —
