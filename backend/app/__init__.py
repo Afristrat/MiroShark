@@ -125,6 +125,10 @@ def create_app(config_class=Config):
     from .api.quote import quote_bp, admin_quote_bp
     app.register_blueprint(quote_bp, url_prefix='/api/quote')
     app.register_blueprint(admin_quote_bp, url_prefix='/api/admin/quotes')
+    # intake_bp serves the qualification-parcours endpoints (US-IQ-01,
+    # chantier V2-B-intake) — public, rate-limited (même limiteur que quote).
+    from .api.intake import intake_bp
+    app.register_blueprint(intake_bp, url_prefix='/api/intake')
     # stripe_bp serves the self-service Checkout for the 3 entry-tier
     # packages (US-205, ADR-014) — public, webhook signature-verified.
     from .api.stripe_checkout import stripe_bp

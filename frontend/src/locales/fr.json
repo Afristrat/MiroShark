@@ -1485,7 +1485,16 @@
     "INVALID_WEBHOOK_URL": "URL webhook invalide.",
     "MISSING_WEBHOOK_URL": "Aucune URL webhook configurée.",
     "WEBHOOK_TEST_FAILED": "Le test du webhook a échoué.",
-    "NO_DATA": "Aucune donnée disponible."
+    "NO_DATA": "Aucune donnée disponible.",
+    "INVALID_EMAIL": "Format d’email invalide.",
+    "RGPD_NOT_ACCEPTED": "Le consentement RGPD est requis pour traiter votre demande.",
+    "SUPABASE_NOT_CONFIGURED": "Service temporairement indisponible. Réessayez dans un instant.",
+    "SESSION_NOT_FOUND": "Votre session a expiré. Merci de recommencer le parcours.",
+    "INVALID_TRANSITION": "Cette étape a déjà été validée. Merci de recommencer le parcours.",
+    "A1_INVALID": "Décrivez votre décision en au moins 15 caractères.",
+    "A2_INVALID": "Indiquez au moins deux options réellement envisagées.",
+    "A7_INVALID": "Indiquez au moins un pays et un segment concernés.",
+    "BRIEF_INVALID": "Certaines réponses sont invalides. Vérifiez le formulaire et réessayez."
   },
   "offers": {
     "nav": {
@@ -1755,63 +1764,128 @@
     "stepper": {
       "step": "Étape {current} sur {total}",
       "stepNames": {
-        "situation": "Votre situation",
-        "context": "Votre contexte",
-        "matched": "Mise en relation"
+        "decision": "La décision",
+        "past": "Le passé",
+        "stakes": "L’enjeu"
       }
     },
-    "step1": {
-      "title": "Comment pouvons-nous vous aider ?",
-      "options": {
-        "crisis": {
-          "title": "Je suis en crise ou sur le point de l’être",
-          "sub": "Simulation de réponse rapide pour des menaces émergentes."
-        },
-        "policy": {
-          "title": "Je dois tester une politique ou une réglementation",
-          "sub": "Stress-tester les impacts socio-économiques avant le déploiement."
-        },
-        "campaign": {
-          "title": "Je m’apprête à lancer une campagne ou un produit",
-          "sub": "Anticiper la réaction du marché et l’adoption par les agents."
+    "reciprocity": {
+      "decision": "Ces éléments calibrent votre scénario de simulation — rien n’est publié.",
+      "past": "Comprendre ce qui vous a éclairé jusqu’ici affine la qualité du stress-test.",
+      "stakes": "L’enjeu et le périmètre déterminent le format de devis le plus adapté."
+    },
+    "temps1": {
+      "title": "Votre décision, d’abord.",
+      "intro": "Trois questions sur la décision que vous devez prendre — pas sur nous.",
+      "a1": {
+        "label": "Quelle décision devez-vous prendre ?",
+        "placeholder": "Ex. : lancer la filiale Sénégal maintenant ou attendre 2027",
+        "hint": "15 caractères minimum.",
+        "invalid": "Décrivez votre décision en au moins 15 caractères."
+      },
+      "a2": {
+        "label": "Quelles options sont réellement sur la table ?",
+        "placeholder": "Ex. : Lancer maintenant",
+        "addOption": "Ajouter une option",
+        "removeOption": "Retirer",
+        "invalid": "Indiquez au moins deux options."
+      },
+      "a3": {
+        "deadlineLabel": "Quand se tranche-t-elle ?",
+        "overdueLabel": "Déjà en retard",
+        "governanceLabel": "Devant qui ?",
+        "governance": {
+          "solo": "Seul",
+          "comite_direction": "Comité de direction",
+          "conseil_administration": "Conseil d’administration",
+          "tutelle": "Tutelle / ministère",
+          "investisseurs": "Investisseurs"
         }
-      },
-      "other": {
-        "label": "Autre situation ?",
-        "placeholder": "Décrivez votre besoin spécifique…"
       }
     },
-    "step2": {
-      "title": "Parlons de vous",
-      "subtitle": "Vos coordonnées nous permettront de préparer une approche sur-mesure.",
-      "fullName": {
-        "label": "Nom complet",
-        "placeholder": "Karim Bensaid"
-      },
-      "email": {
-        "label": "Email professionnel",
-        "placeholder": "vous{'@'}entreprise.com",
-        "invalid": "Format d’email invalide"
-      },
-      "company": {
-        "label": "Organisation",
-        "placeholder": "Banque Populaire MA"
-      },
-      "role": {
-        "label": "Fonction (optionnel)",
-        "placeholder": "Directeur de la communication"
-      },
-      "deadline": {
-        "label": "Échéance (optionnel)",
+    "temps2": {
+      "title": "Le passé.",
+      "intro": "La dernière fois que vous avez tranché une décision de ce poids.",
+      "a4": {
+        "label": "Qu’est-ce qui vous a éclairé la dernière fois ?",
         "options": {
-          "not_urgent": "Pas urgent",
-          "1_month": "Sous 1 mois",
-          "2_weeks": "Sous 2 semaines",
-          "this_week": "Cette semaine"
+          "etude": "Étude de marché",
+          "conseil": "Cabinet de conseil",
+          "sondage_interne": "Sondage interne",
+          "instinct": "Instinct",
+          "rien": "Rien"
         }
       },
-      "consent": {
-        "label": "J’accepte que Bassira (AI MPOWER SAS) traite mes coordonnées pour répondre à ma demande, conformément au RGPD et à la loi 09-08 (Maroc)."
+      "a5": {
+        "label": "Qu’est-ce qui a manqué à ce moment-là ? (optionnel)",
+        "placeholder": "Décrivez brièvement…"
+      }
+    },
+    "temps3": {
+      "title": "L’enjeu et la matière.",
+      "intro": "Ces informations dimensionnent votre devis et pré-seedent la simulation.",
+      "a6": {
+        "budgetLabel": "Budget engagé",
+        "budget": {
+          "lt_1m": "Moins de 1 M MAD",
+          "1_10m": "1 à 10 M MAD",
+          "10_100m": "10 à 100 M MAD",
+          "gt_100m": "Plus de 100 M MAD"
+        },
+        "jobsLabel": "Emplois concernés (optionnel)",
+        "exposureLabel": "Exposition",
+        "exposure": {
+          "interne": "Interne",
+          "sectorielle": "Sectorielle",
+          "nationale": "Nationale",
+          "internationale": "Internationale"
+        }
+      },
+      "a7": {
+        "countriesLabel": "Sur quels pays ?",
+        "countries": {
+          "MA": "Maroc",
+          "DZ": "Algérie",
+          "TN": "Tunisie",
+          "SN": "Sénégal",
+          "CI": "Côte d’Ivoire",
+          "Other": "Autre"
+        },
+        "segmentLabel": "Quel segment ?",
+        "segmentPlaceholder": "Ex. : grand public urbain, PME du secteur bancaire…",
+        "invalid": "Indiquez au moins un pays et un segment."
+      },
+      "a8": {
+        "label": "Quelles données internes pourriez-vous partager ? (optionnel)",
+        "options": {
+          "etudes": "Études existantes",
+          "donnees_clients": "Données clients",
+          "verbatims": "Verbatims",
+          "rien": "Rien pour l’instant"
+        }
+      },
+      "identityIntro": "Vos coordonnées, pour vous transmettre le devis.",
+      "identity": {
+        "fullName": {
+          "label": "Nom complet",
+          "placeholder": "Karim Bensaid"
+        },
+        "email": {
+          "label": "Email professionnel",
+          "placeholder": "vous{'@'}entreprise.com",
+          "invalid": "Format d’email invalide"
+        },
+        "company": {
+          "label": "Organisation",
+          "placeholder": "Banque Populaire MA"
+        },
+        "role": {
+          "label": "Fonction (optionnel)",
+          "placeholder": "Directeur de la communication"
+        },
+        "consent": {
+          "label": "J’accepte que Bassira (AI MPOWER SAS) traite mes coordonnées et le contenu de ce brief pour établir mon devis, conformément au RGPD et à la loi 09-08 (Maroc)."
+        }
       }
     },
     "step3": {

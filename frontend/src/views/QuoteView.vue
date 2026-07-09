@@ -20,12 +20,12 @@
         <span>{{ $t('quote.trustBanner') }}</span>
       </div>
 
-      <!-- ───────────── Card centrée (form 3 steps) ───────────── -->
+      <!-- ───────────── Card centrée (parcours 3 temps A1-A8) ───────────── -->
       <section class="quote-card">
-        <!-- Stepper 3 steps -->
+        <!-- Stepper 3 temps -->
         <ol
           class="quote-stepper"
-          :aria-label="$t('quote.stepper.step', { current: currentStep, total: 3 })"
+          :aria-label="$t('quote.stepper.step', { current: Math.min(currentStep, 3), total: 3 })"
         >
           <li class="quote-stepper-line" aria-hidden="true"></li>
           <li
@@ -46,73 +46,264 @@
           </li>
         </ol>
 
-        <!-- ───── Step 1 — How can we help ? ───── -->
+        <!-- ───── Temps 1 — La décision (A1-A3) ───── -->
         <form
           v-if="currentStep === 1"
           class="quote-step-content"
           @submit.prevent="goToStep2"
         >
-          <h2 class="quote-step-title">{{ $t('quote.step1.title') }}</h2>
+          <h2 class="quote-step-title">{{ $t('quote.temps1.title') }}</h2>
+          <p class="quote-step-subtitle">{{ $t('quote.temps1.intro') }}</p>
+          <p class="quote-reciprocity">{{ $t('quote.reciprocity.decision') }}</p>
 
-          <div class="quote-radio-group">
-            <label
-              v-for="opt in situationOptions"
-              :key="opt.id"
-              class="quote-radio"
-              :class="{ 'quote-radio--checked': form.situation === opt.id }"
+          <label class="quote-field-stitch">
+            <span class="quote-field-stitch-label">
+              {{ $t('quote.temps1.a1.label') }}
+              <span class="quote-required">*</span>
+            </span>
+            <textarea
+              v-model.trim="form.a1_decision"
+              class="quote-input-stitch quote-textarea"
+              rows="2"
+              maxlength="500"
+              :placeholder="$t('quote.temps1.a1.placeholder')"
+            ></textarea>
+            <span class="quote-field-hint">{{ $t('quote.temps1.a1.hint') }}</span>
+            <span v-if="form.a1_decision && !a1Valid" class="quote-field-error">
+              {{ $t('quote.temps1.a1.invalid') }}
+            </span>
+          </label>
+
+          <div class="quote-field-stitch">
+            <span class="quote-field-stitch-label">
+              {{ $t('quote.temps1.a2.label') }}
+              <span class="quote-required">*</span>
+            </span>
+            <div
+              v-for="(_opt, idx) in form.a2_options"
+              :key="idx"
+              class="quote-option-row"
             >
               <input
-                type="radio"
-                name="situation"
-                :value="opt.id"
-                v-model="form.situation"
-                class="quote-radio-input"
+                v-model.trim="form.a2_options[idx]"
+                type="text"
+                class="quote-input-stitch"
+                maxlength="200"
+                :placeholder="$t('quote.temps1.a2.placeholder')"
               />
-              <span class="quote-radio-bullet" aria-hidden="true">
-                <span class="quote-radio-bullet-dot"></span>
-              </span>
-              <span class="quote-radio-content">
-                <span class="quote-radio-title">{{ $t(`quote.step1.options.${opt.id}.title`) }}</span>
-                <span class="quote-radio-sub">{{ $t(`quote.step1.options.${opt.id}.sub`) }}</span>
-              </span>
+              <button
+                v-if="form.a2_options.length > 2"
+                type="button"
+                class="quote-option-remove"
+                :aria-label="$t('quote.temps1.a2.removeOption')"
+                @click="removeOption(idx)"
+              >
+                <span class="material-symbols-outlined" aria-hidden="true">close</span>
+              </button>
+            </div>
+            <button
+              v-if="form.a2_options.length < 4"
+              type="button"
+              class="quote-secondary-btn quote-option-add"
+              @click="addOption"
+            >
+              <span class="material-symbols-outlined" aria-hidden="true">add</span>
+              {{ $t('quote.temps1.a2.addOption') }}
+            </button>
+            <span v-if="!a2Valid && a2Touched" class="quote-field-error">
+              {{ $t('quote.temps1.a2.invalid') }}
+            </span>
+          </div>
+
+          <div class="quote-field-row">
+            <label class="quote-field-stitch">
+              <span class="quote-field-stitch-label">{{ $t('quote.temps1.a3.deadlineLabel') }}</span>
+              <input
+                v-model="form.a3_deadline_date"
+                type="date"
+                class="quote-input-stitch"
+                :disabled="form.a3_overdue"
+              />
+            </label>
+            <label class="quote-field-stitch">
+              <span class="quote-field-stitch-label">{{ $t('quote.temps1.a3.governanceLabel') }}</span>
+              <select v-model="form.a3_governance" class="quote-input-stitch quote-select">
+                <option value="">—</option>
+                <option v-for="opt in governanceOptions" :key="opt" :value="opt">
+                  {{ $t(`quote.temps1.a3.governance.${opt}`) }}
+                </option>
+              </select>
             </label>
           </div>
 
-          <label class="quote-field-stitch">
-            <span class="quote-field-stitch-label">{{ $t('quote.step1.other.label') }}</span>
-            <input
-              v-model.trim="form.otherSituation"
-              type="text"
-              class="quote-input-stitch"
-              :placeholder="$t('quote.step1.other.placeholder')"
-              maxlength="200"
-            />
+          <label class="quote-checkbox-inline">
+            <input v-model="form.a3_overdue" type="checkbox" />
+            <span>{{ $t('quote.temps1.a3.overdueLabel') }}</span>
           </label>
 
-          <button
-            type="submit"
-            class="quote-cta"
-            :disabled="!step1Valid"
-          >
+          <button type="submit" class="quote-cta" :disabled="!temps1Valid">
             <span>{{ $t('quote.actions.next') }}</span>
             <span class="material-symbols-outlined quote-cta-arrow" aria-hidden="true">arrow_forward</span>
           </button>
         </form>
 
-        <!-- ───── Step 2 — Your context ───── -->
+        <!-- ───── Temps 2 — Le passé (A4-A5) ───── -->
         <form
           v-else-if="currentStep === 2"
           class="quote-step-content"
+          @submit.prevent="goToStep3"
+        >
+          <h2 class="quote-step-title">{{ $t('quote.temps2.title') }}</h2>
+          <p class="quote-step-subtitle">{{ $t('quote.temps2.intro') }}</p>
+          <p class="quote-reciprocity">{{ $t('quote.reciprocity.past') }}</p>
+
+          <div class="quote-field-stitch">
+            <span class="quote-field-stitch-label">{{ $t('quote.temps2.a4.label') }}</span>
+            <div class="quote-checkbox-group">
+              <label
+                v-for="opt in pastMethodOptions"
+                :key="opt"
+                class="quote-checkbox-chip"
+                :class="{ 'quote-checkbox-chip--checked': form.a4_past_method.includes(opt) }"
+              >
+                <input
+                  type="checkbox"
+                  :checked="form.a4_past_method.includes(opt)"
+                  @change="toggleInArray(form.a4_past_method, opt)"
+                />
+                <span>{{ $t(`quote.temps2.a4.options.${opt}`) }}</span>
+              </label>
+            </div>
+          </div>
+
+          <label class="quote-field-stitch">
+            <span class="quote-field-stitch-label">{{ $t('quote.temps2.a5.label') }}</span>
+            <textarea
+              v-model.trim="form.a5_past_gap"
+              class="quote-input-stitch quote-textarea"
+              rows="2"
+              maxlength="500"
+              :placeholder="$t('quote.temps2.a5.placeholder')"
+            ></textarea>
+          </label>
+
+          <div class="quote-actions-row">
+            <button type="button" class="quote-secondary-btn" @click="goBack">
+              {{ $t('quote.actions.back') }}
+            </button>
+            <button type="submit" class="quote-cta quote-cta--inline">
+              <span>{{ $t('quote.actions.next') }}</span>
+              <span class="material-symbols-outlined quote-cta-arrow" aria-hidden="true">arrow_forward</span>
+            </button>
+          </div>
+        </form>
+
+        <!-- ───── Temps 3 — L'enjeu et la matière (A6-A8) + identité ───── -->
+        <form
+          v-else-if="currentStep === 3"
+          class="quote-step-content"
           @submit.prevent="submit"
         >
-          <h2 class="quote-step-title">{{ $t('quote.step2.title') }}</h2>
-          <p class="quote-step-subtitle">{{ $t('quote.step2.subtitle') }}</p>
+          <h2 class="quote-step-title">{{ $t('quote.temps3.title') }}</h2>
+          <p class="quote-step-subtitle">{{ $t('quote.temps3.intro') }}</p>
+          <p class="quote-reciprocity">{{ $t('quote.reciprocity.stakes') }}</p>
 
-          <!-- Grid 2 colonnes : nom/email puis organisation/role -->
+          <div class="quote-field-row">
+            <label class="quote-field-stitch">
+              <span class="quote-field-stitch-label">{{ $t('quote.temps3.a6.budgetLabel') }}</span>
+              <select v-model="form.a6_budget_bracket" class="quote-input-stitch quote-select">
+                <option value="">—</option>
+                <option v-for="opt in budgetOptions" :key="opt" :value="opt">
+                  {{ $t(`quote.temps3.a6.budget.${opt}`) }}
+                </option>
+              </select>
+            </label>
+            <label class="quote-field-stitch">
+              <span class="quote-field-stitch-label">{{ $t('quote.temps3.a6.exposureLabel') }}</span>
+              <select v-model="form.a6_exposure" class="quote-input-stitch quote-select">
+                <option value="">—</option>
+                <option v-for="opt in exposureOptions" :key="opt" :value="opt">
+                  {{ $t(`quote.temps3.a6.exposure.${opt}`) }}
+                </option>
+              </select>
+            </label>
+          </div>
+
+          <label class="quote-field-stitch">
+            <span class="quote-field-stitch-label">{{ $t('quote.temps3.a6.jobsLabel') }}</span>
+            <input
+              v-model.number="form.a6_jobs"
+              type="number"
+              min="0"
+              class="quote-input-stitch"
+            />
+          </label>
+
+          <div class="quote-field-stitch">
+            <span class="quote-field-stitch-label">
+              {{ $t('quote.temps3.a7.countriesLabel') }}
+              <span class="quote-required">*</span>
+            </span>
+            <div class="quote-checkbox-group">
+              <label
+                v-for="opt in countryOptions"
+                :key="opt"
+                class="quote-checkbox-chip"
+                :class="{ 'quote-checkbox-chip--checked': form.a7_countries.includes(opt) }"
+              >
+                <input
+                  type="checkbox"
+                  :checked="form.a7_countries.includes(opt)"
+                  @change="toggleInArray(form.a7_countries, opt)"
+                />
+                <span>{{ $t(`quote.temps3.a7.countries.${opt}`) }}</span>
+              </label>
+            </div>
+          </div>
+
+          <label class="quote-field-stitch">
+            <span class="quote-field-stitch-label">
+              {{ $t('quote.temps3.a7.segmentLabel') }}
+              <span class="quote-required">*</span>
+            </span>
+            <input
+              v-model.trim="form.a7_segment"
+              type="text"
+              class="quote-input-stitch"
+              maxlength="200"
+              :placeholder="$t('quote.temps3.a7.segmentPlaceholder')"
+            />
+            <span v-if="!a7Valid && a7Touched" class="quote-field-error">
+              {{ $t('quote.temps3.a7.invalid') }}
+            </span>
+          </label>
+
+          <div class="quote-field-stitch">
+            <span class="quote-field-stitch-label">{{ $t('quote.temps3.a8.label') }}</span>
+            <div class="quote-checkbox-group">
+              <label
+                v-for="opt in dataAssetOptions"
+                :key="opt"
+                class="quote-checkbox-chip"
+                :class="{ 'quote-checkbox-chip--checked': form.a8_data_assets.includes(opt) }"
+              >
+                <input
+                  type="checkbox"
+                  :checked="form.a8_data_assets.includes(opt)"
+                  @change="toggleInArray(form.a8_data_assets, opt)"
+                />
+                <span>{{ $t(`quote.temps3.a8.options.${opt}`) }}</span>
+              </label>
+            </div>
+          </div>
+
+          <hr class="quote-divider" />
+          <p class="quote-step-subtitle">{{ $t('quote.temps3.identityIntro') }}</p>
+
           <div class="quote-field-row">
             <label class="quote-field-stitch">
               <span class="quote-field-stitch-label">
-                {{ $t('quote.step2.fullName.label') }}
+                {{ $t('quote.temps3.identity.fullName.label') }}
                 <span class="quote-required">*</span>
               </span>
               <input
@@ -120,31 +311,26 @@
                 type="text"
                 class="quote-input-stitch"
                 maxlength="100"
-                required
                 dir="ltr"
-                :placeholder="$t('quote.step2.fullName.placeholder')"
+                :placeholder="$t('quote.temps3.identity.fullName.placeholder')"
               />
             </label>
 
             <label class="quote-field-stitch">
               <span class="quote-field-stitch-label">
-                {{ $t('quote.step2.email.label') }}
+                {{ $t('quote.temps3.identity.email.label') }}
                 <span class="quote-required">*</span>
               </span>
               <input
                 v-model.trim="form.email"
                 type="email"
                 class="quote-input-stitch"
-                required
                 dir="ltr"
-                :placeholder="$t('quote.step2.email.placeholder')"
+                :placeholder="$t('quote.temps3.identity.email.placeholder')"
                 :aria-invalid="form.email && !emailValid ? 'true' : 'false'"
               />
-              <span
-                v-if="form.email && !emailValid"
-                class="quote-field-error"
-              >
-                {{ $t('quote.step2.email.invalid') }}
+              <span v-if="form.email && !emailValid" class="quote-field-error">
+                {{ $t('quote.temps3.identity.email.invalid') }}
               </span>
             </label>
           </div>
@@ -152,7 +338,7 @@
           <div class="quote-field-row">
             <label class="quote-field-stitch">
               <span class="quote-field-stitch-label">
-                {{ $t('quote.step2.company.label') }}
+                {{ $t('quote.temps3.identity.company.label') }}
                 <span class="quote-required">*</span>
               </span>
               <input
@@ -160,45 +346,26 @@
                 type="text"
                 class="quote-input-stitch"
                 maxlength="120"
-                required
-                :placeholder="$t('quote.step2.company.placeholder')"
+                :placeholder="$t('quote.temps3.identity.company.placeholder')"
               />
             </label>
 
             <label class="quote-field-stitch">
-              <span class="quote-field-stitch-label">{{ $t('quote.step2.role.label') }}</span>
+              <span class="quote-field-stitch-label">{{ $t('quote.temps3.identity.role.label') }}</span>
               <input
                 v-model.trim="form.role"
                 type="text"
                 class="quote-input-stitch"
                 maxlength="80"
-                :placeholder="$t('quote.step2.role.placeholder')"
+                :placeholder="$t('quote.temps3.identity.role.placeholder')"
               />
             </label>
           </div>
 
-          <label class="quote-field-stitch">
-            <span class="quote-field-stitch-label">{{ $t('quote.step2.deadline.label') }}</span>
-            <select v-model="form.target_deadline" class="quote-input-stitch quote-select">
-              <option value="">—</option>
-              <option
-                v-for="opt in deadlineOptions"
-                :key="opt"
-                :value="opt"
-              >
-                {{ $t(`quote.step2.deadline.options.${opt}`) }}
-              </option>
-            </select>
-          </label>
-
           <label class="quote-consent-stitch">
-            <input
-              v-model="form.consent_rgpd"
-              type="checkbox"
-              required
-            />
+            <input v-model="form.consent_rgpd" type="checkbox" required />
             <span>
-              {{ $t('quote.step2.consent.label') }}
+              {{ $t('quote.temps3.identity.consent.label') }}
               <span class="quote-required">*</span>
             </span>
           </label>
@@ -215,7 +382,7 @@
             <button
               type="submit"
               class="quote-cta quote-cta--inline"
-              :disabled="!step2Valid || submitting"
+              :disabled="!temps3Valid || submitting"
             >
               <span>{{ submitting ? $t('quote.actions.submitting') : $t('quote.actions.submit') }}</span>
               <span v-if="!submitting" class="material-symbols-outlined quote-cta-arrow" aria-hidden="true">arrow_forward</span>
@@ -223,8 +390,8 @@
           </div>
         </form>
 
-        <!-- ───── Step 3 — Get matched (success / error) ───── -->
-        <div v-else-if="currentStep === 3" class="quote-step-content">
+        <!-- ───── Confirmation (succès / erreur) ───── -->
+        <div v-else-if="currentStep === 4" class="quote-step-content">
           <template v-if="submitError === null">
             <div class="quote-success">
               <div class="quote-success-icon">
@@ -236,10 +403,7 @@
                 <span class="quote-success-id-label">{{ $t('quote.step3.quoteIdLabel') }}</span>
                 <code class="quote-success-id-value">{{ quoteId }}</code>
               </p>
-              <router-link
-                :to="{ name: 'Offers' }"
-                class="quote-cta quote-cta--inline"
-              >
+              <router-link :to="{ name: 'Offers' }" class="quote-cta quote-cta--inline">
                 {{ $t('quote.step3.backToOffers') }}
               </router-link>
             </div>
@@ -251,11 +415,7 @@
               </div>
               <h2 class="quote-step-title">{{ $t('quote.step3.errorTitle') }}</h2>
               <p class="quote-success-sub">{{ submitError }}</p>
-              <button
-                type="button"
-                class="quote-secondary-btn"
-                @click="goBackToStep2"
-              >
+              <button type="button" class="quote-secondary-btn" @click="goBackToRetry">
                 {{ $t('quote.step3.tryAgain') }}
               </button>
             </div>
@@ -265,11 +425,7 @@
 
       <!-- ───────────── Trust signals (3 colonnes) ───────────── -->
       <section class="quote-trust-grid" aria-label="Trust signals">
-        <div
-          v-for="item in trustItems"
-          :key="item.id"
-          class="quote-trust-item"
-        >
+        <div v-for="item in trustItems" :key="item.id" class="quote-trust-item">
           <span class="material-symbols-outlined quote-trust-item-icon" aria-hidden="true">{{ item.icon }}</span>
           <h5 class="quote-trust-item-title">{{ $t(`quote.trustSignals.${item.id}.title`) }}</h5>
           <p class="quote-trust-item-body">{{ $t(`quote.trustSignals.${item.id}.body`) }}</p>
@@ -280,284 +436,181 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { submitQuote } from '../api/quote'
+import { startIntakeSession, submitIntakeForm } from '../api/intake'
 import { formatApiError } from '../utils/error-handler'
 
-// ─── Step 1 — situation options du mockup Stitch ────────────────────────
-// Chaque option a un id frontend (camelCase pour les clés i18n) et un id
-// backend canonique pour le payload POST /api/quote (champ `package`).
-const situationOptions = [
-  { id: 'crisis', backendPackage: 'crisis_drill_24h' },
-  { id: 'policy', backendPackage: 'policy_brief_stress' },
-  { id: 'campaign', backendPackage: 'pre_launch_adcheck' },
-]
+// ─── Parcours structuré « 3 temps » A1-A8 (US-IQ-01) ────────────────────
+// Remplace l'ancien formulaire plat (situation + coordonnées) qui ne
+// capturait aucun contexte de décision (incident q_f767321b, 2026-07-09).
+// Étape 3 (l'enjeu et la matière) porte aussi l'identité — inchangée
+// depuis toujours (docs/intake/07-legal §2) — car c'est l'écran de
+// soumission qui crée effectivement le devis.
 
-// Liste des packages backend valides (alignée sur l'enum OpenAPI US-025
-// + quote_service.py _VALID_PACKAGES). Le backend reste à 4 slugs.
-const validBackendPackages = [
-  'crisis_drill_24h',
-  'policy_brief_stress',
-  'pre_launch_adcheck',
-  'custom',
-]
+const governanceOptions = ['solo', 'comite_direction', 'conseil_administration', 'tutelle', 'investisseurs']
+const pastMethodOptions = ['etude', 'conseil', 'sondage_interne', 'instinct', 'rien']
+const budgetOptions = ['lt_1m', '1_10m', '10_100m', 'gt_100m']
+const exposureOptions = ['interne', 'sectorielle', 'nationale', 'internationale']
+const countryOptions = ['MA', 'DZ', 'TN', 'SN', 'CI', 'Other']
+const dataAssetOptions = ['etudes', 'donnees_clients', 'verbatims', 'rien']
 
-// Mapping slug carousel 10-packages → slug backend canonique (4 valeurs).
-// La précision (ex: "Cohort Replay") sera ajoutée en clair dans le
-// payload `message`, pour ne pas perdre l'info au passage.
-const CAROUSEL_TO_BACKEND = {
-  pmf_discovery: 'pre_launch_adcheck',
-  crisis_drill_24h: 'crisis_drill_24h',
-  adcheck_lite: 'pre_launch_adcheck',
-  adcheck_pro: 'pre_launch_adcheck',
-  product_launch: 'pre_launch_adcheck',
-  policy_stress: 'policy_brief_stress',
-  cohort_replay: 'custom',
-  crisis_watch: 'crisis_drill_24h',
-  brand_pulse: 'pre_launch_adcheck',
-  custom: 'custom',
-}
-
-const deadlineOptions = ['not_urgent', '1_month', '2_weeks', 'this_week']
-
-// Trust signals sous le form (3 colonnes).
+// Trust signals sous le form (3 colonnes) — inchangé.
 const trustItems = [
   { id: 'multiAgent', icon: 'psychology' },
   { id: 'airGapped', icon: 'security' },
   { id: 'fastSetup', icon: 'bolt' },
 ]
 
-// ─── Mapping query ?package=… → préselection radio Step 1 ─────────────
-// La page Offers émet par exemple ?package=crisis_drill_24h. On retrouve
-// l'option radio correspondante pour pré-cocher Step 1. Les valeurs
-// frontend OffersView (legacy : crisisDrill / policyBrief / preLaunch)
-// sont aussi acceptées pour ne casser aucun lien existant.
-const PACKAGE_TO_SITUATION = {
-  // Carousel 10-packages (refonte L99) → mapping radio Step 1.
-  // Les packages "Marketing" tombent sur 'campaign', les "Crisis" sur
-  // 'crisis', les "Policy" sur 'policy'. PMF/Cohort/Custom → laissés sur
-  // la radio par défaut (situation crisis) avec la précision en Step 2.
-  crisis_drill_24h: 'crisis',
-  crisis_watch: 'crisis',
-  adcheck_lite: 'campaign',
-  adcheck_pro: 'campaign',
-  brand_pulse: 'campaign',
-  product_launch: 'campaign',
-  pmf_discovery: 'campaign',
-  policy_stress: 'policy',
-  cohort_replay: 'policy',
-  // Legacy US-023
-  policy_brief_stress: 'policy',
-  pre_launch_adcheck: 'campaign',
-  crisisDrill: 'crisis',
-  policyBrief: 'policy',
-  preLaunch: 'campaign',
-}
-
-const route = useRoute()
 const { t, locale } = useI18n()
 
 const currentStep = ref(1)
 
 const form = reactive({
-  // Step 1
-  situation: 'crisis', // l'option par défaut, comme dans le mockup
-  otherSituation: '',
-  // Slug carousel d'origine (?package=…) — préservé pour préciser le pack
-  // demandé dans `message`, indépendamment du mapping backend.
-  carouselPackage: '',
-  // Step 2
+  // Temps 1 — la décision (A1-A3)
+  a1_decision: '',
+  a2_options: ['', ''],
+  a3_deadline_date: '',
+  a3_overdue: false,
+  a3_governance: '',
+  // Temps 2 — le passé (A4-A5)
+  a4_past_method: [],
+  a5_past_gap: '',
+  // Temps 3 — l'enjeu et la matière (A6-A8)
+  a6_budget_bracket: '',
+  a6_jobs: '',
+  a6_exposure: '',
+  a7_countries: [],
+  a7_segment: '',
+  a8_data_assets: [],
+  // Identité (inchangée) — capturée sur l'écran de soumission.
   full_name: '',
   email: '',
   company: '',
   role: '',
-  target_deadline: '',
   consent_rgpd: false,
 })
 
 const submitting = ref(false)
 const submitError = ref(null) // null = succès, string = message d'erreur
 const quoteId = ref('')
+const a2Touched = ref(false)
+const a7Touched = ref(false)
 
-// ─── Validations ───────────────────────────────────────────────────────
+// ─── Validations — seuls A1/A2/A7 sont bloquants (AC US-IQ-01) ─────────
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const emailValid = computed(() => emailRe.test(form.email))
 
-// Step 1 : au moins une situation cochée. « other » suffit aussi car on a
-// toujours une option par défaut, mais on garde la validation explicite.
-const step1Valid = computed(
-  () => !!form.situation || !!form.otherSituation,
-)
+const a1Valid = computed(() => form.a1_decision.trim().length >= 15)
+const a2Valid = computed(() => form.a2_options.filter((o) => o.trim()).length >= 2)
+const a7Valid = computed(() => form.a7_countries.length > 0 && form.a7_segment.trim().length > 0)
 
-const step2Valid = computed(
+const temps1Valid = computed(() => a1Valid.value && a2Valid.value)
+const temps3Valid = computed(
   () =>
-    !!form.full_name &&
-    !!form.email &&
+    a7Valid.value &&
+    !!form.full_name.trim() &&
+    !!form.email.trim() &&
     emailValid.value &&
-    !!form.company &&
+    !!form.company.trim() &&
     form.consent_rgpd === true,
 )
 
-// ─── Step labels ──────────────────────────────────────────────────────
+// ─── Step labels (stepper) ───────────────────────────────────────────
 function stepLabel(idx) {
-  const keys = ['situation', 'context', 'matched']
+  const keys = ['decision', 'past', 'stakes']
   return t(`quote.stepper.stepNames.${keys[idx - 1]}`)
+}
+
+// ─── Helpers champs dynamiques ────────────────────────────────────────
+function addOption() {
+  if (form.a2_options.length < 4) form.a2_options.push('')
+}
+function removeOption(idx) {
+  if (form.a2_options.length > 2) form.a2_options.splice(idx, 1)
+}
+function toggleInArray(arr, val) {
+  const idx = arr.indexOf(val)
+  if (idx === -1) arr.push(val)
+  else arr.splice(idx, 1)
 }
 
 // ─── Navigation ────────────────────────────────────────────────────────
 function goToStep2() {
-  if (!step1Valid.value) return
+  a2Touched.value = true
+  if (!temps1Valid.value) return
   currentStep.value = 2
 }
-
+function goToStep3() {
+  currentStep.value = 3
+}
 function goBack() {
   if (currentStep.value > 1) currentStep.value -= 1
 }
-
-function goBackToStep2() {
-  // Réessayer après une erreur backend : on revient à Step 2, le form
-  // est conservé pour permettre à l'utilisateur d'ajuster s'il le veut.
+function goBackToRetry() {
   submitError.value = null
-  currentStep.value = 2
+  currentStep.value = 3
 }
 
-// ─── Détermine le `package` backend à partir de Step 1 ────────────────
-// crisis → crisis_drill_24h | policy → policy_brief_stress
-// campaign → pre_launch_adcheck. Si l'utilisateur a écrit dans le champ
-// otherSituation et n'a pas cliqué sur une radio standard, on bascule
-// sur 'custom'. La radio par défaut est 'crisis', donc otherSituation
-// non vide ne suffit pas à elle seule : on ne switch sur custom que si
-// la radio n'a pas été modifiée ET que otherSituation est rempli.
-function resolveBackendPackage() {
-  // 1) Si on est arrivé via /offres avec un slug carousel, on le mappe
-  //    vers les 4 slugs backend autorisés (CAROUSEL_TO_BACKEND).
-  if (form.carouselPackage && CAROUSEL_TO_BACKEND[form.carouselPackage]) {
-    return CAROUSEL_TO_BACKEND[form.carouselPackage]
-  }
-  // 2) Sinon on dérive de la radio Step 1.
-  const opt = situationOptions.find((o) => o.id === form.situation)
-  if (opt && opt.backendPackage) {
-    return opt.backendPackage
-  }
-  return 'custom'
-}
-
-// ─── Submit ────────────────────────────────────────────────────────────
+// ─── Submit — démarre une session puis soumet le formulaire A1-A8 ─────
 async function submit() {
-  if (!step2Valid.value || submitting.value) return
+  a7Touched.value = true
+  if (!temps3Valid.value || submitting.value) return
   submitting.value = true
   submitError.value = null
 
-  // Construit le message en concaténant la situation Stitch + l'éventuelle
-  // précision saisie en Step 1 (champ otherSituation).
-  // Si l'utilisateur est arrivé via le carousel /offres, on préfixe par le
-  // nom du pack précis demandé pour que l'équipe sales le retrouve même
-  // quand le slug carousel est mappé vers un slug backend canonique.
-  const situationLabel = form.situation
-    ? t(`quote.step1.options.${form.situation}.title`)
-    : ''
-  const messageParts = []
-  if (form.carouselPackage) {
-    // Tente d'utiliser le nom localisé i18n si dispo, fallback sur le slug.
-    const pkgI18nKey = `offers.packages.${form.carouselPackage}.name`
-    const pkgName = t(pkgI18nKey)
-    const display = pkgName && pkgName !== pkgI18nKey ? pkgName : form.carouselPackage
-    messageParts.push(`[Pack: ${display}]`)
+  const brief = {
+    decision: form.a1_decision.trim(),
+    options: form.a2_options.map((o) => o.trim()).filter(Boolean),
+    deadline: { date: form.a3_deadline_date || null, overdue: form.a3_overdue },
+    governance: form.a3_governance || null,
+    past_method: form.a4_past_method,
+    past_gap: form.a5_past_gap.trim() || null,
+    stakes:
+      form.a6_budget_bracket && form.a6_exposure
+        ? {
+            budget_bracket: form.a6_budget_bracket,
+            jobs: form.a6_jobs !== '' && form.a6_jobs !== null ? Number(form.a6_jobs) : null,
+            exposure: form.a6_exposure,
+          }
+        : null,
+    geo: form.a7_countries.map((c) => ({ country: c, segment: form.a7_segment.trim() })),
+    data_assets: form.a8_data_assets,
   }
-  if (situationLabel) messageParts.push(`[${situationLabel}]`)
-  if (form.otherSituation) messageParts.push(form.otherSituation)
-  const message = messageParts.join(' ').trim()
-
-  const backendPackage = resolveBackendPackage()
-  const safePackage = validBackendPackages.includes(backendPackage)
-    ? backendPackage
-    : 'custom'
 
   const payload = {
-    full_name: form.full_name,
-    email: form.email,
-    company: form.company,
-    package: safePackage,
+    full_name: form.full_name.trim(),
+    email: form.email.trim(),
+    company: form.company.trim(),
     consent_rgpd: form.consent_rgpd,
     locale: locale.value || 'fr',
+    brief,
   }
-  if (form.role) payload.role = form.role
-  if (form.target_deadline) payload.target_deadline = form.target_deadline
-  if (message) payload.message = message
+  if (form.role.trim()) payload.role = form.role.trim()
 
   try {
-    const res = await submitQuote(payload)
-    quoteId.value = (res && res.data && res.data.quote_id) || ''
+    const sessionRes = await startIntakeSession({ locale: locale.value || 'fr' })
+    const sessionId = sessionRes?.data?.session_id
+    const formRes = await submitIntakeForm(sessionId, payload)
+    quoteId.value = formRes?.data?.quote_id || ''
     submitError.value = null
-    currentStep.value = 3
+    currentStep.value = 4
   } catch (err) {
     const localised = formatApiError(err, t)
     submitError.value = localised || t('quote.step3.errorFallback')
-    currentStep.value = 3
+    currentStep.value = 4
   } finally {
     submitting.value = false
   }
 }
-
-// ─── Préselection radio depuis ?package=… (depuis OffersView) ─────────
-// Mapping sector (US-085) → situation radio + package backend par défaut
-const SECTOR_TO_SITUATION = {
-  finance: 'crisis',
-  energy: 'policy',
-  politics: 'policy',
-  retail: 'campaign',
-  tech: 'campaign',
-  industry: 'crisis',
-  media: 'crisis',
-  healthcare: 'policy',
-  custom: '',
-}
-
-const VALID_SECTORS = Object.keys(SECTOR_TO_SITUATION)
-
-onMounted(() => {
-  // Pré-remplissage via ?package= (parcours depuis /offres carousel)
-  const raw = (route.query?.package || '').toString().trim()
-  if (raw && (CAROUSEL_TO_BACKEND[raw] || validBackendPackages.includes(raw))) {
-    form.carouselPackage = raw
-  }
-  if (raw) {
-    const situation = PACKAGE_TO_SITUATION[raw]
-    if (situation) form.situation = situation
-  }
-
-  // Pré-remplissage via ?sector= et ?usecase= (depuis SectorUseCases sur /landing)
-  const sector = (route.query?.sector || '').toString().trim()
-  if (sector && VALID_SECTORS.includes(sector)) {
-    const mappedSituation = SECTOR_TO_SITUATION[sector]
-    if (mappedSituation) form.situation = mappedSituation
-
-    // Récupère le use case spécifique depuis i18n et le pré-remplit
-    // dans otherSituation pour donner du contexte au prospect.
-    const usecaseIdx = parseInt((route.query?.usecase || '0').toString(), 10) || 0
-    try {
-      const sectorName = t(`sectors.${sector}.name`)
-      const caseText = t(`sectors.${sector}.cases.${usecaseIdx}`)
-      if (caseText && !caseText.startsWith('sectors.')) {
-        form.otherSituation = `[${sectorName}] ${caseText}`
-      }
-    } catch (_) {
-      // i18n key absent → silently ignore
-    }
-  }
-})
 </script>
 
 <style scoped>
 /* ═══════════════════════════════════════════════════════════
-   QUOTE — Refonte fidèle au mockup Stitch (US-025 v2)
+   QUOTE — Parcours structuré « 3 temps » A1-A8 (US-IQ-01)
    ═══════════════════════════════════════════════════════════
-   Source unique de vérité : stitch_bassira_simulation_pricing_page/
-   bassira_devis_get_a_quote/code.html
-   On utilise les variables `--stitch-*` scopées au composant pour
-   reproduire la palette M3 du mockup, sans Tailwind. */
+   Réutilise les tokens `--stitch-*` (aliasés sur `--wi-*`, US-053)
+   introduits par la refonte Stitch (US-025 v2). */
 
 .quote-page {
   /* ── Alias --stitch-* → tokens globaux --wi-* (US-053) ── */
@@ -612,8 +665,6 @@ onMounted(() => {
   display: flex;
   align-items: center;
   padding: 16px 32px;
-  /* Réserve la place pour le LanguageSwitcher floating top-right
-     (z-index 1500) — cohérent avec OffersView / MethodologieView. */
   padding-inline-end: 110px;
   border-bottom: 1px solid var(--stitch-stepper-line);
   background: var(--stitch-page-bg);
@@ -656,7 +707,7 @@ onMounted(() => {
   align-items: center;
 }
 
-/* ── Trust banner (mint icon, top — Stitch Step 1) ──── */
+/* ── Trust banner (mint icon, top) ──── */
 .quote-trust-banner {
   display: inline-flex;
   align-items: center;
@@ -677,12 +728,11 @@ onMounted(() => {
 .quote-trust-banner-icon {
   font-size: 18px !important;
   font-variation-settings: 'FILL' 1 !important;
-  /* Mint (--wi-secondary) — signal de protection souverain */
   color: var(--stitch-secondary);
   flex-shrink: 0;
 }
 
-/* ── Card centrée (form 3 steps) ────────────────────── */
+/* ── Card centrée ────────────────────── */
 .quote-card {
   width: 100%;
   max-width: 640px;
@@ -701,7 +751,7 @@ onMounted(() => {
   }
 }
 
-/* ── Stepper 3 steps (rond + label, fidèle Stitch Step 2) ─ */
+/* ── Stepper 3 temps ─ */
 .quote-stepper {
   list-style: none;
   display: flex;
@@ -713,7 +763,6 @@ onMounted(() => {
   position: relative;
 }
 
-/* Track de fond inactif (gris warm) qui traverse tout le stepper */
 .quote-stepper-line {
   position: absolute;
   top: 20px;
@@ -733,7 +782,6 @@ onMounted(() => {
   gap: 0;
   position: relative;
   z-index: 1;
-  /* Pas de fond — la pastille couvre la ligne */
   padding: 0;
   font-family: var(--stitch-font-body);
   font-size: 12px;
@@ -761,12 +809,10 @@ onMounted(() => {
 
 .quote-step-check {
   font-size: 22px !important;
-  /* Texte mint sur container mint clair */
   color: var(--stitch-secondary);
   font-variation-settings: 'FILL' 1 !important;
 }
 
-/* État courant : terracotta (--wi-on-primary-container) avec glow */
 .quote-step--current .quote-step-circle {
   background: var(--stitch-primary-container);
   border-color: var(--stitch-primary-container);
@@ -778,7 +824,6 @@ onMounted(() => {
   font-weight: 700;
 }
 
-/* État done : mint (--wi-secondary-container) avec checkmark */
 .quote-step--done .quote-step-circle {
   background: var(--wi-secondary-container);
   border-color: var(--wi-secondary-container);
@@ -831,6 +876,20 @@ onMounted(() => {
   font-size: 14px;
   line-height: 1.6;
   color: var(--stitch-on-surface-variant);
+  margin: 0 0 4px 0;
+  text-align: center;
+}
+
+/* Micro-copy de réciprocité — « pourquoi cette question » (AC US-IQ-01) */
+.quote-reciprocity {
+  font-family: var(--stitch-font-body);
+  font-size: 12px;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--stitch-secondary);
+  background: var(--wi-secondary-container);
+  border-radius: var(--wi-radius-md);
+  padding: 8px 14px;
   margin: 0 0 16px 0;
   text-align: center;
 }
@@ -839,95 +898,6 @@ onMounted(() => {
   .quote-step-title {
     font-size: 20px;
   }
-}
-
-/* ── Step 1 — radio cards ───────────────────────────── */
-.quote-radio-group {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.quote-radio {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 20px 24px;
-  background: var(--stitch-surface-container-lowest);
-  border: 1px solid var(--stitch-outline-variant);
-  border-radius: var(--wi-radius-md);
-  cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease, border-left-width 0.2s ease;
-}
-.quote-radio:hover {
-  border-color: var(--stitch-primary-container);
-  background: var(--stitch-surface-container-low);
-}
-/* Sélection : border-left orange épaisse (3px) + fond orange soft */
-.quote-radio--checked {
-  border-color: var(--stitch-outline-variant);
-  border-inline-start: 3px solid var(--stitch-primary-container);
-  padding-inline-start: 22px; /* compense les +2px de border */
-  background: var(--ms-orange-soft, rgba(255, 133, 81, 0.08));
-}
-
-.quote-radio-input {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-  pointer-events: none;
-}
-
-.quote-radio-content {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
-
-.quote-radio-title {
-  font-family: var(--stitch-font-body);
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 1.4;
-  color: var(--stitch-on-surface);
-}
-
-.quote-radio-sub {
-  font-family: var(--stitch-font-body);
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--stitch-on-surface-variant);
-}
-
-.quote-radio-bullet {
-  flex-shrink: 0;
-  width: 24px;
-  height: 24px;
-  border-radius: var(--wi-radius-pill);
-  border: 2px solid var(--stitch-stepper-line);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--stitch-surface-container-lowest);
-  transition: background 0.2s ease, border-color 0.2s ease;
-}
-.quote-radio-bullet-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: var(--wi-radius-pill);
-  background: transparent;
-  transition: background 0.2s ease;
-}
-.quote-radio--checked .quote-radio-bullet {
-  border-color: var(--stitch-primary-container);
-  background: var(--stitch-primary-container);
-}
-.quote-radio--checked .quote-radio-bullet-dot {
-  background: var(--stitch-on-primary);
 }
 
 /* ── Champs Stitch (input/textarea/select) ──────────── */
@@ -943,6 +913,13 @@ onMounted(() => {
   font-size: 12px;
   font-weight: 500;
   color: var(--stitch-on-surface-variant);
+  padding-inline-start: 4px;
+}
+
+.quote-field-hint {
+  font-family: var(--stitch-font-body);
+  font-size: 11px;
+  color: var(--stitch-outline);
   padding-inline-start: 4px;
 }
 
@@ -978,6 +955,14 @@ onMounted(() => {
   outline: none;
   box-shadow: 0 0 0 2px var(--stitch-primary-container);
 }
+.quote-input-stitch:disabled {
+  opacity: 0.5;
+}
+
+.quote-textarea {
+  resize: vertical;
+  font-family: inherit;
+}
 
 .quote-select {
   appearance: none;
@@ -1000,6 +985,90 @@ onMounted(() => {
   .quote-field-row {
     grid-template-columns: 1fr 1fr;
   }
+}
+
+/* ── A2 — liste d'options dynamique ──────────────────── */
+.quote-option-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.quote-option-row .quote-input-stitch {
+  flex: 1;
+}
+.quote-option-remove {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--stitch-outline-variant);
+  border-radius: var(--wi-radius-pill);
+  color: var(--stitch-on-surface-variant);
+  cursor: pointer;
+}
+.quote-option-remove:hover {
+  border-color: var(--stitch-error);
+  color: var(--stitch-error);
+}
+.quote-option-add {
+  align-self: flex-start;
+  margin-top: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── Groupes de cases à cocher (A4/A7/A8) ────────────── */
+.quote-checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+.quote-checkbox-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--stitch-outline-variant);
+  border-radius: var(--wi-radius-pill);
+  background: var(--stitch-surface-container-lowest);
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+.quote-checkbox-chip input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.quote-checkbox-chip--checked {
+  border-color: var(--stitch-primary-container);
+  background: var(--ms-orange-soft, rgba(255, 133, 81, 0.08));
+  color: var(--stitch-primary-container);
+  font-weight: 600;
+}
+
+.quote-checkbox-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--stitch-on-surface-variant);
+  cursor: pointer;
+}
+
+.quote-divider {
+  border: none;
+  border-top: 1px solid var(--stitch-outline-variant);
+  margin: 8px 0;
 }
 
 /* ── Consent (checkbox) ─────────────────────────────── */
@@ -1100,7 +1169,7 @@ onMounted(() => {
   cursor: not-allowed;
 }
 
-/* ── Step 3 — success / error ───────────────────────── */
+/* ── Confirmation — success / error ───────────────────── */
 .quote-success,
 .quote-error {
   display: flex;
@@ -1111,8 +1180,6 @@ onMounted(() => {
   padding: 24px 0;
 }
 
-/* Success icon : cercle mint translucide 80px + check_circle 64px outline mint
-   (fidèle au design Stitch "Demande envoyée") */
 .quote-success-icon {
   width: 80px;
   height: 80px;
