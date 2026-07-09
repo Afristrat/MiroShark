@@ -687,8 +687,8 @@ async function onCtaClick(pkg) {
     checkoutLoadingId.value = pkg.id
     try {
       const currency = displayCurrency(pkg).toLowerCase()
-      const { data } = await createCheckoutSession({ package_id: pkg.id, currency })
-      window.location.href = data.data.checkout_url
+      const res = await createCheckoutSession({ package_id: pkg.id, currency })
+      window.location.href = res.data.checkout_url
       // Pas de reset de checkoutLoadingId ici : la page va rediriger vers
       // Stripe, inutile de flash l'état "idle" avant la navigation.
     } catch (err) {
