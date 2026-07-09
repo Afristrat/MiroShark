@@ -4671,13 +4671,13 @@
         "Aucun secret Stripe/LLM/Cal.com hardcodé (env uniquement)",
         "pytest (validation jsonschema du brief, machine à états, rejet 400) + npm run build + Playwright (parcours 3 écrans, fr/en/ar) verts"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [],
       "metadata": {
         "origin": "docs/intake/04-feature-backlog.md (US-IQ-01)",
         "adr": "docs/intake/08-decisions-log.md"
       },
-      "completedAt": null
+      "completedAt": "2026-07-09T21:46:23Z"
     },
     {
       "id": "US-IQ-02",
@@ -4719,7 +4719,7 @@
         "Branche entretien : sujets confidentiels flaggés listés et récupérables via l'API admin",
         "pytest + ruff + npm build verts"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-IQ-01"
       ],
@@ -4727,7 +4727,7 @@
         "origin": "docs/intake/04-feature-backlog.md (US-IQ-03)",
         "adr": "docs/intake/08-decisions-log.md"
       },
-      "completedAt": null
+      "completedAt": "2026-07-09T21:46:54Z"
     },
     {
       "id": "US-IQ-04",
