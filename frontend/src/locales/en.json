@@ -1485,7 +1485,16 @@
     "INVALID_WEBHOOK_URL": "Invalid webhook URL.",
     "MISSING_WEBHOOK_URL": "No webhook URL configured.",
     "WEBHOOK_TEST_FAILED": "Webhook test failed.",
-    "NO_DATA": "No data available."
+    "NO_DATA": "No data available.",
+    "INVALID_EMAIL": "Invalid email format.",
+    "RGPD_NOT_ACCEPTED": "GDPR consent is required to process your request.",
+    "SUPABASE_NOT_CONFIGURED": "Service temporarily unavailable. Please try again shortly.",
+    "SESSION_NOT_FOUND": "Your session has expired. Please restart the form.",
+    "INVALID_TRANSITION": "This step has already been submitted. Please restart the form.",
+    "A1_INVALID": "Describe your decision in at least 15 characters.",
+    "A2_INVALID": "List at least two options you are genuinely considering.",
+    "A7_INVALID": "Provide at least one country and segment.",
+    "BRIEF_INVALID": "Some answers are invalid. Please check the form and try again."
   },
   "offers": {
     "nav": {
@@ -1755,63 +1764,128 @@
     "stepper": {
       "step": "Step {current} of {total}",
       "stepNames": {
-        "situation": "Your situation",
-        "context": "Your context",
-        "matched": "Get matched"
+        "decision": "The decision",
+        "past": "The past",
+        "stakes": "The stakes"
       }
     },
-    "step1": {
-      "title": "How can we help?",
-      "options": {
-        "crisis": {
-          "title": "I'm in a crisis or about to be",
-          "sub": "Rapid response simulation for emerging threats."
-        },
-        "policy": {
-          "title": "I need to test a policy or regulation",
-          "sub": "Stress-test socio-economic impacts before rollout."
-        },
-        "campaign": {
-          "title": "I'm about to launch a campaign or product",
-          "sub": "Anticipate market reaction and agent adoption."
+    "reciprocity": {
+      "decision": "This calibrates your simulation scenario — nothing is published.",
+      "past": "Understanding what has guided you so far sharpens the stress-test.",
+      "stakes": "The stakes and scope determine the most relevant quote format."
+    },
+    "temps1": {
+      "title": "Your decision, first.",
+      "intro": "Three questions about the decision you have to make — not about us.",
+      "a1": {
+        "label": "What decision do you need to make?",
+        "placeholder": "E.g.: launch the Senegal subsidiary now or wait until 2027",
+        "hint": "15 characters minimum.",
+        "invalid": "Describe your decision in at least 15 characters."
+      },
+      "a2": {
+        "label": "What options are actually on the table?",
+        "placeholder": "E.g.: Launch now",
+        "addOption": "Add an option",
+        "removeOption": "Remove",
+        "invalid": "Provide at least two options."
+      },
+      "a3": {
+        "deadlineLabel": "When does it get decided?",
+        "overdueLabel": "Already overdue",
+        "governanceLabel": "In front of whom?",
+        "governance": {
+          "solo": "Alone",
+          "comite_direction": "Executive committee",
+          "conseil_administration": "Board of directors",
+          "tutelle": "Supervisory authority / ministry",
+          "investisseurs": "Investors"
         }
-      },
-      "other": {
-        "label": "Other situation?",
-        "placeholder": "Describe your specific need…"
       }
     },
-    "step2": {
-      "title": "Tell us about you",
-      "subtitle": "Your contact details help us tailor an approach that fits your context.",
-      "fullName": {
-        "label": "Full name",
-        "placeholder": "Karim Bensaid"
-      },
-      "email": {
-        "label": "Work email",
-        "placeholder": "you{'@'}company.com",
-        "invalid": "Invalid email format"
-      },
-      "company": {
-        "label": "Organization",
-        "placeholder": "Banque Populaire MA"
-      },
-      "role": {
-        "label": "Role (optional)",
-        "placeholder": "Head of Communications"
-      },
-      "deadline": {
-        "label": "Deadline (optional)",
+    "temps2": {
+      "title": "The past.",
+      "intro": "The last time you made a decision of this weight.",
+      "a4": {
+        "label": "What guided you last time?",
         "options": {
-          "not_urgent": "Not urgent",
-          "1_month": "Within 1 month",
-          "2_weeks": "Within 2 weeks",
-          "this_week": "This week"
+          "etude": "Market study",
+          "conseil": "Consulting firm",
+          "sondage_interne": "Internal survey",
+          "instinct": "Gut instinct",
+          "rien": "Nothing"
         }
       },
-      "consent": {
-        "label": "I consent to Bassira (AI MPOWER SAS) processing my data to reply to this request, as required by GDPR and Morocco law 09-08."
+      "a5": {
+        "label": "What was missing at that moment? (optional)",
+        "placeholder": "Briefly describe…"
+      }
+    },
+    "temps3": {
+      "title": "The stakes and the substance.",
+      "intro": "This information sizes your quote and pre-seeds the simulation.",
+      "a6": {
+        "budgetLabel": "Budget at stake",
+        "budget": {
+          "lt_1m": "Under 1M MAD",
+          "1_10m": "1 to 10M MAD",
+          "10_100m": "10 to 100M MAD",
+          "gt_100m": "Over 100M MAD"
+        },
+        "jobsLabel": "Jobs affected (optional)",
+        "exposureLabel": "Exposure",
+        "exposure": {
+          "interne": "Internal",
+          "sectorielle": "Sector-wide",
+          "nationale": "National",
+          "internationale": "International"
+        }
+      },
+      "a7": {
+        "countriesLabel": "In which countries?",
+        "countries": {
+          "MA": "Morocco",
+          "DZ": "Algeria",
+          "TN": "Tunisia",
+          "SN": "Senegal",
+          "CI": "Côte d'Ivoire",
+          "Other": "Other"
+        },
+        "segmentLabel": "Which segment?",
+        "segmentPlaceholder": "E.g.: urban general public, SMEs in banking…",
+        "invalid": "Provide at least one country and segment."
+      },
+      "a8": {
+        "label": "What internal data could you share? (optional)",
+        "options": {
+          "etudes": "Existing studies",
+          "donnees_clients": "Customer data",
+          "verbatims": "Verbatims",
+          "rien": "Nothing for now"
+        }
+      },
+      "identityIntro": "Your contact details, to send you the quote.",
+      "identity": {
+        "fullName": {
+          "label": "Full name",
+          "placeholder": "Karim Bensaid"
+        },
+        "email": {
+          "label": "Work email",
+          "placeholder": "you{'@'}company.com",
+          "invalid": "Invalid email format"
+        },
+        "company": {
+          "label": "Organization",
+          "placeholder": "Banque Populaire MA"
+        },
+        "role": {
+          "label": "Role (optional)",
+          "placeholder": "Head of Communications"
+        },
+        "consent": {
+          "label": "I consent to Bassira (AI MPOWER SAS) processing my data and this brief's content to prepare my quote, as required by GDPR and Morocco law 09-08."
+        }
       }
     },
     "step3": {

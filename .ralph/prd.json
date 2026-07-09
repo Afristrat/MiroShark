@@ -4733,11 +4733,11 @@
       "id": "US-IQ-04",
       "chantier": "V2-B-intake",
       "title": "Emails contextualisés + réservation Cal.com",
-      "description": "Refonte de quote_received.html (+ variantes par branche) : décision, échéance, prochaine étape explicite, dans la locale de session (règle transversale langue). Branche entretien : lien de réservation Cal.com self-hosted existant (agenda.ai-mpower.com, ADR-IQ-03 v2), event type \"Entretien Bassira — 20 min\", API appelée EXCLUSIVEMENT en réseau interne (localhost:3002, la route publique /api/* est derrière un challenge Cloudflare).",
+      "description": "Refonte de quote_received.html (+ variantes par branche) : décision, échéance, prochaine étape explicite, dans la locale de session (règle transversale langue). Branche entretien : lien de réservation Cal.com self-hosted existant, event type \"Entretien Bassira — 20 min\", API appelée via le hostname PUBLIC dédié https://api-agenda.ai-mpower.com/v2/... (endpoint testé bout-en-bout le 2026-07-09, 200 OK — PAS agenda.ai-mpower.com/api/v2 qui donne Cloudflare Error 1000, et PAS besoin de réseau Docker interne : miroshark et calcom-api sont sur des réseaux Docker disjoints, cf. mémoire reference_calcom_agenda).",
       "acceptanceCriteria": [
         "Email reflète A1/A3/branche ; AUCUN contenu flaggé confidentiel ; tout contenu prospect échappé HTML (auditer quote_received.html existant pour l'injection HTML, docs/intake/09 R1)",
         "Email ET page de réservation Cal.com dans la locale de session (fr/en/ar) — aucune sortie dans une autre langue que celle choisie par l'utilisateur",
-        "Appels API Cal.com exclusivement en réseau interne (service calcom-api, localhost:3002 ou réseau Docker équivalent) — jamais via le hostname public agenda.ai-mpower.com",
+        "Appels API Cal.com exclusivement via https://api-agenda.ai-mpower.com/v2/... (hostname public dédié, PAS agenda.ai-mpower.com/api/v2 qui échoue en Cloudflare Error 1000) ; chemin sans préfixe /api",
         "Clé CALCOM_API_KEY lue depuis l'environnement backend uniquement, jamais exposée au frontend",
         "Lien de réservation généré pour l'event type \"Entretien Bassira — 20 min\" ; calcom_booking_uid posé sur intake_sessions à la confirmation",
         "Envoi email réel vérifié en prod (pattern de preuve US-204) + une réservation Cal.com test réelle documentée dans .ralph/progress.md",

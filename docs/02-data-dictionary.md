@@ -4,7 +4,8 @@
 > création met ce fichier à jour DANS LE MÊME COMMIT. SQL en snake_case ; le code
 > applicatif suit les conventions de son langage.
 > État extrait des migrations réelles `supabase/migrations/` le 2026-07-07 (10 fichiers,
-> 12 tables, **RLS activée sur les 12** — vérifié).
+> 12 tables, **RLS activée sur les 12** — vérifié). + `intake_sessions` (20260709_001,
+> US-IQ-01) → 13 tables, RLS activée sur les 13.
 
 ## Vue d'ensemble
 
@@ -22,6 +23,7 @@
 | report_comments | 20260506_003 | non | Annotations par paragraphe |
 | report_deliveries | 20260506_004 | **recipient_email, recipient_name** | Livraison URL signée TTL |
 | report_downloads | 20260506_004 | **ip_address, user_agent, country_code** | Tracking téléchargements |
+| intake_sessions | 20260709_001 | **transcript, brief** | Parcours de qualification /devis (US-IQ-01, module Intake) |
 
 ## `organizations`
 Tenant racine du multi-org.
@@ -183,9 +185,36 @@ Versionné temporellement (valid_from/valid_to, null = actif). Défauts = palett
 | country_code | text | | | **oui** |
 | referer | text | | | non |
 
+## `intake_sessions`
+US-IQ-01 (migration 20260709_001) — parcours de qualification /devis « 3 temps »
+(docs/intake/01-intake-spec.md), remplace le contexte de décision jamais capturé par
+l'ancien formulaire de contact. Une row par parcours démarré, même abandonné (funnel).
+| Colonne | Type | Contraintes | Description | PII |
+|---|---|---|---|---|
+| id | uuid | pk, default gen_random_uuid() | | non |
+| quote_id | text | fk quote_ownership.quote_id, set null | posé à form_submitted ; null si abandon avant | non |
+| state | text | not null, check in (started, form_submitted, agent_active, completed, abandoned) | machine à états, trigger anti-transition-arrière | non |
+| brief | jsonb | | brief structuré validé jsonschema — schéma docs/intake/02-data-dictionary-delta.md | **oui** (decision, geo, stakes) |
+| transcript | jsonb | | échanges étape B agent : [{role,content,ts}] — pièce durable, jamais purgée (ADR-IQ-07) | **oui** |
+| calcom_booking_uid | text | | UID réservation Cal.com (branche entretien) | non |
+| confidential_flags | jsonb | not null, default '[]' | sujets flaggés, jamais de contenu (ADR-IQ-04) | non |
+| route | text | check in (self_service, quote_48h, meeting) | branche de sortie (étape C) | non |
+| entry_door | text | not null, default 'standard', check in (standard, aar) | porte 1 ou porte 2 AAR (US-IQ-05) | non |
+| locale | text | not null, default 'fr', check in (fr, en, ar) | | non |
+| agent_turns | int | not null, default 0, check 0-7 | compteur budget agent (US-IQ-02) | non |
+| created_at | timestamptz | not null, default now() | | non |
+| completed_at | timestamptz | | | non |
+
+RLS : aucune policy anon — écriture exclusivement backend service_role, lecture
+`is_super_admin()` (même piège connu que report_states, cf. Pièges connus ci-dessous —
+n'affecte pas le backend qui bypass RLS en service_role). Rétention : `transcript` conservé
+tant que le dossier existe (aucune purge sur session liée à un `quote_id`) ; sessions
+`abandoned` sans `quote_id` purgées à J+30 (pg_cron, non encore implémenté — US-IQ-01 pose
+le schéma, la purge est hors scope V1).
+
 ## Conventions transverses
 
-- **RLS activée sur les 12 tables** (règle absolue) — état vérifié dans les migrations.
+- **RLS activée sur les 13 tables** (règle absolue) — état vérifié dans les migrations.
 - Toute table porte `created_at` ; soft-delete : **non** (suppression cascade par org) —
   réexaminer en ADR si un client exige la rétention.
 - Colonnes PII (marquées **oui** en gras) → reprises dans `docs/07-legal-compliance.md`.

@@ -1,13 +1,16 @@
 /**
- * Tunnel commercial — /offres → /devis (US-010)
+ * Tunnel commercial — /offres → /devis (US-010, parcours A1-A8 US-IQ-01)
  *
  * Vérifie que le CTA d'un package sur /offres redirige bien vers /devis
- * avec le query param `?package=<slug>` et que le Step 1 s'affiche.
+ * et que le Temps 1 (« La décision ») du nouveau parcours structuré
+ * s'affiche. Depuis US-IQ-01, le `?package=` n'est plus consommé par le
+ * formulaire (le package/la branche sont désormais déterminés par le
+ * routage post-brief, US-IQ-03) — seule la navigation est vérifiée ici.
  *
  * IMPORTANT — STRICTEMENT READ-ONLY :
  *   - On clique le CTA Crisis Drill
  *   - On vérifie l'URL `/devis`
- *   - On vérifie que Step 1 est visible
+ *   - On vérifie que le Temps 1 est visible
  *   - ON NE CLIQUE PAS Next Step → AUCUN POST métier déclenché
  *   - ON NE REMPLIT AUCUN CHAMP
  */
@@ -35,13 +38,12 @@ test.describe('Tunnel commercial /offres → /devis', () => {
     await expect(page).toHaveURL(/\/devis(\?|$)/)
     await expect(page).toHaveURL(/package=crisis_drill_24h/)
 
-    // Step 1 visible : stepper 3 dots + 3 radios.
+    // Temps 1 visible : stepper 3 dots + le champ A1 (décision).
     const steps = page.locator('.quote-step')
     await expect(steps).toHaveCount(3)
 
-    // Inputs natifs masqués (custom radio Stitch) — assert sur l'attachement DOM.
-    const radios = page.locator('input[type="radio"]')
-    await expect(radios.first()).toBeAttached()
+    const decisionField = page.locator('.quote-step-content textarea')
+    await expect(decisionField).toBeAttached()
 
     // GARDE-FOU : on s'assure qu'aucun bouton de soumission n'a été cliqué.
     // L'étape courante doit toujours être 1 (vérifié par le label visible).
