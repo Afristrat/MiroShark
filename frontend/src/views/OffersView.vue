@@ -45,6 +45,14 @@
             :aria-selected="currencyPref === 'USD'"
             @click="setCurrencyPref('USD')"
           >USD</button>
+          <button
+            type="button"
+            role="tab"
+            class="offers-toggle-btn"
+            :class="{ 'offers-toggle-btn--active': currencyPref === 'EUR' }"
+            :aria-selected="currencyPref === 'EUR'"
+            @click="setCurrencyPref('EUR')"
+          >EUR</button>
         </div>
 
         <div class="offers-toggle offers-toggle--accent" role="tablist" aria-label="Mode de facturation par défaut">
@@ -198,11 +206,16 @@
 
                 <div class="offers-card-price">
                   <template v-if="resolvedPrice(pkg).priceMAD !== null">
-                    <!-- Devise prioritaire (MAD par défaut, override par toggle global) -->
+                    <!-- Devise prioritaire (MAD par défaut, override par toggle global —
+                         repli gracieux sur USD si EUR sélectionné mais indisponible pour
+                         ce package, cf. displayCurrency()). -->
                     <span class="offers-card-price-mad">
-                      <template v-if="currencyPref === 'MAD'">
+                      <template v-if="displayCurrency(pkg) === 'MAD'">
                         {{ formatMad(resolvedPrice(pkg).priceMAD) }}
                         <span class="offers-card-price-currency">MAD</span>
+                      </template>
+                      <template v-else-if="displayCurrency(pkg) === 'EUR'">
+                        <span class="offers-card-price-currency offers-card-price-currency--lead">€</span>{{ formatUsd(resolvedPrice(pkg).priceEUR) }}
                       </template>
                       <template v-else>
                         <span class="offers-card-price-currency offers-card-price-currency--lead">$</span>{{ formatUsd(resolvedPrice(pkg).priceUSD) }}
@@ -210,7 +223,7 @@
                     </span>
                     <!-- Devise secondaire -->
                     <span class="offers-card-price-usd">
-                      <template v-if="currencyPref === 'MAD'">
+                      <template v-if="displayCurrency(pkg) === 'MAD'">
                         ${{ formatUsd(resolvedPrice(pkg).priceUSD) }}
                       </template>
                       <template v-else>
@@ -251,10 +264,14 @@
                 <button
                   type="button"
                   class="offers-card-cta"
+                  :disabled="checkoutLoadingId === pkg.id"
                   @click="onCtaClick(pkg)"
                 >
-                  {{ $t(`offers.packages.${pkg.id}.cta`) }}
+                  {{ checkoutLoadingId === pkg.id ? $t('offers.checkout.loading') : $t(`offers.packages.${pkg.id}.cta`) }}
                 </button>
+                <p v-if="checkoutErrorId === pkg.id" class="offers-card-checkout-error" role="alert">
+                  {{ checkoutError }}
+                </p>
               </article>
             </li>
           </ul>
@@ -331,6 +348,8 @@
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { createCheckoutSession } from '../api/stripe'
+import { formatApiError } from '../utils/error-handler'
 
 // ════════════════════════════════════════════════════════════════════
 // Catalogue 10 packages (data-driven)
@@ -356,6 +375,8 @@ const packages = [
     delayIcon: 'schedule',
     priceMAD: 10000,
     priceUSD: 1000,
+    priceEUR: 1000, // Self-service Stripe (US-205, ADR-014) — les 3 devises MAD/USD/EUR
+    selfService: true, // Checkout Stripe direct au clic CTA, pas de passage par /devis
     bulletsCount: 6,
     fineprint: true,
   },
@@ -367,6 +388,8 @@ const packages = [
     delayIcon: 'schedule',
     priceMAD: 20000,
     priceUSD: 2000,
+    priceEUR: 2000,
+    selfService: true,
     bulletsCount: 6,
     fineprint: true,
   },
@@ -376,6 +399,8 @@ const packages = [
     delayIcon: 'schedule',
     priceMAD: 15000,
     priceUSD: 1500,
+    priceEUR: 1500,
+    selfService: true,
     bulletsCount: 6,
   },
   // 🎯 Stress
@@ -497,7 +522,14 @@ const faqKeys = [
 // State
 // ════════════════════════════════════════════════════════════════════
 const router = useRouter()
-const { locale: i18nLocale } = useI18n()
+const { locale: i18nLocale, t } = useI18n()
+
+// État du Checkout Stripe self-service (US-205, ADR-014) — un seul en vol
+// à la fois, scopé par package.id pour n'afficher le loading/l'erreur que
+// sur la carte concernée.
+const checkoutLoadingId = ref(null)
+const checkoutErrorId = ref(null)
+const checkoutError = ref('')
 
 const activeChip = ref('all')
 const activeIndex = ref(0)
@@ -561,14 +593,14 @@ function resolvedPrice(pkg) {
   if (pkg.variants) {
     const value = selectedVariant[pkg.id] || pkg.variants.options[0].value
     const opt = pkg.variants.options.find((o) => o.value === value) || pkg.variants.options[0]
-    return computeBilling(pkg, opt.priceMAD, opt.priceUSD)
+    return computeBilling(pkg, opt.priceMAD, opt.priceUSD, opt.priceEUR)
   }
-  return computeBilling(pkg, pkg.priceMAD, pkg.priceUSD)
+  return computeBilling(pkg, pkg.priceMAD, pkg.priceUSD, pkg.priceEUR)
 }
 
-function computeBilling(pkg, priceMAD, priceUSD) {
+function computeBilling(pkg, priceMAD, priceUSD, priceEUR) {
   if (priceMAD === null || priceMAD === undefined) {
-    return { priceMAD: null, priceUSD: null }
+    return { priceMAD: null, priceUSD: null, priceEUR: null }
   }
   // Annual mode : on facture (12 - annualDiscount) mois × prix mensuel,
   // ramené au mois équivalent affiché (priceMAD reste l'affichage mensuel
@@ -580,9 +612,19 @@ function computeBilling(pkg, priceMAD, priceUSD) {
     return {
       priceMAD: Math.round(annualTotal / 12),
       priceUSD: Math.round(annualTotalUsd / 12),
+      priceEUR: null, // pas d'abonnement en self-service EUR (hors périmètre US-205)
     }
   }
-  return { priceMAD, priceUSD }
+  return { priceMAD, priceUSD, priceEUR: priceEUR ?? null }
+}
+
+// Devise effective à afficher pour un package donné : suit le toggle
+// global, sauf repli sur USD si EUR est sélectionné mais indisponible
+// pour ce package précis (les 7 packages hors self-service n'ont pas de
+// priceEUR — cf. ADR-014, EUR scopé au palier d'entrée uniquement).
+function displayCurrency(pkg) {
+  if (currencyPref.value !== 'EUR') return currencyPref.value
+  return resolvedPrice(pkg).priceEUR !== null ? 'EUR' : 'USD'
 }
 
 function formatMad(value) {
@@ -634,9 +676,26 @@ function onTouchEnd(e) {
 // ════════════════════════════════════════════════════════════════════
 // CTA → /devis (sauf custom → mailto)
 // ════════════════════════════════════════════════════════════════════
-function onCtaClick(pkg) {
+async function onCtaClick(pkg) {
   if (pkg.id === 'custom') {
     window.location.href = 'mailto:contact@ai-mpower.com?subject=' + encodeURIComponent('Demande sur-mesure Bassira')
+    return
+  }
+  if (pkg.selfService) {
+    checkoutErrorId.value = null
+    checkoutError.value = ''
+    checkoutLoadingId.value = pkg.id
+    try {
+      const currency = displayCurrency(pkg).toLowerCase()
+      const { data } = await createCheckoutSession({ package_id: pkg.id, currency })
+      window.location.href = data.data.checkout_url
+      // Pas de reset de checkoutLoadingId ici : la page va rediriger vers
+      // Stripe, inutile de flash l'état "idle" avant la navigation.
+    } catch (err) {
+      checkoutError.value = formatApiError(err, t)
+      checkoutErrorId.value = pkg.id
+      checkoutLoadingId.value = null
+    }
     return
   }
   router.push({ name: 'Quote', query: { package: pkg.id } })
@@ -1388,6 +1447,13 @@ onBeforeUnmount(() => {
   font-style: italic;
   color: var(--stitch-outline);
   margin: 0 0 16px 0;
+}
+
+.offers-card-checkout-error {
+  font-family: var(--stitch-font-body);
+  font-size: 12px;
+  color: var(--wi-error, #b3261e);
+  margin: 8px 0 0 0;
 }
 
 .offers-card-cta {

@@ -125,6 +125,10 @@ def create_app(config_class=Config):
     from .api.quote import quote_bp, admin_quote_bp
     app.register_blueprint(quote_bp, url_prefix='/api/quote')
     app.register_blueprint(admin_quote_bp, url_prefix='/api/admin/quotes')
+    # stripe_bp serves the self-service Checkout for the 3 entry-tier
+    # packages (US-205, ADR-014) — public, webhook signature-verified.
+    from .api.stripe_checkout import stripe_bp
+    app.register_blueprint(stripe_bp, url_prefix='/api/stripe')
     # models_bp serves the public branded-brief PDF endpoint at
     # GET /api/models/<slug>/pdf-brief?lang=<fr|en|ar> (US-088).
     from .api.models import models_bp

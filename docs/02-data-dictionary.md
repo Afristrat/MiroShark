@@ -67,7 +67,7 @@ de vérité** du devis complet ; `backend/uploads/quotes/` est rétrogradé en c
 best-effort (le bug P0 « leads PII sur volume éphémère » est corrigé à la racine).
 | Colonne | Type | Contraintes | Description | PII |
 |---|---|---|---|---|
-| quote_id | text | pk | ex. q_abc12345 | non |
+| quote_id | text | pk | ex. `q_abc12345` (devis manuel) ou `stripe_cs_...` (achat self-service US-205/ADR-014, préfixe = ID de la Checkout Session) | non |
 | org_id | uuid | fk organizations.id, cascade, not null | | non |
 | customer_email | text | | contact à la soumission | **oui** |
 | package_id | text | | | non |

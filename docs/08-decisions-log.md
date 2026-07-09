@@ -283,3 +283,26 @@ divergent sont des bugs de marque à corriger (rattaché US-204/US-210).
 **Sources** : directive Amine 2026-07-07.
 **Alternatives rejetées** : bassira.ai (défaut SQL actuel — non retenu par Amine).
 **Signal de réexamen** : acquisition d'un autre domaine par Amine.
+
+## ADR-014 — Stripe Checkout self-service limité au palier d'entrée + ajout EUR
+**Date** : 2026-07-08 (directive Amine, câblage US-205) · **Statut** : accepté · réversible
+**Quoi** : (1) le Checkout Stripe self-service (paiement carte instantané, sans conversation
+commerciale) ne couvre QUE les 3 packages du palier d'entrée — PMF Discovery (1000 MAD/1000
+USD/1000 EUR), Crisis Drill 24h (2000/2000/2000), Adcheck Lite (1500/1500/1500). Les 6 autres
+packages tarifés (Adcheck Pro → Brand Pulse, jusqu'à 24 000 USD) restent sur le circuit devis
+manuel existant (Payment Link envoyé par un admin, US-104) — **confirme et resserre ADR-007**,
+ne le contredit pas. (2) ajout d'une 3e devise **EUR** en plus de MAD/USD (contredit et
+remplace la clause « jamais EUR » d'ADR-007/US-205/CLAUDE.md pour ces 3 packages
+uniquement — les autres canaux/prix restent MAD/USD).
+**Pourquoi** : (1) un paiement carte instantané de 24 000 $ sans échange humain est un risque
+chargeback/fraude disproportionné pour un service B2B à cycle accompagné — cohérent avec le
+motion commercial déjà acté (ADR-007) ; (2) directive Amine — besoin identifié sur un segment
+zone euro, montants fixés par simple parité nominale avec l'USD (pas de conversion FX au
+centime, même logique que les paliers MAD/USD existants qui sont des montants ronds par
+marché, pas des conversions strictes).
+**Sources** : directive Amine 2026-07-08 (session Stripe MCP).
+**Alternatives rejetées** : Checkout sur les 9 packages (rejeté — casse le motion accompagné
+des paliers hauts) ; conversion FX dynamique EUR (rejeté — complexité de maintenance sans
+bénéfice, incohérent avec le pattern MAD/USD existant).
+**Signal de réexamen** : si un segment EUR distinct émerge avec des attentes de prix propres
+(pas juste une parité USD), revoir les 3 montants EUR indépendamment.

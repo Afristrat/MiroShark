@@ -1426,6 +1426,10 @@
     "UNAUTHORIZED": "Authentification requise. Vérifiez votre token administrateur.",
     "FORBIDDEN": "Accès refusé.",
     "ADMIN_AUTH_NOT_CONFIGURED": "L'authentification administrateur n'est pas configurée sur ce déploiement.",
+    "UNKNOWN_PACKAGE": "Ce package n'est pas disponible en paiement direct.",
+    "INVALID_REQUEST": "Requête de paiement invalide.",
+    "STRIPE_NOT_CONFIGURED": "Le paiement en ligne n'est pas disponible pour le moment.",
+    "STRIPE_API_ERROR": "Impossible de démarrer le paiement. Réessayez dans un instant.",
     "PROJECT_NOT_FOUND": "Projet introuvable.",
     "MISSING_PROJECT_ID": "Identifiant de projet requis.",
     "SIMULATION_NOT_FOUND": "Simulation introuvable.",
@@ -1493,6 +1497,9 @@
       "subtitle": "Dix modalités d’engagement · du test de résilience express à la simulation de jumeaux numériques. MAD / USD, livraison sous 24 h à 4 semaines."
     },
     "featuredBadge": "Le plus choisi",
+    "checkout": {
+      "loading": "Redirection vers le paiement…"
+    },
     "filters": {
       "ariaLabel": "Filtrer les offres par domaine",
       "all": "Toutes les offres",
