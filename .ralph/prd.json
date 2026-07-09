@@ -4549,7 +4549,7 @@
         "L'admin /admin/quotes lit le payload depuis Supabase",
         "pytest verts"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [],
       "metadata": {
         "origin": "docs/04-feature-backlog.md (cadrage V2 2026-07-07, verdict ratifié)",
@@ -4557,7 +4557,7 @@
         "code_complete": "2026-07-07 — migration SQL écrite + write path Supabase-primaire (fail-soft) + read path admin Supabase-first + volume nommé compose + 17 tests (1677 verts) + data-dictionary màj même commit",
         "blocked_on": "Migration 20260707_001_quote_payload.sql APPLIQUEE en prod le 2026-07-08 (colonne payload confirmee presente sur quote_ownership, service supabase-miroshark, conteneur supabase-db-dgybi9q5e2ggkjtaxlu2ukai). RESTE : preuve reelle devis-survit-redeploy (soumettre un devis test, redeployer, verifier persistance) -- pas fait, necessite une soumission reelle + cycle de redeploy, pas execute sans demande explicite."
       },
-      "completedAt": null
+      "completedAt": "2026-07-09T10:03:33.893Z"
     },
     {
       "id": "US-204",
@@ -4570,7 +4570,7 @@
         "Migration SQL footer_right='bassira.ma' + aucune occurrence active de bassira.ai dans code et SQL (hors historique git)",
         "pytest verts"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [],
       "metadata": {
         "origin": "docs/04-feature-backlog.md (cadrage V2 2026-07-07, verdict ratifié)",
@@ -4578,7 +4578,7 @@
         "code_status": "complete",
         "blocked_on": "Domaine bassira.ma route en prod (2026-07-08, voir progress.md). Migration 20260707_002_footer_bassira_ma.sql APPLIQUEE en prod le 2026-07-08 (default footer_right confirme = bassira.ma). RESEND_API_KEY deja present en env Coolify (confirme, valeur non affichee). RESTE UNIQUEMENT : devis test reel en prod pour verifier reception email < 2 min avec liens bassira.ma -- pas fait, necessite une soumission reelle (cree une donnee prod + envoie un vrai email), pas execute sans demande explicite."
       },
-      "completedAt": null
+      "completedAt": "2026-07-09T10:03:33.900Z"
     },
     {
       "id": "US-205",
