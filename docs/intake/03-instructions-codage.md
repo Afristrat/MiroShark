@@ -24,6 +24,17 @@
    côté serveur AVANT écriture ; tout ce qui vient du prospect (formulaire ET réponses à
    l'agent) est traité comme non fiable (cf. 09-risques : injection).
 7. **Design tokens `--wi-*` uniquement** (Causse) — aucun `--ms-*` nouveau.
+7bis. **Cal.com : appels API INTERNES uniquement** (service `calcom-api`, `localhost:3002`
+   côté hôte / réseau Docker côté conteneur) — la route publique
+   `agenda.ai-mpower.com/api/*` est derrière un challenge Cloudflare (vérifié 2026-07-09).
+   Clé env `CALCOM_API_KEY` (posée dans Coolify), jamais au front. Le LIEN de réservation
+   envoyé au prospect est la page publique (hors challenge), localisée.
+7ter. **Le transcript ne se perd JAMAIS** (ADR-IQ-07) : toute écriture de l'étape B est
+   persistée tour par tour (pas seulement à la clôture — un abandon en cours de chat
+   conserve les tours déjà joués) ; aucune purge sur session liée à un devis.
+7quater. **Langue transversale** : locale de session propagée à TOUTE sortie (emails,
+   lien Cal.com, devis, PDF) — une correspondance émise dans la mauvaise langue est un
+   bug bloquant, pas un détail.
 8. **Rate limiting** : réutiliser le pattern des dicts internes existants
    (`_ENRICH_RATE_HITS`, cf. progress.md) — l'endpoint agent est public donc limité par IP
    ET par session (7 tours max, compteur `agent_turns` en base, vérifié serveur).

@@ -45,16 +45,20 @@ tri confidentiel (flags sans contenu), production des `agent_insights`.
 **Effort** : S · **Deps** : US-IQ-01 (US-IQ-02 optionnelle — le routage fonctionne sur le
 seul formulaire).
 
-## US-IQ-04 — Emails contextualisés
+## US-IQ-04 — Emails contextualisés + réservation Cal.com
 
 **Description** : refonte de `quote_received.html` (+ variantes par branche) : décision,
-échéance, prochaine étape explicite. Branche entretien : proposition de 2-3 créneaux
-(texte, pas d'outil calendrier — ADR-IQ-03).
+échéance, prochaine étape explicite. Branche entretien : lien de réservation Cal.com
+localisé (event type « Entretien Bassira — 20 min », ADR-IQ-03 v2).
 **AC** :
 - Email reflète A1/A3/branche ; AUCUN contenu flaggé confidentiel ; tout contenu prospect
-  échappé HTML (cf. 09-risques) ; liens bassira.ma ; fr/en/ar selon locale de session.
-- Envoi réel vérifié en prod (pattern de preuve US-204).
-**Effort** : S · **Deps** : US-IQ-03.
+  échappé HTML (cf. 09-risques) ; liens bassira.ma ; **email, page de réservation Cal.com
+  et toute correspondance dans la locale de session** (règle transversale langue).
+- Appels API Cal.com en réseau interne uniquement (`localhost:3002` — route publique
+  bloquée Cloudflare) ; clé lue depuis env `CALCOM_API_KEY`, jamais au front.
+- Réservation confirmée → `calcom_booking_uid` posé sur la session.
+- Envoi réel vérifié en prod (pattern de preuve US-204) + une réservation test réelle.
+**Effort** : M · **Deps** : US-IQ-03.
 
 ## US-IQ-05 — Porte 2 « Testez-nous sur du connu » (AAR)
 
@@ -67,9 +71,11 @@ admin standard avant restitution ; copy 3 locales.
 ## US-IQ-06 — Vue admin enrichie
 
 **Description** : `/admin/quotes` affiche le brief structuré (sections lisibles, pas un
-dump JSON), les sujets confidentiels, la branche de routage, le transcript (accès
-super-admin, mention de la purge J+90).
-**AC** : détail d'un devis montre le brief formaté ; filtre par branche ; aucune
+dump JSON), les sujets confidentiels, la branche de routage, et le **transcript complet —
+pièce durable du dossier de devis (ADR-IQ-07)**, jamais tronqué, présenté comme support
+d'établissement du devis et de préparation d'entretien.
+**AC** : détail d'un devis montre le brief formaté ET le transcript intégral ; filtre par
+branche ; lien vers la réservation Cal.com si `calcom_booking_uid` présent ; aucune
 régression sur les devis legacy (payload ancien format).
 **Effort** : S · **Deps** : US-IQ-03.
 
@@ -84,7 +90,8 @@ traçabilité `intake_session_id` → `simulation_ownership`.
 
 ## Hors périmètre V1 (parking lot, conditions de sortie)
 
-- Outil de calendrier intégré (sortie : > 5 entretiens/semaine planifiés manuellement).
+- Webhook Cal.com entrant (annulation/report de réservation → mise à jour session) —
+  sortie : premiers no-shows constatés ; V1 se contente du booking sortant.
 - Reprise de session cross-device (sortie : demande client réelle).
 - Agent vocal (sortie : jamais sans décision explicite d'Amine).
 - Guide d'entretien oral 20 min outillé (`problem-interview`/`discovery-interview-prep`) —

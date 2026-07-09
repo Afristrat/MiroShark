@@ -28,16 +28,43 @@ testable, stable — un LLM y introduirait de la variance et un vecteur d'inject
 **Signal de réexamen** : > 30 % de reroutages manuels par l'admin (les seuils sont faux —
 ajuster les RÈGLES, pas passer au LLM).
 
-## ADR-IQ-03 — Pas d'outil de calendrier en V1
+## ADR-IQ-03 — Créneaux d'entretien via Cal.com self-hosted EXISTANT (v2 — remplace la v1 du 2026-07-09 matin)
 
-**Quoi** : la branche entretien propose 2-3 créneaux par email (texte), pas de Cal.com ou
-équivalent.
-**Pourquoi** : YAGNI (Ponytail barreau 1) — volume actuel d'entretiens ≈ 0/semaine ; un
-outil de calendrier est une dépendance, une surface d'attaque et un coût de maintenance
-sans problème à résoudre aujourd'hui.
-**Alternatives rejetées** : Cal.com self-hosted (défendable plus tard, service Coolify
-en plus à opérer) ; Calendly (données prospects chez un tiers US).
-**Signal de réexamen** : > 5 entretiens/semaine planifiés manuellement.
+**Quoi** : la branche entretien envoie un lien de réservation Cal.com
+(`agenda.ai-mpower.com`, instance self-hosted déjà en production sur le serveur) vers un
+event type dédié « Entretien Bassira — 20 min », localisé selon la langue de session.
+**Pourquoi** : la v1 de cette ADR écartait l'outil de calendrier par YAGNI — prémisse
+FAUSSE : Cal.com était déjà installé et opéré sur l'infra (directive Amine 2026-07-09).
+Le YAGNI ne s'applique pas à un outil existant : l'utiliser est le barreau Ponytail 5
+(dépendance déjà installée), pas une dépendance nouvelle.
+**Contraintes techniques vérifiées (2026-07-09)** : l'API v2 tourne dans un service dédié
+(`calcom-api-…`, interne `localhost:3002`, health OK) ; la route publique
+`agenda.ai-mpower.com/api/*` est interceptée par un challenge Cloudflare → **le backend
+appelle l'API en réseau interne uniquement**, jamais via le hostname public. Clé :
+env Coolify `CALCOM_API_KEY` (POST envs Coolify = JSON minimal `{key, value}` — le champ
+`is_build_time` est refusé par cette version).
+**Alternatives rejetées** : créneaux par email en texte (v1 — remplacée) ; Calendly
+(données prospects chez un tiers US).
+**Signal de réexamen** : indisponibilité récurrente de l'instance Cal.com.
+
+## ADR-IQ-07 — Le transcript de qualification est une pièce DURABLE du dossier (directive Amine 2026-07-09)
+
+**Quoi** : l'échange utilisateur↔IA de l'étape B n'est JAMAIS perdu : il fait partie
+intégrante de la préqualification et du devis. Il est conservé tant que le dossier de
+devis / la relation commerciale existe, versionné avec le brief, visible dans la vue
+admin, et transmis comme contexte à l'équipe pour l'entretien et l'établissement du devis.
+**Pourquoi** : le transcript EST la matière du devis adaptatif — le purger (comme le
+proposait la v1 du doc 07 : purge J+90) détruirait la valeur du parcours. Directive
+explicite d'Amine : « je ne dois jamais le perdre ».
+**Conséquences** : (1) rétention alignée sur le dossier de devis (07-legal mis à jour —
+base : mesures précontractuelles puis exécution du contrat) ; (2) le prospect est informé
+que l'échange nourrit son devis (transparence, bandeau de l'étape B) ; (3) la purge ne
+subsiste QUE pour les sessions abandonnées sans devis (J+30) ; (4) l'export/suppression
+DSR inclut le transcript.
+**Alternatives rejetées** : purge J+90 (v1 — incompatible avec la fonction commerciale du
+transcript) ; anonymisation différée (détruirait le lien dossier↔échange).
+**Signal de réexamen** : demande de suppression RGPD d'un prospect non converti (procédure
+DSR à appliquer, cas par cas).
 
 ## ADR-IQ-04 — Confidentialité différée : flag SANS contenu
 

@@ -20,8 +20,8 @@
 |---|---|---|---|
 | Identité (nom, email, société) | Mesures précontractuelles (art. 6.1.b RGPD) | Déjà collectée aujourd'hui — inchangé | Durée de la relation commerciale |
 | Brief (décision, options, enjeux, geo) | Mesures précontractuelles | Fourchettes plutôt que montants exacts (A6) ; pas de données de personnes tierces sollicitées | Conservé avec le devis |
-| **Transcript de l'agent** | Mesures précontractuelles + intérêt légitime (qualification) | L'agent N'INVITE JAMAIS à écrire des données sensibles ; le tri confidentiel (flag sans contenu) est une mesure de **privacy by design** opposable | **Purge J+90** après complétion (pg_cron) — documentée dans la politique de confidentialité |
-| Sessions abandonnées | — | — | **Purge J+30** intégrale |
+| **Transcript de l'agent** | Mesures précontractuelles (art. 6.1.b) puis exécution du contrat — le transcript est une **pièce du dossier de devis** (ADR-IQ-07, directive Amine 2026-07-09) | L'agent N'INVITE JAMAIS à écrire des données sensibles ; le tri confidentiel (flag sans contenu) est une mesure de **privacy by design** opposable ; le prospect est INFORMÉ (bandeau étape B) que l'échange nourrit son devis | **Conservé avec le dossier de devis** pendant la relation commerciale ; inclus dans les DSR (export ET suppression sur demande) |
+| Sessions abandonnées sans devis | — | — | **Purge J+30** intégrale (seule purge automatique restante) |
 | `aar_known_outcome` (porte 2) | Mesures précontractuelles | Scellé (chiffrement applicatif ou hachage — ADR-IQ-05) : ni les admins ni l'agent n'y accèdent avant restitution | Purge avec la session si non convertie |
 
 - **Consentement** : la case `consent_rgpd` existante est conservée ; le texte doit être
@@ -47,10 +47,13 @@
 
 ## 4. Politique de confidentialité — mises à jour requises (même release)
 
-1. Section « Assistant de qualification (IA) » : finalité, rétention J+90, droit d'opposition
-   (bouton « Passer »).
+1. Section « Assistant de qualification (IA) » : finalité (l'échange fait partie du
+   dossier de devis), conservation pendant la relation commerciale, droit d'opposition
+   (bouton « Passer »), droits d'accès/suppression.
 2. Mention du sous-traitant LLM effectif (selon configuration gateway).
-3. Mention des purges automatiques J+30/J+90.
+3. Mention de la purge J+30 des sessions abandonnées sans devis.
+4. Mention de Cal.com self-hosted (réservation d'entretien — données restant sur l'infra
+   AI-MPower).
 
 ## 5. Risque spécifique documenté
 

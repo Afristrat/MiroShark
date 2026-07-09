@@ -70,19 +70,29 @@ UNIQUEMENT sur les réponses A1-A8 :
 
 Sortie : un **brief structuré** (JSON validé serveur, schéma en doc 02) = le « brief armé ».
 
+**Le transcript de cet échange est une pièce DURABLE du dossier** (ADR-IQ-07, directive
+Amine) : il fait partie intégrante de la préqualification, alimente l'établissement du
+devis, est transmis à l'équipe avant l'entretien, et n'est JAMAIS perdu tant que le
+dossier existe. Le prospect en est informé (bandeau de l'étape B).
+
 ### Étape C — Routage à 3 branches (règles déterministes, pas LLM)
 
 | Branche | Condition (sur le brief) | Sortie |
 |---|---|---|
 | **Self-service** | enjeu faible (A6 budget < 1 M MAD ET exposition ≤ sectorielle) ET échéance > 2 semaines | Redirection vers le package d'entrée adapté (Stripe existant, US-205) avec le brief attaché |
 | **Devis 48 h** | enjeu moyen, pas d'instance de gouvernance lourde | Devis pré-rempli généré côté admin sous 48 h ; email d'accusé contextualisé |
-| **Entretien 20 min** | instance = conseil/tutelle/investisseurs OU budget ≥ 10 M MAD OU ≥ 1 sujet confidentiel flaggé | Email proposant 2-3 créneaux (pas d'outil calendrier en V1, ADR-IQ-03) ; l'entretien démarre avec le brief armé + la liste des sujets confidentiels à couvrir |
+| **Entretien 20 min** | instance = conseil/tutelle/investisseurs OU budget ≥ 10 M MAD OU ≥ 1 sujet confidentiel flaggé | Lien de réservation **Cal.com** (`agenda.ai-mpower.com`, instance existante — ADR-IQ-03 v2), event type « Entretien Bassira — 20 min », page localisée selon la langue de session ; l'entretien démarre avec le brief armé + le transcript + la liste des sujets confidentiels à couvrir |
 
 ### Étape D — Email de confirmation contextualisé
 
 Remplace le générique actuel : « Votre décision : [A1] — échéance : [A3] — prochaine
 étape : [selon branche] ». Jamais de contenu flaggé confidentiel dans l'email. Liens
-bassira.ma (ADR-013), templates fr/en/ar (ADR-008).
+bassira.ma (ADR-013). Branche entretien : le lien de réservation Cal.com localisé est
+inclus dans l'email.
+
+**Règle transversale langue (directive Amine 2026-07-09)** : TOUTE correspondance et TOUT
+livrable du parcours suit la locale choisie par l'utilisateur — emails, page de
+réservation Cal.com, devis, PDF, relances — sans exception (prolonge ADR-008).
 
 ### Étape E — Porte 2 « Testez-nous sur du connu » (AAR)
 
@@ -94,7 +104,6 @@ Mécanisme issu de la chasse (AAR militaire + chef-d'œuvre, feature score 9).
 ## 4. Non-objectifs (V1)
 
 - Pas de paiement dans le parcours (le routage self-service renvoie au Checkout existant).
-- Pas d'outil de prise de rendez-vous intégré (créneaux proposés par email — ADR-IQ-03).
 - Pas de remplacement de l'entretien oral pour le palier haut : l'agent QUALIFIE et ARME,
   l'humain conclut.
 - Pas de voix (texte uniquement).
@@ -111,6 +120,9 @@ Mécanisme issu de la chasse (AAR militaire + chef-d'œuvre, feature score 9).
 ## 6. Liens avec l'existant
 
 - `quote_ownership.payload` (US-203) : le brief remplace/enrichit le payload actuel.
+- **Cal.com self-hosted existant** (`agenda.ai-mpower.com`) : réservation des entretiens —
+  API interne uniquement (`calcom-api`, localhost:3002 ; la route publique `/api/*` est
+  derrière un challenge Cloudflare, vérifié 2026-07-09), clé env `CALCOM_API_KEY`.
 - Console simulation : le brief pré-seede la création de scénario (US-IQ-07).
 - Chasse moat : M3 (surveillance des verdicts) consommera plus tard les hypothèses du brief.
 - Admin /admin/quotes : affichage du brief + sujets confidentiels (US-IQ-06).

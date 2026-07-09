@@ -53,8 +53,11 @@ modèle (ADR-IQ-06) devra passer ces évaluations.
 
 ## R6 — Fuite du transcript / données stratégiques avant NDA
 
-Cf. 07-legal §5. Contre-mesures : tri confidentiel (ADR-IQ-04), purge J+90, accès
-super-admin uniquement, pas de transcript dans les emails ni les exports.
+Cf. 07-legal §5. Le transcript étant désormais DURABLE (ADR-IQ-07 — jamais purgé tant que
+le dossier existe), l'exposition est accrue : la protection repose sur l'accès (restreint
+super-admin), le tri confidentiel en amont (ADR-IQ-04 — le contenu sensible n'entre
+jamais dans le transcript), l'absence de transcript dans les emails, et l'inclusion dans
+les DSR. La purge n'est PLUS une contre-mesure disponible : ne pas la réintroduire.
 
 ## R7 — Hallucination d'engagements (prix, délais, périmètre)
 

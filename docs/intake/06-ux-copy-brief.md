@@ -20,8 +20,14 @@
 1. **3 écrans, un temps par écran**, barre de progression discrète (1/3 → 3/3). Jamais les
    8 questions sur une page.
 2. **L'agent est un écran à part**, clairement optionnel : « Affiner votre brief avec
-   notre assistant (2-3 minutes) » + bouton « Passer directement ». Bandeau permanent :
-   « Vous échangez avec l'assistant de qualification Bassira — une IA » (AI Act art. 50).
+   notre assistant (2-3 minutes) » + bouton « Passer directement ». Bandeau permanent
+   double mention : « Vous échangez avec l'assistant de qualification Bassira — une IA.
+   Cet échange fait partie de votre dossier et nourrit votre devis. » (AI Act art. 50 +
+   transparence ADR-IQ-07).
+2bis. **La réservation d'entretien** (branche entretien) s'affiche dans la langue de
+   session : le lien Cal.com généré porte le paramètre de locale, et le nom de l'event
+   type est localisé. Règle transversale : AUCUNE sortie (écran, email, page de
+   réservation, devis) dans une autre langue que celle choisie par l'utilisateur.
 3. **Le flag confidentiel est un moment d'UX, pas une case** : quand l'agent propose de
    différer un sujet, le prospect voit une pastille « 🔒 Réservé à l'échange de vive
    voix » s'ajouter à une liste visible — la confidentialité devient une preuve de sérieux
