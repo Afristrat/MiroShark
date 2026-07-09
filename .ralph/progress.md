@@ -52,6 +52,35 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 
 ## Log d'itérations
 
+### 2026-07-09 — Fix bloquant Checkout Stripe self-service (régression US-205)
+
+- **Symptôme signalé par Amine en usage réel** : clic sur un CTA d'achat self-service
+  (`/offres`) → `TypeError: Cannot read properties of undefined (reading 'checkout_url')`,
+  aucune redirection Stripe.
+- **Cause racine** : `frontend/src/api/index.js` — l'intercepteur de réponse axios (ligne 58)
+  résout déjà `response.data` (le body JSON `{success, data}`), donc toute fonction API de ce
+  fichier retourne directement ce body, pas un objet axios standard. `OffersView.vue::onCtaClick`
+  faisait `const { data } = await createCheckoutSession(...)` (= `res.data` =
+  `{checkout_url}`) puis lisait `data.data.checkout_url` — double unwrap, `undefined.checkout_url`.
+  Convention correcte du repo (déjà utilisée ailleurs, ex. `AnalyticsView.vue:525-526`) :
+  `const res = await apiCall(); res.data.xxx`.
+- **Fix** : `res.data.checkout_url` au lieu de `data.data.checkout_url` (1 ligne,
+  `OffersView.vue:690-691`). Commit `fbb53ae`, déployé et vérifié.
+- **Vérification** : Chrome (Claude-in-Chrome) indisponible dans la session (extension non
+  connectée) → repli sur Playwright (outil E2E natif du repo, pas un workaround) : script ad
+  hoc (non committé) naviguant sur `/offres?lang=fr`, cliquant le vrai bouton « Valider mon
+  PMF » (`.offers-card-cta`), écoutant les erreurs console + la navigation. Résultat : clic
+  réel → redirection vers une vraie session `cs_live_...checkout.stripe.com`, **zéro erreur
+  console**. Preuve concrète du comportement observé, pas juste relecture de code.
+- **Piège consolidé** : `gotoLocalized`/tout accès direct à une route localisée nécessite
+  `?lang=<locale>` en query param (`withLocale()` dans `tests/e2e/helpers.ts`) — sans lui,
+  `/offres` seul ne rend pas forcément le FR attendu et les sélecteurs texte-FR ne matchent
+  rien (piège rencontré en écrivant la vérification ad hoc).
+- **Non détecté par les gates existants** : aucun test (unitaire ou E2E) n'exerçait le clic
+  réel du CTA self-service jusqu'à la redirection — les smoke tests `/offres` ne vérifient que
+  l'affichage du carousel, pas l'action d'achat. Lacune de couverture à considérer pour une
+  future story (hors scope de ce fix immédiat, capturé ici pour ne pas le reperdre).
+
 ### 2026-07-09 — US-207 Serveur WSGI prod + Config.validate() fail-closed (V2-A-blocA)
 
 - **Statut** : passes:true — code posé, déployé et vérifié en prod ce jour.
