@@ -312,6 +312,50 @@ class TestAdminQuotesEndpoints:
         assert body["data"]["payload"]["full_name"] == "Karim Bensaid"
         assert body["data"]["status"]["status"] == "received"
 
+    def test_get_detail_exposes_intake_confidential_flags(
+        self, client, isolated_quotes_dir, whitelist_env, jwt_secret, super_admin_email, monkeypatch
+    ):
+        """US-IQ-03 — branche entretien : les sujets confidentiels flaggés
+        doivent être récupérables via l'API admin détail devis."""
+        path = _create_quote(isolated_quotes_dir, "q_iq030001")
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        payload["intake_session_id"] = "intake-sess-abc"
+        path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+        from app.api import quote as quote_api
+
+        monkeypatch.setattr(
+            quote_api.intake_service,
+            "get_session",
+            lambda session_id, **_kw: {
+                "state": "completed",
+                "route": "meeting",
+                "confidential_flags": [{"topic_label": "structure actionnariale", "flagged_at": "2026-07-10T10:00:00Z"}],
+            } if session_id == "intake-sess-abc" else None,
+        )
+
+        token = _make_token(jwt_secret, super_admin_email)
+        resp = client.get(
+            "/api/admin/quotes/q_iq030001",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert resp.status_code == 200
+        body = resp.get_json()
+        assert body["data"]["intake"]["route"] == "meeting"
+        assert body["data"]["intake"]["confidential_flags"][0]["topic_label"] == "structure actionnariale"
+
+    def test_get_detail_no_intake_session_returns_none(
+        self, client, isolated_quotes_dir, whitelist_env, jwt_secret, super_admin_email
+    ):
+        _create_quote(isolated_quotes_dir, "q_iq030002")
+        token = _make_token(jwt_secret, super_admin_email)
+        resp = client.get(
+            "/api/admin/quotes/q_iq030002",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert resp.status_code == 200
+        assert resp.get_json()["data"]["intake"] is None
+
     def test_get_detail_404(
         self, client, isolated_quotes_dir, whitelist_env, jwt_secret, super_admin_email
     ):

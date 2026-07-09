@@ -61,6 +61,7 @@ def create_checkout_session(
     package_id: str,
     currency: str,
     customer_email: Optional[str] = None,
+    intake_session_id: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Crée une Checkout Session Stripe hébergée pour un package d'entrée.
 
@@ -68,6 +69,10 @@ def create_checkout_session(
         package_id: doit être une clé de ``PACKAGE_PRICE_IDS``.
         currency: ``mad``, ``usd`` ou ``eur`` (insensible à la casse).
         customer_email: pré-remplit l'email sur la page Stripe (optionnel).
+        intake_session_id: si le checkout provient de la branche self-service
+            du parcours de qualification (US-IQ-03), propagé en metadata pour
+            relier la session Stripe au brief — le webhook existant (US-205)
+            n'est PAS modifié pour l'exploiter (cf. docs/intake/05-integrations.md).
 
     Returns:
         Le JSON de la Checkout Session Stripe (contient ``id`` et ``url``
@@ -98,6 +103,8 @@ def create_checkout_session(
     }
     if customer_email:
         data["customer_email"] = customer_email
+    if intake_session_id:
+        data["metadata[intake_session_id]"] = intake_session_id
 
     resp = requests.post(
         f"{_API_BASE}/checkout/sessions",

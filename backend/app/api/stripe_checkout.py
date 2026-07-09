@@ -70,6 +70,9 @@ def post_create_checkout_session():
     package_id = (body.get("package_id") or "").strip()
     currency = (body.get("currency") or "").strip().lower()
     customer_email = (body.get("customer_email") or "").strip() or None
+    # US-IQ-03 : propagé par le front quand le checkout provient de la
+    # branche self-service du parcours de qualification (jamais requis).
+    intake_session_id = (body.get("intake_session_id") or "").strip() or None
 
     if package_id not in PACKAGE_PRICE_IDS:
         return jsonify({
@@ -83,6 +86,7 @@ def post_create_checkout_session():
             package_id=package_id,
             currency=currency,
             customer_email=customer_email,
+            intake_session_id=intake_session_id,
         )
     except ValueError as exc:
         return jsonify({"success": False, "error_code": "INVALID_REQUEST", "error": str(exc)}), 400
