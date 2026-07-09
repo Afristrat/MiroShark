@@ -4657,6 +4657,168 @@
         "adr": "docs/08-decisions-log.md"
       },
       "completedAt": null
+    },
+    {
+      "id": "US-IQ-01",
+      "chantier": "V2-B-intake",
+      "title": "Formulaire structuré 3 temps (sans agent)",
+      "description": "Remplacer le formulaire /devis actuel par le parcours A1-A8 (docs/intake/01-intake-spec.md §3, étape A) : 3 écrans (la décision / le passé / l'enjeu et la matière), A1/A2/A7 bloquants côté client ET serveur. Écriture dans une nouvelle table intake_sessions (state='form_submitted') + quote_ownership comme aujourd'hui (rétrocompatible).",
+      "acceptanceCriteria": [
+        "Les 8 questions (A1-A8) réparties en 3 écrans, présentes en fr/en/ar avec parité de clés vérifiée par script (pattern US-201) — zéro clé manquante dans les 3 locales, RTL correct en arabe",
+        "A1 (décision, ≥15 caractères), A2 (options, ≥2 éléments), A7 (pays+segment) sont bloquants côté client ET rejetés en 400 côté serveur si absents — un payload aussi pauvre que q_f767321b (2026-07-09) devient impossible par construction",
+        "Migration SQL de la table intake_sessions (schéma docs/intake/02-data-dictionary-delta.md) posée + delta fusionné dans docs/02-data-dictionary.md dans le même commit",
+        "Micro-copy de réciprocité visible sur chaque écran (\"pourquoi cette question\")",
+        "Aucun secret Stripe/LLM/Cal.com hardcodé (env uniquement)",
+        "pytest (validation jsonschema du brief, machine à états, rejet 400) + npm run build + Playwright (parcours 3 écrans, fr/en/ar) verts"
+      ],
+      "passes": false,
+      "dependencies": [],
+      "metadata": {
+        "origin": "docs/intake/04-feature-backlog.md (US-IQ-01)",
+        "adr": "docs/intake/08-decisions-log.md"
+      },
+      "completedAt": null
+    },
+    {
+      "id": "US-IQ-02",
+      "chantier": "V2-B-intake",
+      "title": "Agent conversationnel de qualification (étape B)",
+      "description": "Endpoint backend + UI chat post-formulaire (docs/intake/01 étape B). System prompt docs/intake/10-execution-prompts.md §10.1, via llm_client.py/gateway LiteLLM (ADR-004). Budget 7 tours (compteur serveur), disclosure IA au 1er message (AI Act art. 50), tri confidentiel (flags sans contenu, ADR-IQ-04), production des agent_insights. Transcript persisté tour par tour, jamais perdu (ADR-IQ-07).",
+      "acceptanceCriteria": [
+        "Endpoint POST /api/intake/session/<id>/agent/turn appelle llm_client.py exclusivement ; modèle lu depuis env INTAKE_LLM_MODEL (défaut LLM_MODEL_NAME) — aucun nom de modèle en dur (ADR-IQ-06)",
+        "System prompt conforme à docs/intake/10-execution-prompts.md §10.1 intégré tel quel",
+        "Grille d'évaluation §10.3 : 10/10 critères automatiques (1-8) passent sur 100% d'un corpus fixture ≥10 transcripts synthétiques (fr/en/ar, injection, darija, demande de prix, demande de prédiction) ; critères 9-10 documentés en revue humaine",
+        "8e tour refusé serveur (403 + clé i18n) même si redemandé côté client ; compteur agent_turns vérifié en base, jamais côté front",
+        "Sur le cas dédié du corpus : confidential_flags contient un topic_label SANS contenu, absent du brief et de tout email généré ensuite (test dédié)",
+        "Chaque tour de conversation est persisté en base immédiatement (pas seulement à la clôture) — un abandon en cours de chat ne perd aucun tour déjà joué (ADR-IQ-07)",
+        "Rate limit par IP + timeout 30s + repli gracieux si gateway down (état passe direct à 'completed', warning loggé, pas de blocage du worker)",
+        "Sortie agent strictement JSON validée jsonschema serveur ; tour rejeté si JSON invalide ; l'agent n'a aucun tool/function-calling",
+        "Le champ aar_known_outcome n'apparaît JAMAIS dans le contexte construit pour l'agent (test unitaire dédié qui échoue si présent)",
+        "pytest (llm_client mocké, aucun appel réel en test) + ruff + npm build verts"
+      ],
+      "passes": false,
+      "dependencies": [
+        "US-IQ-01"
+      ],
+      "metadata": {
+        "origin": "docs/intake/04-feature-backlog.md (US-IQ-02)",
+        "adr": "docs/intake/08-decisions-log.md"
+      },
+      "completedAt": null
+    },
+    {
+      "id": "US-IQ-03",
+      "chantier": "V2-B-intake",
+      "title": "Routage à 3 branches + machine à états",
+      "description": "Règles déterministes de docs/intake/01 §3.C (self-service / devis 48h / entretien) — AUCUN LLM dans le routage. Transitions d'état contraintes en SQL (invariante, pas code applicatif).",
+      "acceptanceCriteria": [
+        "Fonction de routage 100% déterministe implémentant exactement la table de décision de docs/intake/01 §3.C",
+        "Table de vérité exhaustive testée : chaque combinaison enjeu(A6)×gouvernance(A3)×échéance×flags confidentiels → branche attendue, couverte par tests unitaires paramétrés",
+        "Transitions d'état intake_sessions.state contraintes en SQL (trigger empêchant ex. completed→started)",
+        "Branche self-service : intake_session_id propagé en metadata de la Checkout Session Stripe (create_checkout_session existant, US-205) sans modification du webhook",
+        "Branche entretien : sujets confidentiels flaggés listés et récupérables via l'API admin",
+        "pytest + ruff + npm build verts"
+      ],
+      "passes": false,
+      "dependencies": [
+        "US-IQ-01"
+      ],
+      "metadata": {
+        "origin": "docs/intake/04-feature-backlog.md (US-IQ-03)",
+        "adr": "docs/intake/08-decisions-log.md"
+      },
+      "completedAt": null
+    },
+    {
+      "id": "US-IQ-04",
+      "chantier": "V2-B-intake",
+      "title": "Emails contextualisés + réservation Cal.com",
+      "description": "Refonte de quote_received.html (+ variantes par branche) : décision, échéance, prochaine étape explicite, dans la locale de session (règle transversale langue). Branche entretien : lien de réservation Cal.com self-hosted existant (agenda.ai-mpower.com, ADR-IQ-03 v2), event type \"Entretien Bassira — 20 min\", API appelée EXCLUSIVEMENT en réseau interne (localhost:3002, la route publique /api/* est derrière un challenge Cloudflare).",
+      "acceptanceCriteria": [
+        "Email reflète A1/A3/branche ; AUCUN contenu flaggé confidentiel ; tout contenu prospect échappé HTML (auditer quote_received.html existant pour l'injection HTML, docs/intake/09 R1)",
+        "Email ET page de réservation Cal.com dans la locale de session (fr/en/ar) — aucune sortie dans une autre langue que celle choisie par l'utilisateur",
+        "Appels API Cal.com exclusivement en réseau interne (service calcom-api, localhost:3002 ou réseau Docker équivalent) — jamais via le hostname public agenda.ai-mpower.com",
+        "Clé CALCOM_API_KEY lue depuis l'environnement backend uniquement, jamais exposée au frontend",
+        "Lien de réservation généré pour l'event type \"Entretien Bassira — 20 min\" ; calcom_booking_uid posé sur intake_sessions à la confirmation",
+        "Envoi email réel vérifié en prod (pattern de preuve US-204) + une réservation Cal.com test réelle documentée dans .ralph/progress.md",
+        "pytest (Resend et Cal.com mockés) + ruff + npm build verts"
+      ],
+      "passes": false,
+      "dependencies": [
+        "US-IQ-03"
+      ],
+      "metadata": {
+        "origin": "docs/intake/04-feature-backlog.md (US-IQ-04)",
+        "adr": "docs/intake/08-decisions-log.md"
+      },
+      "completedAt": null
+    },
+    {
+      "id": "US-IQ-05",
+      "chantier": "V2-B-intake",
+      "title": "Porte 2 \"Testez-nous sur du connu\" (AAR)",
+      "description": "Entrée alternative sur /devis et /offres (docs/intake/01 étape E) : même parcours, champ A3 remplacé par \"quelle a été l'issue réelle ?\", scellé dès l'écriture (ADR-IQ-05) — ni l'agent ni les admins n'y accèdent avant restitution.",
+      "acceptanceCriteria": [
+        "CTA \"Testez-nous sur une décision déjà tranchée\" visible sur /devis et /offres, copy dans les 3 locales",
+        "entry_door='aar' posé à la création de session",
+        "Le champ issue réelle est scellé dès l'écriture (chiffrement applicatif OU hachage+révélation différée, ADR-IQ-05) — test unitaire prouvant qu'il n'apparaît dans AUCUN contexte construit pour l'agent (US-IQ-02) ni pour le pré-seed simulation (US-IQ-07)",
+        "Parcours complet porte 2 fonctionnel de bout en bout (formulaire adapté → agent → routage)",
+        "pytest + ruff + npm build + Playwright (parcours porte 2) verts"
+      ],
+      "passes": false,
+      "dependencies": [
+        "US-IQ-01"
+      ],
+      "metadata": {
+        "origin": "docs/intake/04-feature-backlog.md (US-IQ-05)",
+        "adr": "docs/intake/08-decisions-log.md"
+      },
+      "completedAt": null
+    },
+    {
+      "id": "US-IQ-06",
+      "chantier": "V2-B-intake",
+      "title": "Vue admin enrichie (brief, transcript, routage)",
+      "description": "/admin/quotes affiche le brief structuré en sections lisibles, les sujets confidentiels, la branche de routage, et le transcript COMPLET de qualification — pièce durable du dossier de devis (ADR-IQ-07), jamais tronqué ni purgé.",
+      "acceptanceCriteria": [
+        "Détail d'un devis montre le brief formaté (sections lisibles, pas un dump JSON) ET le transcript intégral, présentés comme support d'établissement du devis et de préparation d'entretien",
+        "Filtre par branche de routage dans la liste des devis",
+        "Lien direct vers la réservation Cal.com affiché si calcom_booking_uid présent",
+        "Aucune régression sur l'affichage des devis legacy (payload ancien format US-203, sans intake_session_id)",
+        "Accès restreint super-admin (pattern @require_super_admin existant)",
+        "pytest + ruff + npm build + Playwright verts"
+      ],
+      "passes": false,
+      "dependencies": [
+        "US-IQ-03"
+      ],
+      "metadata": {
+        "origin": "docs/intake/04-feature-backlog.md (US-IQ-06)",
+        "adr": "docs/intake/08-decisions-log.md"
+      },
+      "completedAt": null
+    },
+    {
+      "id": "US-IQ-07",
+      "chantier": "V2-B-intake",
+      "title": "Pré-seed de simulation depuis le brief",
+      "description": "Depuis la console (super-admin ou self-service), \"créer une simulation depuis ce devis\" : decision→scénario, options→forks contrefactuels, geo→population cible, data_assets→rappel d'ancrage.",
+      "acceptanceCriteria": [
+        "Action \"Créer une simulation depuis ce devis\" disponible côté console selon les droits existants (super-admin / self-service org)",
+        "Scénario pré-rempli et éditable : champ décision → texte scénario, options → forks contrefactuels, geo → population cible, data_assets → rappel d'ancrage affiché à l'utilisateur",
+        "Traçabilité intake_session_id → simulation_ownership vérifiable en base",
+        "Le champ aar_known_outcome (porte 2) n'est JAMAIS lu par cette fonctionnalité (test unitaire partagé avec US-IQ-05)",
+        "pytest + ruff + npm build verts"
+      ],
+      "passes": false,
+      "dependencies": [
+        "US-IQ-03"
+      ],
+      "metadata": {
+        "origin": "docs/intake/04-feature-backlog.md (US-IQ-07)",
+        "adr": "docs/intake/08-decisions-log.md"
+      },
+      "completedAt": null
     }
   ]
 }
