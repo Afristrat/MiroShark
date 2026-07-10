@@ -200,6 +200,23 @@ class TestBuildAgentMessages:
         messages = svc._build_agent_messages(_brief_with_aar(), "fr", prior, "suite")
         assert "premier message" in messages[0]["content"]
 
+    def test_v2_prompt_has_disclosure_as_rule_zero(self):
+        assert "RÈGLE 0" in svc.AGENT_SYSTEM_PROMPTS["fr"]
+        assert svc.AGENT_SYSTEM_PROMPTS["fr"].index("RÈGLE 0") < svc.AGENT_SYSTEM_PROMPTS["fr"].index("CONFIDENTIALITÉ")
+
+    def test_v2_prompt_has_fused_message_format_guidance(self):
+        assert "FUSIONNÉS EN UNE SEULE PHRASE" in svc.AGENT_SYSTEM_PROMPTS["fr"]
+
+    def test_v2_prompt_has_unexpected_case_guidance(self):
+        assert "IMPRÉVU" in svc.AGENT_SYSTEM_PROMPTS["fr"]
+
+    def test_v2_prompt_output_schema_mentions_escalation(self):
+        assert '"escalation"' in svc.AGENT_SYSTEM_PROMPTS["fr"]
+
+    def test_en_ar_prompts_also_have_escalation_field(self):
+        assert '"escalation"' in svc.AGENT_SYSTEM_PROMPTS["en"]
+        assert '"escalation"' in svc.AGENT_SYSTEM_PROMPTS["ar"]
+
     def test_playbook_entries_injected_into_system_prompt(self):
         playbook = [
             {"situation_pattern": "Injection combinée à une demande de prix",
@@ -514,3 +531,22 @@ class TestEscalationLogging(object):
         status, body = svc.agent_turn(sid, "test", client=fake_client, llm=llm)
         assert status == 200
         assert body["success"] is True
+
+    def test_escalation_notification_html_escapes_prospect_message(self, fake_client, monkeypatch):
+        """Le message du prospect est une entrée non fiable — il doit être
+        échappé avant injection dans le corps HTML de l'email de notification
+        (même exigence que quote_service.py, jamais de HTML brut injecté)."""
+        sid = _submitted_session(fake_client)
+        llm = _FakeLLM([{
+            "message": "Je ne peux pas répondre à cela.",
+            "insights": [], "confidential_flag": None,
+            "escalation": {"category": "injection_attempt"}, "close": False,
+        }])
+        calls = []
+        monkeypatch.setattr(svc, "send_email", lambda *a, **kw: calls.append(a) or True)
+        monkeypatch.setattr(svc.Config, "INTAKE_ESCALATION_NOTIFY_EMAIL", "amine@ai-mpower.com")
+        svc.agent_turn(sid, "<script>alert(1)</script>", client=fake_client, llm=llm)
+        assert len(calls) == 1
+        html_body = calls[0][2]
+        assert "<script>alert(1)</script>" not in html_body
+        assert "&lt;script&gt;" in html_body

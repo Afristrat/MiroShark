@@ -24,6 +24,7 @@ persistante sur volume éphémère »). Une panne Supabase retourne 503.
 
 from __future__ import annotations
 
+import html
 import json
 import uuid
 from datetime import datetime, timezone
@@ -989,12 +990,12 @@ def _log_escalation(
     try:
         send_email(
             notify_email,
-            f"[Bassira] Escalade agent Intake — {category}",
+            f"[Bassira] Escalade agent Intake — {html.escape(category)}",
             (
-                f"<p><strong>Session :</strong> {session_id}</p>"
-                f"<p><strong>Catégorie :</strong> {category}</p>"
-                f"<p><strong>Message prospect :</strong> {user_message}</p>"
-                f"<p><strong>Réponse agent :</strong> {agent_message}</p>"
+                f"<p><strong>Session :</strong> {html.escape(session_id)}</p>"
+                f"<p><strong>Catégorie :</strong> {html.escape(category)}</p>"
+                f"<p><strong>Message prospect :</strong> {html.escape(user_message)}</p>"
+                f"<p><strong>Réponse agent :</strong> {html.escape(agent_message)}</p>"
             ),
         )
     except Exception as exc:  # noqa: BLE001 — jamais casser le tour pour une notif
