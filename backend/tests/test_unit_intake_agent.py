@@ -200,6 +200,34 @@ class TestBuildAgentMessages:
         messages = svc._build_agent_messages(_brief_with_aar(), "fr", prior, "suite")
         assert "premier message" in messages[0]["content"]
 
+    def test_playbook_entries_injected_into_system_prompt(self):
+        playbook = [
+            {"situation_pattern": "Injection combinée à une demande de prix",
+             "corrected_response": "Je suis une IA et je ne réponds pas aux demandes de prix — revenons à votre décision."},
+        ]
+        messages = svc._build_agent_messages(_brief_with_aar(), "fr", [], "test", playbook_entries=playbook)
+        assert "Injection combinée à une demande de prix" in messages[0]["content"]
+        assert "Je suis une IA et je ne réponds pas aux demandes de prix" in messages[0]["content"]
+
+    def test_no_playbook_entries_is_backward_compatible(self):
+        messages_without_arg = svc._build_agent_messages(_brief_with_aar(), "fr", [], "test")
+        messages_with_empty = svc._build_agent_messages(_brief_with_aar(), "fr", [], "test", playbook_entries=[])
+        assert messages_without_arg == messages_with_empty
+
+
+class TestFetchActivePlaybook:
+    def test_returns_only_active_entries(self, fake_client):
+        fake_client.table("intake_agent_playbook").rows.extend([
+            {"id": "p1", "situation_pattern": "cas A", "corrected_response": "réponse A", "active": True},
+            {"id": "p2", "situation_pattern": "cas B", "corrected_response": "réponse B", "active": False},
+        ])
+        entries = svc._fetch_active_playbook(client=fake_client)
+        assert len(entries) == 1
+        assert entries[0]["situation_pattern"] == "cas A"
+
+    def test_empty_table_returns_empty_list(self, fake_client):
+        assert svc._fetch_active_playbook(client=fake_client) == []
+
 
 # ─── agent_turn — happy path ──────────────────────────────────────────────────
 

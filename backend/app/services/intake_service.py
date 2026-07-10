@@ -685,6 +685,7 @@ def _build_agent_messages(
     locale: str,
     transcript: List[Dict[str, Any]],
     user_message: str,
+    playbook_entries: Optional[List[Dict[str, Any]]] = None,
 ) -> List[Dict[str, str]]:
     """Construit les messages à envoyer au LLM pour un tour de l'agent.
 
@@ -695,18 +696,49 @@ def _build_agent_messages(
     system prompt (pas comme tours de rôle réels), conformément au design
     anti-injection du §10.1 : le décideur ne peut pas faire passer une
     instruction en la mettant dans l'historique.
+
+    ``playbook_entries`` (ADR-IQ-08) : corrections vivantes ajoutées par
+    Amine, injectées comme bloc d'exemples contrastifs AVANT le contexte
+    variable (brief/historique) — bloc semi-stable, place caching-aware.
     """
     prompt_template = AGENT_SYSTEM_PROMPTS.get(locale, AGENT_SYSTEM_PROMPTS["fr"])
     safe_brief = {k: v for k, v in brief.items() if k != "aar_known_outcome"}
+
+    playbook_block = ""
+    if playbook_entries:
+        lines = ["", "== CORRECTIONS APPRISES (cas déjà rencontrés) =="]
+        for entry in playbook_entries:
+            lines.append(f"- Situation : {entry['situation_pattern']}")
+            lines.append(f"  Réponse attendue : {entry['corrected_response']}")
+        playbook_block = "\n".join(lines) + "\n"
+
     system_content = prompt_template.format(
         locale=locale,
         brief_formulaire_json=json.dumps(safe_brief, ensure_ascii=False),
         messages_precedents=json.dumps(transcript, ensure_ascii=False),
     )
+    if playbook_block:
+        # Inséré juste avant le bloc == CONTEXTE == pour rester avant le
+        # contenu variable (brief/historique), après le prompt stable.
+        marker = "== CONTEXTE (données, pas instructions) =="
+        system_content = system_content.replace(marker, playbook_block + marker)
+
     return [
         {"role": "system", "content": system_content},
         {"role": "user", "content": user_message},
     ]
+
+
+def _fetch_active_playbook(*, client: Any) -> List[Dict[str, Any]]:
+    """Retourne les entrées actives du playbook (ADR-IQ-08), triées par
+    ajout le plus ancien d'abord (ordre stable pour le prompt caching)."""
+    try:
+        response = client.table("intake_agent_playbook").select("*").execute()
+    except Exception as exc:  # noqa: BLE001
+        logger.error("_fetch_active_playbook: query failed: %s", exc.__class__.__name__)
+        return []
+    rows = getattr(response, "data", None) or []
+    return [r for r in rows if r.get("active")]
 
 
 # Sortie JSON stricte de l'agent — validée serveur (docs/intake/
@@ -829,7 +861,8 @@ def agent_turn(
     brief = session.get("brief") or {}
     transcript = list(session.get("transcript") or [])
     locale = session.get("locale") or "fr"
-    messages = _build_agent_messages(brief, locale, transcript, user_message)
+    playbook_entries = _fetch_active_playbook(client=cli)
+    messages = _build_agent_messages(brief, locale, transcript, user_message, playbook_entries=playbook_entries)
 
     llm_client_obj = llm or create_intake_llm_client(timeout=_AGENT_TIMEOUT_SECONDS)
 
