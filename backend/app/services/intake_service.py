@@ -32,6 +32,8 @@ from typing import Any, Dict, List, Optional, Tuple
 import jsonschema
 
 from ..auth.supabase_client import SupabaseConfigError, get_default_super_admin_org_id, get_supabase_admin
+from ..config import Config
+from ..utils.llm_client import create_llm_client
 from ..utils.logger import get_logger
 from . import quote_ownership as qo
 
@@ -745,3 +747,159 @@ def _validate_agent_output(data: Dict[str, Any]) -> Optional[str]:
     except jsonschema.ValidationError as exc:
         return f"Agent output failed schema validation: {exc.validator} at {list(exc.path)}"
     return None
+
+
+_AGENT_ACTIVATABLE_STATES = {"form_submitted", "agent_active"}
+_AGENT_MAX_TURNS = 7
+_AGENT_TIMEOUT_SECONDS = 30.0
+_AGENT_TEMPERATURE = 0.3
+_AGENT_MAX_TOKENS = 1024
+
+
+def agent_turn(
+    session_id: str,
+    user_message: str,
+    *,
+    client: Any = None,
+    llm: Any = None,
+) -> Tuple[int, Dict[str, Any]]:
+    """Un tour de l'agent conversationnel de qualification (étape B).
+
+    Retourne ``(http_status, body)``. Persiste le tour (user + assistant)
+    IMMÉDIATEMENT — un abandon en cours de chat ne perd aucun tour déjà
+    joué (ADR-IQ-07). Le budget de 7 tours est vérifié EN BASE avant tout
+    appel LLM (jamais côté front). Si l'agent clôt (``close: true``), la
+    branche de routage est calculée via ``_decide_route`` (US-IQ-03) et la
+    session passe à ``completed`` — même contrat de sortie que
+    ``complete_routing``.
+    """
+    if not session_id or not isinstance(session_id, str):
+        return 400, {"success": False, "error_code": "MISSING_FIELD", "error": "session_id is required."}
+    if not isinstance(user_message, str) or not user_message.strip():
+        return 400, {"success": False, "error_code": "MISSING_FIELD", "error": "user_message is required."}
+
+    cli = client or get_supabase_admin()
+
+    try:
+        session = _get_session(session_id, client=cli)
+    except Exception as exc:  # noqa: BLE001
+        logger.error("agent_turn: session lookup failed for %s: %s", session_id, exc.__class__.__name__)
+        return 503, {"success": False, "error_code": "SUPABASE_UNAVAILABLE", "error": "Could not reach storage."}
+
+    if session is None:
+        return 404, {"success": False, "error_code": "SESSION_NOT_FOUND", "error": "Intake session not found."}
+
+    if session["state"] not in _AGENT_ACTIVATABLE_STATES:
+        return 409, {
+            "success": False,
+            "error_code": "INVALID_STATE",
+            "error": f"Session is in state {session['state']!r}, expected one of {sorted(_AGENT_ACTIVATABLE_STATES)}.",
+        }
+
+    agent_turns = session.get("agent_turns") or 0
+    if agent_turns >= _AGENT_MAX_TURNS:
+        return 403, {
+            "success": False,
+            "error_code": "AGENT_BUDGET_EXHAUSTED",
+            "error": "Maximum agent turns (7) already reached for this session.",
+        }
+
+    brief = session.get("brief") or {}
+    transcript = list(session.get("transcript") or [])
+    locale = session.get("locale") or "fr"
+    messages = _build_agent_messages(brief, locale, transcript, user_message)
+
+    llm_client_obj = llm or create_llm_client(
+        model=Config.INTAKE_LLM_MODEL or None,
+        timeout=_AGENT_TIMEOUT_SECONDS,
+    )
+
+    try:
+        raw_output = llm_client_obj.chat_json(
+            messages,
+            temperature=_AGENT_TEMPERATURE,
+            max_tokens=_AGENT_MAX_TOKENS,
+        )
+    except Exception as exc:  # noqa: BLE001 — repli gracieux (AC US-IQ-02)
+        logger.warning(
+            "agent_turn: LLM gateway unavailable for session %s, closing gracefully: %s",
+            session_id, exc.__class__.__name__,
+        )
+        return _close_session_gracefully(session_id, brief, session.get("confidential_flags"), client=cli)
+
+    validation_error = _validate_agent_output(raw_output if isinstance(raw_output, dict) else {})
+    if validation_error is not None:
+        logger.warning("agent_turn: invalid agent output for session %s: %s", session_id, validation_error)
+        return 502, {
+            "success": False,
+            "error_code": "AGENT_INVALID_OUTPUT",
+            "error": "The qualification agent returned an invalid response. Please retry.",
+        }
+
+    now_iso = datetime.now(timezone.utc).isoformat()
+    new_transcript = transcript + [
+        {"role": "user", "content": user_message, "ts": now_iso},
+        {"role": "assistant", "content": raw_output["message"], "ts": now_iso},
+    ]
+    new_turns = agent_turns + 1
+
+    confidential_flags = list(session.get("confidential_flags") or [])
+    flag = raw_output.get("confidential_flag")
+    if flag:
+        confidential_flags.append({"topic_label": flag["topic_label"], "flagged_at": now_iso})
+
+    update_row: Dict[str, Any] = {
+        "transcript": new_transcript,
+        "agent_turns": new_turns,
+        "confidential_flags": confidential_flags,
+        "state": "agent_active",
+    }
+
+    if raw_output.get("close"):
+        route = _decide_route(brief, confidential_flags)
+        update_row["state"] = "completed"
+        update_row["route"] = route
+        update_row["completed_at"] = now_iso
+
+    try:
+        cli.table("intake_sessions").update(update_row).eq("id", session_id).execute()
+    except Exception as exc:  # noqa: BLE001
+        logger.error("agent_turn: intake_sessions update failed for %s: %s", session_id, exc.__class__.__name__)
+        return 503, {"success": False, "error_code": "SUPABASE_UNAVAILABLE", "error": "Could not persist the turn."}
+
+    data: Dict[str, Any] = {
+        "session_id": session_id,
+        "state": update_row["state"],
+        "agent_turns": new_turns,
+        "message": raw_output["message"],
+        "close": bool(raw_output.get("close")),
+    }
+    if update_row["state"] == "completed":
+        data["route"] = update_row["route"]
+
+    return 200, {"success": True, "data": data}
+
+
+def _close_session_gracefully(
+    session_id: str,
+    brief: Dict[str, Any],
+    confidential_flags: Optional[List[Any]],
+    *,
+    client: Any,
+) -> Tuple[int, Dict[str, Any]]:
+    """Repli si le gateway LLM échoue (timeout/erreur réseau) — la session
+    est clôturée directement (state='completed', route calculée) plutôt
+    que de laisser le worker HTTP planter ou le prospect bloqué (AC
+    US-IQ-02, « pas de blocage du worker »)."""
+    route = _decide_route(brief, confidential_flags)
+    now_iso = datetime.now(timezone.utc).isoformat()
+    update_row = {"state": "completed", "route": route, "completed_at": now_iso}
+    try:
+        client.table("intake_sessions").update(update_row).eq("id", session_id).execute()
+    except Exception as exc:  # noqa: BLE001
+        logger.error("agent_turn: graceful close failed to persist for %s: %s", session_id, exc.__class__.__name__)
+        return 503, {"success": False, "error_code": "SUPABASE_UNAVAILABLE", "error": "Could not close the session."}
+    return 200, {
+        "success": True,
+        "data": {"session_id": session_id, "state": "completed", "route": route, "agent_unavailable": True},
+    }

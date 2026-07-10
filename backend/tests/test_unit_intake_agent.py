@@ -24,11 +24,44 @@ import sys
 from pathlib import Path
 from typing import Any, Dict
 
+import pytest
+
 _BACKEND = Path(__file__).resolve().parent.parent
 if str(_BACKEND) not in sys.path:
     sys.path.insert(0, str(_BACKEND))
 
 from app.services import intake_service as svc  # noqa: E402
+
+
+@pytest.fixture
+def app(monkeypatch):
+    from app import storage as storage_pkg
+
+    class _DummyStorage:
+        def __init__(self, *a, **kw):
+            pass
+
+    monkeypatch.setattr(storage_pkg, "Neo4jStorage", _DummyStorage)
+    from app import create_app
+
+    app_obj = create_app()
+    app_obj.config["TESTING"] = True
+    return app_obj
+
+
+@pytest.fixture
+def client(app):
+    return app.test_client()
+
+
+@pytest.fixture
+def fake_client(monkeypatch):
+    from tests.test_unit_intake import FakeSupabase
+
+    cli = FakeSupabase()
+    cli.table("organizations").rows.append({"id": "org-bassira-1", "slug": "aimpower-bassira"})
+    monkeypatch.setattr(svc, "get_default_super_admin_org_id", lambda _c=None: "org-bassira-1")
+    return cli
 
 
 # ─── Schéma de sortie de l'agent ──────────────────────────────────────────────
@@ -131,3 +164,99 @@ class TestBuildAgentMessages:
         prior = [{"role": "user", "content": "premier message", "ts": "2026-07-10T10:00:00Z"}]
         messages = svc._build_agent_messages(_brief_with_aar(), "fr", prior, "suite")
         assert "premier message" in messages[0]["content"]
+
+
+# ─── agent_turn — happy path ──────────────────────────────────────────────────
+
+
+class _FakeLLM:
+    """Double de LLMClient — retourne une séquence de sorties JSON scriptées."""
+
+    def __init__(self, outputs):
+        self._outputs = list(outputs)
+        self.calls = []
+
+    def chat_json(self, messages, temperature=0.3, max_tokens=1024):
+        self.calls.append({"messages": messages, "temperature": temperature, "max_tokens": max_tokens})
+        if not self._outputs:
+            raise AssertionError("no more scripted outputs")
+        return self._outputs.pop(0)
+
+
+def _submitted_session(fake_client) -> str:
+    from tests.test_unit_intake import _valid_payload
+
+    sid = svc.start_session(client=fake_client)["session_id"]
+    svc.submit_form(sid, _valid_payload(), client=fake_client)
+    return sid
+
+
+class TestAgentTurnHappyPath:
+    def test_first_turn_transitions_to_agent_active_and_persists_transcript(self, fake_client):
+        sid = _submitted_session(fake_client)
+        llm = _FakeLLM([{
+            "message": "Vous mentionnez ouvrir 12 agences — qu'est-ce qui vous retient de trancher aujourd'hui ?",
+            "insights": ["Le comité hésite sur le rythme d'ouverture."],
+            "confidential_flag": None,
+            "close": False,
+        }])
+        status, body = svc.agent_turn(sid, "Nous hésitons sur le rythme.", client=fake_client, llm=llm)
+        assert status == 200
+        assert body["success"] is True
+        assert body["data"]["state"] == "agent_active"
+        assert body["data"]["agent_turns"] == 1
+        assert "retient de trancher" in body["data"]["message"]
+
+        session = svc._get_session(sid, client=fake_client)
+        assert session["state"] == "agent_active"
+        assert session["agent_turns"] == 1
+        assert len(session["transcript"]) == 2  # user + assistant
+        assert session["transcript"][0]["role"] == "user"
+        assert session["transcript"][0]["content"] == "Nous hésitons sur le rythme."
+        assert session["transcript"][1]["role"] == "assistant"
+
+    def test_close_true_completes_session_with_route(self, fake_client):
+        sid = _submitted_session(fake_client)
+        llm = _FakeLLM([{
+            "message": "Merci, votre brief est transmis.",
+            "insights": ["Blocage réel identifié : arbitrage budgétaire."],
+            "confidential_flag": None,
+            "close": True,
+        }])
+        status, body = svc.agent_turn(sid, "Voilà, c'est tout.", client=fake_client, llm=llm)
+        assert status == 200
+        assert body["data"]["state"] == "completed"
+        assert body["data"]["route"] in ("self_service", "quote_48h", "meeting")
+
+        session = svc._get_session(sid, client=fake_client)
+        assert session["state"] == "completed"
+        assert session["route"] is not None
+        assert session["completed_at"] is not None
+
+    def test_llm_called_with_correct_model_and_temperature(self, fake_client, monkeypatch):
+        sid = _submitted_session(fake_client)
+        captured = {}
+
+        def _fake_create_llm_client(**kwargs):
+            captured.update(kwargs)
+            return _FakeLLM([{
+                "message": "ok", "insights": [], "confidential_flag": None, "close": False,
+            }])
+
+        monkeypatch.setattr(svc, "create_llm_client", _fake_create_llm_client)
+        svc.agent_turn(sid, "salut", client=fake_client)
+        assert captured["timeout"] == 30.0
+        assert "model" in captured
+
+    def test_session_not_found_returns_404(self, fake_client):
+        llm = _FakeLLM([])
+        status, body = svc.agent_turn("does-not-exist", "hello", client=fake_client, llm=llm)
+        assert status == 404
+        assert body["error_code"] == "SESSION_NOT_FOUND"
+
+    def test_wrong_state_returns_409(self, fake_client):
+        sid = svc.start_session(client=fake_client)["session_id"]  # jamais soumis
+        llm = _FakeLLM([])
+        status, body = svc.agent_turn(sid, "hello", client=fake_client, llm=llm)
+        assert status == 409
+        assert body["error_code"] == "INVALID_STATE"
