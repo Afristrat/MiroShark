@@ -260,3 +260,33 @@ class TestAgentTurnHappyPath:
         status, body = svc.agent_turn(sid, "hello", client=fake_client, llm=llm)
         assert status == 409
         assert body["error_code"] == "INVALID_STATE"
+
+
+# ─── agent_turn — garde-fou budget 7 tours ────────────────────────────────────
+
+
+class TestAgentTurnBudgetGuard:
+    def test_eighth_turn_rejected_even_if_client_retries(self, fake_client):
+        sid = _submitted_session(fake_client)
+        # Simule 7 tours déjà joués directement en base (sans passer par
+        # l'agent — on isole le garde-fou du reste de la logique).
+        fake_client.table("intake_sessions").update({
+            "agent_turns": 7, "state": "agent_active",
+        }).eq("id", sid).execute()
+
+        llm = _FakeLLM([])  # ne doit JAMAIS être appelé
+        status, body = svc.agent_turn(sid, "encore une question", client=fake_client, llm=llm)
+        assert status == 403
+        assert body["error_code"] == "AGENT_BUDGET_EXHAUSTED"
+        assert llm.calls == []  # le LLM n'a pas été sollicité — vérifié en base d'abord
+
+    def test_seventh_turn_still_allowed(self, fake_client):
+        sid = _submitted_session(fake_client)
+        fake_client.table("intake_sessions").update({
+            "agent_turns": 6, "state": "agent_active",
+        }).eq("id", sid).execute()
+
+        llm = _FakeLLM([{"message": "dernière question", "insights": [], "confidential_flag": None, "close": False}])
+        status, body = svc.agent_turn(sid, "ok", client=fake_client, llm=llm)
+        assert status == 200
+        assert body["data"]["agent_turns"] == 7
