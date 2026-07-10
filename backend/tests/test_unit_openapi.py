@@ -151,6 +151,12 @@ _UNDOCUMENTED_ALLOWLIST: set[str] = {
     "/api/admin/quotes/<quote_id>/notes",
     "/api/admin/quotes/<quote_id>/send-payment-link",
     "/api/admin/quotes/<quote_id>/send-delivered",
+    # ADR-IQ-08 — escalades + playbook vivant de l'agent Intake, outil
+    # interne super-admin, même statut que le reste de la console devis.
+    "/api/admin/quotes/intake/escalations",
+    "/api/admin/quotes/intake/escalations/<escalation_id>",
+    "/api/admin/quotes/intake/playbook",
+    "/api/admin/quotes/intake/playbook/<entry_id>",
 }
 
 
