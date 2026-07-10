@@ -73,6 +73,7 @@ class TestAgentOutputSchema:
             "message": "Qu'est-ce qui vous retient de choisir l'option A ?",
             "insights": ["Le budget est déjà voté en interne."],
             "confidential_flag": None,
+            "escalation": None,
             "close": False,
         }
         assert svc._validate_agent_output(data) is None
@@ -82,6 +83,7 @@ class TestAgentOutputSchema:
             "message": "Je note ce point de côté.",
             "insights": [],
             "confidential_flag": {"topic_label": "conflit avec un actionnaire"},
+            "escalation": None,
             "close": False,
         }
         assert svc._validate_agent_output(data) is None
@@ -104,6 +106,39 @@ class TestAgentOutputSchema:
     def test_confidential_flag_without_topic_label_rejected(self):
         data = {"message": "x", "insights": [], "confidential_flag": {}, "close": False}
         assert svc._validate_agent_output(data) is not None
+
+    def test_valid_output_with_escalation_passes(self):
+        data = {
+            "message": "Je ne peux pas répondre à cela.",
+            "insights": [],
+            "confidential_flag": None,
+            "escalation": {"category": "out_of_scope"},
+            "close": False,
+        }
+        assert svc._validate_agent_output(data) is None
+
+    def test_output_without_escalation_field_rejected(self):
+        """escalation devient un champ requis (comme confidential_flag) — null
+        autorisé, mais absence totale du champ doit être rejetée (cohérence
+        de contrat, même exigence que les autres champs requis)."""
+        data = {
+            "message": "x", "insights": [], "confidential_flag": None, "close": False,
+        }
+        assert svc._validate_agent_output(data) is not None
+
+    def test_escalation_invalid_category_rejected(self):
+        data = {
+            "message": "x", "insights": [], "confidential_flag": None,
+            "escalation": {"category": "not_a_real_category"}, "close": False,
+        }
+        assert svc._validate_agent_output(data) is not None
+
+    def test_escalation_null_passes(self):
+        data = {
+            "message": "x", "insights": [], "confidential_flag": None,
+            "escalation": None, "close": False,
+        }
+        assert svc._validate_agent_output(data) is None
 
 
 # ─── Constructeur de contexte agent ───────────────────────────────────────────

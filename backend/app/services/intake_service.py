@@ -714,7 +714,7 @@ def _build_agent_messages(
 
 AGENT_TURN_OUTPUT_SCHEMA: Dict[str, Any] = {
     "type": "object",
-    "required": ["message", "insights", "confidential_flag", "close"],
+    "required": ["message", "insights", "confidential_flag", "escalation", "close"],
     "additionalProperties": False,
     "properties": {
         "message": {"type": "string", "minLength": 1},
@@ -728,6 +728,27 @@ AGENT_TURN_OUTPUT_SCHEMA: Dict[str, Any] = {
                     "additionalProperties": False,
                     "properties": {
                         "topic_label": {"type": "string", "minLength": 1, "maxLength": 80},
+                    },
+                },
+            ],
+        },
+        "escalation": {
+            "anyOf": [
+                {"type": "null"},
+                {
+                    "type": "object",
+                    "required": ["category"],
+                    "additionalProperties": False,
+                    "properties": {
+                        "category": {
+                            "type": "string",
+                            "enum": [
+                                "ambiguous_request",
+                                "out_of_scope",
+                                "injection_attempt",
+                                "unclear_input",
+                            ],
+                        },
                     },
                 },
             ],
