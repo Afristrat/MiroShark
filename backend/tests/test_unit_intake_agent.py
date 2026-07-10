@@ -290,3 +290,41 @@ class TestAgentTurnBudgetGuard:
         status, body = svc.agent_turn(sid, "ok", client=fake_client, llm=llm)
         assert status == 200
         assert body["data"]["agent_turns"] == 7
+
+
+# ─── Endpoint Flask ──────────────────────────────────────────────────────────
+
+
+class TestAgentTurnEndpoint:
+    def test_post_agent_turn_delegates_to_service(self, client, monkeypatch):
+        from app.api import intake as intake_api
+
+        def _fake_agent_turn(session_id, user_message, **_kw):
+            assert session_id == "sess-1"
+            assert user_message == "Bonjour"
+            return 200, {"success": True, "data": {
+                "session_id": "sess-1", "state": "agent_active",
+                "agent_turns": 1, "message": "Réponse de l'agent", "close": False,
+            }}
+
+        monkeypatch.setattr(intake_api.intake_service, "agent_turn", _fake_agent_turn)
+        resp = client.post("/api/intake/session/sess-1/agent/turn", json={"message": "Bonjour"})
+        assert resp.status_code == 200
+        assert resp.get_json()["data"]["message"] == "Réponse de l'agent"
+
+    def test_post_agent_turn_missing_message_returns_400(self, client, monkeypatch):
+        from app.api import intake as intake_api
+        # ne doit même pas appeler le service si le body est vide
+        monkeypatch.setattr(
+            intake_api.intake_service, "agent_turn",
+            lambda *a, **kw: (_ for _ in ()).throw(AssertionError("must not be called")),
+        )
+        resp = client.post("/api/intake/session/sess-1/agent/turn", json={})
+        assert resp.status_code == 400
+
+    def test_post_agent_turn_rate_limited(self, client, monkeypatch):
+        from app.api import intake as intake_api
+        monkeypatch.setattr(intake_api, "check_rate_limit", lambda _ip: False)
+        resp = client.post("/api/intake/session/sess-1/agent/turn", json={"message": "Bonjour"})
+        assert resp.status_code == 429
+        assert resp.get_json()["error_code"] == "RATE_LIMITED"

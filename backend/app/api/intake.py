@@ -1,9 +1,11 @@
-"""Intake endpoints (US-IQ-01, US-IQ-03) — parcours de qualification /devis.
+"""Intake endpoints (US-IQ-01, US-IQ-02, US-IQ-03) — parcours de qualification /devis.
 
   * ``POST /api/intake/session`` — démarre un parcours (state='started').
   * ``POST /api/intake/session/<id>/form`` — soumet le formulaire A1-A8 +
     identité (state → 'form_submitted'), écrit aussi ``quote_ownership``
     (rétrocompatibilité admin console).
+  * ``POST /api/intake/session/<id>/agent/turn`` — un tour de l'agent
+    conversationnel de qualification (étape B, US-IQ-02).
   * ``POST /api/intake/session/<id>/complete`` — calcule la branche de sortie
     (routage déterministe, étape C) et clôture la session (US-IQ-03).
 
@@ -73,6 +75,39 @@ def post_submit_form(session_id: str):
         return jsonify(body), status
     except Exception:  # noqa: BLE001
         logger.exception("intake form submit: unexpected failure")
+        return jsonify({
+            "success": False,
+            "error_code": "UNKNOWN",
+            "error": "Internal server error.",
+        }), 500
+
+
+@intake_bp.route("/session/<session_id>/agent/turn", methods=["POST"])
+def post_agent_turn(session_id: str):
+    """Un tour de l'agent conversationnel de qualification (étape B,
+    US-IQ-02). Body JSON requis : ``{"message": "<texte du décideur>"}``."""
+    try:
+        client_ip = request.remote_addr or ""
+        if not check_rate_limit(client_ip):
+            return jsonify({
+                "success": False,
+                "error_code": "RATE_LIMITED",
+                "error": "Too many requests from this IP. Please retry in an hour.",
+            }), 429
+
+        body = request.get_json(silent=True) or {}
+        user_message = body.get("message")
+        if not isinstance(user_message, str) or not user_message.strip():
+            return jsonify({
+                "success": False,
+                "error_code": "MISSING_FIELD",
+                "error": "Field « message » is required.",
+            }), 400
+
+        status, resp_body = intake_service.agent_turn(session_id, user_message)
+        return jsonify(resp_body), status
+    except Exception:  # noqa: BLE001
+        logger.exception("intake agent turn: unexpected failure")
         return jsonify({
             "success": False,
             "error_code": "UNKNOWN",
