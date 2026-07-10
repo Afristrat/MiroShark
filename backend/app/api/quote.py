@@ -539,3 +539,28 @@ def send_delivered(quote_id: str):
             "status": qa.read_quote_status(quote_id),
         },
     }), 200
+
+
+# ─── Admin Intake — escalades + playbook (ADR-IQ-08) ────────────────────────
+
+
+@admin_quote_bp.route("/intake/escalations", methods=["GET"])
+@require_super_admin
+def list_intake_escalations():
+    """Liste les escalades de l'agent Intake (ADR-IQ-08). Query :
+    ``unreviewed_only`` (bool, default false)."""
+    unreviewed_only = (request.args.get("unreviewed_only") or "").lower() in ("1", "true", "yes")
+    items, total = intake_service.list_escalations(unreviewed_only=unreviewed_only)
+    return jsonify({"success": True, "data": {"escalations": items, "total": total}}), 200
+
+
+@admin_quote_bp.route("/intake/escalations/<escalation_id>", methods=["PATCH"])
+@require_super_admin
+def patch_intake_escalation(escalation_id: str):
+    """Marque une escalade comme revue. Body : ``{"reviewer_note": "..."}`` optionnel."""
+    body = request.get_json(silent=True) or {}
+    note = body.get("reviewer_note")
+    status, payload = intake_service.mark_escalation_reviewed(
+        escalation_id, reviewer_note=note if isinstance(note, str) else None,
+    )
+    return jsonify(payload), status

@@ -1065,3 +1065,37 @@ def _log_escalation(
         )
     except Exception as exc:  # noqa: BLE001 — jamais casser le tour pour une notif
         logger.error("_log_escalation: notification failed for session %s: %s", session_id, exc.__class__.__name__)
+
+
+def list_escalations(
+    *,
+    unreviewed_only: bool = False,
+    client: Any = None,
+) -> Tuple[List[Dict[str, Any]], int]:
+    """Liste les escalades (ADR-IQ-08), non revues d'abord."""
+    cli = client or get_supabase_admin()
+    response = cli.table("intake_agent_escalations").select("*").execute()
+    rows = getattr(response, "data", None) or []
+    if unreviewed_only:
+        rows = [r for r in rows if not r.get("reviewed_at")]
+    rows.sort(key=lambda r: r.get("reviewed_at") is not None)
+    return rows, len(rows)
+
+
+def mark_escalation_reviewed(
+    escalation_id: str,
+    *,
+    reviewer_note: Optional[str],
+    client: Any = None,
+) -> Tuple[int, Dict[str, Any]]:
+    """Marque une escalade comme revue par Amine, avec note optionnelle."""
+    cli = client or get_supabase_admin()
+    rows = cli.table("intake_agent_escalations").select("*").eq("id", escalation_id).execute()
+    if not (getattr(rows, "data", None) or []):
+        return 404, {"success": False, "error_code": "ESCALATION_NOT_FOUND", "error": "Escalation not found."}
+
+    update_row: Dict[str, Any] = {"reviewed_at": datetime.now(timezone.utc).isoformat()}
+    if reviewer_note is not None:
+        update_row["reviewer_note"] = reviewer_note
+    cli.table("intake_agent_escalations").update(update_row).eq("id", escalation_id).execute()
+    return 200, {"success": True, "data": {"id": escalation_id, "reviewed": True}}
