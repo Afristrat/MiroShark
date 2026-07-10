@@ -35,6 +35,8 @@
     "adminBrandingTitle": "إعدادات هوية تقارير PDF لكل مؤسسة",
     "adminUsers": "المستخدمون",
     "adminUsersTitle": "عرض شامل لجميع التسجيلات",
+    "adminAgentPlaybook": "دليل عمل الوكيل",
+    "adminAgentPlaybookTitle": "تصعيدات وتصحيحات وكيل التأهيل (ADR-IQ-08)",
     "console": "الوحدة",
     "consoleTitle": "الوحدة الخاصة: إطلاق محاكاة يدوياً",
     "launchSimulation": "إطلاق محاكاة",
@@ -2590,6 +2592,25 @@
       "create": "خطأ عند إنشاء العلامة التجارية.",
       "update": "خطأ عند التحديث."
     }
+  },
+  "adminAgentPlaybook": {
+    "title": "دليل عمل وكيل التأهيل",
+    "subtitle": "التصعيدات الصامتة والتصحيحات الحية لوكيل التأهيل (ADR-IQ-08).",
+    "escalationsTitle": "التصعيدات",
+    "unreviewedOnly": "غير المراجعة فقط",
+    "loading": "جارٍ التحميل…",
+    "noEscalations": "لا توجد تصعيدات.",
+    "reviewed": "تمت المراجعة",
+    "userMessage": "العميل المحتمل",
+    "agentMessage": "الوكيل",
+    "notePlaceholder": "ملاحظة (اختيارية)",
+    "markReviewed": "وضع علامة كمُراجَع",
+    "playbookTitle": "التصحيحات (دليل العمل)",
+    "situationLabel": "الموقف الذي حدث",
+    "correctedLabel": "الرد المتوقع",
+    "addEntry": "إضافة إلى دليل العمل",
+    "activate": "تفعيل",
+    "deactivate": "إلغاء التفعيل"
   },
   "adminReportReview": {
     "title": "مراجعة التقرير",

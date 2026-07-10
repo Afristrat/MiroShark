@@ -112,6 +112,15 @@
             >
               {{ $t('nav.adminUsers') }}
             </router-link>
+            <router-link
+              to="/admin/agent-playbook"
+              class="app-header__admin-item"
+              role="menuitem"
+              :title="$t('nav.adminAgentPlaybookTitle')"
+              @click="closeAdminMenu"
+            >
+              {{ $t('nav.adminAgentPlaybook') }}
+            </router-link>
           </div>
         </div>
         <!-- US-107 — entrée « Console » dédiée pour les org admins

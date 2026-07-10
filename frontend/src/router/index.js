@@ -231,6 +231,17 @@ const routes = [
     }
   },
   {
+    // ADR-IQ-08 — Escalades silencieuses + playbook vivant de l'agent Intake.
+    path: '/admin/agent-playbook',
+    name: 'AdminAgentPlaybook',
+    component: () => import('../views/AdminAgentPlaybookView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresSuperAdmin: true,
+      title: 'Playbook agent · Bassira admin'
+    }
+  },
+  {
     // US-127 — Révision rapport (split view PDF + Tiptap + CodeMirror + diff versioning).
     path: '/admin/reports/:id/review',
     name: 'AdminReportReview',

@@ -432,4 +432,51 @@ export function createOrganization(payload) {
   return client.post('/api/admin/organizations', payload)
 }
 
+// ───── Agent Intake — playbook + escalades (ADR-IQ-08) ─────────────────────
+
+/**
+ * GET /api/admin/quotes/intake/escalations — liste les escalades de l'agent
+ * Intake (ADR-IQ-08). Query : { unreviewed_only? }
+ */
+export function fetchIntakeEscalations(params = {}) {
+  return client.get('/api/admin/quotes/intake/escalations', { params })
+}
+
+/**
+ * PATCH /api/admin/quotes/intake/escalations/<id> — marque une escalade revue.
+ * Body : { reviewer_note? }
+ */
+export function reviewIntakeEscalation(escalationId, payload = {}) {
+  return client.patch(
+    `/api/admin/quotes/intake/escalations/${encodeURIComponent(escalationId)}`,
+    payload
+  )
+}
+
+/**
+ * GET /api/admin/quotes/intake/playbook — liste les entrées du playbook.
+ */
+export function fetchIntakePlaybook() {
+  return client.get('/api/admin/quotes/intake/playbook')
+}
+
+/**
+ * POST /api/admin/quotes/intake/playbook — ajoute une correction.
+ * Body : { situation_pattern, corrected_response }
+ */
+export function createIntakePlaybookEntry(payload) {
+  return client.post('/api/admin/quotes/intake/playbook', payload)
+}
+
+/**
+ * PATCH /api/admin/quotes/intake/playbook/<id> — active/désactive une entrée.
+ * Body : { active }
+ */
+export function toggleIntakePlaybookEntry(entryId, active) {
+  return client.patch(
+    `/api/admin/quotes/intake/playbook/${encodeURIComponent(entryId)}`,
+    { active }
+  )
+}
+
 export default client

@@ -35,6 +35,8 @@
     "adminBrandingTitle": "Configuration du branding des rapports PDF par organisation",
     "adminUsers": "Utilisateurs",
     "adminUsersTitle": "Vue cross-tenant des inscriptions",
+    "adminAgentPlaybook": "Playbook agent",
+    "adminAgentPlaybookTitle": "Escalades et corrections de l'agent Intake (ADR-IQ-08)",
     "console": "Console",
     "consoleTitle": "Console privative : lancer une simulation manuellement",
     "launchSimulation": "Lancer simulation",
@@ -2496,6 +2498,25 @@
       "create": "Erreur lors de la création du branding.",
       "update": "Erreur lors de la mise à jour."
     }
+  },
+  "adminAgentPlaybook": {
+    "title": "Playbook agent Intake",
+    "subtitle": "Escalades silencieuses et corrections vivantes de l'agent de qualification (ADR-IQ-08).",
+    "escalationsTitle": "Escalades",
+    "unreviewedOnly": "Non revues uniquement",
+    "loading": "Chargement…",
+    "noEscalations": "Aucune escalade.",
+    "reviewed": "Revue",
+    "userMessage": "Prospect",
+    "agentMessage": "Agent",
+    "notePlaceholder": "Note (optionnelle)",
+    "markReviewed": "Marquer revue",
+    "playbookTitle": "Corrections (playbook)",
+    "situationLabel": "Situation rencontrée",
+    "correctedLabel": "Réponse attendue",
+    "addEntry": "Ajouter au playbook",
+    "activate": "Activer",
+    "deactivate": "Désactiver"
   },
   "adminReportTracking": {
     "title": "Suivi des livraisons",

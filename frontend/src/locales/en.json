@@ -35,6 +35,8 @@
     "adminBrandingTitle": "Configure per-organization PDF report branding",
     "adminUsers": "Users",
     "adminUsersTitle": "Cross-tenant view of sign-ups",
+    "adminAgentPlaybook": "Agent playbook",
+    "adminAgentPlaybookTitle": "Intake agent escalations and corrections (ADR-IQ-08)",
     "console": "Console",
     "consoleTitle": "Private console: launch a simulation manually",
     "launchSimulation": "Launch simulation",
@@ -2590,6 +2592,25 @@
       "create": "Error creating branding.",
       "update": "Error updating branding."
     }
+  },
+  "adminAgentPlaybook": {
+    "title": "Intake agent playbook",
+    "subtitle": "Silent escalations and living corrections for the qualification agent (ADR-IQ-08).",
+    "escalationsTitle": "Escalations",
+    "unreviewedOnly": "Unreviewed only",
+    "loading": "Loading…",
+    "noEscalations": "No escalations.",
+    "reviewed": "Reviewed",
+    "userMessage": "Prospect",
+    "agentMessage": "Agent",
+    "notePlaceholder": "Note (optional)",
+    "markReviewed": "Mark reviewed",
+    "playbookTitle": "Corrections (playbook)",
+    "situationLabel": "Situation encountered",
+    "correctedLabel": "Expected response",
+    "addEntry": "Add to playbook",
+    "activate": "Activate",
+    "deactivate": "Deactivate"
   },
   "adminReportReview": {
     "title": "Report Review",
