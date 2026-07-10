@@ -32,9 +32,11 @@ from typing import Any, Dict, List, Optional, Tuple
 import jsonschema
 
 from ..auth.supabase_client import SupabaseConfigError, get_default_super_admin_org_id, get_supabase_admin
+from ..config import Config
 from ..utils.llm_client import create_intake_llm_client
 from ..utils.logger import get_logger
 from . import quote_ownership as qo
+from .email_service import send_email
 
 logger = get_logger("miroshark.intake")
 
@@ -865,6 +867,10 @@ def agent_turn(
     if flag:
         confidential_flags.append({"topic_label": flag["topic_label"], "flagged_at": now_iso})
 
+    escalation = raw_output.get("escalation")
+    if escalation:
+        _log_escalation(session_id, escalation["category"], user_message, raw_output["message"], client=cli)
+
     update_row: Dict[str, Any] = {
         "transcript": new_transcript,
         "agent_turns": new_turns,
@@ -920,3 +926,43 @@ def _close_session_gracefully(
         "success": True,
         "data": {"session_id": session_id, "state": "completed", "route": route, "agent_unavailable": True},
     }
+
+
+def _log_escalation(
+    session_id: str,
+    category: str,
+    user_message: str,
+    agent_message: str,
+    *,
+    client: Any,
+) -> None:
+    """Log une escalade (ADR-IQ-08) — jamais vu du prospect, revue Amine
+    exclusive. Notifie par email si INTAKE_ESCALATION_NOTIFY_EMAIL est
+    configurée. Best-effort total : ne doit JAMAIS faire échouer le tour
+    de l'agent, ni sur l'insert, ni sur l'email."""
+    try:
+        client.table("intake_agent_escalations").insert({
+            "session_id": session_id,
+            "category": category,
+            "user_message": user_message,
+            "agent_message": agent_message,
+        }).execute()
+    except Exception as exc:  # noqa: BLE001
+        logger.error("_log_escalation: insert failed for session %s: %s", session_id, exc.__class__.__name__)
+
+    notify_email = Config.INTAKE_ESCALATION_NOTIFY_EMAIL
+    if not notify_email:
+        return
+    try:
+        send_email(
+            notify_email,
+            f"[Bassira] Escalade agent Intake — {category}",
+            (
+                f"<p><strong>Session :</strong> {session_id}</p>"
+                f"<p><strong>Catégorie :</strong> {category}</p>"
+                f"<p><strong>Message prospect :</strong> {user_message}</p>"
+                f"<p><strong>Réponse agent :</strong> {agent_message}</p>"
+            ),
+        )
+    except Exception as exc:  # noqa: BLE001 — jamais casser le tour pour une notif
+        logger.error("_log_escalation: notification failed for session %s: %s", session_id, exc.__class__.__name__)

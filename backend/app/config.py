@@ -77,7 +77,11 @@ class Config:
     INTAKE_LLM_API_KEY = os.environ.get('INTAKE_LLM_API_KEY', '')
     INTAKE_LLM_BASE_URL = os.environ.get('INTAKE_LLM_BASE_URL', '')
     INTAKE_LLM_MODEL = os.environ.get('INTAKE_LLM_MODEL', '')
-    
+
+    # Escalade silencieuse ADR-IQ-08 — email de notification quand l'agent
+    # flague un tour hors-cadre. Vide = pas de notification, juste loggé.
+    INTAKE_ESCALATION_NOTIFY_EMAIL = os.environ.get('INTAKE_ESCALATION_NOTIFY_EMAIL', '')
+
     # Neo4j configuration
     NEO4J_URI = os.environ.get('NEO4J_URI', 'bolt://localhost:7687')
     NEO4J_USER = os.environ.get('NEO4J_USER', 'neo4j')
