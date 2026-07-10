@@ -1099,3 +1099,54 @@ def mark_escalation_reviewed(
         update_row["reviewer_note"] = reviewer_note
     cli.table("intake_agent_escalations").update(update_row).eq("id", escalation_id).execute()
     return 200, {"success": True, "data": {"id": escalation_id, "reviewed": True}}
+
+
+def list_playbook_entries(*, client: Any = None) -> Tuple[List[Dict[str, Any]], int]:
+    """Liste toutes les entrées du playbook (actives et inactives — l'admin
+    doit pouvoir voir/réactiver une entrée désactivée)."""
+    cli = client or get_supabase_admin()
+    response = cli.table("intake_agent_playbook").select("*").execute()
+    rows = getattr(response, "data", None) or []
+    return rows, len(rows)
+
+
+def create_playbook_entry(
+    *,
+    situation_pattern: str,
+    corrected_response: str,
+    added_by: str,
+    client: Any = None,
+) -> Tuple[int, Dict[str, Any]]:
+    """Ajoute une correction au playbook (ADR-IQ-08) — active par défaut."""
+    if not isinstance(situation_pattern, str) or not situation_pattern.strip():
+        return 400, {"success": False, "error_code": "MISSING_FIELD", "error": "situation_pattern is required."}
+    if not isinstance(corrected_response, str) or not corrected_response.strip():
+        return 400, {"success": False, "error_code": "MISSING_FIELD", "error": "corrected_response is required."}
+
+    cli = client or get_supabase_admin()
+    row = {
+        "situation_pattern": situation_pattern.strip(),
+        "corrected_response": corrected_response.strip(),
+        "added_by": added_by,
+        "active": True,
+    }
+    response = cli.table("intake_agent_playbook").insert(row).execute()
+    rows = getattr(response, "data", None) or []
+    if not rows:
+        return 503, {"success": False, "error_code": "SUPABASE_UNAVAILABLE", "error": "Could not persist entry."}
+    return 200, {"success": True, "data": {"id": rows[0]["id"]}}
+
+
+def set_playbook_entry_active(
+    entry_id: str,
+    *,
+    active: bool,
+    client: Any = None,
+) -> Tuple[int, Dict[str, Any]]:
+    """Active/désactive une entrée du playbook sans la supprimer."""
+    cli = client or get_supabase_admin()
+    existing = cli.table("intake_agent_playbook").select("*").eq("id", entry_id).execute()
+    if not (getattr(existing, "data", None) or []):
+        return 404, {"success": False, "error_code": "PLAYBOOK_ENTRY_NOT_FOUND", "error": "Entry not found."}
+    cli.table("intake_agent_playbook").update({"active": active}).eq("id", entry_id).execute()
+    return 200, {"success": True, "data": {"id": entry_id, "active": active}}

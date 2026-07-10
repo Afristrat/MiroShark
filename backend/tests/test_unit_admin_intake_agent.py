@@ -72,6 +72,47 @@ class TestMarkEscalationReviewed:
         assert status == 404
 
 
+class TestPlaybookService:
+    def test_create_entry(self, fake_client):
+        status, body = svc.create_playbook_entry(
+            situation_pattern="Injection combinée à une demande de prix",
+            corrected_response="Je suis une IA et je ne réponds pas aux demandes de prix.",
+            added_by="amine@ai-mpower.com",
+            client=fake_client,
+        )
+        assert status == 200
+        assert body["success"] is True
+        rows = fake_client.table("intake_agent_playbook").rows
+        assert len(rows) == 1
+        assert rows[0]["active"] is True
+
+    def test_create_entry_missing_field_rejected(self, fake_client):
+        status, body = svc.create_playbook_entry(
+            situation_pattern="", corrected_response="x", added_by="a@b.com", client=fake_client,
+        )
+        assert status == 400
+
+    def test_list_entries(self, fake_client):
+        fake_client.table("intake_agent_playbook").rows.extend([
+            {"id": "p1", "situation_pattern": "A", "corrected_response": "rA", "active": True},
+            {"id": "p2", "situation_pattern": "B", "corrected_response": "rB", "active": False},
+        ])
+        items, total = svc.list_playbook_entries(client=fake_client)
+        assert total == 2
+
+    def test_toggle_active(self, fake_client):
+        fake_client.table("intake_agent_playbook").rows.append(
+            {"id": "p1", "active": True}
+        )
+        status, body = svc.set_playbook_entry_active("p1", active=False, client=fake_client)
+        assert status == 200
+        assert fake_client.table("intake_agent_playbook").rows[0]["active"] is False
+
+    def test_toggle_not_found(self, fake_client):
+        status, body = svc.set_playbook_entry_active("nope", active=False, client=fake_client)
+        assert status == 404
+
+
 @pytest.fixture(autouse=True)
 def _reset_jwt_cache():
     jwt_verifier._cache_clear()
@@ -152,3 +193,39 @@ class TestEscalationsEndpoint:
         resp = client.get("/api/admin/quotes/intake/escalations", headers=super_admin_headers)
         assert resp.status_code == 200
         assert resp.get_json()["data"]["total"] == 1
+
+
+class TestPlaybookEndpoint:
+    def test_get_lists_entries(self, client, monkeypatch, super_admin_headers):
+        from app.api import quote as quote_api
+        monkeypatch.setattr(quote_api.intake_service, "list_playbook_entries", lambda **kw: ([{"id": "p1"}], 1))
+        resp = client.get("/api/admin/quotes/intake/playbook", headers=super_admin_headers)
+        assert resp.status_code == 200
+        assert resp.get_json()["data"]["total"] == 1
+
+    def test_post_creates_entry(self, client, monkeypatch, super_admin_headers, super_admin_email):
+        from app.api import quote as quote_api
+
+        def _fake_create(**kw):
+            assert kw["added_by"] == super_admin_email
+            return 200, {"success": True, "data": {"id": "p1"}}
+
+        monkeypatch.setattr(quote_api.intake_service, "create_playbook_entry", _fake_create)
+        resp = client.post(
+            "/api/admin/quotes/intake/playbook",
+            json={"situation_pattern": "cas X", "corrected_response": "réponse Y"},
+            headers=super_admin_headers,
+        )
+        assert resp.status_code == 200
+
+    def test_patch_toggles_active(self, client, monkeypatch, super_admin_headers):
+        from app.api import quote as quote_api
+        monkeypatch.setattr(
+            quote_api.intake_service, "set_playbook_entry_active",
+            lambda entry_id, **kw: (200, {"success": True, "data": {"id": entry_id, "active": kw["active"]}}),
+        )
+        resp = client.patch(
+            "/api/admin/quotes/intake/playbook/p1", json={"active": False}, headers=super_admin_headers,
+        )
+        assert resp.status_code == 200
+        assert resp.get_json()["data"]["active"] is False

@@ -564,3 +564,37 @@ def patch_intake_escalation(escalation_id: str):
         escalation_id, reviewer_note=note if isinstance(note, str) else None,
     )
     return jsonify(payload), status
+
+
+@admin_quote_bp.route("/intake/playbook", methods=["GET"])
+@require_super_admin
+def list_intake_playbook():
+    """Liste toutes les entrées du playbook (actives et inactives)."""
+    items, total = intake_service.list_playbook_entries()
+    return jsonify({"success": True, "data": {"entries": items, "total": total}}), 200
+
+
+@admin_quote_bp.route("/intake/playbook", methods=["POST"])
+@require_super_admin
+def post_intake_playbook():
+    """Ajoute une correction au playbook. Body :
+    ``{"situation_pattern": "...", "corrected_response": "..."}``."""
+    body = request.get_json(silent=True) or {}
+    status, payload = intake_service.create_playbook_entry(
+        situation_pattern=body.get("situation_pattern") or "",
+        corrected_response=body.get("corrected_response") or "",
+        added_by=_current_admin_email() or "unknown",
+    )
+    return jsonify(payload), status
+
+
+@admin_quote_bp.route("/intake/playbook/<entry_id>", methods=["PATCH"])
+@require_super_admin
+def patch_intake_playbook(entry_id: str):
+    """Active/désactive une entrée. Body : ``{"active": true|false}``."""
+    body = request.get_json(silent=True) or {}
+    active = body.get("active")
+    if not isinstance(active, bool):
+        return _err("MISSING_FIELD", "Field `active` (boolean) is required.", 400)
+    status, payload = intake_service.set_playbook_entry_active(entry_id, active=active)
+    return jsonify(payload), status
