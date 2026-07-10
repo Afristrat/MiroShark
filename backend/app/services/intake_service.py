@@ -28,6 +28,8 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
+import jsonschema
+
 from ..auth.supabase_client import SupabaseConfigError, get_default_super_admin_org_id, get_supabase_admin
 from ..utils.logger import get_logger
 from . import quote_ownership as qo
@@ -467,3 +469,46 @@ def complete_routing(session_id: str, *, client: Any = None) -> Tuple[int, Dict[
             "route": route,
         },
     }
+
+
+# ─── Étape B : agent conversationnel de qualification (US-IQ-02) ────────────
+#
+# Sortie JSON stricte de l'agent — validée serveur (docs/intake/
+# 10-execution-prompts.md §10.1 "SORTIE STRUCTURÉE"). Un tour dont la
+# sortie ne valide pas ce schéma est REJETÉ : rien n'est persisté, le
+# budget de tours n'est pas consommé (cf. AC US-IQ-02).
+
+AGENT_TURN_OUTPUT_SCHEMA: Dict[str, Any] = {
+    "type": "object",
+    "required": ["message", "insights", "confidential_flag", "close"],
+    "additionalProperties": False,
+    "properties": {
+        "message": {"type": "string", "minLength": 1},
+        "insights": {"type": "array", "items": {"type": "string"}},
+        "confidential_flag": {
+            "anyOf": [
+                {"type": "null"},
+                {
+                    "type": "object",
+                    "required": ["topic_label"],
+                    "additionalProperties": False,
+                    "properties": {
+                        "topic_label": {"type": "string", "minLength": 1, "maxLength": 80},
+                    },
+                },
+            ],
+        },
+        "close": {"type": "boolean"},
+    },
+}
+
+
+def _validate_agent_output(data: Dict[str, Any]) -> Optional[str]:
+    """Retourne ``None`` si ``data`` valide le schéma, sinon un message
+    d'erreur COURT (jamais l'exception jsonschema brute, qui peut
+    embarquer le payload complet dans un message public)."""
+    try:
+        jsonschema.validate(data, AGENT_TURN_OUTPUT_SCHEMA)
+    except jsonschema.ValidationError as exc:
+        return f"Agent output failed schema validation: {exc.validator} at {list(exc.path)}"
+    return None
