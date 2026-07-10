@@ -212,9 +212,41 @@ tant que le dossier existe (aucune purge sur session liée à un `quote_id`) ; s
 `abandoned` sans `quote_id` purgées à J+30 (pg_cron, non encore implémenté — US-IQ-01 pose
 le schéma, la purge est hors scope V1).
 
+## `intake_agent_escalations`
+ADR-IQ-08 (migration 20260710_001) — tours de l'agent Intake flaggés `escalation` par
+l'agent lui-même (scénario imprévu, ambigu, tentative d'injection). Jamais exposé au
+prospect — revue exclusive Amine via `/admin`.
+| Colonne | Type | Contraintes | Description | PII |
+|---|---|---|---|---|
+| id | uuid | pk, default gen_random_uuid() | | non |
+| session_id | uuid | fk intake_sessions.id, cascade | | non |
+| category | text | not null, check in (ambiguous_request, out_of_scope, injection_attempt, unclear_input) | déclarée par l'agent | non |
+| user_message | text | not null | message du prospect ayant déclenché l'escalade | **oui** |
+| agent_message | text | not null | réponse effective de l'agent | non |
+| created_at | timestamptz | not null, default now() | | non |
+| reviewed_at | timestamptz | | posé quand Amine marque revu | non |
+| reviewer_note | text | | note libre d'Amine | non |
+
+RLS : lecture + update `is_super_admin()` uniquement, aucune policy anon.
+
+## `intake_agent_playbook`
+ADR-IQ-08 (migration 20260710_001) — corrections de trajectoire ajoutées par Amine,
+injectées dans le system prompt de l'agent Intake tant que `active=true`. Jamais de
+modification automatique.
+| Colonne | Type | Contraintes | Description | PII |
+|---|---|---|---|---|
+| id | uuid | pk, default gen_random_uuid() | | non |
+| situation_pattern | text | not null | description courte de la situation | non |
+| corrected_response | text | not null | réponse idéale, injectée comme exemple contrastif | non |
+| added_by | text | not null | email de l'admin ayant ajouté l'entrée | non |
+| added_at | timestamptz | not null, default now() | | non |
+| active | boolean | not null, default true | désactivable sans suppression | non |
+
+RLS : toutes opérations réservées `is_super_admin()`, aucune policy anon.
+
 ## Conventions transverses
 
-- **RLS activée sur les 13 tables** (règle absolue) — état vérifié dans les migrations.
+- **RLS activée sur les 15 tables** (règle absolue) — état vérifié dans les migrations.
 - Toute table porte `created_at` ; soft-delete : **non** (suppression cascade par org) —
   réexaminer en ADR si un client exige la rétention.
 - Colonnes PII (marquées **oui** en gras) → reprises dans `docs/07-legal-compliance.md`.
