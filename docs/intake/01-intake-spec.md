@@ -121,9 +121,9 @@ Mécanisme issu de la chasse (AAR militaire + chef-d'œuvre, feature score 9).
 
 - `quote_ownership.payload` (US-203) : le brief remplace/enrichit le payload actuel.
 - **Cal.com self-hosted existant** (`agenda.ai-mpower.com`) : réservation des entretiens —
+  event type « Entretien Bassira » créé (slug `entretien-bassira-20-min`, id 25, 20 min),
   API via le hostname public dédié `https://api-agenda.ai-mpower.com/v2/...` (ADR-IQ-03
-  v3 ; PAS de réseau Docker interne, `miroshark`/`calcom-api` sont disjoints), clé env
-  `CALCOM_API_KEY`.
+  v3), clé env `CALCOM_API_KEY`.
 - Console simulation : le brief pré-seede la création de scénario (US-IQ-07).
 - Chasse moat : M3 (surveillance des verdicts) consommera plus tard les hypothèses du brief.
 - Admin /admin/quotes : affichage du brief + sujets confidentiels (US-IQ-06).

@@ -39,9 +39,10 @@ Le YAGNI ne s'applique pas à un outil existant : l'utiliser est le barreau Pony
 (dépendance déjà installée), pas une dépendance nouvelle.
 **Contraintes techniques vérifiées (v2, 2026-07-09)** : l'API v2 tourne dans un service
 dédié (`calcom-api-…`) — la v2 de cette ADR affirmait un appel en réseau Docker interne
-(`localhost:3002`), prémisse **FAUSSE, corrigée en v3** : `miroshark` et `calcom-api`
-vivent sur des réseaux Docker **disjoints** — l'hôte interne n'est pas joignable depuis le
-backend Bassira.
+(`localhost:3002`), prémisse **écartée en v3** : ce chemin n'a jamais été confirmé
+fonctionnel depuis le conteneur `miroshark` (raison exacte non retestée — bind loopback
+suspecté, non déterminant) ; il est de toute façon **inutile**, le hostname public
+suffit et est le seul chemin vérifié bout-en-bout.
 **Correction v3 (vérifiée bout-en-bout 2026-07-09 puis reconfirmée par sonde live
 2026-07-10 22h52)** : le backend appelle l'API via le hostname **public dédié**
 `https://api-agenda.ai-mpower.com/v2/...` (PAS `agenda.ai-mpower.com/api/v2`, qui renvoie
@@ -50,10 +51,12 @@ les deux hostnames). `api-agenda.ai-mpower.com` route directement vers l'API Cal
 (erreur JSON `ForbiddenException` propre sur clé invalide — preuve que la requête atteint
 bien le service, pas un WAF). Clé : env Coolify `CALCOM_API_KEY` (POST envs Coolify =
 JSON minimal `{key, value}` — le champ `is_build_time` est refusé par cette version).
-Endpoints utiles : `GET /v2/me` (validation), `GET /v2/event-types`, `GET /v2/slots`.
+Endpoints utiles : `GET /v2/me` (validation), `GET /v2/event-types`, `GET /v2/slots`,
+`POST /v2/event-types` (création — utilisé le 2026-07-10 pour créer l'event type
+« Entretien Bassira » id=25, slug `entretien-bassira-20-min`, 20 min, sans visioconf
+associée — à compléter manuellement dans l'UI Cal.com si besoin d'un lien Meet).
 **Alternatives rejetées** : créneaux par email en texte (v1 — remplacée) ; réseau Docker
-interne (v2 — non joignable, réseaux disjoints) ; Calendly (données prospects chez un
-tiers US).
+interne (v2 — écarté, non nécessaire) ; Calendly (données prospects chez un tiers US).
 **Signal de réexamen** : indisponibilité récurrente de l'instance Cal.com, ou changement
 de topologie réseau Docker qui rendrait `calcom-api` de nouveau joignable en interne.
 

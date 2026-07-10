@@ -25,10 +25,11 @@
    l'agent) est traité comme non fiable (cf. 09-risques : injection).
 7. **Design tokens `--wi-*` uniquement** (Causse) — aucun `--ms-*` nouveau.
 7bis. **Cal.com : appels API via le hostname PUBLIC dédié** `https://api-agenda.ai-mpower.com/v2/...`
-   (ADR-IQ-03 v3) — PAS `agenda.ai-mpower.com/api/v2` (Cloudflare bloque), PAS de réseau
-   Docker interne non plus (`miroshark` et `calcom-api` sont sur des réseaux disjoints).
-   Clé env `CALCOM_API_KEY` (posée dans Coolify), jamais au front. Le LIEN de réservation
-   envoyé au prospect est la même page publique, localisée.
+   (ADR-IQ-03 v3) — PAS `agenda.ai-mpower.com/api/v2` (Cloudflare bloque). Event type
+   « Entretien Bassira » créé (slug `entretien-bassira-20-min`, id 25, 20 min, sans
+   visioconf associée pour l'instant). Clé env `CALCOM_API_KEY` (posée dans Coolify),
+   jamais au front. Le LIEN de réservation envoyé au prospect est la page publique
+   `agenda.ai-mpower.com/a.mansouri/entretien-bassira-20-min`, localisée.
 7ter. **Le transcript ne se perd JAMAIS** (ADR-IQ-07) : toute écriture de l'étape B est
    persistée tour par tour (pas seulement à la clôture — un abandon en cours de chat
    conserve les tours déjà joués) ; aucune purge sur session liée à un devis.
