@@ -69,6 +69,11 @@ class Config:
     SMART_API_KEY = os.environ.get('SMART_API_KEY', '')
     SMART_BASE_URL = os.environ.get('SMART_BASE_URL', '')
     SMART_MODEL_NAME = os.environ.get('SMART_MODEL_NAME', '')
+
+    # Agent de qualification Intake (US-IQ-02, ADR-IQ-06) — modèle choisi par
+    # Amine via l'environnement, jamais en dur. Vide = retombe sur
+    # LLM_MODEL_NAME (fallback géré par LLMClient).
+    INTAKE_LLM_MODEL = os.environ.get('INTAKE_LLM_MODEL', '')
     
     # Neo4j configuration
     NEO4J_URI = os.environ.get('NEO4J_URI', 'bolt://localhost:7687')
