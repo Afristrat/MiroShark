@@ -102,3 +102,35 @@ Amine) ; l'agent de qualification a des exigences propres (multilingue ar/fr/dar
 compréhension, latence courte) qui justifieront peut-être un modèle distinct — sans
 toucher au code.
 **Signal de réexamen** : évaluations du doc 10 insuffisantes sur le modèle par défaut.
+
+## ADR-IQ-08 — Playbook vivant de corrections + escalade silencieuse (2026-07-10, directive Amine)
+
+**Quoi** : le prompt v2 de l'agent (post-corpus §10.3) ajoute un champ optionnel
+`escalation` (catégorie fermée, jamais de contenu) à la sortie JSON structurée. Quand un
+tour sort du cadre normal (imprévu, injection, ambiguïté, langue incomprise), il est loggé
+dans une nouvelle table `intake_agent_escalations` (lecture réservée super-admin, jamais
+exposée au prospect) et notifie Amine (email Resend). Amine seul consulte, tranche, et
+ajoute une correction dans une nouvelle table `intake_agent_playbook` — des paires
+{situation, réponse corrigée} — via une page d'admin dédiée (`/admin`, PAS Google Docs).
+Le contenu actif du playbook est injecté dans le system prompt de l'agent, entre le prompt
+de base et le contexte variable (brief/historique), et relu à CHAQUE tour, sur TOUTE
+session future — pas seulement celle où l'incident a eu lieu.
+**Pourquoi** : un prompt statique ne peut structurellement pas couvrir tous les scénarios
+non envisagés — c'est mathématiquement impossible de lister à l'avance tous les inputs
+adversariaux. Le playbook vivant transforme chaque incident en amélioration durable, sous
+supervision humaine explicite (Amine corrige, jamais l'agent seul), traçable (log +
+correction versionnée en base), sans jamais de fine-tuning ni d'ajustement automatique du
+comportement — cohérent avec la règle « tout échec = ajustement du prompt, jamais de
+contournement dans le code » (§10.3), appliquée en continu plutôt qu'en un seul passage.
+« Silencieux » signifie invisible pour le prospect qui tente un jailbreak (l'escalade
+n'apparaît jamais dans `message`, seul champ renvoyé au client) — PAS invisible pour
+Amine, qui reçoit systématiquement la notification.
+**Alternatives rejetées** : Google Docs comme source lue en prod par `agent_turn`
+(latence/fiabilité d'un fetch externe dans un chemin déjà contraint à 30s, nouvelle
+dépendance OAuth non documentée dans `05-integrations.md`, alors que Supabase est déjà la
+source de vérité du repo, RLS et backup inclus). Fine-tuning/auto-apprentissage du modèle à
+partir des conversations réelles (risque de dérive de qualité sans jugement humain, risque
+de fuite de contenu confidentiel via `confidential_flags` si mal isolé).
+**Signal de réexamen** : volume d'escalades > ce qu'Amine peut trancher manuellement en
+temps utile (deviendrait un signal pour prioriser/grouper les corrections, pas pour
+automatiser la correction elle-même).
