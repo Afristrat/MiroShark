@@ -32,8 +32,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import jsonschema
 
 from ..auth.supabase_client import SupabaseConfigError, get_default_super_admin_org_id, get_supabase_admin
-from ..config import Config
-from ..utils.llm_client import create_llm_client
+from ..utils.llm_client import create_intake_llm_client
 from ..utils.logger import get_logger
 from . import quote_ownership as qo
 
@@ -809,10 +808,7 @@ def agent_turn(
     locale = session.get("locale") or "fr"
     messages = _build_agent_messages(brief, locale, transcript, user_message)
 
-    llm_client_obj = llm or create_llm_client(
-        model=Config.INTAKE_LLM_MODEL or None,
-        timeout=_AGENT_TIMEOUT_SECONDS,
-    )
+    llm_client_obj = llm or create_intake_llm_client(timeout=_AGENT_TIMEOUT_SECONDS)
 
     try:
         raw_output = llm_client_obj.chat_json(

@@ -191,6 +191,44 @@ def _submitted_session(fake_client) -> str:
     return sid
 
 
+class TestCreateIntakeLlmClient:
+    def test_falls_back_to_default_client_when_no_intake_model(self, monkeypatch):
+        from app.utils import llm_client
+
+        monkeypatch.setattr(llm_client.Config, "INTAKE_LLM_MODEL", "")
+        captured = {}
+        monkeypatch.setattr(
+            llm_client, "create_llm_client",
+            lambda **kw: captured.update(kw) or "fallback-client",
+        )
+        result = llm_client.create_intake_llm_client(timeout=30.0)
+        assert result == "fallback-client"
+        assert captured == {"timeout": 30.0}
+
+    def test_uses_intake_specific_credentials_when_model_set(self, monkeypatch):
+        from app.utils import llm_client
+
+        monkeypatch.setattr(llm_client.Config, "INTAKE_LLM_MODEL", "qwen3.6-35b")
+        monkeypatch.setattr(llm_client.Config, "INTAKE_LLM_API_KEY", "intake-key")
+        monkeypatch.setattr(llm_client.Config, "INTAKE_LLM_BASE_URL", "https://proxy.example.com")
+        client = llm_client.create_intake_llm_client(timeout=30.0)
+        assert client.model == "qwen3.6-35b"
+        assert client.api_key == "intake-key"
+        assert client.base_url == "https://proxy.example.com"
+
+    def test_falls_back_to_default_credentials_when_intake_creds_unset(self, monkeypatch):
+        from app.utils import llm_client
+
+        monkeypatch.setattr(llm_client.Config, "INTAKE_LLM_MODEL", "qwen3.6-35b")
+        monkeypatch.setattr(llm_client.Config, "INTAKE_LLM_API_KEY", "")
+        monkeypatch.setattr(llm_client.Config, "INTAKE_LLM_BASE_URL", "")
+        monkeypatch.setattr(llm_client.Config, "LLM_API_KEY", "default-key")
+        monkeypatch.setattr(llm_client.Config, "LLM_BASE_URL", "https://default.example.com")
+        client = llm_client.create_intake_llm_client(timeout=30.0)
+        assert client.api_key == "default-key"
+        assert client.base_url == "https://default.example.com"
+
+
 class TestAgentTurnHappyPath:
     def test_first_turn_transitions_to_agent_active_and_persists_transcript(self, fake_client):
         sid = _submitted_session(fake_client)
@@ -233,20 +271,19 @@ class TestAgentTurnHappyPath:
         assert session["route"] is not None
         assert session["completed_at"] is not None
 
-    def test_llm_called_with_correct_model_and_temperature(self, fake_client, monkeypatch):
+    def test_uses_intake_llm_client_factory_with_correct_timeout(self, fake_client, monkeypatch):
         sid = _submitted_session(fake_client)
         captured = {}
 
-        def _fake_create_llm_client(**kwargs):
+        def _fake_create_intake_llm_client(**kwargs):
             captured.update(kwargs)
             return _FakeLLM([{
                 "message": "ok", "insights": [], "confidential_flag": None, "close": False,
             }])
 
-        monkeypatch.setattr(svc, "create_llm_client", _fake_create_llm_client)
+        monkeypatch.setattr(svc, "create_intake_llm_client", _fake_create_intake_llm_client)
         svc.agent_turn(sid, "salut", client=fake_client)
         assert captured["timeout"] == 30.0
-        assert "model" in captured
 
     def test_session_not_found_returns_404(self, fake_client):
         llm = _FakeLLM([])

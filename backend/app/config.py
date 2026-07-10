@@ -70,9 +70,12 @@ class Config:
     SMART_BASE_URL = os.environ.get('SMART_BASE_URL', '')
     SMART_MODEL_NAME = os.environ.get('SMART_MODEL_NAME', '')
 
-    # Agent de qualification Intake (US-IQ-02, ADR-IQ-06) — modèle choisi par
-    # Amine via l'environnement, jamais en dur. Vide = retombe sur
-    # LLM_MODEL_NAME (fallback géré par LLMClient).
+    # Agent de qualification Intake (US-IQ-02, ADR-IQ-06) — modèle/gateway
+    # choisis par Amine via l'environnement, jamais en dur. Vide = retombe
+    # sur LLM_API_KEY/LLM_BASE_URL/LLM_MODEL_NAME (fallback géré par
+    # LLMClient), même pattern que SMART_*/NER_* ci-dessus.
+    INTAKE_LLM_API_KEY = os.environ.get('INTAKE_LLM_API_KEY', '')
+    INTAKE_LLM_BASE_URL = os.environ.get('INTAKE_LLM_BASE_URL', '')
     INTAKE_LLM_MODEL = os.environ.get('INTAKE_LLM_MODEL', '')
     
     # Neo4j configuration

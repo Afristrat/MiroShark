@@ -106,6 +106,24 @@ def create_smart_llm_client(timeout: float = 300.0):
     )
 
 
+def create_intake_llm_client(timeout: float = 30.0):
+    """
+    Factory pour l'agent de qualification Intake (US-IQ-02, ADR-IQ-06).
+    Utilise INTAKE_* config quand définie, sinon retombe sur le LLM par
+    défaut. Modèle/gateway choisis par Amine, jamais en dur (même pattern
+    que create_smart_llm_client/create_ner_llm_client ci-dessus).
+    """
+    if not Config.INTAKE_LLM_MODEL:
+        return create_llm_client(timeout=timeout)
+
+    return LLMClient(
+        api_key=Config.INTAKE_LLM_API_KEY or Config.LLM_API_KEY,
+        base_url=Config.INTAKE_LLM_BASE_URL or Config.LLM_BASE_URL,
+        model=Config.INTAKE_LLM_MODEL,
+        timeout=timeout,
+    )
+
+
 def create_ner_llm_client(timeout: float = 120.0):
     """
     Factory for NER extraction — a mechanical task that works fine on smaller/faster models.
