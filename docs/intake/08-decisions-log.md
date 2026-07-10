@@ -28,7 +28,7 @@ testable, stable — un LLM y introduirait de la variance et un vecteur d'inject
 **Signal de réexamen** : > 30 % de reroutages manuels par l'admin (les seuils sont faux —
 ajuster les RÈGLES, pas passer au LLM).
 
-## ADR-IQ-03 — Créneaux d'entretien via Cal.com self-hosted EXISTANT (v2 — remplace la v1 du 2026-07-09 matin)
+## ADR-IQ-03 — Créneaux d'entretien via Cal.com self-hosted EXISTANT (v3 — corrige le mécanisme d'appel API de la v2 du 2026-07-09)
 
 **Quoi** : la branche entretien envoie un lien de réservation Cal.com
 (`agenda.ai-mpower.com`, instance self-hosted déjà en production sur le serveur) vers un
@@ -37,15 +37,25 @@ event type dédié « Entretien Bassira — 20 min », localisé selon la langue
 FAUSSE : Cal.com était déjà installé et opéré sur l'infra (directive Amine 2026-07-09).
 Le YAGNI ne s'applique pas à un outil existant : l'utiliser est le barreau Ponytail 5
 (dépendance déjà installée), pas une dépendance nouvelle.
-**Contraintes techniques vérifiées (2026-07-09)** : l'API v2 tourne dans un service dédié
-(`calcom-api-…`, interne `localhost:3002`, health OK) ; la route publique
-`agenda.ai-mpower.com/api/*` est interceptée par un challenge Cloudflare → **le backend
-appelle l'API en réseau interne uniquement**, jamais via le hostname public. Clé :
-env Coolify `CALCOM_API_KEY` (POST envs Coolify = JSON minimal `{key, value}` — le champ
-`is_build_time` est refusé par cette version).
-**Alternatives rejetées** : créneaux par email en texte (v1 — remplacée) ; Calendly
-(données prospects chez un tiers US).
-**Signal de réexamen** : indisponibilité récurrente de l'instance Cal.com.
+**Contraintes techniques vérifiées (v2, 2026-07-09)** : l'API v2 tourne dans un service
+dédié (`calcom-api-…`) — la v2 de cette ADR affirmait un appel en réseau Docker interne
+(`localhost:3002`), prémisse **FAUSSE, corrigée en v3** : `miroshark` et `calcom-api`
+vivent sur des réseaux Docker **disjoints** — l'hôte interne n'est pas joignable depuis le
+backend Bassira.
+**Correction v3 (vérifiée bout-en-bout 2026-07-09 puis reconfirmée par sonde live
+2026-07-10 22h52)** : le backend appelle l'API via le hostname **public dédié**
+`https://api-agenda.ai-mpower.com/v2/...` (PAS `agenda.ai-mpower.com/api/v2`, qui renvoie
+une page Cloudflare « DNS points to prohibited IP », confirmé par sonde comparative sur
+les deux hostnames). `api-agenda.ai-mpower.com` route directement vers l'API Cal.com
+(erreur JSON `ForbiddenException` propre sur clé invalide — preuve que la requête atteint
+bien le service, pas un WAF). Clé : env Coolify `CALCOM_API_KEY` (POST envs Coolify =
+JSON minimal `{key, value}` — le champ `is_build_time` est refusé par cette version).
+Endpoints utiles : `GET /v2/me` (validation), `GET /v2/event-types`, `GET /v2/slots`.
+**Alternatives rejetées** : créneaux par email en texte (v1 — remplacée) ; réseau Docker
+interne (v2 — non joignable, réseaux disjoints) ; Calendly (données prospects chez un
+tiers US).
+**Signal de réexamen** : indisponibilité récurrente de l'instance Cal.com, ou changement
+de topologie réseau Docker qui rendrait `calcom-api` de nouveau joignable en interne.
 
 ## ADR-IQ-07 — Le transcript de qualification est une pièce DURABLE du dossier (directive Amine 2026-07-09)
 

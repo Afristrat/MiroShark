@@ -81,7 +81,7 @@ dossier existe. Le prospect en est informé (bandeau de l'étape B).
 |---|---|---|
 | **Self-service** | enjeu faible (A6 budget < 1 M MAD ET exposition ≤ sectorielle) ET échéance > 2 semaines | Redirection vers le package d'entrée adapté (Stripe existant, US-205) avec le brief attaché |
 | **Devis 48 h** | enjeu moyen, pas d'instance de gouvernance lourde | Devis pré-rempli généré côté admin sous 48 h ; email d'accusé contextualisé |
-| **Entretien 20 min** | instance = conseil/tutelle/investisseurs OU budget ≥ 10 M MAD OU ≥ 1 sujet confidentiel flaggé | Lien de réservation **Cal.com** (`agenda.ai-mpower.com`, instance existante — ADR-IQ-03 v2), event type « Entretien Bassira — 20 min », page localisée selon la langue de session ; l'entretien démarre avec le brief armé + le transcript + la liste des sujets confidentiels à couvrir |
+| **Entretien 20 min** | instance = conseil/tutelle/investisseurs OU budget ≥ 10 M MAD OU ≥ 1 sujet confidentiel flaggé | Lien de réservation **Cal.com** (`agenda.ai-mpower.com`, instance existante — ADR-IQ-03 v3), event type « Entretien Bassira — 20 min », page localisée selon la langue de session ; l'entretien démarre avec le brief armé + le transcript + la liste des sujets confidentiels à couvrir |
 
 ### Étape D — Email de confirmation contextualisé
 
@@ -121,8 +121,9 @@ Mécanisme issu de la chasse (AAR militaire + chef-d'œuvre, feature score 9).
 
 - `quote_ownership.payload` (US-203) : le brief remplace/enrichit le payload actuel.
 - **Cal.com self-hosted existant** (`agenda.ai-mpower.com`) : réservation des entretiens —
-  API interne uniquement (`calcom-api`, localhost:3002 ; la route publique `/api/*` est
-  derrière un challenge Cloudflare, vérifié 2026-07-09), clé env `CALCOM_API_KEY`.
+  API via le hostname public dédié `https://api-agenda.ai-mpower.com/v2/...` (ADR-IQ-03
+  v3 ; PAS de réseau Docker interne, `miroshark`/`calcom-api` sont disjoints), clé env
+  `CALCOM_API_KEY`.
 - Console simulation : le brief pré-seede la création de scénario (US-IQ-07).
 - Chasse moat : M3 (surveillance des verdicts) consommera plus tard les hypothèses du brief.
 - Admin /admin/quotes : affichage du brief + sujets confidentiels (US-IQ-06).

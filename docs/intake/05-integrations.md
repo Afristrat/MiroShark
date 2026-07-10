@@ -9,7 +9,7 @@
 | **Resend** (US-204, ADR-013) | Emails contextualisés par branche | Expéditeur AI-MPower, liens bassira.ma, templates fr/en/ar. Échappement HTML du contenu prospect (cf. 09). |
 | **Stripe Checkout** (US-205, ADR-014) | Branche self-service : propagation `intake_session_id` en metadata de la Checkout Session | Ne PAS toucher au webhook existant au-delà de l'ajout du metadata — il vient d'être vérifié E2E (2026-07-09). |
 | **Console simulation** | US-IQ-07 : pré-seed du scénario depuis le brief | Contrat interne (pas d'API nouvelle) : le brief est lu depuis `intake_sessions` par `simulation_config_generator`. |
-| **Cal.com self-hosted** (`agenda.ai-mpower.com`, DÉJÀ en production — ADR-IQ-03 v2) | Branche entretien : lien de réservation vers l'event type « Entretien Bassira — 20 min », localisé selon la langue de session | ⚠️ **API appelée en réseau interne uniquement** (service `calcom-api`, `localhost:3002`/réseau Docker — la route publique `/api/*` est bloquée par un challenge Cloudflare, vérifié 2026-07-09). Clé : env Coolify `CALCOM_API_KEY` (POST envs = JSON minimal `{key,value}`). Endpoints utiles : `GET /v2/me` (validation), `GET /v2/event-types`, `GET /v2/slots`. Le lien de réservation envoyé au prospect reste public (page web Cal.com, hors challenge). |
+| **Cal.com self-hosted** (`agenda.ai-mpower.com`, DÉJÀ en production — ADR-IQ-03 v3) | Branche entretien : lien de réservation vers l'event type « Entretien Bassira — 20 min », localisé selon la langue de session | ⚠️ **API appelée via le hostname PUBLIC dédié** `https://api-agenda.ai-mpower.com/v2/...` (PAS `agenda.ai-mpower.com/api/v2` → Cloudflare « DNS points to prohibited IP » ; PAS de réseau Docker interne non plus — `miroshark` et `calcom-api` sont sur des réseaux disjoints). Clé : env Coolify `CALCOM_API_KEY` (POST envs = JSON minimal `{key,value}`). Endpoints utiles : `GET /v2/me` (validation), `GET /v2/event-types`, `GET /v2/slots`. Le lien de réservation envoyé au prospect reste public (page web Cal.com). |
 
 ## Explicitement absentes en V1
 
@@ -26,7 +26,7 @@ Prospect → Formulaire A (Flask) → intake_sessions (Supabase)
         → Agent B (Flask → gateway LiteLLM → Flask) → brief + flags + TRANSCRIPT durable (Supabase)
         → Routage C (Flask, déterministe) → route (Supabase)
         → Email D (Resend, contextualisé, locale de session) / Checkout (Stripe)
-          / Réservation Cal.com (lien localisé ; API interne localhost:3002)
+          / Réservation Cal.com (lien localisé ; API via api-agenda.ai-mpower.com/v2)
 Admin   → /admin/quotes (brief, flags, transcript = pièce du dossier de devis)
 Console → pré-seed simulation (US-IQ-07)
 ```
