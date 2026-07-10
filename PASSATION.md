@@ -1,170 +1,188 @@
-== PASSATION NUCLÉAIRE MiroShark/Bassira — 2026-07-09 (soir, US-IQ-03 codée, PR #2 empilée sur PR #1) ==
+== PASSATION NUCLÉAIRE MiroShark/Bassira — 2026-07-10 (soir, session très longue : merge US-IQ-01/03, incident prod résolu, US-IQ-02 codée+mergée+déployée, corpus §10.3 exécuté et revu, ADR-IQ-08 conçu — implémentation reportée) ==
 Synthèse complète et autonome — ne suppose la lecture d'aucune passation antérieure.
 
 [ETAT]
-- **Prod saine, inchangée** : `bassira.ma`/`prospectives.ai-mpower.com` tourne sur gunicorn,
-  dernier commit déployé `fe062c9e` (avant cette session). Aucun push sur `main` cette
-  session — deux PR ouvertes, empilées :
-  - **PR #1** https://github.com/Afristrat/MiroShark/pull/1 — US-IQ-01 (formulaire),
-    branche `feat/us-iq-01-intake-form`, base `main`. Pas encore mergée.
-  - **PR #2** https://github.com/Afristrat/MiroShark/pull/2 — US-IQ-03 (routage),
-    branche `feat/us-iq-03-routing`, base **`feat/us-iq-01-intake-form`** (PAS `main` —
-    stacked PR, car elle dépend du code non mergé de la PR #1). À retargeter sur `main`
-    après merge de la PR #1 (GitHub le fait souvent automatiquement, à vérifier).
-  - Repo local actuellement sur `feat/us-iq-03-routing` — `git checkout main` avant tout
-    travail sans lien avec ce chantier.
-- `.ralph/prd.json` v2.0.0, 149 stories. Chantier `V2-A-blocA` : US-201..207 `passes:true`,
-  US-208 (Redis+RQ PDF) encore ouverte, indépendante. Chantier `V2-B-intake` : **US-IQ-01 et
-  US-IQ-03 CODÉES et testées mais PAS marquées `passes:true` dans prd.json** (choix
-  délibéré, comme pour IQ-01 : `.ralph/prd.json` non touché en attendant validation Amine /
-  merge des PR). US-IQ-02, 04, 05, 06, 07 toujours `passes:false`, non commencées.
-- **Décision Amine cette session (mode d'exécution)** : rester en **interactif** pour la
-  suite du chantier Intake — PAS de relance du Ralph headless malgré le script corrigé
-  (cause racine non traitée : le repo vit sous OneDrive, cf. MEMO incident Ralph headless).
-  Ne pas re-proposer le headless sans nouvelle demande explicite d'Amine.
+- **Prod saine** : `bassira.ma`/`prospectives.ai-mpower.com` sur gunicorn (Coolify, app
+  `u6pn5mr2pgi88s13un55pkzb`, serveur `serveuria`, IP `192.168.100.24`). `main` local et
+  distant synchronisés à `70c2788` (HEAD). Repo local sur `main`, aucune branche feature
+  restante — toutes mergées et supprimées cette session.
+- **US-IQ-01 (formulaire) + US-IQ-03 (routage) + US-IQ-02 (agent conversationnel)** :
+  toutes mergées sur `main`, déployées, **vérifiées fonctionnelles en prod** (formulaire
+  testé réellement après un incident corrigé — voir [FAIT] ; agent testé réellement via le
+  corpus §10.3 avec le vrai modèle `qwen3.6-35b`). `.ralph/prd.json` : US-IQ-01 et US-IQ-03
+  à `passes:true`. **US-IQ-02 reste volontairement `passes:false`** — le prompt v1 en prod
+  a montré 2 échecs réels sur le corpus (voir [FAIT] point 4), un prompt v2 corrigé a été
+  conçu mais **PAS ENCORE implémenté** (ADR-IQ-08, voir [BLOQUE]).
+- **Clé virtuelle LiteLLM `bassira`** créée sur le proxy `litellm-proxy` (conteneur
+  `blmesg55fcrs39723v74q0yt-220706150352`, fqdn `https://proxy.ai-mpower.com`), scoped
+  `qwen3.6-35b` (demande explicite Amine). Câblage code fait (`create_intake_llm_client`
+  dans `llm_client.py`), variables Coolify posées et confirmées présentes en prod
+  (`INTAKE_LLM_API_KEY`, `INTAKE_LLM_BASE_URL`, `INTAKE_LLM_MODEL=qwen3.6-35b`).
+- **ADR-IQ-08 conçu et documenté mais PAS implémenté** (`docs/intake/08-decisions-log.md`,
+  plan complet `docs/superpowers/plans/2026-07-10-adr-iq-08-playbook-escalation.md`,
+  9 tasks TDD) : escalade silencieuse (jamais vue du prospect, Amine seul notifié par
+  email) + playbook vivant de corrections édité via `/admin` (PAS Google Docs — décision
+  explicite d'Amine), relu par l'agent à chaque tour futur. **Amine a explicitement
+  reporté l'exécution de ce plan** — rien codé, seule la conception (ADR + plan) est
+  commitée et poussée.
 
-[FAIT — cette session]
-1. **US-IQ-03 codée, testée, committée, PR #2 ouverte** (empilée sur PR #1, non mergée) :
-   - `backend/app/services/intake_service.py` — `_decide_route(brief, confidential_flags)`
-     (fonction pure, aucun I/O, aucun LLM — ADR-IQ-02) + `complete_routing(session_id)`
-     (nouveau endpoint `POST /api/intake/session/<id>/complete`, state → 'completed').
-     Priorité stricte : **entretien** (gouvernance conseil/tutelle/investisseurs OU budget
-     10-100M/>100M OU ≥1 sujet confidentiel flaggé) **> self-service** (budget <1M ET
-     exposition interne/sectorielle ET échéance strictement >14 jours) **> devis 48h**
-     (repli). L'entretien est évalué en premier — ses critères sont des seuils de risque qui
-     doivent l'emporter même sur un dossier qui ressemblerait sinon à du self-service.
-   - Machine à états SQL : **déjà satisfaite par le trigger posé en US-IQ-01**
-     (`20260709_001_intake_sessions.sql::trg_intake_sessions_guard_state`) — vérifié par
-     inspection du code SQL cette session (rang croissant started<form_submitted<
-     agent_active<completed, `completed`/`abandoned` terminaux). Aucune nouvelle migration.
-     **Non vérifié en base live** (migration pas encore appliquée en prod, PR #1 pas
-     mergée) — même statut d'attente que pour US-IQ-01.
-   - Stripe (`backend/app/services/stripe_service.py::create_checkout_session`) : nouveau
-     paramètre optionnel `intake_session_id` → `metadata[intake_session_id]` sur la Checkout
-     Session. Endpoint `POST /api/stripe/create-checkout-session` le lit dans le body et le
-     transmet. **Webhook `POST /api/stripe/webhook` NON touché** (directive explicite
-     05-integrations.md) — le metadata est juste propagé pour traçabilité/évolutions
-     futures, rien ne le consomme encore côté webhook.
-   - Admin : `GET /api/admin/quotes/<quote_id>` (`backend/app/api/quote.py::get_quote_admin`)
-     enrichi d'un champ `data.intake` (session_id/state/route/confidential_flags) quand le
-     devis est lié à une session intake (`payload.intake_session_id`) — best-effort, ne fait
-     jamais échouer le détail du devis si la session est absente/injoignable. Satisfait l'AC
-     « sujets confidentiels récupérables via l'API admin » sans construire la vue dédiée
-     (US-IQ-06, story séparée).
-   - Tests : `test_unit_intake.py` (+table de vérité exhaustive paramétrée — 400 cas,
-     produit d'axes enjeu(10)×gouvernance(5)×échéance(4)×flags(2), comparée à une
-     réimplémentation indépendante de la spec, PAS un appel circulaire à
-     `_decide_route` ; + tests `complete_routing` machine à états, 404/409 ; + endpoint),
-     nouveau `test_unit_stripe_checkout.py` (propagation metadata + passthrough endpoint),
-     `test_unit_quote_admin.py` (+2 tests enrichissement `data.intake`).
-   - **Vérifié réellement** : `uv run pytest -m "not integration"` → **2127 passed / 1 failed
-     / 42 skipped** (1 échec = `test_md_hash_stable_with_deterministic_enricher`, flaky
-     **pré-existant et déjà documenté** le 2026-07-07 dans `docs/09-errors-log.md`, re-lancé
-     ISOLÉMENT cette session → 1 passed ; aucun lien avec US-IQ-03, pipeline PDF jamais
-     touché). `ruff check .` → All checks passed. `cd frontend && npm run build` → OK
-     (aucun fichier frontend modifié, gate de non-régression uniquement).
-2. Aucun autre changement cette session (pas de travail Cal.com/infra/secrets — chantier
-   focalisé sur US-IQ-03 uniquement).
+[FAIT — cette session, dans l'ordre chronologique]
+1. Merge PR #1 (US-IQ-01) puis PR #2 (US-IQ-03, retarget base → `main` avant merge) via
+   `gh pr merge --merge`. `prd.json` mis à jour (`passes:true` sur les deux).
+2. **Incident prod découvert et résolu** : Amine a testé le formulaire /devis en prod juste
+   après le merge → erreur "Envoi impossible". Diagnostic systématique
+   (`superpowers:systematic-debugging`) : logs backend → `PGRST205 Could not find the
+   table 'public.intake_sessions'`. Cause racine confirmée par requête SQL directe : **la
+   migration `supabase/migrations/20260709_001_intake_sessions.sql` n'avait jamais été
+   appliquée en base de prod** — le merge déploie le code, PAS les migrations Supabase
+   (projet Supabase séparé, hors pipeline de build Coolify). Fix : migration appliquée en
+   transaction atomique (`docker exec supabase-db-dgybi9q5e2ggkjtaxlu2ukai psql`), cache
+   PostgREST rafraîchi. Vérifié réellement : `POST /api/intake/session` → 200 en prod.
+   **LEÇON PERMANENTE pour tout le chantier Intake** : après merge d'une PR contenant une
+   migration `supabase/migrations/*.sql`, TOUJOURS vérifier/appliquer la migration en base
+   de prod — ce n'est jamais automatique.
+3. **US-IQ-02 codée en TDD complet** (plan `docs/superpowers/plans/2026-07-10-us-iq-02-agent.md`,
+   7 tasks + 1 câblage LLM correctif, tous commités séparément) : schéma jsonschema strict
+   de sortie agent, system prompts fr/en/ar v1 (texte exact §10.1 fr, traductions fidèles
+   en/ar), `agent_turn()` (budget 7 tours vérifié en base, persistance immédiate,
+   confidential_flags sans contenu, repli gracieux si LLM down), endpoint
+   `POST /api/intake/session/<id>/agent/turn`, `create_intake_llm_client` (gateway/clé
+   dédiées Bassira), corpus d'évaluation hand-run (`backend/scripts/test_intake_agent_corpus.py`).
+   Mergé sur `main`, poussé. Suite pytest verte à chaque étape (2151 passed / 1 flaky
+   pré-existant documenté / 42 skipped).
+4. **Corpus §10.3 exécuté en conditions réelles** (dans le conteneur backend de prod, vrai
+   appel LLM `qwen3.6-35b`) : **7/10 scénarios conformes**. Sur les 3 signalés en échec :
+   - 1 **faux positif du script** (grep naïf sur « précision » matchant même une négation
+     — l'agent refuse bien la prédiction, comportement conforme).
+   - 2 **échecs réels** : (a) sur les tours à forte charge (injection de prompt, demande de
+     prédiction), l'agent dépasse la limite « ≤3 phrases » en combinant disclosure+refus+
+     relance ; (b) sur un scénario où le prospect livre un contenu confidentiel dès son
+     premier message, l'agent traite le flag SANS s'être présenté comme IA d'abord —
+     violation de la règle de transparence (AI Act art. 50) qui doit pourtant primer.
+   Documenté en détail dans `.ralph/progress.md` (section « US-IQ-02 — Corpus d'évaluation
+   §10.3 »). Un rapport visuel (Artifact HTML, les 10 transcripts réels + verdicts) a été
+   généré et montré à Amine pour revue — pas persisté nulle part de façon durable côté
+   repo, à régénérer si besoin (voir [MEMO]).
+5. **Conception du prompt v2 + architecture ADR-IQ-08** (via skill `/prompt-engineer-pro`,
+   sur demande explicite d'Amine) : corrige les 2 échecs réels (Règle 0 = disclosure
+   toujours en premier, non négociable ; format de message qui fusionne disclosure+refus
+   en une seule phrase plutôt que de compter les phrases) + ajoute un champ `escalation`
+   optionnel à la sortie JSON + durcissement général contre l'imprévu (section « FACE À
+   L'IMPRÉVU », refus par défaut plutôt que deviner). Débat avec Amine sur le sens
+   d'« escalade silencieuse » (clarifié : invisible pour le prospect qui teste un
+   jailbreak, PAS invisible pour Amine — lui seul reçoit/corrige, jamais d'auto-
+   apprentissage automatique non supervisé). Amine a tranché : stockage du playbook via
+   une page `/admin` (pas Google Docs, pour éviter latence/dépendance OAuth externe dans
+   le chemin chaud de chaque tour). ADR-IQ-08 écrit, plan complet écrit (9 tasks TDD),
+   **implémentation explicitement reportée par Amine** (session déjà très longue).
+6. ADR-IQ-08 + plan commités et poussés sur `main` (`70c2788`) — documentation seule,
+   aucun code touché.
 
 [ALERTE]
-- ⚠️ **Test `tunnel-commercial.spec.ts` échoue en environnement frontend-only** (`vite
-  preview` sans backend) — PAS une régression, déjà expliqué (US-IQ-01) : `crisis_drill_24h`
-  self-service appelle Stripe au clic, échoue silencieusement sans backend. Ne pas
-  re-diagnostiquer.
-- ⚠️ **Coolify preview deployments NE SONT PAS actifs** sur l'app
-  `u6pn5mr2pgi88s13un55pkzb` — pousser une branche/ouvrir une PR ne déclenche aucun build de
-  preview. Webhook GitHub côté Coolify à configurer si cette voie est un jour souhaitée
-  (hors scope de cette session, toujours vrai).
-- ⚠️ **PR ouverte par erreur puis fermée** sur `aaronjmars/MiroShark#243` lors de la session
-  précédente (dépôt tiers upstream, comportement par défaut de `gh pr create` sur un fork).
-  Toujours `gh pr create --repo Afristrat/MiroShark` explicite — vérifié à nouveau respecté
-  cette session (PR #2 créée directement au bon endroit).
-- ⚠️ `COOLIFY_API_TOKEN` du coffre DPAPI **toujours périmé** — token de contournement valide
-  UNIQUEMENT sur le serveur : `/home/serveuria/.credentials/coolify-api-token-claude-20260708`
-  (rotation dans le coffre toujours en attente, session home ou Amine, SOP-001). Non
-  utilisé cette session (aucune opération Coolify).
-- ⚠️ IP serveur `serveuria` dernière valeur confirmée **`192.168.100.24`** (2026-07-09,
-  session précédente) — non re-vérifiée cette session (aucune opération serveur). Toujours
-  lire `$env:SERVER_HOST` du coffre plutôt que coder l'IP en dur.
+- ⚠️ **Coffre DPAPI `SERVER_HOST` désynchronisé** : peut contenir `192.168.100.11`
+  (périmé) au lieu de `192.168.100.24` (IP réelle confirmée cette session, SSH testé,
+  hostname `serveuria-MS-7D98`). **Cette session MiroShark ne peut PAS corriger le coffre**
+  (sandbox de permissions limité au repo courant) — nécessite la session **home** (CWD
+  `C:\Users\amans`). Non re-vérifié si corrigé entre-temps par une autre session — vérifier
+  `$env:SERVER_HOST` avant de faire confiance à l'IP, sinon utiliser `.24` en dur comme
+  vérifié cette session.
+- ⚠️ Aucun CI/check configuré sur `Afristrat/MiroShark` (`statusCheckRollup` vide) — rien
+  ne bloque un merge cassé automatiquement, seule la vigilance manuelle (pytest+ruff avant
+  chaque commit) protège.
+- ⚠️ Test `tunnel-commercial.spec.ts` toujours en échec en environnement frontend-only
+  (`vite preview` sans backend) — non lié, déjà expliqué dans une passation antérieure
+  (US-IQ-01), ne pas re-diagnostiquer.
+- ⚠️ `COOLIFY_API_TOKEN` du coffre DPAPI périmé — token de contournement utilisé cette
+  session, valide sur le serveur : `/home/serveuria/.credentials/coolify-api-token-claude-20260708`.
+- ⚠️ **Déploiement Coolify observé lent/asynchrone** cette session (jusqu'à ~10-15 min
+  entre un push et le conteneur effectivement recréé avec le nouveau code) — toujours
+  vérifier `docker ps --filter name=u6pn5mr2pgi88s13un55pkzb --format "{{.CreatedAt}}"` ET
+  grepper une chaîne de code récente dans le conteneur (ex.
+  `docker exec <nom> grep -c create_intake_llm_client /app/backend/app/utils/llm_client.py`)
+  avant de supposer qu'un déploiement est effectif — ne jamais se fier au seul push.
 
 [BLOQUE / EN ATTENTE D'AMINE]
-- **PR #1 ET PR #2 en attente de review/merge** — merger #1 d'abord (base de #2). Pas de
-  preview visuelle automatique disponible (voir ALERTE Coolify). US-IQ-03 est backend-only
-  (aucun écran) — rien à vérifier visuellement pour cette PR spécifiquement.
-- Arbitrage US-220..223 (moats de la chasse, suggérées, non insérées au PRD) — hors urgence.
-- Rotation `COOLIFY_API_TOKEN` (coffre périmé).
-- Sort de `test@bassira.ma` toujours existant sans org.
-- Décision webhook vs polling pour `calcom_booking_uid` (US-IQ-04) — non tranchée, à
-  trancher à l'implémentation de US-IQ-04 si ça bloque.
+- **Implémentation d'ADR-IQ-08** (playbook + escalade) — plan prêt à exécuter
+  (`docs/superpowers/plans/2026-07-10-adr-iq-08-playbook-escalation.md`), reporté par
+  Amine. Prochaine session : proposer le choix Subagent-Driven vs Inline comme d'habitude,
+  PUIS exécuter le plan tel quel (déjà relu en self-review, cohérent avec le code existant
+  — pas besoin de reconcevoir).
+- **Gate §10.3 sur le prompt v2** — une fois ADR-IQ-08 implémenté et le prompt v2 déployé,
+  ré-exécuter le corpus (`backend/scripts/test_intake_agent_corpus.py`, dans le conteneur
+  prod) pour vérifier que les 2 échecs réels sont corrigés, avant de marquer
+  `US-IQ-02.passes=true`.
+- Rotation `SERVER_HOST`/`COOLIFY_API_TOKEN` dans le coffre DPAPI (session home requise).
 
 [NEXT]
-1. **PRIORITÉ 1** : obtenir la review/merge de la PR #1 (Amine), puis de la PR #2 (retarget
-   base sur `main` si GitHub ne le fait pas seul). Ensuite marquer `US-IQ-01` ET `US-IQ-03`
-   `passes:true` + `completedAt` dans `.ralph/prd.json` (volontairement pas fait avant
-   validation Amine, même logique que IQ-01).
-2. **Poursuivre en interactif** (décision confirmée cette session, cf. ETAT) : US-IQ-02
-   (agent conversationnel, dépend uniquement de US-IQ-01 déjà codée) est la prochaine story
-   naturelle — avant de commencer, relire `docs/intake/01-intake-spec.md` §Étape B et
-   `docs/intake/10-execution-prompts.md` §10.1 (system prompt agent) + §10.3 (grille
-   d'évaluation, corpus fixture ≥10 transcripts). US-IQ-04/06/07 débloquées par US-IQ-03
-   (codée, pas mergée) — peuvent être codées par-dessus `feat/us-iq-03-routing` si Amine
-   valide qu'on continue à empiler sans attendre les merges (c'est le choix fait cette
-   session pour IQ-03 sur IQ-01, cohérent à reconduire sauf avis contraire).
-3. US-208 (Redis+RQ PDF) reste ouverte en parallèle si Intake est mis en pause.
+1. **PRIORITÉ 1** : reprendre l'exécution du plan ADR-IQ-08 (9 tasks, TDD, déjà écrit et
+   auto-revu) — demander à Amine Subagent-Driven vs Inline, puis exécuter task par task
+   exactement comme US-IQ-02 (test échoue → implémente → test passe → commit).
+2. Une fois ADR-IQ-08 mergé/déployé : vérifier le déploiement effectif (cf. [ALERTE] sur la
+   lenteur Coolify — grep le code dans le conteneur, pas juste `docker ps`), puis
+   ré-exécuter le corpus §10.3 dans le conteneur prod avec le prompt v2.
+3. Documenter le nouveau résultat du corpus dans `.ralph/progress.md`, revue humaine des
+   critères 9-10 par Amine, puis marquer `US-IQ-02.passes=true` + `completedAt` dans
+   `.ralph/prd.json` si le gate passe.
+4. Si échec persistant sur un critère : ajuster le prompt (v2 → v3), **jamais de
+   contournement dans le code** (règle explicite §10.3) — ou, une fois ADR-IQ-08 en place,
+   Amine peut directement ajouter une correction au playbook via `/admin/agent-playbook`
+   sans re-toucher au code.
+5. Ensuite : US-IQ-04 (emails contextualisés + Cal.com, dépend de US-IQ-03 déjà mergée) est
+   la suite naturelle du chantier Intake — ou US-208 (Redis+RQ PDF) en parallèle. Décision
+   à Amine.
 
 [CTX]
-- **Chaîne de branches** : `main` ← `feat/us-iq-01-intake-form` (PR #1) ←
-  `feat/us-iq-03-routing` (PR #2, checkout local actuel). Toute nouvelle story IQ-0x qui
-  continue d'empiler devrait partir de `feat/us-iq-03-routing`, pas de `main`.
 - **Repo GitHub** : toujours `--repo Afristrat/MiroShark` explicite sur toute commande `gh`.
-- Accès serveur : `ssh -i $env:SERVER_SSH_KEY serveuria@$env:SERVER_HOST` (coffre — IP DHCP,
-  jamais coder en dur). Non utilisé cette session.
-- **Cal.com** : endpoint public `https://api-agenda.ai-mpower.com/v2/...` (sans `/api`),
-  header `Authorization: Bearer $CALCOM_API_KEY`. Ne PAS utiliser `agenda.ai-mpower.com`.
-  Pertinent pour US-IQ-04 (pas encore commencée).
-- Contrat payload intake (US-IQ-01, inchangé) : `{full_name, email, company, consent_rgpd,
-  brief: {decision, options, deadline:{date,overdue}, governance, past_method, past_gap,
-  stakes:{budget_bracket,jobs,exposure}, geo:[{country,segment}], data_assets}}`. Le
-  `brief` est imbriqué, PAS à plat.
-- **Nouveau contrat routage (US-IQ-03)** : `POST /api/intake/session/<id>/complete` (body
-  vide) → `{success, data:{session_id, state:'completed', route}}`. `route` ∈
-  `self_service|quote_48h|meeting`. Le front doit ensuite, pour `self_service`, appeler
-  `POST /api/stripe/create-checkout-session` avec `intake_session_id` dans le body — ce
-  n'est PAS fait automatiquement par `/complete` (le choix du package d'entrée adapté reste
-  une décision produit/UX non spécifiée par les AC de US-IQ-03, cf. US-IQ-04/frontend).
-- pytest backend : 2127 passed / 1 flaky pré-existant documenté (~3-4 min) sur
-  `feat/us-iq-03-routing`.
-- Fins de ligne : `prd.json` = CRLF — réécrire en CRLF après édition Node.
+- **Accès serveur** : `ssh -i C:\Users\amans\.ssh\serveurai_mnemo serveuria@192.168.100.24`.
+- **LiteLLM proxy** : conteneur `blmesg55fcrs39723v74q0yt-220706150352`, API interne
+  `http://localhost:4000` (curl absent dans ce conteneur — `python3 urllib.request` via
+  `docker exec`). Master key : env `LITELLM_MASTER_KEY` du conteneur (jamais affichée).
+  34+ clés virtuelles existantes (dont `bassira`, scoped `qwen3.6-35b`).
+- **Supabase prod Bassira** : conteneur `supabase-db-dgybi9q5e2ggkjtaxlu2ukai` (service
+  Coolify `supabase-miroshark`). Appliquer une migration :
+  `cat migration.sql | ssh ... 'docker exec -i supabase-db-dgybi9q5e2ggkjtaxlu2ukai psql
+  -U postgres -v ON_ERROR_STOP=1'` enveloppé `BEGIN;`/`COMMIT;` pour rollback auto.
+- **Contrat agent US-IQ-02** (v1, à étendre par ADR-IQ-08) : `POST
+  /api/intake/session/<id>/agent/turn` body `{"message": "<texte>"}` →
+  `{success, data:{session_id, state, agent_turns, message, close, route?}}`. 403
+  `AGENT_BUDGET_EXHAUSTED` au-delà de 7 tours. 502 `AGENT_INVALID_OUTPUT` si JSON non
+  conforme. Le schéma de sortie interne (jamais renvoyé tel quel au client) sera étendu par
+  ADR-IQ-08 avec un champ `escalation` optionnel.
+- **Pattern service Intake** (`backend/app/services/intake_service.py`, ~850 lignes
+  maintenant) : `start_session`, `submit_form`, `complete_routing` (US-IQ-01/03),
+  `_validate_agent_output`, `_build_agent_messages`, `agent_turn`,
+  `_close_session_gracefully` (US-IQ-02). Toutes les fonctions publiques prennent
+  `client: Any = None` (injecté en test via `FakeSupabase`, sinon `get_supabase_admin()`).
+- pytest backend : ~2151 passed / 1 flaky pré-existant documenté / 42 skipped (~5 min).
+- Fins de ligne : `prd.json` = CRLF — réécrire en CRLF après édition Node/outil.
+- Plans de référence (style à reproduire pour toute nouvelle story TDD) :
+  `docs/superpowers/plans/2026-07-10-us-iq-02-agent.md` (exécuté, complet) et
+  `docs/superpowers/plans/2026-07-10-adr-iq-08-playbook-escalation.md` (prêt, pas exécuté).
 
 [MEMO inter-sessions]
-- **Incident Ralph headless (résolu, ne pas reproduire)** : `ralph-loop.sh` avait 3 bugs
-  réels, corrigés dans le script en session précédente, MAIS un circuit breaker a quand même
-  été déclenché — cause racine probable : contention de lock Git, le repo vit sous OneDrive
-  et le `.git` partagé, lui, ne l'est pas (contrairement à Qalem/Building ideas/Stratégie,
-  délibérément hors OneDrive). **Corriger le script ne corrige pas la cause racine** — Amine
-  a confirmé cette session de rester en interactif tant que ce point d'architecture n'est
-  pas traité (migration du repo hors OneDrive = chantier à part, non entamé).
-- **Le module Intake résout un problème RÉEL constaté par Amine** : le formulaire /devis
-  actuel produisait des payloads inexploitables (`message`=libellé du sélecteur, champs
-  vides, cf. incident `q_f767321b`). US-IQ-01 rend ce payload pauvre impossible par
-  construction ; US-IQ-03 transforme ce brief riche en décision commerciale auditable
-  (routage déterministe, testé exhaustivement — jamais de boîte noire LLM sur cette
-  décision, ADR-IQ-02).
-- **Convention intercepteur axios** (`frontend/src/api/index.js`) : les fonctions API
-  retournent DIRECTEMENT le body `{success, data}` — jamais destructurer `{ data }` puis
-  relire `.data` (bug déjà payé, commit `fbb53ae`). Pertinent dès que le frontend consommera
-  `/complete` (US-IQ-04+).
-- **Pattern « empiler une PR sur une PR non mergée »** (nouveau cette session) : quand une
-  story dépend du code d'une story précédente pas encore mergée, créer la nouvelle branche
-  DEPUIS la branche de la story précédente (pas depuis `main`) et ouvrir la PR avec
-  `--base <branche-précédente>` — évite d'attendre un merge pour avancer, au prix d'un
-  retarget manuel de la base une fois le merge amont fait. Décision explicite de continuer
-  ainsi (cf. ETAT/NEXT) plutôt que d'attendre chaque review.
-- **Séquençage secrets, règle absolue** : ne JAMAIS purger presse-papier/historique Win+V
-  avant preuve système que le stockage a réussi (HTTP 201 vérifié).
+- **Pattern « migration Supabase non auto-déployée »** (CRITIQUE, déjà vécu deux fois ce
+  chantier) : chaque story avec une migration SQL doit être suivie d'une vérification
+  explicite en base de prod après merge — le déploiement Coolify ne déploie QUE le code
+  applicatif. Ne jamais supposer qu'un merge = migration appliquée.
+- **Sandbox de session par répertoire** (confirmé empiriquement) : une session dont le CWD
+  est ce repo ne peut PAS lire/écrire dans `~/.claude/secrets/` (Bash ET PowerShell
+  bloqués) — même avec autorisation verbale explicite d'Amine. Toute correction du coffre
+  DPAPI doit passer par la session **home** (CWD `C:\Users\amans`).
+- **Séquençage secrets** : toute clé/token généré côté serveur transite uniquement en
+  variable shell serveur ou fichier temporaire supprimé aussitôt après usage — jamais
+  affiché dans le chat (pattern utilisé pour la clé LiteLLM `bassira` cette session).
+- **« Escalade silencieuse » ≠ boîte noire** (clarification actée avec Amine, structurante
+  pour toute future feature de supervision d'agent) : silencieux = invisible pour
+  l'utilisateur qui teste le système, PAS invisible pour l'opérateur humain qui supervise.
+  Toujours distinguer les deux avant de juger qu'un mécanisme d'escalade/logging pose un
+  problème d'auditabilité.
+- **Convention intercepteur axios** (`frontend/src/api/client.js`) : les fonctions
+  retournent DIRECTEMENT `{success, data}` — jamais destructurer `{ data }` puis relire
+  `.data`. Vérifié une fois de plus en lisant `AdminBrandingView.vue` cette session.
 - Marque : Bassira (بصيرة) visible, `miroshark` technique. Jamais « prédiction » dans le
-  copy (ADR-002). URLs publiques bassira.ma TOUJOURS (ADR-013). i18n fr/en/ar parité stricte
-  (ADR-008 + règle transversale langue module Intake). LLM via gateway LiteLLM, modèles
-  choisis par Amine seul (ADR-004/ADR-IQ-06).
+  copy (ADR-002). URLs publiques bassira.ma TOUJOURS (ADR-013). i18n fr/en/ar parité
+  stricte (ADR-008). LLM : modèle/gateway TOUJOURS choisis par Amine, jamais par l'IA
+  (ADR-004/ADR-IQ-06) — respecté cette session à chaque étape (clé/modèle 35B, choix
+  `/admin` vs Google Docs, tout tranché par Amine).
 
 — fin passation —
