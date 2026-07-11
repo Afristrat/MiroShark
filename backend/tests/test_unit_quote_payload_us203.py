@@ -293,3 +293,32 @@ class TestSubmitQuoteDualPersistence:
         qs.submit_quote(_valid_submission())
         assert captured["record"]["email"] == "karim@example.com"
         assert captured["record"]["consent_rgpd"] is True
+
+
+# ─── US-IQ-04 audit R1 : échappement HTML du contenu prospect ───────────────
+
+
+class TestSendClientConfirmationHtmlEscaping:
+    def test_full_name_html_escaped(self, monkeypatch):
+        import app.services.email_service as email_svc
+
+        captured = {}
+        monkeypatch.setattr(
+            email_svc, "send_email",
+            lambda *, to_email, subject, html_body, **kw: captured.update(
+                {"html_body": html_body}
+            ) or True,
+        )
+        record = {
+            "email": "prospect@example.com",
+            "full_name": "<script>alert(1)</script>",
+            "company": "Acme & Co",
+            "package": "custom",
+            "industry": "<b>tech</b>",
+            "quote_id": "q_test123",
+        }
+        qs._send_client_confirmation(record)
+        assert "<script>alert(1)</script>" not in captured["html_body"]
+        assert "&lt;script&gt;" in captured["html_body"]
+        assert "Acme &amp; Co" in captured["html_body"]
+        assert "&lt;b&gt;tech&lt;/b&gt;" in captured["html_body"]
