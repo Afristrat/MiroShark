@@ -247,7 +247,14 @@ class Config:
     # entre workers Gunicorn. Sinon, fallback in-process (dict TTL) qui
     # marche encore correctement avec un seul worker.
     REDIS_URL = os.environ.get('REDIS_URL', '')
-    
+
+    # Cal.com self-hosted (ADR-IQ-03 v3) — branche entretien de l'agent Intake.
+    # Hostname public dédié api-agenda.ai-mpower.com, JAMAIS agenda.ai-mpower.com/api/v2
+    # (bloqué Cloudflare). Event type créé le 2026-07-10 : id 25, 20 min.
+    CALCOM_API_KEY = os.environ.get('CALCOM_API_KEY', '')
+    CALCOM_EVENT_TYPE_SLUG = os.environ.get('CALCOM_EVENT_TYPE_SLUG', 'entretien-bassira-20-min')
+    CALCOM_BOOKER_USERNAME = os.environ.get('CALCOM_BOOKER_USERNAME', 'a.mansouri')
+
     @classmethod
     def validate(cls):
         """Validate required configuration.
