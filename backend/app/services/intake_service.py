@@ -28,10 +28,12 @@ import json
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
+from urllib.parse import urlencode
 
 import jsonschema
 
 from ..auth.supabase_client import SupabaseConfigError, get_default_super_admin_org_id, get_supabase_admin
+from ..config import Config
 from ..utils.llm_client import create_intake_llm_client
 from ..utils.logger import get_logger
 from . import quote_ownership as qo
@@ -968,3 +970,16 @@ def _build_confirmation_cta(
             "cta_html": locale_copy["cta_html"].format(calcom_link=link),
         }
     return dict(locale_copy)
+
+
+def _build_calcom_booking_link(session_id: str, locale: str) -> str:
+    """Construit l'URL publique de réservation Cal.com pour l'event type
+    Intake (ADR-IQ-03 v3) — AUCUN appel API nécessaire, c'est une page web
+    publique statique. ``forwardParamsSuccessRedirect`` (actif sur l'event
+    type) fait remonter ``intake_session_id`` au redirect de confirmation
+    (Task 6) pour identifier la session côté serveur."""
+    params = urlencode({"intake_session_id": session_id, "lang": locale})
+    return (
+        f"https://agenda.ai-mpower.com/{Config.CALCOM_BOOKER_USERNAME}/"
+        f"{Config.CALCOM_EVENT_TYPE_SLUG}?{params}"
+    )

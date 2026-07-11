@@ -51,3 +51,27 @@ class TestBuildConfirmationCta:
         produire un CTA vide — le générique 'devis 48h' est le repli sûr."""
         result = svc._build_confirmation_cta("unexpected_value", "fr", None)
         assert result["cta_html"]
+
+
+class TestBuildCalcomBookingLink:
+    def test_includes_event_type_slug_and_username(self, monkeypatch):
+        monkeypatch.setattr(svc.Config, "CALCOM_BOOKER_USERNAME", "a.mansouri")
+        monkeypatch.setattr(svc.Config, "CALCOM_EVENT_TYPE_SLUG", "entretien-bassira-20-min")
+        link = svc._build_calcom_booking_link("sess-abc-123", "fr")
+        assert link.startswith("https://agenda.ai-mpower.com/a.mansouri/entretien-bassira-20-min")
+        assert "intake_session_id=sess-abc-123" in link
+
+    def test_locale_propagated_as_query_param(self):
+        link_en = svc._build_calcom_booking_link("sess-1", "en")
+        link_ar = svc._build_calcom_booking_link("sess-1", "ar")
+        assert "lang=en" in link_en
+        assert "lang=ar" in link_ar
+
+    def test_fr_locale_maps_to_fr_query_param(self):
+        link = svc._build_calcom_booking_link("sess-1", "fr")
+        assert "lang=fr" in link
+
+    def test_session_id_url_encoded(self):
+        link = svc._build_calcom_booking_link("sess with space", "fr")
+        assert "sess with space" not in link
+        assert "sess+with+space" in link or "sess%20with%20space" in link
