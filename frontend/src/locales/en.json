@@ -1893,6 +1893,8 @@
     "step3": {
       "successTitle": "Thanks · we've received your case.",
       "successSubtitle": "We'll get back to you within 48 business hours with a scoped proposal.",
+      "calcomConfirmedTitle": "Your meeting is confirmed.",
+      "calcomConfirmedSubtitle": "We arrive prepared — you'll receive an email invite with the video call link.",
       "quoteIdLabel": "Reference",
       "errorTitle": "Submission failed",
       "errorFallback": "A network error occurred. Please retry in a moment.",

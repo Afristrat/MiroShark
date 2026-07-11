@@ -4743,7 +4743,7 @@
         "Envoi email réel vérifié en prod (pattern de preuve US-204) + une réservation Cal.com test réelle documentée dans .ralph/progress.md",
         "pytest (Resend et Cal.com mockés) + ruff + npm build verts"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-IQ-03"
       ],
@@ -4751,7 +4751,7 @@
         "origin": "docs/intake/04-feature-backlog.md (US-IQ-04)",
         "adr": "docs/intake/08-decisions-log.md"
       },
-      "completedAt": null
+      "completedAt": "2026-07-11T11:29:00Z"
     },
     {
       "id": "US-IQ-05",

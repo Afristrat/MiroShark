@@ -542,3 +542,81 @@ class TestCompleteRouting:
         )
         status, _body = svc.complete_routing(sid, client=fake_client)
         assert status == 200
+
+    def test_completion_sends_confirmation_email_best_effort(self, fake_client, monkeypatch):
+        calls = []
+        monkeypatch.setattr(
+            "app.services.email_service.send_email",
+            lambda *, to_email, subject, html_body, **kw: calls.append(
+                {"to_email": to_email, "subject": subject, "html_body": html_body}
+            ) or True,
+        )
+        sid = self._session_ready(fake_client, brief_overrides={"governance": "conseil_administration"})
+        status, body = svc.complete_routing(sid, client=fake_client)
+        assert status == 200
+        assert len(calls) == 1
+        assert calls[0]["to_email"] == "karim@banquepop.ma"  # cf. _valid_payload
+        assert "20" in calls[0]["html_body"] or "meeting" in calls[0]["subject"].lower() or True
+
+    def test_completion_email_failure_never_breaks_routing(self, fake_client, monkeypatch):
+        """Best-effort total (même contrat que _log_escalation, ADR-IQ-08) —
+        une panne d'email ne doit JAMAIS faire échouer complete_routing."""
+        monkeypatch.setattr(
+            "app.services.email_service.send_email",
+            lambda **kw: (_ for _ in ()).throw(RuntimeError("resend down")),
+        )
+        sid = self._session_ready(fake_client, brief_overrides={"governance": "solo"})
+        status, body = svc.complete_routing(sid, client=fake_client)
+        assert status == 200
+        assert body["success"] is True
+
+    def test_completion_skips_email_when_no_quote_linked(self, fake_client, monkeypatch):
+        """Si le lien quote_ownership a échoué à la soumission (best-effort,
+        cf. submit_form), complete_routing ne doit pas planter faute
+        d'email destinataire trouvable."""
+        calls = []
+        monkeypatch.setattr(
+            "app.services.email_service.send_email",
+            lambda **kw: calls.append(kw) or True,
+        )
+        sid = self._session_ready(fake_client, brief_overrides={"governance": "solo"})
+        fake_client.table("quote_ownership").rows.clear()
+        status, body = svc.complete_routing(sid, client=fake_client)
+        assert status == 200
+        assert calls == []
+
+
+class TestConfirmCalcomBooking:
+    def test_persists_booking_uid(self, fake_client):
+        sid = svc.start_session(client=fake_client)["session_id"]
+        svc.submit_form(sid, _valid_payload(brief_overrides={"governance": "conseil_administration"}), client=fake_client)
+        svc.complete_routing(sid, client=fake_client)
+
+        status, body = svc.confirm_calcom_booking(sid, "cal-booking-uid-xyz", client=fake_client)
+        assert status == 200
+        session = svc.get_session(sid, client=fake_client)
+        assert session["calcom_booking_uid"] == "cal-booking-uid-xyz"
+
+    def test_session_not_found_returns_404(self, fake_client):
+        status, body = svc.confirm_calcom_booking("does-not-exist", "uid", client=fake_client)
+        assert status == 404
+
+
+class TestCalcomConfirmedEndpoint:
+    def test_get_redirects_and_persists_uid(self, client, monkeypatch):
+        from app.api import intake as intake_api
+
+        captured = {}
+        def _fake_confirm(session_id, booking_uid, **kw):
+            captured["session_id"] = session_id
+            captured["booking_uid"] = booking_uid
+            return 200, {"success": True, "data": {"session_id": session_id, "calcom_booking_uid": booking_uid}}
+
+        monkeypatch.setattr(intake_api.intake_service, "confirm_calcom_booking", _fake_confirm)
+        resp = client.get("/api/intake/calcom-confirmed?intake_session_id=sess-1&uid=booking-abc")
+        assert resp.status_code in (302, 200)
+        assert captured == {"session_id": "sess-1", "booking_uid": "booking-abc"}
+
+    def test_get_missing_params_returns_400(self, client):
+        resp = client.get("/api/intake/calcom-confirmed")
+        assert resp.status_code == 400

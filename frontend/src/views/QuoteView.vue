@@ -22,8 +22,10 @@
 
       <!-- ───────────── Card centrée (parcours 3 temps A1-A8) ───────────── -->
       <section class="quote-card">
-        <!-- Stepper 3 temps -->
+        <!-- Stepper 3 temps — masqué pour le retour Cal.com (n'a jamais
+             traversé ce formulaire, cf. calcomConfirmed). -->
         <ol
+          v-if="!calcomConfirmed"
           class="quote-stepper"
           :aria-label="$t('quote.stepper.step', { current: Math.min(currentStep, 3), total: 3 })"
         >
@@ -392,7 +394,19 @@
 
         <!-- ───── Confirmation (succès / erreur) ───── -->
         <div v-else-if="currentStep === 4" class="quote-step-content">
-          <template v-if="submitError === null">
+          <template v-if="calcomConfirmed">
+            <div class="quote-success">
+              <div class="quote-success-icon">
+                <span class="material-symbols-outlined" aria-hidden="true">event_available</span>
+              </div>
+              <h2 class="quote-step-title">{{ $t('quote.step3.calcomConfirmedTitle') }}</h2>
+              <p class="quote-success-sub">{{ $t('quote.step3.calcomConfirmedSubtitle') }}</p>
+              <router-link :to="{ name: 'Offers' }" class="quote-cta quote-cta--inline">
+                {{ $t('quote.step3.backToOffers') }}
+              </router-link>
+            </div>
+          </template>
+          <template v-else-if="submitError === null">
             <div class="quote-success">
               <div class="quote-success-icon">
                 <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
@@ -438,6 +452,7 @@
 <script setup>
 import { computed, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import { startIntakeSession, submitIntakeForm } from '../api/intake'
 import { formatApiError } from '../utils/error-handler'
 
@@ -463,8 +478,14 @@ const trustItems = [
 ]
 
 const { t, locale } = useI18n()
+const route = useRoute()
 
 const currentStep = ref(1)
+// Retour depuis le redirect de succès Cal.com (US-IQ-04, branche entretien)
+// — /devis?calcom_confirmed=1 saute directement à l'écran de confirmation
+// au lieu de réafficher le formulaire A1-A8 déjà soumis.
+const calcomConfirmed = ref(route.query.calcom_confirmed === '1')
+if (calcomConfirmed.value) currentStep.value = 4
 
 const form = reactive({
   // Temps 1 — la décision (A1-A3)

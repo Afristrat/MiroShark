@@ -1738,3 +1738,56 @@ avant `US-IQ-02.passes=true`. Deux options non exclusives, à choisir par Amine 
   (b) Accepter tel quel si Amine juge ces deux écarts mineurs/acceptables pour un v1.
 Sortie complète du script conservée dans les logs de session — à relancer après tout ajustement
 du prompt (même corpus, dans le conteneur backend de prod, `INTAKE_LLM_*` déjà en place).
+
+## US-IQ-04 — Emails contextualisés + réservation Cal.com (2026-07-11)
+
+**Exécution** : plan `docs/superpowers/plans/2026-07-11-us-iq-04-email-calcom.md` (7 tasks
+TDD), skill `superpowers:executing-plans`, mode Inline. 6 tasks code + Task 7 gates/vérif
+réelle. Mergé fast-forward dans `main`, poussé (`d81fc91`), déployé Coolify (commit `d81fc91`,
+deployment `bpse4gmanxgpi668zdh49kqw`, fini 09:13 UTC).
+
+**Deux angles morts corrigés en cours de route** (le plan écrit avait des trous, corrigés au
+fil de l'exécution — cf. RÈGLE N°3, zéro dette de plan) :
+1. Task 3 : la copy anglaise CTA branche `meeting` disait « 20-minute meeting » (pas de mot
+   « minutes » isolé) → cassait `test_meeting_en_locale`. Reformulé « Book your meeting
+   (20 minutes) ».
+2. **Task 7 Step 5 — bug réel trouvé par test manuel d'Amine** : le redirect de succès Cal.com
+   pointait vers `https://bassira.ma/devis?calcom_confirmed=1`, mais `QuoteView.vue` (qui sert
+   la route `/devis`) ne consommait JAMAIS ce query param — un prospect qui venait de réserver
+   un entretien (branche `meeting`, qui par définition n'a pas besoin de formulaire) se
+   retrouvait renvoyé vers le formulaire A1-A8 vide. Corrigé (`fd0af3d`, poussé et déployé,
+   fini 11:2x UTC) : `QuoteView.vue` détecte `route.query.calcom_confirmed === '1'` et saute
+   directement à l'écran de confirmation (étape 4) avec un message dédié fr/en/ar
+   (`quote.step3.calcomConfirmedTitle/Subtitle`), stepper masqué.
+
+**Vérification réelle en prod (AC explicite de la story, pas seulement pytest)** :
+- Parcours Intake réel via l'API publique (`session_id=fa6be1f8-375a-4a9c-bdfd-e1d55e99059b`,
+  `quote_id=q_39df1899`), governance `conseil_administration` → route `meeting`.
+- **Email réel reçu** (thread Gmail `19f5044fc558f9c4`, 08:22 UTC, `tahirisophia1@gmail.com`) —
+  contenu exact conforme : décision, CTA branche meeting, lien Cal.com correct. Un artefact de
+  décodage quoted-printable dans l'outil Gmail MCP affichait le lien comme corrompu
+  (`intake_session_id�6be1f8...`) — **faux positif vérifié** : reproduction locale exacte de
+  `render_template`/`_build_calcom_booking_link` confirme que le code produit le lien intact
+  (`intake_session_id=fa6be1f8...`), la corruption n'existe que dans l'extraction de l'outil,
+  pas dans l'email réel envoyé.
+- **Réservation Cal.com réelle effectuée par Amine** (Chrome indisponible dans cet
+  environnement — extension non connectée) sur le lien reçu. `calcom_booking_uid` confirmé
+  persisté en base (`bPsTR8xUhWyYpD3pPMZbEp`, vérifié par requête directe Supabase via le
+  conteneur) — le mécanisme technique redirect → endpoint → DB fonctionne intégralement.
+- Après le fix du redirect, `https://bassira.ma/devis?calcom_confirmed=1` confirmé servant le
+  nouveau bundle (`calcom_confirmed` présent dans `QuoteView-B037gR5A.js` déployé, conteneur
+  recréé 11:24 UTC).
+
+**⚠️ Hors scope, signalé à Amine, PAS corrigé ici** : la réservation Cal.com réelle n'a déclenché
+AUCUN email natif Cal.com (ni côté booker, ni côté host `a.mansouri`), alors que la réservation
+existe bien dans l'agenda. Root cause identifiée par preuve système : les conteneurs
+`calcom-a1354o9qgw8rdkszn56o9x3o` ET `calcom-api-a1354o9qgw8rdkszn56o9x3o` n'ont **aucune**
+variable d'environnement SMTP/EMAIL/MAIL configurée (`env | grep -iE "smtp|email|mail"` vide
+dans les deux). C'est un gap d'infra Cal.com self-hosted pré-existant, indépendant du code
+Bassira — à traiter dans une session dédiée à l'infra Cal.com, pas dans ce repo.
+
+**Gates** : pytest backend complet 2170 passed / 1 failed (flaky pré-existant documenté,
+`test_md_hash_stable_with_deterministic_enricher`) / 42 skipped (WeasyPrint absent) ; ruff
+clean ; `npm run build` OK (frontend touché uniquement par le fix du redirect).
+
+`US-IQ-04.passes = true` dans `.ralph/prd.json`, `completedAt = 2026-07-11T11:29:00Z`.

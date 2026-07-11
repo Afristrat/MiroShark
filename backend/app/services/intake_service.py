@@ -29,6 +29,7 @@ import json
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
+from urllib.parse import urlencode
 
 import jsonschema
 
@@ -413,12 +414,10 @@ _ROUTABLE_STATES = {"form_submitted", "agent_active"}
 
 
 def complete_routing(session_id: str, *, client: Any = None) -> Tuple[int, Dict[str, Any]]:
-    """Calcule la branche de sortie et clôture la session (state → 'completed').
-
-    Ne gère PAS l'email de confirmation ni la réservation Cal.com (étape D,
-    US-IQ-04, qui dépend de cette story) — uniquement le calcul déterministe
-    de la route et sa persistance. Pour la branche self-service, la Checkout
-    Session Stripe elle-même est créée par le flux existant
+    """Calcule la branche de sortie, clôture la session (state → 'completed')
+    et envoie l'email de confirmation contextualisé (best-effort,
+    ``_send_intake_confirmation``, US-IQ-04). Pour la branche self-service,
+    la Checkout Session Stripe elle-même est créée par le flux existant
     (``POST /api/stripe/create-checkout-session``, US-205) ; ce module se
     contente de renvoyer ``route`` au client pour qu'il propage
     ``intake_session_id`` à cet appel (metadata Stripe, cf. 05-integrations.md
@@ -465,6 +464,10 @@ def complete_routing(session_id: str, *, client: Any = None) -> Tuple[int, Dict[
     except Exception as exc:  # noqa: BLE001
         logger.error("complete_routing: intake_sessions update failed for %s: %s", session_id, exc.__class__.__name__)
         return 503, {"success": False, "error_code": "SUPABASE_UNAVAILABLE", "error": "Could not persist the routing decision."}
+
+    updated_session = dict(session)
+    updated_session.update(update_row)
+    _send_intake_confirmation(updated_session, client=cli)
 
     return 200, {
         "success": True,
@@ -1150,3 +1153,166 @@ def set_playbook_entry_active(
         return 404, {"success": False, "error_code": "PLAYBOOK_ENTRY_NOT_FOUND", "error": "Entry not found."}
     cli.table("intake_agent_playbook").update({"active": active}).eq("id", entry_id).execute()
     return 200, {"success": True, "data": {"id": entry_id, "active": active}}
+
+
+_CONFIRMATION_CTA_COPY: Dict[str, Dict[str, Dict[str, str]]] = {
+    "self_service": {
+        "fr": {
+            "next_step_label": "Prochaine étape : finalisez votre commande, votre brief est déjà attaché.",
+            "cta_html": "<b>Ce qu'il se passe maintenant :</b><br>Votre package est prêt à être commandé — votre brief l'accompagne automatiquement.",
+        },
+        "en": {
+            "next_step_label": "Next step: complete your order — your brief is already attached.",
+            "cta_html": "<b>What happens now:</b><br>Your package is ready to order — your brief travels with it automatically.",
+        },
+        "ar": {
+            "next_step_label": "الخطوة التالية: أكمل طلبك — ملفك مرفق تلقائيًا.",
+            "cta_html": "<b>ما يحدث الآن:</b><br>باقتك جاهزة للطلب — يرافقها ملفك تلقائيًا.",
+        },
+    },
+    "quote_48h": {
+        "fr": {
+            "next_step_label": "Prochaine étape : notre équipe stratégique revient vers vous sous 48 heures ouvrées avec un devis chiffré.",
+            "cta_html": "<b>Ce qu'il se passe maintenant :</b><br>Notre équipe étudie votre brief et revient sous 48 heures ouvrées avec un devis chiffré et un plan d'analyse adapté.",
+        },
+        "en": {
+            "next_step_label": "Next step: our strategy team will get back to you within 48 business hours with a priced quote.",
+            "cta_html": "<b>What happens now:</b><br>Our team is reviewing your brief and will return within 48 business hours with a priced quote and a tailored analysis plan.",
+        },
+        "ar": {
+            "next_step_label": "الخطوة التالية: سيعود إليكم فريقنا الاستراتيجي خلال 48 ساعة عمل بعرض سعر مفصل.",
+            "cta_html": "<b>ما يحدث الآن:</b><br>يدرس فريقنا ملفكم وسيعود خلال 48 ساعة عمل بعرض سعر مفصل وخطة تحليل مخصصة.",
+        },
+    },
+    "meeting": {
+        "fr": {
+            "next_step_label": "Votre brief est prêt. Prochaine étape : 20 minutes avec notre équipe — nous arrivons préparés, vous ne répéterez rien.",
+            "cta_html": "<b>Réservez votre entretien (20 min) :</b><br><a href=\"{calcom_link}\" style=\"color:#a13f0f;\">{calcom_link}</a>",
+        },
+        "en": {
+            "next_step_label": "Your brief is ready. Next step: 20 minutes with our team — we arrive prepared, you won't repeat anything.",
+            "cta_html": "<b>Book your meeting (20 minutes):</b><br><a href=\"{calcom_link}\" style=\"color:#a13f0f;\">{calcom_link}</a>",
+        },
+        "ar": {
+            "next_step_label": "ملفك جاهز. الخطوة التالية: 20 دقيقة مع فريقنا — نصل مستعدين، لن تكرروا شيئًا.",
+            "cta_html": "<b>احجز موعدك (20 دقيقة):</b><br><a href=\"{calcom_link}\" style=\"color:#a13f0f;\">{calcom_link}</a>",
+        },
+    },
+}
+
+
+def _build_confirmation_cta(
+    route: str,
+    locale: str,
+    calcom_link: Optional[str],
+) -> Dict[str, str]:
+    """Construit le CTA + libellé de prochaine étape pour l'email de
+    confirmation (US-IQ-04), selon la branche de routage et la locale.
+
+    Filet de sécurité : une ``route`` inconnue retombe sur la copy
+    ``quote_48h`` (le repli le plus neutre) plutôt que de lever — un
+    email de confirmation ne doit jamais planter `complete_routing`."""
+    branch_copy = _CONFIRMATION_CTA_COPY.get(route) or _CONFIRMATION_CTA_COPY["quote_48h"]
+    locale_copy = branch_copy.get(locale) or branch_copy["fr"]
+
+    if route == "meeting":
+        link = calcom_link or "https://agenda.ai-mpower.com/a.mansouri/entretien-bassira-20-min"
+        return {
+            "next_step_label": locale_copy["next_step_label"],
+            "cta_html": locale_copy["cta_html"].format(calcom_link=link),
+        }
+    return dict(locale_copy)
+
+
+def _build_calcom_booking_link(session_id: str, locale: str) -> str:
+    """Construit l'URL publique de réservation Cal.com pour l'event type
+    Intake (ADR-IQ-03 v3) — AUCUN appel API nécessaire, c'est une page web
+    publique statique. ``forwardParamsSuccessRedirect`` (actif sur l'event
+    type) fait remonter ``intake_session_id`` au redirect de confirmation
+    (Task 6) pour identifier la session côté serveur."""
+    params = urlencode({"intake_session_id": session_id, "lang": locale})
+    return (
+        f"https://agenda.ai-mpower.com/{Config.CALCOM_BOOKER_USERNAME}/"
+        f"{Config.CALCOM_EVENT_TYPE_SLUG}?{params}"
+    )
+
+
+def _send_intake_confirmation(session: Dict[str, Any], *, client: Any) -> None:
+    """Envoie l'email de confirmation contextualisé (US-IQ-04) après clôture
+    d'une session Intake. Best-effort total : ne doit JAMAIS faire échouer
+    ``complete_routing`` — même contrat que ``_log_escalation`` (ADR-IQ-08).
+    Ne lit JAMAIS ``confidential_flags`` ni ``transcript`` (R1 : rien de
+    confidentiel dans l'email)."""
+    quote_id = session.get("quote_id")
+    if not quote_id:
+        return
+    try:
+        payload = qo.get_quote_payload_from_supabase(quote_id, client=client)
+    except Exception as exc:  # noqa: BLE001
+        logger.error("_send_intake_confirmation: payload lookup failed for %s: %s", quote_id, exc.__class__.__name__)
+        return
+    if not payload or not payload.get("email"):
+        return
+
+    route = session.get("route") or "quote_48h"
+    locale = session.get("locale") or "fr"
+    brief = session.get("brief") or {}
+
+    calcom_link = None
+    if route == "meeting":
+        try:
+            calcom_link = _build_calcom_booking_link(session["id"], locale)
+        except Exception as exc:  # noqa: BLE001
+            logger.error("_send_intake_confirmation: calcom link build failed: %s", exc.__class__.__name__)
+
+    try:
+        cta = _build_confirmation_cta(route, locale, calcom_link)
+        decision_summary = html.escape(str(brief.get("decision") or "")[:200])
+        full_name = html.escape(str(payload.get("full_name") or "—"))
+        quote_id_safe = html.escape(quote_id)
+
+        from .email_service import render_template, send_email
+
+        html_body = render_template(
+            f"intake_confirmation_{locale}",
+            {
+                "full_name": full_name,
+                "decision_summary": decision_summary,
+                "next_step_label": cta["next_step_label"],
+                "cta_html": cta["cta_html"],
+                "quote_id": quote_id_safe,
+            },
+        )
+        subject_prefix = {"fr": "Votre brief Bassira", "en": "Your Bassira brief", "ar": "ملفك في بصيرة"}
+        subject = f"{subject_prefix.get(locale, subject_prefix['fr'])} — {decision_summary[:60]}"
+        send_email(
+            to_email=payload["email"],
+            subject=subject,
+            html_body=html_body,
+            reply_to="contact@ai-mpower.com",
+        )
+    except Exception as exc:  # noqa: BLE001 — jamais casser complete_routing pour un email
+        logger.error("_send_intake_confirmation: send failed for quote %s: %s", quote_id, exc.__class__.__name__)
+
+
+def confirm_calcom_booking(
+    session_id: str,
+    booking_uid: str,
+    *,
+    client: Any = None,
+) -> Tuple[int, Dict[str, Any]]:
+    """Persiste ``calcom_booking_uid`` sur la session (US-IQ-04) — appelé
+    par le redirect de succès Cal.com, PAS un webhook entrant (hors scope
+    V1, cf. 04-feature-backlog.md)."""
+    cli = client or get_supabase_admin()
+    try:
+        session = _get_session(session_id, client=cli)
+    except Exception as exc:  # noqa: BLE001
+        logger.error("confirm_calcom_booking: session lookup failed for %s: %s", session_id, exc.__class__.__name__)
+        return 503, {"success": False, "error_code": "SUPABASE_UNAVAILABLE", "error": "Could not reach storage."}
+
+    if session is None:
+        return 404, {"success": False, "error_code": "SESSION_NOT_FOUND", "error": "Intake session not found."}
+
+    cli.table("intake_sessions").update({"calcom_booking_uid": booking_uid}).eq("id", session_id).execute()
+    return 200, {"success": True, "data": {"session_id": session_id, "calcom_booking_uid": booking_uid}}

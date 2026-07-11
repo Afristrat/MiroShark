@@ -502,10 +502,10 @@ def _send_client_confirmation(record: Dict[str, Any]) -> None:
         html_body = render_template(
             "quote_received",
             {
-                "full_name": record.get("full_name") or "—",
-                "company": record.get("company") or "—",
+                "full_name": html.escape(record.get("full_name") or "—"),
+                "company": html.escape(record.get("company") or "—"),
                 "package_label": package_label,
-                "industry_label": industry_label,
+                "industry_label": html.escape(industry_label),
                 "quote_id": record.get("quote_id") or "",
             },
         )
