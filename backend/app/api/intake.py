@@ -137,20 +137,25 @@ def post_complete_session(session_id: str):
 
 @intake_bp.route("/calcom-confirmed", methods=["GET"])
 def get_calcom_confirmed():
-    """Capture le redirect de succès Cal.com (ADR-IQ-03 v3, US-IQ-04) —
-    ``forwardParamsSuccessRedirect`` sur l'event type fait remonter
-    ``intake_session_id`` (posé sur le lien de réservation) et l'UID de la
-    réservation confirmée. PAS un webhook entrant (hors scope V1)."""
-    session_id = request.args.get("intake_session_id")
+    """Capture le redirect de succès Cal.com (ADR-IQ-03 v3, US-IQ-04) — l'UID
+    de la réservation confirmée (``uid``/``bookingUid``) est TOUJOURS relayé
+    par Cal.com. ``intake_session_id`` NE L'EST JAMAIS (constat empirique
+    2026-07-11, ADR-IQ-09 : ``forwardParamsSuccessRedirect`` ne relaie que les
+    champs propres à la page de succès Cal.com) — ``email`` (champ natif,
+    verrouillé côté event type) sert de fallback de ré-identification, voir
+    ``intake_service.confirm_calcom_booking``. PAS un webhook entrant (hors
+    scope V1)."""
     booking_uid = request.args.get("uid") or request.args.get("bookingUid")
-    if not session_id or not booking_uid:
+    session_id = request.args.get("intake_session_id")
+    email = request.args.get("email")
+    if not booking_uid or not (session_id or email):
         return jsonify({
             "success": False,
             "error_code": "MISSING_PARAMS",
-            "error": "intake_session_id and uid/bookingUid query params are required.",
+            "error": "uid/bookingUid and intake_session_id or email query params are required.",
         }), 400
 
-    status, payload = intake_service.confirm_calcom_booking(session_id, booking_uid)
+    status, payload = intake_service.confirm_calcom_booking(session_id, booking_uid, email=email)
     if status != 200:
         return jsonify(payload), status
 

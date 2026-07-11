@@ -1224,16 +1224,31 @@ def _build_confirmation_cta(
     return dict(locale_copy)
 
 
-def _build_calcom_booking_link(session_id: str, locale: str) -> str:
+def _build_calcom_booking_link(
+    session_id: str,
+    locale: str,
+    *,
+    email: Optional[str] = None,
+    full_name: Optional[str] = None,
+) -> str:
     """Construit l'URL publique de réservation Cal.com pour l'event type
     Intake (ADR-IQ-03 v3) — AUCUN appel API nécessaire, c'est une page web
-    publique statique. ``forwardParamsSuccessRedirect`` (actif sur l'event
-    type) fait remonter ``intake_session_id`` au redirect de confirmation
-    (Task 6) pour identifier la session côté serveur."""
-    params = urlencode({"intake_session_id": session_id, "lang": locale})
+    publique statique. ``email``/``name`` sont des champs NATIFS Cal.com
+    (slugs ``email``/``name``, ``disableOnPrefill`` posé sur l'event type) :
+    prefill puis VERROUILLE le champ, empêchant le booker de le modifier.
+    ``intake_session_id`` reste posé au cas où mais N'EST PAS fiable pour
+    identifier la session au retour (ADR-IQ-09 : constat empirique 2026-07-11,
+    ``forwardParamsSuccessRedirect`` ne relaie que les champs propres à la
+    page de succès Cal.com — jamais un query param custom). Le fallback réel
+    d'identification se fait sur ``email`` côté ``confirm_calcom_booking``."""
+    params = {"intake_session_id": session_id, "lang": locale}
+    if email:
+        params["email"] = email
+    if full_name:
+        params["name"] = full_name
     return (
         f"https://agenda.ai-mpower.com/{Config.CALCOM_BOOKER_USERNAME}/"
-        f"{Config.CALCOM_EVENT_TYPE_SLUG}?{params}"
+        f"{Config.CALCOM_EVENT_TYPE_SLUG}?{urlencode(params)}"
     )
 
 
@@ -1261,7 +1276,12 @@ def _send_intake_confirmation(session: Dict[str, Any], *, client: Any) -> None:
     calcom_link = None
     if route == "meeting":
         try:
-            calcom_link = _build_calcom_booking_link(session["id"], locale)
+            calcom_link = _build_calcom_booking_link(
+                session["id"],
+                locale,
+                email=payload.get("email"),
+                full_name=payload.get("full_name"),
+            )
         except Exception as exc:  # noqa: BLE001
             logger.error("_send_intake_confirmation: calcom link build failed: %s", exc.__class__.__name__)
 
@@ -1295,16 +1315,58 @@ def _send_intake_confirmation(session: Dict[str, Any], *, client: Any) -> None:
         logger.error("_send_intake_confirmation: send failed for quote %s: %s", quote_id, exc.__class__.__name__)
 
 
+def _find_unclaimed_meeting_session_by_email(email: str, *, client: Any) -> Optional[str]:
+    """Fallback de ré-identification (ADR-IQ-09) quand ``intake_session_id``
+    n'est pas relayé par Cal.com : retrouve la session via l'email verrouillé
+    sur le formulaire de réservation (``quote_ownership.customer_email``),
+    parmi les sessions ``meeting`` complétées pas encore réclamées, la plus
+    récente en cas de multiples parcours pour le même email."""
+    quotes = client.table("quote_ownership").select("quote_id").eq("customer_email", email).execute()
+    quote_ids = {row["quote_id"] for row in (quotes.data or []) if row.get("quote_id")}
+    if not quote_ids:
+        return None
+
+    sessions = (
+        client.table("intake_sessions")
+        .select("id, quote_id, calcom_booking_uid, completed_at")
+        .eq("route", "meeting")
+        .eq("state", "completed")
+        .execute()
+    )
+    candidates = [
+        row for row in (sessions.data or [])
+        if row.get("quote_id") in quote_ids and not row.get("calcom_booking_uid")
+    ]
+    if not candidates:
+        return None
+    candidates.sort(key=lambda r: r.get("completed_at") or "", reverse=True)
+    return candidates[0]["id"]
+
+
 def confirm_calcom_booking(
-    session_id: str,
+    session_id: Optional[str],
     booking_uid: str,
     *,
+    email: Optional[str] = None,
     client: Any = None,
 ) -> Tuple[int, Dict[str, Any]]:
     """Persiste ``calcom_booking_uid`` sur la session (US-IQ-04) — appelé
     par le redirect de succès Cal.com, PAS un webhook entrant (hors scope
-    V1, cf. 04-feature-backlog.md)."""
+    V1, cf. 04-feature-backlog.md). Si ``session_id`` est absent (Cal.com ne
+    le relaie jamais, ADR-IQ-09), retombe sur ``email`` (champ natif Cal.com,
+    verrouillé — cf. ``_build_calcom_booking_link``)."""
     cli = client or get_supabase_admin()
+
+    if not session_id and email:
+        try:
+            session_id = _find_unclaimed_meeting_session_by_email(email, client=cli)
+        except Exception as exc:  # noqa: BLE001
+            logger.error("confirm_calcom_booking: email fallback lookup failed: %s", exc.__class__.__name__)
+            session_id = None
+
+    if not session_id:
+        return 404, {"success": False, "error_code": "SESSION_NOT_FOUND", "error": "Intake session not found."}
+
     try:
         session = _get_session(session_id, client=cli)
     except Exception as exc:  # noqa: BLE001

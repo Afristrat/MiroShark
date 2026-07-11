@@ -558,6 +558,24 @@ class TestCompleteRouting:
         assert calls[0]["to_email"] == "karim@banquepop.ma"  # cf. _valid_payload
         assert "20" in calls[0]["html_body"] or "meeting" in calls[0]["subject"].lower() or True
 
+    def test_completion_email_calcom_link_locks_email_and_name(self, fake_client, monkeypatch):
+        """Le lien Cal.com dans l'email doit porter email/name (champs natifs
+        Cal.com, verrouillés côté event type) — nécessaire pour le fallback de
+        ré-identification au redirect (ADR-IQ-09, forwardParamsSuccessRedirect
+        ne relaie jamais intake_session_id)."""
+        calls = []
+        monkeypatch.setattr(
+            "app.services.email_service.send_email",
+            lambda *, to_email, subject, html_body, **kw: calls.append({"html_body": html_body}) or True,
+        )
+        sid = self._session_ready(fake_client, brief_overrides={"governance": "conseil_administration"})
+        status, _body = svc.complete_routing(sid, client=fake_client)
+        assert status == 200
+        assert len(calls) == 1
+        html_body = calls[0]["html_body"]
+        assert "email=karim%40banquepop.ma" in html_body
+        assert "name=Karim+Bensaid" in html_body
+
     def test_completion_email_failure_never_breaks_routing(self, fake_client, monkeypatch):
         """Best-effort total (même contrat que _log_escalation, ADR-IQ-08) —
         une panne d'email ne doit JAMAIS faire échouer complete_routing."""
@@ -601,6 +619,63 @@ class TestConfirmCalcomBooking:
         status, body = svc.confirm_calcom_booking("does-not-exist", "uid", client=fake_client)
         assert status == 404
 
+    def test_falls_back_to_email_when_session_id_missing(self, fake_client):
+        """Constat empirique 2026-07-11 (ADR-IQ-09) : Cal.com ne relaie jamais
+        intake_session_id au redirect de succès, seulement ses propres champs
+        (email, uid...). Le fallback doit retrouver la session via l'email
+        verrouillé sur le formulaire de réservation."""
+        sid = svc.start_session(client=fake_client)["session_id"]
+        svc.submit_form(sid, _valid_payload(brief_overrides={"governance": "conseil_administration"}), client=fake_client)
+        svc.complete_routing(sid, client=fake_client)
+
+        status, body = svc.confirm_calcom_booking(
+            None, "cal-booking-uid-xyz", email="karim@banquepop.ma", client=fake_client
+        )
+        assert status == 200
+        session = svc.get_session(sid, client=fake_client)
+        assert session["calcom_booking_uid"] == "cal-booking-uid-xyz"
+
+    def test_email_fallback_ignores_already_claimed_sessions(self, fake_client):
+        """Deux sessions 'meeting' complétées pour le même email (le prospect a
+        recommencé) : le fallback doit ignorer celle déjà réclamée par une
+        précédente réservation et cibler l'autre."""
+        sid_claimed = svc.start_session(client=fake_client)["session_id"]
+        svc.submit_form(sid_claimed, _valid_payload(brief_overrides={"governance": "conseil_administration"}), client=fake_client)
+        svc.complete_routing(sid_claimed, client=fake_client)
+        svc.confirm_calcom_booking(sid_claimed, "already-claimed-uid", client=fake_client)
+
+        sid_open = svc.start_session(client=fake_client)["session_id"]
+        svc.submit_form(sid_open, _valid_payload(brief_overrides={"governance": "conseil_administration"}), client=fake_client)
+        svc.complete_routing(sid_open, client=fake_client)
+
+        status, body = svc.confirm_calcom_booking(
+            None, "new-uid", email="karim@banquepop.ma", client=fake_client
+        )
+        assert status == 200
+        assert svc.get_session(sid_open, client=fake_client)["calcom_booking_uid"] == "new-uid"
+        assert svc.get_session(sid_claimed, client=fake_client)["calcom_booking_uid"] == "already-claimed-uid"
+
+    def test_email_fallback_returns_404_when_no_match(self, fake_client):
+        status, body = svc.confirm_calcom_booking(
+            None, "uid", email="inconnu@example.com", client=fake_client
+        )
+        assert status == 404
+        assert body["error_code"] == "SESSION_NOT_FOUND"
+
+
+class TestBuildCalcomBookingLink:
+    def test_includes_locked_email_and_name_when_provided(self):
+        link = svc._build_calcom_booking_link(
+            "sess-1", "fr", email="karim@banquepop.ma", full_name="Karim Bensaid"
+        )
+        assert "email=karim%40banquepop.ma" in link
+        assert "name=Karim+Bensaid" in link
+
+    def test_omits_email_and_name_when_not_provided(self):
+        link = svc._build_calcom_booking_link("sess-1", "fr")
+        assert "email=" not in link
+        assert "name=" not in link
+
 
 class TestCalcomConfirmedEndpoint:
     def test_get_redirects_and_persists_uid(self, client, monkeypatch):
@@ -610,13 +685,40 @@ class TestCalcomConfirmedEndpoint:
         def _fake_confirm(session_id, booking_uid, **kw):
             captured["session_id"] = session_id
             captured["booking_uid"] = booking_uid
+            captured["email"] = kw.get("email")
             return 200, {"success": True, "data": {"session_id": session_id, "calcom_booking_uid": booking_uid}}
 
         monkeypatch.setattr(intake_api.intake_service, "confirm_calcom_booking", _fake_confirm)
         resp = client.get("/api/intake/calcom-confirmed?intake_session_id=sess-1&uid=booking-abc")
         assert resp.status_code in (302, 200)
-        assert captured == {"session_id": "sess-1", "booking_uid": "booking-abc"}
+        assert captured["session_id"] == "sess-1"
+        assert captured["booking_uid"] == "booking-abc"
+
+    def test_get_falls_back_to_email_query_param(self, client, monkeypatch):
+        """Reproduit le cas réel observé le 2026-07-11 : Cal.com relaie
+        `email`/`uid` (ses propres champs) mais jamais `intake_session_id`."""
+        from app.api import intake as intake_api
+
+        captured = {}
+        def _fake_confirm(session_id, booking_uid, **kw):
+            captured["session_id"] = session_id
+            captured["booking_uid"] = booking_uid
+            captured["email"] = kw.get("email")
+            return 200, {"success": True, "data": {"session_id": None, "calcom_booking_uid": booking_uid}}
+
+        monkeypatch.setattr(intake_api.intake_service, "confirm_calcom_booking", _fake_confirm)
+        resp = client.get("/api/intake/calcom-confirmed?uid=booking-abc&email=karim%40banquepop.ma")
+        assert resp.status_code in (302, 200)
+        assert captured["session_id"] is None
+        assert captured["booking_uid"] == "booking-abc"
+        assert captured["email"] == "karim@banquepop.ma"
 
     def test_get_missing_params_returns_400(self, client):
         resp = client.get("/api/intake/calcom-confirmed")
+        assert resp.status_code == 400
+
+    def test_get_missing_params_returns_400_when_only_uid_present(self, client):
+        """uid seul, sans intake_session_id ni email, ne donne rien à
+        résoudre côté serveur."""
+        resp = client.get("/api/intake/calcom-confirmed?uid=booking-abc")
         assert resp.status_code == 400

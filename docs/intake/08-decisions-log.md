@@ -147,3 +147,39 @@ de fuite de contenu confidentiel via `confidential_flags` si mal isolé).
 **Signal de réexamen** : volume d'escalades > ce qu'Amine peut trancher manuellement en
 temps utile (deviendrait un signal pour prioriser/grouper les corrections, pas pour
 automatiser la correction elle-même).
+
+## ADR-IQ-09 — Ré-identification de session au retour Cal.com : email verrouillé, pas intake_session_id (2026-07-11, correction post-vérification réelle)
+
+**Quoi** : `_build_calcom_booking_link` pose désormais `email`/`name` (champs NATIFS
+Cal.com, slugs `email`/`name`) sur le lien de réservation, en plus de
+`intake_session_id`. Côté event type Intake (id 25), `disableOnPrefill=true` a été posé
+sur ces deux champs via l'API Cal.com — le booker ne peut plus les modifier une fois
+prérempli. Au redirect `/api/intake/calcom-confirmed`, `confirm_calcom_booking` retombe
+sur un matching par `email` (via `quote_ownership.customer_email` → `intake_sessions`,
+route='meeting', state='completed', `calcom_booking_uid` encore vide, le plus récent en
+cas de doublon) quand `intake_session_id` est absent.
+**Pourquoi** : constat empirique en test réel (Amine, 2026-07-11) — l'URL de redirect
+reçue contenait `email`, `uid`, `eventTypeSlug`, etc. (tous des champs propres à la page
+de succès Cal.com) mais JAMAIS `intake_session_id`, alors que
+`forwardParamsSuccessRedirect=true` était bien actif sur l'event type (vérifié via
+`GET /v2/event-types/25`). Conclusion : ce paramètre ne relaie que les champs NATIFS de
+la page de succès, jamais un query param custom posé sur le lien de réservation d'origine
+— l'hypothèse de conception initiale de US-IQ-04 (Task 6) était fausse pour cette version
+self-hosted, 3ᵉ occurrence du pattern « le plan n'a jamais vérifié le comportement réel
+d'un service tiers » (cf. MEMO inter-sessions, PASSATION.md). `uid` (natif, toujours
+présent) ne suffit PAS seul à retrouver la session côté Bassira puisqu'il n'existe qu'une
+fois la réservation Cal.com créée, jamais stocké en base avant. `email`, lui, est déjà
+connu (saisi au formulaire A1-A8) et — une fois verrouillé côté Cal.com — garanti
+identique à celui de la session, éliminant le risque de faute de frappe/email différent
+qu'aurait un matching sur un champ resaisi librement par le booker.
+**Alternatives rejetées** : (1) champ Cal.com custom caché `intake_session_id`
+(prefill+disableOnPrefill) + lookup `GET /v2/bookings/{uid}` — ajoute un appel API sortant
+supplémentaire, une reconfig Cal.com plus intrusive, et le mécanisme de prefill n'était pas
+non plus vérifié empiriquement sur cette version self-hosted (même risque que celui qui
+vient d'être découvert) ; (2) webhook Cal.com entrant (`BOOKING_CREATED`) — capture fiable
+à 100 % côté serveur-à-serveur mais explicitement hors scope V1 (US-IQ-04 Task 6),
+nécessite endpoint public + vérification de signature, effort disproportionné pour corriger
+un bug de redirect.
+**Signal de réexamen** : un email prospect resaisi différent du formulaire malgré le
+verrou (édition manuelle de l'URL, contournement navigateur) ferait échouer le fallback —
+si observé en usage réel, réévaluer l'option webhook `BOOKING_CREATED` (scope V2).
