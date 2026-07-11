@@ -7,7 +7,10 @@
   * ``POST /api/intake/session/<id>/agent/turn`` — un tour de l'agent
     conversationnel de qualification (étape B, US-IQ-02).
   * ``POST /api/intake/session/<id>/complete`` — calcule la branche de sortie
-    (routage déterministe, étape C) et clôture la session (US-IQ-03).
+    (routage déterministe, étape C), clôture la session et envoie l'email de
+    confirmation contextualisé (best-effort, US-IQ-04).
+  * ``GET /api/intake/calcom-confirmed`` — capture le redirect de succès
+    Cal.com et persiste ``calcom_booking_uid`` (US-IQ-04).
 
 Public, non authentifié — même limiteur de débit que ``/api/quote``
 (``quote_service.check_rate_limit``, partagé par IP).
@@ -17,7 +20,7 @@ from __future__ import annotations
 
 import logging
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, redirect, request
 
 from ..services import intake_service
 from ..services.quote_service import check_rate_limit
@@ -117,9 +120,9 @@ def post_agent_turn(session_id: str):
 
 @intake_bp.route("/session/<session_id>/complete", methods=["POST"])
 def post_complete_session(session_id: str):
-    """Calcule la branche de sortie (self_service | quote_48h | meeting) et
-    clôture la session. Ne gère PAS l'email ni la réservation Cal.com
-    (US-IQ-04) — voir ``intake_service.complete_routing``."""
+    """Calcule la branche de sortie (self_service | quote_48h | meeting),
+    clôture la session et envoie l'email de confirmation contextualisé
+    (best-effort, US-IQ-04) — voir ``intake_service.complete_routing``."""
     try:
         status, body = intake_service.complete_routing(session_id)
         return jsonify(body), status
@@ -130,3 +133,25 @@ def post_complete_session(session_id: str):
             "error_code": "UNKNOWN",
             "error": "Internal server error.",
         }), 500
+
+
+@intake_bp.route("/calcom-confirmed", methods=["GET"])
+def get_calcom_confirmed():
+    """Capture le redirect de succès Cal.com (ADR-IQ-03 v3, US-IQ-04) —
+    ``forwardParamsSuccessRedirect`` sur l'event type fait remonter
+    ``intake_session_id`` (posé sur le lien de réservation) et l'UID de la
+    réservation confirmée. PAS un webhook entrant (hors scope V1)."""
+    session_id = request.args.get("intake_session_id")
+    booking_uid = request.args.get("uid") or request.args.get("bookingUid")
+    if not session_id or not booking_uid:
+        return jsonify({
+            "success": False,
+            "error_code": "MISSING_PARAMS",
+            "error": "intake_session_id and uid/bookingUid query params are required.",
+        }), 400
+
+    status, payload = intake_service.confirm_calcom_booking(session_id, booking_uid)
+    if status != 200:
+        return jsonify(payload), status
+
+    return redirect("https://bassira.ma/devis?calcom_confirmed=1", code=302)

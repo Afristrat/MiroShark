@@ -584,3 +584,39 @@ class TestCompleteRouting:
         status, body = svc.complete_routing(sid, client=fake_client)
         assert status == 200
         assert calls == []
+
+
+class TestConfirmCalcomBooking:
+    def test_persists_booking_uid(self, fake_client):
+        sid = svc.start_session(client=fake_client)["session_id"]
+        svc.submit_form(sid, _valid_payload(brief_overrides={"governance": "conseil_administration"}), client=fake_client)
+        svc.complete_routing(sid, client=fake_client)
+
+        status, body = svc.confirm_calcom_booking(sid, "cal-booking-uid-xyz", client=fake_client)
+        assert status == 200
+        session = svc.get_session(sid, client=fake_client)
+        assert session["calcom_booking_uid"] == "cal-booking-uid-xyz"
+
+    def test_session_not_found_returns_404(self, fake_client):
+        status, body = svc.confirm_calcom_booking("does-not-exist", "uid", client=fake_client)
+        assert status == 404
+
+
+class TestCalcomConfirmedEndpoint:
+    def test_get_redirects_and_persists_uid(self, client, monkeypatch):
+        from app.api import intake as intake_api
+
+        captured = {}
+        def _fake_confirm(session_id, booking_uid, **kw):
+            captured["session_id"] = session_id
+            captured["booking_uid"] = booking_uid
+            return 200, {"success": True, "data": {"session_id": session_id, "calcom_booking_uid": booking_uid}}
+
+        monkeypatch.setattr(intake_api.intake_service, "confirm_calcom_booking", _fake_confirm)
+        resp = client.get("/api/intake/calcom-confirmed?intake_session_id=sess-1&uid=booking-abc")
+        assert resp.status_code in (302, 200)
+        assert captured == {"session_id": "sess-1", "booking_uid": "booking-abc"}
+
+    def test_get_missing_params_returns_400(self, client):
+        resp = client.get("/api/intake/calcom-confirmed")
+        assert resp.status_code == 400

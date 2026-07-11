@@ -413,12 +413,10 @@ _ROUTABLE_STATES = {"form_submitted", "agent_active"}
 
 
 def complete_routing(session_id: str, *, client: Any = None) -> Tuple[int, Dict[str, Any]]:
-    """Calcule la branche de sortie et clôture la session (state → 'completed').
-
-    Ne gère PAS l'email de confirmation ni la réservation Cal.com (étape D,
-    US-IQ-04, qui dépend de cette story) — uniquement le calcul déterministe
-    de la route et sa persistance. Pour la branche self-service, la Checkout
-    Session Stripe elle-même est créée par le flux existant
+    """Calcule la branche de sortie, clôture la session (state → 'completed')
+    et envoie l'email de confirmation contextualisé (best-effort,
+    ``_send_intake_confirmation``, US-IQ-04). Pour la branche self-service,
+    la Checkout Session Stripe elle-même est créée par le flux existant
     (``POST /api/stripe/create-checkout-session``, US-205) ; ce module se
     contente de renvoyer ``route`` au client pour qu'il propage
     ``intake_session_id`` à cet appel (metadata Stripe, cf. 05-integrations.md
@@ -1046,3 +1044,26 @@ def _send_intake_confirmation(session: Dict[str, Any], *, client: Any) -> None:
         )
     except Exception as exc:  # noqa: BLE001 — jamais casser complete_routing pour un email
         logger.error("_send_intake_confirmation: send failed for quote %s: %s", quote_id, exc.__class__.__name__)
+
+
+def confirm_calcom_booking(
+    session_id: str,
+    booking_uid: str,
+    *,
+    client: Any = None,
+) -> Tuple[int, Dict[str, Any]]:
+    """Persiste ``calcom_booking_uid`` sur la session (US-IQ-04) — appelé
+    par le redirect de succès Cal.com, PAS un webhook entrant (hors scope
+    V1, cf. 04-feature-backlog.md)."""
+    cli = client or get_supabase_admin()
+    try:
+        session = _get_session(session_id, client=cli)
+    except Exception as exc:  # noqa: BLE001
+        logger.error("confirm_calcom_booking: session lookup failed for %s: %s", session_id, exc.__class__.__name__)
+        return 503, {"success": False, "error_code": "SUPABASE_UNAVAILABLE", "error": "Could not reach storage."}
+
+    if session is None:
+        return 404, {"success": False, "error_code": "SESSION_NOT_FOUND", "error": "Intake session not found."}
+
+    cli.table("intake_sessions").update({"calcom_booking_uid": booking_uid}).eq("id", session_id).execute()
+    return 200, {"success": True, "data": {"session_id": session_id, "calcom_booking_uid": booking_uid}}
