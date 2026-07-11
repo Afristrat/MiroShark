@@ -1791,3 +1791,29 @@ Bassira — à traiter dans une session dédiée à l'infra Cal.com, pas dans ce
 clean ; `npm run build` OK (frontend touché uniquement par le fix du redirect).
 
 `US-IQ-04.passes = true` dans `.ralph/prd.json`, `completedAt = 2026-07-11T11:29:00Z`.
+
+## ADR-IQ-08 — Playbook vivant + escalade silencieuse — finalisation (2026-07-11)
+
+Branche `feat/adr-iq-08-playbook-escalation` (9/9 tasks, écrite en session précédente) —
+re-vérifiée par preuve système avant merge (RÈGLE N°4, pas de confiance en mémoire) : pytest
+2185 passed sur la branche seule, ruff clean, `npm run build` OK.
+
+**Un conflit réel avec `main`** (qui avait avancé de 12 commits entre-temps via US-IQ-04) :
+`backend/app/services/intake_service.py`, les deux branches ajoutant des fonctions en fin de
+fichier (`_log_escalation`/playbook d'un côté, `_send_intake_confirmation`/Cal.com de l'autre)
+— aucun chevauchement fonctionnel, résolu par concaténation simple. Tout le reste (config.py,
+locales, docs) a fusionné automatiquement sans conflit.
+
+Merge fast-forward dans `main` (`6a306e6`), poussé, déployé Coolify (deployment
+`wsjq7wvir9npvzc4a4qyoybj`, fini). **Vérification déployée (SOP-011)** :
+- Conteneur `miroshark-u6pn5mr2pgi88s13un55pkzb-132143154399` recréé à 14:22 UTC.
+- `GET /api/admin/quotes/intake/escalations` → `401` (pas `404`) en prod, sans auth.
+- `GET /api/admin/quotes/intake/playbook` → `401` (pas `404`) en prod, sans auth.
+- Route frontend `AdminAgentPlaybookView` confirmée dans `router/index.js`.
+
+Gates re-vérifiés sur le résultat fusionné (pas seulement sur la branche isolée) : pytest
+2204 passed / 0 failed (le flaky `test_md_hash_stable_with_deterministic_enricher` est passé
+sur ce run) / 42 skipped, ruff clean, `npm run build` OK.
+
+Aucune entrée `.ralph/prd.json` dédiée (ADR-IQ-08 est une décision d'architecture documentée
+dans `docs/intake/08-decisions-log.md`, pas une user story trackée) — rien à marquer `passes`.
