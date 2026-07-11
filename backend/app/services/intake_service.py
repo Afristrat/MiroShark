@@ -899,3 +899,72 @@ def _close_session_gracefully(
         "success": True,
         "data": {"session_id": session_id, "state": "completed", "route": route, "agent_unavailable": True},
     }
+
+
+_CONFIRMATION_CTA_COPY: Dict[str, Dict[str, Dict[str, str]]] = {
+    "self_service": {
+        "fr": {
+            "next_step_label": "Prochaine étape : finalisez votre commande, votre brief est déjà attaché.",
+            "cta_html": "<b>Ce qu'il se passe maintenant :</b><br>Votre package est prêt à être commandé — votre brief l'accompagne automatiquement.",
+        },
+        "en": {
+            "next_step_label": "Next step: complete your order — your brief is already attached.",
+            "cta_html": "<b>What happens now:</b><br>Your package is ready to order — your brief travels with it automatically.",
+        },
+        "ar": {
+            "next_step_label": "الخطوة التالية: أكمل طلبك — ملفك مرفق تلقائيًا.",
+            "cta_html": "<b>ما يحدث الآن:</b><br>باقتك جاهزة للطلب — يرافقها ملفك تلقائيًا.",
+        },
+    },
+    "quote_48h": {
+        "fr": {
+            "next_step_label": "Prochaine étape : notre équipe stratégique revient vers vous sous 48 heures ouvrées avec un devis chiffré.",
+            "cta_html": "<b>Ce qu'il se passe maintenant :</b><br>Notre équipe étudie votre brief et revient sous 48 heures ouvrées avec un devis chiffré et un plan d'analyse adapté.",
+        },
+        "en": {
+            "next_step_label": "Next step: our strategy team will get back to you within 48 business hours with a priced quote.",
+            "cta_html": "<b>What happens now:</b><br>Our team is reviewing your brief and will return within 48 business hours with a priced quote and a tailored analysis plan.",
+        },
+        "ar": {
+            "next_step_label": "الخطوة التالية: سيعود إليكم فريقنا الاستراتيجي خلال 48 ساعة عمل بعرض سعر مفصل.",
+            "cta_html": "<b>ما يحدث الآن:</b><br>يدرس فريقنا ملفكم وسيعود خلال 48 ساعة عمل بعرض سعر مفصل وخطة تحليل مخصصة.",
+        },
+    },
+    "meeting": {
+        "fr": {
+            "next_step_label": "Votre brief est prêt. Prochaine étape : 20 minutes avec notre équipe — nous arrivons préparés, vous ne répéterez rien.",
+            "cta_html": "<b>Réservez votre entretien (20 min) :</b><br><a href=\"{calcom_link}\" style=\"color:#a13f0f;\">{calcom_link}</a>",
+        },
+        "en": {
+            "next_step_label": "Your brief is ready. Next step: 20 minutes with our team — we arrive prepared, you won't repeat anything.",
+            "cta_html": "<b>Book your meeting (20 minutes):</b><br><a href=\"{calcom_link}\" style=\"color:#a13f0f;\">{calcom_link}</a>",
+        },
+        "ar": {
+            "next_step_label": "ملفك جاهز. الخطوة التالية: 20 دقيقة مع فريقنا — نصل مستعدين، لن تكرروا شيئًا.",
+            "cta_html": "<b>احجز موعدك (20 دقيقة):</b><br><a href=\"{calcom_link}\" style=\"color:#a13f0f;\">{calcom_link}</a>",
+        },
+    },
+}
+
+
+def _build_confirmation_cta(
+    route: str,
+    locale: str,
+    calcom_link: Optional[str],
+) -> Dict[str, str]:
+    """Construit le CTA + libellé de prochaine étape pour l'email de
+    confirmation (US-IQ-04), selon la branche de routage et la locale.
+
+    Filet de sécurité : une ``route`` inconnue retombe sur la copy
+    ``quote_48h`` (le repli le plus neutre) plutôt que de lever — un
+    email de confirmation ne doit jamais planter `complete_routing`."""
+    branch_copy = _CONFIRMATION_CTA_COPY.get(route) or _CONFIRMATION_CTA_COPY["quote_48h"]
+    locale_copy = branch_copy.get(locale) or branch_copy["fr"]
+
+    if route == "meeting":
+        link = calcom_link or "https://agenda.ai-mpower.com/a.mansouri/entretien-bassira-20-min"
+        return {
+            "next_step_label": locale_copy["next_step_label"],
+            "cta_html": locale_copy["cta_html"].format(calcom_link=link),
+        }
+    return dict(locale_copy)
