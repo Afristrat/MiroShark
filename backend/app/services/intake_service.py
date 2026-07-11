@@ -32,6 +32,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlencode
 
 import jsonschema
+import requests
 
 from ..auth.supabase_client import SupabaseConfigError, get_default_super_admin_org_id, get_supabase_admin
 from ..config import Config
@@ -1343,29 +1344,81 @@ def _find_unclaimed_meeting_session_by_email(email: str, *, client: Any) -> Opti
     return candidates[0]["id"]
 
 
+def _verify_calcom_booking(booking_uid: str) -> Optional[str]:
+    """Vérification server-to-server (ADR-IQ-09, durcissement post-review
+    sécurité) : interroge l'API Cal.com avec NOTRE PROPRE clé — jamais de
+    confiance dans un ``booking_uid`` fourni par un client non authentifié
+    sans preuve qu'il correspond à une réservation RÉELLE, ``ACCEPTED``, sur
+    l'event type Intake. Renvoie l'email de l'attendee tel qu'attesté par
+    Cal.com (jamais un email fourni par le client), ou ``None`` si la
+    réservation n'existe pas / ne remplit pas ces conditions."""
+    try:
+        resp = requests.get(
+            f"{Config.CALCOM_API_BASE_URL}/bookings/{booking_uid}",
+            headers={
+                "Authorization": f"Bearer {Config.CALCOM_API_KEY}",
+                "cal-api-version": "2024-06-14",
+            },
+            timeout=5,
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.error("_verify_calcom_booking: Cal.com API unreachable: %s", exc.__class__.__name__)
+        return None
+
+    if resp.status_code != 200:
+        return None
+
+    data = (resp.json() or {}).get("data") or {}
+    if data.get("eventTypeId") != Config.CALCOM_EVENT_TYPE_ID:
+        return None
+    if data.get("status") != "ACCEPTED":
+        return None
+    attendees = data.get("attendees") or []
+    if not attendees or not attendees[0].get("email"):
+        return None
+    return attendees[0]["email"]
+
+
+def _get_session_email(session: Dict[str, Any], *, client: Any) -> Optional[str]:
+    quote_id = session.get("quote_id")
+    if not quote_id:
+        return None
+    try:
+        payload = qo.get_quote_payload_from_supabase(quote_id, client=client)
+    except Exception as exc:  # noqa: BLE001
+        logger.error("_get_session_email: payload lookup failed for %s: %s", quote_id, exc.__class__.__name__)
+        return None
+    return payload.get("email") if payload else None
+
+
 def confirm_calcom_booking(
     session_id: Optional[str],
     booking_uid: str,
     *,
-    email: Optional[str] = None,
     client: Any = None,
 ) -> Tuple[int, Dict[str, Any]]:
-    """Persiste ``calcom_booking_uid`` sur la session (US-IQ-04) — appelé
-    par le redirect de succès Cal.com, PAS un webhook entrant (hors scope
-    V1, cf. 04-feature-backlog.md). Si ``session_id`` est absent (Cal.com ne
-    le relaie jamais, ADR-IQ-09), retombe sur ``email`` (champ natif Cal.com,
-    verrouillé — cf. ``_build_calcom_booking_link``)."""
+    """Persiste ``calcom_booking_uid`` sur la session (US-IQ-04) — appelé par
+    le redirect de succès Cal.com, PAS un webhook entrant (hors scope V1, cf.
+    04-feature-backlog.md). Exige une preuve server-to-server via l'API
+    Cal.com (``_verify_calcom_booking``, ADR-IQ-09) avant toute écriture —
+    ``booking_uid`` n'est jamais pris pour argent comptant. Si ``session_id``
+    est absent (Cal.com ne le relaie jamais), retombe sur l'email ATTESTÉ par
+    Cal.com pour retrouver la session (jamais un query param client)."""
     cli = client or get_supabase_admin()
 
-    if not session_id and email:
+    verified_email = _verify_calcom_booking(booking_uid)
+    if not verified_email:
+        return 404, {"success": False, "error_code": "CONFIRMATION_FAILED", "error": "Could not confirm this Cal.com booking."}
+
+    if not session_id:
         try:
-            session_id = _find_unclaimed_meeting_session_by_email(email, client=cli)
+            session_id = _find_unclaimed_meeting_session_by_email(verified_email, client=cli)
         except Exception as exc:  # noqa: BLE001
             logger.error("confirm_calcom_booking: email fallback lookup failed: %s", exc.__class__.__name__)
             session_id = None
 
     if not session_id:
-        return 404, {"success": False, "error_code": "SESSION_NOT_FOUND", "error": "Intake session not found."}
+        return 404, {"success": False, "error_code": "CONFIRMATION_FAILED", "error": "Could not confirm this Cal.com booking."}
 
     try:
         session = _get_session(session_id, client=cli)
@@ -1374,7 +1427,11 @@ def confirm_calcom_booking(
         return 503, {"success": False, "error_code": "SUPABASE_UNAVAILABLE", "error": "Could not reach storage."}
 
     if session is None:
-        return 404, {"success": False, "error_code": "SESSION_NOT_FOUND", "error": "Intake session not found."}
+        return 404, {"success": False, "error_code": "CONFIRMATION_FAILED", "error": "Could not confirm this Cal.com booking."}
+
+    session_email = _get_session_email(session, client=cli)
+    if session_email and session_email.lower() != verified_email.lower():
+        return 409, {"success": False, "error_code": "CONFIRMATION_FAILED", "error": "Could not confirm this Cal.com booking."}
 
     cli.table("intake_sessions").update({"calcom_booking_uid": booking_uid}).eq("id", session_id).execute()
     return 200, {"success": True, "data": {"session_id": session_id, "calcom_booking_uid": booking_uid}}

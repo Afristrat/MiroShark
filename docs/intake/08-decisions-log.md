@@ -183,3 +183,41 @@ un bug de redirect.
 **Signal de réexamen** : un email prospect resaisi différent du formulaire malgré le
 verrou (édition manuelle de l'URL, contournement navigateur) ferait échouer le fallback —
 si observé en usage réel, réévaluer l'option webhook `BOOKING_CREATED` (scope V2).
+
+## ADR-IQ-10 — Vérification server-to-server obligatoire du booking_uid avant persistance (2026-07-11, durcissement post-review sécurité sur ADR-IQ-09)
+
+**Quoi** : `confirm_calcom_booking` n'écrit plus JAMAIS `calcom_booking_uid` sur la seule
+foi d'un `uid`/`email` fourni par le client (query params non authentifiés). Avant toute
+résolution de session ou écriture, `_verify_calcom_booking(booking_uid)` interroge l'API
+Cal.com avec notre propre clé serveur (`GET /v2/bookings/{uid}`) et exige : réservation
+existante, `status == "ACCEPTED"`, `eventTypeId == 25` (event type Intake, pas un autre),
+attendee avec email. L'email retourné par CETTE requête (jamais le query param `email` du
+redirect) sert de clé de matching pour le fallback ADR-IQ-09. Même quand
+`intake_session_id` est fourni directement, l'email attesté par Cal.com est comparé à
+l'email connu de la session (`quote_ownership.customer_email`) — mismatch → rejet. Toutes
+les erreurs (booking introuvable, session introuvable, email non correspondant)
+retournent le même `error_code` générique `CONFIRMATION_FAILED` (pas d'énumération).
+**Pourquoi** : review de sécurité automatique post-commit (2026-07-11) a signalé à juste
+titre que le fallback ADR-IQ-09 tel qu'initialement écrit acceptait n'importe quel `uid`
+inventé par un client tant que l'`email` fourni correspondait à une session ouverte —
+« spoofable-field auth bypass » : un attaquant connaissant/devinant l'email d'un prospect
+pouvait marquer sa session comme « réservée » avec un uid bidon, sans jamais avoir
+réellement pris de créneau, corrompant les données ET empêchant la vraie confirmation
+Cal.com ultérieure de se lier (la session apparaîtrait déjà « réclamée »). Vérifier via
+l'API Cal.com elle-même (source faisant autorité, clé serveur jamais exposée au client)
+ferme cette classe de vulnérabilité : un attaquant devrait désormais faire une VRAIE
+réservation Cal.com (créneau réel consommé, email de confirmation natif envoyé au
+véritable propriétaire de l'adresse, visible sur l'agenda d'Amine) pour espérer lier quoi
+que ce soit — coût, visibilité et traçabilité largement supérieurs à une requête HTTP
+gratuite et silencieuse.
+**Alternatives rejetées** : (1) exiger un token signé (HMAC sur `session_id`) émis au
+moment de la construction du lien — protège aussi le chemin `intake_session_id`, mais
+Cal.com ne relaie justement JAMAIS de query param custom (ADR-IQ-09), donc un tel token
+ne survivrait pas au redirect, rendant l'option inapplicable sans passer par un webhook ;
+(2) `requiresBookerEmailVerification=true` côté Cal.com (OTP email avant confirmation) —
+ferme le résidu (booking réel avec email usurpé) mais ajoute de la friction UX pour TOUS
+les prospects légitimes pour un risque résiduel déjà coûteux/visible pour l'attaquant ;
+laissé en scope V2 si le résidu est un jour exploité en usage réel.
+**Signal de réexamen** : une réservation Cal.com réelle constatée avec un email attendee
+usurpé (le résidu documenté ci-dessus) → activer `requiresBookerEmailVerification` sur
+l'event type Intake.

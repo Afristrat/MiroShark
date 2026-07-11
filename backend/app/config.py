@@ -258,6 +258,8 @@ class Config:
     CALCOM_API_KEY = os.environ.get('CALCOM_API_KEY', '')
     CALCOM_EVENT_TYPE_SLUG = os.environ.get('CALCOM_EVENT_TYPE_SLUG', 'entretien-bassira-20-min')
     CALCOM_BOOKER_USERNAME = os.environ.get('CALCOM_BOOKER_USERNAME', 'a.mansouri')
+    CALCOM_API_BASE_URL = os.environ.get('CALCOM_API_BASE_URL', 'https://api-agenda.ai-mpower.com/v2')
+    CALCOM_EVENT_TYPE_ID = int(os.environ.get('CALCOM_EVENT_TYPE_ID', '25'))
 
     @classmethod
     def validate(cls):
