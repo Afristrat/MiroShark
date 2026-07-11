@@ -1891,6 +1891,8 @@
     "step3": {
       "successTitle": "شكرًا · لقد استلمنا طلبكم.",
       "successSubtitle": "سنعود إليكم خلال 48 ساعة عمل بمقترح مُؤطَّر.",
+      "calcomConfirmedTitle": "موعدكم مؤكَّد.",
+      "calcomConfirmedSubtitle": "نصل مستعدين — ستتلقّون دعوة عبر البريد الإلكتروني تتضمّن رابط مكالمة الفيديو.",
       "quoteIdLabel": "المرجع",
       "errorTitle": "تعذّر الإرسال",
       "errorFallback": "حدث خطأ في الشبكة. حاولوا بعد لحظات.",

@@ -1891,6 +1891,8 @@
     "step3": {
       "successTitle": "Merci, nous avons reçu votre demande.",
       "successSubtitle": "Nous revenons vers vous sous 48 h ouvrées avec une proposition cadrée.",
+      "calcomConfirmedTitle": "Votre entretien est confirmé.",
+      "calcomConfirmedSubtitle": "Nous arrivons préparés — vous recevrez une invitation par email avec le lien de visioconférence.",
       "quoteIdLabel": "Référence",
       "errorTitle": "Envoi impossible",
       "errorFallback": "Une erreur réseau est survenue. Réessayez dans un instant.",
