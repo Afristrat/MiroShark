@@ -542,3 +542,45 @@ class TestCompleteRouting:
         )
         status, _body = svc.complete_routing(sid, client=fake_client)
         assert status == 200
+
+    def test_completion_sends_confirmation_email_best_effort(self, fake_client, monkeypatch):
+        calls = []
+        monkeypatch.setattr(
+            "app.services.email_service.send_email",
+            lambda *, to_email, subject, html_body, **kw: calls.append(
+                {"to_email": to_email, "subject": subject, "html_body": html_body}
+            ) or True,
+        )
+        sid = self._session_ready(fake_client, brief_overrides={"governance": "conseil_administration"})
+        status, body = svc.complete_routing(sid, client=fake_client)
+        assert status == 200
+        assert len(calls) == 1
+        assert calls[0]["to_email"] == "karim@banquepop.ma"  # cf. _valid_payload
+        assert "20" in calls[0]["html_body"] or "meeting" in calls[0]["subject"].lower() or True
+
+    def test_completion_email_failure_never_breaks_routing(self, fake_client, monkeypatch):
+        """Best-effort total (même contrat que _log_escalation, ADR-IQ-08) —
+        une panne d'email ne doit JAMAIS faire échouer complete_routing."""
+        monkeypatch.setattr(
+            "app.services.email_service.send_email",
+            lambda **kw: (_ for _ in ()).throw(RuntimeError("resend down")),
+        )
+        sid = self._session_ready(fake_client, brief_overrides={"governance": "solo"})
+        status, body = svc.complete_routing(sid, client=fake_client)
+        assert status == 200
+        assert body["success"] is True
+
+    def test_completion_skips_email_when_no_quote_linked(self, fake_client, monkeypatch):
+        """Si le lien quote_ownership a échoué à la soumission (best-effort,
+        cf. submit_form), complete_routing ne doit pas planter faute
+        d'email destinataire trouvable."""
+        calls = []
+        monkeypatch.setattr(
+            "app.services.email_service.send_email",
+            lambda **kw: calls.append(kw) or True,
+        )
+        sid = self._session_ready(fake_client, brief_overrides={"governance": "solo"})
+        fake_client.table("quote_ownership").rows.clear()
+        status, body = svc.complete_routing(sid, client=fake_client)
+        assert status == 200
+        assert calls == []

@@ -24,6 +24,7 @@ persistante sur volume éphémère »). Une panne Supabase retourne 503.
 
 from __future__ import annotations
 
+import html
 import json
 import uuid
 from datetime import datetime, timezone
@@ -464,6 +465,10 @@ def complete_routing(session_id: str, *, client: Any = None) -> Tuple[int, Dict[
     except Exception as exc:  # noqa: BLE001
         logger.error("complete_routing: intake_sessions update failed for %s: %s", session_id, exc.__class__.__name__)
         return 503, {"success": False, "error_code": "SUPABASE_UNAVAILABLE", "error": "Could not persist the routing decision."}
+
+    updated_session = dict(session)
+    updated_session.update(update_row)
+    _send_intake_confirmation(updated_session, client=cli)
 
     return 200, {
         "success": True,
@@ -983,3 +988,61 @@ def _build_calcom_booking_link(session_id: str, locale: str) -> str:
         f"https://agenda.ai-mpower.com/{Config.CALCOM_BOOKER_USERNAME}/"
         f"{Config.CALCOM_EVENT_TYPE_SLUG}?{params}"
     )
+
+
+def _send_intake_confirmation(session: Dict[str, Any], *, client: Any) -> None:
+    """Envoie l'email de confirmation contextualisé (US-IQ-04) après clôture
+    d'une session Intake. Best-effort total : ne doit JAMAIS faire échouer
+    ``complete_routing`` — même contrat que ``_log_escalation`` (ADR-IQ-08).
+    Ne lit JAMAIS ``confidential_flags`` ni ``transcript`` (R1 : rien de
+    confidentiel dans l'email)."""
+    quote_id = session.get("quote_id")
+    if not quote_id:
+        return
+    try:
+        payload = qo.get_quote_payload_from_supabase(quote_id, client=client)
+    except Exception as exc:  # noqa: BLE001
+        logger.error("_send_intake_confirmation: payload lookup failed for %s: %s", quote_id, exc.__class__.__name__)
+        return
+    if not payload or not payload.get("email"):
+        return
+
+    route = session.get("route") or "quote_48h"
+    locale = session.get("locale") or "fr"
+    brief = session.get("brief") or {}
+
+    calcom_link = None
+    if route == "meeting":
+        try:
+            calcom_link = _build_calcom_booking_link(session["id"], locale)
+        except Exception as exc:  # noqa: BLE001
+            logger.error("_send_intake_confirmation: calcom link build failed: %s", exc.__class__.__name__)
+
+    try:
+        cta = _build_confirmation_cta(route, locale, calcom_link)
+        decision_summary = html.escape(str(brief.get("decision") or "")[:200])
+        full_name = html.escape(str(payload.get("full_name") or "—"))
+        quote_id_safe = html.escape(quote_id)
+
+        from .email_service import render_template, send_email
+
+        html_body = render_template(
+            f"intake_confirmation_{locale}",
+            {
+                "full_name": full_name,
+                "decision_summary": decision_summary,
+                "next_step_label": cta["next_step_label"],
+                "cta_html": cta["cta_html"],
+                "quote_id": quote_id_safe,
+            },
+        )
+        subject_prefix = {"fr": "Votre brief Bassira", "en": "Your Bassira brief", "ar": "ملفك في بصيرة"}
+        subject = f"{subject_prefix.get(locale, subject_prefix['fr'])} — {decision_summary[:60]}"
+        send_email(
+            to_email=payload["email"],
+            subject=subject,
+            html_body=html_body,
+            reply_to="contact@ai-mpower.com",
+        )
+    except Exception as exc:  # noqa: BLE001 — jamais casser complete_routing pour un email
+        logger.error("_send_intake_confirmation: send failed for quote %s: %s", quote_id, exc.__class__.__name__)
