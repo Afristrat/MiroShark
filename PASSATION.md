@@ -1,204 +1,194 @@
-== PASSATION NUCLÉAIRE MiroShark/Bassira — 2026-07-11 (nuit, session très longue : ADR-IQ-08 complet non mergé, diagnostic email intake + correction ADR-IQ-03 + création event type Cal.com réel, plan US-IQ-04 écrit — exécution en attente du choix d'Amine) ==
+== PASSATION NUCLÉAIRE MiroShark/Bassira — 2026-07-11 (soir/nuit : US-IQ-04 + ADR-IQ-08 mergés et déployés, SMTP Cal.com corrigé, Google Meet confirmé connecté — reste à faire une réservation test réelle pour valider les 2 emails natifs Cal.com) ==
 Synthèse complète et autonome — ne suppose la lecture d'aucune passation antérieure.
 
 [ETAT]
-- **Prod inchangée depuis le début de session** : `bassira.ma`/`prospectives.ai-mpower.com`
-  sur gunicorn (Coolify, app `u6pn5mr2pgi88s13un55pkzb`, serveur `serveuria`, IP
-  `192.168.100.24`). Déployé = `e6d6bb3` (docs uniquement, poussé en tout début de
-  session). Rien de fonctionnel n'a été déployé cette session — tout le travail (ADR-IQ-08
-  complet, plan US-IQ-04) vit sur des branches locales NON mergées, NON poussées.
-- **3 branches actives créées cette session** (repo local `C:\Users\amans\OneDrive\Projets\MiroShark`) :
-  - `feat/adr-iq-08-playbook-escalation` (HEAD `792ec5d`) — **ADR-IQ-08 100% implémenté,
-    9/9 tasks, tous les gates verts** (pytest 2184 passed, ruff 0 erreur, npm build OK).
-    **PAS mergée, PAS poussée, aucune PR ouverte.**
-  - `feat/us-iq-04-email-calcom` (HEAD `3d5f1fb`) — **uniquement le plan d'implémentation
-    écrit et commité** (`docs/superpowers/plans/2026-07-11-us-iq-04-email-calcom.md`,
-    7 tasks TDD). **Zéro code d'implémentation.** Créée à partir de `main` (donc contient
-    déjà la correction ADR-IQ-03 v3).
-  - `main` local est **1 commit en avance sur `origin/main`** (`a98ac0c`, correction
-    ADR-IQ-03 — docs uniquement, pas encore poussé).
-  - Deux worktrees pré-existantes non liées à cette session (`worktree-agent-a189a386`,
-    `worktree-agent-a2980770`) — ne pas y toucher, ne pas confondre avec les branches
-    ci-dessus.
-- `.ralph/prd.json` : US-IQ-01, US-IQ-02, US-IQ-03 à `passes:true` (mergées sessions
-  précédentes). US-IQ-04, US-208, US-IQ-05/06/07 toujours `passes:false`.
-- **Session interrompue exactement au moment où Amine devait choisir le mode d'exécution
-  du plan US-IQ-04** (Subagent-Driven vs Inline) — question posée, jamais répondue avant
-  la bascule /clear.
+- **Prod à jour** : `bassira.ma`/`prospectives.ai-mpower.com` (Coolify, app `u6pn5mr2pgi88s13un55pkzb`,
+  serveur `serveuria`, IP `192.168.100.24`). `main` local et distant synchronisés, HEAD =
+  `5c38b51` (dernier push : doc de clôture ADR-IQ-08). Conteneur miroshark actuel :
+  `miroshark-u6pn5mr2pgi88s13un55pkzb-132756713856` (⚠️ le suffixe change à CHAQUE
+  redéploiement Coolify — toujours re-vérifier avec `docker ps --filter name=miroshark` avant
+  un `docker exec`, ne jamais réutiliser un nom de conteneur d'un tour précédent).
+- **US-IQ-04** (emails contextualisés + réservation Cal.com) — `passes: true` dans
+  `.ralph/prd.json`. Implémenté (7 tasks TDD), mergé, déployé, **vérifié réellement en prod** :
+  email reçu (contenu conforme), réservation Cal.com réelle faite par Amine,
+  `calcom_booking_uid` persisté en base. Un bug réel trouvé par Amine en testant (redirect
+  post-booking renvoyait vers le formulaire `/devis` vide au lieu d'un écran de confirmation)
+  → corrigé, déployé, vérifié (`fd0af3d`).
+- **ADR-IQ-08** (playbook vivant + escalade silencieuse) — mergé dans `main` (`6a306e6`,
+  1 conflit réel résolu proprement dans `intake_service.py`, sans perte de logique), déployé,
+  endpoints admin vérifiés en prod (`401` sans auth, pas `404`). Pas d'entrée `.ralph/prd.json`
+  dédiée (c'est une décision d'architecture documentée, pas une user story).
+- **Gap Cal.com natif trouvé ET corrigé cette session** : les conteneurs Cal.com self-hosted
+  (`calcom-a1354o9qgw8rdkszn56o9x3o` + `calcom-api-a1354o9qgw8rdkszn56o9x3o`) n'avaient AUCUNE
+  config SMTP — zéro email natif Cal.com envoyé (ni au booker, ni à Amine comme host), alors
+  que la réservation s'enregistrait bien dans l'agenda. **Corrigé** : 5 variables d'env posées
+  sur le service Coolify `calcom-agenda` (UUID `a1354o9qgw8rdkszn56o9x3o`) via relais SMTP
+  Resend (réutilise `RESEND_API_KEY` déjà utilisé par Bassira) : `EMAIL_SERVER_HOST=
+  smtp.resend.com`, `EMAIL_SERVER_PORT=465`, `EMAIL_SERVER_USER=resend`,
+  `EMAIL_SERVER_PASSWORD=<RESEND_API_KEY>`, `EMAIL_FROM=noreply@ai-mpower.com`. Service
+  redémarré, `healthy`, confirmé par grep dans le conteneur (noms de variables vérifiés dans
+  le bundle Next.js compilé déployé — PAS deviné depuis la doc générique Cal.com, RÈGLE N°2).
+- **Google Meet CONFIRMÉ déjà connecté** sur l'event type id 25 (vérifié par
+  `GET /v2/event-types/25` : `locations: [{"type":"integration","integration":"google-meet",
+  "credentialId":2}]` + `defaultConferencingApp: google-meet` au niveau user) — Amine utilise
+  Google Workspace pour son adresse pro, déjà lié côté Cal.com AVANT cette session (aucune
+  action supplémentaire nécessaire de sa part, contrairement à ce que je pensais au début).
+- **Architecture confirmée avec Amine (à ne pas re-questionner)** : DEUX emails séparés, deux
+  systèmes distincts — (1) email Bassira/Resend = accusé de réception du brief (déjà fait,
+  US-IQ-04, fonctionne) ; (2) email Cal.com natif = confirmation du RDV avec lien Google Meet
+  (booker + host), maintenant débloqué par le fix SMTP. **Pas de duplication côté Bassira** —
+  décision explicite d'Amine de ne PAS coder un 2e envoi via Resend pour la confirmation RDV,
+  de laisser Cal.com gérer nativement sa propre notification.
 
 [FAIT — cette session, dans l'ordre chronologique]
-1. **Auto-correction en tout début de session** : la passation précédente n'avait pas été
-   citée dans la toute première réponse (règle de preuve d'injection ratée) — corrigé
-   immédiatement sur signalement d'Amine, fichier persisté relu intégralement.
-2. **Rattrapage d'un residu de la session précédente** : `docs/superpowers/plans/2026-07-10-us-iq-02-agent.md`
-   n'avait jamais été commité malgré la passation qui l'affirmait ; `PASSATION.md` avait
-   une mise à jour locale jamais poussée. Les deux corrigés et poussés (`e6d6bb3`).
-3. **ADR-IQ-08 implémenté intégralement en Inline** (choix d'Amine), 9 tasks TDD, sur
-   branche `feat/adr-iq-08-playbook-escalation` :
-   - Task 1 : migration `intake_agent_escalations` + `intake_agent_playbook`
-     (`20260710_001_intake_agent_playbook.sql`), data-dictionary à jour (13→15 tables).
-   - Task 2 : champ `escalation` requis dans `AGENT_TURN_OUTPUT_SCHEMA` — a aussi corrigé
-     2 tests pré-existants non anticipés par le plan écrit.
-   - Task 3 : `_log_escalation` (logging + notification email best-effort,
-     `INTAKE_ESCALATION_NOTIFY_EMAIL`). **Faille XSS détectée par la revue de sécurité
-     automatique du commit** (`user_message` injecté sans échappement dans l'email HTML de
-     notification à Amine) — corrigée immédiatement (`html.escape`), verrouillée par test.
-   - Task 4 : `_fetch_active_playbook` + injection du playbook dans le system prompt.
-   - Task 5 : **prompt v2 fr/en/ar** (Règle 0 disclosure en premier, format fusionné
-     identité+refus, champ `escalation` dans la sortie JSON) — remplace le v1 qui avait 2
-     échecs réels sur le corpus §10.3 (session précédente).
-   - Task 6/7 : endpoints admin `/api/admin/quotes/intake/escalations` et `/playbook`.
-     **Le plan prévoyait de mocker `require_super_admin` après import — ça ne marche pas**
-     (décorateur déjà appliqué à la fonction de route au moment de l'import). Réécrit avec
-     un vrai JWT + whitelist (pattern `test_unit_admin_organizations.py`).
-   - Task 8 : vue `AdminAgentPlaybookView.vue` + entrée dans le menu Admin (`AppHeader.vue`
-     — hors scope du plan écrit mais nécessaire, sinon la page n'était atteignable qu'en
-     tapant l'URL). Tokens `--wi-*` alignés sur les vraies valeurs de repli déjà en usage
-     (le plan avait deviné d'autres couleurs).
-   - Task 9 : gate `test_flask_routes_are_documented_or_allowlisted` cassé par les 4
-     nouvelles routes (non anticipé) — corrigé en les allowlistant (même statut que les
-     routes sœurs `/api/admin/quotes/*`).
-4. **Diagnostic d'un signalement réel d'Amine (SOP-003)** : « je n'ai pas reçu de mail
-   après une demande ». Investigation complète (logs conteneur, base Supabase directe,
-   filesystem `uploads/quotes/`) : **PAS un bug**. Les 2 demandes test d'Amine
-   (`q_d955bf4b`, `q_e396a14e`) sont passées par le **nouveau flow Intake** (US-IQ-01/03),
-   pas par l'ancien `/devis`. Le code de `submit_form` (`intake_service.py:302-319`) écrit
-   délibérément `package_id=None` (normal, pas de package choisi à ce stade) et **n'appelle
-   aucune fonction d'envoi d'email** — c'est exactement le trou que US-IQ-04 doit combler.
-   **Fausse piste corrigée en cours de route** : j'avais d'abord cru `resend` non installé
-   en testant `python3` système au lieu du venv `uv` dans le conteneur — le paquet est en
-   réalité bien présent et l'ancien `/devis` envoie ses emails normalement.
-5. **ADR-IQ-03 corrigée v2→v3** (doc périmée découverte en préparant le plan US-IQ-04) :
-   la v2 affirmait un appel API Cal.com en réseau Docker interne (`localhost:3002`) —
-   jamais confirmé fonctionnel. Sonde live comparative faite en direct : le hostname
-   public `https://api-agenda.ai-mpower.com/v2/...` atteint réellement l'API (erreur JSON
-   propre sur clé invalide) ; `agenda.ai-mpower.com/api/v2` est bloqué Cloudflare (« DNS
-   points to prohibited IP »). 4 fichiers docs corrigés + `08-decisions-log.md`
-   (ADR-IQ-03 v3). **Auto-correction supplémentaire** : ma première rédaction de la v3
-   affirmait « miroshark et calcom-api sont sur des réseaux Docker disjoints » comme fait
-   confirmé — en relisant ma propre mémoire `reference_calcom_agenda`, cette affirmation
-   faisait en réalité partie d'une confusion antérieure jamais vérifiée. Reformulé sans
-   cette affirmation non prouvée (le seul fait solide : le hostname public marche, point).
-6. **Event type Cal.com « Entretien Bassira — 20 min » créé réellement** — il n'existait
-   PAS malgré sa mention partout (ADR-IQ-03, spec, prd.json depuis le 2026-07-09 : doc
-   écrite en avance sur l'infra). Sur demande explicite d'Amine (« Crée moi l'événement
-   toi-même »), créé via `POST /v2/event-types` (header `cal-api-version: 2024-06-14`
-   requis) : id `25`, slug `entretien-bassira-20-min`, 20 min, owner `a.mansouri`. URL de
-   réservation confirmée 200 OK : `https://agenda.ai-mpower.com/a.mansouri/entretien-bassira-20-min`.
-   ⚠️ Créé SANS visioconférence (`locations: []`) — les autres event types du compte ont
-   Google Meet configuré, celui-ci non (à ajouter manuellement dans l'UI Cal.com par
-   Amine si souhaité).
-7. **Plan US-IQ-04 écrit** (`docs/superpowers/plans/2026-07-11-us-iq-04-email-calcom.md`,
-   skill `superpowers:writing-plans`) — 7 tasks TDD complètes avec code intégral : audit/fix
-   R1 (échappement HTML du contenu prospect dans l'email existant, faille similaire à celle
-   trouvée au point 3), config Cal.com, 3 templates email localisés fr/en/ar + CTA par
-   branche (self_service/quote_48h/meeting), constructeur de lien de réservation Cal.com
-   (pas d'appel API nécessaire — page publique statique), câblage dans `complete_routing`
-   (best-effort, même contrat que `_log_escalation`), endpoint de capture de confirmation
-   Cal.com (`GET /api/intake/calcom-confirmed`, via `forwardParamsSuccessRedirect`, PAS un
-   webhook entrant — celui-ci reste hors scope V1), gates finaux + vérification réelle en
-   prod (réservation test + email réel). Self-review fait, aucun placeholder, signatures
-   cohérentes entre tasks. **Amine a répondu « 1. et 2. après »** à la question d'ordre
-   (US-IQ-04 d'abord, finalisation ADR-IQ-08 ensuite) — **la question suivante (Subagent-
-   Driven vs Inline pour exécuter ce plan) était posée, sans réponse au moment du /clear.**
+1. **US-IQ-04 implémenté** (plan `docs/superpowers/plans/2026-07-11-us-iq-04-email-calcom.md`,
+   skill `executing-plans`, mode Inline, choisi par Amine) : audit R1 (échappement HTML),
+   config Cal.com, templates fr/en/ar, constructeur CTA + lien booking, `_send_intake_
+   confirmation` câblé dans `complete_routing`, endpoint `GET /api/intake/calcom-confirmed`.
+   2 angles morts du plan corrigés en route (copy EN sans le mot « minutes », import pytest
+   inutile cassant ruff).
+2. **Merge + push `main`** (`d81fc91`), déployé, gates re-vérifiés (2170 passed, ruff clean).
+3. **Vérification réelle en prod** : parcours Intake via API publique (governance
+   `conseil_administration` → route `meeting`), email réel reçu et confirmé (Gmail MCP,
+   thread `19f5044fc558f9c4`) — contenu exact conforme. **Faux positif détecté et écarté** :
+   l'outil `mcp__claude_ai_Gmail__get_thread` affiche le lien Cal.com comme corrompu
+   (`intake_session_id�6be1f8...`, `=fa` disparaît) — reproduction locale exacte de
+   `render_template`/`_build_calcom_booking_link` a prouvé que LE CODE produit le lien intact ;
+   la corruption est un artefact de décodage quoted-printable DANS L'OUTIL Gmail MCP, pas dans
+   l'email réel. **Ne jamais faire confiance à cet outil pour un contenu URL exact** — toujours
+   revérifier par reproduction locale du code si un lien semble corrompu dans son extraction.
+4. **Réservation Cal.com réelle faite par Amine** (Chrome indisponible dans cet environnement,
+   extension non connectée — Amine a réservé lui-même sur le lien fourni).
+   `calcom_booking_uid = bPsTR8xUhWyYpD3pPMZbEp` confirmé persisté en base (requête Supabase
+   directe via conteneur). ⚠️ Réservation réelle toujours active sur l'agenda Cal.com d'Amine,
+   pas annulée (risque faible, créneau test).
+5. **Bug réel signalé par Amine** : après réservation, redirigé vers `/devis` (formulaire A1-A8
+   VIDE) au lieu d'un écran de confirmation — `QuoteView.vue` ne consommait jamais
+   `?calcom_confirmed=1`. Root cause : le plan écrit (Task 6) choisissait cette URL de redirect
+   sans jamais vérifier ce qu'elle affichait réellement. **Corrigé** (`fd0af3d`) : détection du
+   query param, saut direct à l'écran de succès (étape 4), message dédié fr/en/ar
+   (`quote.step3.calcomConfirmedTitle/Subtitle`), stepper masqué. Déployé, vérifié (bundle
+   `QuoteView-B037gR5A.js` contient `calcom_confirmed`).
+6. `US-IQ-04.passes = true` posé dans `.ralph/prd.json`, documenté dans `.ralph/progress.md`.
+7. **Amine a signalé, en testant la réservation réelle** : aucun email reçu ni côté prospect ni
+   côté admin, alors que la réservation existe dans l'agenda. Diagnostic par preuve système :
+   `env | grep -iE "smtp|email|mail"` VIDE dans les 2 conteneurs Cal.com — confirmé root cause,
+   PAS un bug Bassira (email Bassira lui-même déjà confirmé reçu au point 3).
+8. **ADR-IQ-08 finalisé** : branche `feat/adr-iq-08-playbook-escalation` re-vérifiée par preuve
+   système (2185 passed, ruff clean, build OK — ne PAS faire confiance à la mémoire d'une
+   passation précédente sans reprouver, RÈGLE N°4). 1 conflit réel avec `main` (`main` avait
+   avancé de 12 commits entre-temps via US-IQ-04) dans `intake_service.py` : les 2 branches
+   ajoutaient des fonctions en fin de fichier sans chevauchement fonctionnel — résolu par
+   concaténation simple (bloc `_log_escalation`/playbook HEAD, puis bloc
+   `_send_intake_confirmation`/Cal.com main). Merge fast-forward dans `main` (`6a306e6`), gates
+   re-vérifiés sur le résultat fusionné (2204 passed, ruff clean, build OK), poussé, déployé,
+   endpoints admin vérifiés (`401`, pas `404`).
+9. **Amine a demandé de fixer le SMTP Cal.com plutôt que dupliquer l'envoi côté Bassira**
+   (choix explicite après question de clarification — j'avais d'abord proposé du code Bassira/
+   Resend, Amine a préféré la solution native). Noms exacts des variables SMTP Cal.com
+   vérifiés dans le bundle Next.js compilé RÉELLEMENT DÉPLOYÉ (pas depuis la doc générique
+   context7, qui ne donnait pas les noms exacts pour cette version) : `EMAIL_SERVER_HOST`,
+   `EMAIL_SERVER_PORT`, `EMAIL_SERVER_USER`, `EMAIL_SERVER_PASSWORD`, `EMAIL_FROM` (confirmés
+   présents dans `/calcom/apps/web/.next/server/chunks/[root-of-the-server]__11_4bs2._.js` —
+   `EMAIL_FROM_NAME` et `SMTP_SECURE` NE sont PAS lus par cette version, ne pas les poser).
+   Credentials SMTP Resend vérifiés via doc officielle context7 (`/websites/resend`) :
+   `smtp.resend.com:465`, user `resend`, password = clé API. Posées via API Coolify
+   (`POST /api/v1/services/{uuid}/envs`, PAS `/applications/{uuid}/envs` — Cal.com est un
+   *service* docker-compose Coolify, pas une *application* simple). Service redémarré
+   (`POST /api/v1/services/{uuid}/restart`), confirmé `healthy`, variables confirmées
+   injectées dans le nouveau conteneur (noms non-sensibles affichés, `EMAIL_SERVER_PASSWORD`
+   jamais affiché — juste confirmé présent).
+10. **Google Meet vérifié déjà connecté** — Amine a signalé que Meet + Calendar étaient déjà
+    actifs par défaut sur son compte Google Workspace ; confirmé par `GET /v2/event-types/25`
+    (`locations` contient déjà `google-meet` avec `credentialId: 2`). Aucune action OAuth
+    supplémentaire nécessaire — mon guide initial (connecter l'app dans Settings > Apps) était
+    déjà obsolète au moment où je l'ai donné.
 
 [ALERTE]
-- ⚠️ **2 branches complètes/en cours non mergées, non poussées** — tout le travail de
-  cette session est local uniquement. Si la machine ou le repo est perdu avant merge, tout
-  ce travail (ADR-IQ-08 + plan US-IQ-04 + corrections ADR-IQ-03) disparaît.
-- ⚠️ `main` local 1 commit en avance sur `origin/main` (correction ADR-IQ-03, docs
-  uniquement) — jamais poussé cette session, à faire ou confirmer avec Amine.
-- ⚠️ **Mutation réelle sur l'infra Cal.com de production** cette session : un nouvel event
-  type a été créé via API sur l'instance `agenda.ai-mpower.com` (autorisation explicite
-  d'Amine). Pas de rollback fait ni prévu — c'est un ajout, pas une modification d'un
-  event type existant, risque faible.
-- ⚠️ Tant que US-IQ-04 n'est pas implémenté, **aucun prospect passant par le nouveau flow
-  Intake ne recevra d'email de confirmation** — comportement actuel en prod, connu et
-  documenté, pas un bug à corriger en urgence hors de ce chantier.
-- ⚠️ Rien de nouveau sur les alertes de la session précédente (coffre `SERVER_HOST`/
-  `COOLIFY_API_TOKEN` périmés, CI absent sur le repo, test `tunnel-commercial.spec.ts`
-  connu en échec hors-scope) — toujours valables, non revérifiées cette session.
+- Réservation test réelle (`bPsTR8xUhWyYpD3pPMZbEp`) toujours active sur l'agenda Cal.com
+  d'Amine — pas annulée, risque faible (créneau de test, pas un vrai prospect).
+- Service Cal.com (`calcom-agenda`) redémarré 2 fois cette session (fix SMTP) — aucune
+  régression observée (`healthy`, site public `200` après chaque redémarrage), mais à
+  surveiller si Amine signale un souci sur l'agenda dans les heures qui suivent.
 
 [BLOQUE / EN ATTENTE D'AMINE]
-- **Choix du mode d'exécution du plan US-IQ-04** (Subagent-Driven vs Inline) — question
-  posée en toute fin de session, sans réponse. **Reprendre exactement ici.**
-- Finalisation ADR-IQ-08 (merge/PR/déploiement + re-run corpus §10.3 avec le prompt v2)
-  — explicitement reportée après US-IQ-04 par Amine (« 1. et 2. après »).
-- Décision Amine en attente (non bloquante) : ajouter une visioconférence Google Meet à
-  l'event type Cal.com `entretien-bassira-20-min` — pas fait, pas demandé explicitement.
+- Rien de bloquant. **NEXT immédiat** : Amine (ou la prochaine session) doit faire une
+  NOUVELLE réservation test réelle sur `https://agenda.ai-mpower.com/a.mansouri/
+  entretien-bassira-20-min` pour confirmer que les 2 emails natifs Cal.com (booker + host,
+  avec lien Google Meet) partent bien maintenant que le SMTP est corrigé. Question posée à
+  Amine juste avant la coupure de contexte, réponse pas encore reçue au moment de cette
+  passation.
 
 [NEXT]
-1. **PRIORITÉ 1** : redemander à Amine (ou reprendre directement si le premier message est
-   un simple « go »/« reprends » sans autre précision — cf. protocole reprise automatique)
-   le mode d'exécution du plan `docs/superpowers/plans/2026-07-11-us-iq-04-email-calcom.md`,
-   puis l'exécuter task par task (TDD : test échoue → implémente → test passe → commit),
-   sur la branche `feat/us-iq-04-email-calcom` déjà créée.
-2. Task 7 du plan US-IQ-04 exige une vérification RÉELLE en prod (pas seulement les tests
-   unitaires) : réservation Cal.com test réelle + email réel reçu, AVANT de marquer
-   `US-IQ-04.passes=true` dans `.ralph/prd.json`. Ne pas sauter cette étape.
-3. Étape Task 7 Step 5 du plan : poser `successRedirectUrl` sur l'event type Cal.com (id 25)
-   via `PATCH /v2/event-types/25` — **uniquement APRÈS** que l'endpoint
-   `/api/intake/calcom-confirmed` soit effectivement déployé en prod (sinon un prospect
-   réel serait redirigé vers un 404).
-4. Une fois US-IQ-04 mergé/déployé/vérifié : reprendre la finalisation d'ADR-IQ-08 (branche
-   `feat/adr-iq-08-playbook-escalation`, déjà prête, 9/9 tasks, gates verts) — proposer
-   merge/PR à Amine, déployer, puis ré-exécuter le corpus §10.3 avec le prompt v2 pour
-   enfin marquer `US-IQ-02.passes=true`.
-5. Vérifier si `main` local doit être poussé (1 commit en avance, correction ADR-IQ-03
-   docs-only) — probablement oui, à faire au prochain point de contact avec Amine.
+1. **PRIORITÉ 1** : nouvelle réservation Cal.com test réelle → confirmer réception des 2 emails
+   natifs Cal.com (booker + host `a.mansouri`), lien Google Meet présent dans l'email. Si OK :
+   annuler/documenter le test, considérer le chantier Cal.com définitivement clos.
+2. Si les emails natifs Cal.com ne partent toujours pas malgré le SMTP configuré : vérifier les
+   logs du conteneur `calcom-a1354o9qgw8rdkszn56o9x3o` au moment d'une réservation
+   (`docker logs <conteneur> --since 5m`) pour une erreur SMTP explicite (auth Resend,
+   TLS, etc.) — ne pas re-deviner une cause, lire l'erreur réelle.
+3. Annuler la réservation test `bPsTR8xUhWyYpD3pPMZbEp` sur l'agenda si elle encombre le
+   calendrier d'Amine (pas fait cette session, pas demandé explicitement).
+4. Rien d'autre en attente sur US-IQ-04/ADR-IQ-08 — les deux stories sont closes, déployées,
+   vérifiées. Prochain chantier V2-B-intake selon `.ralph/prd.json` : US-IQ-05 (Porte 2 « AAR »)
+   ou reprise de la finalisation US-IQ-02 (2 échecs corpus §10.3 encore à trancher par Amine,
+   cf. `.ralph/progress.md` section US-IQ-02 — non touchée cette session).
 
 [CTX]
 - **Repo GitHub** : `--repo Afristrat/MiroShark` explicite sur toute commande `gh`.
-- **Accès serveur** : `ssh -i C:\Users\amans\.ssh\serveurai_mnemo serveuria@192.168.100.24`.
-- **Gotcha critique découvert cette session** : dans le conteneur backend, `python3`
-  (système) ≠ le venv réellement utilisé par gunicorn (`uv run gunicorn ...` → dépendances
-  dans `backend/.venv`). Pour vérifier un paquet Python installé en prod, TOUJOURS
-  `docker exec <conteneur> sh -c 'cd /app/backend && uv run python3 -c "import X"'`, jamais
-  `python3` nu — sinon faux négatif garanti (vécu cette session avec `resend`).
+- **Accès serveur** : `ssh -i /c/Users/amans/.ssh/serveurai_mnemo serveuria@192.168.100.24`
+  (chemin Git Bash — forward slashes, PAS de backslashes Windows dans la commande `ssh -i`,
+  sinon `Identity file not accessible`).
+- **Coolify API** : `$env:COOLIFY_URL` = `http://192.168.100.24:8000`, token dans le coffre.
+  App miroshark = `/api/v1/applications/u6pn5mr2pgi88s13un55pkzb`. Service Cal.com = 
+  `/api/v1/services/a1354o9qgw8rdkszn56o9x3o` (nom Coolify : `calcom-agenda`) — **endpoints
+  différents pour applications vs services** (`/applications/{uuid}/envs` PATCH vs
+  `/services/{uuid}/envs` POST, `/services/{uuid}/restart` POST). Déploiements : lister via
+  `/api/v1/deployments`, filtrer par `commit`, `status` passe `in_progress` → `finished`
+  (déploiement Bassira ~5-6 min, redémarrage service Cal.com ~1 min).
 - **Cal.com API v2** : hostname public `https://api-agenda.ai-mpower.com/v2/...` (ADR-IQ-03
-  v3), chemin SANS préfixe `/api`. `POST /v2/event-types` exige le header
-  `cal-api-version: 2024-06-14`. Event type Intake : id `25`, slug
-  `entretien-bassira-20-min`, owner `a.mansouri`, 20 min, sans visioconf. Clé
-  `CALCOM_API_KEY` déjà posée en env Coolify miroshark (2026-07-09).
-- **`render_template` (email_service.py) ne fait AUCUN échappement HTML** — simple
-  `str.format`. TOUJOURS `html.escape()` manuellement tout contenu prospect avant
-  injection (pattern déjà appliqué dans `_log_escalation` et prévu dans le plan US-IQ-04
-  Task 1/5). Deux failles de ce type trouvées et corrigées cette session
-  (`_log_escalation` par revue auto, `_send_client_confirmation` par audit R1 planifié).
-- **Endpoints `@require_super_admin` en test** : le décorateur est appliqué à la fonction
-  de route au moment de l'IMPORT du module — monkeypatcher `require_super_admin` après
-  coup ne défait rien. Utiliser un vrai JWT + `BASSIRA_SUPER_ADMIN_EMAILS` (pattern complet
-  dans `tests/test_unit_admin_organizations.py`, repris dans
-  `tests/test_unit_admin_intake_agent.py`).
-- **`complete_routing()` (intake_service.py)** est le point d'accroche explicite documenté
-  pour US-IQ-04 (son propre docstring le dit : « Ne gère PAS l'email de confirmation ni la
-  réservation Cal.com — US-IQ-04, qui dépend de cette story »).
-- **`qo.get_quote_payload_from_supabase(quote_id, client=cli)`** (quote_ownership.py) est
-  la fonction existante pour récupérer l'email/nom/société d'un prospect Intake depuis
-  `quote_ownership.payload` — pas de duplication à créer.
-- pytest backend fin de session : 2184 passed / 1 flaky pré-existant documenté
-  (`test_md_hash_stable_with_deterministic_enricher`) / 42 skipped (WeasyPrint absent).
-- Fins de ligne : `prd.json` = CRLF — réécrire en CRLF après édition Node/outil.
+  v3), header `cal-api-version: 2024-06-14` requis sur les écritures. Event type Intake : id
+  `25`, slug `entretien-bassira-20-min`, owner `a.mansouri`, 20 min, `successRedirectUrl =
+  https://bassira.ma/api/intake/calcom-confirmed`, `locations` inclut déjà `google-meet`.
+  Clé `CALCOM_API_KEY` déjà en env Coolify miroshark.
+- **Cal.com self-hosted, conteneurs** : `calcom-a1354o9qgw8rdkszn56o9x3o` (web app, lit
+  `EMAIL_SERVER_*`/`EMAIL_FROM` pour SMTP, `GOOGLE_API_CREDENTIALS` pour OAuth Google) +
+  `calcom-api-a1354o9qgw8rdkszn56o9x3o` (API v2). Code source dans `/calcom` (pas de
+  `.env.example` en prod — vérifier les vrais noms de vars via
+  `grep -c NOM_VAR "/calcom/apps/web/.next/server/chunks/[root-of-the-server]__11_4bs2._.js"`,
+  UN nom à la fois avec chemin entre guillemets échappés, jamais de regex large — le hook
+  anti-fuite bloque les patterns non ancrés sur une clé exacte).
+- **`render_template` (email_service.py)** : simple `str.format`, AUCUN échappement HTML —
+  toujours `html.escape()` manuellement tout contenu prospect avant injection.
+- **Gmail MCP (`mcp__claude_ai_Gmail__*`)** : compte connecté = `tahirisophia1@gmail.com`.
+  `get_thread` a un bug de décodage quoted-printable qui corrompt les URLs contenant `=XX`
+  (hex-like) juste après un `=` littéral — NE JAMAIS conclure à un bug applicatif sur la seule
+  base d'un lien affiché corrompu par cet outil ; toujours reproduire localement le code de
+  rendu pour vérifier la source de vérité.
+- **Chrome (`mcp__claude-in-chrome__*`)** : extension non connectée dans cet environnement au
+  moment de cette session — ne pas supposer disponible, vérifier par `tabs_context_mcp` avant
+  de compter dessus pour une vérification visuelle/browser.
+- Fins de ligne : `.ralph/prd.json` = CRLF strict — vérifier après toute édition
+  (`data.count(b'\r\n')` doit égaler le nombre total de `\n`).
 
 [MEMO inter-sessions]
-- **Les docs peuvent être écrites en avance sur l'infra réelle** (leçon structurante de
-  cette session, deux fois : ADR-IQ-03 décrivait un mécanisme jamais vérifié fonctionnel ;
-  l'event type Cal.com était documenté partout sans exister). Avant de construire sur une
-  affirmation d'un doc/ADR/prd.json concernant un système EXTERNE, revérifier par preuve
-  système directe (règle fondamentale n°4) — ne jamais faire confiance à la doc seule pour
-  un fait d'infra tiers.
-- **Une mémoire peut elle-même contenir une confusion non résolue** — la mémoire
-  `reference_calcom_agenda` mentionnait « réseaux Docker disjoints » comme partie d'une
-  « confusion initiale », pas comme un fait confirmé ; je l'avais quand même réécrit comme
-  un fait affirmatif dans l'ADR au premier jet. Toujours relire le texte EXACT d'une
-  mémoire avant de la citer comme preuve, pas juste son intitulé/résumé.
-- **Zéro dette de plan** (extension de la RÈGLE N°3) : un plan écrit par une session
-  précédente peut lui-même avoir des angles morts non anticipés (tests d'auth cassés dans
-  ADR-IQ-08 Task 6/7, gate OpenAPI non prévu, 2 tests pré-existants cassés par un schéma
-  étendu) — les corriger au fil de l'exécution plutôt que de suivre le plan aveuglément,
-  et le documenter dans le message de commit.
-- Marque : Bassira (بصيرة) visible, `miroshark` technique. Jamais « prédiction » dans le
-  copy (ADR-002). URLs publiques bassira.ma TOUJOURS (ADR-013). i18n fr/en/ar parité
-  stricte (ADR-008). LLM/modèles : toujours choisis par Amine (ADR-004/ADR-IQ-06).
-
-— fin passation —
+- **Les docs/plans peuvent être écrits en avance sur l'infra réelle ou sur ce qu'un écran
+  affiche réellement** — 3e occurrence cette session (après ADR-IQ-03 et l'event type Cal.com
+  lors de sessions précédentes) : le plan US-IQ-04 choisissait `/devis?calcom_confirmed=1`
+  comme redirect sans jamais vérifier que `QuoteView.vue` consommait ce param — trouvé
+  uniquement parce qu'Amine a testé manuellement. **Un plan écrit, même détaillé et self-reviewé,
+  n'a jamais vérifié le comportement RÉEL d'un écran tiers qu'il ne code pas lui-même** —
+  tester le parcours utilisateur bout en bout reste irremplaçable, même après un plan
+  apparemment complet.
+- **Un outil MCP peut lui-même introduire un artefact qui ressemble à un bug applicatif**
+  (le décodage quoted-printable de Gmail MCP) — avant de déclarer un bug sur la foi d'un
+  outil d'extraction/lecture, reproduire la source de vérité directement (ici : rejouer le
+  code de rendu localement) plutôt que de faire confiance à la première lecture.
+- **Une fonctionnalité "manquante" côté produit (email de confirmation RDV) peut avoir sa
+  vraie cause dans une brique tierce non couverte par les tests du repo** (Cal.com self-hosted
+  sans SMTP) — le réflexe RÈGLE N°4 (preuve système, jamais de supposition) a permis de
+  distinguer en quelques commandes ce qui relevait du code Bassira (déjà vérifié OK) de ce qui
+  relevait de l'infra Cal.com (cassé depuis le déploiement initial, jamais remarqué faute de
+  test réel avant cette session).
+- Marque : Bassira (بصيرة) visible, `miroshark` technique. Jamais « prédiction » dans le copy
+  commercial (ADR-002). URLs publiques toujours `bassira.ma` (ADR-013).
