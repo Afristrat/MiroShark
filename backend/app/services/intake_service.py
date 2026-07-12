@@ -1498,4 +1498,9 @@ def confirm_calcom_booking(
         return 409, {"success": False, "error_code": "CONFIRMATION_FAILED", "error": "Could not confirm this Cal.com booking."}
 
     cli.table("intake_sessions").update({"calcom_booking_uid": booking_uid}).eq("id", session_id).execute()
+
+    updated_session = dict(session)
+    updated_session["calcom_booking_uid"] = booking_uid
+    _send_intake_confirmation(updated_session, client=cli)
+
     return 200, {"success": True, "data": {"session_id": session_id, "calcom_booking_uid": booking_uid}}

@@ -742,6 +742,63 @@ class TestConfirmCalcomBooking:
         session = svc.get_session(sid, client=fake_client)
         assert session.get("calcom_booking_uid") is None
 
+    def test_confirmation_sends_email_with_locked_calcom_link(self, fake_client, monkeypatch):
+        """Reprend l'assertion de contenu qui vivait avant Task 1/2 sur
+        complete_routing (test_completion_email_calcom_link_locks_email_and_name,
+        supprimé) — le timing a changé, pas le contenu attendu de l'email."""
+        calls = []
+        monkeypatch.setattr(
+            "app.services.email_service.send_email",
+            lambda *, to_email, subject, html_body, **kw: calls.append(
+                {"to_email": to_email, "html_body": html_body}
+            ) or True,
+        )
+        sid = svc.start_session(client=fake_client)["session_id"]
+        svc.submit_form(sid, _valid_payload(brief_overrides={"governance": "conseil_administration"}), client=fake_client)
+        svc.complete_routing(sid, client=fake_client)
+        assert calls == []  # pas encore envoyé (Task 1)
+
+        self._mock_calcom_booking(monkeypatch)
+        status, _body = svc.confirm_calcom_booking(sid, "cal-booking-uid-xyz", client=fake_client)
+        assert status == 200
+        assert len(calls) == 1
+        assert calls[0]["to_email"] == "karim@banquepop.ma"
+        html_body = calls[0]["html_body"]
+        assert "email=karim%40banquepop.ma" in html_body
+        assert "name=Karim+Bensaid" in html_body
+
+    def test_confirmation_email_failure_never_breaks_confirmation(self, fake_client, monkeypatch):
+        """Best-effort — même contrat que _send_intake_confirmation partout
+        ailleurs : une panne d'email ne doit jamais faire échouer la
+        confirmation de réservation elle-même."""
+        monkeypatch.setattr(
+            "app.services.email_service.send_email",
+            lambda **kw: (_ for _ in ()).throw(RuntimeError("resend down")),
+        )
+        sid = svc.start_session(client=fake_client)["session_id"]
+        svc.submit_form(sid, _valid_payload(brief_overrides={"governance": "conseil_administration"}), client=fake_client)
+        svc.complete_routing(sid, client=fake_client)
+        self._mock_calcom_booking(monkeypatch)
+
+        status, body = svc.confirm_calcom_booking(sid, "uid-1", client=fake_client)
+        assert status == 200
+        assert body["success"] is True
+
+    def test_confirmation_failure_does_not_send_email(self, fake_client, monkeypatch):
+        calls = []
+        monkeypatch.setattr(
+            "app.services.email_service.send_email",
+            lambda **kw: calls.append(kw) or True,
+        )
+        sid = svc.start_session(client=fake_client)["session_id"]
+        svc.submit_form(sid, _valid_payload(brief_overrides={"governance": "conseil_administration"}), client=fake_client)
+        svc.complete_routing(sid, client=fake_client)
+        self._mock_calcom_booking(monkeypatch, found=False)  # uid inconnu de Cal.com
+
+        status, _body = svc.confirm_calcom_booking(sid, "attacker-invented-uid", client=fake_client)
+        assert status == 404
+        assert calls == []
+
     def test_rejects_cancelled_booking(self, fake_client, monkeypatch):
         sid = svc.start_session(client=fake_client)["session_id"]
         svc.submit_form(sid, _valid_payload(brief_overrides={"governance": "conseil_administration"}), client=fake_client)
