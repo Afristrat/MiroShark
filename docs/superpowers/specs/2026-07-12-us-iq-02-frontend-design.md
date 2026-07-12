@@ -90,9 +90,13 @@ Utilisé par les 3 call sites, qui gardent seulement leur logique propre (persis
 gestion d'erreurs HTTP spécifique).
 
 **Contenu du helper, par branche** :
-- `meeting` : `calcom_link = _build_calcom_booking_link(session_id, locale, email=session["email"], full_name=session["full_name"])`
-  (déjà pur, aucun appel réseau) → `data["calcom_link"]`. `_send_intake_confirmation` **non
-  appelé ici**.
+- `meeting` : `email`/`full_name` ne sont **pas** sur la row `intake_sessions` (vérifié par
+  grep de `submit_form`) — ils vivent dans `quote_ownership`, récupérables via
+  `qo.get_quote_payload_from_supabase(session["quote_id"], client=client)`, exactement le
+  mécanisme déjà utilisé par `_send_intake_confirmation`. `calcom_link =
+  _build_calcom_booking_link(session["id"], locale, email=payload.get("email"),
+  full_name=payload.get("full_name"))` (déjà pur, aucun appel réseau) → `data["calcom_link"]`.
+  `_send_intake_confirmation` **non appelé ici**.
 - `self_service` : recommandation de package (section précédente) → `data["package_recommendation"] = {package_id, rationale}`. Email envoyé normalement (inchangé).
 - `quote_48h` : inchangé, email envoyé normalement.
 
