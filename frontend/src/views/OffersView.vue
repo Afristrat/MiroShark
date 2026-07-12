@@ -346,7 +346,7 @@
 
 <script setup>
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { createCheckoutSession } from '../api/stripe'
 import { formatApiError } from '../utils/error-handler'
@@ -522,6 +522,7 @@ const faqKeys = [
 // State
 // ════════════════════════════════════════════════════════════════════
 const router = useRouter()
+const route = useRoute()
 const { locale: i18nLocale, t } = useI18n()
 
 // État du Checkout Stripe self-service (US-205, ADR-014) — un seul en vol
@@ -644,6 +645,19 @@ function goTo(idx) {
   activeIndex.value = idx
 }
 
+// Préselection depuis l'écran Assistant du parcours /devis (US-IQ-02
+// frontend, branche self_service) — ?recommended=<package_id> navigue le
+// carousel directement sur la carte concernée, sans CSS de surbrillance
+// dédié (le style « carte active » du carousel suffit déjà).
+function applyRecommendedPackage() {
+  const recommended = route.query.recommended
+  if (!recommended || typeof recommended !== 'string') return
+  const idx = packages.findIndex((p) => p.id === recommended)
+  if (idx === -1) return
+  activeChip.value = 'all'
+  goTo(idx)
+}
+
 function next() {
   if (activeIndex.value < displayedPackages.value.length - 1) {
     activeIndex.value += 1
@@ -723,6 +737,7 @@ function onKeydown(e) {
 
 onMounted(() => {
   document.addEventListener('keydown', onKeydown)
+  applyRecommendedPackage()
 })
 
 onBeforeUnmount(() => {
