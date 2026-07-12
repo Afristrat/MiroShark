@@ -616,6 +616,34 @@ class TestCompleteRouting:
         assert calls == []
 
 
+class TestFinalizeSessionSelfService:
+    def test_complete_routing_returns_package_recommendation_for_self_service(self, fake_client, monkeypatch):
+        monkeypatch.setattr(
+            svc, "create_intake_llm_client",
+            lambda **kw: _StubLLM({"package_id": "adcheck_lite", "rationale": "Test de concept publicitaire."}),
+        )
+        sid = svc.start_session(client=fake_client)["session_id"]
+        svc.submit_form(sid, _valid_payload(brief_overrides={
+            "governance": "solo",
+            "deadline": {"date": _FAR_DATE, "overdue": False},
+            "stakes": {"budget_bracket": "lt_1m", "exposure": "interne"},
+        }), client=fake_client)
+        status, body = svc.complete_routing(sid, client=fake_client)
+        assert status == 200
+        assert body["data"]["route"] == "self_service"
+        assert body["data"]["package_recommendation"] == {
+            "package_id": "adcheck_lite", "rationale": "Test de concept publicitaire.",
+        }
+
+
+class _StubLLM:
+    def __init__(self, output):
+        self._output = output
+
+    def chat_json(self, messages, temperature=0.3, max_tokens=1024):
+        return self._output
+
+
 class TestConfirmCalcomBooking:
     """Depuis ADR-IQ-09 (durcissement sécurité post-review), toute confirmation
     exige une vérification server-to-server du booking_uid auprès de l'API

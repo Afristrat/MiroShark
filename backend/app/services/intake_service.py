@@ -1015,6 +1015,81 @@ def agent_turn(
     return 200, {"success": True, "data": data}
 
 
+_SELF_SERVICE_PACKAGES: Dict[str, str] = {
+    "pmf_discovery": (
+        "PMF Discovery (10k MAD) — validation de product-market fit avant une levée, "
+        "cible fondateurs/investisseurs, 50 prospects-cible synthétiques testent la "
+        "proposition de valeur sur 10 semaines."
+    ),
+    "crisis_drill_24h": (
+        "Crisis Drill 24h (20k MAD) — stress-test d'une crise réputationnelle imminente, "
+        "cible directions générales, 50 citoyens synthétiques réagissent heure par heure."
+    ),
+    "adcheck_lite": (
+        "Adcheck Lite (15k MAD) — test de 2 concepts publicitaires avant achat media, "
+        "cible directions marketing, verdict en 72h."
+    ),
+}
+_SELF_SERVICE_PACKAGE_FALLBACK = "crisis_drill_24h"
+_PACKAGE_RECOMMENDATION_TIMEOUT_SECONDS = 15.0
+_PACKAGE_RECOMMENDATION_TEMPERATURE = 0.2
+_PACKAGE_RECOMMENDATION_MAX_TOKENS = 256
+
+_PACKAGE_RECOMMENDATION_OUTPUT_SCHEMA: Dict[str, Any] = {
+    "type": "object",
+    "required": ["package_id", "rationale"],
+    "additionalProperties": False,
+    "properties": {
+        "package_id": {"type": "string", "enum": sorted(_SELF_SERVICE_PACKAGES)},
+        "rationale": {"type": "string", "minLength": 1, "maxLength": 240},
+    },
+}
+
+
+def _recommend_self_service_package(brief: Dict[str, Any], locale: str, llm: Any) -> Dict[str, str]:
+    """Recommande l'un des 3 packages self-service à partir du brief —
+    appel LLM best-effort (jamais bloquant) : toute erreur (gateway
+    indisponible, sortie invalide, package_id hors liste) retombe sur le
+    package `featured` du catalogue (`crisis_drill_24h`), sans rationale
+    spécifique (design US-IQ-02 frontend, section « Recommandation de
+    package self-service »)."""
+    fallback = {"package_id": _SELF_SERVICE_PACKAGE_FALLBACK, "rationale": ""}
+    if llm is None:
+        return fallback
+
+    catalogue = "\n".join(f"- {pid} : {desc}" for pid, desc in _SELF_SERVICE_PACKAGES.items())
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                "Tu recommandes UN SEUL package parmi ceux listés ci-dessous, à partir du "
+                "brief d'un décideur. Réponds en JSON strict "
+                '{"package_id": "<id exact>", "rationale": "<1 phrase, langue ' + locale + '>"}. '
+                "Aucun texte hors de ce JSON.\n\nPackages disponibles :\n" + catalogue
+            ),
+        },
+        {"role": "user", "content": json.dumps(brief, ensure_ascii=False)},
+    ]
+    try:
+        raw_output = llm.chat_json(
+            messages,
+            temperature=_PACKAGE_RECOMMENDATION_TEMPERATURE,
+            max_tokens=_PACKAGE_RECOMMENDATION_MAX_TOKENS,
+        )
+    except Exception as exc:  # noqa: BLE001 — best-effort, jamais bloquant
+        logger.warning("_recommend_self_service_package: LLM call failed: %s", exc.__class__.__name__)
+        return fallback
+
+    if not isinstance(raw_output, dict):
+        return fallback
+    try:
+        jsonschema.validate(raw_output, _PACKAGE_RECOMMENDATION_OUTPUT_SCHEMA)
+    except jsonschema.ValidationError:
+        return fallback
+
+    return {"package_id": raw_output["package_id"], "rationale": raw_output["rationale"]}
+
+
 def _finalize_session(
     session: Dict[str, Any],
     brief: Dict[str, Any],
@@ -1034,6 +1109,16 @@ def _finalize_session(
     réellement vérifié (Task 2 de ce plan)."""
     data: Dict[str, Any] = {}
     locale = session.get("locale") or "fr"
+
+    if route == "self_service":
+        llm_client_obj = llm
+        if llm_client_obj is None and attempt_llm:
+            try:
+                llm_client_obj = create_intake_llm_client(timeout=_PACKAGE_RECOMMENDATION_TIMEOUT_SECONDS)
+            except Exception as exc:  # noqa: BLE001
+                logger.error("_finalize_session: LLM client creation failed: %s", exc.__class__.__name__)
+                llm_client_obj = None
+        data["package_recommendation"] = _recommend_self_service_package(brief, locale, llm_client_obj)
 
     if route == "meeting":
         payload = None
