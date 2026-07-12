@@ -23,3 +23,29 @@ export const startIntakeSession = (opts = {}) => {
 export const submitIntakeForm = (sessionId, payload) => {
   return service.post(`/api/intake/session/${sessionId}/form`, payload)
 }
+
+/**
+ * Un tour de l'agent conversationnel de qualification (étape B, US-IQ-02).
+ *
+ * @param {string} sessionId
+ * @param {string} message — texte du décideur (non vide, y compris l'amorce
+ *   synthétique du montage de IntakeAgentPanel.vue)
+ * @returns {Promise<{success:true, data:{session_id, state, agent_turns,
+ *   message, close, confidential_flags, route?, calcom_link?,
+ *   package_recommendation?}}>}
+ */
+export const postAgentTurn = (sessionId, message) => {
+  return service.post(`/api/intake/session/${sessionId}/agent/turn`, { message })
+}
+
+/**
+ * Clôture directement la session sans passer par le chat (bouton
+ * « Passer cette étape », US-IQ-02 frontend).
+ *
+ * @param {string} sessionId
+ * @returns {Promise<{success:true, data:{session_id, state, route,
+ *   calcom_link?, package_recommendation?}}>}
+ */
+export const completeIntakeSession = (sessionId) => {
+  return service.post(`/api/intake/session/${sessionId}/complete`, {})
+}
