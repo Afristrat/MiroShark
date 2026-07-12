@@ -770,10 +770,12 @@ class TestConfirmCalcomBooking:
         session = svc.get_session(sid, client=fake_client)
         assert session.get("calcom_booking_uid") is None
 
-    def test_confirmation_sends_email_with_locked_calcom_link(self, fake_client, monkeypatch):
-        """Reprend l'assertion de contenu qui vivait avant Task 1/2 sur
-        complete_routing (test_completion_email_calcom_link_locks_email_and_name,
-        supprimé) — le timing a changé, pas le contenu attendu de l'email."""
+    def test_confirmation_sends_email_confirming_meeting_not_asking_to_rebook(self, fake_client, monkeypatch):
+        """L'email post-booking doit confirmer le rendez-vous, jamais
+        redemander une réservation (ADR-IQ-10 bis — corrige une régression
+        de contenu trouvée en revue whole-branch : l'ancienne copy 'Réservez
+        votre entretien' + lien de booking était contradictoire une fois
+        l'email déplacé après la réservation vérifiée)."""
         calls = []
         monkeypatch.setattr(
             "app.services.email_service.send_email",
@@ -792,8 +794,8 @@ class TestConfirmCalcomBooking:
         assert len(calls) == 1
         assert calls[0]["to_email"] == "karim@banquepop.ma"
         html_body = calls[0]["html_body"]
-        assert "email=karim%40banquepop.ma" in html_body
-        assert "name=Karim+Bensaid" in html_body
+        assert "agenda.ai-mpower.com" not in html_body
+        assert "Réservez" not in html_body
 
     def test_confirmation_email_failure_never_breaks_confirmation(self, fake_client, monkeypatch):
         """Best-effort — même contrat que _send_intake_confirmation partout

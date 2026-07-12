@@ -1338,16 +1338,16 @@ _CONFIRMATION_CTA_COPY: Dict[str, Dict[str, Dict[str, str]]] = {
     },
     "meeting": {
         "fr": {
-            "next_step_label": "Votre brief est prêt. Prochaine étape : 20 minutes avec notre équipe — nous arrivons préparés, vous ne répéterez rien.",
-            "cta_html": "<b>Réservez votre entretien (20 min) :</b><br><a href=\"{calcom_link}\" style=\"color:#a13f0f;\">{calcom_link}</a>",
+            "next_step_label": "Votre entretien est confirmé. Nous arrivons préparés — vous ne répéterez rien.",
+            "cta_html": "<b>Ce qui se passe maintenant :</b><br>Vous recevrez une invitation par email avec le lien de visioconférence.",
         },
         "en": {
-            "next_step_label": "Your brief is ready. Next step: 20 minutes with our team — we arrive prepared, you won't repeat anything.",
-            "cta_html": "<b>Book your meeting (20 minutes):</b><br><a href=\"{calcom_link}\" style=\"color:#a13f0f;\">{calcom_link}</a>",
+            "next_step_label": "Your meeting is confirmed. We arrive prepared — you won't repeat anything.",
+            "cta_html": "<b>What happens now:</b><br>You'll receive an email invite with the video call link.",
         },
         "ar": {
-            "next_step_label": "ملفك جاهز. الخطوة التالية: 20 دقيقة مع فريقنا — نصل مستعدين، لن تكرروا شيئًا.",
-            "cta_html": "<b>احجز موعدك (20 دقيقة):</b><br><a href=\"{calcom_link}\" style=\"color:#a13f0f;\">{calcom_link}</a>",
+            "next_step_label": "موعدكم مؤكَّد. نصل مستعدين — لن تكرروا شيئًا.",
+            "cta_html": "<b>ما يحدث الآن:</b><br>ستتلقّون دعوة عبر البريد الإلكتروني تتضمّن رابط مكالمة الفيديو.",
         },
     },
 }
@@ -1356,23 +1356,22 @@ _CONFIRMATION_CTA_COPY: Dict[str, Dict[str, Dict[str, str]]] = {
 def _build_confirmation_cta(
     route: str,
     locale: str,
-    calcom_link: Optional[str],
+    calcom_link: Optional[str] = None,
 ) -> Dict[str, str]:
     """Construit le CTA + libellé de prochaine étape pour l'email de
     confirmation (US-IQ-04), selon la branche de routage et la locale.
 
     Filet de sécurité : une ``route`` inconnue retombe sur la copy
     ``quote_48h`` (le repli le plus neutre) plutôt que de lever — un
-    email de confirmation ne doit jamais planter `complete_routing`."""
+    email de confirmation ne doit jamais planter `complete_routing`.
+
+    ``calcom_link`` n'est plus utilisé par aucune branche — conservé pour
+    compatibilité de signature (ADR-IQ-10 bis : l'email `meeting` part
+    désormais APRÈS réservation vérifiée, Cal.com envoie déjà nativement
+    sa propre confirmation avec le lien Google Meet, ce mail Bassira n'a
+    donc plus de raison de recontenir un lien de RÉSERVATION)."""
     branch_copy = _CONFIRMATION_CTA_COPY.get(route) or _CONFIRMATION_CTA_COPY["quote_48h"]
     locale_copy = branch_copy.get(locale) or branch_copy["fr"]
-
-    if route == "meeting":
-        link = calcom_link or "https://agenda.ai-mpower.com/a.mansouri/entretien-bassira-20-min"
-        return {
-            "next_step_label": locale_copy["next_step_label"],
-            "cta_html": locale_copy["cta_html"].format(calcom_link=link),
-        }
     return dict(locale_copy)
 
 
@@ -1425,20 +1424,8 @@ def _send_intake_confirmation(session: Dict[str, Any], *, client: Any) -> None:
     locale = session.get("locale") or "fr"
     brief = session.get("brief") or {}
 
-    calcom_link = None
-    if route == "meeting":
-        try:
-            calcom_link = _build_calcom_booking_link(
-                session["id"],
-                locale,
-                email=payload.get("email"),
-                full_name=payload.get("full_name"),
-            )
-        except Exception as exc:  # noqa: BLE001
-            logger.error("_send_intake_confirmation: calcom link build failed: %s", exc.__class__.__name__)
-
     try:
-        cta = _build_confirmation_cta(route, locale, calcom_link)
+        cta = _build_confirmation_cta(route, locale)
         decision_summary = html.escape(str(brief.get("decision") or "")[:200])
         full_name = html.escape(str(payload.get("full_name") or "—"))
         quote_id_safe = html.escape(quote_id)
