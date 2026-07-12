@@ -1,7 +1,125 @@
-== PASSATION NUCLÉAIRE MiroShark/Bassira — 2026-07-12 (nuit : ADR-IQ-09+10 déployés/vérifiés, MAIS découverte critique — le parcours /devis réel ne déclenche JAMAIS l'agent ni l'email/Cal.com ; brainstorming en cours pour US-IQ-02 frontend, design NON figé, AUCUN code écrit) ==
+== PASSATION NUCLÉAIRE MiroShark/Bassira — 2026-07-12 12h26 (design US-IQ-02 frontend FIGÉ, validé section par section avec Amine, committé (`5acc4aa`) ; NEXT = writing-plans PUIS implémentation TDD, AUCUN code du chantier écrit) ==
 Synthèse complète et autonome — ne suppose la lecture d'aucune passation antérieure. La
-synthèse du 2026-07-11 (soir/nuit) reste ci-dessous pour l'historique SMTP Cal.com/ADR-IQ-08
-(toujours vrai, non contredit), mais son [NEXT] est **caduc** — remplacé par celui-ci.
+synthèse du 2026-07-12 (nuit, ADR-IQ-09/10 + découverte critique du parcours /devis
+inatteignable) reste ci-dessous pour son [ETAT]/[FAIT] (toujours vrai, non contredit), mais
+son [NEXT] (reprendre le brainstorming) est **caduc et soldé** — le brainstorming s'est
+terminé cette session, remplacé par le [NEXT] ci-dessous (passage à l'implémentation).
+
+[ETAT — cette session]
+- **Design US-IQ-02 frontend complet et validé** avec Amine, section par section (7 « oui »
+  explicites, aucune section rejetée ni modifiée après présentation) via la skill
+  `superpowers:brainstorming`, reprise exactement où la session précédente l'avait laissée
+  (question ouverte sur le package self-service tranchée en premier).
+- **Écrit et committé** : `docs/superpowers/specs/2026-07-12-us-iq-02-frontend-design.md`
+  (commit `5acc4aa`, HEAD actuel, au-dessus de `728bcbd`). Auto-relecture faite (scan
+  placeholders, cohérence interne, scope, ambiguïté) — rien trouvé à corriger.
+- **Amine n'a PAS encore relu le fichier écrit lui-même** (a validé chaque section au fil de
+  la conversation, mais a enchaîné directement sur « mets à jour la passation pour que la
+  prochaine session implémente en TDD » sans dire explicitement « le fichier est bon », donc
+  sans repasser par la porte de relecture du fichier prévue par la skill brainstorming). À
+  traiter comme un go implicite pour enchaîner sur `writing-plans` — mais si la prochaine
+  session veut être rigoureuse, elle peut confirmer en une phrase avant d'invoquer
+  `writing-plans` plutôt que de re-questionner tout le design.
+
+[FAIT — cette session, dans l'ordre chronologique]
+1. Repris le brainstorming interrompu (skill `superpowers:brainstorming`), question ouverte
+   posée en premier via `AskUserQuestion` : quel mécanisme pour recommander un package
+   Stripe self-service (`pmf_discovery`/`crisis_drill_24h`/`adcheck_lite`) à la clôture de
+   l'agent → Amine a choisi l'option **hybride** : l'agent recommande textuellement, puis
+   redirige vers `/offres` pré-sélectionné pour confirmation/changement par le prospect.
+2. **Erreur commise puis auto-corrigée dans la même session** : j'ai d'abord affirmé à tort
+   que la passation citait des noms de packages faux (confusion avec `_VALID_PACKAGES` de
+   `quote_service.py`, une liste DIFFÉRENTE propre au flux de devis manuel) — corrigé après
+   vérification par grep du vrai catalogue `OffersView.vue` (9 packages, dont 3 seulement
+   `selfService: true`). Ne pas répéter : toujours vérifier par grep avant d'accuser une
+   passation d'erreur, même quand ça semble évident.
+3. Design présenté et validé section par section (7 « oui ») : (1) recommandation self-service
+   (agent LLM + repli déterministe `crisis_drill_24h`), (2) flux de données/machine à états
+   (renumérotation étapes `QuoteView.vue`, montage/amorce/clôture), (3) deltas backend
+   (extraction `_finalize_session` pour éliminer la triplication `complete_routing`/
+   `agent_turn`-close/`_close_session_gracefully`), (4) composants frontend
+   (`IntakeAgentPanel.vue` unique, base CSS `ReportChatPanel.vue` mais layout inline pas
+   coulissant), (5) i18n (`quote.step3.assistant.*`, convention existante découplée de
+   `currentStep`), (6) gestion d'erreurs (`errors.*` génériques + cas spécial
+   `agent_unavailable`), (7) plan de tests (contrainte lecture-seule
+   `intake-parcours.spec.ts` → mocks réseau Playwright, pas de vrai submit).
+4. Design écrit dans `docs/superpowers/specs/2026-07-12-us-iq-02-frontend-design.md`,
+   auto-review faite, committé (`5acc4aa`).
+5. Amine a demandé la mise à jour de cette passation pour que la prochaine session fraîche
+   enchaîne directement en implémentation TDD.
+
+[ALERTE]
+- **Aucun code du chantier US-IQ-02 frontend n'a été touché cette session** — uniquement le
+  fichier de design + cette passation. Ne pas sauter d'étape : le design doit d'abord passer
+  par `superpowers:writing-plans` (skill obligatoire, terminal state du process brainstorming)
+  pour produire un plan tâche par tâche, PAS d'implémentation directe depuis le design brut.
+- Le design contient un helper `_finalize_session` **encore à écrire** — il n'existe nulle
+  part dans le code actuel, ne pas le chercher en lisant `intake_service.py`, c'est un delta
+  proposé par le design.
+- US-IQ-04/US-IQ-03 restent `passes: true` dans `.ralph/prd.json` — correct au sens strict de
+  leurs AC, mais toujours inatteignables en usage réel tant que ce chantier n'est pas livré
+  (cf. passation 2026-07-12 nuit, non contredit).
+- Réservation test réelle historique (`bPsTR8xUhWyYpD3pPMZbEp`, 2026-07-11) toujours active
+  sur l'agenda Cal.com d'Amine — jamais annulée, non traité cette session non plus.
+
+[BLOQUE / EN ATTENTE D'AMINE]
+- Rien de bloquant à proprement parler — le go pour enchaîner sur `writing-plans` est
+  implicite (cf. [ETAT] ci-dessus) mais pas formellement confirmé sur le fichier écrit
+  lui-même.
+
+[NEXT]
+1. **PRIORITÉ 1** : invoquer `superpowers:writing-plans` sur
+   `docs/superpowers/specs/2026-07-12-us-iq-02-frontend-design.md` pour produire le plan
+   d'implémentation TDD tâche par tâche (même pattern que
+   `docs/superpowers/plans/2026-07-11-us-iq-04-email-calcom.md`, qui a bien fonctionné :
+   audit, tasks séquentielles avec tests d'abord, gates bloquants).
+2. Exécuter le plan en TDD (skill `superpowers:executing-plans` ou `subagent-driven-development`
+   selon la préférence d'Amine au moment venu — pas encore demandée) :
+   - Backend d'abord (helper `_finalize_session`, exposition `confidential_flags`, endpoint
+     recommandation package, timing email déplacé vers `confirm_calcom_booking`) — TDD complet,
+     gates bloquants (`cd backend && uv run pytest -m "not integration"`, ruff).
+   - Frontend ensuite (`IntakeAgentPanel.vue`, extension `frontend/src/api/intake.js`,
+     renumérotation `QuoteView.vue`, delta `OffersView.vue` pour `?recommended=`, i18n
+     fr/en/ar, tests Playwright mockés).
+   - `npm run build` + suite E2E complète avant de considérer le chantier terminé (RÈGLE N°3,
+     zéro dette).
+3. **Avant OU en parallèle** (indépendant, peut être fait par un autre angle de la même
+   session) : ajuster `AGENT_SYSTEM_PROMPTS` pour les 2 échecs corpus §10.3 documentés dans
+   `.ralph/progress.md` section US-IQ-02 — toujours pas fait, cf. passation 2026-07-12 nuit
+   pour le détail exact des 2 échecs. Ne PAS bloquer le chantier frontend là-dessus (ce sont
+   deux fils indépendants), mais ne pas non plus marquer `US-IQ-02.passes = true` tant que le
+   corpus n'est pas re-passé à 10/10 sur les critères 1-8.
+4. **Une fois livré et déployé** : vérification réelle en prod par un vrai clic sur
+   `bassira.ma/devis` (Amine ou Chrome connecté) — SOP-011, le Playwright mocké de ce chantier
+   ne suffit pas comme preuve d'atteignabilité produit (cf. [MEMO] passation 2026-07-12 nuit :
+   « passes: true » avec tests API directs peut être totalement inatteignable en usage réel).
+5. US-IQ-05 (Porte 2 AAR) reste derrière ce chantier, non prioritaire.
+
+[CTX]
+- Repo GitHub `--repo Afristrat/MiroShark`. HEAD = `5acc4aa`.
+- Design doc : `docs/superpowers/specs/2026-07-12-us-iq-02-frontend-design.md` (~220 lignes,
+  7 sections : recommandation package, flux de données, deltas backend, composants frontend,
+  i18n, gestion d'erreurs, plan de tests).
+- Catalogue offres réel vérifié par grep (`frontend/src/views/OffersView.vue`) : 9 packages,
+  3 `selfService: true` (`pmf_discovery` 10k MAD, `crisis_drill_24h` 20k MAD *featured*,
+  `adcheck_lite` 15k MAD) — à ne pas confondre avec `_VALID_PACKAGES` de `quote_service.py`
+  (`crisis_drill_24h`, `policy_brief_stress`, `pre_launch_adcheck`, `custom`), qui sert
+  uniquement au flux de devis manuel, sans rapport avec le self-service.
+- Endpoints HTTP déjà existants (aucun nouveau nécessaire) :
+  `POST /api/intake/session/<id>/agent/turn` et `POST /api/intake/session/<id>/complete`
+  (`backend/app/api/intake.py:88,121`).
+- Prompt Stitch pour l'écran Assistant (source de vérité UX) :
+  `docs/intake/10-execution-prompts.md:83-104` (section 10.2 de ce fichier — pas le
+  `docs/10-execution-prompts.md` racine, différent).
+
+[MEMO inter-sessions — ajout cette session]
+- La colonne latérale « brief live + sujets verrouillés » de l'écran Assistant a sa source de
+  vérité dans le prompt Stitch §10.2 (`docs/intake/10-execution-prompts.md`), PAS dans une
+  description informelle — toujours aller lire le prompt exact avant de supposer son contenu.
+- Le fichier `frontend/tests/e2e/intake-parcours.spec.ts` (et `tunnel-commercial.spec.ts`) a
+  une politique explicite **jamais de clic sur submit** — Playwright tourne contre la prod
+  réelle (SOP-011). Toute extension de test sur le tunnel commercial doit rester dans cette
+  contrainte (mocks réseau `page.route()`, pas de vrai POST business).
 
 [ETAT]
 - **Prod à jour**, HEAD = `728bcbd`, poussé et déployé, vérifié en profondeur (conteneur
