@@ -1,4 +1,219 @@
-== PASSATION NUCLÉAIRE MiroShark/Bassira — 2026-07-11 (soir/nuit : US-IQ-04 + ADR-IQ-08 mergés et déployés, SMTP Cal.com corrigé, Google Meet confirmé connecté — reste à faire une réservation test réelle pour valider les 2 emails natifs Cal.com) ==
+== PASSATION NUCLÉAIRE MiroShark/Bassira — 2026-07-12 (nuit : ADR-IQ-09+10 déployés/vérifiés, MAIS découverte critique — le parcours /devis réel ne déclenche JAMAIS l'agent ni l'email/Cal.com ; brainstorming en cours pour US-IQ-02 frontend, design NON figé, AUCUN code écrit) ==
+Synthèse complète et autonome — ne suppose la lecture d'aucune passation antérieure. La
+synthèse du 2026-07-11 (soir/nuit) reste ci-dessous pour l'historique SMTP Cal.com/ADR-IQ-08
+(toujours vrai, non contredit), mais son [NEXT] est **caduc** — remplacé par celui-ci.
+
+[ETAT]
+- **Prod à jour**, HEAD = `728bcbd`, poussé et déployé, vérifié en profondeur (conteneur
+  `miroshark-u6pn5mr2pgi88s13un55pkzb-202617800083` au moment de la vérification — **le
+  suffixe change à CHAQUE redéploiement**, toujours re-`docker ps` avant tout `docker exec`).
+- **SMTP Cal.com CONFIRMÉ fonctionnel** (Amine a testé réellement) : email natif Cal.com reçu
+  côté prospect ET côté host (`a.mansouri`), lien Google Meet présent. Ce point précis du
+  chantier SMTP est clos, ne plus y revenir.
+- **ADR-IQ-09** (`3ec2259`) : `forwardParamsSuccessRedirect` de Cal.com ne relaie JAMAIS
+  `intake_session_id` (query param custom) — seulement ses propres champs natifs (`email`,
+  `uid`, `eventTypeSlug`...), constat empirique sur l'URL de redirect réelle fournie par
+  Amine. Fix : `email`/`name` (slugs natifs Cal.com) posés sur le lien de réservation +
+  `disableOnPrefill=true` activé côté API Cal.com sur l'event type Intake (id 25) — le
+  booker ne peut plus modifier ces 2 champs une fois préremplis. Fallback de matching par
+  email côté `confirm_calcom_booking` quand `intake_session_id` absent.
+- **ADR-IQ-10** (`728bcbd`) : une review de sécurité automatique post-commit a trouvé un
+  vrai bypass dans le fix ADR-IQ-09 tel qu'écrit (un attaquant connaissant l'email d'un
+  prospect pouvait poser n'importe quel `uid` bidon et faire croire à une réservation
+  jamais faite). Fermé par vérification server-to-server OBLIGATOIRE : `confirm_calcom_
+  booking` interroge désormais `GET /v2/bookings/{uid}` avec la clé serveur AVANT toute
+  écriture, exige `status=ACCEPTED` + bon `eventTypeId` (25) + email attendee ATTESTÉ par
+  Cal.com (jamais un query param client). Toutes les erreurs renvoient le même
+  `error_code: CONFIRMATION_FAILED` (pas d'énumération). 2215 tests passed, ruff clean,
+  déployé et vérifié en profondeur : conteneur re-`grep`é, endpoint testé en HTTP réel
+  avec le vrai `uid` de la réservation d'hier (`7gz9u9RSvzgHcZRDqnB2rR`), logs re-lus,
+  cross-check en base confirmant le comportement observé (404 attendu, pas un bug).
+- **DÉCOUVERTE CRITIQUE (cette session, en testant le parcours réel)** : Amine a fait le
+  test complet du VRAI formulaire `/devis` en production → jamais vu l'agent conversationnel,
+  aucun email généré des 2 côtés. Root cause trouvée et vérifiée par grep exhaustif :
+  `frontend/src/api/intake.js` n'expose QUE `startIntakeSession` et `submitIntakeForm` —
+  **ZÉRO référence à `agent/turn` ou `complete_routing` nulle part dans `frontend/src`**.
+  `QuoteView.vue` saute directement du formulaire soumis à un écran « merci » statique
+  (`currentStep = 4`). Conséquence : **depuis la mise en prod de ce formulaire, AUCUN
+  prospect réel n'a jamais reçu ni agent, ni routage, ni email de confirmation, ni lien
+  Cal.com** — juste un ID de devis et rien d'autre. US-IQ-04 (email/Cal.com) et US-IQ-03
+  (routage), bien que `passes: true`, sont donc du code correct mais **inatteignable en
+  usage réel** — leur seule vérification passée était par appel API direct, jamais par un
+  vrai clic sur le site.
+- **Correction du diagnostic initial (auto-corrigée dans la même session)** : j'ai d'abord
+  dit à Amine que l'agent (US-IQ-02) « n'avait jamais été construit » — FAUX, corrigé
+  immédiatement après vérification de `.ralph/progress.md` : **le backend de l'agent EST
+  déjà construit, TDD complet, mergé (`8b0f89b`), déployé, testé avec de vrais appels LLM
+  en prod** (`qwen3.6-35b` via gateway LiteLLM). `US-IQ-02.passes = false` dans `prd.json`
+  reflète UNIQUEMENT 2 échecs réels sur le corpus d'évaluation §10.3 (pas un manque
+  d'implémentation) — cf. détail dans [NEXT]. Ce qui manque réellement : (1) le prompt à
+  ajuster pour ces 2 échecs, (2) l'écran chat frontend, **explicitement hors scope du plan
+  déjà écrit** `docs/superpowers/plans/2026-07-10-us-iq-02-agent.md` (§ Hors scope), et
+  (3) le câblage complet du parcours qui n'existe nulle part.
+
+[FAIT — cette session, dans l'ordre chronologique]
+1. Lu la passation du 2026-07-11 soir, identifié le NEXT (réservation test réelle).
+2. Amine a confirmé le SMTP Cal.com fonctionnel (email reçu des 2 côtés, lien Meet présent).
+3. Amine a testé une réservation réelle → `MISSING_PARAMS` sur le redirect. Diagnostic par
+   preuve système (URL réelle fournie par Amine, config Cal.com re-vérifiée via API) →
+   ADR-IQ-09 identifié, implémenté en TDD (8 nouveaux tests), déployé (`3ec2259`), vérifié
+   en HTTP réel + logs + DB.
+4. Review de sécurité automatique post-commit + post-push a flaggé le spoofable-field bypass
+   → ADR-IQ-10 conçu et implémenté en TDD (5 tests de sécurité dédiés), déployé (`728bcbd`),
+   vérifié en profondeur (HTTP réel, logs, cross-check DB avec le vrai uid d'hier).
+5. Amine a posé une question de contexte sur le formulaire (« les questions sont figées,
+   normal ? ») → confirmé que oui par design (ADR-IQ-01), MAIS Amine a précisé n'avoir
+   JAMAIS vu l'agent → investigation → découverte critique décrite ci-dessus (frontend
+   jamais câblé sur agent/turn ni complete_routing).
+6. Amine a demandé de construire US-IQ-02 complet (pas un stopgap minimal) → skill
+   `superpowers:brainstorming` invoquée, en cours au moment de la coupure de contexte.
+7. **Brainstorming — décisions actées avec Amine (AskUserQuestion, réponses explicites)** :
+   a. Amorce de la conversation agent : auto-déclenchée à l'arrivée sur l'écran (premier
+      tour `agent_turn` envoyé automatiquement avec un message d'amorce synthétique,
+      invisible pour l'utilisateur) — PAS besoin que le prospect tape en premier.
+   b. Corriger le prompt (2 échecs corpus §10.3) AVANT de construire le frontend — pas
+      accepté tel quel, pas différé après.
+   c. Écran 4 complet conforme au prompt Stitch §10.2 (chat + bandeau IA permanent +
+      colonne latérale brief live/sujets verrouillés + bouton « Passer cette étape ») —
+      PAS un MVP dégradé sans colonne latérale.
+   d. Le lien Cal.com (branche `meeting`) doit être affiché ET cliquable DIRECTEMENT à
+      l'écran de confirmation, pas seulement dans l'email — petit ajout backend nécessaire
+      (`calcom_link` à renvoyer dans la réponse `complete_routing`/`agent_turn`/
+      `_close_session_gracefully` quand `route == 'meeting'`).
+8. **Correction architecturale majeure demandée par Amine, confirmée explicitement (« oui »)** :
+   pour la branche `meeting` UNIQUEMENT, l'email Bassira contextualisé (`_send_intake_
+   confirmation`, US-IQ-04) ne doit PLUS partir à la clôture de l'agent/skip — il doit être
+   **déplacé pour ne partir qu'APRÈS que `confirm_calcom_booking` réussisse** (créneau
+   réellement validé), pas avant. Raison d'Amine : évite d'envoyer « votre brief est prêt »
+   à quelqu'un qui n'a peut-être jamais réservé, et regroupe la confirmation autour d'un
+   seul moment de vérité (la réservation), plutôt que 2 emails déconnectés dans le temps.
+   Pour `quote_48h`/`self_service` (pas d'étape Cal.com) : email inchangé, part toujours
+   immédiatement à la clôture. **CECI EST UN CHANGEMENT DE COMPORTEMENT SUR DU CODE DÉJÀ
+   SHIPPÉ (US-IQ-04) — PAS ENCORE IMPLÉMENTÉ, à faire dans le cadre de ce chantier US-IQ-02.**
+9. Découvert et vérifié réutilisable : `frontend/src/components/ReportChatPanel.vue` — un
+   pattern de chat déjà existant dans le codebase (bulles par rôle, indicateur « réflexion »,
+   formulaire d'envoi) à utiliser comme base structurelle pour le nouveau composant.
+10. Nouvelle SOP approuvée trouvée et vérifiée NON applicable : **SOP-013** (prototype
+    navigable avant démarrage/reprise du mode Ralph) — exclut explicitement les « stories
+    isolées demandées explicitement par Amine hors mode Ralph » ; ce chantier est mené en
+    direct (interactif), pas en `ralph-mode`/`ralph-loop`, donc SOP-013 ne s'applique pas
+    ICI (à re-vérifier si jamais ce chantier bascule en exécution Ralph autonome).
+11. Point ouvert posé à Amine, **réponse pas encore reçue au moment de la coupure de
+    contexte** : pour la branche `self_service`, aucune logique n'existe nulle part pour
+    déterminer QUEL package Stripe (`pmf_discovery` / `crisis_drill_24h` / `adcheck_lite`)
+    correspond à un brief donné. Proposition faite (pas encore validée) : rediriger vers
+    `/offres` pour un choix manuel du prospect, plutôt que d'inventer un algorithme de
+    sélection automatique sans arbitrage d'Amine.
+
+[ALERTE]
+- **Le brainstorming (skill `superpowers:brainstorming`) est INTERROMPU EN COURS DE
+  SECTION 2** (flux de données / machine à états) — design PAS ENCORE présenté en entier,
+  PAS ENCORE écrit dans `docs/superpowers/specs/`, PAS de plan écrit, **AUCUN code du
+  chantier US-IQ-02 frontend n'a été touché**. Ne pas sauter à l'implémentation à la
+  reprise — reprendre le brainstorming exactement où il s'est arrêté (cf. [NEXT] point 1).
+- Réservation test réelle historique (`bPsTR8xUhWyYpD3pPMZbEp`, 2026-07-11) toujours active
+  sur l'agenda Cal.com d'Amine — jamais annulée, risque faible.
+- **US-IQ-04 et US-IQ-03 restent `passes: true` dans `prd.json`** — c'est correct au sens
+  strict de leurs AC (backend vérifié par appel API direct), mais ne PAS présenter ces
+  stories comme « fonctionnelles en usage réel » tant que le câblage frontend (ce chantier)
+  n'est pas fait. Ne pas non plus re-marquer `passes: false` sans en parler à Amine d'abord
+  — c'est une nuance de scope, pas une régression du code déjà livré.
+
+[BLOQUE / EN ATTENTE D'AMINE]
+- Réponse à la question ouverte sur le point 11 de [FAIT] (package Stripe self-service :
+  redirection `/offres` vs algorithme de sélection à définir).
+- Le reste du design (sections 3+ : détail backend deltas, composants frontend précis,
+  i18n, gestion d'erreurs, tests) n'a pas encore été présenté à Amine — pas encore de go
+  explicite sur l'ensemble du design.
+
+[NEXT]
+1. **PRIORITÉ 1 — reprendre le brainstorming US-IQ-02 exactement où il s'est arrêté** :
+   - Obtenir la réponse d'Amine sur le package Stripe self-service (point 11 ci-dessus).
+   - Finir de présenter le design section par section (backend deltas précis : `calcom_link`
+     + `confidential_flags` dans les réponses API, timing de l'email déplacé vers
+     `confirm_calcom_booking` ; composants frontend précis : `IntakeAgentPanel.vue`,
+     `frontend/src/api/intake.js` à étendre avec `postAgentTurn`/`completeIntakeSession` ;
+     i18n fr/en/ar ; gestion d'erreurs — budget épuisé, gateway down, retry ; plan de tests
+     Playwright étendant `intake-parcours.spec.ts`).
+   - Obtenir le go explicite d'Amine sur le design complet.
+   - Écrire le design dans `docs/superpowers/specs/2026-07-12-us-iq-02-frontend-design.md`,
+     commit, auto-review (placeholders, contradictions, ambiguïtés), faire relire par Amine.
+   - Invoquer `superpowers:writing-plans` pour transformer le design validé en plan TDD
+     tâche par tâche (comme fait pour US-IQ-04).
+2. **Avant ou pendant l'implémentation** : ajuster `AGENT_SYSTEM_PROMPTS` (fr, puis re-dériver
+   en/ar, parité ADR-008) pour les 2 échecs réels du corpus §10.3 documentés dans
+   `.ralph/progress.md` section US-IQ-02 : (1) disclosure IA doit précéder TOUT traitement,
+   y compris un contenu confidentiel immédiat (le cas le plus sérieux) ; (2) assouplir
+   légèrement la contrainte « ≤ 3 phrases » sur les tours combinant disclosure+refus+relance
+   (injection, demande de prédiction). Re-lancer le corpus (`scripts/test_intake_agent_
+   corpus.py`, hand-run dans le conteneur prod, vrai appel LLM) après ajustement, viser
+   10/10 critères automatiques 1-8. Puis poser `US-IQ-02.passes = true`.
+3. Une fois le chantier US-IQ-02 frontend livré et vérifié en usage réel (un vrai clic sur
+   le site, pas un appel API direct — SOP-011) : reconsidérer si `passes: true` sur
+   US-IQ-03/04 doit être accompagné d'une note dans `progress.md` précisant la date à
+   laquelle le parcours est devenu RÉELLEMENT atteignable en prod (distincte de la date
+   d'implémentation backend).
+4. US-IQ-05 (Porte 2 « AAR ») reste en attente derrière ce chantier, non prioritaire tant
+   que le parcours standard n'est pas complètement fonctionnel en usage réel.
+
+[CTX — ajouts cette session, en complément du CTX 2026-07-11 ci-dessous (toujours valide)]
+- **`confirm_calcom_booking(session_id, booking_uid, *, client=None)`** — signature CHANGÉE
+  cette session : le kwarg `email=` a été RETIRÉ (remplacé par la vérification Cal.com
+  interne, `_verify_calcom_booking`). Ne pas réintroduire un paramètre `email` non vérifié.
+- **`_verify_calcom_booking(booking_uid)`** (nouveau, `intake_service.py`) : seule source de
+  vérité pour l'email attendee — `GET {Config.CALCOM_API_BASE_URL}/bookings/{uid}`, exige
+  `status=ACCEPTED` + `eventTypeId == Config.CALCOM_EVENT_TYPE_ID` (défaut 25). Nouvelles
+  variables `Config.CALCOM_API_BASE_URL` (défaut `https://api-agenda.ai-mpower.com/v2`) et
+  `Config.CALCOM_EVENT_TYPE_ID` (défaut `25`) — PAS posées dans Coolify (defaults suffisent,
+  vérifié cohérent avec la prod réelle), à poser explicitement seulement si ces valeurs
+  doivent un jour diverger de la prod actuelle.
+- **`disableOnPrefill=true`** posé côté Cal.com (API, event type 25) sur les bookingFields
+  natifs `name` et `email` — vérifié après coup que les 5 autres champs (`location`,
+  `title`, `notes`, `guests`, `rescheduleReason`) n'ont pas été altérés par le PATCH
+  (remplacement intégral du tableau `bookingFields`, jamais un merge partiel côté API
+  Cal.com — toujours renvoyer le tableau COMPLET, jamais un sous-ensemble).
+- **`agent_turn(session_id, user_message, ...)`** (existant, inchangé) : exige un
+  `user_message` non vide — ne peut PAS parler en premier tout seul. L'amorce automatique
+  (décision 7a ci-dessus) devra envoyer un premier message synthétique non vide côté
+  frontend au montage de l'écran Assistant.
+- **`ReportChatPanel.vue`** (`frontend/src/components/`) : pattern de chat réutilisable
+  (rôles, bulles, indicateur réflexion, formulaire d'envoi, historique) — base structurelle
+  pour le futur `IntakeAgentPanel.vue`, PAS un style à copier tel quel (le nouveau composant
+  doit être sobre/exécutif, pas ludique, conforme au prompt Stitch §10.2).
+- **`frontend/src/api/intake.js`** : actuellement 2 fonctions seulement (`startIntakeSession`,
+  `submitIntakeForm`) — à étendre avec les appels agent/complete lors de l'implémentation.
+- **`frontend/tests/e2e/intake-parcours.spec.ts`** : couvre aujourd'hui UNIQUEMENT les 3
+  écrans du formulaire (US-IQ-01) — à étendre pour couvrir l'écran Assistant + les 3 issues
+  de branche.
+- **Plan déjà écrit** `docs/superpowers/plans/2026-07-10-us-iq-02-agent.md` : couvre le
+  BACKEND uniquement (déjà exécuté, mergé `8b0f89b`) — sa section « Hors scope » liste
+  explicitement le frontend comme tâche distincte, à planifier séparément (ce qu'on fait).
+
+[MEMO inter-sessions — ajouts cette session]
+- **Une story marquée `passes: true` avec des tests API directs qui passent peut être
+  totalement inatteignable en usage réel** si rien côté frontend n'appelle jamais les
+  endpoints concernés — le pattern « vérifié via API publique » (déjà utilisé pour US-IQ-04)
+  est une preuve de correction du BACKEND, jamais une preuve d'atteignabilité PRODUIT. Le
+  seul test qui aurait révélé ce trou plus tôt est un vrai clic utilisateur sur le site
+  (SOP-011, déjà écrite avant cette session mais pas encore assez strictement appliquée à
+  « est-ce que ce code est même appelé par un vrai parcours utilisateur »).
+- **Ne jamais affirmer qu'une story/un composant « n'a jamais été construit » sur la seule
+  foi de `passes: false` dans `prd.json`** — `passes: false` peut aussi vouloir dire « fait
+  mais gated sur un critère précis restant » (ici : 2 échecs corpus). Toujours lire
+  `progress.md` ET grepper le code réel avant d'affirmer une absence totale — erreur commise
+  puis auto-corrigée dans cette même session, à ne pas répéter.
+- **Une review de sécurité automatique peut arriver à tout moment après un commit/push** et
+  révéler un trou réel dans un fix qu'on vient tout juste de livrer et déployer — cette
+  session en a eu 3 (background review sur commit, sur push, plus le premier signalement) ;
+  le premier signal (« spoofable-field ») était le seul pleinement actionnable, les 2
+  suivants n'ont pas pu être lus en détail (contenu tronqué par un avertissement connecteur
+  claude.ai sans rapport) — si un signal de review sécurité arrive tronqué/illisible, ne
+  pas l'ignorer silencieusement, le signaler à Amine si son contenu reste inaccessible.
+- Marque : Bassira (بصيرة) visible, `miroshark` technique. Jamais « prédiction » dans le copy
+  commercial (ADR-002). URLs publiques toujours `bassira.ma` (ADR-013).
+
+═══════════════════════════════════════════════════════════════════════════════
+== SYNTHÈSE PRÉCÉDENTE (2026-07-11 soir/nuit) — historique SMTP Cal.com/ADR-IQ-08, [NEXT] ci-dessous CADUC (remplacé par la synthèse du 2026-07-12 en tête de fichier) ==
 Synthèse complète et autonome — ne suppose la lecture d'aucune passation antérieure.
 
 [ETAT]
