@@ -1492,6 +1492,11 @@
     "RGPD_NOT_ACCEPTED": "GDPR consent is required to process your request.",
     "SUPABASE_NOT_CONFIGURED": "Service temporarily unavailable. Please try again shortly.",
     "SESSION_NOT_FOUND": "Your session has expired. Please restart the form.",
+    "AGENT_BUDGET_EXHAUSTED": "This conversation has reached its limit. Click \"Skip this step\" to continue.",
+    "AGENT_INVALID_OUTPUT": "The assistant hit a snag. Please retry your message.",
+    "INVALID_STATE": "This step has already been completed.",
+    "BRIEF_MISSING": "This session's brief could not be found. Please restart the form.",
+    "SUPABASE_UNAVAILABLE": "Service temporarily unavailable. Please retry in a moment.",
     "INVALID_TRANSITION": "This step has already been submitted. Please restart the form.",
     "A1_INVALID": "Describe your decision in at least 15 characters.",
     "A2_INVALID": "List at least two options you are genuinely considering.",
@@ -1899,7 +1904,21 @@
       "errorTitle": "Submission failed",
       "errorFallback": "A network error occurred. Please retry in a moment.",
       "backToOffers": "Back to offers",
-      "tryAgain": "Retry"
+      "tryAgain": "Retry",
+      "assistant": {
+        "banner": "You're chatting with an AI",
+        "you": "You",
+        "assistant": "Bassira",
+        "placeholder": "Your answer…",
+        "send": "Send",
+        "sending": "Sending…",
+        "thinking": "Bassira is thinking…",
+        "briefSummaryTitle": "Your brief",
+        "lockedTopicsTitle": "Reserved for a live conversation",
+        "skipButton": "Skip this step",
+        "recommendedPackage": "Recommended package: {package}",
+        "viewMeeting": "View my slot"
+      }
     },
     "trustSignals": {
       "multiAgent": {

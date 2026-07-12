@@ -1492,6 +1492,11 @@
     "RGPD_NOT_ACCEPTED": "Le consentement RGPD est requis pour traiter votre demande.",
     "SUPABASE_NOT_CONFIGURED": "Service temporairement indisponible. Réessayez dans un instant.",
     "SESSION_NOT_FOUND": "Votre session a expiré. Merci de recommencer le parcours.",
+    "AGENT_BUDGET_EXHAUSTED": "Cette conversation a atteint sa limite. Cliquez sur « Passer cette étape » pour continuer.",
+    "AGENT_INVALID_OUTPUT": "L'assistant a rencontré un problème. Réessayez votre message.",
+    "INVALID_STATE": "Cette étape est déjà validée.",
+    "BRIEF_MISSING": "Le brief de cette session est introuvable. Merci de recommencer le parcours.",
+    "SUPABASE_UNAVAILABLE": "Service temporairement indisponible. Réessayez dans un instant.",
     "INVALID_TRANSITION": "Cette étape a déjà été validée. Merci de recommencer le parcours.",
     "A1_INVALID": "Décrivez votre décision en au moins 15 caractères.",
     "A2_INVALID": "Indiquez au moins deux options réellement envisagées.",
@@ -1899,7 +1904,21 @@
       "errorTitle": "Envoi impossible",
       "errorFallback": "Une erreur réseau est survenue. Réessayez dans un instant.",
       "backToOffers": "Retour aux offres",
-      "tryAgain": "Réessayer"
+      "tryAgain": "Réessayer",
+      "assistant": {
+        "banner": "Vous échangez avec une IA",
+        "you": "Vous",
+        "assistant": "Bassira",
+        "placeholder": "Votre réponse…",
+        "send": "Envoyer",
+        "sending": "Envoi…",
+        "thinking": "Bassira réfléchit…",
+        "briefSummaryTitle": "Votre brief",
+        "lockedTopicsTitle": "Réservé à l'échange de vive voix",
+        "skipButton": "Passer cette étape",
+        "recommendedPackage": "Package recommandé : {package}",
+        "viewMeeting": "Voir mon créneau"
+      }
     },
     "trustSignals": {
       "multiAgent": {
