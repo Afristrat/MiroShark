@@ -1,3 +1,104 @@
+== PASSATION NUCLÉAIRE MiroShark/Bassira — 2026-07-12 14h02 (plan d'implémentation TDD ÉCRIT et committé (`d8b43d8`), 10 tasks prêtes à exécuter ; NEXT = choisir mode d'exécution (subagent-driven / inline) PUIS exécuter le plan, AUCUN code du chantier encore écrit) ==
+Synthèse complète et autonome — ne suppose la lecture d'aucune passation antérieure. La
+synthèse du 2026-07-12 12h26 (design figé) reste ci-dessous pour son [ETAT]/[FAIT] (toujours
+vrai, non contredit), mais son [NEXT] est **caduc et soldé** — le plan a été écrit cette
+session, remplacé par le [NEXT] ci-dessous.
+
+[ETAT — cette session]
+- Skill `superpowers:writing-plans` invoquée sur le design validé. Contexte technique
+  exhaustif collecté par lecture directe du code (PAS deviné) avant d'écrire une seule ligne
+  de plan : signatures exactes (`_get_session`, `_build_calcom_booking_link`,
+  `_send_intake_confirmation`, `confirm_calcom_booking`, `create_intake_llm_client`,
+  `chat_json`), fixtures de test existantes (`FakeSupabase`, `_valid_payload`, `_FakeLLM`,
+  `fake_client`), structure complète de `QuoteView.vue`/`OffersView.vue`/`intake.js`, contenu
+  exact des 3 fichiers de locale (fr/en/ar) aux mêmes offsets de ligne.
+- **Erreur réelle trouvée et corrigée dans le design AVANT d'écrire le plan** (commit
+  `ae2df33`) : le design disait `session["email"]`/`session["full_name"]` — FAUX, vérifié par
+  grep de `submit_form` : `intake_sessions` ne stocke JAMAIS ces champs, ils vivent
+  uniquement dans `quote_ownership.payload` via `quote_id`. Corrigé pour réutiliser
+  `qo.get_quote_payload_from_supabase`, exactement le mécanisme déjà utilisé par
+  `_send_intake_confirmation`.
+- **Trou de comportement PRÉEXISTANT découvert en lisant le code** (pas une régression du
+  design, un bug déjà présent en prod) : aujourd'hui, **seul `complete_routing` (bouton
+  « Passer cette étape ») envoie l'email de confirmation US-IQ-04** — ni `agent_turn`
+  (`close: true`, la clôture NATURELLE d'une conversation), ni `_close_session_gracefully`
+  (gateway LLM down) ne l'envoient JAMAIS. Invisible jusqu'ici car rien côté frontend
+  n'appelait `agent_turn`. Le plan (Task 1) corrige ce trou en unifiant les 3 points de sortie
+  sur le nouveau helper `_finalize_session` — **effet de bord positif de la factorisation
+  demandée par le design**, pas un scope ajouté arbitrairement.
+- **Plan écrit** : `docs/superpowers/plans/2026-07-12-us-iq-02-frontend-implementation.md`
+  (committé `d8b43d8`, ~2335 lignes). 10 tasks TDD, ordre : backend (Task 1 `_finalize_session`
+  branche meeting + fix email manquant, Task 2 timing email meeting → `confirm_calcom_booking`,
+  Task 3 exposition `confidential_flags`, Task 4 recommandation package self-service) → i18n
+  (Task 5) → frontend (Task 6 `intake.js`, Task 7 `IntakeAgentPanel.vue`, Task 8 câblage
+  `QuoteView.vue`, Task 9 `OffersView.vue` préselection, Task 10 tests Playwright mockés).
+  Auto-review faite (couverture spec section par section, scan placeholders, cohérence des
+  signatures/noms entre tasks) — rien trouvé à corriger.
+- **Chaque task backend identifie et corrige les tests EXISTANTS qui casseraient sinon** :
+  Task 1 corrige `test_completion_sends_confirmation_email_best_effort` et
+  `test_completion_email_calcom_link_locks_email_and_name` (`test_unit_intake.py`, ces 2 tests
+  vérifiaient l'envoi d'email pour la branche `meeting` à `complete_routing` — comportement
+  qui change) — ce n'était PAS une évidence a priori, trouvé en lisant `TestCompleteRouting`
+  en entier avant d'écrire le plan.
+
+[FAIT — cette session]
+1. Invoqué `writing-plans` avec un prompt détaillé listant les 10 chantiers attendus.
+2. Lu en profondeur : `intake_service.py` (constantes agent, `_build_agent_messages`,
+   `_validate_agent_output`, `confirm_calcom_booking`, `_verify_calcom_booking`,
+   `_send_intake_confirmation`, `submit_form` — pour découvrir où vivent email/full_name),
+   `config.py` (constantes Cal.com), `llm_client.py` (`create_intake_llm_client`, `chat_json`),
+   3 fichiers de tests backend existants (`test_unit_intake.py`, `test_unit_intake_agent.py`,
+   `test_unit_intake_confirmation.py`) pour caler exactement les patterns de mock/fixture,
+   `QuoteView.vue` en entier, `OffersView.vue` (découverte : c'est un CAROUSEL, pas une grille
+   — `displayedPackages`/`activeIndex`/`goTo(idx)` déjà existants, réutilisés tels quels pour
+   la préselection plutôt que d'inventer un scroll+surbrillance CSS), `api/index.js`
+   (intercepteur de réponse — confirmé que `service.post()` résout déjà le body déballé),
+   `ReportChatPanel.vue` en entier (base du nouveau composant), 3 fichiers de locale aux
+   mêmes offsets de ligne (fr/en/ar) pour `quote.step3`/`report.chat`/`errors`.
+3. Corrigé le design (`ae2df33`) avant d'écrire le plan — cf. [ETAT] ci-dessus.
+4. Écrit et committé le plan complet (`d8b43d8`).
+
+[ALERTE]
+- **Aucun code du chantier US-IQ-02 frontend n'a encore été touché** — seuls le design et le
+  plan existent. La prochaine étape est l'EXÉCUTION du plan, pas une nouvelle relecture.
+- Le plan modifie 2 tests existants et en ajoute une douzaine côté backend, plusieurs dizaines
+  de lignes de diff côté 3 fichiers de locale, crée 1 nouveau composant Vue, modifie 2 vues
+  existantes. Chantier de taille correcte pour `subagent-driven-development` (10 tasks bien
+  délimitées) si Amine préfère paralléliser/isoler la revue.
+- US-IQ-04/US-IQ-03 restent `passes: true` dans `.ralph/prd.json`, toujours inatteignables en
+  usage réel tant que ce plan n'est pas exécuté ET déployé ET vérifié par un vrai clic
+  (SOP-011) — cf. passations précédentes, non contredit.
+
+[BLOQUE / EN ATTENTE D'AMINE]
+- **Choix du mode d'exécution du plan**, posé explicitement à Amine juste avant la coupure de
+  contexte, réponse pas encore reçue : (1) Subagent-Driven (`superpowers:subagent-driven-
+  development`, un sous-agent frais par task + revue à deux étages) ou (2) Inline
+  (`superpowers:executing-plans`, exécution par lots avec points de contrôle dans la session
+  courante). Ne pas choisir à la place d'Amine — c'est explicitement sa décision dans le
+  protocole de la skill `writing-plans`.
+
+[NEXT]
+1. **PRIORITÉ 1** : obtenir la réponse d'Amine sur le mode d'exécution (cf. [BLOQUE]), puis
+   invoquer la sous-skill correspondante (`superpowers:subagent-driven-development` ou
+   `superpowers:executing-plans`) sur
+   `docs/superpowers/plans/2026-07-12-us-iq-02-frontend-implementation.md`.
+2. Exécuter les 10 tasks dans l'ordre du plan (backend Tasks 1-4 → i18n Task 5 → frontend
+   Tasks 6-10), gates bloquants après CHAQUE task (`pytest`/`ruff` backend, `npm run build`
+   frontend), commit après chaque task (déjà les messages de commit exacts dans le plan).
+3. Une fois les 10 tasks vertes et déployées : vérification réelle en prod par un vrai clic
+   sur `bassira.ma/devis` (SOP-011) — le Playwright mocké de Task 10 ne suffit pas comme
+   preuve d'atteignabilité produit.
+4. Puis seulement : ajuster `AGENT_SYSTEM_PROMPTS` pour les 2 échecs corpus §10.3 (chantier
+   séparé, cf. passations précédentes, non touché par ce plan) avant de poser
+   `US-IQ-02.passes = true`.
+5. US-IQ-05 (Porte 2 AAR) reste derrière, non prioritaire.
+
+[CTX]
+- HEAD = `d8b43d8`. Plan : `docs/superpowers/plans/2026-07-12-us-iq-02-frontend-implementation.md`.
+- Design (source de vérité amont) : `docs/superpowers/specs/2026-07-12-us-iq-02-frontend-design.md` (corrigé `ae2df33`).
+
+═══════════════════════════════════════════════════════════════════════════════
+== SYNTHÈSE PRÉCÉDENTE (2026-07-12 12h26, design figé) — [NEXT] ci-dessous CADUC ==
 == PASSATION NUCLÉAIRE MiroShark/Bassira — 2026-07-12 12h26 (design US-IQ-02 frontend FIGÉ, validé section par section avec Amine, committé (`5acc4aa`) ; NEXT = writing-plans PUIS implémentation TDD, AUCUN code du chantier écrit) ==
 Synthèse complète et autonome — ne suppose la lecture d'aucune passation antérieure. La
 synthèse du 2026-07-12 (nuit, ADR-IQ-09/10 + découverte critique du parcours /devis
