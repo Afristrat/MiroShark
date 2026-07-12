@@ -1495,7 +1495,7 @@
     "AGENT_BUDGET_EXHAUSTED": "This conversation has reached its limit. Click \"Skip this step\" to continue.",
     "AGENT_INVALID_OUTPUT": "The assistant hit a snag. Please retry your message.",
     "INVALID_STATE": "This step has already been completed.",
-    "BRIEF_MISSING": "This session's brief could not be found. Please restart the form.",
+    "BRIEF_MISSING": "This session's brief could not be found. Please restart the process.",
     "SUPABASE_UNAVAILABLE": "Service temporarily unavailable. Please retry in a moment.",
     "INVALID_TRANSITION": "This step has already been submitted. Please restart the form.",
     "A1_INVALID": "Describe your decision in at least 15 characters.",
