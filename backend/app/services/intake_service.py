@@ -1000,6 +1000,7 @@ def agent_turn(
         "agent_turns": new_turns,
         "message": raw_output["message"],
         "close": bool(raw_output.get("close")),
+        "confidential_flags": confidential_flags,
     }
     if update_row["state"] == "completed":
         data["route"] = update_row["route"]

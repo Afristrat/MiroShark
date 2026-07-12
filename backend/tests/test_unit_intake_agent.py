@@ -423,6 +423,46 @@ class TestAgentTurnHappyPath:
         assert "calcom_link" in body["data"]
         assert calls == []
 
+    def test_confidential_flags_exposed_in_every_response(self, fake_client):
+        sid = _submitted_session(fake_client)
+        llm = _FakeLLM([{
+            "message": "Je note ce point de côté — quelle est la prochaine étape ?",
+            "insights": [], "confidential_flag": {"topic_label": "conflit avec un actionnaire"},
+            "escalation": None, "close": False,
+        }])
+        status, body = svc.agent_turn(sid, "Entre nous, il y a un conflit.", client=fake_client, llm=llm)
+        assert status == 200
+        assert body["data"]["confidential_flags"] == [
+            {"topic_label": "conflit avec un actionnaire", "flagged_at": body["data"]["confidential_flags"][0]["flagged_at"]}
+        ]
+
+    def test_confidential_flags_empty_list_when_none_flagged(self, fake_client):
+        sid = _submitted_session(fake_client)
+        llm = _FakeLLM([{
+            "message": "D'accord, poursuivons.", "insights": [], "confidential_flag": None,
+            "escalation": None, "close": False,
+        }])
+        status, body = svc.agent_turn(sid, "ok", client=fake_client, llm=llm)
+        assert status == 200
+        assert body["data"]["confidential_flags"] == []
+
+    def test_confidential_flags_accumulate_across_turns(self, fake_client):
+        sid = _submitted_session(fake_client)
+        llm1 = _FakeLLM([{
+            "message": "Je note ce point.", "insights": [],
+            "confidential_flag": {"topic_label": "sujet A"}, "escalation": None, "close": False,
+        }])
+        svc.agent_turn(sid, "premier message sensible", client=fake_client, llm=llm1)
+
+        llm2 = _FakeLLM([{
+            "message": "Je note aussi ce point.", "insights": [],
+            "confidential_flag": {"topic_label": "sujet B"}, "escalation": None, "close": False,
+        }])
+        status, body = svc.agent_turn(sid, "second message sensible", client=fake_client, llm=llm2)
+        assert status == 200
+        labels = [f["topic_label"] for f in body["data"]["confidential_flags"]]
+        assert labels == ["sujet A", "sujet B"]
+
 
 # ─── agent_turn — garde-fou budget 7 tours ────────────────────────────────────
 
