@@ -1091,6 +1091,7 @@ def _close_session_gracefully(
         "success": True,
         "data": {
             "session_id": session_id, "state": "completed", "route": route,
+            "confidential_flags": confidential_flags,
             "agent_unavailable": True, **extra_data,
         },
     }

@@ -632,3 +632,34 @@ class TestEscalationLogging(object):
         html_body = calls[0][2]
         assert "<script>alert(1)</script>" not in html_body
         assert "&lt;script&gt;" in html_body
+
+
+# ─── Repli gracieux gateway down ──────────────────────────────────────────────
+
+
+class TestAgentTurnGatewayDownFallback:
+    def test_gateway_down_fallback_includes_confidential_flags(self, fake_client):
+        """Le repli gateway-down (_close_session_gracefully) est une vraie
+        réponse agent_turn (200), donc confidential_flags doit y être présent
+        même si le LLM est indisponible — Task 3 du plan US-IQ-02 frontend."""
+        sid = _submitted_session(fake_client)
+        # Pré-enregistrer une confidential_flag en base pour vérifier qu'elle
+        # réapparaît dans la réponse de fallback.
+        fake_client.table("intake_sessions").update({
+            "confidential_flags": [{"topic_label": "sujet sensible", "flagged_at": "2026-07-12T10:00:00Z"}],
+        }).eq("id", sid).execute()
+
+        # Créer un LLM double dont chat_json lève une exception (gateway down).
+        class _FailingLLM:
+            def chat_json(self, *args, **kwargs):
+                raise RuntimeError("LLM gateway unavailable")
+
+        llm = _FailingLLM()
+        status, body = svc.agent_turn(sid, "test message", client=fake_client, llm=llm)
+        assert status == 200
+        assert body["success"] is True
+        assert body["data"]["agent_unavailable"] is True
+        # ASSERTION CLÉE : confidential_flags doit être présent dans la réponse
+        assert "confidential_flags" in body["data"]
+        assert len(body["data"]["confidential_flags"]) == 1
+        assert body["data"]["confidential_flags"][0]["topic_label"] == "sujet sensible"
