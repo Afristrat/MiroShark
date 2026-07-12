@@ -22,29 +22,32 @@ class TestBuildConfirmationCta:
         result = svc._build_confirmation_cta("quote_48h", "fr", None)
         assert "48" in result["cta_html"]
 
-    def test_meeting_includes_calcom_link_fr(self):
+    def test_meeting_confirms_without_rebooking_link_fr(self):
+        """Depuis ADR-IQ-10 bis, l'email meeting part APRÈS réservation
+        vérifiée — il ne doit plus jamais contenir de lien de RÉSERVATION
+        (Cal.com envoie déjà sa propre confirmation native avec le lien
+        Google Meet)."""
+        result = svc._build_confirmation_cta("meeting", "fr")
+        assert "agenda.ai-mpower.com" not in result["cta_html"]
+        assert "Réservez" not in result["cta_html"]
+        assert "confirmé" in result["next_step_label"]
+
+    def test_meeting_ignores_calcom_link_argument(self):
+        """calcom_link est accepté pour compatibilité de signature mais
+        n'est plus utilisé par aucune branche de copy."""
         link = "https://agenda.ai-mpower.com/a.mansouri/entretien-bassira-20-min?intake_session_id=abc"
         result = svc._build_confirmation_cta("meeting", "fr", link)
-        assert link in result["cta_html"]
-        assert "20" in result["cta_html"]
-
-    def test_meeting_without_link_falls_back_gracefully(self):
-        """Si la génération du lien Cal.com échoue (best-effort), le CTA ne
-        doit jamais planter — juste un message sans lien cliquable."""
-        result = svc._build_confirmation_cta("meeting", "fr", None)
-        assert "cta_html" in result
-        assert "None" not in result["cta_html"]
+        assert link not in result["cta_html"]
 
     def test_meeting_en_locale(self):
-        link = "https://agenda.ai-mpower.com/a.mansouri/entretien-bassira-20-min?intake_session_id=abc&lang=en"
-        result = svc._build_confirmation_cta("meeting", "en", link)
-        assert link in result["cta_html"]
-        assert "minutes" in result["cta_html"].lower()
+        result = svc._build_confirmation_cta("meeting", "en")
+        assert "confirmed" in result["next_step_label"].lower()
+        assert "book" not in result["cta_html"].lower()
 
     def test_meeting_ar_locale(self):
-        link = "https://agenda.ai-mpower.com/a.mansouri/entretien-bassira-20-min?intake_session_id=abc&lang=ar"
-        result = svc._build_confirmation_cta("meeting", "ar", link)
-        assert link in result["cta_html"]
+        result = svc._build_confirmation_cta("meeting", "ar")
+        assert "مؤكَّد" in result["next_step_label"]
+        assert "احجز" not in result["cta_html"]
 
     def test_unknown_route_falls_back_to_quote_48h_copy(self):
         """Filet de sécurité : une route inattendue ne doit jamais lever, ni

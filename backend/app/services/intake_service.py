@@ -468,7 +468,7 @@ def complete_routing(session_id: str, *, client: Any = None) -> Tuple[int, Dict[
 
     updated_session = dict(session)
     updated_session.update(update_row)
-    _send_intake_confirmation(updated_session, client=cli)
+    extra_data = _finalize_session(updated_session, brief, session.get("confidential_flags"), route, client=cli)
 
     return 200, {
         "success": True,
@@ -476,6 +476,7 @@ def complete_routing(session_id: str, *, client: Any = None) -> Tuple[int, Dict[
             "session_id": session_id,
             "state": "completed",
             "route": route,
+            **extra_data,
         },
     }
 
@@ -947,7 +948,7 @@ def agent_turn(
             "agent_turn: LLM gateway unavailable for session %s, closing gracefully: %s",
             session_id, exc.__class__.__name__,
         )
-        return _close_session_gracefully(session_id, brief, session.get("confidential_flags"), client=cli)
+        return _close_session_gracefully(session, brief, session.get("confidential_flags"), client=cli)
 
     validation_error = _validate_agent_output(raw_output if isinstance(raw_output, dict) else {})
     if validation_error is not None:
@@ -999,15 +1000,154 @@ def agent_turn(
         "agent_turns": new_turns,
         "message": raw_output["message"],
         "close": bool(raw_output.get("close")),
+        "confidential_flags": confidential_flags,
     }
     if update_row["state"] == "completed":
         data["route"] = update_row["route"]
+        closing_session = dict(session)
+        closing_session.update(update_row)
+        extra_data = _finalize_session(
+            closing_session, brief, confidential_flags, update_row["route"],
+            client=cli, llm=llm_client_obj,
+        )
+        data.update(extra_data)
 
     return 200, {"success": True, "data": data}
 
 
+_SELF_SERVICE_PACKAGES: Dict[str, str] = {
+    "pmf_discovery": (
+        "PMF Discovery (10k MAD) — validation de product-market fit avant une levée, "
+        "cible fondateurs/investisseurs, 50 prospects-cible synthétiques testent la "
+        "proposition de valeur sur 10 semaines."
+    ),
+    "crisis_drill_24h": (
+        "Crisis Drill 24h (20k MAD) — stress-test d'une crise réputationnelle imminente, "
+        "cible directions générales, 50 citoyens synthétiques réagissent heure par heure."
+    ),
+    "adcheck_lite": (
+        "Adcheck Lite (15k MAD) — test de 2 concepts publicitaires avant achat media, "
+        "cible directions marketing, verdict en 72h."
+    ),
+}
+_SELF_SERVICE_PACKAGE_FALLBACK = "crisis_drill_24h"
+_PACKAGE_RECOMMENDATION_TIMEOUT_SECONDS = 15.0
+_PACKAGE_RECOMMENDATION_TEMPERATURE = 0.2
+_PACKAGE_RECOMMENDATION_MAX_TOKENS = 256
+
+_PACKAGE_RECOMMENDATION_OUTPUT_SCHEMA: Dict[str, Any] = {
+    "type": "object",
+    "required": ["package_id", "rationale"],
+    "additionalProperties": False,
+    "properties": {
+        "package_id": {"type": "string", "enum": sorted(_SELF_SERVICE_PACKAGES)},
+        "rationale": {"type": "string", "minLength": 1, "maxLength": 240},
+    },
+}
+
+
+def _recommend_self_service_package(brief: Dict[str, Any], locale: str, llm: Any) -> Dict[str, str]:
+    """Recommande l'un des 3 packages self-service à partir du brief —
+    appel LLM best-effort (jamais bloquant) : toute erreur (gateway
+    indisponible, sortie invalide, package_id hors liste) retombe sur le
+    package `featured` du catalogue (`crisis_drill_24h`), sans rationale
+    spécifique (design US-IQ-02 frontend, section « Recommandation de
+    package self-service »)."""
+    fallback = {"package_id": _SELF_SERVICE_PACKAGE_FALLBACK, "rationale": ""}
+    if llm is None:
+        return fallback
+
+    catalogue = "\n".join(f"- {pid} : {desc}" for pid, desc in _SELF_SERVICE_PACKAGES.items())
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                "Tu recommandes UN SEUL package parmi ceux listés ci-dessous, à partir du "
+                "brief d'un décideur. Réponds en JSON strict "
+                '{"package_id": "<id exact>", "rationale": "<1 phrase, langue ' + locale + '>"}. '
+                "Aucun texte hors de ce JSON.\n\nPackages disponibles :\n" + catalogue
+            ),
+        },
+        {"role": "user", "content": json.dumps(brief, ensure_ascii=False)},
+    ]
+    try:
+        raw_output = llm.chat_json(
+            messages,
+            temperature=_PACKAGE_RECOMMENDATION_TEMPERATURE,
+            max_tokens=_PACKAGE_RECOMMENDATION_MAX_TOKENS,
+        )
+    except Exception as exc:  # noqa: BLE001 — best-effort, jamais bloquant
+        logger.warning("_recommend_self_service_package: LLM call failed: %s", exc.__class__.__name__)
+        return fallback
+
+    if not isinstance(raw_output, dict):
+        return fallback
+    try:
+        jsonschema.validate(raw_output, _PACKAGE_RECOMMENDATION_OUTPUT_SCHEMA)
+    except jsonschema.ValidationError:
+        return fallback
+
+    return {"package_id": raw_output["package_id"], "rationale": raw_output["rationale"]}
+
+
+def _finalize_session(
+    session: Dict[str, Any],
+    brief: Dict[str, Any],
+    confidential_flags: Optional[List[Any]],
+    route: str,
+    *,
+    client: Any,
+    llm: Any = None,
+    attempt_llm: bool = True,
+) -> Dict[str, Any]:
+    """Construit le payload de clôture commun aux 3 points d'entrée qui
+    terminent une session Intake (complete_routing, agent_turn en close,
+    _close_session_gracefully) : calcom_link (branche meeting) ou
+    package_recommendation (branche self_service, Task 4 de ce plan), et
+    pilote l'envoi de l'email de confirmation (US-IQ-04) — jamais pour
+    meeting, déplacé vers confirm_calcom_booking une fois le créneau
+    réellement vérifié (Task 2 de ce plan)."""
+    data: Dict[str, Any] = {}
+    locale = session.get("locale") or "fr"
+
+    if route == "self_service":
+        llm_client_obj = llm
+        if llm_client_obj is None and attempt_llm:
+            try:
+                llm_client_obj = create_intake_llm_client(timeout=_PACKAGE_RECOMMENDATION_TIMEOUT_SECONDS)
+            except Exception as exc:  # noqa: BLE001
+                logger.error("_finalize_session: LLM client creation failed: %s", exc.__class__.__name__)
+                llm_client_obj = None
+        data["package_recommendation"] = _recommend_self_service_package(brief, locale, llm_client_obj)
+
+    if route == "meeting":
+        payload = None
+        quote_id = session.get("quote_id")
+        if quote_id:
+            try:
+                payload = qo.get_quote_payload_from_supabase(quote_id, client=client)
+            except Exception as exc:  # noqa: BLE001
+                logger.error("_finalize_session: payload lookup failed for %s: %s", quote_id, exc.__class__.__name__)
+        try:
+            data["calcom_link"] = _build_calcom_booking_link(
+                session["id"],
+                locale,
+                email=(payload or {}).get("email"),
+                full_name=(payload or {}).get("full_name"),
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.error("_finalize_session: calcom link build failed: %s", exc.__class__.__name__)
+
+    if route != "meeting":
+        session_for_email = dict(session)
+        session_for_email["route"] = route
+        _send_intake_confirmation(session_for_email, client=client)
+
+    return data
+
+
 def _close_session_gracefully(
-    session_id: str,
+    session: Dict[str, Any],
     brief: Dict[str, Any],
     confidential_flags: Optional[List[Any]],
     *,
@@ -1016,7 +1156,10 @@ def _close_session_gracefully(
     """Repli si le gateway LLM échoue (timeout/erreur réseau) — la session
     est clôturée directement (state='completed', route calculée) plutôt
     que de laisser le worker HTTP planter ou le prospect bloqué (AC
-    US-IQ-02, « pas de blocage du worker »)."""
+    US-IQ-02, « pas de blocage du worker »). Le gateway étant DÉJÀ tombé,
+    aucune 2e tentative LLM n'est faite pour la recommandation self-service
+    (attempt_llm=False, repli déterministe immédiat, Task 4 de ce plan)."""
+    session_id = session["id"]
     route = _decide_route(brief, confidential_flags)
     now_iso = datetime.now(timezone.utc).isoformat()
     update_row = {"state": "completed", "route": route, "completed_at": now_iso}
@@ -1025,9 +1168,17 @@ def _close_session_gracefully(
     except Exception as exc:  # noqa: BLE001
         logger.error("agent_turn: graceful close failed to persist for %s: %s", session_id, exc.__class__.__name__)
         return 503, {"success": False, "error_code": "SUPABASE_UNAVAILABLE", "error": "Could not close the session."}
+
+    closing_session = dict(session)
+    closing_session.update(update_row)
+    extra_data = _finalize_session(closing_session, brief, confidential_flags, route, client=client, attempt_llm=False)
     return 200, {
         "success": True,
-        "data": {"session_id": session_id, "state": "completed", "route": route, "agent_unavailable": True},
+        "data": {
+            "session_id": session_id, "state": "completed", "route": route,
+            "confidential_flags": confidential_flags,
+            "agent_unavailable": True, **extra_data,
+        },
     }
 
 
@@ -1187,16 +1338,16 @@ _CONFIRMATION_CTA_COPY: Dict[str, Dict[str, Dict[str, str]]] = {
     },
     "meeting": {
         "fr": {
-            "next_step_label": "Votre brief est prêt. Prochaine étape : 20 minutes avec notre équipe — nous arrivons préparés, vous ne répéterez rien.",
-            "cta_html": "<b>Réservez votre entretien (20 min) :</b><br><a href=\"{calcom_link}\" style=\"color:#a13f0f;\">{calcom_link}</a>",
+            "next_step_label": "Votre entretien est confirmé. Nous arrivons préparés — vous ne répéterez rien.",
+            "cta_html": "<b>Ce qui se passe maintenant :</b><br>Vous recevrez une invitation par email avec le lien de visioconférence.",
         },
         "en": {
-            "next_step_label": "Your brief is ready. Next step: 20 minutes with our team — we arrive prepared, you won't repeat anything.",
-            "cta_html": "<b>Book your meeting (20 minutes):</b><br><a href=\"{calcom_link}\" style=\"color:#a13f0f;\">{calcom_link}</a>",
+            "next_step_label": "Your meeting is confirmed. We arrive prepared — you won't repeat anything.",
+            "cta_html": "<b>What happens now:</b><br>You'll receive an email invite with the video call link.",
         },
         "ar": {
-            "next_step_label": "ملفك جاهز. الخطوة التالية: 20 دقيقة مع فريقنا — نصل مستعدين، لن تكرروا شيئًا.",
-            "cta_html": "<b>احجز موعدك (20 دقيقة):</b><br><a href=\"{calcom_link}\" style=\"color:#a13f0f;\">{calcom_link}</a>",
+            "next_step_label": "موعدكم مؤكَّد. نصل مستعدين — لن تكرروا شيئًا.",
+            "cta_html": "<b>ما يحدث الآن:</b><br>ستتلقّون دعوة عبر البريد الإلكتروني تتضمّن رابط مكالمة الفيديو.",
         },
     },
 }
@@ -1205,23 +1356,22 @@ _CONFIRMATION_CTA_COPY: Dict[str, Dict[str, Dict[str, str]]] = {
 def _build_confirmation_cta(
     route: str,
     locale: str,
-    calcom_link: Optional[str],
+    calcom_link: Optional[str] = None,
 ) -> Dict[str, str]:
     """Construit le CTA + libellé de prochaine étape pour l'email de
     confirmation (US-IQ-04), selon la branche de routage et la locale.
 
     Filet de sécurité : une ``route`` inconnue retombe sur la copy
     ``quote_48h`` (le repli le plus neutre) plutôt que de lever — un
-    email de confirmation ne doit jamais planter `complete_routing`."""
+    email de confirmation ne doit jamais planter `complete_routing`.
+
+    ``calcom_link`` n'est plus utilisé par aucune branche — conservé pour
+    compatibilité de signature (ADR-IQ-10 bis : l'email `meeting` part
+    désormais APRÈS réservation vérifiée, Cal.com envoie déjà nativement
+    sa propre confirmation avec le lien Google Meet, ce mail Bassira n'a
+    donc plus de raison de recontenir un lien de RÉSERVATION)."""
     branch_copy = _CONFIRMATION_CTA_COPY.get(route) or _CONFIRMATION_CTA_COPY["quote_48h"]
     locale_copy = branch_copy.get(locale) or branch_copy["fr"]
-
-    if route == "meeting":
-        link = calcom_link or "https://agenda.ai-mpower.com/a.mansouri/entretien-bassira-20-min"
-        return {
-            "next_step_label": locale_copy["next_step_label"],
-            "cta_html": locale_copy["cta_html"].format(calcom_link=link),
-        }
     return dict(locale_copy)
 
 
@@ -1274,20 +1424,8 @@ def _send_intake_confirmation(session: Dict[str, Any], *, client: Any) -> None:
     locale = session.get("locale") or "fr"
     brief = session.get("brief") or {}
 
-    calcom_link = None
-    if route == "meeting":
-        try:
-            calcom_link = _build_calcom_booking_link(
-                session["id"],
-                locale,
-                email=payload.get("email"),
-                full_name=payload.get("full_name"),
-            )
-        except Exception as exc:  # noqa: BLE001
-            logger.error("_send_intake_confirmation: calcom link build failed: %s", exc.__class__.__name__)
-
     try:
-        cta = _build_confirmation_cta(route, locale, calcom_link)
+        cta = _build_confirmation_cta(route, locale)
         decision_summary = html.escape(str(brief.get("decision") or "")[:200])
         full_name = html.escape(str(payload.get("full_name") or "—"))
         quote_id_safe = html.escape(quote_id)
@@ -1434,4 +1572,9 @@ def confirm_calcom_booking(
         return 409, {"success": False, "error_code": "CONFIRMATION_FAILED", "error": "Could not confirm this Cal.com booking."}
 
     cli.table("intake_sessions").update({"calcom_booking_uid": booking_uid}).eq("id", session_id).execute()
+
+    updated_session = dict(session)
+    updated_session["calcom_booking_uid"] = booking_uid
+    _send_intake_confirmation(updated_session, client=cli)
+
     return 200, {"success": True, "data": {"session_id": session_id, "calcom_booking_uid": booking_uid}}

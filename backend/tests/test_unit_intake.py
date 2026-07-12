@@ -551,30 +551,42 @@ class TestCompleteRouting:
                 {"to_email": to_email, "subject": subject, "html_body": html_body}
             ) or True,
         )
-        sid = self._session_ready(fake_client, brief_overrides={"governance": "conseil_administration"})
+        sid = self._session_ready(
+            fake_client,
+            brief_overrides={
+                "governance": "comite_direction",
+                "stakes": {"budget_bracket": "1_10m", "exposure": "sectorielle"},
+            },
+        )
         status, body = svc.complete_routing(sid, client=fake_client)
         assert status == 200
+        assert body["data"]["route"] == "quote_48h"
         assert len(calls) == 1
         assert calls[0]["to_email"] == "karim@banquepop.ma"  # cf. _valid_payload
-        assert "20" in calls[0]["html_body"] or "meeting" in calls[0]["subject"].lower() or True
 
-    def test_completion_email_calcom_link_locks_email_and_name(self, fake_client, monkeypatch):
-        """Le lien Cal.com dans l'email doit porter email/name (champs natifs
-        Cal.com, verrouillés côté event type) — nécessaire pour le fallback de
-        ré-identification au redirect (ADR-IQ-09, forwardParamsSuccessRedirect
-        ne relaie jamais intake_session_id)."""
+    def test_completion_skips_email_for_meeting_route(self, fake_client, monkeypatch):
+        """Depuis ce Task, la branche meeting ne déclenche plus l'email à la
+        clôture — il part désormais uniquement après confirm_calcom_booking
+        (créneau réellement vérifié), cf. Task 2 de ce plan."""
         calls = []
         monkeypatch.setattr(
             "app.services.email_service.send_email",
-            lambda *, to_email, subject, html_body, **kw: calls.append({"html_body": html_body}) or True,
+            lambda **kw: calls.append(kw) or True,
         )
         sid = self._session_ready(fake_client, brief_overrides={"governance": "conseil_administration"})
-        status, _body = svc.complete_routing(sid, client=fake_client)
+        status, body = svc.complete_routing(sid, client=fake_client)
         assert status == 200
-        assert len(calls) == 1
-        html_body = calls[0]["html_body"]
-        assert "email=karim%40banquepop.ma" in html_body
-        assert "name=Karim+Bensaid" in html_body
+        assert body["data"]["route"] == "meeting"
+        assert calls == []
+
+    def test_completion_returns_calcom_link_for_meeting(self, fake_client):
+        sid = self._session_ready(fake_client, brief_overrides={"governance": "conseil_administration"})
+        status, body = svc.complete_routing(sid, client=fake_client)
+        assert status == 200
+        assert body["data"]["route"] == "meeting"
+        assert "calcom_link" in body["data"]
+        assert body["data"]["calcom_link"].startswith("https://agenda.ai-mpower.com/")
+        assert "email=karim%40banquepop.ma" in body["data"]["calcom_link"]
 
     def test_completion_email_failure_never_breaks_routing(self, fake_client, monkeypatch):
         """Best-effort total (même contrat que _log_escalation, ADR-IQ-08) —
@@ -602,6 +614,34 @@ class TestCompleteRouting:
         status, body = svc.complete_routing(sid, client=fake_client)
         assert status == 200
         assert calls == []
+
+
+class TestFinalizeSessionSelfService:
+    def test_complete_routing_returns_package_recommendation_for_self_service(self, fake_client, monkeypatch):
+        monkeypatch.setattr(
+            svc, "create_intake_llm_client",
+            lambda **kw: _StubLLM({"package_id": "adcheck_lite", "rationale": "Test de concept publicitaire."}),
+        )
+        sid = svc.start_session(client=fake_client)["session_id"]
+        svc.submit_form(sid, _valid_payload(brief_overrides={
+            "governance": "solo",
+            "deadline": {"date": _FAR_DATE, "overdue": False},
+            "stakes": {"budget_bracket": "lt_1m", "exposure": "interne"},
+        }), client=fake_client)
+        status, body = svc.complete_routing(sid, client=fake_client)
+        assert status == 200
+        assert body["data"]["route"] == "self_service"
+        assert body["data"]["package_recommendation"] == {
+            "package_id": "adcheck_lite", "rationale": "Test de concept publicitaire.",
+        }
+
+
+class _StubLLM:
+    def __init__(self, output):
+        self._output = output
+
+    def chat_json(self, messages, temperature=0.3, max_tokens=1024):
+        return self._output
 
 
 class TestConfirmCalcomBooking:
@@ -729,6 +769,65 @@ class TestConfirmCalcomBooking:
         assert status != 200
         session = svc.get_session(sid, client=fake_client)
         assert session.get("calcom_booking_uid") is None
+
+    def test_confirmation_sends_email_confirming_meeting_not_asking_to_rebook(self, fake_client, monkeypatch):
+        """L'email post-booking doit confirmer le rendez-vous, jamais
+        redemander une réservation (ADR-IQ-10 bis — corrige une régression
+        de contenu trouvée en revue whole-branch : l'ancienne copy 'Réservez
+        votre entretien' + lien de booking était contradictoire une fois
+        l'email déplacé après la réservation vérifiée)."""
+        calls = []
+        monkeypatch.setattr(
+            "app.services.email_service.send_email",
+            lambda *, to_email, subject, html_body, **kw: calls.append(
+                {"to_email": to_email, "html_body": html_body}
+            ) or True,
+        )
+        sid = svc.start_session(client=fake_client)["session_id"]
+        svc.submit_form(sid, _valid_payload(brief_overrides={"governance": "conseil_administration"}), client=fake_client)
+        svc.complete_routing(sid, client=fake_client)
+        assert calls == []  # pas encore envoyé (Task 1)
+
+        self._mock_calcom_booking(monkeypatch)
+        status, _body = svc.confirm_calcom_booking(sid, "cal-booking-uid-xyz", client=fake_client)
+        assert status == 200
+        assert len(calls) == 1
+        assert calls[0]["to_email"] == "karim@banquepop.ma"
+        html_body = calls[0]["html_body"]
+        assert "agenda.ai-mpower.com" not in html_body
+        assert "Réservez" not in html_body
+
+    def test_confirmation_email_failure_never_breaks_confirmation(self, fake_client, monkeypatch):
+        """Best-effort — même contrat que _send_intake_confirmation partout
+        ailleurs : une panne d'email ne doit jamais faire échouer la
+        confirmation de réservation elle-même."""
+        monkeypatch.setattr(
+            "app.services.email_service.send_email",
+            lambda **kw: (_ for _ in ()).throw(RuntimeError("resend down")),
+        )
+        sid = svc.start_session(client=fake_client)["session_id"]
+        svc.submit_form(sid, _valid_payload(brief_overrides={"governance": "conseil_administration"}), client=fake_client)
+        svc.complete_routing(sid, client=fake_client)
+        self._mock_calcom_booking(monkeypatch)
+
+        status, body = svc.confirm_calcom_booking(sid, "uid-1", client=fake_client)
+        assert status == 200
+        assert body["success"] is True
+
+    def test_confirmation_failure_does_not_send_email(self, fake_client, monkeypatch):
+        calls = []
+        monkeypatch.setattr(
+            "app.services.email_service.send_email",
+            lambda **kw: calls.append(kw) or True,
+        )
+        sid = svc.start_session(client=fake_client)["session_id"]
+        svc.submit_form(sid, _valid_payload(brief_overrides={"governance": "conseil_administration"}), client=fake_client)
+        svc.complete_routing(sid, client=fake_client)
+        self._mock_calcom_booking(monkeypatch, found=False)  # uid inconnu de Cal.com
+
+        status, _body = svc.confirm_calcom_booking(sid, "attacker-invented-uid", client=fake_client)
+        assert status == 404
+        assert calls == []
 
     def test_rejects_cancelled_booking(self, fake_client, monkeypatch):
         sid = svc.start_session(client=fake_client)["session_id"]

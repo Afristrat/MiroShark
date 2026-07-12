@@ -75,3 +75,4 @@ backend/uploads/
 
 # Docker data
 data/
+.superpowers/

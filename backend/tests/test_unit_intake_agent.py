@@ -381,6 +381,88 @@ class TestAgentTurnHappyPath:
         assert status == 409
         assert body["error_code"] == "INVALID_STATE"
 
+    def test_close_true_sends_confirmation_email_for_non_meeting_route(self, fake_client, monkeypatch):
+        """Trou corrigé par _finalize_session (Task 1 du plan US-IQ-02 frontend) :
+        avant ce changement, agent_turn(close:true) ne déclenchait JAMAIS l'email
+        de confirmation, contrairement à complete_routing."""
+        calls = []
+        monkeypatch.setattr(
+            "app.services.email_service.send_email",
+            lambda **kw: calls.append(kw) or True,
+        )
+        sid = _submitted_session(fake_client)  # governance par défaut = conseil_administration (_valid_brief)
+        # Forcer une branche non-meeting pour ce test : budget/exposure self_service-eligible.
+        fake_client.table("intake_sessions").update({
+            "brief": {**svc._get_session(sid, client=fake_client)["brief"], "governance": "solo",
+                      "stakes": {"budget_bracket": "1_10m", "exposure": "sectorielle"},
+                      "deadline": {"date": "2099-01-01", "overdue": False}},
+        }).eq("id", sid).execute()
+        llm = _FakeLLM([{
+            "message": "Merci, votre brief est transmis.", "insights": [],
+            "confidential_flag": None, "escalation": None, "close": True,
+        }])
+        status, body = svc.agent_turn(sid, "Voilà, c'est tout.", client=fake_client, llm=llm)
+        assert status == 200
+        assert body["data"]["route"] == "quote_48h"
+        assert len(calls) == 1
+
+    def test_close_true_skips_email_for_meeting_route(self, fake_client, monkeypatch):
+        calls = []
+        monkeypatch.setattr(
+            "app.services.email_service.send_email",
+            lambda **kw: calls.append(kw) or True,
+        )
+        sid = _submitted_session(fake_client)  # governance par défaut = conseil_administration → meeting
+        llm = _FakeLLM([{
+            "message": "Merci, votre brief est transmis.", "insights": [],
+            "confidential_flag": None, "escalation": None, "close": True,
+        }])
+        status, body = svc.agent_turn(sid, "Voilà, c'est tout.", client=fake_client, llm=llm)
+        assert status == 200
+        assert body["data"]["route"] == "meeting"
+        assert "calcom_link" in body["data"]
+        assert calls == []
+
+    def test_confidential_flags_exposed_in_every_response(self, fake_client):
+        sid = _submitted_session(fake_client)
+        llm = _FakeLLM([{
+            "message": "Je note ce point de côté — quelle est la prochaine étape ?",
+            "insights": [], "confidential_flag": {"topic_label": "conflit avec un actionnaire"},
+            "escalation": None, "close": False,
+        }])
+        status, body = svc.agent_turn(sid, "Entre nous, il y a un conflit.", client=fake_client, llm=llm)
+        assert status == 200
+        assert body["data"]["confidential_flags"] == [
+            {"topic_label": "conflit avec un actionnaire", "flagged_at": body["data"]["confidential_flags"][0]["flagged_at"]}
+        ]
+
+    def test_confidential_flags_empty_list_when_none_flagged(self, fake_client):
+        sid = _submitted_session(fake_client)
+        llm = _FakeLLM([{
+            "message": "D'accord, poursuivons.", "insights": [], "confidential_flag": None,
+            "escalation": None, "close": False,
+        }])
+        status, body = svc.agent_turn(sid, "ok", client=fake_client, llm=llm)
+        assert status == 200
+        assert body["data"]["confidential_flags"] == []
+
+    def test_confidential_flags_accumulate_across_turns(self, fake_client):
+        sid = _submitted_session(fake_client)
+        llm1 = _FakeLLM([{
+            "message": "Je note ce point.", "insights": [],
+            "confidential_flag": {"topic_label": "sujet A"}, "escalation": None, "close": False,
+        }])
+        svc.agent_turn(sid, "premier message sensible", client=fake_client, llm=llm1)
+
+        llm2 = _FakeLLM([{
+            "message": "Je note aussi ce point.", "insights": [],
+            "confidential_flag": {"topic_label": "sujet B"}, "escalation": None, "close": False,
+        }])
+        status, body = svc.agent_turn(sid, "second message sensible", client=fake_client, llm=llm2)
+        assert status == 200
+        labels = [f["topic_label"] for f in body["data"]["confidential_flags"]]
+        assert labels == ["sujet A", "sujet B"]
+
 
 # ─── agent_turn — garde-fou budget 7 tours ────────────────────────────────────
 
@@ -550,3 +632,34 @@ class TestEscalationLogging(object):
         html_body = calls[0][2]
         assert "<script>alert(1)</script>" not in html_body
         assert "&lt;script&gt;" in html_body
+
+
+# ─── Repli gracieux gateway down ──────────────────────────────────────────────
+
+
+class TestAgentTurnGatewayDownFallback:
+    def test_gateway_down_fallback_includes_confidential_flags(self, fake_client):
+        """Le repli gateway-down (_close_session_gracefully) est une vraie
+        réponse agent_turn (200), donc confidential_flags doit y être présent
+        même si le LLM est indisponible — Task 3 du plan US-IQ-02 frontend."""
+        sid = _submitted_session(fake_client)
+        # Pré-enregistrer une confidential_flag en base pour vérifier qu'elle
+        # réapparaît dans la réponse de fallback.
+        fake_client.table("intake_sessions").update({
+            "confidential_flags": [{"topic_label": "sujet sensible", "flagged_at": "2026-07-12T10:00:00Z"}],
+        }).eq("id", sid).execute()
+
+        # Créer un LLM double dont chat_json lève une exception (gateway down).
+        class _FailingLLM:
+            def chat_json(self, *args, **kwargs):
+                raise RuntimeError("LLM gateway unavailable")
+
+        llm = _FailingLLM()
+        status, body = svc.agent_turn(sid, "test message", client=fake_client, llm=llm)
+        assert status == 200
+        assert body["success"] is True
+        assert body["data"]["agent_unavailable"] is True
+        # ASSERTION CLÉE : confidential_flags doit être présent dans la réponse
+        assert "confidential_flags" in body["data"]
+        assert len(body["data"]["confidential_flags"]) == 1
+        assert body["data"]["confidential_flags"][0]["topic_label"] == "sujet sensible"
