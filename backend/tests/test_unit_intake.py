@@ -551,30 +551,42 @@ class TestCompleteRouting:
                 {"to_email": to_email, "subject": subject, "html_body": html_body}
             ) or True,
         )
-        sid = self._session_ready(fake_client, brief_overrides={"governance": "conseil_administration"})
+        sid = self._session_ready(
+            fake_client,
+            brief_overrides={
+                "governance": "comite_direction",
+                "stakes": {"budget_bracket": "1_10m", "exposure": "sectorielle"},
+            },
+        )
         status, body = svc.complete_routing(sid, client=fake_client)
         assert status == 200
+        assert body["data"]["route"] == "quote_48h"
         assert len(calls) == 1
         assert calls[0]["to_email"] == "karim@banquepop.ma"  # cf. _valid_payload
-        assert "20" in calls[0]["html_body"] or "meeting" in calls[0]["subject"].lower() or True
 
-    def test_completion_email_calcom_link_locks_email_and_name(self, fake_client, monkeypatch):
-        """Le lien Cal.com dans l'email doit porter email/name (champs natifs
-        Cal.com, verrouillés côté event type) — nécessaire pour le fallback de
-        ré-identification au redirect (ADR-IQ-09, forwardParamsSuccessRedirect
-        ne relaie jamais intake_session_id)."""
+    def test_completion_skips_email_for_meeting_route(self, fake_client, monkeypatch):
+        """Depuis ce Task, la branche meeting ne déclenche plus l'email à la
+        clôture — il part désormais uniquement après confirm_calcom_booking
+        (créneau réellement vérifié), cf. Task 2 de ce plan."""
         calls = []
         monkeypatch.setattr(
             "app.services.email_service.send_email",
-            lambda *, to_email, subject, html_body, **kw: calls.append({"html_body": html_body}) or True,
+            lambda **kw: calls.append(kw) or True,
         )
         sid = self._session_ready(fake_client, brief_overrides={"governance": "conseil_administration"})
-        status, _body = svc.complete_routing(sid, client=fake_client)
+        status, body = svc.complete_routing(sid, client=fake_client)
         assert status == 200
-        assert len(calls) == 1
-        html_body = calls[0]["html_body"]
-        assert "email=karim%40banquepop.ma" in html_body
-        assert "name=Karim+Bensaid" in html_body
+        assert body["data"]["route"] == "meeting"
+        assert calls == []
+
+    def test_completion_returns_calcom_link_for_meeting(self, fake_client):
+        sid = self._session_ready(fake_client, brief_overrides={"governance": "conseil_administration"})
+        status, body = svc.complete_routing(sid, client=fake_client)
+        assert status == 200
+        assert body["data"]["route"] == "meeting"
+        assert "calcom_link" in body["data"]
+        assert body["data"]["calcom_link"].startswith("https://agenda.ai-mpower.com/")
+        assert "email=karim%40banquepop.ma" in body["data"]["calcom_link"]
 
     def test_completion_email_failure_never_breaks_routing(self, fake_client, monkeypatch):
         """Best-effort total (même contrat que _log_escalation, ADR-IQ-08) —

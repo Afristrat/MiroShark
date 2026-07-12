@@ -381,6 +381,48 @@ class TestAgentTurnHappyPath:
         assert status == 409
         assert body["error_code"] == "INVALID_STATE"
 
+    def test_close_true_sends_confirmation_email_for_non_meeting_route(self, fake_client, monkeypatch):
+        """Trou corrigé par _finalize_session (Task 1 du plan US-IQ-02 frontend) :
+        avant ce changement, agent_turn(close:true) ne déclenchait JAMAIS l'email
+        de confirmation, contrairement à complete_routing."""
+        calls = []
+        monkeypatch.setattr(
+            "app.services.email_service.send_email",
+            lambda **kw: calls.append(kw) or True,
+        )
+        sid = _submitted_session(fake_client)  # governance par défaut = conseil_administration (_valid_brief)
+        # Forcer une branche non-meeting pour ce test : budget/exposure self_service-eligible.
+        fake_client.table("intake_sessions").update({
+            "brief": {**svc._get_session(sid, client=fake_client)["brief"], "governance": "solo",
+                      "stakes": {"budget_bracket": "1_10m", "exposure": "sectorielle"},
+                      "deadline": {"date": "2099-01-01", "overdue": False}},
+        }).eq("id", sid).execute()
+        llm = _FakeLLM([{
+            "message": "Merci, votre brief est transmis.", "insights": [],
+            "confidential_flag": None, "escalation": None, "close": True,
+        }])
+        status, body = svc.agent_turn(sid, "Voilà, c'est tout.", client=fake_client, llm=llm)
+        assert status == 200
+        assert body["data"]["route"] == "quote_48h"
+        assert len(calls) == 1
+
+    def test_close_true_skips_email_for_meeting_route(self, fake_client, monkeypatch):
+        calls = []
+        monkeypatch.setattr(
+            "app.services.email_service.send_email",
+            lambda **kw: calls.append(kw) or True,
+        )
+        sid = _submitted_session(fake_client)  # governance par défaut = conseil_administration → meeting
+        llm = _FakeLLM([{
+            "message": "Merci, votre brief est transmis.", "insights": [],
+            "confidential_flag": None, "escalation": None, "close": True,
+        }])
+        status, body = svc.agent_turn(sid, "Voilà, c'est tout.", client=fake_client, llm=llm)
+        assert status == 200
+        assert body["data"]["route"] == "meeting"
+        assert "calcom_link" in body["data"]
+        assert calls == []
+
 
 # ─── agent_turn — garde-fou budget 7 tours ────────────────────────────────────
 

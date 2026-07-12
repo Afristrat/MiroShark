@@ -468,7 +468,7 @@ def complete_routing(session_id: str, *, client: Any = None) -> Tuple[int, Dict[
 
     updated_session = dict(session)
     updated_session.update(update_row)
-    _send_intake_confirmation(updated_session, client=cli)
+    extra_data = _finalize_session(updated_session, brief, session.get("confidential_flags"), route, client=cli)
 
     return 200, {
         "success": True,
@@ -476,6 +476,7 @@ def complete_routing(session_id: str, *, client: Any = None) -> Tuple[int, Dict[
             "session_id": session_id,
             "state": "completed",
             "route": route,
+            **extra_data,
         },
     }
 
@@ -947,7 +948,7 @@ def agent_turn(
             "agent_turn: LLM gateway unavailable for session %s, closing gracefully: %s",
             session_id, exc.__class__.__name__,
         )
-        return _close_session_gracefully(session_id, brief, session.get("confidential_flags"), client=cli)
+        return _close_session_gracefully(session, brief, session.get("confidential_flags"), client=cli)
 
     validation_error = _validate_agent_output(raw_output if isinstance(raw_output, dict) else {})
     if validation_error is not None:
@@ -1002,12 +1003,65 @@ def agent_turn(
     }
     if update_row["state"] == "completed":
         data["route"] = update_row["route"]
+        closing_session = dict(session)
+        closing_session.update(update_row)
+        extra_data = _finalize_session(
+            closing_session, brief, confidential_flags, update_row["route"],
+            client=cli, llm=llm_client_obj,
+        )
+        data.update(extra_data)
 
     return 200, {"success": True, "data": data}
 
 
+def _finalize_session(
+    session: Dict[str, Any],
+    brief: Dict[str, Any],
+    confidential_flags: Optional[List[Any]],
+    route: str,
+    *,
+    client: Any,
+    llm: Any = None,
+    attempt_llm: bool = True,
+) -> Dict[str, Any]:
+    """Construit le payload de clôture commun aux 3 points d'entrée qui
+    terminent une session Intake (complete_routing, agent_turn en close,
+    _close_session_gracefully) : calcom_link (branche meeting) ou
+    package_recommendation (branche self_service, Task 4 de ce plan), et
+    pilote l'envoi de l'email de confirmation (US-IQ-04) — jamais pour
+    meeting, déplacé vers confirm_calcom_booking une fois le créneau
+    réellement vérifié (Task 2 de ce plan)."""
+    data: Dict[str, Any] = {}
+    locale = session.get("locale") or "fr"
+
+    if route == "meeting":
+        payload = None
+        quote_id = session.get("quote_id")
+        if quote_id:
+            try:
+                payload = qo.get_quote_payload_from_supabase(quote_id, client=client)
+            except Exception as exc:  # noqa: BLE001
+                logger.error("_finalize_session: payload lookup failed for %s: %s", quote_id, exc.__class__.__name__)
+        try:
+            data["calcom_link"] = _build_calcom_booking_link(
+                session["id"],
+                locale,
+                email=(payload or {}).get("email"),
+                full_name=(payload or {}).get("full_name"),
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.error("_finalize_session: calcom link build failed: %s", exc.__class__.__name__)
+
+    if route != "meeting":
+        session_for_email = dict(session)
+        session_for_email["route"] = route
+        _send_intake_confirmation(session_for_email, client=client)
+
+    return data
+
+
 def _close_session_gracefully(
-    session_id: str,
+    session: Dict[str, Any],
     brief: Dict[str, Any],
     confidential_flags: Optional[List[Any]],
     *,
@@ -1016,7 +1070,10 @@ def _close_session_gracefully(
     """Repli si le gateway LLM échoue (timeout/erreur réseau) — la session
     est clôturée directement (state='completed', route calculée) plutôt
     que de laisser le worker HTTP planter ou le prospect bloqué (AC
-    US-IQ-02, « pas de blocage du worker »)."""
+    US-IQ-02, « pas de blocage du worker »). Le gateway étant DÉJÀ tombé,
+    aucune 2e tentative LLM n'est faite pour la recommandation self-service
+    (attempt_llm=False, repli déterministe immédiat, Task 4 de ce plan)."""
+    session_id = session["id"]
     route = _decide_route(brief, confidential_flags)
     now_iso = datetime.now(timezone.utc).isoformat()
     update_row = {"state": "completed", "route": route, "completed_at": now_iso}
@@ -1025,9 +1082,16 @@ def _close_session_gracefully(
     except Exception as exc:  # noqa: BLE001
         logger.error("agent_turn: graceful close failed to persist for %s: %s", session_id, exc.__class__.__name__)
         return 503, {"success": False, "error_code": "SUPABASE_UNAVAILABLE", "error": "Could not close the session."}
+
+    closing_session = dict(session)
+    closing_session.update(update_row)
+    extra_data = _finalize_session(closing_session, brief, confidential_flags, route, client=client, attempt_llm=False)
     return 200, {
         "success": True,
-        "data": {"session_id": session_id, "state": "completed", "route": route, "agent_unavailable": True},
+        "data": {
+            "session_id": session_id, "state": "completed", "route": route,
+            "agent_unavailable": True, **extra_data,
+        },
     }
 
 
