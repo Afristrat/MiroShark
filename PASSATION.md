@@ -1,159 +1,126 @@
-== PASSATION NUCLÉAIRE MiroShark/Bassira — 2026-07-12 14h36 (exécution TDD du plan US-IQ-02 frontend EN COURS dans un worktree isolé — Task 1/10 dispatchée à un sous-agent implémenteur, résultat PAS ENCORE reçu au moment de cette passation ; NEXT = vérifier l'état réel du worktree AVANT toute action) ==
-Synthèse complète et autonome — ne suppose la lecture d'aucune passation antérieure.
-Entrées historiques antérieures PURGÉES de ce fichier (chantier SMTP Cal.com/ADR-IQ-08/09/10,
-brainstorming design) — tout ce qui reste pertinent est réintégré ci-dessous ou vit désormais
-dans `docs/superpowers/specs/2026-07-12-us-iq-02-frontend-design.md` et
-`docs/superpowers/plans/2026-07-12-us-iq-02-frontend-implementation.md` (commités sur `main`,
-source de vérité durable — ne pas chercher l'historique de décision ailleurs que dans ces 2
-fichiers + `git log`).
+== PASSATION NUCLÉAIRE MiroShark/Bassira — 2026-07-12 16h07 (exécution TDD du plan US-IQ-02 frontend EN COURS dans un worktree isolé — Tasks 1-3/10 FAITES et approuvées après revue (Task 3 a nécessité 1 cycle correctif), Task 4/10 pas encore dispatchée ; NEXT = dispatcher Task 4) ==
+Synthèse complète et autonome — ne suppose la lecture d'aucune passation antérieure. Remplace
+entièrement la synthèse du 2026-07-12 14h36 (dont le [NEXT] — « vérifier l'état du sous-agent
+Task 1 » — est désormais soldé : Task 1 a réussi, ainsi que Tasks 2 et 3).
 
 [ETAT]
-- **`main`** : HEAD = `f8586c4`, à jour, RIEN de ce chantier n'y est encore mergé (le plan et
-  le design sont docs-only, déjà sur `main`). Le code applicatif (backend + frontend) du
-  chantier US-IQ-02 frontend est développé dans un **worktree isolé**, PAS sur `main` —
-  raison : ce repo est en PRODUCTION avec auto-deploy Coolify sur push `main`
-  (`https://prospectives.ai-mpower.com`), committer 10 tasks directement dessus aurait
-  déclenché 10 déploiements de fonctionnalité incomplète.
+- **`main`** : HEAD = `6659591`, à jour, RIEN du code applicatif de ce chantier n'y est encore
+  mergé (seuls design+plan+passations, docs-only). Le code (backend + frontend) se développe
+  dans un **worktree isolé** — raison inchangée : repo en PRODUCTION, auto-deploy Coolify sur
+  push `main`, 10 tasks committées directement dessus auraient déclenché 10 déploiements
+  incomplets.
 - **Worktree actif** : `C:\Users\amans\OneDrive\Projets\MiroShark\.claude\worktrees\us-iq-02-frontend`,
-  branche `worktree-us-iq-02-frontend`, créé via l'outil natif `EnterWorktree` (PAS
-  `git worktree add` manuel). ⚠️ Ce worktree a été créé par `EnterWorktree` DEPUIS LA SESSION
-  COURANTE — une nouvelle session fraîche qui lirait cette passation n'est PAS automatiquement
-  « dans » ce worktree ; elle démarre dans le repo principal. Pour reprendre CE chantier, il
-  faut soit rouvrir/entrer ce worktree (`EnterWorktree` avec `path:
-  "C:\Users\amans\OneDrive\Projets\MiroShark\.claude\worktrees\us-iq-02-frontend"` s'il existe
-  encore — vérifier par `git worktree list` avant tout), soit travailler dessus directement en
-  `cd` + `git` si l'outil n'est plus disponible dans le nouveau contexte.
-- **HEAD du worktree au moment de cette passation** : `4dbe72d` (fast-forward depuis `f8586c4`
-  + 1 commit `chore: ignore .superpowers/`). **Task 1 du plan (`_finalize_session`, branche
-  meeting) est EN COURS d'implémentation par un sous-agent (`impl-task1`, modèle Haiku),
-  dispatché via `superpowers:subagent-driven-development`** — au moment de la coupure de
-  contexte, ce sous-agent avait DÉJÀ des modifications non commitées sur
-  `backend/tests/test_unit_intake.py` (+25/-13 lignes, vérifié par `git diff --stat`) mais
-  **aucun commit encore créé** pour la Task 1 elle-même. Statut du sous-agent : INCONNU au
-  moment de cette passation (ni DONE, ni BLOCKED reçu) — **NE PAS supposer qu'il a réussi ou
-  échoué, vérifier par preuve système (cf. [NEXT] point 1)**.
-- **Baseline du worktree confirmée propre AVANT dispatch de Task 1** : backend
-  `uv run pytest -m "not integration" -q` → 2215 passed (un run précédent avait affiché 1
-  échec isolé sur `test_pdf_pipeline_e2e.py::TestPipelineMarkdown::test_md_hash_stable_with_deterministic_enricher`,
-  reproductible ni en isolation ni au re-run complet — flake d'ordre de tests, PAS causé par ce
-  chantier, PAS touché par le plan). Frontend `npm run build` → OK (warnings de taille de
-  chunk préexistants, pas des erreurs). Dépendances installées dans le worktree :
-  `backend/.venv` (`uv sync`) + `frontend/node_modules` (`npm install`) — n'existaient pas par
-  défaut dans le nouveau worktree, à réinstaller si jamais reperdu.
-- **Décisions actées avec Amine cette session** (`AskUserQuestion`) : mode d'exécution du plan
-  = **Subagent-Driven** (pas Inline) — un sous-agent frais par task, revue à deux étages,
-  revue finale de branche entière avant merge.
+  branche `worktree-us-iq-02-frontend`, créé via l'outil natif `EnterWorktree` DEPUIS LA
+  SESSION EN COURS. ⚠️ **Une nouvelle session fraîche ne « voit » pas ce worktree
+  automatiquement** — elle démarre dans le repo principal. Pour reprendre CE chantier :
+  vérifier `git worktree list` depuis le repo principal ; s'il existe encore, y entrer
+  (`EnterWorktree` avec `path` pointant dessus) ou `cd` + `git` directement.
+- **HEAD du worktree** : `4024498`. 3 tasks du plan terminées et validées :
+  - **Task 1** (`8866f49`) — `_finalize_session`, branche `meeting` : calcom_link renvoyé,
+    email suspendu à la clôture. Corrige au passage un vrai bug pré-existant (seul le bouton
+    « skip »/`complete_routing` envoyait l'email de confirmation ; `agent_turn(close:true)` et
+    le repli gateway-down ne l'envoyaient JAMAIS). Revue : Approved du premier coup (2 Minor
+    sans impact, aucun Critical/Important).
+  - **Task 2** (`b7dc3ad`) — email de confirmation `meeting` désormais envoyé depuis
+    `confirm_calcom_booking` (après vérification server-to-server réussie du booking Cal.com),
+    pas avant. Revue : Approved du premier coup (1 Minor sans impact).
+  - **Task 3** (`cd53722` + correctif `4024498`) — `confidential_flags` exposé dans chaque
+    réponse `agent_turn`. **Revue initiale : Needs fixes** — le reviewer a trouvé que
+    `_close_session_gracefully` (repli gateway LLM down, une VRAIE réponse `agent_turn` à 200)
+    ne renvoyait jamais ce champ, violant la contrainte « présent dans CHAQUE réponse » du
+    plan. Correctif dispatché (1 ligne + 1 test TDD dédié, nouvelle classe
+    `TestAgentTurnGatewayDownFallback`), commité `4024498`. **Re-revue PAS ENCORE dispatchée**
+    au moment de cette passation — c'est le tout premier NEXT.
+- **Suites de tests re-vérifiées indépendamment par le controller à chaque étape** (jamais fait
+  confiance aux seuls rapports des sous-agents — RÈGLE N°4) : baseline avant Task 1 = 2215
+  passed ; après Task 1 = 2218 ; après Task 2 = 2221 ; après Task 3 (avant correctif) = 2223
+  passed **+ 1 failed** (`test_pdf_pipeline_e2e.py::TestPipelineMarkdown::test_md_hash_stable_with_deterministic_enricher`
+  — vérifié en isolation : flake PRÉEXISTANT, timestamp de génération PDF qui varie d'1
+  seconde entre 2 appels internes du test, RIEN à voir avec `intake_service.py`, hors scope de
+  ce chantier, ne PAS essayer de le corriger ici). **Suite complète après le correctif de
+  Task 3 (`4024498`) : lancée en arrière-plan, résultat pas encore reçu au moment de cette
+  passation** — à vérifier avant de dispatcher la re-revue.
+- Pattern observé et qui marche : après CHAQUE tâche, le controller (moi) re-lance lui-même
+  la suite complète plutôt que de faire confiance au rapport du sous-agent (qui ne rapporte
+  parfois que la suite scopée « intake », ex. Task 1 « 492 tests », Task 3 « 499 tests » —
+  jamais suffisant seul pour la gate du plan qui exige la suite COMPLÈTE).
 
-[FAIT — cette session, dans l'ordre chronologique]
-1. Repris le brainstorming US-IQ-02 interrompu (skill `brainstorming`) → design complet
-   validé section par section (7 « oui » explicites) → écrit et committé
-   (`docs/superpowers/specs/2026-07-12-us-iq-02-frontend-design.md`, `5acc4aa`).
-2. Invoqué `superpowers:writing-plans` → contexte technique exhaustif collecté par lecture
-   directe du code (signatures exactes, fixtures de test existantes, structure complète de
-   `QuoteView.vue`/`OffersView.vue`/`intake.js`, contenu exact des 3 locales) AVANT d'écrire
-   une ligne de plan.
-3. **2 découvertes réelles en creusant le code, corrigées avant d'écrire le plan** :
-   (a) le design disait `session["email"]` — FAUX, `intake_sessions` ne stocke jamais
-   email/full_name (vivent dans `quote_ownership.payload` via `quote_id`), corrigé (`ae2df33`) ;
-   (b) **bug préexistant en prod découvert** : aujourd'hui, SEUL `complete_routing` (bouton
-   skip) envoie l'email de confirmation US-IQ-04 — ni `agent_turn` (`close:true`, la clôture
-   NATURELLE d'une conversation) ni `_close_session_gracefully` (gateway down) ne l'envoient
-   JAMAIS. Invisible jusqu'ici car rien côté frontend n'appelait `agent_turn`. Le plan (Task 1)
-   corrige ce trou comme effet de bord de la factorisation demandée par le design.
-4. Écrit et committé le plan complet, 10 tasks TDD, code réel à chaque étape, aucun
-   placeholder (`docs/superpowers/plans/2026-07-12-us-iq-02-frontend-implementation.md`,
-   `d8b43d8`). Auto-review faite (couverture spec, scan placeholders, cohérence des
-   signatures entre tasks).
-5. Amine a choisi le mode d'exécution **Subagent-Driven** → invoqué
-   `superpowers:subagent-driven-development` → celui-ci exige `using-git-worktrees` →
-   worktree créé (cf. [ETAT]), fast-forwardé avec les 5 commits locaux (design+plan+passation,
-   alors non poussés sur `origin/main`), dépendances installées, baseline vérifiée propre.
-6. Créé le todo-list des 10 tasks + tâche de revue finale (tasks Claude Code #8 à #18,
-   visibles dans cette session — #8 « Task 1 » marquée `in_progress`).
-7. Créé le ledger `.superpowers/sdd/progress.md` dans le worktree (scratch, gitignored après
-   correction d'une erreur d'édition — cf. [MEMO]).
-8. Extrait le brief de la Task 1 (`scripts/task-brief`) → dispatché un sous-agent implémenteur
-   (Haiku) sur la Task 1 → **coupure de contexte avant réception du rapport du sous-agent**.
+[FAIT — cette session, depuis la dernière passation (14h36)]
+1. Task 1 : sous-agent implémenteur (Haiku) → DONE → revue (Sonnet) → Approved → suite
+   complète re-vérifiée par le controller (2218 passed) → ledger mis à jour → task marquée
+   complète.
+2. Task 2 : même cycle → Approved du premier coup → 2221 passed.
+3. Task 3 : même cycle → **Needs fixes** (1 Important, gap `_close_session_gracefully`) →
+   correctif dispatché à un sous-agent frais (nommé `impl-task3-2`, PAS une reprise du même
+   sous-agent — techniquement un écart mineur par rapport à la préférence « même sous-agent
+   corrige » de la skill, sans impact car contexte complet redonné) → correctif commité
+   (`4024498`) → **re-revue pas encore dispatchée**.
+4. Erreur opérationnelle corrigée en route : un `cd frontend` resté actif entre 2 appels Bash
+   a fait atterrir `.superpowers/` dans `frontend/.gitignore` au lieu de la racine — repéré et
+   corrigé avant tout dégât (`4dbe72d`).
+5. Amine a explicitement rappelé de mettre à jour la passation (bon réflexe à encourager) —
+   ce fichier en est la réponse.
 
 [ALERTE]
-- **Aucun résultat de la Task 1 n'a été reçu avant la coupure de contexte.** Le sous-agent
-  `impl-task1` était en train de modifier `backend/tests/test_unit_intake.py` (non commité) au
-  dernier point de vérification système. Ne JAMAIS supposer qu'il a terminé, réussi, ou
-  échoué sans re-vérifier par `git log`/`git status`/lecture du fichier de rapport
-  (RÈGLE N°4) — cf. [NEXT] point 1 pour la procédure exacte de reprise.
-- Aucune des 10 tasks n'est encore committée sur la branche `worktree-us-iq-02-frontend` au
-  sens strict (seul le commit de housekeeping `.gitignore`, `4dbe72d`, existe au-delà du
-  fast-forward `f8586c4`).
-- Le worktree contient une copie indépendante des dépendances (`.venv`, `node_modules`) — ne
-  pas s'étonner qu'elles semblent « manquantes » si on regarde le repo principal, elles sont
-  scopées au worktree.
+- **Le résultat de la suite complète après le correctif de Task 3 n'a pas encore été reçu**
+  au moment de cette passation (commande lancée en arrière-plan). Ne PAS dispatcher la
+  re-revue de Task 3 sans ce résultat.
+- **Task 3 n'est PAS encore marquée complète** dans le suivi (todo #10 reste `in_progress`) —
+  attend la re-revue.
+- Le finding de Task 3 est un signal utile sur MES propres angles morts en écrivant le plan :
+  j'ai spécifié le champ dans le `data` dict d'`agent_turn` mais oublié le chemin de repli
+  séparé (`_close_session_gracefully` construit son propre dict). À garder en tête pour la
+  revue finale whole-branch : chercher d'autres endroits où un même champ/comportement doit
+  être répliqué sur plusieurs chemins de sortie.
 
 [BLOQUE / EN ATTENTE]
-- Rien de bloquant pour Amine — la seule chose en attente est le résultat du sous-agent Task 1,
-  à vérifier par la prochaine session (pas une question à poser à Amine, une vérification
-  système à faire).
+- Rien pour Amine. Uniquement des vérifications système à faire par la prochaine
+  session/moi-même avant de continuer.
 
 [NEXT]
-1. **PRIORITÉ 1 — reprendre EXACTEMENT où la coupure a eu lieu, par preuve système, pas par
-   supposition** :
-   a. Vérifier si le worktree existe encore : `git -C "C:\Users\amans\OneDrive\Projets\MiroShark" worktree list`.
-   b. Si oui, y entrer (`EnterWorktree` avec `path` pointant dessus, ou `cd` direct si l'outil
-      n'est pas disponible) et vérifier l'état réel : `git log --oneline -5` (Task 1
-      committée ? par qui ?), `git status --short` (modifications en cours non commitées ?),
-      `cat .superpowers/sdd/task-1-report.md` (le sous-agent a-t-il écrit son rapport avant la
-      coupure ?).
-   c. Si le rapport existe et status DONE → dispatcher le reviewer de Task 1 (voir
-      `docs/superpowers/plans/2026-07-12-us-iq-02-frontend-implementation.md` Task 1 + skill
-      `superpowers:subagent-driven-development`, `task-reviewer-prompt.md`), continuer le
-      cycle normal.
-   d. Si aucun commit ni rapport (sous-agent interrompu par la coupure, PAS par un blocage
-      réel) → re-dispatcher un implémenteur frais sur la Task 1 (le brief existe déjà :
-      `.superpowers/sdd/task-1-brief.md`, pas besoin de le regénérer) — mais D'ABORD vérifier
-      si les modifications non commitées vues avant la coupure (`test_unit_intake.py`) sont
-      encore là et cohérentes avec le brief ; si oui, un nouveau sous-agent peut repartir de
-      cet état plutôt que tout refaire.
-2. Poursuivre le plan dans l'ordre : Tasks 2-4 (backend) → Task 5 (i18n) → Tasks 6-10
-   (frontend) → revue finale whole-branch (skill `requesting-code-review`) →
-   `superpowers:finishing-a-development-branch` (merge vers `main`, PUIS SEULEMENT push —
-   demander confirmation à Amine avant ce push, action visible/production).
-3. Gates bloquants après CHAQUE task (déjà spécifiés dans le plan) : backend
-   `cd backend && uv run pytest -m "not integration" -q && uv run ruff check .` ; frontend
-   `cd frontend && npm run build`.
-4. Une fois les 10 tasks vertes et mergées/déployées : vérification réelle en prod par un vrai
-   clic sur `bassira.ma/devis` (SOP-011) — le Playwright mocké de Task 10 ne suffit pas comme
-   preuve d'atteignabilité produit.
+1. **PRIORITÉ 1 — récupérer le résultat de la suite complète lancée en arrière-plan** (ou la
+   relancer si perdue : `cd backend && uv run pytest -m "not integration" -q` depuis le
+   worktree). Si 0 échec (hors le flake PDF déjà identifié comme non lié) → dispatcher la
+   re-revue de Task 3 (package de diff `bash scripts/review-package b7dc3ad 4024498` depuis le
+   dossier de la skill `subagent-driven-development`, même gabarit `task-reviewer-prompt.md`
+   que les revues précédentes).
+2. Si la re-revue de Task 3 est propre (Approved) → marquer todo #10 complet, logger au
+   ledger `.superpowers/sdd/progress.md`, enchaîner sur **Task 4** (recommandation package
+   self-service — `scripts/task-brief docs/superpowers/plans/2026-07-12-us-iq-02-frontend-implementation.md 4`),
+   puis Task 5 (i18n), puis Tasks 6-10 (frontend), dans l'ordre strict du plan — **jamais 2
+   implémenteurs en parallèle** (worktree/git index partagé, red flag explicite de la skill).
+3. Après les 10 tasks : revue finale whole-branch (skill `requesting-code-review`) —
+   prêter une attention particulière aux « champs à répliquer sur plusieurs chemins de
+   sortie » (cf. [ALERTE]) — puis `superpowers:finishing-a-development-branch` (merge vers
+   `main`). **Demander confirmation explicite à Amine avant tout push** (action visible/
+   production, jamais pré-autorisée).
+4. Une fois mergé et déployé : vérification réelle en prod par un vrai clic sur
+   `bassira.ma/devis` (SOP-011) — le Playwright mocké de Task 10 ne suffit pas comme preuve
+   d'atteignabilité produit.
 5. Puis seulement : ajuster `AGENT_SYSTEM_PROMPTS` pour les 2 échecs corpus §10.3 (chantier
-   séparé, non couvert par ce plan) avant de poser `US-IQ-02.passes = true` dans
-   `.ralph/prd.json`.
+   séparé, non couvert par ce plan) avant de poser `US-IQ-02.passes = true`.
 
 [CTX]
-- Repo GitHub `--repo Afristrat/MiroShark`. `main` local à `f8586c4`, 5 commits d'avance sur
-  `origin/main` (jamais poussés cette session — décision consciente d'attendre la fin du
-  chantier plutôt que pousser des docs seules maintenant).
+- Plan : `docs/superpowers/plans/2026-07-12-us-iq-02-frontend-implementation.md` (10 tasks,
+  code complet pour chaque étape — référence technique, ne pas re-dériver).
 - Design : `docs/superpowers/specs/2026-07-12-us-iq-02-frontend-design.md`.
-- Plan : `docs/superpowers/plans/2026-07-12-us-iq-02-frontend-implementation.md` (~2335
-  lignes, 10 tasks, code complet pour chaque étape — c'est la référence technique complète,
-  ne pas la re-dériver).
-- Ledger de progression du sous-agent-driven-development : `.superpowers/sdd/progress.md`
-  dans le worktree (gitignored, scratch — si perdu par un `git clean -fdx`, reconstruire
-  depuis `git log` du worktree, pas grave).
+- Ledger de progression (worktree, gitignored, scratch) : `.superpowers/sdd/progress.md` —
+  contient le détail de chaque task validée, y compris le cycle correctif de Task 3.
+- Todo list Claude Code (visible dans CETTE session, peut ne pas survivre à un `/clear` selon
+  le mécanisme du harness — le ledger fichier fait foi en cas de doute) : #8 Task1 complete,
+  #9 Task2 complete, #10 Task3 in_progress (en attente re-revue), #11-17 Tasks 4-10 pending,
+  #18 revue finale pending.
 
 [MEMO inter-sessions]
-- **Packages self-service réels** (vérifiés par grep, pas par mémoire) : seuls 3 des 9
-  packages du catalogue `OffersView.vue` ont `selfService: true` — `pmf_discovery` (10k MAD),
-  `crisis_drill_24h` (20k MAD, `featured`), `adcheck_lite` (15k MAD). Ne pas confondre avec
-  `_VALID_PACKAGES` de `quote_service.py` (`crisis_drill_24h`, `policy_brief_stress`,
-  `pre_launch_adcheck`, `custom`) — flux de devis manuel, sans rapport.
-- **Erreur commise cette session, corrigée** : un `cd frontend` resté actif entre deux
-  commandes Bash a fait atterrir un `.gitignore` erroné dans `frontend/.gitignore` au lieu de
-  la racine — corrigé (`4dbe72d`). Toujours vérifier `pwd` ou utiliser des chemins absolus
-  après un `cd` dans une commande précédente, la persistance du répertoire de travail entre
-  appels Bash peut surprendre.
-- **`OffersView.vue` est un carousel**, pas une grille (`displayedPackages`/`activeIndex`/
-  `goTo(idx)` déjà existants) — la préselection `?recommended=` (Task 9) réutilise `goTo()`
-  tel quel, pas de nouveau CSS de surbrillance.
-- **`frontend/tests/e2e/intake-parcours.spec.ts` est strictement lecture seule** (jamais de
-  vrai clic submit, Playwright tourne contre la prod réelle, SOP-011) — Task 10 du plan
-  respecte cette contrainte via interception réseau `page.route()`.
+- **Packages self-service réels** : `pmf_discovery` (10k MAD), `crisis_drill_24h` (20k MAD,
+  featured), `adcheck_lite` (15k MAD) — seuls ceux-là dans `OffersView.vue` ont
+  `selfService: true`. Ne pas confondre avec `_VALID_PACKAGES` de `quote_service.py`.
+- **`OffersView.vue` est un carousel** (`displayedPackages`/`activeIndex`/`goTo(idx)`),
+  Task 9 réutilise `goTo()` tel quel.
+- **`intake-parcours.spec.ts` est strictement lecture seule** (jamais de vrai submit,
+  Playwright tourne contre la prod réelle) — Task 10 respecte ça via `page.route()`.
+- **Toujours re-vérifier soi-même la suite complète après chaque task** — les rapports de
+  sous-agents ne montrent parfois qu'un sous-ensemble scope (« intake tests »), jamais fiable
+  seul pour la gate du plan.
 - Marque : Bassira (بصيرة) visible, `miroshark` technique. Jamais « prédiction » dans le copy
   commercial (ADR-002). URLs publiques toujours `bassira.ma` (ADR-013).
