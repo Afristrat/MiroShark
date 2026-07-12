@@ -392,8 +392,18 @@
           </div>
         </form>
 
-        <!-- ───── Confirmation (succès / erreur) ───── -->
+        <!-- ───── Étape 4 — Assistant (US-IQ-02 frontend) ───── -->
         <div v-else-if="currentStep === 4" class="quote-step-content">
+          <IntakeAgentPanel
+            :session-id="agentSessionId"
+            :brief="agentBrief"
+            :locale="locale"
+            @closed="onAgentClosed"
+          />
+        </div>
+
+        <!-- ───── Étape 5 — Confirmation (succès / erreur) ───── -->
+        <div v-else-if="currentStep === 5" class="quote-step-content">
           <template v-if="calcomConfirmed">
             <div class="quote-success">
               <div class="quote-success-icon">
@@ -401,6 +411,56 @@
               </div>
               <h2 class="quote-step-title">{{ $t('quote.step3.calcomConfirmedTitle') }}</h2>
               <p class="quote-success-sub">{{ $t('quote.step3.calcomConfirmedSubtitle') }}</p>
+              <router-link :to="{ name: 'Offers' }" class="quote-cta quote-cta--inline">
+                {{ $t('quote.step3.backToOffers') }}
+              </router-link>
+            </div>
+          </template>
+          <template v-else-if="agentClosePayload && agentClosePayload.route === 'meeting'">
+            <div class="quote-success">
+              <div class="quote-success-icon">
+                <span class="material-symbols-outlined" aria-hidden="true">event_available</span>
+              </div>
+              <h2 class="quote-step-title">{{ $t('quote.step3.successTitle') }}</h2>
+              <p class="quote-success-sub">{{ $t('quote.step3.successSubtitle') }}</p>
+              <a
+                v-if="agentClosePayload.calcomLink"
+                :href="agentClosePayload.calcomLink"
+                target="_blank"
+                rel="noopener"
+                class="quote-cta quote-cta--inline"
+              >
+                {{ $t('quote.step3.assistant.viewMeeting') }}
+              </a>
+            </div>
+          </template>
+          <template v-else-if="agentClosePayload && agentClosePayload.route === 'self_service'">
+            <div class="quote-success">
+              <div class="quote-success-icon">
+                <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+              </div>
+              <h2 class="quote-step-title">{{ $t('quote.step3.successTitle') }}</h2>
+              <p
+                v-if="agentClosePayload.packageRecommendation"
+                class="quote-success-sub"
+              >
+                {{ $t('quote.step3.assistant.recommendedPackage', { package: $t(`offers.packages.${agentClosePayload.packageRecommendation.package_id}.name`) }) }}
+              </p>
+              <router-link
+                :to="{ name: 'Offers', query: { recommended: agentClosePayload.packageRecommendation ? agentClosePayload.packageRecommendation.package_id : undefined } }"
+                class="quote-cta quote-cta--inline"
+              >
+                {{ $t('quote.step3.backToOffers') }}
+              </router-link>
+            </div>
+          </template>
+          <template v-else-if="agentClosePayload && agentClosePayload.route === 'quote_48h'">
+            <div class="quote-success">
+              <div class="quote-success-icon">
+                <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+              </div>
+              <h2 class="quote-step-title">{{ $t('quote.step3.successTitle') }}</h2>
+              <p class="quote-success-sub">{{ $t('quote.step3.successSubtitle') }}</p>
               <router-link :to="{ name: 'Offers' }" class="quote-cta quote-cta--inline">
                 {{ $t('quote.step3.backToOffers') }}
               </router-link>
@@ -455,6 +515,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { startIntakeSession, submitIntakeForm } from '../api/intake'
 import { formatApiError } from '../utils/error-handler'
+import IntakeAgentPanel from '../components/IntakeAgentPanel.vue'
 
 // ─── Parcours structuré « 3 temps » A1-A8 (US-IQ-01) ────────────────────
 // Remplace l'ancien formulaire plat (situation + coordonnées) qui ne
@@ -483,9 +544,16 @@ const route = useRoute()
 const currentStep = ref(1)
 // Retour depuis le redirect de succès Cal.com (US-IQ-04, branche entretien)
 // — /devis?calcom_confirmed=1 saute directement à l'écran de confirmation
-// au lieu de réafficher le formulaire A1-A8 déjà soumis.
+// (étape 5) au lieu de réafficher le formulaire A1-A8 déjà soumis.
 const calcomConfirmed = ref(route.query.calcom_confirmed === '1')
-if (calcomConfirmed.value) currentStep.value = 4
+if (calcomConfirmed.value) currentStep.value = 5
+
+// Étape 4 (écran Assistant, US-IQ-02 frontend) — session/brief conservés
+// en mémoire depuis submit() pour alimenter IntakeAgentPanel sans appel
+// réseau supplémentaire.
+const agentSessionId = ref('')
+const agentBrief = ref(null)
+const agentClosePayload = ref(null) // { route, calcomLink, packageRecommendation }
 
 const form = reactive({
   // Temps 1 — la décision (A1-A3)
@@ -615,14 +683,21 @@ async function submit() {
     const formRes = await submitIntakeForm(sessionId, payload)
     quoteId.value = formRes?.data?.quote_id || ''
     submitError.value = null
+    agentSessionId.value = sessionId
+    agentBrief.value = brief
     currentStep.value = 4
   } catch (err) {
     const localised = formatApiError(err, t)
     submitError.value = localised || t('quote.step3.errorFallback')
-    currentStep.value = 4
+    currentStep.value = 5
   } finally {
     submitting.value = false
   }
+}
+
+function onAgentClosed(payload) {
+  agentClosePayload.value = payload
+  currentStep.value = 5
 }
 </script>
 
