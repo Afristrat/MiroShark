@@ -4696,7 +4696,7 @@
         "Le champ aar_known_outcome n'apparaît JAMAIS dans le contexte construit pour l'agent (test unitaire dédié qui échoue si présent)",
         "pytest (llm_client mocké, aucun appel réel en test) + ruff + npm build verts"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-IQ-01"
       ],
@@ -4704,7 +4704,7 @@
         "origin": "docs/intake/04-feature-backlog.md (US-IQ-02)",
         "adr": "docs/intake/08-decisions-log.md"
       },
-      "completedAt": null
+      "completedAt": "2026-07-13"
     },
     {
       "id": "US-IQ-03",

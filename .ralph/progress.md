@@ -1802,6 +1802,16 @@ darija comprise (relire `darija_melangee` dans la sortie du run) + fidélité in
 de dette technique restante côté prompt/code ; la seule chose qui bloque `passes=true` est un
 jugement humain, pas un bug.
 
+### Gate levée — 2026-07-13 (confirmation humaine d'Amine)
+
+Amine a exécuté le test darija mélangée fourni (2 messages, faits vérifiables : date, nombre
+de tentatives, budget) sur `/devis` en prod et confirme : « la darija fonctionnait très bien »
+— critère 9 (darija comprise) et critère 10 (fidélité `agent_insights`↔brief, le test étant
+conçu pour les couvrir ensemble via des faits vérifiables) validés par jugement humain, seule
+étape non automatisable qui restait. Combiné aux 8 critères automatiques déjà propres (cf.
+verdict du 2026-07-13 ci-dessus, 9/10 sur le corpus §10.3, seul écart = faux positif accepté
+le 2026-07-10), **`US-IQ-02.passes = true`** posé dans `.ralph/prd.json`.
+
 ## US-IQ-04 — Emails contextualisés + réservation Cal.com (2026-07-11)
 
 **Exécution** : plan `docs/superpowers/plans/2026-07-11-us-iq-04-email-calcom.md` (7 tasks
