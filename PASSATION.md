@@ -1,4 +1,4 @@
-== PASSATION NUCLÉAIRE MiroShark/Bassira — 2026-07-13 ~11h00 (écran Assistant /devis : 3 bugs réels trouvés par Amine en test humain, tous corrigés et re-vérifiés par preuve système ; reste 1 point UX non confirmé + revue humaine corpus jamais faite) ==
+== PASSATION NUCLÉAIRE MiroShark/Bassira — 2026-07-13 ~11h05 (écran Assistant /devis : 3 bugs réels trouvés par Amine en test humain, tous corrigés et re-vérifiés par preuve système ; reste 1 point UX non confirmé + revue humaine corpus jamais faite + NOUVEAU bug signalé À L'INSTANT non encore diagnostiqué : aucun créneau Cal.com proposé) ==
 Synthèse complète et autonome — ne suppose la lecture d'aucune passation antérieure, remplace
 et purge intégralement l'entrée du 2026-07-13 02h12 (bug 403 gateway LLM intake). Ce bug 403
 est CONFIRMÉ résolu (preuve indirecte : Amine a pu interagir avec l'écran Assistant assez
@@ -90,6 +90,20 @@ répété ici.
   `check_agent_turn_rate_limit` (40/h) pour tout futur endpoint conversationnel.
 
 [BLOQUE / EN ATTENTE D'AMINE]
+- **NOUVEAU, PRIORITÉ 1 ABSOLUE (signalé par Amine à l'instant, juste avant /clear, PAS ENCORE
+  diagnostiqué)** : « je n'ai toujours pas eu l'occasion de choisir un créneau, rien ne m'a été
+  proposé. » Amine a fini une conversation sur l'écran Assistant sans jamais recevoir de
+  proposition de créneau Cal.com. Aucun diagnostic fait sur ce point cette session — piste de
+  départ pour la session suivante : (1) vérifier sur quelle branche `_decide_route` (US-IQ-03,
+  `intake_service.py`) sa session a atterri (`self_service` / `quote_48h` / `meeting`) —
+  seule la branche `meeting` propose un lien Cal.com ; (2) si la session est bien tombée sur
+  `meeting`, vérifier `_verify_calcom_booking`/génération du lien (ADR-IQ-03, ADR-IQ-09,
+  ADR-IQ-10, `docs/intake/08-decisions-log.md`) ; (3) si elle est tombée sur une AUTRE branche,
+  comprendre si c'est un problème de logique de routage (mauvaise branche choisie) ou un
+  comportement normal (le routage déterministe ne mène pas toujours à `meeting`) mal compris/mal
+  communiqué à l'utilisateur côté UI. Regarder `docker logs` + la ligne `route` de la session
+  Supabase (`intake_sessions.route`) pour la session réelle d'Amine (la plus récente en base) en
+  tout premier réflexe, avant toute supposition (RÈGLE N°4/SOP-007).
 - Confirmer si « le disclaimer à tous les messages » = la bannière statique `.iap-banner`
   (hypothèse la plus probable, pas encore validée) ou autre chose vu en vrai dans le
   navigateur — je ne peux pas trancher sans lui, et je n'ai pas pu vérifier visuellement
