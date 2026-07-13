@@ -391,10 +391,12 @@ class TestAgentTurnHappyPath:
             lambda **kw: calls.append(kw) or True,
         )
         sid = _submitted_session(fake_client)  # governance par défaut = conseil_administration (_valid_brief)
-        # Forcer une branche non-meeting pour ce test : budget/exposure self_service-eligible.
+        # Forcer une branche non-meeting pour ce test : budget/exposure self_service-eligible
+        # (depuis ADR-IQ-12, self_service est la SEULE branche non-meeting encore
+        # atteignable par _decide_route — le repli par défaut est désormais meeting).
         fake_client.table("intake_sessions").update({
             "brief": {**svc._get_session(sid, client=fake_client)["brief"], "governance": "solo",
-                      "stakes": {"budget_bracket": "1_10m", "exposure": "sectorielle"},
+                      "stakes": {"budget_bracket": "lt_1m", "exposure": "interne"},
                       "deadline": {"date": "2099-01-01", "overdue": False}},
         }).eq("id", sid).execute()
         llm = _FakeLLM([{
@@ -403,7 +405,7 @@ class TestAgentTurnHappyPath:
         }])
         status, body = svc.agent_turn(sid, "Voilà, c'est tout.", client=fake_client, llm=llm)
         assert status == 200
-        assert body["data"]["route"] == "quote_48h"
+        assert body["data"]["route"] == "self_service"
         assert len(calls) == 1
 
     def test_close_true_skips_email_for_meeting_route(self, fake_client, monkeypatch):

@@ -264,3 +264,43 @@ ultérieur) ne réannoncent plus l'identité.
 tout futur ajustement du prompt — le gate §10.3 grep sur le premier message uniquement,
 donc toute reformulation de RÈGLE 0 doit conserver le mot-clé disclosure dans ce message
 précis.
+
+## ADR-IQ-12 — Repli par défaut de `_decide_route` : `meeting`, plus `quote_48h` (2026-07-13, directive Amine post-diagnostic « aucun créneau Cal.com proposé »)
+
+**Quoi** : dans `_decide_route` (`intake_service.py`), le repli par défaut (aucun critère
+`meeting` ni `self_service` satisfait) passe de `quote_48h` à `meeting`. Concrètement,
+`self_service` reste la SEULE branche non-`meeting` encore atteignable par cette fonction
+pure (budget `lt_1m` + exposition `interne`/`sectorielle` + échéance > 14 jours). La
+constante `_ROUTE_QUOTE_48H` (devenue sans référent) est retirée ; la copy/l'infra
+`quote_48h` (`_CONFIRMATION_CTA_COPY`, écran de clôture frontend, contrainte SQL
+`intake_sessions.route`) restent intactes — ADR-IQ-02 prévoit explicitement d'« ajuster
+les RÈGLES, pas passer au LLM » en cas de seuils jugés faux, donc ce repli reste réversible
+sans toucher l'architecture ni la copy.
+
+**Pourquoi** :
+- Diagnostic de la session réelle d'Amine (`6936f9ba…`, 2026-07-13 09h08-09h30, `route =
+  quote_48h`) : brief `budget_bracket=lt_1m`, `exposure=nationale`, `governance=solo`,
+  0 flag confidentiel — aucune des trois conditions `meeting` n'était vraie, et l'exposition
+  `nationale` ne rentre dans aucune des deux branches explicites (ni `meeting` ni
+  `self_service`), donc repli sur `quote_48h` : comportement conforme à la spec, mais aucun
+  contact humain synchrone proposé sur un enjeu réel (ouverture d'une structure en Europe).
+- Proposition initiale (ajouter `exposure == nationale` aux déclencheurs `meeting`)
+  **rejetée par Amine** : correctif trop étroit face au vrai problème.
+- Directive explicite d'Amine : « on n'a pas le luxe de protéger le temps [commercial],
+  il nous faut des références pour devenir top of mind » — en phase de calibrage/premières
+  références, chaque lead à enjeu non trivial doit obtenir un contact humain, y compris au
+  prix du temps commercial. Le seul cas qui reste automatisé sans contact humain est
+  `self_service`, réservé aux enjeux explicitement les plus faibles (petit budget, exposition
+  interne/sectorielle, aucune urgence) — un profil qui n'a pas vocation à devenir une
+  référence commerciale de toute façon.
+**Alternatives rejetées** :
+- Ajouter `nationale` aux seuls déclencheurs `meeting` (proposition initiale) — rejetée par
+  Amine, jugée trop étroite pour la philosophie « pas de luxe de protéger le temps ».
+- Router via un signal détecté par l'agent LLM plutôt que par seuil déterministe — rejetée
+  sans même être proposée à Amine : contredirait directement ADR-IQ-02 (auditabilité,
+  anti-injection « route-moi en self-service »), ce changement reste dans le cadre 100 %
+  déterministe.
+**Signal de réexamen** : volume de sessions suffisant pour que le temps commercial devienne
+la vraie contrainte, ou preuve business que le stade « top of mind / premières références »
+est atteint — recalibrer alors via le signal déjà prévu par ADR-IQ-02 (`> 30 % de
+reroutages manuels par l'admin` = seuils faux, ajuster les RÈGLES).

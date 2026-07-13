@@ -337,7 +337,8 @@ class TestIntakeEndpoints:
 # ─── _decide_route — table de vérité exhaustive (US-IQ-03, étape C) ─────────
 #
 # Règles de docs/intake/01-intake-spec.md §3.C (ADR-IQ-02, 100% déterministe,
-# aucun LLM). ``_expected_route`` ci-dessous est une réimplémentation
+# aucun LLM ; ADR-IQ-12, repli par défaut = meeting). ``_expected_route`` ci-dessous
+# est une réimplémentation
 # INDÉPENDANTE de la spec — pas un appel à ``svc._decide_route`` — pour que
 # le test vérifie vraiment le comportement contre la spec, pas contre
 # lui-même.
@@ -387,7 +388,7 @@ def _expected_route(budget_bracket, exposure, governance, deadline_key, flags_ke
         return "meeting"
     if budget_bracket == "lt_1m" and exposure in ("interne", "sectorielle") and deadline_key == "far":
         return "self_service"
-    return "quote_48h"
+    return "meeting"
 
 
 _TRUTH_TABLE_CASES = [
@@ -421,7 +422,7 @@ class TestDeadlineBoundary:
             "deadline": {"date": date_14, "overdue": False},
             "stakes": {"budget_bracket": "lt_1m", "exposure": "interne"},
         }
-        assert svc._decide_route(brief, []) == "quote_48h"
+        assert svc._decide_route(brief, []) == "meeting"
 
     def test_15_days_is_far_enough(self):
         date_15 = (datetime.now(timezone.utc).date() + timedelta(days=15)).strftime("%Y-%m-%d")
@@ -432,13 +433,13 @@ class TestDeadlineBoundary:
         }
         assert svc._decide_route(brief, []) == "self_service"
 
-    def test_malformed_date_falls_back_to_quote_48h(self):
+    def test_malformed_date_falls_back_to_meeting(self):
         brief = {
             "governance": "solo",
             "deadline": {"date": "not-a-date", "overdue": False},
             "stakes": {"budget_bracket": "lt_1m", "exposure": "interne"},
         }
-        assert svc._decide_route(brief, []) == "quote_48h"
+        assert svc._decide_route(brief, []) == "meeting"
 
 
 # ─── complete_routing — service + machine à états ────────────────────────────
@@ -484,7 +485,11 @@ class TestCompleteRouting:
         assert status == 200
         assert body["data"]["route"] == "self_service"
 
-    def test_routes_to_quote_48h_by_default(self, fake_client):
+    def test_routes_to_meeting_by_default(self, fake_client):
+        """Repli par défaut (ADR-IQ-12) : un brief sans stake explicite (budget/
+        gouvernance sous les seuils meeting, hors fenêtre self-service) part quand
+        même en meeting — on ne protège plus le temps commercial en phase de
+        calibrage, cf. directive Amine 2026-07-13."""
         sid = self._session_ready(
             fake_client,
             brief_overrides={
@@ -494,7 +499,7 @@ class TestCompleteRouting:
         )
         status, body = svc.complete_routing(sid, client=fake_client)
         assert status == 200
-        assert body["data"]["route"] == "quote_48h"
+        assert body["data"]["route"] == "meeting"
 
     def test_meeting_route_triggered_by_confidential_flag_alone(self, fake_client):
         sid = self._session_ready(
@@ -544,6 +549,9 @@ class TestCompleteRouting:
         assert status == 200
 
     def test_completion_sends_confirmation_email_best_effort(self, fake_client, monkeypatch):
+        """Depuis ADR-IQ-12 (repli par défaut = meeting), self_service est la
+        SEULE branche non-meeting encore atteignable par _decide_route — c'est
+        elle qui sert ici à vérifier l'envoi d'email best-effort en clôture."""
         calls = []
         monkeypatch.setattr(
             "app.services.email_service.send_email",
@@ -554,13 +562,14 @@ class TestCompleteRouting:
         sid = self._session_ready(
             fake_client,
             brief_overrides={
-                "governance": "comite_direction",
-                "stakes": {"budget_bracket": "1_10m", "exposure": "sectorielle"},
+                "governance": "solo",
+                "deadline": {"date": _FAR_DATE, "overdue": False},
+                "stakes": {"budget_bracket": "lt_1m", "exposure": "interne"},
             },
         )
         status, body = svc.complete_routing(sid, client=fake_client)
         assert status == 200
-        assert body["data"]["route"] == "quote_48h"
+        assert body["data"]["route"] == "self_service"
         assert len(calls) == 1
         assert calls[0]["to_email"] == "karim@banquepop.ma"  # cf. _valid_payload
 

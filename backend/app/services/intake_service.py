@@ -362,7 +362,6 @@ _SELF_SERVICE_EXPOSURE = {"interne", "sectorielle"}
 _SELF_SERVICE_MIN_DAYS_OUT = 14
 
 _ROUTE_SELF_SERVICE = "self_service"
-_ROUTE_QUOTE_48H = "quote_48h"
 _ROUTE_MEETING = "meeting"
 
 
@@ -387,7 +386,11 @@ def _decide_route(brief: Dict[str, Any], confidential_flags: Optional[List[Any]]
     """Calcule la branche de sortie (self_service | quote_48h | meeting).
 
     Fonction pure, sans effet de bord — testée par table de vérité exhaustive
-    dans ``test_unit_intake.py``.
+    dans ``test_unit_intake.py``. Repli par défaut = ``meeting`` (ADR-IQ-12,
+    directive Amine 2026-07-13) : en phase de calibrage, aucun lead à enjeu
+    non trivial n'est reporté vers un devis asynchrone. ``quote_48h`` reste
+    la copy/l'infra existante mais n'est plus atteignable par cette fonction
+    tant que ce choix tient (cf. signal de réexamen de l'ADR).
     """
     stakes = brief.get("stakes") or {}
     governance = brief.get("governance")
@@ -408,7 +411,7 @@ def _decide_route(brief: Dict[str, Any], confidential_flags: Optional[List[Any]]
     ):
         return _ROUTE_SELF_SERVICE
 
-    return _ROUTE_QUOTE_48H
+    return _ROUTE_MEETING
 
 
 _ROUTABLE_STATES = {"form_submitted", "agent_active"}
