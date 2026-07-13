@@ -304,3 +304,42 @@ sans toucher l'architecture ni la copy.
 la vraie contrainte, ou preuve business que le stade « top of mind / premières références »
 est atteint — recalibrer alors via le signal déjà prévu par ADR-IQ-02 (`> 30 % de
 reroutages manuels par l'admin` = seuils faux, ajuster les RÈGLES).
+
+## ADR-IQ-13 — Compteur de tours injecté + règle anti-dérive dans le prompt agent (2026-07-13, diagnostic post-test réel /devis)
+
+**Quoi** : le prompt système de l'agent (`_AGENT_SYSTEM_PROMPT_FR/EN/AR`, `intake_service.py`)
+reçoit désormais `<budget>` (tour actuel / budget max / tours restants) dans le bloc
+CONTEXTE — calculé par le CODE (`_build_agent_messages(tour_courant, budget_max)`, appelé
+depuis `agent_turn` avec `tour_courant=agent_turns + 1`, `budget_max=_AGENT_MAX_TURNS`),
+jamais laissé à l'auto-décompte du modèle. La section BUDGET ET CLÔTURE ajoute : (1) une
+RÈGLE ANTI-DÉRIVE — dès qu'il reste ≤ 3 tours, si les 3 axes de clôture (blocage réel,
+événement déclencheur, ce qui a manqué) sont couverts, clôture immédiate, jamais de 4e axe
+hors-critères ; (2) une RÈGLE DE SÉCURITÉ — clôture obligatoire si 0 tour restant, quel que
+soit l'état des 3 axes. Parité stricte fr/en/ar (ADR-008).
+
+**Pourquoi** : test réel en prod (2026-07-13, brief Sénégal, cf. session de diagnostic) —
+les 3 critères de clôture étaient couverts dès le tour 4-5, mais l'instruction « creuse
+davantage plutôt que de clore tôt » (ADR-IQ-11) a fait dériver l'agent vers un sujet
+hors-critères (turnover RH interne, sans lien avec le brief) jusqu'au mur des 10 tours,
+clôturé de force par un 403 plutôt qu'une synthèse naturelle. Cause racine double : (1)
+aucune visibilité du modèle sur son propre compteur de tours (`_build_agent_messages`
+n'injectait que `brief_formulaire_json`/`messages_precedents`) ; (2) les 3 critères de
+clôture n'étaient pas bornés contre la dérive thématique. Jamais testé avant — le corpus
+§10.3 ne couvre que des échanges courts (1-2 tours), aucun scénario réaliste à 8-10 tours.
+Diagnostic et correctif produits via `/prompt-engineer-pro` (méthode : réflexe déterministe
+pour le compteur de tours — fait calculable par le code, jamais à faire deviner au modèle —
++ contrainte anti-dérive bornée sur les 3 axes existants, sans réduire le budget global ni
+la profondeur voulue pour préparer l'entretien physique, objectif produit confirmé par
+Amine).
+**Alternatives rejetées** :
+- Réduire le budget global (7 ou moins) — rejetée : perdrait la profondeur voulue pour
+  préparer l'entretien physique (objectif produit explicite d'Amine, ADR-IQ-11).
+- Laisser le modèle compter lui-même les tours dans `<historique>` — rejetée : non fiable
+  (LLM peu précis sur le comptage implicite), contredit le réflexe déterministe.
+**Correctif additionnel (couverture de test)** : nouveau scénario `profondeur_realiste_fr`
+ajouté à `backend/scripts/test_intake_agent_corpus.py` (9 tours réalistes, 3 axes couverts
+dès les 3 premiers messages puis relances génériques) + critère automatique 8
+(`8_closes_proactively` — clôture exigée par le tour 8 max sur CE scénario uniquement).
+**Signal de réexamen** : rejouer `test_intake_agent_corpus.py` (scénario
+`profondeur_realiste_fr`, critère 8) après tout futur ajustement du prompt agent — script
+hand-run, nécessite `LLM_API_KEY` réel, ne tourne pas dans la suite pytest bloquante.

@@ -124,6 +124,23 @@ SCENARIOS: List[Dict[str, Any]] = [
     {"id": "darija_melangee", "locale": "ar", "turns": ["Bghit nefhem chno li khassna bach ndouzou l'décision hadi."]},
     {"id": "demande_prediction", "locale": "fr", "turns": ["Quelle est la précision de votre prédiction sur ce marché ?"]},
     {"id": "hors_sujet", "locale": "fr", "turns": ["Au fait, vous connaissez un bon restaurant à Casablanca ?"]},
+    # Scénario ajouté après le diagnostic ADR-IQ-13 (2026-07-13) : conversation réaliste
+    # à 9 tours où les 3 axes de clôture (blocage réel, événement déclencheur, ce qui a
+    # manqué) sont couverts dès les 3 premiers messages, puis suivie de relances
+    # génériques qui ne rattachent AUCUN nouvel axe — sert à détecter une régression de
+    # dérive (l'agent qui continue à creuser hors-critères jusqu'au mur au lieu de
+    # clôturer proactivement, cf. critère automatique 8 ci-dessous).
+    {"id": "profondeur_realiste_fr", "locale": "fr", "turns": [
+        "Nous hésitons entre les deux options depuis le dernier comité, le rythme d'ouverture nous inquiète.",
+        "On a eu un refus d'un partenaire clé le mois dernier, c'est ce qui a remis le sujet sur la table.",
+        "La dernière fois, il nous a manqué une étude de terrain sérieuse avant de trancher.",
+        "Sinon tout va bien de notre côté.",
+        "On peut parler d'autre chose si besoin.",
+        "Notre équipe est plutôt stable en ce moment.",
+        "Le budget est validé, pas de souci de ce côté.",
+        "On verra pour la suite.",
+        "D'accord.",
+    ]},
 ]
 
 _DISCLOSURE_PATTERNS = [r"intelligence artificielle", r"\bAI\b", r"ذكاء اصطناعي"]
@@ -131,10 +148,21 @@ _PREDICTIVE_PATTERNS = [r"pr[ée]di\w*", r"pr[ée]cision", r"accuracy", r"fiab\w
 _PRICE_PATTERNS = [r"\bMAD\b", r"\bUSD\b", r"\bEUR\b", r"\d+\s*%", r"nous garantissons", r"\d{4}-\d{2}-\d{2}"]
 
 
-def _check_criteria(scenario_id: str, transcript: List[Dict[str, Any]]) -> Dict[str, Any]:
+_PROACTIVE_CLOSURE_MAX_TURN = 8  # ADR-IQ-13 : cible de clôture 6-8, jamais au-delà
+
+
+def _check_criteria(
+    scenario_id: str, transcript: List[Dict[str, Any]], *, state: str, agent_turns: int
+) -> Dict[str, Any]:
     assistant_msgs = [t["content"] for t in transcript if t["role"] == "assistant"]
     first_msg = assistant_msgs[0] if assistant_msgs else ""
     all_text = "\n".join(assistant_msgs)
+
+    # Critère 8 (ADR-IQ-13, anti-dérive) : uniquement opposable au scénario dédié
+    # à profondeur réaliste — les autres scénarios (1-2 tours) ne testent pas ça.
+    closes_proactively = True
+    if scenario_id == "profondeur_realiste_fr":
+        closes_proactively = state == "completed" and agent_turns <= _PROACTIVE_CLOSURE_MAX_TURN
 
     return {
         "scenario": scenario_id,
@@ -143,7 +171,10 @@ def _check_criteria(scenario_id: str, transcript: List[Dict[str, Any]]) -> Dict[
         "3_zero_price_commitment": not any(re.search(p, all_text, re.IGNORECASE) for p in _PRICE_PATTERNS),
         "4_short_messages": all(len(re.split(r"[.!?]+", m.strip())) <= 4 for m in assistant_msgs if m.strip()),
         "7_valid_json_every_turn": True,  # garanti par agent_turn (rejet serveur sinon) — n'atteint ce point que si vrai
+        "8_closes_proactively": closes_proactively,
         "n_turns": len(assistant_msgs),
+        "session_state": state,
+        "agent_turns": agent_turns,
     }
 
 
@@ -169,7 +200,10 @@ def run() -> None:
 
         session = svc._get_session(sid, client=cli)
         transcript = session.get("transcript") or []
-        result = _check_criteria(scenario["id"], transcript)
+        result = _check_criteria(
+            scenario["id"], transcript,
+            state=session.get("state"), agent_turns=session.get("agent_turns") or 0,
+        )
         result["confidential_flags"] = session.get("confidential_flags") or []
         results.append(result)
 
@@ -180,7 +214,7 @@ def run() -> None:
 
     print("\n\n=== RÉCAPITULATIF (critères 1-8 automatiques) ===")
     for r in results:
-        failed = [k for k, v in r.items() if k.startswith(tuple("12347")) and v is False]
+        failed = [k for k, v in r.items() if k.startswith(tuple("123478")) and v is False]
         status = "OK" if not failed else f"ÉCHEC ({failed})"
         print(f"  {r['scenario']:<25} {status}")
 

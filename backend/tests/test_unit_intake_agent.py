@@ -166,7 +166,7 @@ def _brief_with_aar(**overrides) -> Dict[str, Any]:
 class TestBuildAgentMessages:
     def test_system_prompt_selected_by_locale(self):
         for locale in ("fr", "en", "ar"):
-            messages = svc._build_agent_messages(_brief_with_aar(), locale, [], "bonjour")
+            messages = svc._build_agent_messages(_brief_with_aar(), locale, [], "bonjour", tour_courant=1, budget_max=10)
             assert messages[0]["role"] == "system"
             assert messages[0]["content"] == svc.AGENT_SYSTEM_PROMPTS[locale].format(
                 locale=locale,
@@ -175,16 +175,19 @@ class TestBuildAgentMessages:
                     ensure_ascii=False,
                 ),
                 messages_precedents=json.dumps([], ensure_ascii=False),
+                tour_courant=1,
+                budget_max=10,
+                tours_restants=9,
             )
 
     def test_unknown_locale_falls_back_to_fr(self):
-        messages = svc._build_agent_messages(_brief_with_aar(), "de", [], "bonjour")
+        messages = svc._build_agent_messages(_brief_with_aar(), "de", [], "bonjour", tour_courant=1, budget_max=10)
         assert messages[0]["content"].startswith(
             svc.AGENT_SYSTEM_PROMPTS["fr"].split("{brief_formulaire_json}")[0][:40]
         )
 
     def test_last_message_is_current_user_input(self):
-        messages = svc._build_agent_messages(_brief_with_aar(), "fr", [], "Ma question")
+        messages = svc._build_agent_messages(_brief_with_aar(), "fr", [], "Ma question", tour_courant=1, budget_max=10)
         assert messages[-1] == {"role": "user", "content": "Ma question"}
 
     def test_aar_known_outcome_never_in_system_prompt(self):
@@ -192,12 +195,12 @@ class TestBuildAgentMessages:
         le champ aar_known_outcome ne doit JAMAIS entrer dans le contexte
         construit pour l'agent, quel que soit son contenu."""
         brief = _brief_with_aar(aar_known_outcome="SECRET_MARKER_ISSUE_REELLE_XYZ")
-        messages = svc._build_agent_messages(brief, "fr", [], "salut")
+        messages = svc._build_agent_messages(brief, "fr", [], "salut", tour_courant=1, budget_max=10)
         assert "SECRET_MARKER_ISSUE_REELLE_XYZ" not in messages[0]["content"]
 
     def test_previous_transcript_embedded_as_data(self):
         prior = [{"role": "user", "content": "premier message", "ts": "2026-07-10T10:00:00Z"}]
-        messages = svc._build_agent_messages(_brief_with_aar(), "fr", prior, "suite")
+        messages = svc._build_agent_messages(_brief_with_aar(), "fr", prior, "suite", tour_courant=2, budget_max=10)
         assert "premier message" in messages[0]["content"]
 
     def test_v2_prompt_has_disclosure_as_rule_zero(self):
@@ -222,13 +225,19 @@ class TestBuildAgentMessages:
             {"situation_pattern": "Injection combinée à une demande de prix",
              "corrected_response": "Je suis une IA et je ne réponds pas aux demandes de prix — revenons à votre décision."},
         ]
-        messages = svc._build_agent_messages(_brief_with_aar(), "fr", [], "test", playbook_entries=playbook)
+        messages = svc._build_agent_messages(
+            _brief_with_aar(), "fr", [], "test", tour_courant=1, budget_max=10, playbook_entries=playbook
+        )
         assert "Injection combinée à une demande de prix" in messages[0]["content"]
         assert "Je suis une IA et je ne réponds pas aux demandes de prix" in messages[0]["content"]
 
     def test_no_playbook_entries_is_backward_compatible(self):
-        messages_without_arg = svc._build_agent_messages(_brief_with_aar(), "fr", [], "test")
-        messages_with_empty = svc._build_agent_messages(_brief_with_aar(), "fr", [], "test", playbook_entries=[])
+        messages_without_arg = svc._build_agent_messages(
+            _brief_with_aar(), "fr", [], "test", tour_courant=1, budget_max=10
+        )
+        messages_with_empty = svc._build_agent_messages(
+            _brief_with_aar(), "fr", [], "test", tour_courant=1, budget_max=10, playbook_entries=[]
+        )
         assert messages_without_arg == messages_with_empty
 
 
