@@ -1,4 +1,4 @@
-== PASSATION NUCLÉAIRE MiroShark/Bassira — 2026-07-13 02h08 (US-IQ-02 déployé MAIS cassé en usage réel — 403 gateway LLM intake, model/clé désaccordés ; correctif de config appliqué, REDÉMARRAGE PAS ENCORE CONFIRMÉ TERMINÉ au moment de cette passation) ==
+== PASSATION NUCLÉAIRE MiroShark/Bassira — 2026-07-13 02h12 (403 gateway LLM intake CORRIGÉ et CONFIRMÉ par preuve système — HTTP 200 réel obtenu ; NEXT = redemander à Amine un test humain réel sur /devis, seule preuve finale valable) ==
 Synthèse complète et autonome — ne suppose la lecture d'aucune passation antérieure. Remplace
 la synthèse du 2026-07-12 20h07 (« chantier clos ») — son [NEXT] point 1 (vérification humaine
 réelle) A été fait par Amine, et a immédiatement révélé un vrai bug bloquant. Le reste de la
@@ -37,12 +37,15 @@ consultable via `git log` sur `main` — non répété ici.
   production (`real_value` relu = `qwen3.5-122b`). Puis `POST
   .../applications/u6pn5mr2pgi88s13un55pkzb/restart` → `{"message":"Restart request queued.",
   "deployment_uuid":"uw289hvdin4bt56rxfbi89ba"}`.
-- **⚠️ REDÉMARRAGE PAS ENCORE CONFIRMÉ TERMINÉ au moment de cette passation** : dernier
-  contrôle système (02h08) — conteneur `miroshark-u6pn5mr2pgi88s13un55pkzb-190923631874`
-  toujours créé à `20:09:43`, statut déploiement `uw289hvdin4bt56rxfbi89ba` = `in_progress`
-  (dernier check ~01:04 UTC). Ne PAS supposer que le correctif est actif tant qu'un nouveau
-  conteneur (nouveau timestamp de création) et un appel réel réussi (plus de 403) n'ont pas
-  été observés.
+- **✅ CONFIRMÉ par preuve système (02h12)** : déploiement `uw289hvdin4bt56rxfbi89ba` =
+  `finished`. Nouveau conteneur `miroshark-u6pn5mr2pgi88s13un55pkzb-011035506407` (créé
+  `2026-07-13 02:10:55`). Appel réel reproduit depuis CE conteneur vers la gateway LLM
+  intake : `HTTP_STATUS:200`, réponse `chatcmpl-...` réelle avec `"model":"qwen3.5-122b"`
+  reçue (plus de 403). **Le blocage technique est levé côté infrastructure.**
+- **Ce qui reste à faire n'est PAS technique** : seule la vérification humaine d'Amine sur le
+  vrai parcours `/devis` (SOP-011) constitue la preuve finale — mon test `curl` isolé prouve
+  que la gateway répond, pas que l'écran Assistant reste affiché, que la conversation se
+  déroule, que le routage/email/Cal.com fonctionnent bout en bout avec ce nouveau modèle.
 
 [FAIT — cette session, après la clôture du chantier]
 1. Amine a testé `/devis` en prod → bug signalé (flash + disparition, pas de créneau Cal.com).
@@ -78,31 +81,24 @@ consultable via `git log` sur `main` — non répété ici.
   Restart : `POST /api/v1/applications/{uuid}/restart` → renvoie un `deployment_uuid` à
   poller via `GET /api/v1/deployments/{deployment_uuid}` (`status`: `in_progress`→`finished`).
 
-[BLOQUE / EN ATTENTE]
-- Rien pour Amine — uniquement une vérification système à terminer (temps d'attente du
-  redémarrage Coolify, habituellement quelques minutes).
+[BLOQUE / EN ATTENTE D'AMINE]
+- **Un nouveau test humain réel sur `/devis`** (SOP-011) — demandé, pas encore fait au moment
+  de cette passation. C'est la seule chose qui manque pour clore définitivement ce bug.
 
 [NEXT]
-1. **PRIORITÉ 1** : reprendre EXACTEMENT le suivi du redémarrage. Vérifier
-   `GET https://<COOLIFY_URL>/api/v1/deployments/uw289hvdin4bt56rxfbi89ba` (via script .ps1
-   dans le scratchpad, cf. [ALERTE] pour la méthode) → si `status: finished`, vérifier
-   `docker ps --filter name=miroshark` sur serveuria pour un NOUVEAU timestamp de création,
-   PUIS reproduire le test direct depuis le conteneur :
-   ```
-   docker exec <conteneur> sh -c 'curl -s -o /tmp/r.json -w "HTTP_STATUS:%{http_code}\n" -X POST "$INTAKE_LLM_BASE_URL/chat/completions" -H "Authorization: Bearer $INTAKE_LLM_API_KEY" -H "Content-Type: application/json" -d "{\"model\":\"$INTAKE_LLM_MODEL\",\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}],\"max_tokens\":5}"; cat /tmp/r.json'
-   ```
-   Attendu : `HTTP_STATUS:200` (plus de 403).
-2. Si le déploiement est bloqué/échoué (`status: failed` ou toujours `in_progress` après
-   ~10 min) : investiguer directement (`docker logs`, pas de supposition) plutôt que de
-   relancer aveuglément un 2e restart.
-3. Une fois confirmé : redemander à Amine de retester `/devis` en vrai (SOP-011) — c'est la
-   seule preuve finale qui compte, pas mon test `curl` isolé (qui prouve la gateway
-   accessible, pas le parcours complet bout en bout avec un vrai brief/routage/email).
-4. Envisager (pas fait, pas demandé) : aligner aussi l'entrée `is_preview=true` de
+1. **PRIORITÉ 1** : dès qu'Amine confirme (ou qu'une session future doit le redemander) que
+   l'écran Assistant reste affiché et qu'une vraie conversation se déroule sur `/devis` en
+   prod → considérer le bug définitivement clos, l'écrire explicitement dans la passation
+   suivante avec la confirmation d'Amine citée.
+2. Si le test humain révèle encore un problème : NE PAS repartir de zéro — d'abord
+   `docker logs miroshark-... --since 5m | grep -i "gateway unavailable\|PermissionDenied\|error"`
+   sur le NOUVEAU conteneur (`...-011035506407` ou plus récent), la même méthode que celle qui
+   a trouvé la cause racine cette fois-ci (2 lignes de log ont suffi).
+3. Envisager (pas fait, pas demandé) : aligner aussi l'entrée `is_preview=true` de
    `INTAKE_LLM_MODEL` sur `qwen3.5-122b` par cohérence — actuellement encore à
    `qwen3.6-35b`, sans impact tant qu'aucun déploiement preview n'est utilisé, mais source de
    confusion future si quelqu'un l'oublie.
-5. Chantier séparé, toujours en attente (non touché) : ajuster `AGENT_SYSTEM_PROMPTS` pour les
+4. Chantier séparé, toujours en attente (non touché) : ajuster `AGENT_SYSTEM_PROMPTS` pour les
    2 échecs corpus §10.3 avant de poser `US-IQ-02.passes = true` — cf. passations précédentes,
    `.ralph/progress.md` section US-IQ-02.
 
