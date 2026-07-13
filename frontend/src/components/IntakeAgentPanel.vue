@@ -6,9 +6,13 @@
     verrouillés en ligne compacte AU-DESSUS du chat (pas de colonne latérale
     fixe, cf. ADR-IQ-11 — écrasait le chat) + bouton skip. Layout initial
     conforme au prompt Stitch §10.2 (docs/intake/10-execution-prompts.md:83-104).
+    Bandeau allégé (pas retiré) dès la 1re réponse de l'assistant — le
+    disclosure IA textuel (RÈGLE 0 du prompt) n'apparaît qu'au tour 1, le
+    bandeau permanent en pleine intensité donnait l'impression trompeuse
+    d'un rappel répété à chaque message (retour Amine 2026-07-13).
   -->
   <div class="iap-root">
-    <div class="iap-banner">
+    <div class="iap-banner" :class="{ 'iap-banner--compact': messages.length > 0 }">
       <span class="material-symbols-outlined iap-banner-icon" aria-hidden="true">smart_toy</span>
       <span>{{ $t('quote.step3.assistant.banner') }}</span>
     </div>
@@ -239,6 +243,16 @@ onMounted(() => {
   font-size: 12px;
   font-weight: 600;
   align-self: flex-start;
+  opacity: 1;
+  transform: scale(1);
+  transform-origin: left center;
+  transition: opacity 0.2s ease, transform 0.2s ease, padding 0.2s ease;
+}
+.iap-banner--compact {
+  padding: 5px 10px;
+  font-weight: 500;
+  opacity: 0.7;
+  transform: scale(0.92);
 }
 .iap-banner-icon {
   font-size: 16px !important;
