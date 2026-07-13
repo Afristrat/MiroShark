@@ -16,6 +16,27 @@
 
 ## Entrées (amorcées depuis les erreurs déjà payées en v1 — passations)
 
+### 2026-07-13 — Chat Assistant intake bloqué par 429 dès la 4e question
+- **Contexte** : Amine teste `/devis` en prod (SOP-011) — deux défauts : layout étape
+  Assistant n'utilisant pas la largeur disponible, et `429 RATE_LIMITED` après ~3
+  questions dans le chat, message trompeur (« patientez un instant » alors que la fenêtre
+  est de 1h).
+- **Cause RACINE** : `POST /api/intake/session/<id>/agent/turn` réutilisait
+  `quote_service.check_rate_limit` (5/h/IP), le même bucket que la soumission du
+  formulaire de devis — pensé pour de l'anti-spam de soumissions, jamais dimensionné pour
+  des tours de conversation. Layout : `.quote-card` (`QuoteView.vue`) a un `max-width:
+  640px` fixe pour toutes les étapes, y compris l'étape 4 dont le layout grid 2 colonnes
+  (`IntakeAgentPanel.vue`) a besoin de bien plus de largeur.
+- **Fix** : bucket dédié `check_agent_turn_rate_limit` (40/h/IP, `quote_service.py`),
+  branché uniquement sur `/agent/turn` — `/session` et `/api/quote` restent sur le bucket
+  5/h. `.quote-card` élargie à l'étape 4, sidebar Brief remontée au-dessus du chat
+  (`IntakeAgentPanel.vue`). cf. ADR-IQ-11.
+- **Leçon généralisable** : un rate-limiter écrit pour un cas d'usage (anti-spam de
+  soumission ponctuelle) ne doit jamais être réutilisé tel quel pour un cas d'usage à
+  cardinalité différente (tours de conversation) sans revoir le seuil — le partage de code
+  a caché un besoin de 8x plus de débit derrière un nom de fonction générique
+  (`check_rate_limit`).
+
 ### 2026-07-07 — test_md_hash_stable_with_deterministic_enricher flaky en suite complète
 - **Contexte** : `uv run pytest tests/` (gate US-206) — 1 failed sur 1689, mais **passe seul**
   (`pytest tests/test_pdf_pipeline_e2e.py::...::test_md_hash_stable... -q` → 1 passed).

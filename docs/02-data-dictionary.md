@@ -201,7 +201,7 @@ l'ancien formulaire de contact. Une row par parcours démarré, même abandonné
 | route | text | check in (self_service, quote_48h, meeting) | branche de sortie (étape C) | non |
 | entry_door | text | not null, default 'standard', check in (standard, aar) | porte 1 ou porte 2 AAR (US-IQ-05) | non |
 | locale | text | not null, default 'fr', check in (fr, en, ar) | | non |
-| agent_turns | int | not null, default 0, check 0-7 | compteur budget agent (US-IQ-02) | non |
+| agent_turns | int | not null, default 0, check 0-10 | compteur budget agent (US-IQ-02, ADR-IQ-11) | non |
 | created_at | timestamptz | not null, default now() | | non |
 | completed_at | timestamptz | | | non |
 

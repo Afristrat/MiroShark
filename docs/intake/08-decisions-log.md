@@ -221,3 +221,46 @@ laissé en scope V2 si le résidu est un jour exploité en usage réel.
 **Signal de réexamen** : une réservation Cal.com réelle constatée avec un email attendee
 usurpé (le résidu documenté ci-dessus) → activer `requiresBookerEmailVerification` sur
 l'event type Intake.
+
+## ADR-IQ-11 — Budget agent 7 → 10 tours + limiteur de débit du chat détaché de celui des soumissions (2026-07-13, directive Amine post-test réel /devis)
+
+**Quoi** : (1) `_AGENT_MAX_TURNS` (`intake_service.py`) et la contrainte SQL miroir
+`intake_sessions_agent_turns_chk` passent de 7 à 10 (migration `20260713_001`) ; le prompt
+vise désormais 6-9 questions (au lieu de 3-5/3-7). (2) `POST .../agent/turn` utilise un
+nouveau bucket dédié `check_agent_turn_rate_limit` (40/h/IP), distinct du bucket anti-spam
+`check_rate_limit` (5/h/IP) resté sur `/session` et `/api/quote`. (3) La disclosure IA de
+la RÈGLE 0 du prompt est reformulée pour fusionner l'identité et le traitement du premier
+message en UNE phrase (moins robotique) et explicitement bornée au tout premier message —
+les exemples « Bon » plus loin dans le prompt (refus d'instructions internes sur un tour
+ultérieur) ne réannoncent plus l'identité.
+**Pourquoi** :
+- Amine a testé `/devis` en prod (2026-07-13) et signalé deux défauts réels : (a) le
+  panneau Assistant écrasé dans la largeur fixe 640px de `.quote-card` (corrigé côté
+  frontend, hors scope SQL/prompt) ; (b) `429 RATE_LIMITED` dès le 4e message du chat.
+  Cause racine (b) : `POST /agent/turn` réutilisait le même bucket IP 5/h que la
+  soumission du formulaire — une conversation légitime de 8-10 échanges épuisait le quota
+  en quelques minutes (le budget de 5/h avait été pensé pour de l'anti-spam de
+  soumissions, jamais pour des tours de chat).
+- Amine, en testant, a également jugé l'ouverture « Je suis une intelligence
+  artificielle. » trop robotique/plate, tout en réaffirmant vouloir garder la
+  transparence. **Aucune ADR ni source légale n'a été retrouvée dans ce repo justifiant
+  cette disclosure** — `docs/07-legal-compliance.md:20` ne documente que l'AI Act Art. 50
+  « marquage du contenu synthétique » (PDF de rapport), une obligation différente ; la
+  mention « AI Act art. 50 » qui accompagnait ce champ dans `.ralph/prd.json` (US-IQ-02)
+  était une citation non sourcée, corrigée dans le même commit. La disclosure reste donc
+  un choix produit d'Amine (transparence envers le prospect), pas une contrainte légale
+  vérifiée — reformulée pour être plus naturelle tout en conservant le mot-clé littéral
+  attendu par le gate corpus §10.3 (critère 1, grep `intelligence artificielle`/`AI`/
+  `ذكاء اصطناعي` sur le premier message assistant uniquement).
+- Cette reformulation corrige aussi, en passant, les 2 échecs réels du run corpus du
+  2026-07-10 documentés dans `.ralph/progress.md` (US-IQ-02) : messages à 4 phrases sur
+  les cas à forte charge (disclosure+refus+question) et disclosure traitée après un
+  contenu confidentiel immédiat sur un scénario à un seul tour — les deux venaient du même
+  gabarit de phrase à réparer.
+**Alternatives rejetées** : garder le bucket partagé et augmenter son plafond global à
+40/h — rejeté car ça aurait aussi élargi le quota anti-spam des soumissions de devis
+(effet de bord non désiré, hors du problème réel constaté).
+**Signal de réexamen** : re-lancer `backend/scripts/test_intake_agent_corpus.py` après
+tout futur ajustement du prompt — le gate §10.3 grep sur le premier message uniquement,
+donc toute reformulation de RÈGLE 0 doit conserver le mot-clé disclosure dans ce message
+précis.

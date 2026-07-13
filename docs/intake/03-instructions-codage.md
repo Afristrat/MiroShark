@@ -38,7 +38,9 @@
    bug bloquant, pas un détail.
 8. **Rate limiting** : réutiliser le pattern des dicts internes existants
    (`_ENRICH_RATE_HITS`, cf. progress.md) — l'endpoint agent est public donc limité par IP
-   ET par session (7 tours max, compteur `agent_turns` en base, vérifié serveur).
+   (bucket DÉDIÉ `check_agent_turn_rate_limit`, 40/h — distinct du bucket 5/h anti-spam
+   des soumissions depuis ADR-IQ-11) ET par session (10 tours max, compteur `agent_turns`
+   en base, vérifié serveur).
 9. **Tests** : pytest unitaires (routage, validation jsonschema, machine à états, budget
    de tours) + Playwright sur le parcours complet (formulaire → routage) avec agent mocké.
    L'agent réel n'est JAMAIS appelé dans les tests (mock du llm_client, pattern

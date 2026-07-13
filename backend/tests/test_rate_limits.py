@@ -157,3 +157,52 @@ def test_quote_rate_limit_enforced(client):
         with quote_service._rate_limit_lock:
             quote_service._rate_limit.clear()
             quote_service._rate_limit.update(original)
+
+
+# ─── /api/intake/session/<id>/agent/turn ────────────────────────────────────
+
+
+def test_agent_turn_rate_limit_independent_from_quote_bucket():
+    """A04 — check_agent_turn_rate_limit a son propre bucket (40/h), distinct
+    de check_rate_limit (5/h) — régression du bug 2026-07-13 (chat épuisé
+    après ~3 questions car il partageait le bucket de soumission)."""
+    import time
+    from app.services import quote_service
+
+    test_ip = "9.9.9.98"
+
+    with quote_service._rate_limit_lock:
+        original_quote = dict(quote_service._rate_limit)
+        quote_service._rate_limit.clear()
+    with quote_service._agent_turn_rate_limit_lock:
+        original_turn = dict(quote_service._agent_turn_rate_limit)
+        quote_service._agent_turn_rate_limit.clear()
+
+    try:
+        # Épuiser le bucket de soumission (5/h) ne doit PAS affecter le chat.
+        with quote_service._rate_limit_lock:
+            quote_service._rate_limit[test_ip] = [time.time()] * 10
+        assert quote_service.check_agent_turn_rate_limit(test_ip) is True, (
+            "le chat ne doit pas être bloqué par le quota de soumission épuisé"
+        )
+
+        # Le chat tolère bien plus de 5 tours (le cas réel : 8-10 questions).
+        with quote_service._agent_turn_rate_limit_lock:
+            quote_service._agent_turn_rate_limit[test_ip] = [time.time()] * 8
+        assert quote_service.check_agent_turn_rate_limit(test_ip) is True, (
+            "8 tours de chat ne doivent pas épuiser le quota de 40/h"
+        )
+
+        # Le bucket du chat s'épuise bien à son propre seuil.
+        with quote_service._agent_turn_rate_limit_lock:
+            quote_service._agent_turn_rate_limit[test_ip] = [time.time()] * 40
+        assert quote_service.check_agent_turn_rate_limit(test_ip) is False, (
+            "check_agent_turn_rate_limit doit retourner False au-delà de 40/h"
+        )
+    finally:
+        with quote_service._rate_limit_lock:
+            quote_service._rate_limit.clear()
+            quote_service._rate_limit.update(original_quote)
+        with quote_service._agent_turn_rate_limit_lock:
+            quote_service._agent_turn_rate_limit.clear()
+            quote_service._agent_turn_rate_limit.update(original_turn)

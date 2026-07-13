@@ -464,16 +464,16 @@ class TestAgentTurnHappyPath:
         assert labels == ["sujet A", "sujet B"]
 
 
-# ─── agent_turn — garde-fou budget 7 tours ────────────────────────────────────
+# ─── agent_turn — garde-fou budget 10 tours (ADR-IQ-11) ───────────────────────
 
 
 class TestAgentTurnBudgetGuard:
-    def test_eighth_turn_rejected_even_if_client_retries(self, fake_client):
+    def test_eleventh_turn_rejected_even_if_client_retries(self, fake_client):
         sid = _submitted_session(fake_client)
-        # Simule 7 tours déjà joués directement en base (sans passer par
+        # Simule 10 tours déjà joués directement en base (sans passer par
         # l'agent — on isole le garde-fou du reste de la logique).
         fake_client.table("intake_sessions").update({
-            "agent_turns": 7, "state": "agent_active",
+            "agent_turns": 10, "state": "agent_active",
         }).eq("id", sid).execute()
 
         llm = _FakeLLM([])  # ne doit JAMAIS être appelé
@@ -482,10 +482,10 @@ class TestAgentTurnBudgetGuard:
         assert body["error_code"] == "AGENT_BUDGET_EXHAUSTED"
         assert llm.calls == []  # le LLM n'a pas été sollicité — vérifié en base d'abord
 
-    def test_seventh_turn_still_allowed(self, fake_client):
+    def test_tenth_turn_still_allowed(self, fake_client):
         sid = _submitted_session(fake_client)
         fake_client.table("intake_sessions").update({
-            "agent_turns": 6, "state": "agent_active",
+            "agent_turns": 9, "state": "agent_active",
         }).eq("id", sid).execute()
 
         llm = _FakeLLM([{
@@ -494,7 +494,7 @@ class TestAgentTurnBudgetGuard:
         }])
         status, body = svc.agent_turn(sid, "ok", client=fake_client, llm=llm)
         assert status == 200
-        assert body["data"]["agent_turns"] == 7
+        assert body["data"]["agent_turns"] == 10
 
 
 # ─── Endpoint Flask ──────────────────────────────────────────────────────────
@@ -529,7 +529,9 @@ class TestAgentTurnEndpoint:
 
     def test_post_agent_turn_rate_limited(self, client, monkeypatch):
         from app.api import intake as intake_api
-        monkeypatch.setattr(intake_api, "check_rate_limit", lambda _ip: False)
+        # ADR-IQ-11 — /agent/turn a son propre limiteur (40/h), distinct de
+        # check_rate_limit (5/h, resté sur /session et /api/quote).
+        monkeypatch.setattr(intake_api, "check_agent_turn_rate_limit", lambda _ip: False)
         resp = client.post("/api/intake/session/sess-1/agent/turn", json={"message": "Bonjour"})
         assert resp.status_code == 429
         assert resp.get_json()["error_code"] == "RATE_LIMITED"

@@ -21,7 +21,10 @@
       </div>
 
       <!-- ───────────── Card centrée (parcours 3 temps A1-A8) ───────────── -->
-      <section class="quote-card">
+      <!-- quote-card--wide (étape 4 uniquement) : l'écran Assistant a un
+           layout chat + brief qui a besoin de bien plus que 640px, sinon le
+           chat est écrasé (bug trouvé 2026-07-13, cf. ADR-IQ-11). -->
+      <section class="quote-card" :class="{ 'quote-card--wide': currentStep === 4 }">
         <!-- Stepper 3 temps — masqué pour le retour Cal.com (n'a jamais
              traversé ce formulaire, cf. calcomConfirmed). -->
         <ol
@@ -845,6 +848,12 @@ function onAgentClosed(payload) {
     padding: 32px 20px;
     border-radius: 20px;
   }
+}
+
+/* Étape 4 (Assistant, US-IQ-02) : layout chat + brief plus large que le
+   formulaire A1-A8 — s'étend jusqu'à quote-main (max-width: 1100px). */
+.quote-card--wide {
+  max-width: 960px;
 }
 
 /* ── Stepper 3 temps ─ */

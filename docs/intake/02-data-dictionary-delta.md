@@ -20,7 +20,7 @@ Une ligne par parcours de qualification démarré (même abandonné — mesure d
 | `route` | text | NULL, CHECK IN ('self_service','quote_48h','meeting') | Branche de sortie (étape C) |
 | `entry_door` | text | NOT NULL default 'standard', CHECK IN ('standard','aar') | Porte 1 ou porte 2 (« Testez-nous sur du connu ») |
 | `locale` | text | NOT NULL default 'fr' | fr / en / ar |
-| `agent_turns` | int | NOT NULL default 0, CHECK ≤ 7 | Compteur de tours de l'agent (budget) |
+| `agent_turns` | int | NOT NULL default 0, CHECK ≤ 10 | Compteur de tours de l'agent (budget, ADR-IQ-11) |
 | `created_at` | timestamptz | NOT NULL default now() | |
 | `completed_at` | timestamptz | NULL | |
 

@@ -2,9 +2,10 @@
   <!--
     IntakeAgentPanel (US-IQ-02 frontend) — écran Assistant inline (PAS un
     panneau coulissant, contrairement à ReportChatPanel dont les classes
-    CSS de base sont réutilisées). Bandeau IA permanent + chat + colonne
-    latérale (brief live + sujets verrouillés) + bouton skip, conforme au
-    prompt Stitch §10.2 (docs/intake/10-execution-prompts.md:83-104).
+    CSS de base sont réutilisées). Bandeau IA permanent + brief live/sujets
+    verrouillés en ligne compacte AU-DESSUS du chat (pas de colonne latérale
+    fixe, cf. ADR-IQ-11 — écrasait le chat) + bouton skip. Layout initial
+    conforme au prompt Stitch §10.2 (docs/intake/10-execution-prompts.md:83-104).
   -->
   <div class="iap-root">
     <div class="iap-banner">
@@ -13,6 +14,30 @@
     </div>
 
     <div class="iap-layout">
+      <!-- Brief au-dessus du chat (bug 2026-07-13, ADR-IQ-11) : une colonne
+           latérale fixe écrasait le chat dans la largeur de .quote-card.
+           En ligne compacte ici, le chat garde toute la largeur. -->
+      <aside class="iap-sidebar" aria-label="Brief">
+        <div class="iap-sidebar-block">
+          <h3 class="iap-sidebar-title">{{ $t('quote.step3.assistant.briefSummaryTitle') }}</h3>
+          <ul class="iap-brief-list">
+            <li v-for="item in briefSummaryItems" :key="item.label">
+              <strong>{{ item.label }}</strong> — {{ item.value }}
+            </li>
+          </ul>
+        </div>
+
+        <div v-if="lockedTopics.length > 0" class="iap-sidebar-block">
+          <h3 class="iap-sidebar-title">{{ $t('quote.step3.assistant.lockedTopicsTitle') }}</h3>
+          <ul class="iap-locked-list">
+            <li v-for="(topic, idx) in lockedTopics" :key="idx">
+              <span class="material-symbols-outlined iap-lock-icon" aria-hidden="true">lock</span>
+              {{ topic.topic_label }}
+            </li>
+          </ul>
+        </div>
+      </aside>
+
       <section class="iap-chat" aria-label="Assistant">
         <div ref="scrollEl" class="iap-messages">
           <div
@@ -67,27 +92,6 @@
           {{ $t('quote.step3.assistant.skipButton') }}
         </button>
       </section>
-
-      <aside class="iap-sidebar" aria-label="Brief">
-        <div class="iap-sidebar-block">
-          <h3 class="iap-sidebar-title">{{ $t('quote.step3.assistant.briefSummaryTitle') }}</h3>
-          <ul class="iap-brief-list">
-            <li v-for="item in briefSummaryItems" :key="item.label">
-              <strong>{{ item.label }}</strong> — {{ item.value }}
-            </li>
-          </ul>
-        </div>
-
-        <div v-if="lockedTopics.length > 0" class="iap-sidebar-block">
-          <h3 class="iap-sidebar-title">{{ $t('quote.step3.assistant.lockedTopicsTitle') }}</h3>
-          <ul class="iap-locked-list">
-            <li v-for="(topic, idx) in lockedTopics" :key="idx">
-              <span class="material-symbols-outlined iap-lock-icon" aria-hidden="true">lock</span>
-              {{ topic.topic_label }}
-            </li>
-          </ul>
-        </div>
-      </aside>
     </div>
   </div>
 </template>
@@ -241,14 +245,9 @@ onMounted(() => {
 }
 
 .iap-layout {
-  display: grid;
-  grid-template-columns: 1fr;
+  display: flex;
+  flex-direction: column;
   gap: var(--wi-space-md);
-}
-@media (min-width: 720px) {
-  .iap-layout {
-    grid-template-columns: 1fr 320px;
-  }
 }
 
 .iap-chat {
@@ -386,30 +385,35 @@ onMounted(() => {
 .iap-sidebar {
   display: flex;
   flex-direction: column;
-  gap: var(--wi-space-md);
+  gap: var(--wi-space-sm);
 }
 .iap-sidebar-block {
   border: 1px solid var(--wi-outline-variant);
   border-radius: var(--wi-radius-card);
-  padding: var(--wi-space-sm);
+  padding: 10px var(--wi-space-sm);
   background: var(--wi-surface);
 }
 .iap-sidebar-title {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--wi-on-surface-variant);
-  margin: 0 0 8px 0;
+  margin: 0 0 6px 0;
 }
+/* Ligne compacte (pas une colonne) : le brief déjà répondu ne doit pas
+   pousser en hauteur pour laisser toute la place au chat en dessous
+   (bug 2026-07-13, ADR-IQ-11). */
 .iap-brief-list,
 .iap-locked-list {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  flex-direction: row;
+  flex-wrap: wrap;
+  column-gap: 16px;
+  row-gap: 6px;
   font-size: 12px;
   color: var(--wi-on-surface);
 }

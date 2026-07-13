@@ -12,8 +12,13 @@
   * ``GET /api/intake/calcom-confirmed`` — capture le redirect de succès
     Cal.com et persiste ``calcom_booking_uid`` (US-IQ-04).
 
-Public, non authentifié — même limiteur de débit que ``/api/quote``
-(``quote_service.check_rate_limit``, partagé par IP).
+Public, non authentifié. ``/session`` partage le limiteur anti-spam de
+``/api/quote`` (``quote_service.check_rate_limit``, 5/h/IP — cohérent avec un
+démarrage de parcours). ``/agent/turn`` a son propre limiteur dédié
+(``quote_service.check_agent_turn_rate_limit``, 40/h/IP) — le partage
+initial avec le bucket de soumission épuisait un prospect réel après ~3
+questions dans le chat (bug trouvé 2026-07-13 par Amine en testant /devis
+en prod, cf. docs/intake/08-decisions-log.md ADR-IQ-11).
 """
 
 from __future__ import annotations
@@ -23,7 +28,7 @@ import logging
 from flask import Blueprint, jsonify, redirect, request
 
 from ..services import intake_service
-from ..services.quote_service import check_rate_limit
+from ..services.quote_service import check_agent_turn_rate_limit, check_rate_limit
 
 
 intake_bp = Blueprint("intake", __name__)
@@ -91,7 +96,7 @@ def post_agent_turn(session_id: str):
     US-IQ-02). Body JSON requis : ``{"message": "<texte du décideur>"}``."""
     try:
         client_ip = request.remote_addr or ""
-        if not check_rate_limit(client_ip):
+        if not check_agent_turn_rate_limit(client_ip):
             return jsonify({
                 "success": False,
                 "error_code": "RATE_LIMITED",

@@ -88,27 +88,54 @@ import re  # noqa: E402 — co-located with the regex it powers
 _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 # ─── Rate limiting ───────────────────────────────────────────────────────────
+#
+# Two independent buckets, both process-local in-memory ``client_ip →
+# list[ts]`` windows, sharing the same pruning logic via ``_check_bucket``:
+#
+#   - ``check_rate_limit`` (5/h) — anti-spam on *submissions* (quote form,
+#     intake session creation). Tight on purpose: a legitimate prospect
+#     submits at most a handful of times.
+#   - ``check_agent_turn_rate_limit`` (40/h) — the US-IQ-02 qualification
+#     chat, where a single legitimate conversation routinely needs 8-10+
+#     back-and-forth turns. Sharing the 5/h submission bucket with chat
+#     turns exhausted real users after ~3 questions (bug found 2026-07-13
+#     by Amine testing /devis in prod) — separate bucket, higher ceiling.
 
 _RATE_LIMIT_MAX_PER_HOUR = 5
 _RATE_LIMIT_WINDOW_SECONDS = 3600
 
-# Process-local rate-limit window. Keys: client IP. Values: list of unix
-# timestamps of recent submissions. Pruned on each check.
+_AGENT_TURN_RATE_LIMIT_MAX_PER_HOUR = 40
+_AGENT_TURN_RATE_LIMIT_WINDOW_SECONDS = 3600
+
+# Process-local rate-limit windows. Keys: client IP. Values: list of unix
+# timestamps of recent hits. Pruned on each check.
 _rate_limit: Dict[str, List[float]] = {}
 _rate_limit_lock = Lock()
 
+_agent_turn_rate_limit: Dict[str, List[float]] = {}
+_agent_turn_rate_limit_lock = Lock()
+
 
 def _reset_rate_limit_for_tests() -> None:
-    """Test helper — clears the in-memory rate-limit dict so each test
+    """Test helper — clears the in-memory rate-limit dicts so each test
     starts from zero. Not exported for production callers.
     """
     with _rate_limit_lock:
         _rate_limit.clear()
+    with _agent_turn_rate_limit_lock:
+        _agent_turn_rate_limit.clear()
 
 
-def check_rate_limit(client_ip: Optional[str]) -> bool:
-    """Return ``True`` when the caller is within quota, ``False`` if the
-    request should be 429'd.
+def _check_bucket(
+    client_ip: Optional[str],
+    *,
+    bucket_dict: Dict[str, List[float]],
+    lock: Lock,
+    max_per_window: int,
+    window_seconds: int,
+) -> bool:
+    """Shared rolling-window check: ``True`` if the caller is within quota,
+    ``False`` if the request should be 429'd.
 
     A missing / empty ``client_ip`` (e.g. when ``request.remote_addr`` is
     ``None``) is treated as a single shared bucket keyed on ``"_unknown"``
@@ -116,17 +143,41 @@ def check_rate_limit(client_ip: Optional[str]) -> bool:
     """
     key = (client_ip or "").strip() or "_unknown"
     now = time.time()
-    with _rate_limit_lock:
-        bucket = _rate_limit.get(key, [])
-        # Prune entries outside the rolling window.
-        cutoff = now - _RATE_LIMIT_WINDOW_SECONDS
+    with lock:
+        bucket = bucket_dict.get(key, [])
+        cutoff = now - window_seconds
         bucket = [ts for ts in bucket if ts > cutoff]
-        if len(bucket) >= _RATE_LIMIT_MAX_PER_HOUR:
-            _rate_limit[key] = bucket
+        if len(bucket) >= max_per_window:
+            bucket_dict[key] = bucket
             return False
         bucket.append(now)
-        _rate_limit[key] = bucket
+        bucket_dict[key] = bucket
         return True
+
+
+def check_rate_limit(client_ip: Optional[str]) -> bool:
+    """Anti-spam bucket for submissions (quote form, intake session start) —
+    5 per rolling hour per IP. See module docstring."""
+    return _check_bucket(
+        client_ip,
+        bucket_dict=_rate_limit,
+        lock=_rate_limit_lock,
+        max_per_window=_RATE_LIMIT_MAX_PER_HOUR,
+        window_seconds=_RATE_LIMIT_WINDOW_SECONDS,
+    )
+
+
+def check_agent_turn_rate_limit(client_ip: Optional[str]) -> bool:
+    """Chat-turn bucket for the US-IQ-02 qualification agent — 40 per
+    rolling hour per IP, independent from ``check_rate_limit``. See module
+    docstring."""
+    return _check_bucket(
+        client_ip,
+        bucket_dict=_agent_turn_rate_limit,
+        lock=_agent_turn_rate_limit_lock,
+        max_per_window=_AGENT_TURN_RATE_LIMIT_MAX_PER_HOUR,
+        window_seconds=_AGENT_TURN_RATE_LIMIT_WINDOW_SECONDS,
+    )
 
 
 # ─── Path helpers ────────────────────────────────────────────────────────────

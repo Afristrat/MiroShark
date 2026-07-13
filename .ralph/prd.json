@@ -4683,7 +4683,7 @@
       "id": "US-IQ-02",
       "chantier": "V2-B-intake",
       "title": "Agent conversationnel de qualification (étape B)",
-      "description": "Endpoint backend + UI chat post-formulaire (docs/intake/01 étape B). System prompt docs/intake/10-execution-prompts.md §10.1, via llm_client.py/gateway LiteLLM (ADR-004). Budget 7 tours (compteur serveur), disclosure IA au 1er message (AI Act art. 50), tri confidentiel (flags sans contenu, ADR-IQ-04), production des agent_insights. Transcript persisté tour par tour, jamais perdu (ADR-IQ-07).",
+      "description": "Endpoint backend + UI chat post-formulaire (docs/intake/01 étape B). System prompt docs/intake/10-execution-prompts.md §10.1, via llm_client.py/gateway LiteLLM (ADR-004). Budget 10 tours (compteur serveur, ADR-IQ-11 — relevé de 7, sourcing légal 'AI Act art. 50' de la version précédente de ce champ jamais retrouvé, cf. ADR-IQ-11), disclosure IA au 1er message uniquement (règle produit RÈGLE 0 du prompt), tri confidentiel (flags sans contenu, ADR-IQ-04), production des agent_insights. Transcript persisté tour par tour, jamais perdu (ADR-IQ-07).",
       "acceptanceCriteria": [
         "Endpoint POST /api/intake/session/<id>/agent/turn appelle llm_client.py exclusivement ; modèle lu depuis env INTAKE_LLM_MODEL (défaut LLM_MODEL_NAME) — aucun nom de modèle en dur (ADR-IQ-06)",
         "System prompt conforme à docs/intake/10-execution-prompts.md §10.1 intégré tel quel",
