@@ -29,7 +29,7 @@ import json
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
-from urllib.parse import urlencode
+from urllib.parse import quote_plus, urlencode
 
 import jsonschema
 import requests
@@ -1302,7 +1302,7 @@ def _finalize_session(
         session_for_email["route"] = route
         _send_intake_confirmation(session_for_email, client=client)
 
-    _send_admin_notification(session, brief, route, data.get("calcom_link"), client=client)
+    _send_admin_notification(session, brief, route, client=client)
 
     return data
 
@@ -1619,7 +1619,6 @@ def _send_admin_notification(
     session: Dict[str, Any],
     brief: Dict[str, Any],
     route: str,
-    calcom_link: Optional[str],
     *,
     client: Any,
 ) -> None:
@@ -1629,7 +1628,13 @@ def _send_admin_notification(
     JAMAIS faire échouer ``complete_routing``. Seul canal de notification
     admin pour le flux `/devis` — l'ancien ``_send_email`` SMTP de
     ``quote_service.py`` n'est jamais appelé par ce flux et sa config
-    (``EMAIL_SMTP_HOST``) n'existe pas sur Coolify (constat 2026-07-14)."""
+    (``EMAIL_SMTP_HOST``) n'existe pas sur Coolify (constat 2026-07-14).
+
+    Le corps NE contient PAS le lien de réservation Cal.com (ADR-IQ-15) :
+    ce lien est destiné au CLIENT (c'est lui qui choisit son créneau), le
+    mettre dans la notif admin laissait croire à Amine que c'était à lui de
+    réserver. À la place, un lien profond vers la fiche de la demande dans
+    la console admin (``/admin/quotes?quote_id=…``)."""
     notify_email = Config.INTAKE_ESCALATION_NOTIFY_EMAIL
     if not notify_email:
         return
@@ -1646,10 +1651,10 @@ def _send_admin_notification(
         company = html.escape(str(payload.get("organization") or payload.get("company") or "—"))
         email = html.escape(str(payload.get("email") or "—"))
         route_safe = html.escape(route)
-        calcom_html = (
-            f"<p><strong>Lien Cal.com :</strong> {html.escape(calcom_link)}</p>"
-            if calcom_link else ""
-        )
+        admin_html = ""
+        if quote_id:
+            admin_url = f"https://bassira.ma/admin/quotes?quote_id={quote_plus(quote_id)}"
+            admin_html = f'<p><a href="{html.escape(admin_url)}">Voir la demande dans la console admin</a></p>'
         send_email(
             notify_email,
             f"[Bassira] Nouvelle demande ({route_safe}) — {full_name}",
@@ -1657,8 +1662,8 @@ def _send_admin_notification(
                 f"<p><strong>Décision :</strong> {decision}</p>"
                 f"<p><strong>Contact :</strong> {full_name} — {company} — {email}</p>"
                 f"<p><strong>Route :</strong> {route_safe}</p>"
-                f"{calcom_html}"
                 f"<p><strong>Quote ID :</strong> {html.escape(quote_id or '—')}</p>"
+                f"{admin_html}"
             ),
         )
     except Exception as exc:  # noqa: BLE001 — jamais casser complete_routing pour une notif

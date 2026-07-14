@@ -658,10 +658,11 @@ class TestCompleteRouting:
         assert calls[-1][0] == "amine@ai-mpower.com"
         assert "karim@banquepop.ma" in calls[-1][2]  # cf. _valid_payload
 
-    def test_admin_notification_sent_for_meeting_route_with_calcom_link(self, fake_client, monkeypatch):
-        """Contrairement à l'email client (jamais envoyé pour meeting à la
-        clôture, cf. ADR-IQ-10bis), la notif admin part bien pour TOUTES
-        les routes, y compris meeting — avec le lien Cal.com dans le corps."""
+    def test_admin_notification_for_meeting_has_admin_link_not_calcom(self, fake_client, monkeypatch):
+        """ADR-IQ-15 : la notif admin part pour TOUTES les routes (y compris
+        meeting), mais elle NE contient PAS le lien de réservation Cal.com
+        (destiné au client) — à la place, un lien profond vers la fiche de la
+        demande dans la console admin (/admin/quotes?quote_id=…)."""
         calls = []
         monkeypatch.setattr(svc, "send_email", lambda *a, **kw: calls.append(a) or True)
         monkeypatch.setattr(svc.Config, "INTAKE_ESCALATION_NOTIFY_EMAIL", "amine@ai-mpower.com")
@@ -671,7 +672,9 @@ class TestCompleteRouting:
         assert body["data"]["route"] == "meeting"
         assert len(calls) == 1
         assert calls[0][0] == "amine@ai-mpower.com"
-        assert "agenda.ai-mpower.com" in calls[0][2]
+        html_body = calls[0][2]
+        assert "agenda.ai-mpower.com" not in html_body  # pas de lien de réservation client
+        assert "/admin/quotes?quote_id=" in html_body    # lien profond vers la fiche demande
 
     def test_admin_notification_failure_never_breaks_routing(self, fake_client, monkeypatch):
         """Best-effort total (même contrat que _log_escalation/_send_intake_confirmation,

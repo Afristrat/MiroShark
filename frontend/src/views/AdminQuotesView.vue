@@ -221,6 +221,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import {
   fetchAdminQuotes,
   fetchAdminQuoteDetail,
@@ -229,6 +230,8 @@ import {
   sendAdminQuotePaymentLink,
   sendAdminQuoteDelivered,
 } from '../api/client'
+
+const route = useRoute()
 
 const allStatuses = [
   'received', 'reviewing', 'quoted', 'declined', 'paid', 'in_progress', 'delivered',
@@ -418,8 +421,17 @@ function truncate(s, max) {
   return s.slice(0, max - 1).trimEnd() + '…'
 }
 
-onMounted(() => {
-  loadQuotes()
+onMounted(async () => {
+  await loadQuotes()
+  // Deep-link depuis la notif admin (ADR-IQ-15) : /admin/quotes?quote_id=…
+  // ouvre directement la fiche de la demande. openModal re-fetch le détail,
+  // donc un objet minimal { quote_id } suffit même si le devis n'est pas
+  // dans la première page chargée.
+  const deepLinkId = route.query.quote_id
+  if (deepLinkId) {
+    const match = quotes.value.find(q => q.quote_id === deepLinkId)
+    openModal(match || { quote_id: deepLinkId })
+  }
 })
 </script>
 

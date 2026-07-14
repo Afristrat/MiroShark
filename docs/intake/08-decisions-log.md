@@ -381,3 +381,31 @@ vérifiée pendant cette session — investigation interrompue par un incident d
 **Signal de réexamen** : si Amine signale de nouveau une absence de notification admin après
 avoir configuré `INTAKE_ESCALATION_NOTIFY_EMAIL` sur Coolify — vérifier d'abord la valeur de
 cette variable (preuve système, pas supposition) avant de re-suspecter le code.
+
+## ADR-IQ-15 — Notif admin : lien vers la fiche demande admin, jamais le lien de réservation Cal.com (2026-07-14, retour test réel Amine)
+
+**Quoi** : `_send_admin_notification` (`intake_service.py`) ne reçoit plus `calcom_link` et
+n'insère plus JAMAIS le lien de réservation Cal.com dans le corps de la notif admin. À la
+place, un lien profond vers la fiche de la demande dans la console super-admin :
+`https://bassira.ma/admin/quotes?quote_id={quote_id}` (URL-encodé). Côté frontend,
+`AdminQuotesView.vue` lit `route.query.quote_id` au montage et ouvre directement la modal de
+la demande (`openModal` re-fetch le détail, donc un objet `{quote_id}` minimal suffit même si
+le devis n'est pas dans la première page). Domaine `bassira.ma` (ADR-013).
+
+**Pourquoi** : test réel du 2026-07-14 — Amine reçoit la notif admin (ADR-IQ-14 OK) mais son
+corps contient le **lien de réservation Cal.com**, ce qui lui laisse croire que c'est à LUI,
+l'admin, de choisir le créneau. Or ce lien est destiné au CLIENT (c'est lui qui réserve depuis
+l'écran de clôture `/devis`). Mettre un lien de booking dans la notif admin était un défaut de
+conception d'ADR-IQ-14. Ce dont l'admin a besoin : accéder vite à la fiche complète de la
+demande (brief, contact, statut, actions devis) — d'où le lien profond vers `/admin/quotes`.
+La notification que le client a bien réservé viendra, elle, de Cal.com nativement (à l'hôte).
+
+**Alternatives rejetées** :
+- Lien vers la LISTE `/admin/quotes` (sans `?quote_id`) — rejetée : un clic de plus pour
+  retrouver la bonne demande, alors que le deep-link coûte ~8 lignes de frontend.
+- Garder le lien Cal.com « pour info » — rejetée : c'est précisément la source de la confusion
+  signalée par Amine ; un lien de booking n'a aucun sens pour l'admin.
+
+**Signal de réexamen** : si une future fiche admin dédiée aux sessions Intake (transcript,
+insights, escalades) est créée, faire pointer le deep-link vers elle plutôt que vers la fiche
+devis générique `/admin/quotes`.
