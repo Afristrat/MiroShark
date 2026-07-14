@@ -39,6 +39,7 @@ from ..config import Config
 from ..utils.llm_client import create_intake_llm_client
 from ..utils.logger import get_logger
 from . import quote_ownership as qo
+from .client_account_service import ensure_client_account
 from .email_service import send_email
 
 logger = get_logger("miroshark.intake")
@@ -1792,5 +1793,18 @@ def confirm_calcom_booking(
     updated_session = dict(session)
     updated_session["calcom_booking_uid"] = booking_uid
     _send_intake_confirmation(updated_session, client=cli)
+
+    # Lot B (compte client) — création best-effort du compte à l'engagement
+    # réel (réservation confirmée). ensure_client_account ne lève jamais.
+    quote_id = session.get("quote_id")
+    payload = qo.get_quote_payload_from_supabase(quote_id, client=cli) if quote_id else None
+    ensure_client_account(
+        verified_email,
+        (payload or {}).get("full_name") or "",
+        (payload or {}).get("organization") or (payload or {}).get("company"),
+        source="calcom_booking",
+        locale=session.get("locale") or "fr",
+        client=cli,
+    )
 
     return 200, {"success": True, "data": {"session_id": session_id, "calcom_booking_uid": booking_uid}}

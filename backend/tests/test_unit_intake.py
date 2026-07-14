@@ -927,6 +927,33 @@ class TestConfirmCalcomBooking:
         session = svc.get_session(sid, client=fake_client)
         assert session.get("calcom_booking_uid") is None
 
+    # ─── Lot B (compte client) — déclencheur ensure_client_account ───────────
+
+    def test_confirmed_booking_calls_ensure_client_account(self, fake_client, monkeypatch):
+        calls = []
+        monkeypatch.setattr(
+            svc, "ensure_client_account",
+            lambda email, full_name, org_name, *, source, locale="fr", client=None: (
+                calls.append({
+                    "email": email, "full_name": full_name, "org_name": org_name,
+                    "source": source, "locale": locale,
+                }) or {"org_id": "org-x", "user_id": "user-x", "created": True}
+            ),
+        )
+        sid = svc.start_session(client=fake_client)["session_id"]
+        svc.submit_form(sid, _valid_payload(brief_overrides={"governance": "conseil_administration"}), client=fake_client)
+        svc.complete_routing(sid, client=fake_client)
+        self._mock_calcom_booking(monkeypatch)
+
+        status, _body = svc.confirm_calcom_booking(sid, "cal-booking-uid-xyz", client=fake_client)
+
+        assert status == 200
+        assert len(calls) == 1
+        assert calls[0]["email"] == "karim@banquepop.ma"
+        assert calls[0]["full_name"] == "Karim Bensaid"
+        assert calls[0]["org_name"] == "Banque Populaire MA"
+        assert calls[0]["source"] == "calcom_booking"
+
 
 class TestBuildCalcomBookingLink:
     def test_includes_locked_email_and_name_when_provided(self):
