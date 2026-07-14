@@ -1302,6 +1302,8 @@ def _finalize_session(
         session_for_email["route"] = route
         _send_intake_confirmation(session_for_email, client=client)
 
+    _send_admin_notification(session, brief, route, data.get("calcom_link"), client=client)
+
     return data
 
 
@@ -1611,6 +1613,56 @@ def _send_intake_confirmation(session: Dict[str, Any], *, client: Any) -> None:
         )
     except Exception as exc:  # noqa: BLE001 — jamais casser complete_routing pour un email
         logger.error("_send_intake_confirmation: send failed for quote %s: %s", quote_id, exc.__class__.__name__)
+
+
+def _send_admin_notification(
+    session: Dict[str, Any],
+    brief: Dict[str, Any],
+    route: str,
+    calcom_link: Optional[str],
+    *,
+    client: Any,
+) -> None:
+    """Notifie Amine (``INTAKE_ESCALATION_NOTIFY_EMAIL`` — même canal que
+    ``_log_escalation``, réutilisé plutôt que dupliqué) qu'une session
+    Intake vient de clôturer (ADR-IQ-14). Best-effort total : ne doit
+    JAMAIS faire échouer ``complete_routing``. Seul canal de notification
+    admin pour le flux `/devis` — l'ancien ``_send_email`` SMTP de
+    ``quote_service.py`` n'est jamais appelé par ce flux et sa config
+    (``EMAIL_SMTP_HOST``) n'existe pas sur Coolify (constat 2026-07-14)."""
+    notify_email = Config.INTAKE_ESCALATION_NOTIFY_EMAIL
+    if not notify_email:
+        return
+    quote_id = session.get("quote_id")
+    payload: Dict[str, Any] = {}
+    if quote_id:
+        try:
+            payload = qo.get_quote_payload_from_supabase(quote_id, client=client) or {}
+        except Exception as exc:  # noqa: BLE001
+            logger.error("_send_admin_notification: payload lookup failed for %s: %s", quote_id, exc.__class__.__name__)
+    try:
+        decision = html.escape(str(brief.get("decision") or "—")[:200])
+        full_name = html.escape(str(payload.get("full_name") or "—"))
+        company = html.escape(str(payload.get("organization") or payload.get("company") or "—"))
+        email = html.escape(str(payload.get("email") or "—"))
+        route_safe = html.escape(route)
+        calcom_html = (
+            f"<p><strong>Lien Cal.com :</strong> {html.escape(calcom_link)}</p>"
+            if calcom_link else ""
+        )
+        send_email(
+            notify_email,
+            f"[Bassira] Nouvelle demande ({route_safe}) — {full_name}",
+            (
+                f"<p><strong>Décision :</strong> {decision}</p>"
+                f"<p><strong>Contact :</strong> {full_name} — {company} — {email}</p>"
+                f"<p><strong>Route :</strong> {route_safe}</p>"
+                f"{calcom_html}"
+                f"<p><strong>Quote ID :</strong> {html.escape(quote_id or '—')}</p>"
+            ),
+        )
+    except Exception as exc:  # noqa: BLE001 — jamais casser complete_routing pour une notif
+        logger.error("_send_admin_notification: send failed for session %s: %s", session.get("id"), exc.__class__.__name__)
 
 
 def _find_unclaimed_meeting_session_by_email(email: str, *, client: Any) -> Optional[str]:

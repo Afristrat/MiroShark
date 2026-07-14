@@ -343,3 +343,41 @@ dès les 3 premiers messages puis relances génériques) + critère automatique 
 **Signal de réexamen** : rejouer `test_intake_agent_corpus.py` (scénario
 `profondeur_realiste_fr`, critère 8) après tout futur ajustement du prompt agent — script
 hand-run, nécessite `LLM_API_KEY` réel, ne tourne pas dans la suite pytest bloquante.
+
+## ADR-IQ-14 — Notification admin à la clôture : canal Resend unifié, pas le SMTP legacy mort (2026-07-14, constat post-test réel `/devis`)
+
+**Quoi** : `_finalize_session` (`intake_service.py`) appelle désormais
+`_send_admin_notification` pour TOUTES les routes (self_service, quote_48h, meeting), best-
+effort, via le canal `email_service.send_email` (Resend) déjà utilisé par `_log_escalation` —
+destinataire réutilisé : `Config.INTAKE_ESCALATION_NOTIFY_EMAIL`. Contenu : décision, contact
+(nom/organisation/email), route décidée, lien Cal.com si meeting, quote_id.
+
+**Pourquoi** : test end-to-end réel du 2026-07-13/14 sur `/devis` (session de validation
+ADR-IQ-12/13) — Amine n'a reçu AUCUN email admin, ni pour la demande ni pour le RDV.
+Diagnostic par preuve système : le flux `/devis` (agent IA, `intake_service.py`) n'appelle
+JAMAIS `quote_service.submit_quote` — donc jamais `quote_service._send_email` (l'unique
+notification admin existante, SMTP brut legacy). Et même si ce chemin avait été emprunté,
+`EMAIL_SMTP_HOST` n'existe pas dans les variables d'environnement Coolify de l'app miroshark
+(vérifié via l'API Coolify) — ce canal aurait échoué silencieusement (best-effort, log warning,
+return). Deux causes cumulées : mauvais flux ET config absente. Plutôt que de réparer le canal
+SMTP mort (double dépendance email dans le même backend), réutilisation du canal Resend déjà
+opérationnel (`RESEND_API_KEY` configurée, prouvé par les emails clients reçus) et du
+destinataire déjà défini en config (`INTAKE_ESCALATION_NOTIFY_EMAIL`, jusqu'ici jamais peuplé
+non plus — Amine doit le configurer sur Coolify pour activer ce canal).
+
+**Alternatives rejetées** :
+- Réparer `quote_service._send_email` (poser `EMAIL_SMTP_HOST` sur Coolify) — rejetée : ce
+  chemin n'est de toute façon jamais atteint par `/devis`, et maintiendrait deux
+  implémentations d'envoi d'email dans le même backend (dette).
+- Nouvelle variable d'environnement dédiée (`INTAKE_ADMIN_NOTIFY_EMAIL`) — rejetée : doublon
+  fonctionnel avec `INTAKE_ESCALATION_NOTIFY_EMAIL` (même destinataire réel — Amine), pour
+  un seul barreau Ponytail (réutiliser l'existant) plutôt que deux variables à synchroniser.
+
+**Hors scope de cette ADR** : la confirmation NATIVE Cal.com (email avec lien Google Meet,
+envoyée par l'instance Cal.com self-hosted elle-même à l'hôte et à l'attendee) n'a pas pu être
+vérifiée pendant cette session — investigation interrompue par un incident de sécurité
+(rotation `CALCOM_API_KEY`, cf. mémoire `incident_calcom_key_leak_20260714`). À reprendre.
+
+**Signal de réexamen** : si Amine signale de nouveau une absence de notification admin après
+avoir configuré `INTAKE_ESCALATION_NOTIFY_EMAIL` sur Coolify — vérifier d'abord la valeur de
+cette variable (preuve système, pas supposition) avant de re-suspecter le code.

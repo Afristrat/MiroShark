@@ -624,6 +624,81 @@ class TestCompleteRouting:
         assert status == 200
         assert calls == []
 
+    def test_admin_notification_skipped_when_not_configured(self, fake_client, monkeypatch):
+        """Par défaut (INTAKE_ESCALATION_NOTIFY_EMAIL vide), aucune notif
+        admin n'est envoyée — comportement inchangé tant qu'Amine n'a pas
+        configuré l'adresse sur Coolify (ADR-IQ-14)."""
+        calls = []
+        monkeypatch.setattr(svc, "send_email", lambda *a, **kw: calls.append(a) or True)
+        monkeypatch.setattr(svc.Config, "INTAKE_ESCALATION_NOTIFY_EMAIL", "")
+        sid = self._session_ready(fake_client, brief_overrides={"governance": "solo"})
+        status, _body = svc.complete_routing(sid, client=fake_client)
+        assert status == 200
+        assert calls == []
+
+    def test_admin_notification_sent_on_completion_for_self_service(self, fake_client, monkeypatch):
+        """ADR-IQ-14 : notification admin best-effort à la clôture, sur le
+        même canal Resend que _log_escalation (INTAKE_ESCALATION_NOTIFY_EMAIL),
+        pour toutes les routes — remplace le canal SMTP legacy jamais
+        configuré sur Coolify."""
+        calls = []
+        monkeypatch.setattr(svc, "send_email", lambda *a, **kw: calls.append(a) or True)
+        monkeypatch.setattr(svc.Config, "INTAKE_ESCALATION_NOTIFY_EMAIL", "amine@ai-mpower.com")
+        sid = self._session_ready(
+            fake_client,
+            brief_overrides={
+                "governance": "solo",
+                "deadline": {"date": _FAR_DATE, "overdue": False},
+                "stakes": {"budget_bracket": "lt_1m", "exposure": "interne"},
+            },
+        )
+        status, body = svc.complete_routing(sid, client=fake_client)
+        assert status == 200
+        assert body["data"]["route"] == "self_service"
+        assert calls[-1][0] == "amine@ai-mpower.com"
+        assert "karim@banquepop.ma" in calls[-1][2]  # cf. _valid_payload
+
+    def test_admin_notification_sent_for_meeting_route_with_calcom_link(self, fake_client, monkeypatch):
+        """Contrairement à l'email client (jamais envoyé pour meeting à la
+        clôture, cf. ADR-IQ-10bis), la notif admin part bien pour TOUTES
+        les routes, y compris meeting — avec le lien Cal.com dans le corps."""
+        calls = []
+        monkeypatch.setattr(svc, "send_email", lambda *a, **kw: calls.append(a) or True)
+        monkeypatch.setattr(svc.Config, "INTAKE_ESCALATION_NOTIFY_EMAIL", "amine@ai-mpower.com")
+        sid = self._session_ready(fake_client, brief_overrides={"governance": "conseil_administration"})
+        status, body = svc.complete_routing(sid, client=fake_client)
+        assert status == 200
+        assert body["data"]["route"] == "meeting"
+        assert len(calls) == 1
+        assert calls[0][0] == "amine@ai-mpower.com"
+        assert "agenda.ai-mpower.com" in calls[0][2]
+
+    def test_admin_notification_failure_never_breaks_routing(self, fake_client, monkeypatch):
+        """Best-effort total (même contrat que _log_escalation/_send_intake_confirmation,
+        ADR-IQ-08) — une panne d'email admin ne doit JAMAIS faire échouer complete_routing."""
+        monkeypatch.setattr(svc, "send_email", lambda *a, **kw: (_ for _ in ()).throw(RuntimeError("resend down")))
+        monkeypatch.setattr(svc.Config, "INTAKE_ESCALATION_NOTIFY_EMAIL", "amine@ai-mpower.com")
+        sid = self._session_ready(fake_client, brief_overrides={"governance": "solo"})
+        status, body = svc.complete_routing(sid, client=fake_client)
+        assert status == 200
+        assert body["success"] is True
+
+    def test_admin_notification_html_escapes_decision(self, fake_client, monkeypatch):
+        """Le brief est une entrée non fiable — il doit être échappé avant
+        injection dans le corps HTML de la notif admin."""
+        calls = []
+        monkeypatch.setattr(svc, "send_email", lambda *a, **kw: calls.append(a) or True)
+        monkeypatch.setattr(svc.Config, "INTAKE_ESCALATION_NOTIFY_EMAIL", "amine@ai-mpower.com")
+        sid = self._session_ready(fake_client, brief_overrides={
+            "governance": "solo",
+            "decision": "<script>alert(1)</script> " + "x" * 20,
+        })
+        svc.complete_routing(sid, client=fake_client)
+        assert len(calls) == 1
+        html_body = calls[0][2]
+        assert "<script>alert(1)</script>" not in html_body
+        assert "&lt;script&gt;" in html_body
+
 
 class TestFinalizeSessionSelfService:
     def test_complete_routing_returns_package_recommendation_for_self_service(self, fake_client, monkeypatch):
