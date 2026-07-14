@@ -2398,6 +2398,21 @@
         "published": "Public publications",
         "brierAvg": "Average Brier (private)"
       },
+      "quotes": {
+        "title": "My requests",
+        "statusLabels": {
+          "received": "Quote received",
+          "reviewing": "Under review",
+          "quoted": "Quote sent",
+          "declined": "Declined",
+          "paid": "Paid",
+          "in_progress": "In progress",
+          "delivered": "Delivered"
+        },
+        "cta": {
+          "viewReport": "View report →"
+        }
+      },
       "table": {
         "id": "Identifier",
         "package": "Package",

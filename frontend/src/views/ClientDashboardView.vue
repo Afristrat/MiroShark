@@ -80,6 +80,31 @@
         </article>
       </section>
 
+      <!-- ── Mes demandes (Lot B, US-B5) ── -->
+      <section v-if="quotes.length > 0" class="dash-quotes" aria-label="Mes demandes">
+        <h2 class="dash-section-title">{{ $t('client.dashboard.quotes.title') }}</h2>
+        <div class="dash-quotes-list">
+          <article v-for="q in quotes" :key="q.quote_id" class="dash-quote-card">
+            <div class="dash-quote-info">
+              <div class="dash-quote-package">{{ q.package_id || '—' }}</div>
+              <div class="dash-quote-meta">{{ formatDate(q.created_at) }} · {{ q.quote_id }}</div>
+            </div>
+            <div class="dash-quote-actions">
+              <span class="dash-quote-status" :data-status="q.status">
+                {{ quoteStatusLabel(q.status) }}
+              </span>
+              <a
+                v-if="q.status === 'delivered'"
+                :href="`/report/${q.quote_id}`"
+                class="dash-quote-cta dash-quote-cta--primary"
+              >
+                {{ $t('client.dashboard.quotes.cta.viewReport') }}
+              </a>
+            </div>
+          </article>
+        </div>
+      </section>
+
       <!-- ── Toolbar : commande nouvelle analyse + (US-098) self-service ── -->
       <div v-if="orgs.length > 0" class="dash-toolbar">
         <h2 class="dash-section-title">{{ $t('client.dashboard.simulationsTitle') }}</h2>
@@ -295,6 +320,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import {
   listClientSimulations,
+  listClientQuotes,
   markOutcome,
   publishSimulation
 } from '../api/client'
@@ -306,6 +332,7 @@ const auth = useAuthStore()
 const loading = ref(false)
 const errorMessage = ref('')
 const simulations = ref([])
+const quotes = ref([])
 const publishingId = ref('')
 
 // ── Modal outcome ─────────────────────────────────────────────────
@@ -421,6 +448,23 @@ async function fetchSimulations() {
   }
 }
 
+async function fetchQuotes() {
+  try {
+    const res = await listClientQuotes()
+    const payload = res?.data || res
+    quotes.value = Array.isArray(payload?.quotes) ? payload.quotes : []
+  } catch (_err) {
+    // Best-effort : une section en échec n'empêche pas le reste du dashboard.
+    quotes.value = []
+  }
+}
+
+function quoteStatusLabel(status) {
+  const key = `client.dashboard.quotes.statusLabels.${status || 'received'}`
+  const v = t(key)
+  return v && v !== key ? v : status
+}
+
 async function togglePublish(sim) {
   if (!canWrite.value) return
   publishingId.value = sim.simulation_id
@@ -494,7 +538,7 @@ async function onLogout() {
 async function onChangeOrg(orgId) {
   if (!orgId || orgId === auth.currentOrgId) return
   auth.setCurrentOrg(orgId)
-  await fetchSimulations()
+  await Promise.all([fetchSimulations(), fetchQuotes()])
 }
 
 onMounted(async () => {
@@ -508,7 +552,7 @@ onMounted(async () => {
     }
   }
   if (auth.orgs.length > 0) {
-    await fetchSimulations()
+    await Promise.all([fetchSimulations(), fetchQuotes()])
   }
 })
 </script>
@@ -754,6 +798,79 @@ onMounted(async () => {
   font-weight: 600;
   line-height: 1;
   color: var(--wi-primary);
+}
+
+/* ── Mes demandes (Lot B) ────────────────────────────── */
+.dash-quotes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wi-space-sm);
+  margin-block-start: var(--wi-space-sm);
+}
+
+.dash-quotes-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wi-space-xs);
+}
+
+.dash-quote-card {
+  background: var(--wi-surface);
+  border: 1px solid var(--wi-outline-variant);
+  border-radius: var(--wi-radius-card);
+  padding: var(--wi-space-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--wi-space-sm);
+  box-shadow: var(--wi-shadow-sm);
+}
+
+.dash-quote-package {
+  font-weight: 600;
+  color: var(--wi-on-surface);
+}
+
+.dash-quote-meta {
+  font-size: var(--wi-label-sm);
+  color: var(--wi-on-surface-variant);
+  margin-block-start: 2px;
+}
+
+.dash-quote-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--wi-space-sm);
+}
+
+.dash-quote-status {
+  font-size: var(--wi-label-sm);
+  font-weight: var(--wi-label-sm-weight);
+  padding: 4px 12px;
+  border-radius: var(--wi-radius-pill);
+  background: var(--wi-surface-container);
+  color: var(--wi-on-surface-variant);
+}
+
+.dash-quote-status[data-status='delivered'],
+.dash-quote-status[data-status='paid'] {
+  background: var(--wi-secondary-container);
+  color: var(--wi-secondary);
+}
+
+.dash-quote-cta--primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--wi-primary);
+  color: var(--wi-on-primary);
+  font-family: var(--wi-font-heading);
+  font-size: var(--wi-label-sm);
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: var(--wi-radius-pill);
+  padding: 8px 16px;
 }
 
 /* ── Toolbar ─────────────────────────────────────────── */

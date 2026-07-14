@@ -96,6 +96,11 @@ export function listClientSimulations(params = {}) {
   return client.get('/api/client/simulations', { params })
 }
 
+/** GET /api/client/quotes — liste les devis de l'org courante (Lot B, US-B4). */
+export function listClientQuotes(params = {}) {
+  return client.get('/api/client/quotes', { params })
+}
+
 /** POST /api/client/simulations — crée une simulation (commande). */
 export function createClientSimulation(payload) {
   return client.post('/api/client/simulations', payload)

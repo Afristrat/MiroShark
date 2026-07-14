@@ -2398,6 +2398,21 @@
         "published": "Publications publiques",
         "brierAvg": "Brier moyen (privé)"
       },
+      "quotes": {
+        "title": "Mes demandes",
+        "statusLabels": {
+          "received": "Devis reçu",
+          "reviewing": "En cours d'analyse",
+          "quoted": "Devis envoyé",
+          "declined": "Refusée",
+          "paid": "Payée",
+          "in_progress": "En cours",
+          "delivered": "Livré"
+        },
+        "cta": {
+          "viewReport": "Voir le rapport →"
+        }
+      },
       "table": {
         "id": "Identifiant",
         "package": "Package",

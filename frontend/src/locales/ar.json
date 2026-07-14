@@ -2398,6 +2398,21 @@
         "published": "المنشورات العمومية",
         "brierAvg": "متوسط براير (خاص)"
       },
+      "quotes": {
+        "title": "طلباتي",
+        "statusLabels": {
+          "received": "تم استلام العرض",
+          "reviewing": "قيد المراجعة",
+          "quoted": "تم إرسال العرض",
+          "declined": "مرفوض",
+          "paid": "مدفوع",
+          "in_progress": "قيد التنفيذ",
+          "delivered": "تم التسليم"
+        },
+        "cta": {
+          "viewReport": "عرض التقرير ←"
+        }
+      },
       "table": {
         "id": "المعرّف",
         "package": "الباقة",
