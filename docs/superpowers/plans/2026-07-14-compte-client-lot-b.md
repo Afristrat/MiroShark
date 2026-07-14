@@ -37,48 +37,47 @@
 
 ---
 
-## Task 1 : Vérifier le contrat exact de l'API admin Supabase (`generate_link`)
+## Task 1 : Vérifier le contrat exact de l'API admin Supabase (`generate_link`) — FAIT
 
-**Contexte** : aucun usage de `auth.admin.create_user` / `auth.admin.generate_link` n'existe encore dans ce repo. `supabase-py>=2.7.0` les expose via `client.auth.admin`, mais la forme exacte de la réponse (`.user.id`, `.properties.action_link` ou équivalent) doit être confirmée contre la version réellement installée avant d'écrire du code dessus — ne pas deviner.
+**Méthode réellement utilisée** (différente du plan initial) : la sonde live contre l'environnement preview Coolify a été bloquée par le garde-fou anti-fuite (`bash-guard.sh`, protection légitime post-incident `incident_coolify_secrets_leak_20260709`). Vérification faite à la place par lecture directe du code source Pydantic du SDK **réellement installé** dans `backend/.venv` — preuve plus forte qu'un seul échantillon runtime (contrat typé, pas une observation).
 
-**Files:**
-- Aucun fichier produit — script jetable dans le scratchpad.
+**Fichiers inspectés** :
+- `backend/.venv/Lib/site-packages/supabase_auth/_sync/gotrue_admin_api.py` (méthodes `create_user`, `list_users`, `generate_link`)
+- `backend/.venv/Lib/site-packages/supabase_auth/types.py` (modèles `User`, `UserResponse`, `GenerateLinkResponse`, `GenerateLinkProperties`)
+- `backend/.venv/Lib/site-packages/supabase_auth/helpers.py` (`parse_link_response`, `parse_user_response`)
 
-- [ ] **Step 1: Vérifier la version installée**
+**Version installée** : `supabase_auth==2.29.0` (dépendance de `supabase>=2.7.0`, `pyproject.toml`).
 
-Run: `cd backend && uv run python -c "import supabase; print(supabase.__version__)"`
-Expected: une version `>=2.7.0` (ex. `2.9.1`)
-
-- [ ] **Step 2: Script jetable pour inspecter la réponse réelle**
-
-Écrire `backend/scripts/_probe_generate_link.py` (temporaire, à supprimer après) :
+**Contrat confirmé** (utilisé tel quel dans le code du Task 2 — pas de fallback `getattr`/dict nécessaire, ce sont toujours des objets Pydantic) :
 
 ```python
-import os
-from app.auth.supabase_client import get_supabase_admin
+# client.auth.admin.list_users(page=None, per_page=None) -> List[User]
+#   PAS de wrapper .users — retourne directement la liste.
+#   User a .id: str, .email: Optional[str], etc.
 
-os.environ.setdefault("SUPABASE_URL", os.environ["SUPABASE_URL"])
-cli = get_supabase_admin()
-resp = cli.auth.admin.generate_link({
-    "type": "magiclink",
-    "email": "probe-ensure-client-account@example.invalid",
-})
-print(type(resp))
-print(resp)
+# client.auth.admin.create_user(attributes) -> UserResponse
+#   UserResponse.user: User  → user_id = created.user.id
+
+# client.auth.admin.generate_link(params) -> GenerateLinkResponse
+#   GenerateLinkResponse.properties: GenerateLinkProperties (action_link: str, requis)
+#   GenerateLinkResponse.user: User
+#   → action_link = resp.properties.action_link (jamais None, champ non-optionnel)
 ```
 
-Run (contre l'environnement de dev/preview Coolify, **jamais prod**) :
-`cd backend && SUPABASE_URL=$PREVIEW_URL SUPABASE_SERVICE_ROLE_KEY=$PREVIEW_KEY uv run python scripts/_probe_generate_link.py`
+**Limite connue, acceptée** : `list_users()` n'a pas d'équivalent "get by email" côté GoTrue admin API — recherche par filtrage côté client sur la liste paginée (défaut `per_page`). Cohérent avec l'hypothèse de volume déjà actée ailleurs dans ce repo (`quote.py::list_quotes_admin`, commentaire "le volume de devis reste petit — pas de besoin d'optimisation"). À revisiter si le nombre de comptes clients dépasse quelques centaines.
 
-Expected: un objet avec un attribut exposant `user.id` (uuid créé) et un attribut exposant le lien d'action (`properties.action_link` dans les versions récentes du SDK officiel). Noter la forme EXACTE observée — elle conditionne le code du Task 2.
+- [ ] **Step 1 (fait) : Vérifier la version installée**
 
-- [ ] **Step 3: Nettoyer**
+Run: `cd backend && uv run python -c "import supabase_auth; print(supabase_auth.__version__)"`
+Résultat obtenu : `2.29.0`
 
-Supprimer `backend/scripts/_probe_generate_link.py` et l'utilisateur de test créé (`cli.auth.admin.delete_user(user_id)` en one-liner Python, ou via le dashboard Supabase Auth).
+- [ ] **Step 2 (fait, méthode alternative) : Contrat confirmé par lecture du code source du SDK**
 
-- [ ] **Step 4: Commit**
+Voir ci-dessus — aucun script jetable exécuté contre une infra live (bloqué par le garde-fou, contournement jugé plus sûr que d'insister).
 
-Pas de commit pour cette tâche (rien de permanent) — mais noter la forme de réponse observée dans le message du commit du Task 2 pour traçabilité.
+- [ ] **Step 3 : Rien à nettoyer** (aucun utilisateur de test créé sur Supabase — vérification 100% statique).
+
+- [ ] **Step 4: Pas de commit dédié** — le contrat vérifié est directement utilisé dans le code du Task 2 (traçabilité via ce paragraphe).
 
 ---
 
@@ -256,13 +255,16 @@ def _slugify(value: str) -> str:
 
 
 def _find_user_by_email(email: str, *, client: Any) -> Optional[Dict[str, Any]]:
-    resp = client.auth.admin.list_users()
-    users = getattr(resp, "users", None) or resp
+    # list_users() retourne directement List[User] (pas de wrapper .users) —
+    # contrat confirmé par lecture de supabase_auth==2.29.0 (Task 1). Pas
+    # d'équivalent "get by email" côté GoTrue admin API ; filtrage client-side
+    # acceptable au volume actuel de ce produit (cf. commentaire équivalent
+    # dans quote.py::list_quotes_admin).
+    users = client.auth.admin.list_users()
+    target = email.strip().lower()
     for u in users:
-        u_email = getattr(u, "email", None) or (u.get("email") if isinstance(u, dict) else None)
-        if u_email and u_email.strip().lower() == email.strip().lower():
-            u_id = getattr(u, "id", None) or (u.get("id") if isinstance(u, dict) else None)
-            return {"id": u_id, "email": u_email}
+        if u.email and u.email.strip().lower() == target:
+            return {"id": u.id, "email": u.email}
     return None
 
 
@@ -318,17 +320,14 @@ def _create_org_and_membership(
         raise RuntimeError("organizations insert returned no row")
     org_id = org_rows[0]["id"]
 
+    # create_user() retourne UserResponse(user: User) — toujours un objet
+    # Pydantic, jamais un dict (contrat confirmé Task 1).
     created_user = client.auth.admin.create_user({
         "email": email,
         "email_confirm": True,
         "user_metadata": {"full_name": full_name},
     })
-    user_obj = getattr(created_user, "user", None) or created_user
-    user_id = getattr(user_obj, "id", None) or (
-        user_obj.get("id") if isinstance(user_obj, dict) else None
-    )
-    if not user_id:
-        raise RuntimeError("auth.admin.create_user returned no user id")
+    user_id = created_user.user.id
 
     client.table("org_members").insert({
         "org_id": org_id,
@@ -353,18 +352,14 @@ def _reattach_quote_ownership(org_id: str, email: str, *, client: Any) -> None:
 
 def _send_magic_link(email: str, full_name: str, *, client: Any) -> None:
     try:
+        # generate_link() retourne GenerateLinkResponse(properties, user) —
+        # properties.action_link est un champ Pydantic requis (jamais None),
+        # contrat confirmé Task 1 (supabase_auth==2.29.0).
         resp = client.auth.admin.generate_link({
             "type": "magiclink",
             "email": email,
         })
-        # Forme exacte confirmée au Task 1 — ``properties.action_link``
-        # pour supabase-py>=2.7.0.
-        action_link = getattr(getattr(resp, "properties", None), "action_link", None)
-        if not action_link and isinstance(resp, dict):
-            action_link = (resp.get("properties") or {}).get("action_link")
-        if not action_link:
-            logger.error("_send_magic_link: no action_link in generate_link response")
-            return
+        action_link = resp.properties.action_link
         html_body = render_template("client_account_ready", {
             "full_name": full_name or email,
             "magic_link": action_link,
