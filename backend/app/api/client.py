@@ -36,6 +36,7 @@ from ..auth.supabase_client import (
     publish_simulation as _publish_simulation,
     get_simulation_owner,
 )
+from ..services import quote_ownership as qo
 from ..services.simulation_manager import SimulationManager
 from ..utils.logger import get_logger
 
@@ -150,6 +151,43 @@ def list_org_simulations():
             "org_id": org_id,
             "simulations": sims,
         },
+    }), 200
+
+
+# ─── /quotes (Lot B — compte client, US-B4) ─────────────────────────────────
+
+@client_bp.route("/quotes", methods=["GET"])
+@require_org_membership(role_min="viewer")
+def list_org_quotes():
+    """Liste les devis de l'organisation courante (US-B4, Lot B).
+
+    Payload allégé — jamais ``customer_email`` ni ``payload`` complet (PII)
+    exposés au client : uniquement ce qu'il a besoin de voir sur ses propres
+    demandes. La policy RLS ``members_can_read_org_quotes`` (migration
+    20260505_001) couvre déjà l'isolation par org côté Supabase ; ce filtrage
+    applicatif est une seconde barrière défensive.
+    """
+    org = getattr(g, "current_org", None) or {}
+    org_id = org.get("id")
+    if not org_id:
+        return _err("ORG_RESOLUTION_FAILED", "Could not resolve current org.", 500)
+
+    limit = min(max(int(request.args.get("limit", 50) or 50), 1), 200)
+    offset = max(int(request.args.get("offset", 0) or 0), 0)
+
+    rows = qo.list_quotes_for_org(org_id, limit=limit, offset=offset)
+    quotes = [
+        {
+            "quote_id": r.get("quote_id"),
+            "package_id": r.get("package_id"),
+            "status": r.get("status"),
+            "created_at": r.get("created_at"),
+        }
+        for r in rows
+    ]
+    return jsonify({
+        "success": True,
+        "data": {"quotes": quotes, "total": len(quotes), "limit": limit, "offset": offset},
     }), 200
 
 
