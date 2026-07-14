@@ -45,6 +45,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
+from .client_account_service import ensure_client_account
+
 
 
 logger = logging.getLogger("miroshark.quote_admin")
@@ -476,6 +478,29 @@ def update_quote_status(
             "quote_ownership status mirror skipped for %s: %s",
             quote_id, exc.__class__.__name__,
         )
+
+    # Lot B (compte client) — création best-effort du compte client sur
+    # transition VERS "paid" du circuit devis manuel admin (Payment Link
+    # envoyé hors self-service, ou virement bancaire confirmé hors-ligne).
+    # Le webhook Stripe self-service (stripe_checkout.py) n'appelle jamais
+    # ce chemin — ADR-007/US-205 préservé sans régression.
+    if new_status == "paid" and current_status != "paid":
+        payload = read_quote_payload(quote_id) or {}
+        client_email = payload.get("email")
+        if client_email:
+            ensure_client_account(
+                client_email,
+                payload.get("full_name") or "",
+                payload.get("organization") or payload.get("company"),
+                source="quote_paid",
+                locale=payload.get("locale") or "fr",
+            )
+        else:
+            logger.warning(
+                "update_quote_status: paid transition for %s without email in "
+                "payload — ensure_client_account skipped.",
+                quote_id,
+            )
 
     return True, "OK", new_payload
 

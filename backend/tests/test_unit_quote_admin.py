@@ -257,6 +257,86 @@ class TestQuoteAdminService:
         assert items_reviewing[0]["quote_id"] == "q_bbb10002"
 
 
+class TestUpdateQuoteStatusEnsureClientAccount:
+    """Lot B (compte client) — déclencheur ensure_client_account, uniquement
+    sur la transition VERS "paid" du circuit devis manuel admin. Ne doit
+    jamais se déclencher sur les autres transitions, ni se re-déclencher sur
+    une redéclaration idempotente de "paid" (current == new)."""
+
+    def test_transition_to_paid_calls_ensure_client_account(self, isolated_quotes_dir, monkeypatch):
+        _create_quote(isolated_quotes_dir, "q_paidtest1", email="client@example.com")
+        qa.update_quote_status("q_paidtest1", new_status="reviewing")
+        qa.update_quote_status("q_paidtest1", new_status="quoted")
+
+        calls = []
+        monkeypatch.setattr(
+            qa, "ensure_client_account",
+            lambda email, full_name, org_name, *, source, locale="fr", client=None: (
+                calls.append({
+                    "email": email, "full_name": full_name, "org_name": org_name,
+                    "source": source, "locale": locale,
+                }) or {"org_id": "org-x", "user_id": "user-x", "created": True}
+            ),
+        )
+
+        ok, code, _ = qa.update_quote_status(
+            "q_paidtest1", new_status="paid", by_email="amine@ai-mpower.com",
+        )
+
+        assert ok is True
+        assert code == "OK"
+        assert len(calls) == 1
+        assert calls[0]["email"] == "client@example.com"
+        assert calls[0]["full_name"] == "Karim Bensaid"
+        assert calls[0]["org_name"] == "Banque Populaire MA"
+        assert calls[0]["source"] == "quote_paid"
+        assert calls[0]["locale"] == "fr"
+
+    def test_transition_not_to_paid_does_not_trigger(self, isolated_quotes_dir, monkeypatch):
+        _create_quote(isolated_quotes_dir, "q_notpaid1")
+        ensure_mock = MagicMock()
+        monkeypatch.setattr(qa, "ensure_client_account", ensure_mock)
+
+        ok, _code, _ = qa.update_quote_status("q_notpaid1", new_status="reviewing")
+
+        assert ok is True
+        ensure_mock.assert_not_called()
+
+    def test_idempotent_redeclare_paid_does_not_retrigger(self, isolated_quotes_dir, monkeypatch):
+        _create_quote(isolated_quotes_dir, "q_paidtest2")
+        qa.update_quote_status("q_paidtest2", new_status="reviewing")
+        qa.update_quote_status("q_paidtest2", new_status="quoted")
+        qa.update_quote_status("q_paidtest2", new_status="paid")
+
+        ensure_mock = MagicMock()
+        monkeypatch.setattr(qa, "ensure_client_account", ensure_mock)
+
+        ok, _code, _ = qa.update_quote_status("q_paidtest2", new_status="paid")
+
+        assert ok is True
+        ensure_mock.assert_not_called()
+
+    def test_missing_email_in_payload_skips_without_failing(self, isolated_quotes_dir, monkeypatch):
+        _create_quote(isolated_quotes_dir, "q_noemail1")
+        # Corrompt le payload pour retirer l'email (cas défensif).
+        payload_path = next(isolated_quotes_dir.glob("*noemail1*.json"))
+        data = json.loads(payload_path.read_text(encoding="utf-8"))
+        data.pop("email", None)
+        payload_path.write_text(json.dumps(data), encoding="utf-8")
+
+        qa.update_quote_status("q_noemail1", new_status="reviewing")
+        qa.update_quote_status("q_noemail1", new_status="quoted")
+
+        ensure_mock = MagicMock()
+        monkeypatch.setattr(qa, "ensure_client_account", ensure_mock)
+
+        ok, code, _ = qa.update_quote_status("q_noemail1", new_status="paid")
+
+        assert ok is True
+        assert code == "OK"
+        ensure_mock.assert_not_called()
+
+
 # ─── Tests : endpoints HTTP ─────────────────────────────────────────────────
 
 
