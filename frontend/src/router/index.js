@@ -283,7 +283,9 @@ router.beforeEach(async (to) => {
   // US-096 fix — Si on revient d'un OAuth implicit (URL contient
   // `#access_token=...`), Supabase JS est en train d'écrire la session ;
   // ne pas rediriger vers /login dans cette fenêtre.
+  console.log('[DBGGUARD] to=', to.fullPath, 'hash=', typeof window !== 'undefined' ? window.location.hash : 'n/a')
   if (typeof window !== 'undefined' && window.location.hash.includes('access_token=')) {
+    console.log('[DBGGUARD] bypass (hash has access_token)')
     return true
   }
 
@@ -291,7 +293,9 @@ router.beforeEach(async (to) => {
   if (!needsAuth) return true
 
   const auth = useAuthStore()
+  console.log('[DBGGUARD] needsAuth=', needsAuth, 'isAuthenticated=', auth.isAuthenticated, 'session=', !!auth.session, 'user=', !!auth.user)
   if (!auth.isAuthenticated) {
+    console.log('[DBGGUARD] REDIRECT TO LOGIN from', to.fullPath)
     return {
       name: 'Login',
       query: { redirect: to.fullPath }

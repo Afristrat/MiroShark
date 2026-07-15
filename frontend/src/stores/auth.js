@@ -81,20 +81,23 @@ export const useAuthStore = defineStore('auth', {
         // (failsafe 3s) pour éviter que le router beforeEach redirige
         // vers /login alors que la session est en train de s'écrire.
         if (typeof window !== 'undefined' && window.location.hash.includes('access_token=')) {
+          console.log('[DBGAUTH] init: hash has access_token, waiting for SIGNED_IN/TOKEN_REFRESHED')
           await new Promise((resolve) => {
             let done = false
-            const finish = () => { if (!done) { done = true; resolve() } }
+            const finish = (why) => { if (!done) { done = true; console.log('[DBGAUTH] wait finished:', why); resolve() } }
             const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+              console.log('[DBGAUTH] pre-getSession onAuthStateChange event=', event)
               if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
                 try { sub?.subscription?.unsubscribe?.() } catch (_) { /* ignore */ }
-                finish()
+                finish('event:' + event)
               }
             })
-            setTimeout(finish, 3000)
+            setTimeout(() => finish('timeout'), 3000)
           })
         }
 
         const { data, error } = await supabase.auth.getSession()
+        console.log('[DBGAUTH] getSession result: session=', !!data?.session, 'error=', error?.message)
         if (error) {
           // Erreur réseau ou Supabase down — on log mais on n'empêche
           // pas l'app de tourner (les routes publiques restent accessibles).
@@ -102,10 +105,12 @@ export const useAuthStore = defineStore('auth', {
         }
         this.session = data?.session || null
         this.user = data?.session?.user || null
+        console.log('[DBGAUTH] init done: isAuthenticated=', this.isAuthenticated)
 
         // Listener : tout changement d'état auth (login, logout, refresh)
         // met à jour le store. Pinia est réactif → la nav réagit auto.
         supabase.auth.onAuthStateChange((event, session) => {
+          console.log('[DBGAUTH] post-init onAuthStateChange event=', event, 'session=', !!session)
           this.session = session || null
           this.user = session?.user || null
           if (event === 'SIGNED_OUT') {
