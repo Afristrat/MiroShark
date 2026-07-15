@@ -1890,3 +1890,18 @@ sur ce run) / 42 skipped, ruff clean, `npm run build` OK.
 
 Aucune entrée `.ralph/prd.json` dédiée (ADR-IQ-08 est une décision d'architecture documentée
 dans `docs/intake/08-decisions-log.md`, pas une user story trackée) — rien à marquer `passes`.
+
+### 2026-07-16 — LOOP EN PAUSE : gate SOP-013 en cours (prototype navigable avant reprise)
+
+Reprise du mode Ralph demandée par Amine sur le chantier `16-simulations-v2`
+(US-221→US-237, spec `docs/superpowers/specs/2026-07-16-simulations-v2-design.md`).
+**SOP-013 appliquée : AUCUNE story codée avant le go explicite d'Amine.**
+Périmètre restant recompté par script : 21 stories `passes=false` (US-208, US-IQ-05/06/07,
+US-221→US-237). Écrans à couvrir par le prototype : création de simulation (étape arènes,
+routage ADR-019), overlay « Marchés de convictions » avec dénouement, PDF (encart dénouement
++ section comparative Delphi), console super-admin Prompts (liste + détail/diff), intake
+Porte 2 AAR (US-IQ-05), vue admin quotes enrichie (US-IQ-06), pré-seed simulation depuis
+devis (US-IQ-07). Stories sans écran (US-208, 221-223, 225-226, 228-233) : gate quand même
+(SOP-013 §8 étape 2 — aucune story avant l'étape 10).
+Charte : pas de Design.md → tokens extraits de `frontend/src/design-tokens.css`
+(75 tokens --wi-*, thèmes light/dark).
