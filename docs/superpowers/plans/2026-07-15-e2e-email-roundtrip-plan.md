@@ -49,6 +49,20 @@ sleep 15
 
 **Ne pas passer à Task 2 sans avoir exécuté ce spike et noté le résultat (GO ou repli) dans le commit de Task 2.**
 
+**Résultat réel (exécuté 2026-07-15) : GO.** Flux complet réel exécuté (création devis
+`q_6e401f45` → login admin → 3 transitions → paid) avec adresse
+`a.mansouri+e2e-spike-1784077418@afriquestrategie.com`. Vérifié via
+`gam.exe user a.mansouri@afriquestrategie.com show messages query "to:a.mansouri+e2e-spike-...@afriquestrategie.com"`
+→ 2 messages reçus, `Delivered-To` préserve l'adresse taguée complète, sujet
+« Bassira — Votre espace client est prêt » présent. `gmail-reader.ts` (Task 2) utilise donc
+`to:<toAddress>` avec l'adresse complète taguée, sans repli nécessaire.
+
+**Découverte annexe (corrigée dans Task 4 ci-dessous)** : `page.goto('/admin/quotes')` en
+navigation directe (reload complet) fait courir une race entre la réhydratation de session
+Supabase et le guard router, qui rebondit sur `/login` — la navigation doit passer par le menu
+SPA (`.app-header__admin-toggle` puis `a[href="/admin/quotes"]`), jamais par un `goto` direct
+vers une route protégée après un login fraîchement établi.
+
 ---
 
 ### Task 2: `gmail-reader.ts` — lecture Gmail via compte de service DWD
@@ -299,7 +313,12 @@ async function loginAsAdmin(page: Page) {
 }
 
 async function advanceQuoteToPaid(page: Page, quoteId: string) {
-  await page.goto('/admin/quotes')
+  // Navigation SPA (router-link), jamais page.goto('/admin/quotes') : un
+  // reload complet fait courir une race entre la réhydratation Supabase
+  // et le guard router, qui rebondit sur /login (constaté au spike Task 1).
+  await page.locator('.app-header__admin-toggle').click()
+  await page.locator('a[href="/admin/quotes"]').click()
+  await page.waitForURL((url) => url.pathname === '/admin/quotes', { timeout: 15_000 })
   const row = page.locator('tr', { has: page.locator('.aq-id', { hasText: quoteId }) })
   await row.locator('.aq-action').click()
 
