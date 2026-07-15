@@ -260,4 +260,17 @@ RLS : toutes opérations réservées `is_super_admin()`, aucune policy anon.
   - Policies `FOR ALL TO authenticated` sur report_deliveries/report_downloads : un
     org-admin peut théoriquement forger des lignes de tracking via un client Supabase.
   - Le payload riche (devis, snapshots rapports, artefacts simulation) est
-    filesystem-only sur volume éphémère — source de vérité à migrer (ADR-005).
+    filesystem-only sur volume éphémère — source de vérité à migrer (ADR-005 → US-221).
+
+## Tables et colonnes PLANIFIÉES — chantier Simulations V2 (spec 2026-07-16, PAS ENCORE MIGRÉES)
+
+> Réservation de noms (contrat de nommage). Chaque objet passera en section définitive de
+> ce dictionnaire AU COMMIT de sa migration (même commit — règle CLAUDE.md). Détail :
+> `docs/superpowers/specs/2026-07-16-simulations-v2-design.md` §4 et ADR-015/016/017/019.
+
+| Objet planifié | Story | Rôle | RLS prévue |
+|---|---|---|---|
+| `simulation_prompts` | US-223 | Registre versionné des prompts de simulation (une ligne = une version immuable ; `key`, `scope`, `locale`, `version`, `content`, `variables` jsonb, `is_active`, `created_by`) | écriture super-admin uniquement |
+| `occupation_profiles` | US-228 | Cache fiches métiers ESCO + enrichissement 122B (`occupation_uri`, `label`, `lang`, `definition`, `essential_skills` jsonb, `optional_skills` jsonb, `source` ∈ {esco, llm_122b}, `fetched_at`) | lecture service ; écriture super-admin/pipeline |
+| `market_resolutions` | US-226 | Verdicts de l'oracle de clôture (`simulation_id`, `market_id`, `question`, `resolution_spec` jsonb, `verdict` ∈ {YES, NO, INVALID}, `justification`, `confidence`, `oracle_prompt_version`, `resolved_at`) | lecture org propriétaire ; écriture service |
+| `simulation_ownership.enabled_platforms` (colonne `text[]`) | US-222 | Arènes activées, requêtables en SQL (aujourd'hui perdues dans les flags du state filesystem) | héritée de la table |

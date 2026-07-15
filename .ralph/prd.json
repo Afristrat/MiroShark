@@ -4819,6 +4819,367 @@
         "adr": "docs/intake/08-decisions-log.md"
       },
       "completedAt": null
+    },
+    {
+      "id": "US-221",
+      "chantier": "16-simulations-v2",
+      "title": "Persistance durable des artefacts de simulation (ADR-005)",
+      "description": "Migrer les artefacts de simulation (state.json, run_state.json, *_profiles.*, simulation_config.json, actions.jsonl, polymarket_simulation.db, trajectory) de backend/uploads/ (volume éphémère Coolify) vers un stockage durable : Supabase Storage pour les blobs + métadonnées requêtables en table. Lecture rétro-compatible (fallback filesystem si l'artefact n'est pas encore migré). Écriture systématique vers le stockage durable à la fin de chaque phase (prepare, run, clôture).",
+      "acceptanceCriteria": [
+        "Une simulation complète (create→prepare→start→fin) ne laisse aucun artefact UNIQUEMENT sur backend/uploads/ — tout est relu depuis le stockage durable",
+        "Après suppression simulée du dossier local uploads/simulations/{sim_id}/, GET status/résultats/rapport fonctionnent toujours",
+        "docs/02-data-dictionary.md mis à jour dans le même commit pour toute table/colonne créée",
+        "Tests unitaires du module de persistance (upload, download, fallback) verts",
+        "Aucune régression : suite pytest complète verte"
+      ],
+      "passes": false,
+      "dependencies": [],
+      "metadata": {
+        "estimated_hours": 8,
+        "priority": "P0",
+        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md"
+      }
+    },
+    {
+      "id": "US-222",
+      "chantier": "16-simulations-v2",
+      "title": "Arènes requêtables + registre dynamique + validation croisée /start",
+      "description": "Ajouter la colonne enabled_platforms (text[]) à simulation_ownership (migration + data dictionary même commit). Remplacer l'enum de plateformes codé en dur (backend/app/api/simulation.py:3771) par un registre d'arènes dynamique (source unique listant les SimulationConfig disponibles). /simulation/start refuse une plateforme absente des flags enable_* de la simulation (aujourd'hui accepté sans validation — simulation_runner.py:560-574).",
+      "acceptanceCriteria": [
+        "Colonne enabled_platforms peuplée à la création de simulation et requêtable en SQL",
+        "Le registre d'arènes est LA source unique : ajouter une arène = l'enregistrer, aucun enum à retoucher dans l'API",
+        "POST /simulation/{id}/start avec platform non activée → 400 avec code d'erreur explicite",
+        "docs/02-data-dictionary.md à jour dans le même commit",
+        "Tests unitaires du registre et de la validation croisée verts ; suite pytest verte"
+      ],
+      "passes": false,
+      "dependencies": [],
+      "metadata": {
+        "estimated_hours": 5,
+        "priority": "P0",
+        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md"
+      }
+    },
+    {
+      "id": "US-223",
+      "chantier": "16-simulations-v2",
+      "title": "Table simulation_prompts + PromptRegistry backend",
+      "description": "Créer la table simulation_prompts (key, scope, locale, version, content, variables jsonb, is_active, created_by, created_at — une ligne = une version immuable, RLS super-admin en écriture). Backend PromptRegistry : résolution key+locale → version active, cache in-process avec invalidation, fallback sur le prompt codé en dur si table vide/injoignable. Brancher au moins UN prompt pilote (le builder Polymarket) pour prouver le flux de bout en bout.",
+      "acceptanceCriteria": [
+        "Migration + RLS + docs/02-data-dictionary.md dans le même commit",
+        "PromptRegistry.get(key, locale) retourne la version active ; table vide → fallback prompt codé, sans erreur",
+        "Le system prompt Polymarket est résolu via le registre dans une simulation réelle (seed de la version 1 = prompt actuel)",
+        "Insérer une nouvelle version puis l'activer change le prompt servi sans redéploiement",
+        "Tests unitaires (résolution, fallback, cache, versions) verts ; suite pytest verte"
+      ],
+      "passes": false,
+      "dependencies": [],
+      "metadata": {
+        "estimated_hours": 6,
+        "priority": "P0",
+        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md"
+      }
+    },
+    {
+      "id": "US-224",
+      "chantier": "16-simulations-v2",
+      "title": "Renommage client « marché de convictions » (ADR-018)",
+      "description": "Purger « prédiction »/« prediction »/« تنبؤ » de tout le visible client : encart PDF _method_limits.md.j2 (3 langues — « marché de convictions simulé, où chaque persona investit selon ses convictions »), libellés UI (charts.polymarket.title, marketCountTitle, predictionMarkets, clé fallback ~l.149, et toute autre occurrence trouvée par grep dans les 3 locales). Le vocabulaire technique interne (code, polymarket_*, schémas) ne change pas.",
+      "acceptanceCriteria": [
+        "grep -i 'prédiction|prediction|تنبؤ' sur frontend/src/locales/*.json et backend/app/templates/ → zéro occurrence client-facing restante (hors identifiants techniques)",
+        "Parité stricte fr/en/ar dans le même commit (US-217)",
+        "Un PDF généré en fr, en et ar contient le nouveau vocabulaire dans l'encart Méthode et limites",
+        "npm run build vert ; suite pytest verte (snapshots PDF mis à jour si nécessaire)"
+      ],
+      "passes": false,
+      "dependencies": [],
+      "metadata": {
+        "estimated_hours": 2,
+        "priority": "P0",
+        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md"
+      }
+    },
+    {
+      "id": "US-225",
+      "chantier": "16-simulations-v2",
+      "title": "resolution_spec générée avec chaque marché (ADR-015)",
+      "description": "Étendre la génération des marchés (simulation_config_generator.py:1101-1138) pour produire, par marché, une resolution_spec structurée (structured output validé) : critères mesurables sur l'état final de la simulation, échéance, conditions d'invalidité. Spec non mesurable ou invalide → régénération (borne de tentatives + échec explicite). Prompt de génération élevé L99 (skill prompt-engineer-pro) et servi via le PromptRegistry.",
+      "acceptanceCriteria": [
+        "Chaque marché créé porte une resolution_spec validée structurellement (schéma jsonb documenté)",
+        "Une spec non conforme déclenche une régénération ; après N tentatives, erreur explicite (jamais de marché sans contrat)",
+        "Le prompt de génération vit dans simulation_prompts avec un golden set d'éval (≥ 8 cas dont 2 adversariaux) qui passe",
+        "Tests unitaires de validation de spec verts ; suite pytest verte"
+      ],
+      "passes": false,
+      "dependencies": [
+        "US-223"
+      ],
+      "metadata": {
+        "estimated_hours": 6,
+        "priority": "P1",
+        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md"
+      }
+    },
+    {
+      "id": "US-226",
+      "chantier": "16-simulations-v2",
+      "title": "Oracle de clôture + paiement réel des positions (ADR-015)",
+      "description": "À la clôture de simulation : l'oracle de résolution (prompt L99 distinct, chain-of-verification, structured output) applique la resolution_spec de chaque marché aux artefacts finaux → verdict YES/NO/INVALID + justification + confiance, persisté dans la table market_resolutions. YES/NO → resolve_market() paie les positions ; INVALID → void, remboursement au coût réel. Corriger cost_basis : coût réel depuis la table trade (supprime le 0.50 codé en dur, polymarket/environment.py:40). La richesse finale par persona est persistée (score de justesse).",
+      "acceptanceCriteria": [
+        "Fin de simulation avec marchés → chaque marché a une ligne market_resolutions (verdict, justification, confiance, version du prompt oracle)",
+        "resolve_market() est appelé (plus aucun marché non dénoué) ; positions payées ; INVALID → remboursement au coût réel vérifié par test",
+        "cost_basis provient de la table trade — le 0.50 codé en dur a disparu",
+        "Richesse finale par persona persistée et exposée par l'API",
+        "Prompt oracle dans simulation_prompts + golden set (≥ 10 cas dont ≥ 2 INVALID) qui passe",
+        "Migration + data dictionary même commit ; suite pytest verte"
+      ],
+      "passes": false,
+      "dependencies": [
+        "US-225"
+      ],
+      "metadata": {
+        "estimated_hours": 8,
+        "priority": "P1",
+        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md"
+      }
+    },
+    {
+      "id": "US-227",
+      "chantier": "16-simulations-v2",
+      "title": "Restitution du dénouement (PDF + API + frontend)",
+      "description": "Restituer le cycle économique complet dans les livrables : prix réels du marché (série temporelle depuis la table trade), verdict de l'oracle avec justification, richesse finale des personas marquants. PDF : polymarket_curves complété ou remplacé par un chart adossé aux prix réels + encart dénouement. Frontend : PolymarketChart affiche le verdict et l'état résolu. Vocabulaire ADR-018 partout.",
+      "acceptanceCriteria": [
+        "Le PDF d'une simulation avec marché montre : évolution du prix réel, verdict, justification de l'oracle",
+        "PolymarketChart (frontend) affiche l'état résolu (verdict + date) quand le marché est dénoué",
+        "Aucune occurrence de « prédiction » dans les nouveaux éléments (3 locales, parité même commit)",
+        "npm run build vert ; suite pytest verte"
+      ],
+      "passes": false,
+      "dependencies": [
+        "US-226"
+      ],
+      "metadata": {
+        "estimated_hours": 5,
+        "priority": "P1",
+        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md"
+      }
+    },
+    {
+      "id": "US-228",
+      "chantier": "16-simulations-v2",
+      "title": "Cache Supabase des fiches métiers ESCO (ADR-016)",
+      "description": "Créer la table occupation_profiles (occupation_uri, label, lang, definition, essential_skills jsonb, optional_skills jsonb, source enum esco|llm_122b, fetched_at). Client ESCO backend (urllib stdlib, zéro dépendance) : recherche par libellé métier, fr/en/ar, écriture dans le cache. Stratégie : cache d'abord, API sinon, échec réseau → fallback persona sans bloc expertise (journalisé).",
+      "acceptanceCriteria": [
+        "Migration + RLS + data dictionary même commit",
+        "Client ESCO : une recherche 'analyste financier' (fr) et 'محلل مالي' (ar) peuple le cache avec définition + compétences essentielles réelles",
+        "Deuxième appel identique servi par le cache (zéro appel réseau — vérifié par test)",
+        "Échec réseau simulé → génération de personas continue sans crash, fallback journalisé",
+        "Tests unitaires (parsing API, cache hit/miss, fallback) verts ; suite pytest verte"
+      ],
+      "passes": false,
+      "dependencies": [],
+      "metadata": {
+        "estimated_hours": 5,
+        "priority": "P1",
+        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md"
+      }
+    },
+    {
+      "id": "US-229",
+      "chantier": "16-simulations-v2",
+      "title": "Blocs expertise_metier ESCO dans les system prompts des personas (ADR-016)",
+      "description": "wonderwall_profile_generator mappe la profession de chaque entité vers sa fiche occupation_profiles et injecte un bloc <expertise_metier> (définition ESCO + compétences essentielles = axes de comportement) dans le system prompt du persona, dans la langue de la simulation. MBTI/risk_tolerance restent la couche style. Profession introuvable → fallback documenté (persona actuel) + trace pour le pipeline 122B (US-230).",
+      "acceptanceCriteria": [
+        "Les personas générés pour une simulation contiennent le bloc <expertise_metier> quand la profession est résolue (vérifié sur les 3 formats : twitter, reddit, polymarket)",
+        "Bloc dans la langue de la simulation (fr/en/ar)",
+        "Profession non résolue → persona généré sans bloc + entrée de trace exploitable par US-230",
+        "Golden set : ≥ 5 professions → blocs conformes au pattern de la skill (structure, compétences numérotées)",
+        "Suite pytest verte"
+      ],
+      "passes": false,
+      "dependencies": [
+        "US-228",
+        "US-223"
+      ],
+      "metadata": {
+        "estimated_hours": 6,
+        "priority": "P1",
+        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md"
+      }
+    },
+    {
+      "id": "US-230",
+      "chantier": "16-simulations-v2",
+      "title": "Pipeline 122B d'enrichissement des rôles hors-ESCO (ADR-016)",
+      "description": "Pipeline (commande CLI backend) qui prend les professions non résolues tracées par US-229, génère une fiche métier au format occupation_profiles via le modèle 122B (gateway LiteLLM — le modèle est un paramètre de config, choix Amine), et l'écrit avec source='llm_122b'. Les fiches 122B sont relisibles/supprimables depuis la console super-admin (US-234 les affiche ; ici : API de listing/suppression).",
+      "acceptanceCriteria": [
+        "La commande traite la file des professions non résolues et peuple occupation_profiles avec source='llm_122b'",
+        "Le modèle utilisé est lu depuis la config (aucun nom de modèle codé en dur)",
+        "Format de fiche identique aux fiches ESCO (mêmes champs, validation structurelle avant écriture)",
+        "Endpoint super-admin de listing par source et de suppression d'une fiche",
+        "Tests unitaires (validation, écriture, listing) verts ; suite pytest verte"
+      ],
+      "passes": false,
+      "dependencies": [
+        "US-228"
+      ],
+      "metadata": {
+        "estimated_hours": 4,
+        "priority": "P2",
+        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md"
+      }
+    },
+    {
+      "id": "US-231",
+      "chantier": "16-simulations-v2",
+      "title": "Élévation L99 des prompts d'arènes (3 builders) + corrections de biais",
+      "description": "Passer les 3 prompt builders (Twitter, Reddit, Polymarket) au niveau L99 via la skill prompt-engineer-pro : localisation fr/en/ar servie par le PromptRegistry, correction de l'incohérence « There is one prediction market » (N marchés), retrait de la psychologie soufflée uniforme (TRADING PSYCHOLOGY identique pour tous → dérivée du persona), dé-biaisage du do_nothing générique de base.py (vocabulaire trader hérité par toutes les arènes → docstring neutre + spécialisation par arène), neutralisation des heuristiques injectées dans l'observation Polymarket (flags near-max/near-zero, nudges contrarian), retrait du « Twitter and Reddit » codé en dur.",
+      "acceptanceCriteria": [
+        "Les 3 system prompts sont servis par le PromptRegistry en fr/en/ar (seed = versions L99)",
+        "Le prompt Polymarket reflète le nombre réel de marchés de la simulation",
+        "base.py:do_nothing ne contient plus de vocabulaire trader ; chaque arène spécialise sa propre description",
+        "L'observation Polymarket n'injecte plus de recommandations de trading (les flags/nudges de environment.py:49-56,103-107 sont retirés ou dérivés du persona)",
+        "Golden set par prompt (≥ 8 cas) qui passe ; suite pytest verte"
+      ],
+      "passes": false,
+      "dependencies": [
+        "US-223"
+      ],
+      "metadata": {
+        "estimated_hours": 8,
+        "priority": "P1",
+        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md"
+      }
+    },
+    {
+      "id": "US-232",
+      "chantier": "16-simulations-v2",
+      "title": "Élévation L99 des prompts services + profils temporels paramétrables",
+      "description": "Externaliser vers le PromptRegistry et élever L99 les prompts LLM des services de simulation : simulation_config_generator (génération config/événements/marchés), wonderwall_profile_generator (enrichissement bios), et les prompts de simulation restants identifiés à l'inventaire (report_agent pour la partie simulation, round_analyzer le cas échéant). Remplacer CHINA_TIMEZONE_CONFIG (simulation_config_generator.py:30) par des profils temporels paramétrables par région (défaut MENA fourni), sélectionnés par la config de simulation.",
+      "acceptanceCriteria": [
+        "Les prompts LLM des services listés sont servis par le PromptRegistry (versions L99 seedées)",
+        "CHINA_TIMEZONE_CONFIG n'existe plus ; le profil temporel est un paramètre (≥ 2 profils fournis dont MENA) répercuté dans la config générée",
+        "Golden set par prompt externalisé qui passe",
+        "Suite pytest verte ; npm run build vert"
+      ],
+      "passes": false,
+      "dependencies": [
+        "US-223"
+      ],
+      "metadata": {
+        "estimated_hours": 8,
+        "priority": "P2",
+        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md"
+      }
+    },
+    {
+      "id": "US-233",
+      "chantier": "16-simulations-v2",
+      "title": "API super-admin des prompts : versions, diff, rollback, activation gated",
+      "description": "API REST super-admin (guard existant) sur simulation_prompts : lister par scope/clé/locale, lire une version, créer une nouvelle version (jamais d'écrasement — contrainte DB), diff entre deux versions, activer une version (bascule is_active) CONDITIONNÉE au passage du golden set du prompt (exécution serveur, résultat persisté), rollback = activation d'une version antérieure.",
+      "acceptanceCriteria": [
+        "Toutes les routes refusent un non-super-admin (401/403) — testé",
+        "Créer une version n'altère jamais une ligne existante (contrainte vérifiée par test d'intégrité)",
+        "Activation refusée si le golden set échoue (réponse explicite avec les cas en échec)",
+        "Rollback restaure le comportement précédent (testé bout-en-bout sur un prompt pilote)",
+        "Suite pytest verte"
+      ],
+      "passes": false,
+      "dependencies": [
+        "US-223"
+      ],
+      "metadata": {
+        "estimated_hours": 6,
+        "priority": "P2",
+        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md"
+      }
+    },
+    {
+      "id": "US-234",
+      "chantier": "16-simulations-v2",
+      "title": "Page console super-admin « Prompts de simulation » (SOP-013 : maquette avant Ralph)",
+      "description": "Page frontend derrière le rôle super-admin : liste des prompts par arène/service (clé, scope, locale, version active, date), détail avec contenu et variables, diff visuel entre versions, édition (= création de nouvelle version), activation/rollback via l'API US-233, badge source d'éval (dernier golden set passé/échoué). i18n fr/en/ar + RTL. PRÉ-REQUIS SOP-013 : maquette navigable validée par Amine avant implémentation.",
+      "acceptanceCriteria": [
+        "Maquette navigable validée par Amine AVANT le code (SOP-013)",
+        "Un non-super-admin ne voit jamais la page (guard testé E2E)",
+        "Parcours E2E : lister → ouvrir → éditer → nouvelle version → activer (golden set vert) → rollback",
+        "Diff lisible entre deux versions ; i18n 3 locales + RTL ; npm run build vert ; Playwright vert sur le parcours"
+      ],
+      "passes": false,
+      "dependencies": [
+        "US-233"
+      ],
+      "metadata": {
+        "estimated_hours": 8,
+        "priority": "P2",
+        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md"
+      }
+    },
+    {
+      "id": "US-235",
+      "chantier": "16-simulations-v2",
+      "title": "Routage déterministe des arènes (ADR-019)",
+      "description": "Table de routage déclarative type de scénario → arènes recommandées (stockage requêtable, contenu par défaut SOUMIS À VALIDATION AMINE), appliquée à la création de simulation : la combinaison recommandée est proposée, l'utilisateur peut outrepasser explicitement, chaque décision (règle appliquée ou override) est journalisée avec le type de scénario détecté.",
+      "acceptanceCriteria": [
+        "À la création, les arènes proposées proviennent de la table de routage selon le type de scénario",
+        "L'override utilisateur fonctionne et est journalisé (règle vs override, requêtable)",
+        "La table par défaut est documentée et marquée comme validée/à valider par Amine",
+        "Data dictionary à jour même commit ; tests unitaires du moteur de routage verts ; suite pytest verte"
+      ],
+      "passes": false,
+      "dependencies": [
+        "US-222"
+      ],
+      "metadata": {
+        "estimated_hours": 5,
+        "priority": "P2",
+        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md"
+      }
+    },
+    {
+      "id": "US-236",
+      "chantier": "16-simulations-v2",
+      "title": "Couche Delphi de confrontation cross-arènes + PDF comparatif (ADR-011/ADR-019)",
+      "description": "Couche de normalisation Delphi : convertit les signaux hétérogènes de chaque arène active (prix du marché de convictions, distribution des stances sociales, belief drift) en distributions de probabilité comparables ; calcule l'indicateur continu et la polarisation (écart-type) ; pondère optionnellement par la richesse finale des traders (US-226, score de justesse). Section PDF comparative « ce que dit chaque arène » (convergences/divergences).",
+      "acceptanceCriteria": [
+        "Pour une simulation multi-arènes, l'API expose un indicateur normalisé + polarisation par arène et agrégé",
+        "La section PDF comparative apparaît quand ≥ 2 arènes sont actives (fr/en/ar, vocabulaire ADR-018)",
+        "La pondération par richesse finale est activable par config et testée",
+        "Suite pytest verte ; npm run build vert"
+      ],
+      "passes": false,
+      "dependencies": [
+        "US-226",
+        "US-235"
+      ],
+      "metadata": {
+        "estimated_hours": 8,
+        "priority": "P3",
+        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md"
+      }
+    },
+    {
+      "id": "US-237",
+      "chantier": "16-simulations-v2",
+      "title": "Première arène MENA : relais de messagerie (WhatsApp-like) — reprend US-216/ADR-011",
+      "description": "Nouvelle arène « relais de messagerie » (dynamique de groupes/forwards, pas de recsys public) comme SimulationConfig sur la plateforme sociale existante : prompt builder dédié (L99, fr/en/ar, servi par le PromptRegistry), liste d'actions adaptée (message groupe, transfert, réaction), platform_kwargs propres. Enregistrée dans le registre d'arènes (US-222), routable (US-235), visible dans les livrables.",
+      "acceptanceCriteria": [
+        "L'arène apparaît dans le registre et est sélectionnable/combinable à la création",
+        "Une simulation 2 arènes (messagerie + marché de convictions) tourne en lock-step de bout en bout",
+        "Prompt builder dans simulation_prompts (3 locales) + golden set qui passe",
+        "Les actions de l'arène sont visibles dans les artefacts et le rapport",
+        "Suite pytest verte"
+      ],
+      "passes": false,
+      "dependencies": [
+        "US-222",
+        "US-231"
+      ],
+      "metadata": {
+        "estimated_hours": 10,
+        "priority": "P3",
+        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md"
+      }
     }
   ]
 }

@@ -308,3 +308,119 @@ des paliers hauts) ; conversion FX dynamique EUR (rejeté — complexité de mai
 bénéfice, incohérent avec le pattern MAD/USD existant).
 **Signal de réexamen** : si un segment EUR distinct émerge avec des attentes de prix propres
 (pas juste une parité USD), revoir les 3 montants EUR indépendamment.
+
+## ADR-015 — Dénouement économique des marchés simulés : resolution_spec à la création + oracle de clôture
+**Date** : 2026-07-16 (directive Amine : « un dénouement simulé avec un vrai sens
+économique ») · **Statut** : accepté · réversible
+**Quoi** : chaque marché simulé naît avec sa `resolution_spec` (contrat de dénouement
+structuré : critères mesurables sur l'état final de la simulation, échéance, conditions
+d'invalidité), générée par le même appel LLM que la question de marché
+(`simulation_config_generator.py:1101-1138`). À la clôture, un oracle de résolution
+(prompt L99, chain-of-verification, structured output) applique la spec aux artefacts
+finaux → verdict `YES | NO | INVALID` + justification + confiance, persisté en Supabase
+(`market_resolutions`) et restitué dans le PDF. `INVALID` → void, remboursement au coût
+réel. `resolve_market()` (existant, jamais appelé jusqu'ici) paie les positions ;
+`cost_basis` recalculé depuis la table `trade` (remplace le 0.50 codé en dur,
+`polymarket/environment.py:40`). La richesse finale des personas devient leur score de
+justesse.
+**Pourquoi** : les scénarios sont infinis — tout menu fixe de critères de résolution est
+intenable (objection d'Amine, fondée). Le mécanisme des marchés réels (resolution rules
+par marché + autorité de résolution) déplace la charge de spécification à la création,
+où le contexte existe. Constat déclencheur : `resolve_market()` sans appelant = marché
+économiquement décoratif (deep-explore 2026-07-15).
+**Sources** : deep-explore 2026-07-15 (spec `2026-07-16-simulations-v2-design.md` §2.1) ;
+pattern resolution rules des marchés de prédiction réels.
+**Alternatives rejetées** : menu de 2-3 critères de dénouement (non généralisable, rejeté
+par Amine) ; résolution par seuil de stance fixe (ne couvre que les questions alignées
+sur la stance) ; laisser les marchés sans dénouement (contredit la directive).
+**Signal de réexamen** : taux de verdicts INVALID > ~20 % sur les simulations réelles →
+le prompt de génération des specs produit des contrats non mesurables, le durcir.
+
+## ADR-016 — Personas fondées ESCO (cache Supabase) + enrichissement 122B hors-taxonomie
+**Date** : 2026-07-16 (directive Amine) · **Statut** : accepté · réversible
+**Quoi** : le system prompt de chaque persona reçoit un bloc `<expertise_metier>` fondé
+sur la fiche ESCO de sa profession (définition officielle + compétences essentielles =
+axes de comportement), via un cache Supabase `occupation_profiles` (par langue fr/en/ar,
+alimenté par l'API publique ESCO — opérationnelle FR et AR, vérifié 2026-07-15). MBTI et
+risk_tolerance existants restent la couche « style ». Rôles hors-taxonomie : fiches
+générées par le modèle 122B (choix de modèle = Amine, gateway LiteLLM) écrites dans la
+même table avec `source='llm_122b'` (provenance tracée).
+**Pourquoi** : le persona nu (« Your name is X. Background: {bio} ») ne produit que du
+ton, pas de la fidélité comportementale (Wei et al. 2023 arXiv 2311.10054 ; Snell et al.
+2026 arXiv 2603.18507 — via skill prompt-engineer-pro). ESCO : 3 039 métiers, 28 langues
+dont FR/AR, API gratuite sans authentification.
+**Sources** : reference/esco-role-prompting.md (skill) ; tests API réels du 2026-07-15
+(« analyste financier » FR, « محلل مالي » AR).
+**Alternatives rejetées** : personas nus (statu quo, insuffisant) ; appel API ESCO à
+chaque génération (dépendance réseau pour des centaines de personas par simulation —
+cache obligatoire) ; taxonomie maison (réinvente ESCO en moins bien).
+**Signal de réexamen** : si une part significative des entités générées tombe
+hors-taxonomie ESCO, évaluer une taxonomie complémentaire dédiée aux rôles
+d'influence en ligne.
+
+## ADR-017 — Registre des prompts de simulation en base, versionné, éditable via console super-admin
+**Date** : 2026-07-16 (directive Amine : page d'administration super-admin ; « en base
+c'est mieux ») · **Statut** : accepté · réversible
+**Quoi** : tous les prompts de simulation (3 builders d'arènes, oracle de résolution,
+générateur de config/marchés, générateur de profils, etc.) sont externalisés dans la
+table `simulation_prompts` — une ligne = une version immuable (clé, scope, locale,
+version, contenu, variables, is_active). Le backend les résout via un `PromptRegistry`
+(cache in-process, fallback sur le prompt codé si table vide/injoignable — le moteur ne
+casse jamais à cause du registre). Console super-admin : liste, diff, édition (=
+nouvelle version, jamais d'écrasement), rollback, activation conditionnée au passage du
+golden set du prompt. Élévation L99 (skill prompt-engineer-pro) de chaque prompt au
+moment de son externalisation, avec golden set d'éval par prompt.
+**Pourquoi** : prompts éparpillés dans 4 fichiers moteur + 8 services, anglais codé en
+dur, incohérences factuelles (« There is one prediction market » vs N marchés
+configurables), zéro versionnage, zéro éval, zéro visibilité (deep-explore 2026-07-15).
+**Sources** : spec `2026-07-16-simulations-v2-design.md` §2.2, §3.3.
+**Alternatives rejetées** : fichiers versionnés dans le repo sans UI (rejeté par Amine —
+il veut les retrouver dans l'administration) ; édition libre sans versionnage ni éval
+(régression silencieuse d'un moteur en prod = inacceptable) ; lecture seule (proposé,
+rejeté par Amine — « en base c'est mieux » = éditable).
+**Signal de réexamen** : si les golden sets ralentissent l'itération au point d'être
+contournés, revoir leur granularité (pas leur existence).
+
+## ADR-018 — Vocabulaire client : « marché de convictions » remplace « marché de prédiction »
+**Date** : 2026-07-16 (arbitrage Amine — option « renommage complet ») · **Statut** :
+accepté · réversible
+**Quoi** : purge de « prédiction »/« prediction »/« تنبؤ » de tout le visible client au
+profit de « marché de convictions » (FR), « conviction market » (EN), « سوق القناعات »
+(AR) : encart PDF « Méthode et limites » (`_method_limits.md.j2:10,16,22`), libellés UI
+(`charts.polymarket.title` fr.json:1396, `marketCountTitle` fr.json:670,
+`predictionMarkets` fr.json:669, clé l.149, équivalents en/ar), parité stricte 3 locales
+dans le même commit. Le vocabulaire technique interne (code, `polymarket_*`, schémas
+SQLite) ne change pas.
+**Pourquoi** : ADR-002 interdit « prédiction » dans le copy commercial tant que < 20
+outcomes réels publics ; l'encart méthodologique est présent dans 100 % des PDF remis
+aux décideurs — c'est le document qui circule. La transparence méthodologique (AI Act
+art. 50, US-202) n'exige pas le mot « prédiction » : elle exige de décrire le mécanisme,
+ce que « marché de convictions simulé, où chaque persona investit selon ses
+convictions » fait sans claim prédictif.
+**Sources** : ADR-002 ; audit vocabulaire du deep-explore 2026-07-15 (agent
+explore-consommation, contre-vérifié).
+**Alternatives rejetées** : statu quo (le mot circule dans chaque livrable) ; hybride
+UI purgée / encart conservé (laisse le mot dans 100 % des PDF).
+**Signal de réexamen** : celui d'ADR-002 (≥ 20 outcomes réels publics avec Brier
+honnête) — le vocabulaire « prédiction » pourra alors être réévalué.
+
+## ADR-019 — Routage déterministe des arènes : règle par défaut + override journalisé (étend ADR-011)
+**Date** : 2026-07-16 (directive Amine : « fixer une règle déterministe de quand
+utiliser quoi ») · **Statut** : accepté · réversible
+**Quoi** : une table de routage déclarative (type de scénario → arènes recommandées)
+propose la combinaison d'arènes par défaut à la création de simulation ; l'utilisateur
+peut outrepasser explicitement ; chaque décision (règle appliquée ou override) est
+journalisée. Validation croisée ajoutée : `/simulation/start` refuse une plateforme non
+activée dans les flags de la simulation (ferme l'angle mort `simulation_runner.py:560-574`).
+Le CONTENU de la table de routage est une décision produit d'Amine ; ce chantier livre
+le mécanisme et une table par défaut soumise à sa validation.
+**Pourquoi** : aujourd'hui le choix d'arène est 100 % utilisateur sans aucune heuristique
+métier ; une règle figée sans données d'usage serait arbitraire → défaut + override +
+journal permet de réviser la table sur usage réel (aligné avec le signal de réexamen
+d'ADR-011 : déprécier une arène jamais sélectionnée en 12 mois).
+**Sources** : ADR-011 ; deep-explore 2026-07-15 (§2.3 de la spec).
+**Alternatives rejetées** : routage impératif sans override (rigide, calibré sur rien) ;
+statu quo checkboxes (aucune aide à la décision, arènes incohérentes avec le scénario).
+**Signal de réexamen** : après ~20 simulations réelles, comparer routage recommandé vs
+overrides — si > 50 % d'overrides sur un type de scénario, la règle par défaut est
+fausse, la réviser.
