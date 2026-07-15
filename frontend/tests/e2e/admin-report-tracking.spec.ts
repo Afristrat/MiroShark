@@ -11,7 +11,7 @@
  *
  * Stratégie de mock :
  *   - seedSuperAdminAuth / seedRegularUserAuth / navigateAuthenticated (pattern US-117)
- *   - L'API /api/admin/reports/*/deliveries est mockée via page.route
+ *   - L'API /api/admin/reports/:id/deliveries est mockée via page.route
  *   - Aucun appel réseau vers le backend prod
  */
 
