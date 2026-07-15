@@ -841,7 +841,7 @@ class TestEmailTemplate:
                 "org_name": "ACME",
                 "org_slug": "acme",
                 "role": "member",
-                "invite_url": "https://prospectives.ai-mpower.com/signup?invite=abc",
+                "invite_url": "https://bassira.ma/signup?invite=abc",
                 "expires_at": "2026-05-12T12:00:00+00:00",
                 "email": "user@example.com",
             },

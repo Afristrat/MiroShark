@@ -165,14 +165,14 @@ def test_cors_origins_default_includes_prod_and_local(monkeypatch):
     response = client.options(
         '/api/templates/list',
         headers={
-            'Origin': 'https://prospectives.ai-mpower.com',
+            'Origin': 'https://bassira.ma',
             'Access-Control-Request-Method': 'GET',
         },
     )
     # 200 ou 204 attendu selon flask-cors
     assert response.status_code in (200, 204)
     allow_origin = response.headers.get('Access-Control-Allow-Origin', '')
-    assert 'prospectives.ai-mpower.com' in allow_origin or allow_origin == '*', (
+    assert 'bassira.ma' in allow_origin or allow_origin == '*', (
         f"unexpected Allow-Origin: {allow_origin!r}"
     )
 

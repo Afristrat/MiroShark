@@ -230,7 +230,7 @@ def create_delivery(
     delivery_id = delivery["id"]
 
     # Construire le lien de téléchargement
-    base_url = os.environ.get("BASSIRA_PUBLIC_URL", "https://prospectives.ai-mpower.com").rstrip("/")
+    base_url = os.environ.get("BASSIRA_PUBLIC_URL", "https://bassira.ma").rstrip("/")
     download_url = f"{base_url}/r/{token}"
 
     # Titre par défaut
@@ -378,7 +378,7 @@ def re_send_link(
     expires_at = _now_utc() + timedelta(seconds=expires_in_seconds)
 
     # Construire le lien
-    base_url     = os.environ.get("BASSIRA_PUBLIC_URL", "https://prospectives.ai-mpower.com").rstrip("/")
+    base_url     = os.environ.get("BASSIRA_PUBLIC_URL", "https://bassira.ma").rstrip("/")
     download_url = f"{base_url}/r/{new_token}"
 
     if not report_title:

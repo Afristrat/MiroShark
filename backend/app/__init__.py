@@ -44,7 +44,7 @@ def create_app(config_class=Config):
     # Defaults to the production tunnel + local dev server.
     cors_origins_env = os.environ.get(
         'CORS_ORIGINS',
-        'https://prospectives.ai-mpower.com,http://localhost:3000,http://127.0.0.1:3000',
+        'https://bassira.ma,http://localhost:3000,http://127.0.0.1:3000',
     )
     cors_origins = [o.strip() for o in cors_origins_env.split(',') if o.strip()]
     # The literal '*' is still honoured (no whitelist) but emits a warning.

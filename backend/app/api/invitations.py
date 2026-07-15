@@ -30,6 +30,7 @@ Sécurité
 from __future__ import annotations
 
 import logging
+import os
 import re
 from typing import Any, Dict, Optional
 
@@ -157,10 +158,9 @@ def _send_invitation_email(
         from ..services.email_service import render_template, send_email
 
         token = invitation.get("token") or ""
+        base_url = os.environ.get("BASSIRA_PUBLIC_URL", "https://bassira.ma").rstrip("/")
         # Le frontend SPA route /signup et lit ?invite=<token>.
-        invite_url = (
-            f"https://prospectives.ai-mpower.com/signup?invite={token}"
-        )
+        invite_url = f"{base_url}/signup?invite={token}"
 
         ctx = {
             "org_name": org_meta.get("name") or "Bassira",

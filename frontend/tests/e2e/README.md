@@ -1,7 +1,7 @@
 # Tests E2E Playwright — Bassira (US-010)
 
 Suite de smoke tests **strictement read-only** ciblant la prod
-`https://prospectives.ai-mpower.com` ou un dev local via override.
+`https://bassira.ma` ou un dev local via override.
 
 ## Périmètre
 
@@ -32,7 +32,7 @@ packages système ne sont pas gérés sur Windows) ; ce n'est pas bloquant.
 
 | Variable           | Default                                | Rôle                                       |
 |--------------------|----------------------------------------|--------------------------------------------|
-| `BASSIRA_E2E_URL`  | `https://prospectives.ai-mpower.com`   | Base URL des tests (override pour le dev)  |
+| `BASSIRA_E2E_URL`  | `https://bassira.ma`   | Base URL des tests (override pour le dev)  |
 | `CI`               | unset                                  | Active retries=1 et workers=2              |
 
 Exemples :

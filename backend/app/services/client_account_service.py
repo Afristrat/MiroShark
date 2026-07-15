@@ -23,6 +23,7 @@ dans ``backend/.venv``, cf. plan d'implémentation) :
 
 from __future__ import annotations
 
+import os
 import re
 import secrets
 from typing import Any, Dict, Optional
@@ -148,9 +149,11 @@ def _send_magic_link(email: str, full_name: str, locale: str, *, client: Any) ->
     try:
         # generate_link() retourne GenerateLinkResponse(properties, user) —
         # properties.action_link est un champ Pydantic requis (jamais None).
+        base_url = os.environ.get("BASSIRA_PUBLIC_URL", "https://bassira.ma").rstrip("/")
         resp = client.auth.admin.generate_link({
             "type": "magiclink",
             "email": email,
+            "options": {"redirect_to": f"{base_url}/client/dashboard"},
         })
         action_link = resp.properties.action_link
         html_body = render_template(f"client_account_ready_{locale}", {

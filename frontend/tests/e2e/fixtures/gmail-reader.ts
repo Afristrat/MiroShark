@@ -13,7 +13,9 @@ const SERVICE_ACCOUNT_KEY_PATH =
 const IMPERSONATED_USER = 'a.mansouri@afriquestrategie.com'
 const SCOPES = ['https://www.googleapis.com/auth/gmail.modify']
 
-const MAGIC_LINK_RE = /href="(https:\/\/[^"]*supabase\.co\/auth\/v1\/verify[^"]*)"/
+// Domaine variable : instance Supabase self-hébergée (db-miroshark.ai-mpower.com)
+// ou managée (*.supabase.co) — seul le chemin /auth/v1/verify est stable.
+const MAGIC_LINK_RE = /href="(https:\/\/[^"]*\/auth\/v1\/verify[^"]*)"/
 
 export function extractMagicLink(html: string): string | null {
   const match = html.match(MAGIC_LINK_RE)

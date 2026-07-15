@@ -65,6 +65,11 @@ backend/pipeline_test_output/
 frontend/test-results/
 frontend/playwright-report/
 frontend/playwright/.cache/
+/test-results/
+/.playwright-mcp/
+
+# Cache local des outils d'analyse (understand-anything, etc.)
+/.understand-anything/
 
 # Log files
 backend/logs/

@@ -22,7 +22,7 @@ values (
   jsonb_build_object(
     'description',  'Organisation interne Bassira — éditeur de la plateforme',
     'is_internal',  true,
-    'website',      'https://prospectives.ai-mpower.com'
+    'website',      'https://bassira.ma'
   )
 )
 on conflict (slug) do nothing;

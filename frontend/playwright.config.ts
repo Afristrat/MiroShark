@@ -2,7 +2,7 @@
  * Bassira — Playwright config (US-010)
  *
  * Suite de smoke tests E2E read-only sur la prod
- *   https://prospectives.ai-mpower.com
+ *   https://bassira.ma
  *
  * Override possible via la variable d'env BASSIRA_E2E_URL (utile en
  * dev local pour pointer sur http://localhost:5173).
@@ -22,7 +22,7 @@
 
 import { defineConfig, devices } from '@playwright/test'
 
-const BASE_URL = process.env.BASSIRA_E2E_URL || 'https://prospectives.ai-mpower.com'
+const BASE_URL = process.env.BASSIRA_E2E_URL || 'https://bassira.ma'
 const IS_CI = !!process.env.CI
 
 export default defineConfig({
