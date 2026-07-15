@@ -1,7 +1,41 @@
-== PASSATION NUCLÉAIRE MiroShark/Bassira — 2026-07-15 ~19h00 (Brique E2E email : Task 1-5 TOUTES closes, magic link réel validé bout-en-bout en prod — 3 bugs de prod distincts trouvés et corrigés) ==
+== PASSATION NUCLÉAIRE MiroShark/Bassira — 2026-07-15 ~20h30 (Brique E2E email SOLDÉE ; NOUVEAU CHANTIER commandé par Amine : deep-explore de la partie SIMULATIONS — angles morts + axes d'amélioration + remplacement du calque Polymarket par une solution adaptée aux marchés cibles) ==
 Synthèse complète et autonome — ne suppose la lecture d'aucune passation antérieure,
-remplace et purge intégralement l'entrée du 2026-07-15 ~02h30 (tous ses points FAIT/Task 1-3
-restent acquis et ne sont pas remis en cause ci-dessous, juste non répétés en détail).
+remplace et purge intégralement les entrées du 2026-07-15 ~02h30 et ~19h00 (tous leurs
+points FAIT restent acquis et ne sont pas remis en cause ci-dessous).
+
+[NOUVEAU CHANTIER — PRIORITÉ 1 à la reprise, commandé par Amine en toute fin de session]
+Amine (passé sur modèle Fable 5 via /model juste avant) demande d'attaquer la partie
+**simulations** : « deep explore et pointe les angles morts ainsi que les axes
+d'améliorations ». Second volet explicite : « je t'avais demandé aussi dans d'autres
+sessions de creuser un remplacement de Polymarket — une solution adaptée pour mes marchés
+cibles ». Cadrage initial fait avant /clear :
+- Dans Bassira, « Polymarket » = le FORMAT du marché de prédiction SIMULÉ du moteur
+  wonderwall (pas le vrai site) : `backend/app/services/wonderwall_profile_generator.py`
+  (`to_polymarket_format()` l.138, `_save_polymarket_json()` l.1592, risk tolerance l.435,
+  branchement plateforme l.1460) génère des personas traders au format Polymarket — un des
+  canaux de simulation aux côtés des réseaux sociaux simulés. Autres fichiers touchant au
+  marché de prédiction : `backend/app/config.py`, `api/client.py`, locales fr/en/ar,
+  scripts `test_pipeline_twitter_polymarket.py` / `test_3platform_interconnected.py`,
+  pipeline PDF (`report_pdf/loader.py`, `enricher.py`, `renderer.py`,
+  `_method_limits.md.j2`), `docs/08-decisions-log.md`, `.ralph/prd.json`.
+- « Marchés cibles » d'Amine = C-Level et institutions MENA (cf. CLAUDE.md), vente sur
+  devis MAD/USD — le calque Polymarket (crypto/US, traders retail) est culturellement et
+  sémantiquement décalé pour ce public ; c'est le cœur du besoin de remplacement.
+- ⚠️ Amine mentionne des demandes faites « dans d'autres sessions » sur ce remplacement —
+  AVANT de proposer quoi que ce soit, chercher les traces : `PASSATION-ARCHIVE.md` (matche
+  déjà « polymarket »), Mnemo (`recall_context` / `search_memory` sur le cercle Bassira),
+  `docs/08-decisions-log.md` et `docs/04-feature-backlog.md`. Ne pas refaire un cadrage
+  from scratch si un existe déjà.
+- Méthode suggérée à la reprise : (1) retrouver l'historique des demandes précédentes,
+  (2) deep-explore du moteur `backend/wonderwall/` + services de simulation (architecture
+  réelle, pas supposée), (3) restitution angles morts / axes d'amélioration sourcée
+  fichier:ligne, (4) proposition de remplacement du calque Polymarket alignée marchés
+  cibles — en respectant ADR-002 (jamais le mot « prédiction » ni claim de calibration
+  dans le copy commercial tant que < 20 outcomes réels publics — le mécanisme de marché
+  interne peut exister, c'est le POSITIONNEMENT commercial qui est contraint) et SOP-015
+  (les décisions business/pricing restent à Amine ; l'exploration technique est mandatée).
+
+== Reste de la passation : état à l'issue de la brique E2E email (2026-07-15 ~19h00) ==
 
 [ETAT]
 - **`main`** HEAD = `eb332c3`, poussé sur `origin/main`. Commits produit cette session (en
@@ -110,6 +144,9 @@ restent acquis et ne sont pas remis en cause ci-dessous, juste non répétés en
   est le finding Stripe live checkout ci-dessus (ALERTE).
 
 [NEXT]
+0. **PRIORITÉ 1 : le nouveau chantier simulations** (cf. bloc [NOUVEAU CHANTIER] en tête
+   de cette passation) — deep-explore + angles morts + remplacement du calque Polymarket.
+   Il PRIME sur tout le reste de cette liste, ordre explicite d'Amine.
 1. **Décision Amine sur le finding Stripe live checkout** (tunnel-commercial.spec.ts) —
    investiguer si le CTA « Crisis Drill 24h » sur `/offres` route intentionnellement vers un
    Payment Link Stripe direct, ou si c'est une régression à corriger.
