@@ -83,32 +83,12 @@ test('round-trip complet : devis payé → email réel → magic link → dashbo
   // Nouveau contexte : la session admin ne doit pas contaminer ce test.
   const clientContext = await context.browser()!.newContext()
   const clientPage = await clientContext.newPage()
-  clientPage.on('framenavigated', (frame) => {
-    if (frame === clientPage.mainFrame()) {
-      console.log('[DEBUG framenavigated]', frame.url())
-    }
-  })
-  clientPage.on('console', (msg) => console.log('[DEBUG console]', msg.text()))
-  clientPage.on('pageerror', (err) => console.log('[DEBUG pageerror]', err.message))
-  clientPage.on('response', (res) => {
-    if (res.url().includes('/auth/v1/')) {
-      console.log('[DEBUG response]', res.status(), res.url())
-    }
-  })
   await clientPage.goto(magicLink!)
-  console.log('[DEBUG after goto]', clientPage.url())
 
   await clientPage.waitForURL(
     (url) => url.pathname === '/client/dashboard',
     { timeout: 15_000 }
   )
-  console.log('[DEBUG after waitForURL]', clientPage.url())
-  await clientPage.waitForTimeout(3000)
-  console.log('[DEBUG after 3s settle]', clientPage.url())
-  const storageState = await clientPage.evaluate(() =>
-    window.localStorage.getItem('bassira_supabase_auth')
-  )
-  console.log('[DEBUG localStorage bassira_supabase_auth]', storageState)
   const eyebrow = clientPage.locator('.dash-hero-eyebrow, .dash-hero').first()
   await expect(eyebrow).toBeVisible({ timeout: 10_000 })
 

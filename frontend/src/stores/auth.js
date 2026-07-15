@@ -20,6 +20,17 @@
 import { defineStore } from 'pinia'
 import { supabase } from '../lib/supabase'
 
+// Mémoïsation de init() en dehors du store (module-scope, un seul store
+// auth dans l'app) — cf. US-093-bis. Le routeur (beforeEach) démarre sa
+// résolution de navigation initiale AVANT que main.js n'ait fini
+// d'attendre init() (Vue Router n'est pas gaté par app.mount()) : sans
+// cette mémoïsation, un guard qui se déclenche pendant l'attente de
+// init() lit un store encore à l'état par défaut (isAuthenticated=false)
+// et redirige vers /login avant même que la session issue d'un magic
+// link n'ait fini de s'écrire. Tout appelant (main.js, le guard) attend
+// la même promesse plutôt que de relire un état pas encore prêt.
+let initPromise = null
+
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null,           // Supabase auth User | null
@@ -71,33 +82,41 @@ export const useAuthStore = defineStore('auth', {
     /**
      * Initialise le store au démarrage de l'app : récupère la session
      * Supabase persistée et abonne aux changements d'auth.
+     *
+     * Mémoïsé (cf. `initPromise` module-scope) — le routeur (beforeEach)
+     * et main.js peuvent tous deux appeler init() ; le second attend
+     * simplement la promesse déjà en cours plutôt que d'agir sur un état
+     * pas encore prêt.
      */
-    async init() {
+    init() {
+      if (!initPromise) {
+        initPromise = this._runInit()
+      }
+      return initPromise
+    },
+
+    async _runInit() {
       try {
-        // US-096 fix — Si on revient d'un OAuth implicit (Google), l'URL
-        // contient un fragment `#access_token=...` que Supabase JS doit
-        // d'abord parser via detectSessionInUrl AVANT que getSession()
-        // ne renvoie une session valide. On attend l'event SIGNED_IN
-        // (failsafe 3s) pour éviter que le router beforeEach redirige
-        // vers /login alors que la session est en train de s'écrire.
+        // US-096 fix — Si on revient d'un OAuth implicit (Google) ou d'un
+        // magic link, l'URL contient un fragment `#access_token=...` que
+        // Supabase JS doit d'abord parser via detectSessionInUrl AVANT que
+        // getSession() ne renvoie une session valide. On attend l'event
+        // SIGNED_IN (failsafe 3s).
         if (typeof window !== 'undefined' && window.location.hash.includes('access_token=')) {
-          console.log('[DBGAUTH] init: hash has access_token, waiting for SIGNED_IN/TOKEN_REFRESHED')
           await new Promise((resolve) => {
             let done = false
-            const finish = (why) => { if (!done) { done = true; console.log('[DBGAUTH] wait finished:', why); resolve() } }
+            const finish = () => { if (!done) { done = true; resolve() } }
             const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-              console.log('[DBGAUTH] pre-getSession onAuthStateChange event=', event)
               if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
                 try { sub?.subscription?.unsubscribe?.() } catch (_) { /* ignore */ }
-                finish('event:' + event)
+                finish()
               }
             })
-            setTimeout(() => finish('timeout'), 3000)
+            setTimeout(finish, 3000)
           })
         }
 
         const { data, error } = await supabase.auth.getSession()
-        console.log('[DBGAUTH] getSession result: session=', !!data?.session, 'error=', error?.message)
         if (error) {
           // Erreur réseau ou Supabase down — on log mais on n'empêche
           // pas l'app de tourner (les routes publiques restent accessibles).
@@ -105,12 +124,10 @@ export const useAuthStore = defineStore('auth', {
         }
         this.session = data?.session || null
         this.user = data?.session?.user || null
-        console.log('[DBGAUTH] init done: isAuthenticated=', this.isAuthenticated)
 
         // Listener : tout changement d'état auth (login, logout, refresh)
         // met à jour le store. Pinia est réactif → la nav réagit auto.
         supabase.auth.onAuthStateChange((event, session) => {
-          console.log('[DBGAUTH] post-init onAuthStateChange event=', event, 'session=', !!session)
           this.session = session || null
           this.user = session?.user || null
           if (event === 'SIGNED_OUT') {

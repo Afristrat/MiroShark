@@ -277,25 +277,27 @@ const router = createRouter({
 //   currentOrg.self_service_enabled).
 // US-102 — étendu pour requiresSuperAdmin.
 // Si non authentifié → redirection vers /login avec ?redirect=<path>.
-// On lit l'auth store (Pinia) ; init() est appelé en amont depuis main.js
-// donc l'état de session persisté est déjà chargé au moment des nav.
+//
+// US-093-bis fix — Vue Router résout sa navigation initiale dès
+// `app.use(router)`, INDÉPENDAMMENT du `await auth.init()` fait dans
+// main.js avant `app.mount()` : ce guard peut donc s'exécuter avant que
+// init() n'ait fini. C'était invisible tant qu'aucun flux magic link
+// n'avait été testé de bout en bout (Task 4, brique E2E email) — la
+// bascule Supabase (traitement du hash `#access_token=...` puis
+// `history.replaceState` qui le retire) déclenche une SECONDE navigation
+// pendant que init() attend encore l'event SIGNED_IN ; l'ancienne
+// heuristique (bypass si le hash contient `access_token=`) ne protège
+// plus cette seconde navigation, où le hash est déjà vide. Fix : le
+// guard attend explicitement `auth.init()` — mémoïsé, donc gratuit une
+// fois résolu — avant de statuer sur l'authentification.
 router.beforeEach(async (to) => {
-  // US-096 fix — Si on revient d'un OAuth implicit (URL contient
-  // `#access_token=...`), Supabase JS est en train d'écrire la session ;
-  // ne pas rediriger vers /login dans cette fenêtre.
-  console.log('[DBGGUARD] to=', to.fullPath, 'hash=', typeof window !== 'undefined' ? window.location.hash : 'n/a')
-  if (typeof window !== 'undefined' && window.location.hash.includes('access_token=')) {
-    console.log('[DBGGUARD] bypass (hash has access_token)')
-    return true
-  }
+  const auth = useAuthStore()
+  await auth.init()
 
   const needsAuth = to.meta?.requiresAuth || to.meta?.requiresSelfService || to.meta?.requiresSuperAdmin
   if (!needsAuth) return true
 
-  const auth = useAuthStore()
-  console.log('[DBGGUARD] needsAuth=', needsAuth, 'isAuthenticated=', auth.isAuthenticated, 'session=', !!auth.session, 'user=', !!auth.user)
   if (!auth.isAuthenticated) {
-    console.log('[DBGGUARD] REDIRECT TO LOGIN from', to.fullPath)
     return {
       name: 'Login',
       query: { redirect: to.fullPath }
