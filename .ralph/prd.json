@@ -5066,13 +5066,21 @@
         "Échec réseau simulé → génération de personas continue sans crash, fallback journalisé",
         "Tests unitaires (parsing API, cache hit/miss, fallback) verts ; suite pytest verte"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [],
       "metadata": {
         "estimated_hours": 5,
         "priority": "P1",
-        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md"
-      }
+        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md",
+        "files_touched": [
+          "supabase/migrations/20260716_003_occupation_profiles.sql",
+          "backend/app/services/esco_client.py",
+          "backend/tests/test_unit_esco_client.py",
+          "docs/02-data-dictionary.md"
+        ],
+        "note": "get_occupation_profile(query, lang, client=None) : cache Supabase (label,lang) normalisé d'abord, API ESCO publique sinon (urllib stdlib, 2 temps search->resource, adapté du script de référence prouvé esco-role.py testé FR/AR 2026-07-05). Fallback silencieux total. 9 tests unitaires verts. Suite complète 2291 passed 42 skipped — 1 flaky pre-existant (test_md_hash_stable_with_deterministic_enricher, app/services/report_pdf/renderer.py, PDF pipeline, zero reference croisee avec esco_client.py) confirme recidiver 2x cette session apres avoir ete propre sur US-212/223/222 -- isole = vert a chaque fois. Cause racine exacte NON investiguee (hors scope US-228) -- juste confirme non lie et non bloquant. Severite (recidive x2) tracee dans progress.md pour visibilite future."
+      },
+      "completedAt": "2026-07-16T20:57:28Z"
     },
     {
       "id": "US-229",

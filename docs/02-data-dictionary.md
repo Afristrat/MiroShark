@@ -269,9 +269,32 @@ prompt actuellement codé dans `wonderwall/simulations/polymarket/prompts.py`).
 RLS : toutes opérations réservées `is_super_admin()`, aucune policy anon (backend lit/
 écrit via service_role, contourne RLS — même pattern que `intake_agent_playbook`).
 
+## `occupation_profiles`
+ADR-016 (migration 20260716_003) — cache des fiches métiers ESCO (+ enrichissement 122B
+hors-taxonomie, US-230). Clé de cache `(label, lang)` = terme de recherche normalisé
+(trim + lowercase), pas nécessairement le prefLabel ESCO canonique retourné par l'API.
+Client `backend/app/services/esco_client.py` : cache d'abord, API ESCO publique sinon
+(`urllib` stdlib, requête en 2 temps : `/search` puis `/resource/occupation`), échec
+réseau → `None` journalisé (jamais d'exception — persona généré sans bloc
+`<expertise_metier>`, cf. US-229).
+| Colonne | Type | Contraintes | Description | PII |
+|---|---|---|---|---|
+| id | uuid | pk, default gen_random_uuid() | | non |
+| occupation_uri | text | not null | identifiant ESCO canonique | non |
+| label | text | not null | terme de recherche normalisé — clé de cache avec lang | non |
+| lang | text | not null | fr \| en \| ar \| ... | non |
+| definition | text | not null, default '' | description ESCO dans la langue demandée | non |
+| essential_skills | jsonb | not null, default [] | libellés des compétences essentielles | non |
+| optional_skills | jsonb | not null, default [] | libellés des compétences optionnelles | non |
+| source | text | not null, check in (esco, llm_122b) | esco = taxonomie officielle ; llm_122b = enrichissement hors-taxonomie (US-230) | non |
+| fetched_at | timestamptz | not null, default now() | | non |
+
+RLS : lecture `authenticated` (données non sensibles, taxonomie ESCO publique) ; écriture
+(insert/update/delete) réservée `is_super_admin()`.
+
 ## Conventions transverses
 
-- **RLS activée sur les 15 tables** (règle absolue) — état vérifié dans les migrations.
+- **RLS activée sur les 17 tables** (règle absolue) — état vérifié dans les migrations.
 - Toute table porte `created_at` ; soft-delete : **non** (suppression cascade par org) —
   réexaminer en ADR si un client exige la rétention.
 - Colonnes PII (marquées **oui** en gras) → reprises dans `docs/07-legal-compliance.md`.
@@ -295,5 +318,4 @@ RLS : toutes opérations réservées `is_super_admin()`, aucune policy anon (bac
 
 | Objet planifié | Story | Rôle | RLS prévue |
 |---|---|---|---|
-| `occupation_profiles` | US-228 | Cache fiches métiers ESCO + enrichissement 122B (`occupation_uri`, `label`, `lang`, `definition`, `essential_skills` jsonb, `optional_skills` jsonb, `source` ∈ {esco, llm_122b}, `fetched_at`) | lecture service ; écriture super-admin/pipeline |
 | `market_resolutions` | US-226 | Verdicts de l'oracle de clôture (`simulation_id`, `market_id`, `question`, `resolution_spec` jsonb, `verdict` ∈ {YES, NO, INVALID}, `justification`, `confidence`, `oracle_prompt_version`, `resolved_at`) | lecture org propriétaire ; écriture service |

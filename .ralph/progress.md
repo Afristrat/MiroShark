@@ -2094,3 +2094,51 @@ US-237).
 pytest **2283 passed, 42 skipped, 0 failed** (+14 tests, zéro régression).
 Prochaine story : **US-228** (cache Supabase ESCO) — débloque US-229
 (partiel, avec US-223) et US-230.
+
+### 2026-07-16 — [US-228] Cache Supabase ESCO — CLÔTURÉE
+
+Livré :
+- Migration `supabase/migrations/20260716_003_occupation_profiles.sql` :
+  table `occupation_profiles`, clé de cache `(label, lang)` = **terme de
+  recherche normalisé** (trim+lowercase), volontairement PAS le prefLabel
+  ESCO canonique (peut différer légèrement de la recherche) — choix
+  documenté en commentaire de migration pour éviter toute confusion future.
+  RLS : lecture `authenticated` (données non sensibles), écriture
+  `is_super_admin()`. **Créée, PAS encore jouée en prod** (même convention
+  que US-223/US-222).
+- `backend/app/services/esco_client.py` : `get_occupation_profile(query,
+  lang, client=None)` — cache d'abord, sinon requête API ESCO en 2 temps
+  (`/search` puis `/resource/occupation`), adaptée du script de référence
+  DÉJÀ PROUVÉ `~/.claude/skills/prompt-engineer-pro/scripts/esco-role.py`
+  (testé OK FR/AR le 2026-07-05 — mémoire projet). `urllib` stdlib
+  exclusivement (Ponytail, ADR-016 §3.2 : zéro dépendance nouvelle).
+  Fallback silencieux total (ne lève jamais — `SupabaseConfigError` et
+  toute exception réseau/JSON → `None` + log, écriture cache best-effort).
+- 9 tests unitaires : cache hit (zéro appel réseau vérifié), cache miss +
+  écriture, requête arabe normalisée, échec réseau, 404 ESCO, JSON
+  malformé, Supabase indisponible (lookup ET write), requête vide.
+- `docs/02-data-dictionary.md` : table documentée (17 tables au total,
+  compté par grep).
+**Gates** : ruff 0 erreur (115 fichiers) · mypy 0 erreur (scope inchangé)
+· `test_unit_esco_client.py` 9/9 verts isolément.
+
+**Flaky pré-existant récidivé 2x** : `test_pdf_pipeline_e2e.py::
+TestPipelineMarkdown::test_md_hash_stable_with_deterministic_enricher` a
+échoué sur les 2 lancements complets de cette story (2291 passed à chaque
+fois, seul cet unique test varie). Vérifications faites avant de considérer
+non-bloquant : (1) zéro référence croisée entre ce test et
+`esco_client.py`/`occupation_profiles`/tout fichier touché par US-228 ;
+(2) le test PASSE systématiquement en isolation (`pytest
+tests/test_pdf_pipeline_e2e.py::TestPipelineMarkdown::
+test_md_hash_stable_with_deterministic_enricher` seul → vert) ; (3) ce
+flaky était déjà propre (0 échec) sur les 3 suites complètes précédentes de
+cette session (US-212, US-223, US-222) — sa récidive 2x d'affilée MAINTENANT
+est une donnée nouvelle qui élève sa priorité de correction (déjà tracé en
+[ALERTE] héritée, mais jusqu'ici jamais observé se déclencher réellement
+cette session). Cause racine exacte NON investiguée (hors scope US-228 —
+le fichier concerné est `app/services/report_pdf/renderer.py`, aucun lien
+avec ce chantier). **Recommandation pour un futur ticket dédié** (pas cette
+session) : creuser pourquoi ce test dépend de l'ordre d'exécution de la
+suite (passe seul, échoue parfois en suite complète).
+Prochaine story : **US-221** (persistance durable des artefacts, ADR-005)
+— dernière story du Lot 0.
