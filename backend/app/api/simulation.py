@@ -24,6 +24,7 @@ from ..config import Config
 from ..services.entity_reader import EntityReader
 from ..services.wonderwall_profile_generator import WonderwallProfileGenerator
 from ..services.simulation_manager import SimulationManager, SimulationStatus
+from ..services import arena_registry
 from ..services.simulation_config_generator import SimulationConfigGenerator
 from ..services.simulation_runner import SimulationRunner, RunnerStatus
 from ..utils.logger import get_logger
@@ -3706,7 +3707,7 @@ def start_simulation():
     Request (JSON):
         {
             "simulation_id": "sim_xxxx",          // Required, simulation ID
-            "platform": "parallel",                // Optional: twitter / reddit / parallel (default)
+            "platform": "parallel",                // Optional: twitter / reddit / polymarket / parallel (default) — must be enabled on the simulation (US-222)
             "max_rounds": 100,                     // Optional: maximum simulation rounds, used to truncate overly long simulations
             "enable_graph_memory_update": false,   // Optional: whether to dynamically update agent activity to knowledge graph memory
             "force": false                         // Optional: force restart (will stop running simulation and clean up logs)
@@ -3777,11 +3778,14 @@ def start_simulation():
                     "error": "max_rounds must be a valid integer"
                 }), 400
 
-        if platform not in ['twitter', 'reddit', 'polymarket', 'parallel']:
+        if not arena_registry.is_valid_platform(platform):
             return jsonify({
                 "success": False,
                 "error_code": "INVALID_INPUT",
-                "error": f"Invalid platform type: {platform}, options: twitter/reddit/polymarket/parallel"
+                "error": (
+                    f"Invalid platform type: {platform}, options: "
+                    f"{'/'.join(arena_registry.list_arena_names())}/parallel"
+                )
             }), 400
 
         enable_cross_platform = data.get('enable_cross_platform', True)
@@ -3796,6 +3800,19 @@ def start_simulation():
                 "error_code": "SIMULATION_NOT_FOUND",
                 "error": f"Simulation not found: {simulation_id}"
             }), 404
+
+        # US-222 : refuse une arène non activée à la création de la
+        # simulation (angle mort documenté — jusqu'ici /start acceptait
+        # n'importe quelle plateforme sans vérifier les flags enable_*).
+        if not arena_registry.is_platform_enabled(platform, state):
+            return jsonify({
+                "success": False,
+                "error_code": "PLATFORM_NOT_ENABLED",
+                "error": (
+                    f"Platform '{platform}' is not enabled for this simulation "
+                    f"(check enable_twitter/enable_reddit/enable_polymarket at creation time)."
+                )
+            }), 400
 
         force_restarted = False
         
@@ -4302,7 +4319,7 @@ def _compute_influence_ranked(simulation_id, top_n=None):
             }
         return agents[name]
 
-    for platform in ('twitter', 'reddit', 'polymarket'):
+    for platform in arena_registry.list_arena_names():
         actions_path = os.path.join(sim_dir, platform, 'actions.jsonl')
         if not os.path.exists(actions_path):
             continue
@@ -5031,7 +5048,7 @@ def get_simulation_frame(simulation_id: str, round_num: int):
         actions_for_round: list = []
         if platforms:
             for p in platforms:
-                if p not in ('twitter', 'reddit', 'polymarket'):
+                if p not in arena_registry.list_arena_names():
                     continue
                 actions_for_round.extend(
                     SimulationRunner.get_all_actions(simulation_id, platform=p, round_num=round_num)
@@ -8201,7 +8218,7 @@ def get_interaction_network(simulation_id: str):
                 agents[name] = {'name': name, 'platforms': set(), 'actions': 0}
             agents[name]['platforms'].add(platform)
 
-        for platform in ('twitter', 'reddit', 'polymarket'):
+        for platform in arena_registry.list_arena_names():
             actions_path = os.path.join(sim_dir, platform, 'actions.jsonl')
             if not os.path.exists(actions_path):
                 continue

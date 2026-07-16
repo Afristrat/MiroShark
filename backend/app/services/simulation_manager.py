@@ -313,15 +313,22 @@ class SimulationManager:
         if org_id:
             try:
                 from ..auth.supabase_client import record_simulation_ownership
+                from .arena_registry import ARENA_STATE_FLAGS
+                enabled_platforms = [
+                    name for name, flag in ARENA_STATE_FLAGS.items()
+                    if getattr(state, flag, False)
+                ]
                 record_simulation_ownership(
                     simulation_id=simulation_id,
                     org_id=org_id,
                     user_id=created_by,
                     package_id=package_id,
+                    enabled_platforms=enabled_platforms,
                 )
                 logger.info(
-                    "simulation_ownership recorded: %s -> org=%s, user=%s, package=%s",
-                    simulation_id, org_id, created_by, package_id,
+                    "simulation_ownership recorded: %s -> org=%s, user=%s, package=%s, "
+                    "enabled_platforms=%s",
+                    simulation_id, org_id, created_by, package_id, enabled_platforms,
                 )
             except Exception as exc:  # noqa: BLE001 — défense en profondeur
                 logger.error(

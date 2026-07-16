@@ -2058,3 +2058,39 @@ l'ordre d'exécution). Livré :
 Prochaine story : **US-222** (arènes requêtables + registre dynamique) —
 2e plus grosse contrainte bloquante (débloque US-235, et avec US-231,
 US-237).
+
+### 2026-07-16 — [US-222] Arènes requêtables + registre dynamique — CLÔTURÉE
+
+2e plus grosse contrainte bloquante du chantier. Livré :
+- `backend/app/services/arena_registry.py` : `ARENA_STATE_FLAGS` (dict arène
+  → attribut SimulationState) = source unique. `list_arena_names()`,
+  `is_valid_platform()`, `is_platform_enabled(platform, state)`. Ajouter une
+  4e arène (US-237) = une ligne dans ce dict + son propre `enable_*` sur
+  `SimulationState` — zéro modification de `app/api/simulation.py`.
+- `simulation.py` : les 4 occurrences de l'enum `('twitter','reddit',
+  'polymarket')` codé en dur remplacées par `arena_registry.list_arena_names()`
+  (lignes ~3780 validation `/start`, ~4322, ~5051, ~8221 boucles de lecture
+  actions.jsonl par arène).
+- **Angle mort fermé** : `/simulation/{id}/start` refuse désormais une
+  plateforme non activée à la création (`PLATFORM_NOT_ENABLED`, 400) — avant
+  cette story, n'importe quelle `platform` était acceptée sans vérifier les
+  flags `enable_twitter`/`enable_reddit`/`enable_polymarket` de la sim
+  (`simulation_runner.py:560-574`, comportement de fallback `else` qui
+  démarrait tout en parallèle par défaut).
+- Migration `supabase/migrations/20260716_002_enabled_platforms.sql` :
+  colonne `simulation_ownership.enabled_platforms text[]`. **Créée mais PAS
+  encore jouée en prod** (même convention qu'US-223 — Amine via SQL Editor).
+  `record_simulation_ownership()` étendu (paramètre optionnel) ;
+  `SimulationManager.create_simulation()` calcule la liste depuis les flags
+  et la transmet — peuplée uniquement pour les sims avec `org_id` (périmètre
+  identique au reste de `simulation_ownership`, cohérent avec l'existant).
+- `docs/02-data-dictionary.md` : colonne documentée en section définitive.
+- 14 tests unitaires nouveaux (`test_unit_arena_registry.py` : liste, validité,
+  validation croisée dont sentinelle `parallel` toujours activée et
+  robustesse sur state incomplet ; extension de
+  `test_unit_simulation_manager_ownership.py` : `enabled_platforms` reflète
+  bien les flags à la création, y compris le cas tout désactivé).
+**Gates** : ruff 0 erreur (114 fichiers) · mypy 0 erreur (scope inchangé) ·
+pytest **2283 passed, 42 skipped, 0 failed** (+14 tests, zéro régression).
+Prochaine story : **US-228** (cache Supabase ESCO) — débloque US-229
+(partiel, avec US-223) et US-230.

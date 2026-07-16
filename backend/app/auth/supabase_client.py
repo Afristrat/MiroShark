@@ -297,6 +297,7 @@ def record_simulation_ownership(
     org_id: str,
     user_id: Optional[str] = None,
     package_id: Optional[str] = None,
+    enabled_platforms: Optional[List[str]] = None,
     client: Any = None,
 ) -> None:
     """Enregistre une simulation comme appartenant à une org.
@@ -304,6 +305,11 @@ def record_simulation_ownership(
     Idempotent : un INSERT...ON CONFLICT côté Supabase (la clé primaire
     est `simulation_id`). Si la sim est déjà tracée, la ligne existante
     n'est pas écrasée — on log un warning et on retourne sans erreur.
+
+    Args:
+        enabled_platforms: arènes activées à la création (US-222) — snapshot
+            SQL requêtable de SimulationState.enable_*. Omis/vide → colonne
+            laissée au défaut `{}` côté DB (migration 20260716_002).
     """
     cli = client or get_supabase_admin()
     payload: Dict[str, Any] = {
@@ -314,6 +320,8 @@ def record_simulation_ownership(
         payload["created_by"] = user_id
     if package_id:
         payload["package_id"] = package_id
+    if enabled_platforms:
+        payload["enabled_platforms"] = list(enabled_platforms)
     try:
         cli.table("simulation_ownership").insert(payload).execute()
     except Exception as exc:  # noqa: BLE001 — duplicate key, etc.

@@ -62,6 +62,7 @@ Métadonnées légères ; le payload riche (profils, trajectoire, state.json) vi
 | outcome | jsonb | | {label, observed_at, source_url, notes} | non |
 | brier_score | numeric | | calculé après outcome | non |
 | metadata | jsonb | not null, default '{}' | | non |
+| enabled_platforms | text[] | not null, default '{}' | arènes activées à la création (US-222, migration 20260716_002) — snapshot SQL requêtable dérivé de `SimulationState.enable_*`, source de vérité du nom canonique = `app/services/arena_registry.py` | non |
 
 ## `quote_ownership`
 ✅ US-203 (migration 20260707_001) : la colonne `payload` fait de Supabase la **source
@@ -296,4 +297,3 @@ RLS : toutes opérations réservées `is_super_admin()`, aucune policy anon (bac
 |---|---|---|---|
 | `occupation_profiles` | US-228 | Cache fiches métiers ESCO + enrichissement 122B (`occupation_uri`, `label`, `lang`, `definition`, `essential_skills` jsonb, `optional_skills` jsonb, `source` ∈ {esco, llm_122b}, `fetched_at`) | lecture service ; écriture super-admin/pipeline |
 | `market_resolutions` | US-226 | Verdicts de l'oracle de clôture (`simulation_id`, `market_id`, `question`, `resolution_spec` jsonb, `verdict` ∈ {YES, NO, INVALID}, `justification`, `confidence`, `oracle_prompt_version`, `resolved_at`) | lecture org propriétaire ; écriture service |
-| `simulation_ownership.enabled_platforms` (colonne `text[]`) | US-222 | Arènes activées, requêtables en SQL (aujourd'hui perdues dans les flags du state filesystem) | héritée de la table |

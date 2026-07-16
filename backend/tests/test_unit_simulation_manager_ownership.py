@@ -79,6 +79,54 @@ class TestCreateSimulationOwnership:
         assert captured["user_id"] == "user-uuid-1"
         assert captured["package_id"] == "crisis-drill-24h"
 
+    def test_enabled_platforms_reflects_flags_at_creation(self, sim_dir, monkeypatch):
+        """US-222 : enabled_platforms dérivé des flags enable_* à la création."""
+        captured: Dict[str, Any] = {}
+
+        def fake_record(**kwargs):
+            captured.update(kwargs)
+
+        monkeypatch.setattr(
+            "app.auth.supabase_client.record_simulation_ownership",
+            fake_record,
+        )
+
+        sm = SimulationManager()
+        sm.create_simulation(
+            project_id="proj1",
+            graph_id="graph1",
+            enable_twitter=True,
+            enable_reddit=False,
+            enable_polymarket=True,
+            org_id="org-uuid-1",
+        )
+
+        assert set(captured["enabled_platforms"]) == {"twitter", "polymarket"}
+        assert "reddit" not in captured["enabled_platforms"]
+
+    def test_enabled_platforms_empty_when_all_disabled(self, sim_dir, monkeypatch):
+        captured: Dict[str, Any] = {}
+
+        def fake_record(**kwargs):
+            captured.update(kwargs)
+
+        monkeypatch.setattr(
+            "app.auth.supabase_client.record_simulation_ownership",
+            fake_record,
+        )
+
+        sm = SimulationManager()
+        sm.create_simulation(
+            project_id="proj1",
+            graph_id="graph1",
+            enable_twitter=False,
+            enable_reddit=False,
+            enable_polymarket=False,
+            org_id="org-uuid-1",
+        )
+
+        assert captured["enabled_platforms"] == []
+
     def test_supabase_failure_does_not_break_creation(
         self, sim_dir, monkeypatch
     ):

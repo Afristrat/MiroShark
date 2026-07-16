@@ -4916,13 +4916,25 @@
         "docs/02-data-dictionary.md à jour dans le même commit",
         "Tests unitaires du registre et de la validation croisée verts ; suite pytest verte"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [],
       "metadata": {
         "estimated_hours": 5,
         "priority": "P0",
-        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md"
-      }
+        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md",
+        "files_touched": [
+          "supabase/migrations/20260716_002_enabled_platforms.sql",
+          "backend/app/services/arena_registry.py",
+          "backend/app/api/simulation.py",
+          "backend/app/auth/supabase_client.py",
+          "backend/app/services/simulation_manager.py",
+          "backend/tests/test_unit_arena_registry.py",
+          "backend/tests/test_unit_simulation_manager_ownership.py",
+          "docs/02-data-dictionary.md"
+        ],
+        "note": "arena_registry.py = source unique (ARENA_STATE_FLAGS) remplaçant l'enum en dur sur 4 sites de simulation.py. Validation croisée /start ajoutée (PLATFORM_NOT_ENABLED 400, angle mort documenté fermé). Colonne enabled_platforms peuplée à la création (org_id requis, même périmètre que le reste de simulation_ownership) — migration créée, PAS encore jouée en prod (convention projet). 14 tests nouveaux, pytest 2283 passed 42 skipped 0 failed."
+      },
+      "completedAt": "2026-07-16T20:35:28Z"
     },
     {
       "id": "US-223",
