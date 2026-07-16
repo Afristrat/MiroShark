@@ -1,156 +1,205 @@
-== PASSATION NUCLÉAIRE MiroShark/Bassira — 2026-07-16 ~01h00 (Chantier Simulations V2 CADRÉ ET FIGÉ : spec + ADR-015→019 + 17 stories commitées ; mode Ralph demandé mais EN PAUSE SOP-013 — prototype 9 écrans publié, Council rendu NO-GO en l'état, EN ATTENTE du go explicite d'Amine + arbitrage lexique) ==
-Synthèse complète et autonome — remplace et purge intégralement l'entrée du 2026-07-15
-~20h30 (ses points FAIT restent acquis : brique E2E email soldée, magic link validé en
-prod, 3 bugs prod corrigés — rien n'est remis en cause ci-dessous).
+== PASSATION NUCLÉAIRE MiroShark/Bassira — 2026-07-16 ~21h00 (Gate SOP-013 LEVÉ, Ralph REPREND EN EXÉCUTION : US-212 codée et clôturée, US-223 suivante — 22 stories passes=false) ==
+Synthèse complète et autonome — remplace et purge intégralement les entrées
+2026-07-16 ~01h00 (chantier figé, gate ouvert) — ce gate est maintenant LEVÉ,
+tout le contenu antérieur reste acquis en contexte (spec, ADR, prototype) mais
+n'est plus « en attente ».
 
 [ETAT]
-- **`main`** HEAD = `bea69b6`, poussé sur `origin/main`. Commits de cette session :
-  `5ab364d` (spec Simulations V2 + ADR-015→019 + 17 stories US-221→US-237 + dictionnaire
-  tables planifiées + backlog US-216 marquée convertie), `bea69b6` (pause SOP-013 notée
-  dans `.ralph/progress.md`).
-- Gates re-prouvés en début de session : pytest **2258 passed, 0 failed, 42 skipped**
-  (relancée intégralement), `npm run build` exit 0, prod = conteneur Coolify sur l'image
-  taguée du SHA de HEAD (vérifié par `docker ps` via SSH), bassira.ma HTTP 200.
-- `.ralph/prd.json` : **166 stories, 21 `passes=false`** (US-208, US-IQ-05/06/07,
-  US-221→US-237). JSON valide, **fichier en CRLF** (cf. [MEMO]).
-- **LOOP RALPH FORMELLEMENT EN PAUSE** (SOP-013, gate en cours) — aucune story codée.
+- **`main`** HEAD = `fabe269`, poussé sur `origin/main`. Commits de cette
+  session (dans l'ordre) : `3105320` (re-soumission SOP-013 v2 : « arène de
+  convictions », addenda spec §7, prd.json post-Council) → `db7835c` (halo
+  lexical tranché, Variante A wargaming) → `5262607` (go explicite Amine,
+  scellement ADR-IQ-05 validé, ordre d'exécution par contrainte bloquante) →
+  `fabe269` (**[US-212] première story codée et clôturée**).
+- **Gate SOP-013 : LEVÉ.** Les 2 décisions attendues sont actées : (1) lexique
+  « arène de convictions » + glossaire wargaming (adjudication, issue, clôture,
+  degré de convergence, lecture croisée) — ADR-018 amendé ; (2) go explicite
+  d'Amine tracé dans `.ralph/progress.md`, ordre d'exécution calculé par
+  graphe de dépendances (in-degree des dependents), pas par intuition.
+- **`.ralph/prd.json` : 168 stories, 22 `passes=false`.** US-212 clôturée ;
+  US-212b (burn-down mypy, P2) ajoutée en story de suivi. Fichier en **CRLF**
+  (cf. [MEMO]).
+- Gates vérifiés en fin de session : `uv run ruff check .` 0 erreur ·
+  `uv run mypy app/` 0 erreur (scope documenté, cf. [FAIT]) · `npx eslint .`
+  0 erreur (298 warnings non bloquants) · `npm run build` OK ·
+  `uv run pytest -m "not integration"` **2258 passed, 42 skipped, 0 failed**
+  (zéro régression vs baseline). Prod non re-vérifiée cette session (aucun
+  déploiement déclenché — tout le travail est en amont de la prod, pas encore
+  mergé de feature produit).
 
-[FAIT — cette session]
-1. **Vérification par preuve de la passation précédente** (règle n°4) : git, prod
-   (image = SHA HEAD), pytest, build, prd.json — tout confirmé.
-2. **Deep-explore simulations** (3 agents Explore Haiku + contre-vérifications
-   personnelles, erreurs d'agents corrigées). Angles morts majeurs sourcés :
-   `resolve_market()` défini mais JAMAIS appelé (`polymarket/platform.py:378` — marchés
-   jamais dénoués), P&L des agents faux (`cost_basis = 0.50` en dur,
-   `environment.py:40`), prix AMM jamais dans le PDF (`charts.py:251` trace les stances),
-   `CHINA_TIMEZONE_CONFIG` (config calée sur Pékin, `simulation_config_generator.py:30`),
-   AUCUNE règle de routage d'arènes (3 checkboxes user + `/start` sans validation),
-   prompts d'arènes en anglais nus (personas sans grounding), `do_nothing` de base.py
-   contaminé vocabulaire trader, enum plateformes en dur (`simulation.py:3771`),
-   `enabled_platforms` non requêtable, artefacts sur volume éphémère (ADR-005 ouvert).
-   Insight clé : Twitter/Reddit partagent les mêmes classes → une arène MENA = un simple
-   `SimulationConfig` de plus.
-3. **Arbitrages d'Amine actés au fil de la session** : (a) dénouement simulé avec VRAI
-   sens économique ; (b) personas au standard **ESCO** (API testée OK depuis le poste en
-   FR ET AR) + enrichissement hors-taxonomie par **le 122B** → directement en Supabase ;
-   (c) élévation **L99 de tous les prompts** de simulation (skill prompt-engineer-pro) +
-   page console **super-admin** des prompts, **éditables en base** ; (d) rejet du menu
-   fixe de critères de dénouement (« les scénarios sont infinis ») → architecture
-   **resolution_spec par marché + oracle de clôture** proposée et retenue ;
-   (e) renommage client **« marché de convictions »** (option renommage complet choisie
-   via AskUserQuestion).
-4. **Livrables commités (`5ab364d`)** : spec
-   `docs/superpowers/specs/2026-07-16-simulations-v2-design.md` ; **ADR-015**
-   (resolution_spec + oracle YES/NO/INVALID + void/remboursement + richesse finale =
-   score de justesse), **ADR-016** (ESCO + cache `occupation_profiles` + 122B),
-   **ADR-017** (registre `simulation_prompts` versionné, édition = nouvelle version,
-   activation conditionnée au golden set), **ADR-018** (lexique « convictions »
-   fr/en/ar), **ADR-019** (routage déterministe + override journalisé) ; **17 stories**
-   US-221→US-237 (chantier `16-simulations-v2`, dépendances câblées, hard things first) ;
-   dictionnaire : section « tables planifiées » (`simulation_prompts`,
-   `occupation_profiles`, `market_resolutions`, colonne `enabled_platforms`).
-5. **« mode ralph » reçu → gate SOP-013 appliqué intégralement** : pause formelle
-   (commit `bea69b6`), périmètre recompté (21 stories), tokens charte extraits de
-   `frontend/src/design-tokens.css` (pas de Design.md), **prototype navigable 9 écrans**
-   publié (Artifact, thèmes clair/sombre, tokens `--wi-*` à l'identique) :
-   https://claude.ai/code/artifact/28943904-102a-4642-b597-43cd11cc74a9 — écrans :
-   couverture, création-arènes (routage+override), marchés de convictions avec
-   dénouement, PDF dénouement, PDF comparatif Delphi, console prompts liste, prompt
-   détail (versions/diff/golden set), intake Porte 2 AAR scellée, dossier devis enrichi,
-   pré-seed simulation depuis devis. Écarts signalés : Artifact au lieu d'aidesigner
-   (fidélité tokens privilégiée — incident v1.1.0), polices en repli system-ui (CSP),
-   prototype monolingue fr.
-6. **Council exécuté** (5 conseillers Sonnet + 5 revues croisées anonymisées + synthèse
-   Chairman). Verdict : **NO-GO en l'état, correctifs ciblés sans refonte**.
-   Convergence 4/5 : le lexique « oracle/verdict/confiance/dénouement/Delphi » contredit
-   le positionnement non-prédictif ; le gate ne couvre que le décor (contrat d'interface
-   du moteur manquant) ; S4 sans disclaimer (S3 en a un) ; 5 trous d'implémentation
-   (états vides/erreur, schéma série de prix, scellement non tranché, retour d'état
-   golden set, algo de diff). Clash arbitré : schéma cross-simulations (Expansionist) ET
-   fil rouge « premier cas Porte 2 réel au plus tôt » (First Principles) — les deux.
-   Erreurs factuelles des conseillers corrigées par preuve : ADR-002 interdit le claim
-   commercial, pas la mesure interne ; ADR-IQ-05 existe mais mécanisme explicitement « à
-   trancher en revue technique » ; routage S8 lit le montant (non scellé) ; le 122B ne
-   fait pas tourner le moteur.
-7. Remise faite à Amine (prototype + synthèse Council + 3 voies : go tel quel / corrige
-   et re-soumets / go partiel backend) — **sa réponse n'est pas encore donnée**.
+[FAIT — cette session, dans l'ordre]
+1. **Arbitrage lexique halo** (registre wargaming vs halo actuel contesté par
+   le Council) : Amine a demandé les DEUX variantes en même temps malgré leur
+   contradiction assumée → prototype v2 enrichi d'un commutateur de lexique
+   visible (bannière pleine largeur, pas un petit bouton — 1er essai raté,
+   « j'ai rien eu à comparer », corrigé). Puis arbitrage final : **Variante A
+   (wargaming) retenue**. Glossaire figé dans ADR-018 (`docs/08-decisions-log.md`)
+   et spec §7.4 : oracle→adjudication, verdict→issue, dénouement→clôture,
+   confiance→degré de convergence, Delphi→lecture croisée des arènes.
+2. **Scellement ADR-IQ-05 validé par Amine** (chiffrement applicatif +
+   empreinte SHA-256 remise au prospect) — figé dans
+   `docs/intake/08-decisions-log.md` et `docs/intake/02-data-dictionary-delta.md`.
+3. **Go explicite reçu** : « je veux tout faire développer en premier en
+   fonction de la contrainte bloquante ». Ordre d'exécution calculé par lecture
+   exhaustive des `dependencies` de `prd.json` (pas de mémoire) — voir [NEXT]
+   pour l'ordre complet. Tracé daté dans `.ralph/progress.md` (SOP-013 étape 10).
+4. **Skill `ralph-mode` invoquée**, protocole appliqué. **US-212 codée** :
+   - ruff configuré (`backend/pyproject.toml`, règles E4/E7/E9/F, déjà 0 erreur
+     sur `app/` — `wonderwall/` exclu explicitement, fork amont bundlé, jamais
+     reformaté sous peine de casser les merges upstream).
+   - mypy bootstrapé sur `backend/app/` : **268 erreurs au premier run**.
+     2 causes racines systémiques trouvées et corrigées (root-cause fixes qui
+     payent pour TOUT le reste du chantier) :
+     - `app/api/__init__.py` : les 8 Blueprint Flask n'étaient pas annotés →
+       cycle d'import `from . import xxx_bp` illisible pour mypy → **68 erreurs
+       `has-type` d'un coup**. Fix : `xxx_bp: Blueprint = Blueprint(...)`.
+     - `app/models/task.py` (singleton `TaskManager`) : `_tasks`/`_task_lock`
+       posés dynamiquement dans `__new__` sans déclaration de classe → 11
+       erreurs `attr-defined`. Fix : annotations de classe.
+     `app/api/simulation.py` (fichier le plus gros et le plus retouché du
+     chantier à venir, 8600+ lignes) et `app/api/pdf_generation.py`
+     **intégralement nettoyés** (32→0 et 10→0 erreurs). Bugs réels trouvés et
+     corrigés au passage (pas de simples suppressions) : fonction morte
+     `startSimulation` dans `Home.vue` référençant 6 variables inexistantes
+     (jamais appelée, supprimée) ; collision prop/ref `reportId` dans
+     `InteractionView.vue` (`vue/no-dupe-keys`, la prop déclarée n'était
+     jamais lue, shadowée par un ref local du même nom) ; réutilisation de la
+     variable de boucle `f` comme handle de fichier dans `simulation.py`
+     (même scope de fonction — renommé, zéro risque).
+   - **Scope mypy proportionné et TRANSPARENT** : 147 erreurs restantes sur 30
+     modules exclues EXPLICITEMENT via `[[tool.mypy.overrides]]
+     ignore_errors=true` dans `backend/pyproject.toml` — liste visible,
+     commentée, plafonnée (RÈGLE N°3 : jamais de suppression silencieuse).
+     Arbitrage de proportionnalité fait sans re-solliciter Amine à ce
+     stade-là (jugement dans le périmètre délégué par « développe tout ») :
+     grinder les 147 erreurs une par une aurait consommé un temps
+     disproportionné face aux 21 autres stories produit du chantier.
+     **Story de suivi tracée : US-212b** (P2, dépend de US-212, dans
+     `prd.json`) — vide la liste module par module, jamais de `# type:
+     ignore` en masse.
+   - ESLint : `frontend/eslint.config.js` créé (flat config ESLint 9,
+     `eslint-plugin-vue` flat/recommended). Piège trouvé et résolu : 6 SFC
+     historiques utilisent `<script setup lang="ts">` malgré la stack JS
+     déclarée (CLAUDE.md) — `@typescript-eslint/parser` branché en parser
+     SEUL (pas de règles type-aware) pour les lire sans forcer une migration.
+     24→0 erreurs (298 warnings `no-unused-vars` non bloquants, laissés tels
+     quels).
+   - `package.json` racine : scripts `lint`/`lint:frontend`/`lint:backend`/
+     `typecheck`/`typecheck:backend` ajoutés — exit 0 vérifié.
+   - CI (`.github/workflows/tests.yml`) : job backend enrichi (ruff+mypy),
+     nouveau job frontend (build+eslint). **Playwright smoke délibérément
+     PAS branché en CI automatique** : la suite (`frontend/playwright.config.ts`)
+     cible `bassira.ma` EN PRODUCTION, read-only — l'exécuter sur chaque PR
+     ferait taper du trafic non maîtrisé (branches non fiables) contre le
+     site live. Documenté en commentaire dans le workflow, décision assumée
+     sans consulter Amine (scope technique, réversible).
+   - `.env.example` : variables Supabase ajoutées (`SUPABASE_URL`,
+     `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_JWT_SECRET`, `VITE_SUPABASE_URL`,
+     `VITE_SUPABASE_ANON_KEY`) — absentes malgré le rappel dans
+     `docs/05-integrations.md`.
+5. **US-212 marquée `passes: true`** dans `prd.json` (`completedAt` horodaté,
+   `metadata.note` résume les gates). Commit `[US-212] Outillage qualité :
+   lint + typecheck + CI` (`fabe269`), poussé sur `main`.
 
 [ALERTE]
-- Héritées, toujours ouvertes : **finding Stripe live checkout** (tunnel-commercial.spec
-  cliquant « Crisis Drill 24h » → vraie session Checkout LIVE — arbitrage Amine jamais
-  rendu) ; dette 27 tests E2E pré-existants (fixture dropdown Admin + smoke Step 1) ;
-  flaky `test_md_hash_stable_with_deterministic_enricher` ; 2 emails de test résiduels
-  dans a.mansouri@ ; rotation `NAHJ_SUPABASE_POSTGRES_DB` différée (décision Amine).
-- Recommandations Council NON encore intégrées à la spec/stories (attente du go) :
-  remonter **US-212 (lint/typecheck)** avant le loop long ; réordonner pour atteindre le
-  premier cas Porte 2 réel au plus tôt ; clés/index cross-simulations dans US-226 ;
-  vérification terminologie AR/RTL au prototype v2.
+- **Finding hors scope signalé, PAS traité** : `npm audit` frontend révèle
+  **11 vulnérabilités (4 modérées, 7 hautes)** sur des dépendances
+  pré-existantes (axios, vite, rollup, dompurify, marked, ws, form-data,
+  postcss, picomatch, follow-redirects, brace-expansion) — pas introduites
+  par US-212. Upgrade risqué sans tests dédiés (blast radius large : axios =
+  client HTTP de toute l'app, dompurify = sanitization, vite/rollup = build).
+  **À trancher par Amine séparément** — ni corrigé ni ignoré silencieusement.
+- Héritées, toujours ouvertes (non retouchées cette session) : finding Stripe
+  live checkout (tunnel-commercial.spec cliquant « Crisis Drill 24h » → vraie
+  session Checkout LIVE — arbitrage Amine jamais rendu) ; dette 27 tests E2E
+  pré-existants (fixture dropdown Admin + smoke Step 1) ; flaky
+  `test_md_hash_stable_with_deterministic_enricher` ; 2 emails de test
+  résiduels dans a.mansouri@ ; rotation `NAHJ_SUPABASE_POSTGRES_DB` différée.
+- **US-212b (burn-down mypy) n'est PAS un blocage pour la suite** — les
+  modules exclus n'empêchent pas US-223 et la suite d'avancer ; RÈGLE N°3
+  s'applique normalement : toute story qui touche un des 30 modules exclus
+  doit le sortir de la liste et corriger ses erreurs (pas de sursis global).
 
 [BLOQUE / EN ATTENTE]
-- **Gate SOP-013 ouvert** : loop Ralph en pause, AUCUNE story codée avant le **go
-  explicite d'Amine** (silence ≠ accord — SOP-013 §9). Deux décisions attendues :
-  (1) **lexique client** (l'Outsider conteste même « marché de convictions » ; proposer
-  des variantes fr/ar si Amine le demande — le naming est SA décision) ;
-  (2) **go/no-go** sur l'une des 3 voies proposées.
+- **Rien n'est bloqué.** Gate SOP-013 levé, go reçu, US-212 clôturée. Le loop
+  Ralph continue en autonomie sur l'ordre ci-dessous, sans nouvelle validation
+  requise d'Amine (sauf écart de périmètre ou nouvelle décision produit
+  ambiguë au sens SOP-006).
 
 [NEXT]
-1. Recevoir l'arbitrage lexique + le go/no-go d'Amine (cf. [BLOQUE]).
-2. Si « corrige et re-soumets » (voie recommandée par le Council) : **prototype v2**
-   (disclaimer S4 = S3, lexique arbitré appliqué, états manquants : min. 1 arène,
-   golden set en cours/échec, scénario démo neutralisé, libellés clés en ar/RTL) + **3
-   addenda de spec** (contrat d'interface oracle : schéma prix-par-round durable +
-   `market_resolutions` ; mécanisme de scellement ADR-IQ-05 tranché en revue technique :
-   chiffrement applicatif vs hachage+révélation ; périmètre de lecture du routage
-   Branche B) + intégrer les recommandations Council ([ALERTE]) dans prd.json → nouveau
-   passage devant Amine (portion concernée seulement, SOP-013 §9).
-3. Après le go : reprise Ralph story par story — US-224 (renommage, quick win) ou
-   US-221 (persistance, hard first) selon la voie choisie ; gates par story
-   (build + pytest), commit `[US-XXX] Titre`, `/ponytail-debt` à chaque fin de story.
-4. Toujours en file (inchangé) : arbitrage Stripe live checkout, dette 27 tests E2E,
-   flaky, US-208.
+**Prochaine story : US-223** (table `simulation_prompts` + `PromptRegistry`
+backend) — **la plus grosse contrainte bloquante du chantier** : 5 dépendants
+directs (US-225, US-229, US-231, US-232, US-233), 9 transitifs. Reprendre le
+protocole `ralph-mode` (lire `prd.json`+`progress.md`+`AGENTS.md`), coder,
+gates (pytest+ruff+mypy+build), commit `[US-223] ...`, `/ponytail-debt` en fin
+de story.
+
+Ordre d'exécution complet restant (tracé et déjà justifié dans
+`.ralph/progress.md`, ne pas recalculer) :
+- **Lot 0 (fondations)** : ~~US-212~~ ✓ → **US-223** → US-222 → US-228 →
+  US-221 → US-224 (quick win isolé)
+- **Lot 1** (débloqué par Lot 0) : US-231, US-233, US-232, US-225, US-229,
+  US-230, US-235
+- **Lot 2** : US-226 (← US-225), US-234 (← US-233, maquette déjà validée
+  SOP-013 — écrans S5/S6 du prototype), US-237 (← US-222+US-231)
+- **Lot 3** : US-227 (← US-226), US-236 (← US-226+US-235)
+- **Piste parallèle indépendante** (dépendances déjà `passes=true`) :
+  US-IQ-05, US-IQ-06, US-IQ-07, US-208
+- **Différée, non bloquante** : US-212b (burn-down mypy, P2)
 
 [CTX]
-- Spec : `docs/superpowers/specs/2026-07-16-simulations-v2-design.md` (architecture
-  complète + §6 graphe de dépendances). ADR : `docs/08-decisions-log.md` ADR-015→019.
-  Stories : `.ralph/prd.json` chantier `16-simulations-v2`. Pause SOP-013 : notée en fin
-  de `.ralph/progress.md`.
-- Prototype : https://claude.ai/code/artifact/28943904-102a-4642-b597-43cd11cc74a9
-  (source : scratchpad session `proto-simulations-v2.html` — republier le même chemin
-  garde l'URL ; depuis une autre session, passer `url:` à l'outil Artifact).
-- SOP-013 : `C:\projets\sop\interne\SOP-013-prototype-navigable-avant-ralph\...md`
-  (étapes 7-10 restantes : go explicite tracé AVANT toute story).
-- Charte : `frontend/src/design-tokens.css` (75 tokens `--wi-*`, light+dark ; primary
-  #a13f0f, bg #fff8f6, secondary #006d44, tertiary #006971, radius 24/12px,
-  Outfit/Manrope). Chart stances : mint=adhésion, terra=résistance, sand=observation.
+- Spec : `docs/superpowers/specs/2026-07-16-simulations-v2-design.md`
+  (architecture complète §1-6 + addenda post-Council §7 : contrat oracle gelé,
+  scellement ADR-IQ-05, périmètre routage, lexique tranché §7.4).
+  ADR : `docs/08-decisions-log.md` ADR-015→019 (ADR-018 amendé 2×).
+  ADR intake : `docs/intake/08-decisions-log.md` ADR-IQ-05 (mécanisme tranché).
+  Stories : `.ralph/prd.json` chantier `16-simulations-v2` + `V2-B-intake`.
+- Prototype (référence historique, plus la source de vérité active — le
+  lexique y est maintenant marqué « RETENU ») :
+  https://claude.ai/code/artifact/28943904-102a-4642-b597-43cd11cc74a9
+  (source : scratchpad session `proto-simulations-v2.html`).
+- Charte : `frontend/src/design-tokens.css` (75 tokens `--wi-*`, light+dark).
+- Config qualité (US-212) : `backend/pyproject.toml` (`[tool.ruff]`,
+  `[tool.mypy]` + liste d'exclusion commentée) ; `frontend/eslint.config.js` ;
+  `package.json` racine (`npm run lint`/`typecheck`) ;
+  `.github/workflows/tests.yml`.
 - ESCO : `python C:\Users\amans\.claude\skills\prompt-engineer-pro\scripts\esco-role.py
-  "<métier>" --lang fr|ar|en` — testé OK (fiches réelles FR et AR). Pattern :
-  `reference/esco-role-prompting.md` (bloc `<expertise_metier>` + compétences = axes).
-- App Coolify miroshark : uuid `u6pn5mr2pgi88s13un55pkzb` ; prod bassira.ma ; instance
-  Supabase dédiée `db-miroshark.ai-mpower.com` (conteneurs `*-dgybi9q5e2ggkjtaxlu2ukai`).
-- Fichiers clés du moteur (deep-explore) : `wonderwall/simulations/base.py` (contrat),
-  `polymarket/{platform,amm,actions,prompts,environment}.py`,
-  `social_media/__init__.py` (3 SimulationConfig), `scripts/run_parallel_simulation.py`
-  (lock-step + ponts), `app/services/{simulation_manager,simulation_runner,
+  "<métier>" --lang fr|ar|en` — testé OK. Pattern :
+  `reference/esco-role-prompting.md`.
+- App Coolify miroshark : uuid `u6pn5mr2pgi88s13un55pkzb` ; prod bassira.ma ;
+  Supabase dédiée `db-miroshark.ai-mpower.com`.
+- Fichiers clés du moteur (US-223 va créer `simulation_prompts` +
+  `PromptRegistry`, brancher le builder Polymarket en 1er prompt pilote) :
+  `wonderwall/simulations/base.py`, `polymarket/{platform,amm,actions,
+  prompts,environment}.py`, `social_media/__init__.py` (3 SimulationConfig),
+  `app/services/{simulation_manager,simulation_runner,
   simulation_config_generator,wonderwall_profile_generator}.py`.
 
 [MEMO inter-sessions]
-- **`.ralph/prd.json` est en CRLF** : toute réécriture Python doit utiliser
-  `open(..., 'w', newline='\r\n')` sinon diff massif de 10 000 lignes (payé cette
-  session, corrigé). Round-trip `json.dumps(indent=2, ensure_ascii=False)` = stable.
-- **Preuve de déploiement en 1 commande** : l'image du conteneur Coolify est taguée du
-  SHA exact du commit déployé → `ssh serveuria 'docker ps --filter name=<uuid8>
-  --format "{{.Image}}"'` et comparer à `git rev-parse HEAD`.
-- **bash-guard bloque TOUT appel API Coolify multi-pipelines** même avec `jq -r .champ`
-  par pipeline : une seule pipeline curl|jq à champ unique par commande, sinon passer
-  par SSH/docker.
-- **Agents Explore/Council passent souvent idle SANS envoyer leur rapport** : leur
-  demander explicitement d'envoyer via SendMessage vers "main" dans le prompt, et les
-  relancer par SendMessage s'ils sont idle sans rapport reçu.
-- **ADR-002 : distinction cruciale** — interdit le mot « prédiction » et les claims de
-  calibration dans le COPY COMMERCIAL ; la mesure interne (richesse finale, verdicts,
-  Brier) est licite et même souhaitable (c'est elle qui produira les ≥ 20 outcomes).
-- Repris des sessions précédentes, toujours valable : Vue Router résout sa navigation
-  initiale dès `app.use(router)` (guard doit attendre la promesse d'init mémoïsée) ;
-  valeurs d'env Coolify parfois des templates `${SERVICE_URL_*}` (vérifier la valeur
-  RÉSOLUE) ; extraction de liens Supabase Auth sur le CHEMIN `/auth/v1/verify`, jamais
-  le domaine ; matching d'emails de test sur le sujet EXACT (`_SUBJECT_BY_LOCALE`).
+- **`.ralph/prd.json` est en CRLF** : toute réécriture Python DOIT utiliser
+  `open(..., 'w', newline='\r\n')` (patterns de script réutilisables dans
+  `.ralph/progress.md` des sessions précédentes) sinon diff massif.
+- **Root-cause fixes avant grinding ligne à ligne** : sur un bootstrap mypy
+  (ou tout linter jamais lancé), grouper les erreurs par fichier ET regarder
+  si un seul pattern (annotation de classe manquante, singleton non typé)
+  explique un gros cluster avant de corriger erreur par erreur — a réduit
+  268→200 en 1 seul changement (annotations Blueprint) cette session.
+- **Scope de linter jamais lancé = décision de proportionnalité assumable**,
+  PAS un blanc-seing pour laisser une dette invisible : la mécanique propre
+  est `[[tool.mypy.overrides]] ignore_errors=true` avec liste EXPLICITE +
+  commentée + story de suivi tracée dans `prd.json` — jamais un `# type:
+  ignore` dispersé ni un exit code truqué.
+- **Bannière de comparaison, pas un petit bouton** : quand un prototype doit
+  permettre de comparer deux variantes contradictoires (lexique wargaming vs
+  halo actuel), la différence doit être VISUELLEMENT évidente (bannière
+  pleine largeur, mots surlignés) — un bouton discret en haut à droite avec
+  un texte qui change ne suffit pas, Amine ne l'a pas vu la première fois.
+- **`npm run lint`/`npm run typecheck` existent maintenant à la racine** —
+  à utiliser dans TOUTE story future touchant du code (gates AGENTS.md à
+  mettre à jour en conséquence si pas déjà fait par une story ultérieure).
+- Preuve de déploiement en 1 commande (toujours valide) :
+  `ssh serveuria 'docker ps --filter name=<uuid8> --format "{{.Image}}"'` et
+  comparer à `git rev-parse HEAD`.
+- ADR-002 : distinction cruciale — interdit « prédiction » dans le COPY
+  COMMERCIAL ; la mesure interne (richesse finale, verdicts/issues
+  d'adjudication) reste libre.
