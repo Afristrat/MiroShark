@@ -391,14 +391,28 @@ sont unanimement classés maysir (jeu de hasard prohibé) par les jurisprudences
 finance islamique — le mot « marché »/« سوق » garde cette connotation pour la cible
 institutionnelle MENA (sources : Halal Worthy, Halal Wallet 2026, Practical Law
 « Maisir ») ; (2) cohérence produit : le mécanisme devient une arène parmi les arènes.
-Les marchés individuels deviennent des « questions » côté client. Le halo lexical
-connexe (oracle/verdict/confiance/dénouement/Delphi) reste à trancher — deux variantes
-commutables au prototype v2 (spec §7.4) ; l'arbitrage final d'Amine sera exécuté par
-US-224. Le reste de l'ADR s'applique inchangé en remplaçant « marché de convictions »
-par « arène de convictions ».
-**Quoi** : purge de « prédiction »/« prediction »/« تنبؤ » de tout le visible client au
-profit de « marché de convictions » (FR), « conviction market » (EN), « سوق القناعات »
-(AR) : encart PDF « Méthode et limites » (`_method_limits.md.j2:10,16,22`), libellés UI
+Les marchés individuels deviennent des « questions » côté client.
+**Révision 2026-07-16 (arbitrage final Amine, halo lexical)** : **Variante A —
+registre wargaming** retenue (arbitrage rendu après comparaison des deux variantes sur
+le prototype v2, spec §7.4). Glossaire final gelé :
+
+| Terme abandonné | Terme retenu (FR) | EN | AR |
+|---|---|---|---|
+| oracle / verdict de l'oracle | adjudication / issue d'adjudication | adjudication / adjudicated outcome | التحكيم / محصلة التحكيم |
+| verdict (isolé) | issue | outcome | محصلة |
+| dénouement | clôture (de scénario) | scenario closure | إغلاق السيناريو |
+| confiance (score) | degré de convergence | convergence score | درجة التقارب |
+| Delphi / comparatif Delphi | lecture croisée des arènes | cross-arena reading | القراءة المتقاطعة للساحات |
+
+Registre sourcé : CICDE Wargaming Handbook (ministère des Armées, France) et
+littérature académique de l'adjudication en wargaming (cf. spec §7.4 pour les sources
+complètes). US-224 exécute ce glossaire ; aucune occurrence des termes abandonnés
+(y compris « Delphi » et « oracle ») ne doit subsister dans le visible client.
+**Statut du halo lexical : clos.**
+**Quoi** : purge de « prédiction »/« prediction »/« تنبؤ » ET du halo lexical abandonné
+(tableau ci-dessus) de tout le visible client, au profit de « arène de convictions »
+(FR) / « conviction arena » (EN) / « ساحة القناعات » (AR) et du glossaire retenu :
+encart PDF « Méthode et limites » (`_method_limits.md.j2:10,16,22`), libellés UI
 (`charts.polymarket.title` fr.json:1396, `marketCountTitle` fr.json:670,
 `predictionMarkets` fr.json:669, clé l.149, équivalents en/ar), parité stricte 3 locales
 dans le même commit. Le vocabulaire technique interne (code, `polymarket_*`, schémas

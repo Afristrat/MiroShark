@@ -1920,3 +1920,18 @@ ADR-IQ-05 tranché en revue technique → chiffrement applicatif + empreinte rem
 prospect, à confirmer au go ; périmètre de lecture du routage gelé) ; prd.json :
 US-212 converti en story Lot 0, US-IQ-05/06/07 → P0, US-224/225/226/227 alignées.
 **Toujours AUCUNE story codée — attente du go explicite d'Amine + arbitrage halo (SOP-013 §9).**
+
+### 2026-07-16 — Halo lexical TRANCHÉ : Variante A (wargaming) retenue
+
+Go explicite d'Amine sur le halo lexical (dernier point ouvert du gate SOP-013,
+étape 9) : **Variante A — registre wargaming** retenue après comparaison sur le
+prototype v2. Glossaire final gelé dans ADR-018 (docs/08-decisions-log.md) et spec
+§7.4 : oracle/verdict de l'oracle → adjudication/issue d'adjudication ; verdict
+(isolé) → issue ; dénouement → clôture (de scénario) ; confiance (score) → degré
+de convergence ; Delphi/comparatif Delphi → lecture croisée des arènes. Variante B
+(halo actuel) rejetée, conservée en archive au prototype uniquement. US-224
+(prd.json) porte désormais ce glossaire dans ses critères d'acceptation (grep de
+non-régression sur les termes abandonnés).
+**Statut gate SOP-013** : lexique client entièrement clos (nom + halo). Reste en
+attente avant tout code : confirmation du scellement ADR-IQ-05 (spec §7.2) et le go
+final englobant sur la reprise Ralph story par story (étape 8/10).

@@ -269,20 +269,33 @@ peut donc afficher « montant estimé > palier self-service » : le montant est 
 déclaration non scellée du brief. Toute évolution du routage qui voudrait lire un
 champ supplémentaire exige un amendement d'ADR-IQ-02.
 
-### 7.4 Lexique client (état au 2026-07-16)
+### 7.4 Lexique client — TRANCHÉ (2026-07-16)
 
-- **Acté (arbitrage Amine, session du 2026-07-16)** : **« arène de convictions »**
-  (fr) / « conviction arena » (en) / « ساحة القناعات » (ar) remplace « marché de
-  convictions » — ADR-018 amendé. Motif sourcé : les prediction markets sont
-  unanimement classés maysir (jeu de hasard prohibé) par les jurisprudences de finance
-  islamique — le mot « marché »/« سوق » porte cette connotation pour la cible
+- **Nom du mécanisme** (arbitrage Amine, session du 2026-07-16) : **« arène de
+  convictions »** (fr) / « conviction arena » (en) / « ساحة القناعات » (ar) remplace
+  « marché de convictions » — ADR-018 amendé. Motif sourcé : les prediction markets
+  sont unanimement classés maysir (jeu de hasard prohibé) par les jurisprudences de
+  finance islamique — le mot « marché »/« سوق » porte cette connotation pour la cible
   institutionnelle MENA ; « arène » est en outre cohérent avec le vocabulaire produit
   existant (les arènes sociales). Les marchés individuels deviennent des
   « questions » côté client.
-- **En attente (deux variantes commutables au prototype v2)** : le halo
-  oracle/verdict/confiance/dénouement/Delphi. Variante A — registre wargaming
-  professionnel (adjudication, issue, clôture de scénario, degré de convergence,
-  lecture croisée des arènes ; registre du CICDE Wargaming Handbook, ministère des
-  Armées). Variante B — halo actuel conservé (« Delphi » reste défendable : nom de
-  méthode RAND reconnu, y compris en arabe تقنية دلفي dans la littérature استشراف).
-  US-224 exécutera l'arbitrage final d'Amine.
+- **Halo lexical** (arbitrage Amine, même session, après comparaison des deux
+  variantes commutables sur le prototype v2) : **Variante A retenue — registre
+  wargaming professionnel**, sourcé CICDE Wargaming Handbook (ministère des Armées,
+  France) et littérature de l'adjudication en wargaming (ScienceDirect,
+  « Wargaming adjudication in the air-force and other military areas of
+  education »). Glossaire final gelé :
+
+  | Terme abandonné | Terme retenu (FR) | EN | AR |
+  |---|---|---|---|
+  | oracle / verdict de l'oracle | adjudication / issue d'adjudication | adjudication / adjudicated outcome | التحكيم / محصلة التحكيم |
+  | verdict (isolé) | issue | outcome | محصلة |
+  | dénouement | clôture (de scénario) | scenario closure | إغلاق السيناريو |
+  | confiance (score) | degré de convergence | convergence score | درجة التقارب |
+  | Delphi / comparatif Delphi | lecture croisée des arènes | cross-arena reading | القراءة المتقاطعة للساحات |
+
+  Variante B (halo actuel conservé) est rejetée. US-224 exécute ce glossaire pour
+  tout le visible client (PDF, UI, 3 locales, parité stricte même commit) — aucune
+  occurrence des termes abandonnés (y compris « Delphi » et « oracle ») ne doit
+  subsister. Le vocabulaire technique interne (clés `simulation_prompts.key` telles
+  que `oracle.resolution`, tables SQLite) ne change pas (US-217, ADR-018).

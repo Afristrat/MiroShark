@@ -4911,13 +4911,13 @@
       "id": "US-224",
       "chantier": "16-simulations-v2",
       "title": "Renommage client « arène de convictions » (ADR-018 amendé)",
-      "description": "Purger « prédiction »/« prediction »/« تنبؤ » de tout le visible client au profit de « arène de convictions » (fr) / « conviction arena » (en) / « ساحة القناعات » (ar) — ADR-018 amendé post-Council (spec §7.4) : encart PDF _method_limits.md.j2 (3 langues — « arène de convictions simulée, où chaque persona investit selon ses convictions »), libellés UI (charts.polymarket.title, marketCountTitle, predictionMarkets, clé fallback ~l.149, et toute autre occurrence trouvée par grep dans les 3 locales). Les marchés individuels deviennent des « questions » côté client. Applique AUSSI l'arbitrage final d'Amine sur le halo lexical (oracle/verdict/confiance/dénouement/Delphi — variante A wargaming ou B actuelle, cf. spec §7.4) une fois rendu. Le vocabulaire technique interne (code, polymarket_*, schémas) ne change pas.",
+      "description": "Purger « prédiction »/« prediction »/« تنبؤ » ET le halo lexical abandonné de tout le visible client, au profit de « arène de convictions » (fr) / « conviction arena » (en) / « ساحة القناعات » (ar) et du glossaire retenu — ADR-018 amendé, arbitrage final Amine 2026-07-16 (Variante A wargaming) : oracle/verdict de l'oracle → adjudication/issue d'adjudication ; verdict (isolé) → issue ; dénouement → clôture (de scénario) ; confiance (score) → degré de convergence ; Delphi/comparatif Delphi → lecture croisée des arènes. Périmètre : encart PDF _method_limits.md.j2 (3 langues), libellés UI (charts.polymarket.title, marketCountTitle, predictionMarkets, clé fallback ~l.149, et toute autre occurrence trouvée par grep dans les 3 locales). Les marchés individuels deviennent des « questions » côté client. Le vocabulaire technique interne (code, polymarket_*, clés simulation_prompts.key type oracle.resolution, schémas) ne change pas.",
       "acceptanceCriteria": [
         "grep -i 'prédiction|prediction|تنبؤ' sur frontend/src/locales/*.json et backend/app/templates/ → zéro occurrence client-facing restante (hors identifiants techniques)",
         "grep -i 'marché de convictions|conviction market|سوق القناعات' → zéro occurrence (le nom abandonné ne survit nulle part)",
+        "grep -iE 'oracle|verdict|dénouement|denouement|confiance|Delphi' sur le visible client (locales + templates PDF) → zéro occurrence hors clés techniques (simulation_prompts.key, tables SQLite) — glossaire ADR-018 (adjudication/issue d'adjudication, issue, clôture, degré de convergence, lecture croisée des arènes) appliqué partout",
         "Parité stricte fr/en/ar dans le même commit (US-217)",
-        "Un PDF généré en fr, en et ar contient le nouveau vocabulaire dans l'encart Méthode et limites",
-        "Le halo lexical appliqué correspond à l'arbitrage final d'Amine consigné dans ADR-018 (variante A ou B, spec §7.4)",
+        "Un PDF généré en fr, en et ar contient le nouveau vocabulaire (nom + glossaire) dans l'encart Méthode et limites",
         "npm run build vert ; suite pytest verte (snapshots PDF mis à jour si nécessaire)"
       ],
       "passes": false,
