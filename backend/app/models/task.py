@@ -57,16 +57,20 @@ class TaskManager:
     Thread-safe task status management
     """
 
-    _instance = None
+    _instance: Optional["TaskManager"] = None
     _lock = threading.Lock()
+    # Annotations de classe : toujours posées dans __new__ avant tout usage —
+    # sans elles mypy ne peut pas résoudre self._tasks/_task_lock (US-212).
+    _tasks: Dict[str, Task]
+    _task_lock: threading.Lock
 
-    def __new__(cls):
+    def __new__(cls) -> "TaskManager":
         """Singleton pattern"""
         if cls._instance is None:
             with cls._lock:
                 if cls._instance is None:
                     cls._instance = super().__new__(cls)
-                    cls._instance._tasks: Dict[str, Task] = {}
+                    cls._instance._tasks = {}
                     cls._instance._task_lock = threading.Lock()
         return cls._instance
 

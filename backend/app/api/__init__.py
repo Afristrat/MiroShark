@@ -4,14 +4,18 @@ API Routes Module
 
 from flask import Blueprint
 
-graph_bp = Blueprint('graph', __name__)
-simulation_bp = Blueprint('simulation', __name__)
-report_bp = Blueprint('report', __name__)
-templates_bp = Blueprint('templates', __name__)
-settings_bp = Blueprint('settings', __name__)
-observability_bp = Blueprint('observability', __name__)
-mcp_bp = Blueprint('mcp', __name__)
-docs_bp = Blueprint('docs', __name__)
+# Annotations explicites : sans elles, mypy ne peut pas résoudre le type de
+# ces blueprints à travers le cycle d'import `from . import <module>` plus
+# bas (chaque module de routes fait `from . import xxx_bp` en retour) —
+# cause racine de l'essentiel des erreurs "Cannot determine type" (US-212).
+graph_bp: Blueprint = Blueprint('graph', __name__)
+simulation_bp: Blueprint = Blueprint('simulation', __name__)
+report_bp: Blueprint = Blueprint('report', __name__)
+templates_bp: Blueprint = Blueprint('templates', __name__)
+settings_bp: Blueprint = Blueprint('settings', __name__)
+observability_bp: Blueprint = Blueprint('observability', __name__)
+mcp_bp: Blueprint = Blueprint('mcp', __name__)
+docs_bp: Blueprint = Blueprint('docs', __name__)
 
 from . import graph  # noqa: E402, F401
 from . import simulation  # noqa: E402, F401

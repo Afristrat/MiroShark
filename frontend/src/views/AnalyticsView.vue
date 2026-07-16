@@ -163,7 +163,7 @@
             <div class="analytics-series">
               <div class="analytics-series-bars">
                 <div
-                  v-for="(day, idx) in timeSeriesNormalised"
+                  v-for="day in timeSeriesNormalised"
                   :key="day.date"
                   class="analytics-series-bar-wrap"
                   :title="`${day.date} — ${day.completed}`"

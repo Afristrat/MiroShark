@@ -544,7 +544,7 @@ const copy = async (which) => {
     ta.value = text
     document.body.appendChild(ta)
     ta.select()
-    try { document.execCommand('copy') } catch (_) {}
+    try { document.execCommand('copy') } catch (_) { /* ignore : execCommand deprecated/refusé */ }
     document.body.removeChild(ta)
     copied.value = which
     setTimeout(() => {

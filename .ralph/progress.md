@@ -1967,3 +1967,54 @@ Piste parallèle indépendante (dépendances déjà passes=true) : US-IQ-05, US-
 US-IQ-07, US-208.
 
 Démarrage : US-212.
+
+### 2026-07-16 — [US-212] Outillage qualité : lint + typecheck + CI — CLÔTURÉE
+
+Première story codée du chantier 16-simulations-v2 (Lot 0, la plus prioritaire
+après le go). ruff (E4/E7/E9/F) et ESLint (flat config, Vue3) configurés et
+VERTS sur tout leur périmètre. mypy bootstrapé sur backend/app/ : 268 erreurs
+au premier run, 2 causes racines systémiques trouvées et corrigées (payent pour
+tout le chantier à venir) :
+- `app/api/__init__.py` : les 8 Blueprint Flask n'étaient pas annotés → mypy ne
+  pouvait résoudre leur type à travers le cycle d'import `from . import xxx_bp`
+  (68 erreurs `has-type` d'un coup). Fix : annotation `: Blueprint` explicite.
+- `app/models/task.py` (singleton `TaskManager`) : `_tasks`/`_task_lock` posés
+  dynamiquement dans `__new__` sans déclaration de classe → mypy ne les
+  reconnaissait pas comme attributs. Fix : annotations de classe.
+`app/api/simulation.py` (le fichier le plus gros et le plus retouché du
+chantier) et `app/api/pdf_generation.py` intégralement nettoyés (0 erreur
+mypy). Bugs réels trouvés et corrigés au passage : fonction `startSimulation`
+morte dans `Home.vue` référençant 6 variables inexistantes (jamais appelée,
+supprimée) ; collision prop/ref `reportId` dans `InteractionView.vue`
+(`vue/no-dupe-keys`, prop jamais lue car shadowée) ; réutilisation de la
+variable de boucle `f` comme handle de fichier dans `simulation.py` (même
+scope de fonction, renommé).
+**Scope mypy proportionné et documenté** : 147 erreurs restantes sur 30
+modules exclues EXPLICITEMENT (liste visible et commentée dans
+`backend/pyproject.toml`, `[[tool.mypy.overrides]] ignore_errors=true`) —
+grinder les 147 une par une aurait consommé un temps disproportionné face aux
+21 autres stories du chantier. Story de suivi tracée : **US-212b** (P2, dépend
+de US-212) qui vide la liste module par module. `wonderwall/` (fork amont
+bundlé) exclu de ruff ET mypy — ne jamais le reformater (casse les merges
+upstream).
+CI (`.github/workflows/tests.yml`) : jobs ruff+mypy ajoutés au job backend
+existant ; nouveau job frontend (build+eslint). Playwright smoke
+DÉLIBÉRÉMENT absent de la CI automatique : la suite cible bassira.ma EN
+PRODUCTION (read-only) — l'exécuter sur chaque PR taperait du trafic non
+maîtrisé contre le site live (documenté en commentaire dans le workflow).
+`.env.example` : variables Supabase (SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY,
+SUPABASE_JWT_SECRET, VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY) ajoutées —
+absentes historiquement malgré le rappel dans docs/05-integrations.md.
+**Gates finaux** : `uv run ruff check .` 0 erreur · `uv run mypy app/` 0 erreur
+(scope documenté) · `npx eslint .` 0 erreur (298 warnings non bloquants,
+`no-unused-vars`) · `npm run build` OK · `uv run pytest -m "not integration"`
+**2258 passed, 42 skipped, 0 failed** (zéro régression vs baseline).
+**Finding hors scope signalé (pas traité)** : `npm audit` frontend révèle 11
+vulnérabilités (4 modérées, 7 hautes) sur des dépendances existantes (axios,
+vite, rollup, dompurify, marked, ws, form-data, postcss, picomatch,
+follow-redirects, brace-expansion) — pré-existantes, pas introduites par
+US-212. Upgrade risqué sans tests dédiés (hors scope outillage) — à trancher
+par Amine séparément.
+Prochaine story : **US-223** (table `simulation_prompts` + `PromptRegistry`)
+— la plus grosse contrainte bloquante du chantier (5 dépendants directs, 9
+transitifs).

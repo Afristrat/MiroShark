@@ -161,22 +161,6 @@ const scrollToBottom = () => {
     behavior: 'smooth'
   })
 }
-
-// Start simulation - navigate immediately, API calls happen on the Process page
-const startSimulation = () => {
-  if (!canSubmit.value || loading.value) return
-
-  // Store data pending upload
-  import('../store/pendingUpload.js').then(({ setPendingUpload }) => {
-    setPendingUpload(files.value, formData.value.simulationRequirement, urlDocs.value)
-
-    // Navigate immediately to Process page (using special identifier for new project)
-    router.push({
-      name: 'Process',
-      params: { projectId: 'new' }
-    })
-  })
-}
 </script>
 
 <style scoped>

@@ -271,14 +271,14 @@ function connectSSE() {
         const event = JSON.parse(e.data)
         if (event.type === 'heartbeat') return
         addEvent(event)
-      } catch {}
+      } catch { /* ignore : événement SSE malformé */ }
     }
     // Named event handlers
     for (const et of ['llm_call', 'agent_decision', 'round_boundary', 'graph_build', 'graph_ner', 'error', 'system']) {
       eventSource.addEventListener(et, (e) => {
         try {
           addEvent(JSON.parse(e.data))
-        } catch {}
+        } catch { /* ignore : événement SSE malformé */ }
       })
     }
     eventSource.onerror = () => {
@@ -360,7 +360,7 @@ async function fetchStats() {
   try {
     const res = await getObservabilityStats(simulationId.value)
     if (res.stats) stats.value = res.stats
-  } catch {}
+  } catch { /* ignore : stats indisponibles */ }
 }
 
 // Filtered views

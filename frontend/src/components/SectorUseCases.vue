@@ -20,7 +20,7 @@
 
     <div class="suc-grid">
       <article
-        v-for="(s, idx) in sectors"
+        v-for="s in sectors"
         :key="s.id"
         class="suc-card"
         :class="{ 'suc-card--featured': s.featured }"

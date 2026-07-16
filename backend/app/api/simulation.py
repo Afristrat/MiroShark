@@ -11,6 +11,7 @@ import json
 import hashlib
 import time
 import traceback
+from typing import Any
 from datetime import datetime, timezone
 from functools import wraps
 from flask import request, jsonify, send_file, current_app
@@ -1029,8 +1030,13 @@ def _ask_clean_result(payload, question: str) -> "dict | None":
             if isinstance(p, str) and p.strip().lower() in _ASK_ALLOWED_PLATFORMS:
                 platforms.append(p.strip().lower())
     # dedupe while preserving order
-    seen = set()
-    platforms = [p for p in platforms if not (p in seen or seen.add(p))]
+    seen_platforms: set[str] = set()
+    deduped_platforms = []
+    for p in platforms:
+        if p not in seen_platforms:
+            seen_platforms.add(p)
+            deduped_platforms.append(p)
+    platforms = deduped_platforms
     if not platforms:
         platforms = ["twitter", "reddit"]
 
@@ -1469,7 +1475,7 @@ def _trending_fetch_all(feeds: "list[str]") -> "list[dict]":
                 )
 
     # Drop duplicates by URL while preserving the newest occurrence.
-    seen = {}
+    seen: dict[str, dict] = {}
     for item in merged:
         prev = seen.get(item['url'])
         if prev is None or item['_sort_ts'] > prev['_sort_ts']:
@@ -2117,8 +2123,11 @@ def _check_simulation_prepared(simulation_id: str) -> tuple:
     state_file = os.path.join(simulation_dir, "state.json")
     try:
         import json
-        with open(state_file, 'r', encoding='utf-8') as f:
-            state_data = json.load(f)
+        # Nommage distinct de la variable de boucle `f` (required_files, plus
+        # haut dans cette fonction) — même scope de fonction, sinon mypy
+        # signale un conflit de type str vs handle de fichier (US-212).
+        with open(state_file, 'r', encoding='utf-8') as state_fh:
+            state_data = json.load(state_fh)
         
         status = state_data.get("status", "")
         config_generated = state_data.get("config_generated", False)
@@ -2141,8 +2150,8 @@ def _check_simulation_prepared(simulation_id: str) -> tuple:
 
             profiles_count = 0
             if os.path.exists(profiles_file):
-                with open(profiles_file, 'r', encoding='utf-8') as f:
-                    profiles_data = json.load(f)
+                with open(profiles_file, 'r', encoding='utf-8') as profiles_fh:
+                    profiles_data = json.load(profiles_fh)
                     profiles_count = len(profiles_data) if isinstance(profiles_data, list) else 0
             
             # If status is preparing but files are complete, auto-update status to ready
@@ -2151,8 +2160,8 @@ def _check_simulation_prepared(simulation_id: str) -> tuple:
                     state_data["status"] = "ready"
                     from datetime import datetime
                     state_data["updated_at"] = datetime.now().isoformat()
-                    with open(state_file, 'w', encoding='utf-8') as f:
-                        json.dump(state_data, f, ensure_ascii=False, indent=2)
+                    with open(state_file, 'w', encoding='utf-8') as state_fh:
+                        json.dump(state_data, state_fh, ensure_ascii=False, indent=2)
                     logger.info(f"Auto-updated simulation status: {simulation_id} preparing -> ready")
                     status = "ready"
                 except Exception as e:
@@ -2715,7 +2724,7 @@ def list_simulations():
         }), 500
 
 
-def _get_report_id_for_simulation(simulation_id: str) -> str:
+def _get_report_id_for_simulation(simulation_id: str) -> str | None:
     """
     Get the latest report_id corresponding to a simulation
 
@@ -4654,7 +4663,7 @@ def get_counterfactual_drift(simulation_id: str):
         # (e.g. "mallku_519"). Without this, incoming display names fall
         # through to `unresolved` and counterfactual ends up empty.
         profiles = _demo_load_profiles(sim_dir)
-        name_to_id = {}
+        name_to_id: dict[str, str] = {}
         for p in profiles:
             if not isinstance(p, dict):
                 continue
@@ -4853,10 +4862,12 @@ def _compute_quality_diagnostics(simulation_id: str, sim_dir: str):
 
     active_agent_ids = set()
     content_actions = {'CREATE_POST', 'QUOTE_POST', 'CREATE_COMMENT', 'BUY_SHARES', 'SELL_SHARES'}
-    platform_actions = {}
-    agent_platforms = {}
+    platform_actions: dict[str, int] = {}
+    agent_platforms: dict[Any, set] = {}
     for a in all_actions:
-        a_dict = a.to_dict() if hasattr(a, 'to_dict') else a
+        # isinstance() plutôt que hasattr() : mypy réduit correctement l'union
+        # dict|AgentAction sur les deux branches (US-212), même comportement.
+        a_dict = a if isinstance(a, dict) else a.to_dict()
         aid = a_dict.get('agent_id')
         atype = a_dict.get('action_type', '')
         platform = a_dict.get('platform', '')
@@ -4870,7 +4881,7 @@ def _compute_quality_diagnostics(simulation_id: str, sim_dir: str):
 
     if total_agents == 0:
         total_agents = len(set(
-            (a.to_dict() if hasattr(a, 'to_dict') else a).get('agent_id')
+            (a if isinstance(a, dict) else a.to_dict()).get('agent_id')
             for a in all_actions
         )) or 1
 
@@ -5389,7 +5400,7 @@ def _build_embed_summary_payload(simulation_id: str) -> dict:
             with open(trajectory_path, 'r', encoding='utf-8') as f:
                 traj = json.load(f)
 
-            rounds = []
+            rounds: list[int] = []
             bullish = []
             neutral = []
             bearish = []
@@ -6587,7 +6598,10 @@ def export_simulation_data(simulation_id: str):
                 "error": "Unsupported format. Use 'json' or 'csv'."
             }), 400
 
-        export_data = {}
+        # dict[str, Any] : sections hétérogènes (dict de métadonnées, listes
+        # d'actions/posts...) — sans annotation mypy fige le type sur la
+        # première affectation et rejette les suivantes (US-212).
+        export_data: dict[str, Any] = {}
 
         # --- Metadata ---
         if 'metadata' in include_sections:
@@ -6656,7 +6670,7 @@ def export_simulation_data(simulation_id: str):
             )
 
         # CSV: flatten actions into a single table (the most useful tabular view)
-        rows = export_data.get('actions', [])
+        rows: list[dict] = export_data.get('actions', [])
         if not rows:
             return jsonify({
                 "success": False,
@@ -7278,8 +7292,8 @@ def generate_simulation_article(simulation_id: str):
             path = os.path.join(sim_dir, platform, 'actions.jsonl')
             if not os.path.exists(path):
                 return []
-            posts = {}  # post_id -> {content, author, round, likes, reposts, replies}
-            engagement = {}  # post_id -> weighted engagement score
+            posts: dict = {}  # post_id -> {content, author, round, likes, reposts, replies}
+            engagement: dict[Any, int] = {}  # post_id -> weighted engagement score
             try:
                 with open(path, 'r', encoding='utf-8') as f:
                     for line in f:
@@ -7403,7 +7417,7 @@ def generate_simulation_article(simulation_id: str):
                             "SELECT market_id, outcome, price, shares, created_at FROM trade "
                             "ORDER BY created_at ASC"
                         ).fetchall()
-                        prev_yes = {}
+                        prev_yes: dict[Any, float] = {}
                         biggest = None  # (abs_delta, mid, from_pct, to_pct, shares)
                         for mid, outcome, price, shares, _ts in trade_rows:
                             yes_price = (1 - price) if (outcome or '').upper() == 'NO' else price
@@ -8296,8 +8310,8 @@ def get_interaction_network(simulation_id: str):
                 pass
 
         # Compute graph metrics
-        in_degree = {}
-        out_degree = {}
+        in_degree: dict[Any, float] = {}
+        out_degree: dict[Any, float] = {}
         cross_platform_edges = 0
         total_edges = len(edges)
 
@@ -8366,7 +8380,7 @@ def get_interaction_network(simulation_id: str):
                 }
 
         # Platform clustering
-        platform_agents = {}
+        platform_agents: dict[Any, set] = {}
         for n in nodes:
             for p in n['platforms']:
                 platform_agents.setdefault(p, set()).add(n['id'])

@@ -28,6 +28,7 @@ import uuid
 from typing import Any, Dict, Optional
 
 from flask import Blueprint, Response, jsonify, request
+from flask.typing import ResponseReturnValue
 
 from ..auth.decorators import require_auth, require_super_admin
 
@@ -117,7 +118,7 @@ def _job_status(redis_conn: Any, job_id: str) -> Dict[str, Any]:
 @pdf_generation_bp.route("/<report_id>/preview", methods=["POST"])
 @require_auth
 @require_super_admin
-def preview_report(report_id: str) -> Response:
+def preview_report(report_id: str) -> ResponseReturnValue:
     """Génère et retourne la page de couverture du rapport PDF (1 page, sync).
 
     Body JSON (optionnel) :
@@ -181,7 +182,7 @@ def preview_report(report_id: str) -> Response:
 @pdf_generation_bp.route("/<report_id>/generate", methods=["POST"])
 @require_auth
 @require_super_admin
-def generate_report(report_id: str) -> Response:
+def generate_report(report_id: str) -> ResponseReturnValue:
     """Enqueue une génération PDF async via RQ.
 
     Body JSON :
@@ -296,7 +297,7 @@ def generate_report(report_id: str) -> Response:
 @pdf_generation_bp.route("/<report_id>/jobs/<job_id>", methods=["GET"])
 @require_auth
 @require_super_admin
-def get_job_status(report_id: str, job_id: str) -> Response:
+def get_job_status(report_id: str, job_id: str) -> ResponseReturnValue:
     """Retourne le statut d'un job de génération PDF.
 
     Returns :

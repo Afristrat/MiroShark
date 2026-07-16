@@ -247,9 +247,10 @@ const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
 
-defineProps({
-  reportId: { type: String, default: null }
-})
+// reportId n'est pas déclaré en prop : la route (props: true) le fournit via
+// route.params, lu directement plus bas (ref réactif + watch) — une
+// déclaration defineProps({ reportId }) doublonnait ce nom sans jamais être
+// lue (collision détectée par vue/no-dupe-keys, US-212).
 
 // ─── Tab toggle (audit méthodologique vs interaction sandbox) ──
 const TAB_STORAGE_KEY = 'bassira:interactionView:activeTab'

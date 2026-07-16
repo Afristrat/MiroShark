@@ -604,7 +604,7 @@ const resetRefinement = () => {
   refineSavedAt.value = null
   refineError.value = ''
   if (storageKey.value) {
-    try { localStorage.removeItem(storageKey.value) } catch (_) {}
+    try { localStorage.removeItem(storageKey.value) } catch (_) { /* ignore : localStorage indisponible */ }
   }
 }
 

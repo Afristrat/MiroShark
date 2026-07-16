@@ -44,3 +44,41 @@ jobs:
       - name: Run unit tests
         run: pytest -m "not integration"
 
+      - name: Ruff (lint)
+        run: pip install ruff==0.15.2 && ruff check .
+
+      - name: Mypy (typecheck)
+        run: pip install mypy==2.3.0 && mypy app/
+
+  frontend:
+    name: Frontend build + lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: ESLint
+        run: npx eslint .
+
+# Smoke Playwright (frontend/tests/e2e) volontairement absent de cette CI :
+# la suite cible bassira.ma EN PRODUCTION (read-only, cf.
+# frontend/playwright.config.ts) — l'exécuter automatiquement sur chaque PR
+# ferait taper du trafic non maîtrisé (branches non fiables) contre le site
+# live. Reste un run manuel (`npm run test:e2e`) ou à planifier séparément
+# (cron) si un environnement de staging dédié existe un jour (US-212).
+

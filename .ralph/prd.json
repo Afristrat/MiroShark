@@ -4838,14 +4838,51 @@
         ".env.example documente les variables Supabase requises (US-212 / docs/05-integrations.md)",
         "Suite pytest complète verte ; npm run build vert"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [],
       "metadata": {
         "estimated_hours": 5,
         "priority": "P0",
         "origin": "docs/04-feature-backlog.md (US-212)",
-        "council_20260716": "Remonté avant le loop long — recommandation Council (dette de validation)"
-      }
+        "council_20260716": "Remonté avant le loop long — recommandation Council (dette de validation)",
+        "files_touched": [
+          "backend/app/api/__init__.py",
+          "backend/app/api/simulation.py",
+          "backend/app/api/pdf_generation.py",
+          "backend/app/models/task.py",
+          "backend/pyproject.toml",
+          "frontend/eslint.config.js",
+          "frontend/src/views/Home.vue",
+          "frontend/src/views/InteractionView.vue",
+          ".github/workflows/tests.yml",
+          "package.json",
+          ".env.example"
+        ],
+        "note": "ruff+mypy backend verts (mypy scope documenté : liste d'exclusion visible pyproject.toml, burn-down = US-212b) ; eslint frontend 0 erreur ; npm run lint / typecheck existent racine ; CI build+lint+typecheck ; pytest 2258 passed 42 skipped 0 failed (zéro régression)."
+      },
+      "completedAt": "2026-07-16T19:54:42Z"
+    },
+    {
+      "id": "US-212b",
+      "chantier": "16-simulations-v2",
+      "title": "Burn-down mypy — vider la liste d'exclusion de pyproject.toml",
+      "description": "US-212 a bootstrapé mypy sur backend/app/ (268 erreurs au premier run, 2 causes racines systémiques corrigées : annotations Blueprint app/api/__init__.py, singleton TaskManager app/models/task.py — app/api/simulation.py et app/api/pdf_generation.py intégralement nettoyés). 147 erreurs restantes sur 30 modules sont EXPLICITEMENT exclues via [[tool.mypy.overrides]] ignore_errors=true dans backend/pyproject.toml (liste visible, commentée, plafonnée — jamais de suppression silencieuse). Cette story vide la liste module par module : pour chaque module, retirer son entrée de la liste d'exclusion, corriger les erreurs réelles révélées (jamais de # type: ignore en masse), relancer la suite complète.",
+      "acceptanceCriteria": [
+        "La liste [[tool.mypy.overrides]] de backend/pyproject.toml est vide (section supprimée) OU réduite avec justification explicite pour ce qui reste (ex. wonderwall/ déjà exclu séparément, fork amont)",
+        "uv run mypy app/ → 0 erreur sur l'intégralité de backend/app/",
+        "Aucune régression : ruff check . reste vert, suite pytest complète verte",
+        "Root causes systémiques documentées dans .ralph/progress.md si de nouveaux patterns récurrents sont trouvés (comme US-212 l'a fait pour Blueprint/TaskManager)"
+      ],
+      "passes": false,
+      "dependencies": [
+        "US-212"
+      ],
+      "metadata": {
+        "estimated_hours": 6,
+        "priority": "P2",
+        "origin": "US-212 (scope proportionné, dette visible trackée)"
+      },
+      "completedAt": null
     },
     {
       "id": "US-221",

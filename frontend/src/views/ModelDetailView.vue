@@ -392,7 +392,7 @@ function agentRoleLabel (roleKey) {
   // dans ce cas on convertit le role_key en libellé lisible pour fallback.
   if (translated === i18nKey) {
     return roleKey
-      .split(/[_\-]/)
+      .split(/[_-]/)
       .filter(Boolean)
       .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
       .join(' ')

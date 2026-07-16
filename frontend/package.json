@@ -34,9 +34,15 @@
     "vue-router": "^4.6.3"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
     "@playwright/test": "^1.49.0",
+    "@typescript-eslint/parser": "^8.64.0",
     "@vitejs/plugin-vue": "^6.0.1",
+    "eslint": "^9.39.5",
+    "eslint-plugin-vue": "^9.33.0",
+    "globals": "^15.15.0",
     "googleapis": "^173.0.0",
+    "typescript": "^5.9.3",
     "vite": "^7.2.4",
     "vite-plugin-compression2": "^2.5.3"
   }

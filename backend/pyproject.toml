@@ -106,7 +106,82 @@ dev = [
     "pytest-asyncio>=0.23.0",
     # US-129 : mock Redis pour les tests async (évite un Redis réel en CI)
     "fakeredis>=2.20",
+    "mypy>=2.3.0",
 ]
 
 [tool.hatch.build.targets.wheel]
 packages = ["app"]
+
+[tool.ruff]
+line-length = 100
+# wonderwall/ = fork amont bundlé (aaronjmars/miroshark) — ne pas reformater,
+# ça casserait les futurs merges upstream (US-212).
+exclude = ["wonderwall"]
+
+[tool.ruff.lint]
+# E4,E7,E9,F = défauts ruff (pyflakes/pycodestyle) — imports inutilisés, noms
+# non définis, erreurs de syntaxe : déjà 0 erreur sur tout app/, gate CI
+# bloquant dès aujourd'hui. Règles plus larges (UP/I/B/SIM) volontairement
+# hors scope US-212 : 3900+ hits sur wonderwall/ (fork amont, cf. ci-dessus).
+select = ["E4", "E7", "E9", "F"]
+
+[tool.ruff.lint.per-file-ignores]
+# scripts/ et tests/ font `sys.path.insert(...)` avant les imports pour
+# s'exécuter en standalone (hors du package app/) — pattern intentionnel,
+# pas une dette. Seul E402 est exempté ; F401/F821/etc. restent bloquants.
+"scripts/*.py" = ["E402"]
+"tests/*.py" = ["E402"]
+# app/__init__.py doit suppresser les warnings resource_tracker AVANT
+# d'importer flask/flask_cors (side-effect intentionnel, commenté sur place).
+"app/__init__.py" = ["E402"]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+exclude = ["wonderwall/"]
+
+# Bootstrap mypy sur un backend jamais typé avant US-212 : 268 erreurs
+# trouvées sur app/ au premier run. Root causes systémiques déjà corrigées
+# (annotations Blueprint dans app/api/__init__.py, singleton TaskManager,
+# app/api/simulation.py et pdf_generation.py intégralement nettoyés).
+# Les modules ci-dessous restent EXCLUS explicitement (dette VISIBLE, pas
+# supprimée) : 147 erreurs réparties sur 30 fichiers, hors scope proportionné
+# pour une story d'outillage face au reste du chantier 16-simulations-v2.
+# Ponytail : plafond = cette liste ne doit jamais grandir (RÈGLE N°3 : tout
+# fichier touché par une story doit en sortir) ; déclencheur = story de suivi
+# dédiée (US-212b, .ralph/prd.json) qui la vide module par module.
+[[tool.mypy.overrides]]
+module = [
+    "app.api.admin_reports",
+    "app.api.admin_users",
+    "app.api.mcp",
+    "app.api.observability",
+    "app.api.pdf_export",
+    "app.api.report",
+    "app.api.settings",
+    "app.models.project",
+    "app.services.email_service",
+    "app.services.graph_memory_updater",
+    "app.services.graph_tools",
+    "app.services.kairos_proxy",
+    "app.services.push_notification_service",
+    "app.services.replay_gif",
+    "app.services.report_agent",
+    "app.services.report_pdf.enricher",
+    "app.services.report_pdf.jinja_env",
+    "app.services.report_pdf.loader",
+    "app.services.share_card",
+    "app.services.simulation_config_generator",
+    "app.services.simulation_ipc",
+    "app.services.simulation_manager",
+    "app.services.simulation_runner",
+    "app.services.wonderwall_profile_generator",
+    "app.storage.embedding_service",
+    "app.storage.neo4j_storage",
+    "app.storage.ner_extractor",
+    "app.storage.reranker_service",
+    "app.utils.llm_client",
+    "app.utils.retry",
+    "app.workers.pdf_generation_worker",
+]
+ignore_errors = true
