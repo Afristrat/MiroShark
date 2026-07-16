@@ -1,225 +1,156 @@
-== PASSATION NUCLÉAIRE MiroShark/Bassira — 2026-07-15 ~20h30 (Brique E2E email SOLDÉE ; NOUVEAU CHANTIER commandé par Amine : deep-explore de la partie SIMULATIONS — angles morts + axes d'amélioration + remplacement du calque Polymarket par une solution adaptée aux marchés cibles) ==
-Synthèse complète et autonome — ne suppose la lecture d'aucune passation antérieure,
-remplace et purge intégralement les entrées du 2026-07-15 ~02h30 et ~19h00 (tous leurs
-points FAIT restent acquis et ne sont pas remis en cause ci-dessous).
-
-[NOUVEAU CHANTIER — PRIORITÉ 1 à la reprise, commandé par Amine en toute fin de session]
-Amine (passé sur modèle Fable 5 via /model juste avant) demande d'attaquer la partie
-**simulations** : « deep explore et pointe les angles morts ainsi que les axes
-d'améliorations ». Second volet explicite : « je t'avais demandé aussi dans d'autres
-sessions de creuser un remplacement de Polymarket — une solution adaptée pour mes marchés
-cibles ». Cadrage initial fait avant /clear :
-- Dans Bassira, « Polymarket » = le FORMAT du marché de prédiction SIMULÉ du moteur
-  wonderwall (pas le vrai site) : `backend/app/services/wonderwall_profile_generator.py`
-  (`to_polymarket_format()` l.138, `_save_polymarket_json()` l.1592, risk tolerance l.435,
-  branchement plateforme l.1460) génère des personas traders au format Polymarket — un des
-  canaux de simulation aux côtés des réseaux sociaux simulés. Autres fichiers touchant au
-  marché de prédiction : `backend/app/config.py`, `api/client.py`, locales fr/en/ar,
-  scripts `test_pipeline_twitter_polymarket.py` / `test_3platform_interconnected.py`,
-  pipeline PDF (`report_pdf/loader.py`, `enricher.py`, `renderer.py`,
-  `_method_limits.md.j2`), `docs/08-decisions-log.md`, `.ralph/prd.json`.
-- « Marchés cibles » d'Amine = C-Level et institutions MENA (cf. CLAUDE.md), vente sur
-  devis MAD/USD — le calque Polymarket (crypto/US, traders retail) est culturellement et
-  sémantiquement décalé pour ce public ; c'est le cœur du besoin de remplacement.
-- ⚠️ Amine mentionne des demandes faites « dans d'autres sessions » sur ce remplacement —
-  AVANT de proposer quoi que ce soit, chercher les traces : `PASSATION-ARCHIVE.md` (matche
-  déjà « polymarket »), Mnemo (`recall_context` / `search_memory` sur le cercle Bassira),
-  `docs/08-decisions-log.md` et `docs/04-feature-backlog.md`. Ne pas refaire un cadrage
-  from scratch si un existe déjà.
-- Méthode suggérée à la reprise : (1) retrouver l'historique des demandes précédentes,
-  (2) deep-explore du moteur `backend/wonderwall/` + services de simulation (architecture
-  réelle, pas supposée), (3) restitution angles morts / axes d'amélioration sourcée
-  fichier:ligne, (4) proposition de remplacement du calque Polymarket alignée marchés
-  cibles — en respectant ADR-002 (jamais le mot « prédiction » ni claim de calibration
-  dans le copy commercial tant que < 20 outcomes réels publics — le mécanisme de marché
-  interne peut exister, c'est le POSITIONNEMENT commercial qui est contraint) et SOP-015
-  (les décisions business/pricing restent à Amine ; l'exploration technique est mandatée).
-
-== Reste de la passation : état à l'issue de la brique E2E email (2026-07-15 ~19h00) ==
+== PASSATION NUCLÉAIRE MiroShark/Bassira — 2026-07-16 ~01h00 (Chantier Simulations V2 CADRÉ ET FIGÉ : spec + ADR-015→019 + 17 stories commitées ; mode Ralph demandé mais EN PAUSE SOP-013 — prototype 9 écrans publié, Council rendu NO-GO en l'état, EN ATTENTE du go explicite d'Amine + arbitrage lexique) ==
+Synthèse complète et autonome — remplace et purge intégralement l'entrée du 2026-07-15
+~20h30 (ses points FAIT restent acquis : brique E2E email soldée, magic link validé en
+prod, 3 bugs prod corrigés — rien n'est remis en cause ci-dessous).
 
 [ETAT]
-- **`main`** HEAD = `eb332c3`, poussé sur `origin/main`. Commits produit cette session (en
-  plus des 5 déjà connus 0e11da7→988e472) : `6e32bd5` (bascule bassira.ma : redirect_to
-  magic link + 6 occurrences codées en dur de prospectives.ai-mpower.com + CORS_ORIGINS
-  Coolify), `3210ffc` (debug temporaire, retiré), `eb332c3` (**vrai correctif** : race
-  condition guard router / auth.init()).
-- Suite pytest backend : **2258 passed, 0 failed, 42 skipped** (revérifiée après les
-  changements backend de cette session — le flaky `test_md_hash_stable_with_
-  deterministic_enricher` est passé cette fois, timing-dépendant comme documenté, toujours
-  pas corrigé au fond, cf. [NEXT]).
-- Build front (`npm run build`) vert (exit 0), revérifié 2× (avant et après le vrai fix).
-- **Suite E2E Playwright complète (114 tests) : 86 passed, 28 failed** — **AUCUN de ces 28
-  échecs n'est une régression de cette session** (triage détaillé ci-dessous, [ALERTE]).
-  `client-dashboard.spec.ts` (Lot B, 9 tests) et `auth-flow(s).spec.ts` intégralement verts.
-- `.gitignore` : `test-results/`, `.playwright-mcp/`, `.understand-anything/` ajoutés
-  (untracked oubliés, point [NEXT] de la passation précédente — traité).
+- **`main`** HEAD = `bea69b6`, poussé sur `origin/main`. Commits de cette session :
+  `5ab364d` (spec Simulations V2 + ADR-015→019 + 17 stories US-221→US-237 + dictionnaire
+  tables planifiées + backlog US-216 marquée convertie), `bea69b6` (pause SOP-013 notée
+  dans `.ralph/progress.md`).
+- Gates re-prouvés en début de session : pytest **2258 passed, 0 failed, 42 skipped**
+  (relancée intégralement), `npm run build` exit 0, prod = conteneur Coolify sur l'image
+  taguée du SHA de HEAD (vérifié par `docker ps` via SSH), bassira.ma HTTP 200.
+- `.ralph/prd.json` : **166 stories, 21 `passes=false`** (US-208, US-IQ-05/06/07,
+  US-221→US-237). JSON valide, **fichier en CRLF** (cf. [MEMO]).
+- **LOOP RALPH FORMELLEMENT EN PAUSE** (SOP-013, gate en cours) — aucune story codée.
 
-[FAIT — cette session, après la reprise du 2026-07-15 ~02h30]
-1. **Décision Amine actée** : correction immédiate de `API_EXTERNAL_URL` (infra Supabase
-   miroshark) + rotation de `NAHJ_SUPABASE_POSTGRES_DB` **différée** (faux positif jugé peu
-   sensible, non prioritaire).
-2. **Bug de prod #1 corrigé** : `API_EXTERNAL_URL` sur le service Coolify Supabase dédié
-   miroshark (`dgybi9q5e2ggkjtaxlu2ukai`) — `http://supabase-kong:8000` (hostname Docker
-   interne) → `https://db-miroshark.ai-mpower.com`. Redémarrage du service appliqué et
-   vérifié (`running:healthy`).
-3. **Test relancé → toujours en échec** (regex d'extraction câblée sur `*.supabase.co`,
-   cassée pour un domaine self-hébergé custom) → corrigée dans `gmail-reader.ts`
-   (`MAGIC_LINK_RE` généralisée sur `/auth/v1/verify`, peu importe le domaine) + 3e cas de
-   test ajouté (`gmail-reader.test.mjs`, 3/3 verts).
-4. **Directive Amine reçue en cours de route** : « plus jamais `prospectives.ai-mpower.com`
-   ni `db-miroshark.ai-mpower.com` nulle part dans l'app, tout doit utiliser bassira.ma ».
-5. **Bug de prod #2 découvert et corrigé** : `GOTRUE_SITE_URL` (même service Coolify) valait
-   `${SERVICE_URL_SUPABASEKONG}` (template Coolify, résolu en `http://db-miroshark.ai-mpower.
-   com` — le domaine technique Supabase lui-même). Or `_send_magic_link()` n'envoyait aucun
-   `redirect_to` explicite → GoTrue retombait sur `SITE_URL` par défaut → tout magic link
-   redirigeait vers le domaine Supabase brut, jamais vers l'app. Vérifié (lecture seule,
-   sans rien modifier avant confirmation) que `bassira.ma` sert EXACTEMENT le même build que
-   `prospectives.ai-mpower.com` (bundle JS identique `index-ePmacGrZ.js`) → cohérent ADR-013.
-   Corrigé → `https://bassira.ma`.
-6. **Audit complet des occurrences codées en dur** de `prospectives.ai-mpower.com` dans le
-   code applicatif (hors docs/historique) : 6 sites trouvés et corrigés en une passe (accord
-   Amine) — `client_account_service.py::_send_magic_link` (ajout `redirect_to` explicite via
-   nouvelle var `BASSIRA_PUBLIC_URL`, défaut `bassira.ma`), `api/invitations.py` (invite_url),
-   `api/models.py` ×3 (cta_link PDF modèles, 3 locales), `services/report_delivery.py` ×2
-   (défaut `BASSIRA_PUBLIC_URL` incohérent avec `stripe_service.py`), `app/__init__.py`
-   (défaut `CORS_ORIGINS`). Tests unitaires alignés (`test_unit_invitations.py`,
-   `test_unit_hardening.py`). `playwright.config.ts` + `frontend/tests/e2e/README.md` +
-   `supabase/seed.sql` également alignés. Variable Coolify `CORS_ORIGINS` (app applicative
-   `u6pn5mr2pgi88s13un55pkzb`) corrigée → `https://bassira.ma,http://localhost:3000`.
-   Suite pytest complète (2258 passed) + build revérifiés avant commit/push/deploy.
-7. **Test relancé après déploiement du code → nouvel échec, différent** : la navigation
-   atteint bien `/client/dashboard` (progrès), mais le contenu affiché est le formulaire de
-   login, pas le dashboard.
-8. **Bug de prod #3 trouvé, le plus profond : race condition auth** — instrumentation
-   console.log temporaire (commit `3210ffc`, déployé, retiré ensuite) a prouvé que la
-   session Supabase est BIEN établie (localStorage peuplé, `/auth/v1/user` → 200) mais que
-   le guard `router.beforeEach` redirige quand même vers `/login` **avant** que
-   `auth.init()` n'ait fini de traiter l'event `SIGNED_IN`. Cause racine : Vue Router résout
-   sa navigation initiale dès `app.use(router)`, **indépendamment** du `await auth.init()`
-   fait dans `main.js` avant `app.mount()` — l'hypothèse du commentaire du code d'origine
-   (US-096) était fausse. Quand Supabase JS traite le hash `#access_token=...` puis le
-   retire via `history.replaceState`, une SECONDE navigation se déclenche pendant que
-   `auth.init()` attend encore — l'ancienne heuristique de bypass (hash contient
-   `access_token=`) ne protège plus cette seconde navigation, où le hash est déjà vide.
-   **Corrigé** (commit `eb332c3`) : `auth.init()` rendu idempotent (promesse mémoïsée
-   module-scope) ; le guard l'attend explicitement au lieu de se fier au hash. Build + push
-   + déploiement + reconfirmation conteneur recréé.
-9. **Task 4 relancée après ce vrai correctif → PASSE** (22.4s, 1 passed). Round-trip complet
-   validé bout-en-bout en prod réelle : devis créé → avancé à payé via l'admin → email réel
-   reçu (Gmail DWD) → magic link extrait → navigation → session établie → dashboard affiché.
-10. **Task 5 (gates finaux)** : bug de syntaxe préexistant corrigé en passant (bloquait TOUTE
-    la suite E2E) — `admin-report-tracking.spec.ts` avait un commentaire JSDoc contenant
-    littéralement `*/` (dans `reports/*/deliveries`), fermant le bloc de commentaire
-    prématurément. Suite complète relancée : 86/114 verts, 28 échecs tous triés et confirmés
-    **pré-existants, sans rapport avec cette session** (cf. [ALERTE]).
+[FAIT — cette session]
+1. **Vérification par preuve de la passation précédente** (règle n°4) : git, prod
+   (image = SHA HEAD), pytest, build, prd.json — tout confirmé.
+2. **Deep-explore simulations** (3 agents Explore Haiku + contre-vérifications
+   personnelles, erreurs d'agents corrigées). Angles morts majeurs sourcés :
+   `resolve_market()` défini mais JAMAIS appelé (`polymarket/platform.py:378` — marchés
+   jamais dénoués), P&L des agents faux (`cost_basis = 0.50` en dur,
+   `environment.py:40`), prix AMM jamais dans le PDF (`charts.py:251` trace les stances),
+   `CHINA_TIMEZONE_CONFIG` (config calée sur Pékin, `simulation_config_generator.py:30`),
+   AUCUNE règle de routage d'arènes (3 checkboxes user + `/start` sans validation),
+   prompts d'arènes en anglais nus (personas sans grounding), `do_nothing` de base.py
+   contaminé vocabulaire trader, enum plateformes en dur (`simulation.py:3771`),
+   `enabled_platforms` non requêtable, artefacts sur volume éphémère (ADR-005 ouvert).
+   Insight clé : Twitter/Reddit partagent les mêmes classes → une arène MENA = un simple
+   `SimulationConfig` de plus.
+3. **Arbitrages d'Amine actés au fil de la session** : (a) dénouement simulé avec VRAI
+   sens économique ; (b) personas au standard **ESCO** (API testée OK depuis le poste en
+   FR ET AR) + enrichissement hors-taxonomie par **le 122B** → directement en Supabase ;
+   (c) élévation **L99 de tous les prompts** de simulation (skill prompt-engineer-pro) +
+   page console **super-admin** des prompts, **éditables en base** ; (d) rejet du menu
+   fixe de critères de dénouement (« les scénarios sont infinis ») → architecture
+   **resolution_spec par marché + oracle de clôture** proposée et retenue ;
+   (e) renommage client **« marché de convictions »** (option renommage complet choisie
+   via AskUserQuestion).
+4. **Livrables commités (`5ab364d`)** : spec
+   `docs/superpowers/specs/2026-07-16-simulations-v2-design.md` ; **ADR-015**
+   (resolution_spec + oracle YES/NO/INVALID + void/remboursement + richesse finale =
+   score de justesse), **ADR-016** (ESCO + cache `occupation_profiles` + 122B),
+   **ADR-017** (registre `simulation_prompts` versionné, édition = nouvelle version,
+   activation conditionnée au golden set), **ADR-018** (lexique « convictions »
+   fr/en/ar), **ADR-019** (routage déterministe + override journalisé) ; **17 stories**
+   US-221→US-237 (chantier `16-simulations-v2`, dépendances câblées, hard things first) ;
+   dictionnaire : section « tables planifiées » (`simulation_prompts`,
+   `occupation_profiles`, `market_resolutions`, colonne `enabled_platforms`).
+5. **« mode ralph » reçu → gate SOP-013 appliqué intégralement** : pause formelle
+   (commit `bea69b6`), périmètre recompté (21 stories), tokens charte extraits de
+   `frontend/src/design-tokens.css` (pas de Design.md), **prototype navigable 9 écrans**
+   publié (Artifact, thèmes clair/sombre, tokens `--wi-*` à l'identique) :
+   https://claude.ai/code/artifact/28943904-102a-4642-b597-43cd11cc74a9 — écrans :
+   couverture, création-arènes (routage+override), marchés de convictions avec
+   dénouement, PDF dénouement, PDF comparatif Delphi, console prompts liste, prompt
+   détail (versions/diff/golden set), intake Porte 2 AAR scellée, dossier devis enrichi,
+   pré-seed simulation depuis devis. Écarts signalés : Artifact au lieu d'aidesigner
+   (fidélité tokens privilégiée — incident v1.1.0), polices en repli system-ui (CSP),
+   prototype monolingue fr.
+6. **Council exécuté** (5 conseillers Sonnet + 5 revues croisées anonymisées + synthèse
+   Chairman). Verdict : **NO-GO en l'état, correctifs ciblés sans refonte**.
+   Convergence 4/5 : le lexique « oracle/verdict/confiance/dénouement/Delphi » contredit
+   le positionnement non-prédictif ; le gate ne couvre que le décor (contrat d'interface
+   du moteur manquant) ; S4 sans disclaimer (S3 en a un) ; 5 trous d'implémentation
+   (états vides/erreur, schéma série de prix, scellement non tranché, retour d'état
+   golden set, algo de diff). Clash arbitré : schéma cross-simulations (Expansionist) ET
+   fil rouge « premier cas Porte 2 réel au plus tôt » (First Principles) — les deux.
+   Erreurs factuelles des conseillers corrigées par preuve : ADR-002 interdit le claim
+   commercial, pas la mesure interne ; ADR-IQ-05 existe mais mécanisme explicitement « à
+   trancher en revue technique » ; routage S8 lit le montant (non scellé) ; le 122B ne
+   fait pas tourner le moteur.
+7. Remise faite à Amine (prototype + synthèse Council + 3 voies : go tel quel / corrige
+   et re-soumets / go partiel backend) — **sa réponse n'est pas encore donnée**.
 
 [ALERTE]
-- **⚠️ POINT SÉRIEUX NON RÉSOLU, à faire trancher par Amine** : `tunnel-commercial.spec.ts`
-  (censé être strictement read-only, s'arrêter avant toute soumission — cf. en-tête
-  `playwright.config.ts`) a fini par naviguer vers une **vraie session Stripe Checkout LIVE**
-  (`https://checkout.stripe.com/c/pay/cs_live_...`) en cliquant le CTA « Crisis Drill 24h »
-  depuis `/offres`. Découvert en fin de suite complète, PAS creusé plus loin ni interagi avec
-  cette page Stripe (hors mandat, touche un système de paiement réel). Confirmé sans lien
-  avec cette session : aucun fichier touché ici ne concerne `/offres`, `QuoteView.vue`, ou
-  `stripe_service.py`. À investiguer séparément — est-ce un comportement voulu (Stripe
-  Payment Link direct pour ce package précis) ou une régression antérieure non détectée ?
-- **27 autres échecs E2E confirmés pré-existants, dette de test non traitée cette session** :
-  (a) ~24 tests admin (`admin-branding`, `admin-quotes`, `admin-report-review`,
-  `admin-report-tracking`, `console-multitenant` volets super-admin) échouent parce que
-  `fixtures/auth.ts::navigateAuthenticated` attend un lien admin (`a[href="/admin/quotes"]`)
-  en état VISIBLE, alors que ce lien vit désormais derrière un dropdown « Admin » à ouvrir
-  (menu réorganisé à un moment non identifié, jamais répercuté dans le fixture). (b) 3 tests
-  smoke (`smoke-fr/en/ar` sur `/devis`) attendent 3 boutons radio pour le Step 1 du tunnel
-  devis, alors que Step 1 a été redesigné en question texte libre (« Quelle décision devez-
-  vous prendre ? ») — confirmé par capture d'écran, le rendu est correct, seul le test est
-  périmé. Aucun de ces fichiers (`fixtures/auth.ts`, composant header, `QuoteView.vue`) n'a
-  été touché cette session. Backlog de nettoyage de tests à ouvrir séparément (pas fait ici,
-  hors scope strict de la brique E2E email).
-- Points hérités de la passation précédente, toujours non résolus (statu quo, non repris
-  cette session) : rotation `NAHJ_SUPABASE_POSTGRES_DB` (décision Amine : différée), 2
-  emails de test résiduels dans `a.mansouri@` (mise à la corbeille jamais retentée).
+- Héritées, toujours ouvertes : **finding Stripe live checkout** (tunnel-commercial.spec
+  cliquant « Crisis Drill 24h » → vraie session Checkout LIVE — arbitrage Amine jamais
+  rendu) ; dette 27 tests E2E pré-existants (fixture dropdown Admin + smoke Step 1) ;
+  flaky `test_md_hash_stable_with_deterministic_enricher` ; 2 emails de test résiduels
+  dans a.mansouri@ ; rotation `NAHJ_SUPABASE_POSTGRES_DB` différée (décision Amine).
+- Recommandations Council NON encore intégrées à la spec/stories (attente du go) :
+  remonter **US-212 (lint/typecheck)** avant le loop long ; réordonner pour atteindre le
+  premier cas Porte 2 réel au plus tôt ; clés/index cross-simulations dans US-226 ;
+  vérification terminologie AR/RTL au prototype v2.
 
 [BLOQUE / EN ATTENTE]
-- RAS — Task 4 et Task 5 sont closes. Le seul point réellement en attente d'arbitrage Amine
-  est le finding Stripe live checkout ci-dessus (ALERTE).
+- **Gate SOP-013 ouvert** : loop Ralph en pause, AUCUNE story codée avant le **go
+  explicite d'Amine** (silence ≠ accord — SOP-013 §9). Deux décisions attendues :
+  (1) **lexique client** (l'Outsider conteste même « marché de convictions » ; proposer
+  des variantes fr/ar si Amine le demande — le naming est SA décision) ;
+  (2) **go/no-go** sur l'une des 3 voies proposées.
 
 [NEXT]
-0. **PRIORITÉ 1 : le nouveau chantier simulations** (cf. bloc [NOUVEAU CHANTIER] en tête
-   de cette passation) — deep-explore + angles morts + remplacement du calque Polymarket.
-   Il PRIME sur tout le reste de cette liste, ordre explicite d'Amine.
-1. **Décision Amine sur le finding Stripe live checkout** (tunnel-commercial.spec.ts) —
-   investiguer si le CTA « Crisis Drill 24h » sur `/offres` route intentionnellement vers un
-   Payment Link Stripe direct, ou si c'est une régression à corriger.
-2. Nettoyage de la dette de tests E2E pré-existante (27 tests) — chantier séparé, pas
-   urgent : mettre à jour `fixtures/auth.ts` pour ouvrir le dropdown Admin avant de chercher
-   les liens, et réécrire les assertions Step 1 du tunnel devis (radios → texte libre).
-3. Corriger le test flaky `test_md_hash_stable_with_deterministic_enricher` (freeze du
-   temps) — connu depuis le 2026-07-11, jamais traité, quelques minutes.
-4. Reprendre l'ordre de priorité déjà validé avec Amine (difficulté croissante) — `US-208`
-   (Redis+RQ worker PDF actifs en prod, dépendance `US-207` déjà `passes=true`), puis
-   `US-IQ-07` (pré-seed simulation depuis le brief), puis Lot C (Cal.com embarqué), Lot D
-   (white-label Cal.com), `US-IQ-05`/`US-IQ-06`. 4 stories `passes=false` confirmées dans
-   `.ralph/prd.json` sur 149 au total.
-5. Nettoyer les 2 emails de test résiduels dans la boîte `a.mansouri@` (GAM trash, syntaxe à
-   revoir).
+1. Recevoir l'arbitrage lexique + le go/no-go d'Amine (cf. [BLOQUE]).
+2. Si « corrige et re-soumets » (voie recommandée par le Council) : **prototype v2**
+   (disclaimer S4 = S3, lexique arbitré appliqué, états manquants : min. 1 arène,
+   golden set en cours/échec, scénario démo neutralisé, libellés clés en ar/RTL) + **3
+   addenda de spec** (contrat d'interface oracle : schéma prix-par-round durable +
+   `market_resolutions` ; mécanisme de scellement ADR-IQ-05 tranché en revue technique :
+   chiffrement applicatif vs hachage+révélation ; périmètre de lecture du routage
+   Branche B) + intégrer les recommandations Council ([ALERTE]) dans prd.json → nouveau
+   passage devant Amine (portion concernée seulement, SOP-013 §9).
+3. Après le go : reprise Ralph story par story — US-224 (renommage, quick win) ou
+   US-221 (persistance, hard first) selon la voie choisie ; gates par story
+   (build + pytest), commit `[US-XXX] Titre`, `/ponytail-debt` à chaque fin de story.
+4. Toujours en file (inchangé) : arbitrage Stripe live checkout, dette 27 tests E2E,
+   flaky, US-208.
 
 [CTX]
-- App Coolify miroshark : uuid `u6pn5mr2pgi88s13un55pkzb`. Prod = `bassira.ma` ==
-  `prospectives.ai-mpower.com` (même build, bundle JS identique vérifié) — bassira.ma est
-  désormais le domaine canonique partout dans le code applicatif et les tests.
-  `prospectives.ai-mpower.com` reste fonctionnel (alias Coolify) mais n'est plus référencé
-  nulle part dans le code.
-- **Instance Supabase dédiée miroshark** : conteneurs `supabase-kong-
-  dgybi9q5e2ggkjtaxlu2ukai` / `supabase-db-dgybi9q5e2ggkjtaxlu2ukai`, domaine public
-  `db-miroshark.ai-mpower.com`. Ce domaine reste le domaine TECHNIQUE de l'API Supabase Auth
-  (utilisé en interne pour `SUPABASE_URL`, `VITE_SUPABASE_URL`, `API_EXTERNAL_URL`) — non
-  migré vers un sous-domaine bassira.ma (décision explicite d'Amine : provisionner un
-  sous-domaine dédié type `db.bassira.ma`, chantier SOP-005 séparé, PAS commencé cette
-  session malgré la décision prise — à ouvrir explicitement si toujours voulu).
-  `API_EXTERNAL_URL=https://db-miroshark.ai-mpower.com`, `GOTRUE_SITE_URL=https://bassira.ma`.
-- Nouvelle convention backend : `BASSIRA_PUBLIC_URL` (env var, défaut `https://bassira.ma`)
-  — utilisée par `client_account_service.py`, `api/invitations.py`,
-  `services/report_delivery.py`, `services/stripe_service.py`. Pas encore posée
-  explicitement dans les env Coolify de l'app (les 4 sites tournent sur leur défaut Python
-  actuellement, tous alignés sur bassira.ma — poser la variable serait redondant tant que le
-  défaut reste correct, mais fragile si un jour quelqu'un modifie un seul défaut sans les
-  autres : envisager de la poser explicitement en env Coolify pour une source de vérité
-  unique).
-- Spec E2E email : `docs/superpowers/specs/2026-07-15-e2e-email-roundtrip-design.md`.
-- Plan E2E email : `docs/superpowers/plans/2026-07-15-e2e-email-roundtrip-plan.md` — les 5
-  tâches sont closes, le plan peut être archivé/marqué terminé.
-- Fichiers modifiés cette session (au-delà de ceux déjà listés le 2026-07-15 ~02h30) :
-  `backend/app/__init__.py`, `backend/app/api/invitations.py`, `backend/app/api/models.py`,
-  `backend/app/services/client_account_service.py`,
-  `backend/app/services/report_delivery.py`, `backend/tests/test_unit_hardening.py`,
-  `backend/tests/test_unit_invitations.py`, `frontend/playwright.config.ts`,
-  `frontend/tests/e2e/README.md`, `frontend/tests/e2e/fixtures/gmail-reader.{ts,test.mjs}`,
-  `frontend/tests/e2e/client-account-email-roundtrip.spec.ts`,
-  `frontend/tests/e2e/admin-report-tracking.spec.ts` (bug syntaxe), `supabase/seed.sql`,
-  `frontend/src/stores/auth.js`, `frontend/src/router/index.js`, `.gitignore`.
-- Mode de travail : exécution INLINE sur `main` (consentement Amine hérité, reconfirmé
-  explicitement à plusieurs reprises cette session via AskUserQuestion).
+- Spec : `docs/superpowers/specs/2026-07-16-simulations-v2-design.md` (architecture
+  complète + §6 graphe de dépendances). ADR : `docs/08-decisions-log.md` ADR-015→019.
+  Stories : `.ralph/prd.json` chantier `16-simulations-v2`. Pause SOP-013 : notée en fin
+  de `.ralph/progress.md`.
+- Prototype : https://claude.ai/code/artifact/28943904-102a-4642-b597-43cd11cc74a9
+  (source : scratchpad session `proto-simulations-v2.html` — republier le même chemin
+  garde l'URL ; depuis une autre session, passer `url:` à l'outil Artifact).
+- SOP-013 : `C:\projets\sop\interne\SOP-013-prototype-navigable-avant-ralph\...md`
+  (étapes 7-10 restantes : go explicite tracé AVANT toute story).
+- Charte : `frontend/src/design-tokens.css` (75 tokens `--wi-*`, light+dark ; primary
+  #a13f0f, bg #fff8f6, secondary #006d44, tertiary #006971, radius 24/12px,
+  Outfit/Manrope). Chart stances : mint=adhésion, terra=résistance, sand=observation.
+- ESCO : `python C:\Users\amans\.claude\skills\prompt-engineer-pro\scripts\esco-role.py
+  "<métier>" --lang fr|ar|en` — testé OK (fiches réelles FR et AR). Pattern :
+  `reference/esco-role-prompting.md` (bloc `<expertise_metier>` + compétences = axes).
+- App Coolify miroshark : uuid `u6pn5mr2pgi88s13un55pkzb` ; prod bassira.ma ; instance
+  Supabase dédiée `db-miroshark.ai-mpower.com` (conteneurs `*-dgybi9q5e2ggkjtaxlu2ukai`).
+- Fichiers clés du moteur (deep-explore) : `wonderwall/simulations/base.py` (contrat),
+  `polymarket/{platform,amm,actions,prompts,environment}.py`,
+  `social_media/__init__.py` (3 SimulationConfig), `scripts/run_parallel_simulation.py`
+  (lock-step + ponts), `app/services/{simulation_manager,simulation_runner,
+  simulation_config_generator,wonderwall_profile_generator}.py`.
 
 [MEMO inter-sessions]
-- **Vue Router résout sa navigation initiale dès `app.use(router)`, PAS gaté par
-  `app.mount()`** — tout code qui suppose qu'un `await xxx.init()` avant `app.mount()`
-  protège les guards `beforeEach` d'un état pas encore prêt est FAUX dans cette architecture.
-  Le seul pattern fiable : mémoïser la promesse d'init et la faire attendre explicitement
-  PAR le guard lui-même (cf. `stores/auth.js::init()` + `router/index.js::beforeEach`,
-  2026-07-15). À vérifier sur tout futur guard qui dépend d'un état async chargé au boot.
-- **Piège Coolify template Supabase** : les valeurs d'env var peuvent être des références
-  template (`${SERVICE_URL_SUPABASEKONG}`) plutôt que des littéraux — `GOTRUE_SITE_URL`
-  était configuré ainsi, résolu dynamiquement vers le domaine Kong lui-même. Toujours
-  vérifier la VALEUR RÉSOLUE (pas juste le nom de la variable) avant de diagnostiquer.
-- **Domaine self-hébergé Supabase ≠ regex générique `*.supabase.co`** — toute logique de
-  test/extraction de lien Supabase Auth écrite en supposant le SaaS managé casse sur une
-  instance self-hébergée à domaine custom. Généraliser sur le CHEMIN (`/auth/v1/verify`),
-  jamais sur le domaine.
-- **`createQuote()` et `_send_magic_link()` envoient chacun un email avec « Bassira » dans
-  le sujet au même destinataire** — tout matching de test sur un email doit cibler le sujet
-  EXACT du template voulu (`_SUBJECT_BY_LOCALE` dans `client_account_service.py`), jamais un
-  préfixe de marque générique.
-- Repris du 2026-07-15 ~02h30, toujours valable : piège identification conteneur Kong/
-  Supabase (jamais en boucle batchée), convention nommage `supabase-kong-<uuid>`/
-  `supabase-db-<uuid>`, `API_EXTERNAL_URL` et `GOTRUE_SITE_URL` distincts et pas
-  auto-synchronisés par le template Coolify.
+- **`.ralph/prd.json` est en CRLF** : toute réécriture Python doit utiliser
+  `open(..., 'w', newline='\r\n')` sinon diff massif de 10 000 lignes (payé cette
+  session, corrigé). Round-trip `json.dumps(indent=2, ensure_ascii=False)` = stable.
+- **Preuve de déploiement en 1 commande** : l'image du conteneur Coolify est taguée du
+  SHA exact du commit déployé → `ssh serveuria 'docker ps --filter name=<uuid8>
+  --format "{{.Image}}"'` et comparer à `git rev-parse HEAD`.
+- **bash-guard bloque TOUT appel API Coolify multi-pipelines** même avec `jq -r .champ`
+  par pipeline : une seule pipeline curl|jq à champ unique par commande, sinon passer
+  par SSH/docker.
+- **Agents Explore/Council passent souvent idle SANS envoyer leur rapport** : leur
+  demander explicitement d'envoyer via SendMessage vers "main" dans le prompt, et les
+  relancer par SendMessage s'ils sont idle sans rapport reçu.
+- **ADR-002 : distinction cruciale** — interdit le mot « prédiction » et les claims de
+  calibration dans le COPY COMMERCIAL ; la mesure interne (richesse finale, verdicts,
+  Brier) est licite et même souhaitable (c'est elle qui produira les ≥ 20 outcomes).
+- Repris des sessions précédentes, toujours valable : Vue Router résout sa navigation
+  initiale dès `app.use(router)` (guard doit attendre la promesse d'init mémoïsée) ;
+  valeurs d'env Coolify parfois des templates `${SERVICE_URL_*}` (vérifier la valeur
+  RÉSOLUE) ; extraction de liens Supabase Auth sur le CHEMIN `/auth/v1/verify`, jamais
+  le domaine ; matching d'emails de test sur le sujet EXACT (`_SUBJECT_BY_LOCALE`).
