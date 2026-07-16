@@ -61,8 +61,9 @@ de vérité : `intake_sessions.brief`). Champs actuels conservés tels quels
   existe** — il fait partie intégrante de la préqualification et alimente le devis.
   AUCUNE purge automatique sur les sessions liées à un `quote_id`. Inclus dans tout
   export/suppression DSR.
-- `aar_known_outcome` : chiffré applicativement OU stocké haché + révélé seulement à la
-  restitution (à trancher en revue de code — les deux options documentées en ADR-IQ-05).
+- `aar_known_outcome` : **chiffré applicativement** (clé `INTAKE_SEAL_KEY`) + empreinte
+  SHA-256 du clair remise au prospect à la soumission, déchiffré uniquement au moment de
+  la restitution (mécanisme tranché ADR-IQ-05, 2026-07-16).
 - Sessions `abandoned` SANS `quote_id` : purge complète à J+30 (pg_cron) — seules ces
   sessions orphelines sont purgées.
 

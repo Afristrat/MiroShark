@@ -1935,3 +1935,35 @@ non-régression sur les termes abandonnés).
 **Statut gate SOP-013** : lexique client entièrement clos (nom + halo). Reste en
 attente avant tout code : confirmation du scellement ADR-IQ-05 (spec §7.2) et le go
 final englobant sur la reprise Ralph story par story (étape 8/10).
+
+### 2026-07-16 — GO EXPLICITE REÇU : gate SOP-013 levé, reprise Ralph
+
+Amine : (1) valide le scellement ADR-IQ-05 (chiffrement applicatif + empreinte —
+docs/intake/08-decisions-log.md, docs/intake/02-data-dictionary-delta.md, spec §7.2
+mis à jour) ; (2) « je veux tout faire développer en premier en fonction de la
+contrainte bloquante » — go explicite sur l'intégralité du périmètre gate SOP-013
+(22 stories : chantier 16-simulations-v2 + US-208 + US-IQ-05/06/07), ordre calculé
+par graphe de dépendances (in-degree des dependents), pas par intuition.
+
+**SOP-013 étape 10 — traçabilité du go** : go reçu ce jour, horodaté avant la
+première story du segment. Aucune story codée avant cette entrée.
+
+**Ordre d'exécution (contrainte bloquante, recalculé par lecture exhaustive de
+prd.json)** :
+
+Lot 0 — fondations (zéro dépendance) :
+1. US-212 (outillage qualité) — sécurise les gates de toutes les stories suivantes (Council)
+2. US-223 (simulation_prompts + PromptRegistry) — **PLUS GROSSE CONTRAINTE BLOQUANTE** : 5 dépendants directs (US-225, US-229, US-231, US-232, US-233), 9 transitifs
+3. US-222 (registre d'arènes) — débloque US-235, US-237 (partiel)
+4. US-228 (cache ESCO) — débloque US-229 (partiel), US-230
+5. US-221 (persistance artefacts, ADR-005) — P0 isolé, bug prod déjà payé
+6. US-224 (renommage arène de convictions) — quick win isolé
+
+Lot 1 (débloqué par Lot 0) : US-231, US-233, US-232, US-225, US-229, US-230, US-235
+Lot 2 : US-226 (← US-225), US-234 (← US-233, maquette déjà validée SOP-013), US-237 (← US-222+US-231)
+Lot 3 : US-227 (← US-226), US-236 (← US-226+US-235)
+
+Piste parallèle indépendante (dépendances déjà passes=true) : US-IQ-05, US-IQ-06,
+US-IQ-07, US-208.
+
+Démarrage : US-212.

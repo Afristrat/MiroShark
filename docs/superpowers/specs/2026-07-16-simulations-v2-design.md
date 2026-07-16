@@ -236,7 +236,7 @@ round. Décision :
   composite (`simulation_id`, `market_id`) + index (`org_id`, `resolved_at`) pour les
   requêtes croisées entre simulations d'une même organisation.
 
-### 7.2 Scellement ADR-IQ-05 — revue technique tranchée (US-IQ-05)
+### 7.2 Scellement ADR-IQ-05 — TRANCHÉ, validé par Amine (US-IQ-05)
 
 | Critère | Chiffrement applicatif | Hachage + révélation différée |
 |---|---|---|
@@ -253,8 +253,9 @@ prospect vérifie que rien n'a été altéré). La révélation différée pure 
 elle transfère le risque d'échec de la démonstration au prospect. Le test unitaire
 d'US-IQ-05 (le champ n'apparaît dans AUCUN contexte agent ni pré-seed) reste le
 garde-fou principal ; mutualisation avec le registre scellé M1 (US-220) au signal de
-réexamen d'ADR-IQ-05. → **À confirmer par Amine au go** ; ADR-IQ-05 et le critère
-d'US-IQ-05 seront alors fixés sur cette option.
+réexamen d'ADR-IQ-05. **Validé par Amine (2026-07-16)** : ADR-IQ-05 et le critère
+d'US-IQ-05 sont fixés sur cette option (docs/intake/08-decisions-log.md,
+docs/intake/02-data-dictionary-delta.md).
 
 ### 7.3 Périmètre de lecture du routage Branche B (clarification — US-IQ-06/07)
 

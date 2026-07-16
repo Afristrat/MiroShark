@@ -96,13 +96,24 @@ mécanisme (améliorer le prompt, pas le stockage).
 ## ADR-IQ-05 — Issue réelle de la porte AAR : scellée jusqu'à restitution
 
 **Quoi** : dans la porte 2 (« Testez-nous sur du connu »), l'issue réelle fournie par le
-prospect est stockée scellée (chiffrement applicatif OU hachage+révélation, à trancher en
-revue technique) et n'est lisible ni par l'agent ni par les admins avant la restitution.
+prospect est stockée scellée et n'est lisible ni par l'agent ni par les admins avant la
+restitution.
+**Mécanisme TRANCHÉ (revue technique 2026-07-16, validé par Amine — chantier
+16-simulations-v2 spec §7.2)** : **chiffrement applicatif** — clé env dédiée
+`INTAKE_SEAL_KEY` (jamais la clé Supabase), déchiffrement uniquement dans le chemin de
+restitution — **plus** empreinte SHA-256 du clair remise au prospect à la soumission
+(commitment cryptographique : à la restitution, le déchiffré re-hache vers la même
+empreinte, le prospect vérifie que rien n'a été altéré). La révélation différée pure
+(hachage seul, sans stockage du clair) est rejetée : elle transfère le risque d'échec de
+la démonstration au prospect (absent ou re-saisie divergente à la restitution → la
+comparaison, donc le livrable, devient impossible). Le test unitaire d'US-IQ-05 (le champ
+n'apparaît dans AUCUN contexte agent ni pré-seed) reste le garde-fou principal.
 **Pourquoi** : toute fuite de l'issue vers l'équipe ou vers le contexte du LLM détruit la
 valeur probante du test — le scellé est ce qui rend la démonstration honnête ET
 démontrable (cousin du registre scellé M1 de la chasse moat).
 **Alternatives rejetées** : stockage en clair avec discipline d'accès (invérifiable, la
-promesse ne tient que par la parole).
+promesse ne tient que par la parole) ; hachage + révélation différée pure (risque
+business : transfère l'échec de la démonstration au prospect).
 **Signal de réexamen** : mise en œuvre du registre scellé M1 (US-220) — mutualiser le
 mécanisme.
 
