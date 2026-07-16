@@ -4771,7 +4771,9 @@
       ],
       "metadata": {
         "origin": "docs/intake/04-feature-backlog.md (US-IQ-05)",
-        "adr": "docs/intake/08-decisions-log.md"
+        "adr": "docs/intake/08-decisions-log.md",
+        "priority": "P0",
+        "council_20260716": "Fil rouge « premier cas Porte 2 réel au plus tôt » — arbitrage Chairman"
       },
       "completedAt": null
     },
@@ -4794,7 +4796,9 @@
       ],
       "metadata": {
         "origin": "docs/intake/04-feature-backlog.md (US-IQ-06)",
-        "adr": "docs/intake/08-decisions-log.md"
+        "adr": "docs/intake/08-decisions-log.md",
+        "priority": "P0",
+        "council_20260716": "Fil rouge « premier cas Porte 2 réel au plus tôt » — arbitrage Chairman"
       },
       "completedAt": null
     },
@@ -4816,9 +4820,32 @@
       ],
       "metadata": {
         "origin": "docs/intake/04-feature-backlog.md (US-IQ-07)",
-        "adr": "docs/intake/08-decisions-log.md"
+        "adr": "docs/intake/08-decisions-log.md",
+        "priority": "P0",
+        "council_20260716": "Fil rouge « premier cas Porte 2 réel au plus tôt » — arbitrage Chairman"
       },
       "completedAt": null
+    },
+    {
+      "id": "US-212",
+      "chantier": "16-simulations-v2",
+      "title": "Outillage qualité : lint + typecheck + CI frontend (backlog US-212)",
+      "description": "Configurer l'outillage qualité absent du repo (docs/04-feature-backlog.md US-212) AVANT le loop long du chantier simulations : ruff + mypy sur backend/ (config pyproject, dette existante corrigée ou baseline explicite justifiée), eslint sur frontend/ (Vue 3, pas de TypeScript — eslint-plugin-vue), scripts npm lint/typecheck à la racine, CI exécutant build + lint + smoke Playwright sur PR. Documenter les variables Supabase manquantes de .env.example au passage (docs/05-integrations.md).",
+      "acceptanceCriteria": [
+        "npm run lint et npm run typecheck existent à la racine et passent (exit 0)",
+        "cd backend && uv run ruff check . → 0 erreur ; mypy configuré et vert sur le périmètre défini",
+        "CI (workflow) exécute build + lint + smoke Playwright sur PR",
+        ".env.example documente les variables Supabase requises (US-212 / docs/05-integrations.md)",
+        "Suite pytest complète verte ; npm run build vert"
+      ],
+      "passes": false,
+      "dependencies": [],
+      "metadata": {
+        "estimated_hours": 5,
+        "priority": "P0",
+        "origin": "docs/04-feature-backlog.md (US-212)",
+        "council_20260716": "Remonté avant le loop long — recommandation Council (dette de validation)"
+      }
     },
     {
       "id": "US-221",
@@ -4883,12 +4910,14 @@
     {
       "id": "US-224",
       "chantier": "16-simulations-v2",
-      "title": "Renommage client « marché de convictions » (ADR-018)",
-      "description": "Purger « prédiction »/« prediction »/« تنبؤ » de tout le visible client : encart PDF _method_limits.md.j2 (3 langues — « marché de convictions simulé, où chaque persona investit selon ses convictions »), libellés UI (charts.polymarket.title, marketCountTitle, predictionMarkets, clé fallback ~l.149, et toute autre occurrence trouvée par grep dans les 3 locales). Le vocabulaire technique interne (code, polymarket_*, schémas) ne change pas.",
+      "title": "Renommage client « arène de convictions » (ADR-018 amendé)",
+      "description": "Purger « prédiction »/« prediction »/« تنبؤ » de tout le visible client au profit de « arène de convictions » (fr) / « conviction arena » (en) / « ساحة القناعات » (ar) — ADR-018 amendé post-Council (spec §7.4) : encart PDF _method_limits.md.j2 (3 langues — « arène de convictions simulée, où chaque persona investit selon ses convictions »), libellés UI (charts.polymarket.title, marketCountTitle, predictionMarkets, clé fallback ~l.149, et toute autre occurrence trouvée par grep dans les 3 locales). Les marchés individuels deviennent des « questions » côté client. Applique AUSSI l'arbitrage final d'Amine sur le halo lexical (oracle/verdict/confiance/dénouement/Delphi — variante A wargaming ou B actuelle, cf. spec §7.4) une fois rendu. Le vocabulaire technique interne (code, polymarket_*, schémas) ne change pas.",
       "acceptanceCriteria": [
         "grep -i 'prédiction|prediction|تنبؤ' sur frontend/src/locales/*.json et backend/app/templates/ → zéro occurrence client-facing restante (hors identifiants techniques)",
+        "grep -i 'marché de convictions|conviction market|سوق القناعات' → zéro occurrence (le nom abandonné ne survit nulle part)",
         "Parité stricte fr/en/ar dans le même commit (US-217)",
         "Un PDF généré en fr, en et ar contient le nouveau vocabulaire dans l'encart Méthode et limites",
+        "Le halo lexical appliqué correspond à l'arbitrage final d'Amine consigné dans ADR-018 (variante A ou B, spec §7.4)",
         "npm run build vert ; suite pytest verte (snapshots PDF mis à jour si nécessaire)"
       ],
       "passes": false,
@@ -4908,7 +4937,8 @@
         "Chaque marché créé porte une resolution_spec validée structurellement (schéma jsonb documenté)",
         "Une spec non conforme déclenche une régénération ; après N tentatives, erreur explicite (jamais de marché sans contrat)",
         "Le prompt de génération vit dans simulation_prompts avec un golden set d'éval (≥ 8 cas dont 2 adversariaux) qui passe",
-        "Tests unitaires de validation de spec verts ; suite pytest verte"
+        "Tests unitaires de validation de spec verts ; suite pytest verte",
+        "Table SQLite market_price_snapshot (market_id, round, price_yes, reserve_a, reserve_b) écrite au tick de chaque round (spec §7.1)"
       ],
       "passes": false,
       "dependencies": [
@@ -4927,6 +4957,8 @@
       "description": "À la clôture de simulation : l'oracle de résolution (prompt L99 distinct, chain-of-verification, structured output) applique la resolution_spec de chaque marché aux artefacts finaux → verdict YES/NO/INVALID + justification + confiance, persisté dans la table market_resolutions. YES/NO → resolve_market() paie les positions ; INVALID → void, remboursement au coût réel. Corriger cost_basis : coût réel depuis la table trade (supprime le 0.50 codé en dur, polymarket/environment.py:40). La richesse finale par persona est persistée (score de justesse).",
       "acceptanceCriteria": [
         "Fin de simulation avec marchés → chaque marché a une ligne market_resolutions (verdict, justification, confiance, version du prompt oracle)",
+        "market_resolutions respecte le schéma gelé de la spec §7.1 : price_series jsonb, payout_summary jsonb, PK composite (simulation_id, market_id), index (org_id, resolved_at) pour les requêtes cross-simulations",
+        "Contrat d'interface oracle conforme §7.1 : verdict YES|NO|INVALID|UNRESOLVED, échec persistant → UNRESOLVED sans paiement (jamais de verdict inventé)",
         "resolve_market() est appelé (plus aucun marché non dénoué) ; positions payées ; INVALID → remboursement au coût réel vérifié par test",
         "cost_basis provient de la table trade — le 0.50 codé en dur a disparu",
         "Richesse finale par persona persistée et exposée par l'API",
@@ -4947,7 +4979,7 @@
       "id": "US-227",
       "chantier": "16-simulations-v2",
       "title": "Restitution du dénouement (PDF + API + frontend)",
-      "description": "Restituer le cycle économique complet dans les livrables : prix réels du marché (série temporelle depuis la table trade), verdict de l'oracle avec justification, richesse finale des personas marquants. PDF : polymarket_curves complété ou remplacé par un chart adossé aux prix réels + encart dénouement. Frontend : PolymarketChart affiche le verdict et l'état résolu. Vocabulaire ADR-018 partout.",
+      "description": "Restituer le cycle économique complet dans les livrables : prix réels du marché (série temporelle depuis market_price_snapshot, copiée en market_resolutions.price_series à la clôture — spec §7.1), verdict de l'oracle avec justification, richesse finale des personas marquants. PDF : polymarket_curves complété ou remplacé par un chart adossé aux prix réels + encart dénouement. Frontend : PolymarketChart affiche le verdict et l'état résolu. Vocabulaire ADR-018 partout.",
       "acceptanceCriteria": [
         "Le PDF d'une simulation avec marché montre : évolution du prix réel, verdict, justification de l'oracle",
         "PolymarketChart (frontend) affiche l'état résolu (verdict + date) quand le marché est dénoué",

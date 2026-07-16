@@ -1905,3 +1905,18 @@ devis (US-IQ-07). Stories sans écran (US-208, 221-223, 225-226, 228-233) : gate
 (SOP-013 §8 étape 2 — aucune story avant l'étape 10).
 Charte : pas de Design.md → tokens extraits de `frontend/src/design-tokens.css`
 (75 tokens --wi-*, thèmes light/dark).
+
+### 2026-07-16 — Gate SOP-013 : re-soumission v2 (voie « corrige et re-soumets »)
+
+Arbitrages Amine (session ~09h) : voie Council « corrige et re-soumets » actée ; nom
+client = **« arène de convictions »** (fr) / « conviction arena » (en) / « ساحة القناعات »
+(ar) — ADR-018 amendé ; halo lexical (oracle/verdict/confiance/dénouement/Delphi) :
+demande explicite des DEUX variantes → prototype v2 avec commutateur de lexique
+(A wargaming / B halo actuel), à trancher au go.
+Livré : prototype v2 (même URL, correctifs Council : disclaimer S4=S3, état min. 1 arène,
+golden set en cours, scénario fictif Bab Rimal, aperçu ar/RTL) ; spec §7 addenda
+(contrat oracle + market_price_snapshot + schéma market_resolutions gelé ; scellement
+ADR-IQ-05 tranché en revue technique → chiffrement applicatif + empreinte remise au
+prospect, à confirmer au go ; périmètre de lecture du routage gelé) ; prd.json :
+US-212 converti en story Lot 0, US-IQ-05/06/07 → P0, US-224/225/226/227 alignées.
+**Toujours AUCUNE story codée — attente du go explicite d'Amine + arbitrage halo (SOP-013 §9).**

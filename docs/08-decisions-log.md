@@ -381,9 +381,21 @@ rejeté par Amine — « en base c'est mieux » = éditable).
 **Signal de réexamen** : si les golden sets ralentissent l'itération au point d'être
 contournés, revoir leur granularité (pas leur existence).
 
-## ADR-018 — Vocabulaire client : « marché de convictions » remplace « marché de prédiction »
+## ADR-018 — Vocabulaire client : « arène de convictions » remplace « marché de prédiction »
 **Date** : 2026-07-16 (arbitrage Amine — option « renommage complet ») · **Statut** :
 accepté · réversible
+**Révision 2026-07-16 (post-Council, arbitrage Amine)** : le nom retenu devient
+**« arène de convictions »** (fr) / « conviction arena » (en) / « ساحة القناعات » (ar)
+— « marché de convictions » est abandonné. Deux motifs : (1) les prediction markets
+sont unanimement classés maysir (jeu de hasard prohibé) par les jurisprudences de
+finance islamique — le mot « marché »/« سوق » garde cette connotation pour la cible
+institutionnelle MENA (sources : Halal Worthy, Halal Wallet 2026, Practical Law
+« Maisir ») ; (2) cohérence produit : le mécanisme devient une arène parmi les arènes.
+Les marchés individuels deviennent des « questions » côté client. Le halo lexical
+connexe (oracle/verdict/confiance/dénouement/Delphi) reste à trancher — deux variantes
+commutables au prototype v2 (spec §7.4) ; l'arbitrage final d'Amine sera exécuté par
+US-224. Le reste de l'ADR s'applique inchangé en remplaçant « marché de convictions »
+par « arène de convictions ».
 **Quoi** : purge de « prédiction »/« prediction »/« تنبؤ » de tout le visible client au
 profit de « marché de convictions » (FR), « conviction market » (EN), « سوق القناعات »
 (AR) : encart PDF « Méthode et limites » (`_method_limits.md.j2:10,16,22`), libellés UI

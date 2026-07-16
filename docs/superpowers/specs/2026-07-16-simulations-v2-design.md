@@ -17,9 +17,11 @@
    Amine : « en base c'est mieux »), avec versionnage et garde-fous.
 4. **Garder le calque marché + règle déterministe de routage + confrontation d'approches**
    (« l'un ne peut pas aller sans l'autre ») — pas de remplacement 1:1, conforme ADR-011.
-5. **Renommage client-facing** : « marché de prédiction » → **« marché de convictions »**
-   (FR), « conviction market » (EN), « سوق القناعات » (AR) — option « renommage complet »
-   choisie le 2026-07-16 (ADR-018).
+5. **Renommage client-facing** : « marché de prédiction » → **« arène de convictions »**
+   (FR), « conviction arena » (EN), « ساحة القناعات » (AR) — option « renommage complet »
+   choisie le 2026-07-16, nom révisé le 2026-07-16 après verdict Council (ADR-018 amendé,
+   cf. §7.4). Le halo lexical (oracle/verdict/confiance/dénouement/Delphi) reste à
+   trancher — deux variantes commutables au prototype v2.
 
 ## 2. État des lieux vérifié (deep-explore du 2026-07-15, faits sourcés)
 
@@ -136,12 +138,14 @@ il n'invente pas.
 - Première arène MENA (relais WhatsApp/groupe) en `SimulationConfig` sur la plateforme
   sociale existante (US-216 → US-237).
 
-### 3.5 Renommage « marché de convictions » (ADR-018)
+### 3.5 Renommage « arène de convictions » (ADR-018 amendé — cf. §7.4)
 
 Périmètre : tout le visible client — encart PDF `_method_limits.md.j2` (3 langues),
 libellés UI (`charts.polymarket.title`, `marketCountTitle`, `predictionMarkets`, clé
 fallback l.149, etc.), parité stricte fr/en/ar dans le même commit (US-217).
-Le vocabulaire technique interne (code, `polymarket_*`, tables SQLite) ne change pas.
+Le mécanisme est une **arène parmi les arènes** (cohérence produit) ; les marchés
+individuels deviennent des « questions » côté client. Le vocabulaire technique interne
+(code, `polymarket_*`, tables SQLite) ne change pas.
 
 ## 4. Tables et colonnes planifiées (à confirmer dans le dictionnaire au commit de migration)
 
@@ -182,3 +186,103 @@ US-233 (API prompts versionnée)           ← US-223 → US-234 (page super-adm
 US-235 (routage déterministe)             ← US-222 → US-236 (Delphi + PDF comparatif) ← US-226
 US-237 (arène MENA WhatsApp)              ← US-222, US-231
 ```
+
+Ajustements post-Council (2026-07-16) : **US-212** (outillage lint/typecheck, converti
+du backlog en story prd.json) rejoint le Lot 0 — un loop long sans gate lint est une
+dette de validation ; **US-IQ-05/06/07** passent P0 (fil rouge « premier cas Porte 2
+réel au plus tôt » — First Principles, arbitré par le Chairman).
+
+## 7. Addenda post-Council (2026-07-16 — re-soumission SOP-013)
+
+> Verdict Council : NO-GO en l'état, correctifs ciblés sans refonte. Les trous de spec
+> identifiés sont comblés ici ; le prototype v2 (même URL) intègre les états manquants,
+> le disclaimer S4 = S3, le scénario démo neutralisé, l'aperçu ar/RTL et le commutateur
+> de lexique. Rien n'est codé avant le go explicite d'Amine (SOP-013 §9).
+
+### 7.1 Contrat d'interface de l'oracle + série de prix durable (complète §3.1 — US-225/226/227/236)
+
+**Série de prix par round (durable)** — constat vérifié : le prix n'existe aujourd'hui
+qu'en lecture live des réserves AMM (`simulation.py:5151-5190`) ; la table `trade`
+porte un prix effectif par transaction (`schema/trade.sql`) mais aucune notion de
+round. Décision :
+
+- Nouvelle table SQLite `market_price_snapshot` (`market_id`, `round`, `price_yes`,
+  `reserve_a`, `reserve_b`) dans `polymarket_simulation.db`, écrite au tick de chaque
+  round (hook existant `platform.tick_clock()`). Coût : un INSERT par marché par round.
+  L'artefact devient durable via US-221 (Supabase Storage).
+- À la clôture, la série complète est copiée en jsonb dans
+  `market_resolutions.price_series` : le PDF, l'API et le comparatif Delphi (US-236)
+  lisent **Supabase**, jamais l'artefact brut.
+- `cost_basis` réel : somme des `trade.cost` par (user, market, outcome) — supprime le
+  0,50 codé en dur (`environment.py:40`).
+
+**Contrat d'interface oracle (I/O gelé)** :
+
+- **Entrée** (JSON) : `resolution_spec` du marché (criteria[] mesurables,
+  `deadline_round`, `invalid_conditions[]`) + `simulation_digest` (stances finales,
+  extraits de contenus produits pertinents aux critères, métriques de trajectoire,
+  `price_series`) + `market` (question, outcomes).
+- **Sortie** (structured output validé par schéma) : `{ verdict: YES|NO|INVALID,
+  justification (citant rounds et preuves), confidence ∈ [0,1],
+  evidence: [{round, type, ref}] }`.
+- **Modes d'échec** : sortie invalide → 1 retry ; échec persistant → statut
+  `UNRESOLVED` persisté, AUCUN paiement, le PDF affiche « non clôturé — incident
+  technique ». L'oracle n'invente jamais de verdict par défaut. `INVALID` → void :
+  remboursement de chaque position au coût réel.
+- **`market_resolutions` (schéma gelé)** : `simulation_id`, `market_id`,
+  `resolution_spec` jsonb, `verdict`, `justification`, `confidence`,
+  `price_series` jsonb, `payout_summary` jsonb, `prompt_key`, `prompt_version`,
+  `resolved_at`. **Clés/index cross-simulations** (recommandation Council) : PK
+  composite (`simulation_id`, `market_id`) + index (`org_id`, `resolved_at`) pour les
+  requêtes croisées entre simulations d'une même organisation.
+
+### 7.2 Scellement ADR-IQ-05 — revue technique tranchée (US-IQ-05)
+
+| Critère | Chiffrement applicatif | Hachage + révélation différée |
+|---|---|---|
+| Garantie de non-accès | Organisationnelle (une clé existe côté serveur) | Cryptographique (le clair n'est jamais stocké) |
+| UX de restitution | Automatique (déchiffrement serveur) | Le prospect doit re-saisir l'issue à l'identique |
+| Risque business | Faible | Élevé : prospect absent ou re-saisie divergente → restitution comparée impossible (le livrable meurt) |
+| Complexité | Faible (Fernet, clé env dédiée) | Moyenne (canonicalisation fragile sur texte libre) |
+
+**Tranche de la revue technique** : **chiffrement applicatif** — clé env dédiée
+`INTAKE_SEAL_KEY` (jamais la clé Supabase), déchiffrement uniquement dans le chemin de
+restitution — **plus** empreinte SHA-256 du clair remise au prospect à la soumission
+(commitment : à la restitution, le déchiffré re-hache vers la même empreinte, le
+prospect vérifie que rien n'a été altéré). La révélation différée pure est rejetée :
+elle transfère le risque d'échec de la démonstration au prospect. Le test unitaire
+d'US-IQ-05 (le champ n'apparaît dans AUCUN contexte agent ni pré-seed) reste le
+garde-fou principal ; mutualisation avec le registre scellé M1 (US-220) au signal de
+réexamen d'ADR-IQ-05. → **À confirmer par Amine au go** ; ADR-IQ-05 et le critère
+d'US-IQ-05 seront alors fixés sur cette option.
+
+### 7.3 Périmètre de lecture du routage Branche B (clarification — US-IQ-06/07)
+
+Le routage est déjà déterministe, pur et testé par table de vérité (`_decide_route`,
+`intake_service.py:386-415`, ADR-IQ-02/ADR-IQ-12). **Contrat de lecture gelé** — le
+routage lit exactement : `stakes.budget_bracket` (tranche déclarée par le prospect,
+jamais scellée), `stakes.exposure`, `governance`, `deadline`, et le **nombre** de
+sujets confidentiels (`len(confidential_flags)`) — jamais leur contenu. Il ne lit
+JAMAIS `aar_known_outcome` (exclu de tout contexte : `safe_brief`,
+`intake_service.py:928` ; test unitaire partagé US-IQ-05/07). L'écran admin (proto S8)
+peut donc afficher « montant estimé > palier self-service » : le montant est une
+déclaration non scellée du brief. Toute évolution du routage qui voudrait lire un
+champ supplémentaire exige un amendement d'ADR-IQ-02.
+
+### 7.4 Lexique client (état au 2026-07-16)
+
+- **Acté (arbitrage Amine, session du 2026-07-16)** : **« arène de convictions »**
+  (fr) / « conviction arena » (en) / « ساحة القناعات » (ar) remplace « marché de
+  convictions » — ADR-018 amendé. Motif sourcé : les prediction markets sont
+  unanimement classés maysir (jeu de hasard prohibé) par les jurisprudences de finance
+  islamique — le mot « marché »/« سوق » porte cette connotation pour la cible
+  institutionnelle MENA ; « arène » est en outre cohérent avec le vocabulaire produit
+  existant (les arènes sociales). Les marchés individuels deviennent des
+  « questions » côté client.
+- **En attente (deux variantes commutables au prototype v2)** : le halo
+  oracle/verdict/confiance/dénouement/Delphi. Variante A — registre wargaming
+  professionnel (adjudication, issue, clôture de scénario, degré de convergence,
+  lecture croisée des arènes ; registre du CICDE Wargaming Handbook, ministère des
+  Armées). Variante B — halo actuel conservé (« Delphi » reste défendable : nom de
+  méthode RAND reconnu, y compris en arabe تقنية دلفي dans la littérature استشراف).
+  US-224 exécutera l'arbitrage final d'Amine.
