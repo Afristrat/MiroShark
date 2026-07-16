@@ -1531,6 +1531,8 @@ Return the sub-questions as a JSON list."""
             os.path.dirname(__file__),
             f'../../uploads/simulations/{simulation_id}'
         )
+        from .artifact_storage import ensure_simulation_dir_hydrated
+        ensure_simulation_dir_hydrated(simulation_id, sim_dir)
 
         profiles = []
 
@@ -1690,6 +1692,8 @@ Select up to {max_agents} agents. Return their indices."""
             os.path.dirname(__file__),
             f'../../uploads/simulations/{simulation_id}'
         )
+        from .artifact_storage import ensure_simulation_dir_hydrated
+        ensure_simulation_dir_hydrated(simulation_id, sim_dir)
 
         agent_set = set(agent_indices)
         twitter_counts: Dict[int, int] = {idx: 0 for idx in agent_indices}

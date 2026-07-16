@@ -25,6 +25,7 @@ from ..services.entity_reader import EntityReader
 from ..services.wonderwall_profile_generator import WonderwallProfileGenerator
 from ..services.simulation_manager import SimulationManager, SimulationStatus
 from ..services import arena_registry
+from ..services import artifact_storage
 from ..services.simulation_config_generator import SimulationConfigGenerator
 from ..services.simulation_runner import SimulationRunner, RunnerStatus
 from ..utils.logger import get_logger
@@ -2090,6 +2091,7 @@ def _check_simulation_prepared(simulation_id: str) -> tuple:
     from ..config import Config
     
     simulation_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
+    artifact_storage.ensure_simulation_dir_hydrated(simulation_id, simulation_dir)
     
     # Check if directory exists
     if not os.path.exists(simulation_dir):
@@ -2884,6 +2886,8 @@ def get_simulation_history():
             sim_dict["created_date"] = (sim_dict.get("created_at") or "")[:10]
 
             # Include resolution data if it exists
+            _sim_dir_for_cache = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, sim.simulation_id)
+            artifact_storage.ensure_simulation_dir_hydrated(sim.simulation_id, _sim_dir_for_cache)
             resolution_path = os.path.join(
                 Config.WONDERWALL_SIMULATION_DATA_DIR, sim.simulation_id, "resolution.json"
             )
@@ -3085,6 +3089,7 @@ def get_simulation_profiles_realtime(simulation_id: str):
         
         # Get simulation directory
         sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
+        artifact_storage.ensure_simulation_dir_hydrated(simulation_id, sim_dir)
 
         if not os.path.exists(sim_dir):
             return jsonify({
@@ -3190,6 +3195,7 @@ def get_simulation_config_realtime(simulation_id: str):
     try:
         # Get simulation directory
         sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
+        artifact_storage.ensure_simulation_dir_hydrated(simulation_id, sim_dir)
 
         if not os.path.exists(sim_dir):
             return jsonify({
@@ -3318,6 +3324,7 @@ def retry_simulation_config(simulation_id: str):
 
         # Profiles must exist before we can retry config generation
         sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
+        artifact_storage.ensure_simulation_dir_hydrated(simulation_id, sim_dir)
         profiles_exist = (
             os.path.exists(os.path.join(sim_dir, "reddit_profiles.json")) or
             os.path.exists(os.path.join(sim_dir, "twitter_profiles.csv"))
@@ -4298,6 +4305,7 @@ def _compute_influence_ranked(simulation_id, top_n=None):
     Returns an empty list if the simulation directory does not exist.
     """
     sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
+    artifact_storage.ensure_simulation_dir_hydrated(simulation_id, sim_dir)
     if not os.path.exists(sim_dir):
         return []
 
@@ -4400,6 +4408,7 @@ def get_influence_leaderboard(simulation_id: str):
     """
     try:
         sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
+        artifact_storage.ensure_simulation_dir_hydrated(simulation_id, sim_dir)
         if not os.path.exists(sim_dir):
             return jsonify({
                 "success": False,
@@ -4438,6 +4447,7 @@ def get_belief_drift(simulation_id: str):
     """
     try:
         sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
+        artifact_storage.ensure_simulation_dir_hydrated(simulation_id, sim_dir)
         if not os.path.exists(sim_dir):
             return jsonify({
                 "success": False,
@@ -4646,6 +4656,7 @@ def get_counterfactual_drift(simulation_id: str):
     """
     try:
         sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
+        artifact_storage.ensure_simulation_dir_hydrated(simulation_id, sim_dir)
         if not os.path.exists(sim_dir):
             return jsonify({
                 "success": False,
@@ -4825,6 +4836,7 @@ def get_simulation_quality(simulation_id: str):
     """
     try:
         sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
+        artifact_storage.ensure_simulation_dir_hydrated(simulation_id, sim_dir)
         if not os.path.exists(sim_dir):
             return jsonify({
                 "success": False,
@@ -5071,6 +5083,7 @@ def get_simulation_frame(simulation_id: str, round_num: int):
         market_prices: list = []
         if include_market:
             sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
+            artifact_storage.ensure_simulation_dir_hydrated(simulation_id, sim_dir)
             db_path = os.path.join(sim_dir, 'polymarket', 'polymarket.db')
             if os.path.exists(db_path):
                 try:
@@ -5098,6 +5111,8 @@ def get_simulation_frame(simulation_id: str, round_num: int):
         # Belief snapshot at this round (or closest prior snapshot)
         belief_snapshot = None
         if include_belief:
+            _belief_sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
+            artifact_storage.ensure_simulation_dir_hydrated(simulation_id, _belief_sim_dir)
             traj_path = os.path.join(
                 Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id, "trajectory.json"
             )
@@ -5166,6 +5181,7 @@ def _polymarket_db_path(simulation_id: str) -> str:
     (``<sim_dir>/polymarket_simulation.db``) and the older nested layout
     (``<sim_dir>/polymarket/polymarket.db``)."""
     sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
+    artifact_storage.ensure_simulation_dir_hydrated(simulation_id, sim_dir)
     candidates = [
         os.path.join(sim_dir, 'polymarket_simulation.db'),
         os.path.join(sim_dir, 'polymarket', 'polymarket.db'),
@@ -5388,6 +5404,7 @@ def _build_embed_summary_payload(simulation_id: str) -> dict:
         raise LookupError(f"Simulation not found: {simulation_id}")
 
     sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
+    artifact_storage.ensure_simulation_dir_hydrated(simulation_id, sim_dir)
 
     config = manager.get_simulation_config(simulation_id)
     scenario = ""
@@ -5925,6 +5942,7 @@ def list_public_simulations():
             verified_sims = []
             for s in public_sims:
                 sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, s.simulation_id)
+                artifact_storage.ensure_simulation_dir_hydrated(s.simulation_id, sim_dir)
                 if _read_outcome_file(sim_dir) is not None:
                     verified_sims.append(s)
             public_sims = verified_sims
@@ -5935,6 +5953,7 @@ def list_public_simulations():
         items = []
         for state in page:
             sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, state.simulation_id)
+            artifact_storage.ensure_simulation_dir_hydrated(state.simulation_id, sim_dir)
             try:
                 items.append(_build_gallery_card_payload(state, sim_dir))
             except Exception as exc:
@@ -5992,7 +6011,8 @@ def get_simulation_posts(simulation_id: str):
             os.path.dirname(__file__),
             f'../../uploads/simulations/{simulation_id}'
         )
-        
+        artifact_storage.ensure_simulation_dir_hydrated(simulation_id, sim_dir)
+
         db_file = f"{platform}_simulation.db"
         db_path = os.path.join(sim_dir, db_file)
         
@@ -6653,6 +6673,7 @@ def export_simulation_data(simulation_id: str):
                 os.path.dirname(__file__),
                 f'../../uploads/simulations/{simulation_id}'
             )
+            artifact_storage.ensure_simulation_dir_hydrated(simulation_id, sim_dir)
             all_posts = []
             for platform in ('twitter', 'reddit'):
                 db_path = os.path.join(sim_dir, f"{platform}_simulation.db")
@@ -6794,6 +6815,7 @@ def compare_simulations():
             per round. Returns an empty list if Polymarket was not enabled or the DB does not exist.
             """
             sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, sim_id)
+            artifact_storage.ensure_simulation_dir_hydrated(sim_id, sim_dir)
             db_path = os.path.join(sim_dir, 'polymarket', 'polymarket.db')
             if not os.path.exists(db_path):
                 return []
@@ -6972,6 +6994,7 @@ def resolve_simulation(simulation_id: str):
             }), 404
 
         sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
+        artifact_storage.ensure_simulation_dir_hydrated(simulation_id, sim_dir)
 
         # Attempt to read final Polymarket consensus from the SQLite database
         predicted_consensus = None
@@ -7118,6 +7141,7 @@ def simulation_outcome(simulation_id: str):
             }), 404
 
         sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
+        artifact_storage.ensure_simulation_dir_hydrated(simulation_id, sim_dir)
 
         if request.method == 'GET':
             outcome = _read_outcome_file(sim_dir)
@@ -7239,6 +7263,7 @@ def generate_simulation_article(simulation_id: str):
         share_url = body.get('share_url', '')
 
         sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
+        artifact_storage.ensure_simulation_dir_hydrated(simulation_id, sim_dir)
         if not os.path.exists(sim_dir):
             return jsonify({
                 "success": False,
@@ -7551,6 +7576,7 @@ def _build_agent_trace(simulation_id: str, agent_name: str) -> dict:
         }
     """
     sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
+    artifact_storage.ensure_simulation_dir_hydrated(simulation_id, sim_dir)
 
     rounds: dict = {}
     total_posts = 0
@@ -7668,6 +7694,7 @@ def trace_interview_agent(simulation_id: str, agent_name: str):
             }), 400
 
         sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
+        artifact_storage.ensure_simulation_dir_hydrated(simulation_id, sim_dir)
         if not os.path.exists(sim_dir):
             return jsonify({
                 "success": False,
@@ -7849,6 +7876,7 @@ def get_agent_interview_transcript(simulation_id: str, agent_name: str):
     """
     try:
         sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
+        artifact_storage.ensure_simulation_dir_hydrated(simulation_id, sim_dir)
         if not os.path.exists(sim_dir):
             return jsonify({
                 "success": False,
@@ -8097,6 +8125,7 @@ def inject_director_event(simulation_id: str):
             }), 400
 
         sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
+        artifact_storage.ensure_simulation_dir_hydrated(simulation_id, sim_dir)
         if not os.path.exists(sim_dir):
             return jsonify({
                 "success": False,
@@ -8158,6 +8187,7 @@ def get_director_events(simulation_id: str):
 
     try:
         sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
+        artifact_storage.ensure_simulation_dir_hydrated(simulation_id, sim_dir)
         if not os.path.exists(sim_dir):
             return jsonify({
                 "success": False,
@@ -8192,6 +8222,7 @@ def get_interaction_network(simulation_id: str):
 
     try:
         sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
+        artifact_storage.ensure_simulation_dir_hydrated(simulation_id, sim_dir)
         if not os.path.exists(sim_dir):
             return jsonify({
                 "success": False,
@@ -8695,6 +8726,7 @@ def get_demographic_breakdown(simulation_id: str):
     """
     try:
         sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
+        artifact_storage.ensure_simulation_dir_hydrated(simulation_id, sim_dir)
         if not os.path.exists(sim_dir):
             return jsonify({
                 "success": False,

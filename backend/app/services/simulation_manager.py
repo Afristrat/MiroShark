@@ -209,6 +209,10 @@ class SimulationManager:
 
         # US-051: read-only — never auto-create the directory.
         sim_dir = self._get_simulation_dir(simulation_id, create=False)
+        # US-221 : rematérialise depuis Supabase Storage si le volume local
+        # (éphémère Coolify) a été vidé — le moteur ne perd pas l'état.
+        from . import artifact_storage
+        artifact_storage.ensure_simulation_dir_hydrated(simulation_id, sim_dir)
         state_file = os.path.join(sim_dir, "state.json")
 
         if not os.path.exists(state_file):
@@ -690,6 +694,8 @@ class SimulationManager:
     def get_simulation_config(self, simulation_id: str) -> Optional[Dict[str, Any]]:
         """Get simulation config"""
         sim_dir = self._get_simulation_dir(simulation_id, create=False)
+        from . import artifact_storage
+        artifact_storage.ensure_simulation_dir_hydrated(simulation_id, sim_dir)
         config_path = os.path.join(sim_dir, "simulation_config.json")
         
         if not os.path.exists(config_path):

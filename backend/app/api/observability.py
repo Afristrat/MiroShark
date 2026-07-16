@@ -17,6 +17,7 @@ from flask import request, Response, stream_with_context
 
 from . import observability_bp
 from ..config import Config
+from ..services.artifact_storage import ensure_simulation_dir_hydrated
 from ..utils.event_logger import EventLogger, FileTailer
 
 
@@ -140,6 +141,7 @@ def get_events():
     # Decide which file to read
     if sim_id:
         path = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, sim_id, 'events.jsonl')
+        ensure_simulation_dir_hydrated(sim_id, os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, sim_id))
     else:
         from ..utils.event_logger import LOG_DIR
         path = os.path.join(LOG_DIR, 'events.jsonl')
@@ -172,6 +174,7 @@ def get_stats():
 
     if sim_id:
         path = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, sim_id, 'events.jsonl')
+        ensure_simulation_dir_hydrated(sim_id, os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, sim_id))
     else:
         from ..utils.event_logger import LOG_DIR
         path = os.path.join(LOG_DIR, 'events.jsonl')
@@ -248,6 +251,7 @@ def get_llm_calls():
 
     if sim_id:
         path = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, sim_id, 'events.jsonl')
+        ensure_simulation_dir_hydrated(sim_id, os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, sim_id))
     else:
         from ..utils.event_logger import LOG_DIR
         path = os.path.join(LOG_DIR, 'events.jsonl')

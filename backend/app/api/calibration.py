@@ -78,6 +78,7 @@ from typing import Any, Dict, Iterable, List, Optional
 from flask import Blueprint, jsonify, request
 
 from ..config import Config
+from ..services.artifact_storage import ensure_simulation_dir_hydrated
 from ..services.simulation_manager import SimulationManager
 from ..utils.logger import get_logger
 
@@ -368,6 +369,7 @@ def _gather_samples(
         sim_dir = os.path.join(
             Config.WONDERWALL_SIMULATION_DATA_DIR, state.simulation_id
         )
+        ensure_simulation_dir_hydrated(state.simulation_id, sim_dir)
 
         if not _in_date_range(
             getattr(state, "created_at", "") or "",
@@ -664,6 +666,7 @@ def _gather_evaluable_simulations(
         sim_dir = os.path.join(
             Config.WONDERWALL_SIMULATION_DATA_DIR, state.simulation_id
         )
+        ensure_simulation_dir_hydrated(state.simulation_id, sim_dir)
 
         cfg = _read_simulation_config(sim_dir)
         template_id = cfg.get("template_id") if isinstance(cfg.get("template_id"), str) else None

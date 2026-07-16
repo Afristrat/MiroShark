@@ -998,6 +998,10 @@ class PDFContextLoader:
         """
         # ── Résolution des répertoires ─────────────────────────────────────
         sim_dir = (sim_base_dir or _SIMULATIONS_DIR) / simulation_id
+        # US-221 : rematérialise depuis Supabase Storage si le volume local
+        # (éphémère Coolify) a été vidé — un rapport doit rester générable.
+        from ..artifact_storage import ensure_simulation_dir_hydrated
+        ensure_simulation_dir_hydrated(simulation_id, str(sim_dir))
         rep_dir: Optional[Path] = None
         if report_id is not None:
             rep_dir = (rep_base_dir or _REPORTS_DIR) / report_id
