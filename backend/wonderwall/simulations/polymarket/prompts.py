@@ -16,6 +16,9 @@ from __future__ import annotations
 
 from wonderwall.simulations.base import BasePromptBuilder
 
+_PROMPT_KEY = "arena.polymarket.system"
+_PROMPT_LOCALE = "en"  # multi-locale : US-231 (élévation L99 des 3 builders)
+
 
 class PolymarketPromptBuilder(BasePromptBuilder):
     """Builds system prompts for prediction market trader agents."""
@@ -34,6 +37,18 @@ class PolymarketPromptBuilder(BasePromptBuilder):
                 profile_str = f"Background: {other['user_profile']}"
             if "risk_tolerance" in other:
                 risk_str = other["risk_tolerance"]
+
+        # PromptRegistry (US-223, ADR-017) : version active en base sinon
+        # fallback sur le prompt codé en dur ci-dessous — le moteur ne
+        # casse jamais à cause du registre (import tardif : évite un
+        # import Flask/Supabase au chargement du module wonderwall).
+        from app.services import prompt_registry
+
+        template = prompt_registry.get(_PROMPT_KEY, _PROMPT_LOCALE)
+        if template:
+            return template.format(
+                name_str=name_str, profile_str=profile_str, risk_str=risk_str,
+            )
 
         return f"""\
 # WHO YOU ARE

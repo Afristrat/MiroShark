@@ -2018,3 +2018,43 @@ par Amine séparément.
 Prochaine story : **US-223** (table `simulation_prompts` + `PromptRegistry`)
 — la plus grosse contrainte bloquante du chantier (5 dépendants directs, 9
 transitifs).
+
+### 2026-07-16 — [US-223] Table simulation_prompts + PromptRegistry — CLÔTURÉE
+
+Story bloquante prioritaire du chantier (5 dépendants directs identifiés dans
+l'ordre d'exécution). Livré :
+- Migration `supabase/migrations/20260716_001_simulation_prompts.sql` :
+  table `simulation_prompts` (key/scope/locale/version/content/variables
+  jsonb/is_active/created_by), unique (key, locale, version), index partiel
+  unique garantissant UNE SEULE version active par (key, locale), RLS
+  `is_super_admin()` (même pattern que `intake_agent_playbook`). Seed
+  idempotent (`on conflict do nothing`) de la version 1 de
+  `arena.polymarket.system` (locale `en`) = copie exacte du prompt
+  actuellement codé en dur — preuve du flux de bout en bout (AC3).
+  **Migration créée mais PAS encore jouée en prod** — convention établie du
+  projet (pas d'accès service_role en local pour du DDL) : Amine doit
+  l'exécuter via le SQL Editor Supabase avant que la table existe réellement.
+  Le fallback silencieux de PromptRegistry couvre ce cas sans risque
+  (`simulation_prompts` inexistante → exception attrapée → None → prompt codé
+  utilisé, comportement identique à aujourd'hui).
+- `backend/app/services/prompt_registry.py` : `get(key, locale, client=None)`
+  (cache in-process, thread-safe, ne lève JAMAIS — `SupabaseConfigError` et
+  toute autre exception → None + log) et `invalidate(key=None, locale=None)`.
+- `backend/wonderwall/simulations/polymarket/prompts.py` : import tardif de
+  `app.services.prompt_registry` (pattern déjà utilisé ailleurs dans
+  wonderwall/, ex. `belief_state.py` — évite le couplage Flask/Supabase au
+  chargement du module moteur), résolution du prompt actif sinon fallback
+  strictement identique au texte actuel (élévation L99/multi-locale =
+  US-231, hors scope ici).
+- `docs/02-data-dictionary.md` : `simulation_prompts` documentée en section
+  définitive, retirée de la section « planifiées » (contrat de nommage tenu).
+- 11 tests unitaires (`tests/test_unit_prompt_registry.py`) : résolution,
+  fallback (table vide, champ absent, Supabase non configuré, erreur
+  réseau), cache (hit, invalidate ciblé, invalidate global), intégration
+  bout-en-bout du builder Polymarket (registre actif ET fallback).
+**Gates** : ruff 0 erreur (113 fichiers, +1 vs US-212) · mypy 0 erreur
+(scope documenté inchangé) · pytest **2269 passed, 42 skipped, 0 failed**
+(+11 tests vs baseline US-212, zéro régression).
+Prochaine story : **US-222** (arènes requêtables + registre dynamique) —
+2e plus grosse contrainte bloquante (débloque US-235, et avec US-231,
+US-237).

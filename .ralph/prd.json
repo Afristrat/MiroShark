@@ -4936,13 +4936,22 @@
         "Insérer une nouvelle version puis l'activer change le prompt servi sans redéploiement",
         "Tests unitaires (résolution, fallback, cache, versions) verts ; suite pytest verte"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [],
       "metadata": {
         "estimated_hours": 6,
         "priority": "P0",
-        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md"
-      }
+        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md",
+        "files_touched": [
+          "supabase/migrations/20260716_001_simulation_prompts.sql",
+          "backend/app/services/prompt_registry.py",
+          "backend/wonderwall/simulations/polymarket/prompts.py",
+          "backend/tests/test_unit_prompt_registry.py",
+          "docs/02-data-dictionary.md"
+        ],
+        "note": "Table simulation_prompts + RLS + seed v1 (migration NON encore jouée en prod — à exécuter par Amine via SQL Editor, cf. convention établie). PromptRegistry.get()/invalidate() : cache in-process, fallback silencieux (SupabaseConfigError + toute exception -> None). Builder Polymarket branché en pilote (1er prompt réel résolu via le registre, fallback identique au comportement actuel si table vide/absente). 11 tests unitaires nouveaux, pytest 2269 passed 42 skipped 0 failed."
+      },
+      "completedAt": "2026-07-16T20:17:24Z"
     },
     {
       "id": "US-224",

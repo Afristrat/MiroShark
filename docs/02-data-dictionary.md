@@ -244,6 +244,30 @@ modification automatique.
 
 RLS : toutes opérations réservées `is_super_admin()`, aucune policy anon.
 
+## `simulation_prompts`
+ADR-017 (migration 20260716_001) — registre versionné des prompts du moteur de
+simulation. Une ligne = une version IMMUABLE ; éditer crée une nouvelle version,
+activer = basculer `is_active`. Résolu par `PromptRegistry.get(key, locale)`
+(`backend/app/services/prompt_registry.py`), cache in-process, fallback sur le prompt
+codé en dur si table vide/injoignable — le moteur ne casse jamais à cause du registre.
+Pilote branché (US-223) : `arena.polymarket.system` (locale `en`, version 1 = seed du
+prompt actuellement codé dans `wonderwall/simulations/polymarket/prompts.py`).
+| Colonne | Type | Contraintes | Description | PII |
+|---|---|---|---|---|
+| id | uuid | pk, default gen_random_uuid() | | non |
+| key | text | not null | identifiant technique stable (ex. arena.polymarket.system) | non |
+| scope | text | not null | regroupement fonctionnel pour la console (ex. arena, oracle) | non |
+| locale | text | not null | fr \| en \| ar | non |
+| version | integer | not null | unique avec (key, locale) | non |
+| content | text | not null | corps du prompt, placeholders `{var}` | non |
+| variables | jsonb | not null, default [] | liste informative des placeholders attendus | non |
+| is_active | boolean | not null, default false | une seule version active par (key, locale) — index partiel unique | non |
+| created_by | text | not null | email admin ou `system-seed-US-223` | non |
+| created_at | timestamptz | not null, default now() | | non |
+
+RLS : toutes opérations réservées `is_super_admin()`, aucune policy anon (backend lit/
+écrit via service_role, contourne RLS — même pattern que `intake_agent_playbook`).
+
 ## Conventions transverses
 
 - **RLS activée sur les 15 tables** (règle absolue) — état vérifié dans les migrations.
@@ -270,7 +294,6 @@ RLS : toutes opérations réservées `is_super_admin()`, aucune policy anon.
 
 | Objet planifié | Story | Rôle | RLS prévue |
 |---|---|---|---|
-| `simulation_prompts` | US-223 | Registre versionné des prompts de simulation (une ligne = une version immuable ; `key`, `scope`, `locale`, `version`, `content`, `variables` jsonb, `is_active`, `created_by`) | écriture super-admin uniquement |
 | `occupation_profiles` | US-228 | Cache fiches métiers ESCO + enrichissement 122B (`occupation_uri`, `label`, `lang`, `definition`, `essential_skills` jsonb, `optional_skills` jsonb, `source` ∈ {esco, llm_122b}, `fetched_at`) | lecture service ; écriture super-admin/pipeline |
 | `market_resolutions` | US-226 | Verdicts de l'oracle de clôture (`simulation_id`, `market_id`, `question`, `resolution_spec` jsonb, `verdict` ∈ {YES, NO, INVALID}, `justification`, `confidence`, `oracle_prompt_version`, `resolved_at`) | lecture org propriétaire ; écriture service |
 | `simulation_ownership.enabled_platforms` (colonne `text[]`) | US-222 | Arènes activées, requêtables en SQL (aujourd'hui perdues dans les flags du state filesystem) | héritée de la table |
