@@ -2262,3 +2262,22 @@ exit 0 ; parité i18n exit 0 ; balayage UTF-8 : zéro occurrence client-facing d
 « prédiction », « prediction » ou « تنبؤ » hors identifiants/commentaires
 techniques. Findings hors story maintenus : warnings pytest, vulnérabilités npm
 et failles P0 d'autorisation découvertes par l'audit du 2026-07-17.
+
+### 2026-07-17 — [US-213] Dépendances npm vulnérables — CLÔTURÉE
+
+Audit frais séparé des deux graphes npm : le frontend comptait 11
+vulnérabilités (7 hautes, 4 modérées) et l'outillage racine 2 critiques
+(`concurrently` → `shell-quote`). Correctifs appliqués uniquement dans les
+plages majeures déjà déclarées ; aucun manifeste `package.json` modifié.
+Versions de sécurité résolues notamment : axios 1.18.1, DOMPurify 3.4.12,
+marked 18.0.6, Vite 7.3.6, Rollup 4.62.2, ws 8.21.1, concurrently 9.2.4 et
+shell-quote 1.9.0.
+
+Preuves après réinstallation propre (`npm ci`) : `npm audit --audit-level=low`
+= 0 vulnérabilité dans les deux graphes ; build Vite vert ; parité i18n 2060
+clés verte ; 114 tests Playwright découverts sans erreur ; ruff et mypy verts ;
+suite backend complète **2321 passed, 42 skipped, 18 deselected, 0 failed**.
+Dette distincte confirmée, non masquée : ESLint retourne 0 erreur mais 298
+warnings historiques ; pytest retourne 47 warnings ; Vite émet des warnings de
+compression dupliquée et de chunks > 500 kB. Ces dettes ne sont pas causées par
+les mises à niveau et nécessitent un chantier qualité dédié.
