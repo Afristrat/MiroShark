@@ -2391,3 +2391,38 @@ mypy zéro erreur sur 116 fichiers ; build Vite 948 modules ; parité i18n stric
 Permanence vérifiée : commit fonctionnel `ce6faf6` poussé, image Coolify active
 exacte `ce6faf66fc94dee4ce0647216507599ea7cf8d56`, `/health` = 200 et replay
 Playwright IQ-06 contre la production **1 réussite, 0 échec**.
+
+### 2026-07-17 — [US-231] Prompts d'arènes L99 — FONCTIONNEL, CLÔTURE BLOQUÉE PAR SOP-001
+
+Le commit fonctionnel `3424bb0` est poussé sur `main` et déployé par Coolify sur
+l'image exacte `3424bb028e3848f8ccfb60f838599944af5b6439`. Twitter, Reddit et
+Polymarket résolvent désormais leurs prompts par `PromptRegistry` en `fr` / `en`
+/ `ar`; le runner persiste et propage la locale, Polymarket reçoit le nombre réel
+de questions et la liste des plateformes actives. Le `do_nothing` partagé est
+neutre. Les flags near-max/near-zero, nudges contrarians et injonctions uniformes
+de trading ont été retirés de l'observation Polymarket.
+
+Preuves fraîches : Ruff zéro erreur ; mypy zéro erreur sur tous les fichiers
+touchés ; golden sets **43/43** après ajout des deux preuves de routage legacy ;
+suite backend complète **2 355 réussites, 60 ignorées, 0 échec** (avant les deux
+dernières assertions de routage, elles-mêmes vertes ciblées) ; build Vite vert,
+948 modules. Migration `20260717_002_arena_prompts_l99.sql` jouée en production :
+neuf lignes actives, versions attendues, `created_by=system-seed-US-231`. Les neuf
+empreintes MD5 du contenu en base sont strictement identiques aux neuf fallbacks
+Python. `/health` = 200, logs applicatifs des dix dernières minutes sans erreur.
+
+**Incident SOP-001 nouveau, bloquant la clôture** : pendant la certification,
+`docker inspect --format '{{json .Config.Env}}'` a imprimé l'environnement complet
+du conteneur applicatif MiroShark dans le transcript. Les credentials ainsi
+exposés, y compris ceux fraîchement rotatés lors du lot MiroShark précédent,
+doivent être considérés compromis et rotatés de nouveau. Aucun secret n'est
+recopié ici. La commande de test in-container suivante a échoué avant toute
+exécution fonctionnelle (`ModuleNotFoundError: wonderwall`) et n'a causé aucune
+mutation. US-231 reste `passes:false` tant que la rotation, la propagation, le
+redéploiement exact et la recertification ne sont pas achevés.
+
+**Incident de transport SQL corrigé** : le premier pipe PowerShell → SSH avait
+altéré les six prompts Unicode. Les neuf seules lignes `system-seed-US-231` ont
+été supprimées (`DELETE 9`), puis la migration rejouée en flux binaire base64
+UTF-8 (`INSERT 0 9`). La comparaison finale des neuf empreintes base/code est
+exacte ; aucune ligne corrompue ne subsiste.

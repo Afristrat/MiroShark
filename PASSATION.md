@@ -5,11 +5,12 @@ Synthèse autonome fondée sur l’état système du dépôt au 2026-07-17. Elle
 ## ÉTAT SYSTÈME VÉRIFIÉ
 
 - Branche : `main`.
-- HEAD local : `162f9a4af225bf1276c535ffd11b53c46839b7d3` (`Refine MiroShark frontend and backend workflows`).
-- `origin/main` : `162f9a4af225bf1276c535ffd11b53c46839b7d3`.
-- Arbre de travail désormais modifié par la recertification décrite ci-dessous ; ces
-  corrections restent locales tant qu’elles ne sont pas commitées et poussées.
-- PRD Ralph : **168 stories au total, 151 avec `passes: true`, 17 avec `passes: false`**.
+- HEAD local et `origin/main` : `3424bb028e3848f8ccfb60f838599944af5b6439`
+  (`[US-231] Élever les prompts des trois arènes`).
+- Image Coolify active vérifiée : ce même SHA exact ; `/health` = 200.
+- PRD Ralph : **168 stories au total, 154 avec `passes: true`, 14 avec `passes: false`**.
+- US-231 est fonctionnelle en production mais reste volontairement `passes:false` tant
+  que le nouvel incident SOP-001 décrit ci-dessous n'est pas remédié.
 - Cette passation est elle-même une nouvelle modification locale tant qu’elle n’est pas commitée et poussée.
 
 ## BOUCLÉ ET PRÉSENT DANS L’HISTORIQUE GIT
@@ -82,6 +83,12 @@ Par conséquent :
   autres expositions sont des dettes propres à leurs projets : cette session ne
   doit ni les traiter ni piloter leur rotation.**
 
+- **P0 sécurité — nouvel incident MiroShark pendant US-231** : une inspection de
+  l'environnement du conteneur applicatif a imprimé les credentials MiroShark dans
+  le transcript. Le lot de rotation MiroShark précédemment certifié est donc caduc
+  pour les valeurs réexposées. Rotater uniquement depuis cette session propriétaire,
+  propager aux consommateurs, redéployer puis recertifier avant toute suite produit.
+
 - **15 stories Ralph restent à `passes: false`.**
 - Les 298 warnings ESLint historiques et les warnings Vite de chunks/compression ont été
   éliminés dans la recertification locale. Les notes mypy `annotation-unchecked` ne sont
@@ -104,23 +111,27 @@ Par conséquent :
 
 ### Lot prompts et simulation
 
-- **US-231 — élévation L99 des trois prompts d’arènes** ; P1, 8 h, dépendance US-223 satisfaite.
+- **US-231 — fonctionnelle en production, clôture suspendue à SOP-001** : trois
+  prompts L99 trilingues, neuf seeds actifs et byte-for-byte identiques aux fallbacks,
+  biais d'observation retirés, image exacte `3424bb028e3848f8ccfb60f838599944af5b6439`.
 - **US-229 — expertise métier ESCO injectée dans les personas** ; P1, 6 h, dépendances US-228 et US-223 satisfaites.
 - **US-225 — `resolution_spec` structurée pour chaque marché** ; P1, 6 h, dépendance US-223 satisfaite.
 - **US-232, US-233, US-235, US-230** sont également éligibles, mais moins prioritaires dans le PRD courant.
 
 ## ENCHAÎNEMENT HARD THINGS FIRST RECOMMANDÉ
 
-1. **US-231 — prompts d’arènes L99**, puis **US-225** et **US-229** selon la valeur produit recherchée.
+1. **Rotater les credentials MiroShark exposés pendant la certification US-231**, puis
+   recertifier l'image et les dépendances externes.
+2. Marquer **US-231** `passes:true`, puis enchaîner sur **US-225**.
 
 ## PROCHAINE ACTION EXACTE
 
-La recertification, US-IQ-05 et US-IQ-07 sont poussées et certifiées sur l’image
-de production `934c2faf6639` : backend **2 324/0**, Playwright production **114/0**
-(60 et 1 tests ignorés respectivement), `/` et `/health` à 200. La prochaine
-action exacte dans cette session est **US-231 — prompts d’arènes L99**. Les
-dettes de sécurité des autres projets seront notifiées et traitées uniquement
-dans leurs sessions propriétaires respectives.
+US-231 est poussée et déployée sur l'image exacte `3424bb028e3848f8ccfb60f838599944af5b6439` :
+backend **2 355/0**, golden sets ciblés **43/43**, build Vite vert, neuf seeds SQL
+actifs et identiques au code, `/health` à 200. La prochaine action exacte est la
+**rotation SOP-001 des credentials MiroShark réexposés pendant cette certification**.
+Ne pas ouvrir US-225 avant cette remédiation et sa recertification. Les dettes des
+autres projets restent exclusivement dans leurs sessions propriétaires.
 
 ## SIGNAL DE COMPLÉTION
 
