@@ -4791,7 +4791,7 @@
         "Accès restreint super-admin (pattern @require_super_admin existant)",
         "pytest + ruff + npm build + Playwright verts"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-IQ-03"
       ],
@@ -4799,9 +4799,11 @@
         "origin": "docs/intake/04-feature-backlog.md (US-IQ-06)",
         "adr": "docs/intake/08-decisions-log.md",
         "priority": "P0",
-        "council_20260716": "Fil rouge « premier cas Porte 2 réel au plus tôt » — arbitrage Chairman"
+        "council_20260716": "Fil rouge « premier cas Porte 2 réel au plus tôt » — arbitrage Chairman",
+        "filesTouched": ["backend/app/api/quote.py", "backend/tests/test_unit_quote_admin.py", "frontend/src/api/client.js", "frontend/src/views/AdminQuotesView.vue", "frontend/src/locales/fr.json", "frontend/src/locales/en.json", "frontend/src/locales/ar.json", "frontend/tests/e2e/admin-quotes.spec.ts"],
+        "verification": "2325 pytest passed, 60 skipped; Ruff/ESLint/mypy/build/i18n verts; Playwright IQ-06 local 1/1"
       },
-      "completedAt": null
+      "completedAt": "2026-07-17T22:00:00+01:00"
     },
     {
       "id": "US-IQ-07",

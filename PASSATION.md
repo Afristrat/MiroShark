@@ -98,7 +98,9 @@ Par conséquent :
   trilingue certifié en production.
 - **US-IQ-07 — clôturée** : pré-seed éditable, traçabilité durable et test partagé
   de non-divulgation certifiés en production.
-- **US-IQ-06 — vue admin enrichie** ; dépendance satisfaite : US-IQ-03.
+- **US-IQ-06 — clôturée localement** : brief structuré, transcript intégral,
+  confidentialité, routage et réservation Cal.com ; certification production
+  encore à produire sur le commit de story.
 
 ### Lot prompts et simulation
 
@@ -109,7 +111,7 @@ Par conséquent :
 
 ## ENCHAÎNEMENT HARD THINGS FIRST RECOMMANDÉ
 
-1. **US-IQ-06 — vue admin enrichie**, dernière story P0 du lot Intake Qualification.
+1. **Déployer et recertifier US-IQ-06 en production**.
 2. **US-231 — prompts d’arènes L99**, puis **US-225** et **US-229** selon la valeur produit recherchée.
 
 ## PROCHAINE ACTION EXACTE
@@ -117,7 +119,7 @@ Par conséquent :
 La recertification, US-IQ-05 et US-IQ-07 sont poussées et certifiées sur l’image
 de production `934c2faf6639` : backend **2 324/0**, Playwright production **114/0**
 (60 et 1 tests ignorés respectivement), `/` et `/health` à 200. La prochaine
-action exacte dans cette session est **US-IQ-06 — vue admin enrichie**. Les
+action exacte dans cette session est de déployer et recertifier **US-IQ-06**. Les
 dettes de sécurité des autres projets seront notifiées et traitées uniquement
 dans leurs sessions propriétaires respectives.
 

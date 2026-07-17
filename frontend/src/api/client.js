@@ -224,6 +224,7 @@ export function fetchAdminQuotes(filters = {}) {
   if (typeof filters.limit === 'number') params.limit = filters.limit
   if (typeof filters.offset === 'number') params.offset = filters.offset
   if (filters.status) params.status = filters.status
+  if (filters.route) params.route = filters.route
   return client.get('/api/admin/quotes', { params })
 }
 

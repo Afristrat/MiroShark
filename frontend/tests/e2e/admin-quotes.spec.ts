@@ -170,3 +170,59 @@ test.describe('US-117 — /admin/quotes accès super-admin', () => {
     await expect(subtitle).toContainText(/super-admin|Bassira|commercial/i)
   })
 })
+
+test.describe('US-IQ-06 — dossier Intake durable', () => {
+  test('filtre le routage et affiche brief, transcript, confidentialité et réservation', async ({ page }) => {
+    await seedSuperAdminAuth(page)
+
+    const quote = {
+      quote_id: 'q_iq060001',
+      submitted_at: '2026-07-17T12:00:00Z',
+      payload: { full_name: 'Nadia Amrani', email: 'nadia@example.com', message: 'Arbitrage marché' },
+      status: { status: 'received', history: [] }
+    }
+    const requestedRoutes: Array<string | null> = []
+    await page.route('**/api/admin/quotes**', async route => {
+      const url = new URL(route.request().url())
+      if (url.pathname.endsWith('/q_iq060001')) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ success: true, data: {
+            quote_id: quote.quote_id,
+            payload: { ...quote.payload, intake_session_id: 'sess-iq06' },
+            status: quote.status,
+            intake: {
+              session_id: 'sess-iq06', state: 'completed', route: 'meeting',
+              brief: { decision: 'Choisir le marché prioritaire', options: ['Maroc', 'Sénégal'] },
+              confidential_flags: [{ topic_label: 'Structure actionnariale', flagged_at: '2026-07-17T12:01:00Z' }],
+              transcript: [
+                { role: 'user', content: 'Notre priorité est le Maroc.' },
+                { role: 'assistant', content: 'Quel horizon visez-vous ?' }
+              ],
+              calcom_booking_uid: 'booking-iq06'
+            }
+          } })
+        })
+        return
+      }
+      requestedRoutes.push(url.searchParams.get('route'))
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, data: { quotes: [quote], total: 1, limit: 100, offset: 0 } })
+      })
+    })
+
+    await navigateAuthenticated(page, '/admin/quotes?lang=fr')
+    await page.locator('.aq-filters select').nth(1).selectOption('meeting')
+    await expect.poll(() => requestedRoutes).toContain('meeting')
+    await page.locator('.aq-action').first().click()
+
+    await expect(page.getByText('Choisir le marché prioritaire')).toBeVisible()
+    await expect(page.getByText('Structure actionnariale')).toBeVisible()
+    await expect(page.getByText('Notre priorité est le Maroc.')).toBeVisible()
+    const booking = page.locator('a[href="https://agenda.ai-mpower.com/booking/booking-iq06"]')
+    await expect(booking).toBeVisible()
+  })
+})

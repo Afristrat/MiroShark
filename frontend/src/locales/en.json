@@ -2539,10 +2539,20 @@
     "loading": "Loading quotes…",
     "empty": "No quote received yet.",
     "filters": {
-      "status": "Status",
-      "all": "All",
-      "reset": "Reset"
-    },
+    "status": "Status",
+    "all": "All",
+    "route": "Routing branch",
+    "allRoutes": "All branches",
+    "reset": "Reset"
+  },
+  "routes": { "meeting": "Qualified meeting", "self_service": "Self-service" },
+  "intake": {
+    "title": "Intake qualification", "route": "Routing", "state": "Session state",
+    "brief": "Structured brief", "confidential": "Confidential topics for verbal discussion",
+    "transcript": "Complete qualification transcript", "openBooking": "Open Cal.com booking",
+    "none": "No confidential topic flagged.", "noTranscript": "No qualification exchange recorded.",
+    "roles": { "user": "Prospect", "assistant": "Assistant", "system": "System" }
+  },
     "table": {
       "id": "ID",
       "date": "Received",

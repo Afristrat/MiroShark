@@ -120,6 +120,22 @@ def _parse_int(raw: Optional[str], default: int, min_v: int, max_v: int) -> int:
     return max(min_v, min(max_v, n))
 
 
+def _get_intake_session(payload: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Résout la session Intake liée, sans casser les devis legacy."""
+    session_id = (payload or {}).get("intake_session_id")
+    if not session_id:
+        return None
+    try:
+        return intake_service.get_session(session_id)
+    except Exception as exc:  # noqa: BLE001 — enrichissement admin fail-soft
+        logger.warning(
+            "intake session lookup failed for %s: %s",
+            session_id,
+            exc.__class__.__name__,
+        )
+        return None
+
+
 @admin_quote_bp.route("", methods=["GET"])
 @require_auth
 def list_quotes_admin():
@@ -143,17 +159,26 @@ def list_quotes_admin():
         limit = _parse_int(request.args.get("limit"), 50, 1, 200)
         offset = _parse_int(request.args.get("offset"), 0, 0, 1_000_000)
         status_filter = (request.args.get("status") or "").strip() or None
+        route_filter = (request.args.get("route") or "").strip() or None
 
         user = getattr(g, "current_user", None) or {}
         email = user.get("email") if isinstance(user, dict) else None
 
         # 1. Super-admin → vue cross-tenant complète (filesystem only).
         if is_super_admin_email(email):
-            items, total = qa.list_quotes(
-                limit=limit,
-                offset=offset,
+            items, _ = qa.list_quotes(
+                limit=10_000,
+                offset=0,
                 status_filter=status_filter,
             )
+            if route_filter:
+                items = [
+                    item for item in items
+                    if (_get_intake_session(item.get("payload") or {}) or {}).get("route")
+                    == route_filter
+                ]
+            total = len(items)
+            items = items[offset : offset + limit]
             return jsonify({
                 "success": True,
                 "data": {
@@ -276,18 +301,17 @@ def get_quote_admin(quote_id: str):
     # détail du devis si la session intake est absente/injoignable.
     intake_summary = None
     intake_session_id = (payload or {}).get("intake_session_id")
-    if intake_session_id:
-        try:
-            session = intake_service.get_session(intake_session_id)
-        except Exception as exc:  # noqa: BLE001
-            logger.warning("get_quote_admin: intake session lookup failed for %s: %s", intake_session_id, exc.__class__.__name__)
-            session = None
+    if intake_session_id and is_super:
+        session = _get_intake_session(payload)
         if session:
             intake_summary = {
                 "session_id": intake_session_id,
                 "state": session.get("state"),
                 "route": session.get("route"),
+                "brief": session.get("brief") or {},
+                "transcript": session.get("transcript") or [],
                 "confidential_flags": session.get("confidential_flags") or [],
+                "calcom_booking_uid": session.get("calcom_booking_uid"),
             }
 
     return jsonify({

@@ -2619,10 +2619,20 @@
     "loading": "Chargement des devis…",
     "empty": "Aucun devis enregistré pour le moment.",
     "filters": {
-      "status": "Statut",
-      "all": "Tous",
-      "reset": "Réinitialiser"
-    },
+    "status": "Statut",
+    "all": "Tous",
+    "route": "Branche de routage",
+    "allRoutes": "Toutes les branches",
+    "reset": "Réinitialiser"
+  },
+  "routes": { "meeting": "Entretien qualifié", "self_service": "Libre-service" },
+  "intake": {
+    "title": "Qualification Intake", "route": "Routage", "state": "État de session",
+    "brief": "Brief structuré", "confidential": "Sujets confidentiels à traiter de vive voix",
+    "transcript": "Transcript intégral de qualification", "openBooking": "Ouvrir la réservation Cal.com",
+    "none": "Aucun sujet confidentiel signalé.", "noTranscript": "Aucun échange de qualification enregistré.",
+    "roles": { "user": "Prospect", "assistant": "Assistant", "system": "Système" }
+  },
     "table": {
       "id": "Identifiant",
       "date": "Reçu le",

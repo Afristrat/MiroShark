@@ -410,7 +410,13 @@ class TestAdminQuotesEndpoints:
             lambda session_id, **_kw: {
                 "state": "completed",
                 "route": "meeting",
+                "brief": {"decision": "Choisir le marché prioritaire"},
+                "transcript": [
+                    {"role": "user", "content": "Notre priorité est le Maroc."},
+                    {"role": "assistant", "content": "Quel horizon visez-vous ?"},
+                ],
                 "confidential_flags": [{"topic_label": "structure actionnariale", "flagged_at": "2026-07-10T10:00:00Z"}],
+                "calcom_booking_uid": "book-123",
             } if session_id == "intake-sess-abc" else None,
         )
 
@@ -423,6 +429,9 @@ class TestAdminQuotesEndpoints:
         body = resp.get_json()
         assert body["data"]["intake"]["route"] == "meeting"
         assert body["data"]["intake"]["confidential_flags"][0]["topic_label"] == "structure actionnariale"
+        assert body["data"]["intake"]["brief"]["decision"] == "Choisir le marché prioritaire"
+        assert len(body["data"]["intake"]["transcript"]) == 2
+        assert body["data"]["intake"]["calcom_booking_uid"] == "book-123"
 
     def test_get_detail_no_intake_session_returns_none(
         self, client, isolated_quotes_dir, whitelist_env, jwt_secret, super_admin_email
@@ -516,6 +525,33 @@ class TestAdminQuotesEndpoints:
         body = resp.get_json()
         assert body["data"]["total"] == 1
         assert body["data"]["quotes"][0]["quote_id"] == "q_flt10002"
+
+    def test_filter_by_intake_route(
+        self, client, isolated_quotes_dir, whitelist_env, jwt_secret, super_admin_email, monkeypatch
+    ):
+        for quote_id, session_id in (("q_route001", "sess-meeting"), ("q_route002", "sess-self")):
+            path = _create_quote(isolated_quotes_dir, quote_id)
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            payload["intake_session_id"] = session_id
+            path.write_text(json.dumps(payload), encoding="utf-8")
+
+        from app.api import quote as quote_api
+        monkeypatch.setattr(
+            quote_api.intake_service,
+            "get_session",
+            lambda session_id, **_kw: {
+                "route": "meeting" if session_id == "sess-meeting" else "self_service"
+            },
+        )
+        token = _make_token(jwt_secret, super_admin_email)
+        resp = client.get(
+            "/api/admin/quotes?route=meeting",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert resp.status_code == 200
+        body = resp.get_json()["data"]
+        assert body["total"] == 1
+        assert body["quotes"][0]["quote_id"] == "q_route001"
 
 
 # ─── Tests : email actions (US-104) ─────────────────────────────────────────

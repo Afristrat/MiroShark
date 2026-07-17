@@ -33,6 +33,14 @@
             </option>
           </select>
         </label>
+        <label class="aq-filter">
+          <span class="aq-filter-label">{{ $t('adminQuotes.filters.route') }}</span>
+          <select v-model="routeFilter" @change="loadQuotes">
+            <option value="">{{ $t('adminQuotes.filters.allRoutes') }}</option>
+            <option value="meeting">{{ $t('adminQuotes.routes.meeting') }}</option>
+            <option value="self_service">{{ $t('adminQuotes.routes.self_service') }}</option>
+          </select>
+        </label>
         <button class="aq-reset" type="button" @click="resetFilters">
           {{ $t('adminQuotes.filters.reset') }}
         </button>
@@ -123,6 +131,55 @@
                 <p>{{ modal.quote?.payload?.message || '—' }}</p>
               </div>
             </section>
+
+            <template v-if="modal.quote?.intake">
+              <section class="aq-modal-section aq-intake-summary">
+                <h4>{{ $t('adminQuotes.intake.title') }}</h4>
+                <dl class="aq-dl">
+                  <div><dt>{{ $t('adminQuotes.intake.route') }}</dt><dd>{{ $t(`adminQuotes.routes.${modal.quote.intake.route}`) }}</dd></div>
+                  <div><dt>{{ $t('adminQuotes.intake.state') }}</dt><dd>{{ modal.quote.intake.state || '—' }}</dd></div>
+                </dl>
+                <a
+                  v-if="modal.quote.intake.calcom_booking_uid"
+                  class="aq-calcom-link"
+                  :href="calcomBookingUrl(modal.quote.intake.calcom_booking_uid)"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >{{ $t('adminQuotes.intake.openBooking') }}</a>
+              </section>
+
+              <section class="aq-modal-section">
+                <h4>{{ $t('adminQuotes.intake.brief') }}</h4>
+                <dl class="aq-brief">
+                  <div v-for="(value, key) in modal.quote.intake.brief" :key="key">
+                    <dt>{{ humanizeKey(key) }}</dt>
+                    <dd>{{ formatBriefValue(value) }}</dd>
+                  </div>
+                </dl>
+              </section>
+
+              <section class="aq-modal-section">
+                <h4>{{ $t('adminQuotes.intake.confidential') }}</h4>
+                <ul v-if="modal.quote.intake.confidential_flags?.length" class="aq-flags">
+                  <li v-for="flag in modal.quote.intake.confidential_flags" :key="`${flag.topic_label}-${flag.flagged_at}`">
+                    {{ flag.topic_label }}
+                  </li>
+                </ul>
+                <p v-else class="aq-meta">{{ $t('adminQuotes.intake.none') }}</p>
+              </section>
+
+              <section class="aq-modal-section">
+                <h4>{{ $t('adminQuotes.intake.transcript') }}</h4>
+                <ol v-if="modal.quote.intake.transcript?.length" class="aq-transcript">
+                  <li v-for="(turn, index) in modal.quote.intake.transcript" :key="index" :class="`aq-turn--${turn.role}`">
+                    <strong>{{ $t(`adminQuotes.intake.roles.${turn.role}`, turn.role) }}</strong>
+                    <p>{{ turn.content }}</p>
+                    <time v-if="turn.ts">{{ formatDate(turn.ts) }}</time>
+                  </li>
+                </ol>
+                <p v-else class="aq-meta">{{ $t('adminQuotes.intake.noTranscript') }}</p>
+              </section>
+            </template>
 
             <!-- Statut + transitions -->
             <section class="aq-modal-section">
@@ -267,6 +324,7 @@ const quotes = ref([])
 const loading = ref(false)
 const error = ref('')
 const statusFilter = ref('')
+const routeFilter = ref('')
 
 const modal = reactive({ open: false, quote: null })
 const busy = ref(false)
@@ -288,6 +346,7 @@ async function loadQuotes() {
       limit: 100,
       offset: 0,
       status: statusFilter.value || undefined,
+      route: routeFilter.value || undefined,
     })
     quotes.value = res?.data?.quotes || []
   } catch (err) {
@@ -299,6 +358,7 @@ async function loadQuotes() {
 
 function resetFilters() {
   statusFilter.value = ''
+  routeFilter.value = ''
   loadQuotes()
 }
 
@@ -320,6 +380,7 @@ async function openModal(q) {
         quote_id: q.quote_id,
         payload: res.data.payload,
         status: res.data.status,
+        intake: res.data.intake,
         submitted_at: q.submitted_at,
       }
       paymentLinkInput.value = res.data.status?.payment_link || ''
@@ -435,6 +496,25 @@ function truncate(s, max) {
   if (!s) return '—'
   if (s.length <= max) return s
   return s.slice(0, max - 1).trimEnd() + '…'
+}
+
+function humanizeKey(key) {
+  return String(key).replaceAll('_', ' ').replace(/^./, char => char.toUpperCase())
+}
+
+function formatBriefValue(value) {
+  if (value === null || value === undefined || value === '') return '—'
+  if (Array.isArray(value)) return value.map(formatBriefValue).join(' · ')
+  if (typeof value === 'object') {
+    return Object.entries(value)
+      .map(([key, child]) => `${humanizeKey(key)} : ${formatBriefValue(child)}`)
+      .join(' · ')
+  }
+  return String(value)
+}
+
+function calcomBookingUrl(uid) {
+  return `https://agenda.ai-mpower.com/booking/${encodeURIComponent(uid)}`
 }
 
 onMounted(async () => {
@@ -761,4 +841,20 @@ onMounted(async () => {
   font-style: italic;
   color: var(--wi-on-surface-variant);
 }
+.aq-intake-summary {
+  border-inline-start: 4px solid var(--wi-primary);
+  padding-inline-start: 16px;
+}
+.aq-calcom-link { display: inline-block; margin-top: 12px; color: var(--wi-primary); font-weight: 600; }
+.aq-brief { display: grid; gap: 10px; margin: 0; }
+.aq-brief div { padding: 10px 12px; border-radius: 8px; background: var(--wi-surface-container-low); }
+.aq-brief dt { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--wi-on-surface-variant); }
+.aq-brief dd { margin: 4px 0 0; white-space: pre-wrap; }
+.aq-flags { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; list-style: none; }
+.aq-flags li { padding: 6px 10px; border-radius: 999px; background: var(--wi-primary-soft); color: var(--wi-primary); }
+.aq-transcript { display: grid; gap: 10px; padding: 0; list-style: none; }
+.aq-transcript li { padding: 12px; border-radius: 10px; background: var(--wi-surface-container-low); }
+.aq-transcript p { margin: 6px 0; white-space: pre-wrap; }
+.aq-transcript time { color: var(--wi-on-surface-variant); font-size: 11px; }
+.aq-turn--user { border-inline-start: 3px solid var(--wi-primary); }
 </style>

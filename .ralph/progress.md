@@ -2370,3 +2370,23 @@ registre global Codex. Chaque dette doit être notifiée à l’ouverture de la
 session propriétaire correspondante, puis diagnostiquée, rotatée et recertifiée
 uniquement depuis cette session. Aucun ordre d’exécution inter-projets ne fait
 partie de la passation Bassira.
+
+### 2026-07-17 — [US-IQ-06] Vue admin Intake enrichie — CLÔTURÉE LOCALEMENT
+
+Le détail super-admin d’un devis lié à Intake expose désormais le brief
+structuré, le transcript intégral durable, les seuls libellés de sujets
+confidentiels, la branche de routage et l’UID Cal.com. Ces données stratégiques
+ne sont jamais ajoutées au contrat des membres non super-admin. Les devis legacy
+sans `intake_session_id` conservent leur affichage précédent.
+
+`/admin/quotes` ajoute un filtre backend/frontend par branche `meeting` ou
+`self_service`. La modale présente le brief en sections lisibles, le transcript
+tour par tour et un lien direct vers la réservation. Contrat de re-fetch corrigé
+pour préserver `intake` dans l’état de la modale.
+
+Preuves locales : test backend ciblé **46 réussites**, suite backend complète
+**2 325 réussites, 60 ignorées, 0 échec** ; Ruff et ESLint zéro erreur/warning ;
+mypy zéro erreur sur 116 fichiers ; build Vite 948 modules ; parité i18n stricte
+**2 085 clés** ; Playwright IQ-06 contre le build local **1 réussite, 0 échec**.
+Reste avant permanence totale : push, déploiement et replay Playwright en
+production.
