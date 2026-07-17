@@ -186,10 +186,22 @@ def test_report_get_not_found(app_client):
 # ─── Settings routes ────────────────────────────────────────────────────
 
 
-def test_settings_invalid_preset(app_client):
+def test_settings_invalid_preset(app_client, monkeypatch):
     """``INVALID_INPUT`` when preset name isn't in the allowed list."""
+    import app.auth.decorators as auth_decorators
+
+    monkeypatch.setenv("BASSIRA_SUPER_ADMIN_EMAILS", "admin@example.test")
+    monkeypatch.setattr(
+        auth_decorators,
+        "verify_supabase_jwt",
+        lambda _token: {"sub": "user-admin", "email": "admin@example.test"},
+    )
     _, client = app_client
-    resp = client.post("/api/settings", json={"preset": "definitely_not_a_preset"})
+    resp = client.post(
+        "/api/settings",
+        headers={"Authorization": "Bearer test-token"},
+        json={"preset": "definitely_not_a_preset"},
+    )
     assert resp.status_code == 400
     _assert_error_envelope(
         resp.get_json(), expected_code="INVALID_INPUT", http_status=400

@@ -23,6 +23,7 @@ Dépendances optionnelles (skip si absent) :
 from __future__ import annotations
 
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -215,7 +216,12 @@ class TestPipelineMarkdown:
             inst.enrich = _enrich
             return inst
 
-        with patch("app.services.report_pdf.enricher.Enricher", side_effect=_make_instance):
+        fixed_now = datetime(2026, 7, 17, 10, 0, tzinfo=timezone.utc)
+        with (
+            patch("app.services.report_pdf.enricher.Enricher", side_effect=_make_instance),
+            patch("app.services.report_pdf.renderer.datetime") as mocked_datetime,
+        ):
+            mocked_datetime.now.return_value = fixed_now
             md1 = _strip_frontmatter(Renderer(ctx1).render_md())
             md2 = _strip_frontmatter(Renderer(ctx2).render_md())
 

@@ -10,6 +10,7 @@ import time
 from flask import request, jsonify
 
 from . import settings_bp
+from ..auth import require_super_admin
 from ..config import Config
 from ..services import webhook_service  # noqa: F401 — kept for namespace-style access
 from ..services.webhook_service import (
@@ -153,6 +154,7 @@ def _current_snapshot() -> dict:
 
 
 @settings_bp.route('', methods=['GET'])
+@require_super_admin
 def get_settings():
     """Return current active config across every slot (API keys masked)."""
     return jsonify({'success': True, 'data': _current_snapshot()})
@@ -169,6 +171,7 @@ def _apply_preset(preset_id: str, preset_api_key: str) -> None:
 
 
 @settings_bp.route('', methods=['POST'])
+@require_super_admin
 def update_settings():
     """
     Update configuration at runtime. All fields optional.
@@ -287,6 +290,7 @@ def update_settings():
 
 
 @settings_bp.route('/test-llm', methods=['POST'])
+@require_super_admin
 def test_llm():
     """
     Make a minimal test call to the current LLM config.
@@ -329,6 +333,7 @@ def test_llm():
 
 
 @settings_bp.route('/test-webhook', methods=['POST'])
+@require_super_admin
 def test_webhook():
     """Fire a sample ``simulation.test`` event at the user-supplied
     webhook URL and return delivery details.
