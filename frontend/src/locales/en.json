@@ -4,7 +4,7 @@
     "explore": "Explore",
     "github": "GitHub",
     "settings": "Settings",
-    "verified": "Verified predictions",
+    "verified": "Verified outcomes",
     "calibration": "Calibration",
     "offers": "Offers",
     "offersTitle": "See our stress-test packages (3 formats)",
@@ -146,7 +146,7 @@
       },
       "s2": {
         "title": "Hundreds of grounded agents",
-        "desc": "React on Twitter, Reddit, and a prediction market. Hour by hour, round after round."
+        "desc": "React on Twitter, Reddit, and a conviction arena. Hour by hour, round after round."
       },
       "s3": {
         "title": "Steer the timeline",
@@ -666,10 +666,10 @@
       "complete": {
         "title": "Build Complete",
         "description": "Graph build is complete. Please proceed to the next step for simulation agent setup.",
-        "predictionMarkets": "Prediction markets",
-        "marketCountTitle": "How many prediction markets to generate for this simulation",
-        "marketSingular": "market",
-        "marketPlural": "markets",
+        "predictionMarkets": "Conviction arena",
+        "marketCountTitle": "How many questions to generate for this simulation",
+        "marketSingular": "question",
+        "marketPlural": "questions",
         "creating": "Creating...",
         "newSimulation": "New Simulation ➝",
         "enterSetup": "Enter Agent Setup ➝",
@@ -986,8 +986,8 @@
         "networkTitle": "Agent interaction network graph",
         "demographics": "◇ Demographics",
         "demographicsTitle": "Agent demographic breakdown (age, gender, country, actor type, platform)",
-        "markets": "Markets",
-        "marketsTitle": "Live prediction market price chart",
+        "markets": "Arena",
+        "marketsTitle": "Live conviction arena price chart",
         "whatIf": "◐ What If?",
         "whatIfTitle": "What If? · remove agents and recompute belief drift from existing trajectory",
         "director": "⚡ Director",
@@ -1123,7 +1123,7 @@
     "header": {
       "title": "Explore",
       "subtitle": "Public simulations from the Bassira community",
-      "verified": "Verified predictions",
+      "verified": "Verified outcomes",
       "all": "All"
     },
     "filters": {
@@ -1393,8 +1393,8 @@
       "noData": "No graph data."
     },
     "polymarket": {
-      "title": "Prediction Markets",
-      "subtitle": "Live market prices",
+      "title": "Conviction Arena",
+      "subtitle": "Live arena prices",
       "yes": "YES",
       "no": "NO",
       "price": "Price",
@@ -1483,7 +1483,7 @@
     "CHAT_FAILED": "Chat with the report agent failed.",
     "SCENARIO_SUGGEST_FAILED": "Scenario suggestion failed.",
     "POLYMARKET_NOT_ENABLED": "Polymarket is not enabled for this simulation.",
-    "MARKET_NOT_FOUND": "Prediction market not found.",
+    "MARKET_NOT_FOUND": "Question not found.",
     "INVALID_WEBHOOK_URL": "Invalid webhook URL.",
     "MISSING_WEBHOOK_URL": "No webhook URL configured.",
     "WEBHOOK_TEST_FAILED": "Webhook test failed.",
@@ -1551,9 +1551,9 @@
         "fineprint": "For solo founders pre-Series A",
         "bullets": {
           "b1": "50 synthetic prospects pan-Africa",
-          "b2": "Verdict: viable / borderline / nope",
+          "b2": "Outcome: viable / borderline / inconclusive",
           "b3": "Top 3 segments + top 3 frictions",
-          "b4": "Confidence interval on the verdict",
+          "b4": "Convergence range on the outcome",
           "b5": "Pivot recommendations if nope",
           "b6": "1 × 30-min debrief session"
         }
@@ -1578,15 +1578,15 @@
         "sectorBadge": "Marketing leadership",
         "name": "Adcheck Lite",
         "delay": "3 days",
-        "description": "Test 2 ad concepts on a synthetic Moroccan 25-45 audience. Verdict in 72h, ideal for fast iteration before media buy.",
+        "description": "Test 2 ad concepts on a synthetic Moroccan 25-45 audience. Outcome in 72h, ideal for fast iteration before media buy.",
         "cta": "Adcheck my campaign",
         "bullets": {
           "b1": "2 concepts × 50 agents",
-          "b2": "A/B ranking with confidence",
+          "b2": "A/B ranking with convergence score",
           "b3": "Top 3 arguments + top 3 objections",
           "b4": "Backfire risk identified",
           "b5": "Sentiment heatmap per persona",
-          "b6": "Simple GO / NO-GO verdict"
+          "b6": "Simple GO / NO-GO outcome"
         }
       },
       "adcheck_pro": {
@@ -1604,7 +1604,7 @@
         "bullets": {
           "b1": "3 concepts × 80 segmented agents",
           "b2": "Persona breakdown (urban/rural, young/senior)",
-          "b3": "Quantified GO / NO-GO / ITERATE verdict",
+          "b3": "Quantified GO / NO-GO / ITERATE outcome",
           "b4": "Top 5 creative adjustments",
           "b5": "Sentiment by geographic segment",
           "b6": "2 × 45-min debrief sessions"
@@ -1633,7 +1633,7 @@
         "cta": "Stress test my brief",
         "bullets": {
           "b1": "80 segmented agents (citizens, opposition, press, authorities)",
-          "b2": "Verdict survives_yes / no with confidence",
+          "b2": "Outcome survives_yes / no with convergence score",
           "b3": "Top 3 compromise amendments",
           "b4": "Mapping of emerging coalitions",
           "b5": "Top 3 arguments that don't hold in real-life",
@@ -2221,7 +2221,7 @@
       "section": {
         "decision": {
           "kicker": "DECISION QUESTION",
-          "title": "The verdict this model is designed to produce"
+          "title": "The outcome this model is designed to produce"
         },
         "context": {
           "kicker": "CONTEXT",
@@ -2250,7 +2250,7 @@
         "methodology": {
           "kicker": "METHODOLOGY",
           "title": "How this model is calibrated and audited",
-          "body": "Each model exposes its agents, injected director events, and expected verdict shape. The full methodology — and its limits — is published and verifiable. Data used under a client mandate remains sovereign, hosted under reinforced NDA.",
+          "body": "Each model exposes its agents, injected director events, and expected outcome shape. The full methodology — and its limits — is published and verifiable. Data used under a client mandate remains sovereign, hosted under reinforced NDA.",
           "calibrationLink": "View our methodology",
           "allModelsLink": "Back to the list of models"
         }
@@ -2801,7 +2801,7 @@
     },
     "not": {
       "title": "What Bassira does not do",
-      "n1t": "Predict the future",
+      "n1t": "Announce the future",
       "n1b": "Synthetic personas do not replace the real world. The simulation explores possibilities; it does not announce what will happen.",
       "n2t": "Replace field research",
       "n2b": "Stress-testing complements real surveys and interviews; it does not substitute for them on a binding decision.",

@@ -2246,3 +2246,19 @@ session) : creuser pourquoi ce test dépend de l'ordre d'exécution de la
 suite (passe seul, échoue parfois en suite complète).
 Prochaine story : **US-221** (persistance durable des artefacts, ADR-005)
 — dernière story du Lot 0.
+
+### 2026-07-17 — [US-224] Renommage client « arène de convictions » — CLÔTURÉE
+
+Renommage ADR-018 appliqué aux trois locales, aux templates PDF et aux quatre
+composants qui contenaient encore du vocabulaire visible codé en dur. Le halo
+lexical wargaming validé (issue, clôture, degré de convergence, lecture croisée)
+remplace également les termes abandonnés. Les identifiants techniques et deux
+regex de compatibilité restent volontairement inchangés. Quatre assertions de
+templates PDF ont été alignées de « Verdict » vers « Issue ».
+
+Preuves fraîches : tests PDF ciblés **87 passed, 5 skipped** ; suite backend
+complète **2309 passed, 42 skipped, 18 deselected, 0 failed** ; build frontend
+exit 0 ; parité i18n exit 0 ; balayage UTF-8 : zéro occurrence client-facing de
+« prédiction », « prediction » ou « تنبؤ » hors identifiants/commentaires
+techniques. Findings hors story maintenus : warnings pytest, vulnérabilités npm
+et failles P0 d'autorisation découvertes par l'audit du 2026-07-17.

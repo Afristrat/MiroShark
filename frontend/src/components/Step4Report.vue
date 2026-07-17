@@ -1169,7 +1169,7 @@ const InsightDisplay = {
         ]),
         props.result.query && h('div', { class: 'header-topic' }, props.result.query),
         props.result.simulationRequirement && h('div', { class: 'header-scenario' }, [
-          h('span', { class: 'scenario-label' }, 'Prediction Scenario: '),
+          h('span', { class: 'scenario-label' }, 'Scenario: '),
           h('span', { class: 'scenario-text' }, props.result.simulationRequirement)
         ])
       ]),

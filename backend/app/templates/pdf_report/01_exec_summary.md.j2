@@ -21,7 +21,7 @@
 
 ---
 
-### Verdict
+### Issue
 
 {% if context.outcome and context.outcome.verdict %}
 **{{ context.outcome.verdict | normalize(context.lang) }}**
@@ -37,7 +37,7 @@
 {% endif %}
 
 {% else %}
-{{ callout('warning', 'Verdict non disponible', 'Le verdict de simulation n\'est pas encore calculé pour ce rapport.') }}
+{{ callout('warning', 'Issue non disponible', 'L\'issue de simulation n\'est pas encore calculée pour ce rapport.') }}
 {% endif %}
 
 ---

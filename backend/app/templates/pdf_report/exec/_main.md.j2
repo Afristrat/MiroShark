@@ -30,12 +30,12 @@ branding_version: {{ branding_version | default('default') }}
 {{ kpi_card(
     label=context.kpi_hero.verdict | normalize(context.lang),
     value=(context.kpi_hero.confidence_pct | round(1) | string) + ' %',
-    unit='de confiance'
+    unit='de convergence'
 ) }}
 
 | Indicateur | Valeur |
 | --- | --- |
-| Confiance | {{ context.kpi_hero.confidence_pct | round(1) }} % |
+| Convergence | {{ context.kpi_hero.confidence_pct | round(1) }} % |
 | Score de Brier | {{ context.kpi_hero.brier | round(3) }} |
 {% for camp, pct in context.kpi_hero.scenario_distribution.items() %}
 | {{ camp | capitalize }} | {{ (pct * 100) | round(1) }} % |
@@ -64,11 +64,11 @@ branding_version: {{ branding_version | default('default') }}
 
 ---
 
-### Verdict
+### Issue
 
 {% if context.outcome %}
 {{ kpi_card(
-    label='Verdict de Simulation',
+    label='Issue de Simulation',
     value=context.outcome.verdict | normalize(context.lang),
     unit='',
     color='primary'
@@ -86,7 +86,7 @@ branding_version: {{ branding_version | default('default') }}
 {% endif %}
 
 {% else %}
-{{ callout('warning', 'Verdict', 'Verdict non disponible.') }}
+{{ callout('warning', 'Issue', 'Issue non disponible.') }}
 {% endif %}
 
 ---

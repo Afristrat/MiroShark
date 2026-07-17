@@ -311,7 +311,7 @@
           :ref="el => setSectionRef(el, 4)"
         >
           <header class="cmp-markets-head">
-            <h3 class="cmp-markets-title">Prediction Market Final Prices</h3>
+            <h3 class="cmp-markets-title">Conviction Arena Final Prices</h3>
           </header>
           <div class="cmp-markets-grid">
             <div class="cmp-market-col">

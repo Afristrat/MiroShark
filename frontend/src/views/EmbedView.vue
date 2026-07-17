@@ -350,13 +350,13 @@ const keyFindings = computed(() => {
         items.push({
           tone: 'success',
           icon: 'check_circle',
-          text: `Prédiction correcte — outcome réel : ${r.actual_outcome}.`
+          text: `Résolution exacte — outcome réel : ${r.actual_outcome}.`
         })
       } else if (r.accuracy_score <= 0.0) {
         items.push({
           tone: 'warning',
           icon: 'warning',
-          text: `Prédiction manquée — outcome réel : ${r.actual_outcome}.`
+          text: `Résolution manquée — outcome réel : ${r.actual_outcome}.`
         })
       } else {
         items.push({

@@ -4,7 +4,7 @@
     "explore": "Explorer",
     "github": "GitHub",
     "settings": "Paramètres",
-    "verified": "Prédictions vérifiées",
+    "verified": "Issues vérifiées",
     "calibration": "Calibration",
     "offers": "Offres",
     "offersTitle": "Voir nos packages de stress-test (3 formats)",
@@ -146,7 +146,7 @@
       },
       "s2": {
         "title": "Des centaines d’agents ancrés",
-        "desc": "Réagissent sur Twitter, Reddit et un marché de prédiction. Heure par heure, tour après tour."
+        "desc": "Réagissent sur Twitter, Reddit et une arène de convictions. Heure par heure, tour après tour."
       },
       "s3": {
         "title": "Pilotez la chronologie",
@@ -666,10 +666,10 @@
       "complete": {
         "title": "Construction terminée",
         "description": "La construction du graphe est terminée. Passez à l’étape suivante pour configurer les agents de simulation.",
-        "predictionMarkets": "Marchés de prédiction",
-        "marketCountTitle": "Nombre de marchés de prédiction à générer pour cette simulation",
-        "marketSingular": "marché",
-        "marketPlural": "marchés",
+        "predictionMarkets": "Arène de convictions",
+        "marketCountTitle": "Nombre de questions à générer pour cette simulation",
+        "marketSingular": "question",
+        "marketPlural": "questions",
         "creating": "Création…",
         "newSimulation": "Nouvelle simulation ➝",
         "enterSetup": "Configurer les agents ➝",
@@ -986,8 +986,8 @@
         "networkTitle": "Graphe d’interactions entre agents",
         "demographics": "◇ Démographie",
         "demographicsTitle": "Répartition démographique (âge, genre, pays, type, plateforme)",
-        "markets": "Marchés",
-        "marketsTitle": "Graphique en direct des prix de marché",
+        "markets": "Arène",
+        "marketsTitle": "Graphique en direct des prix de l’arène",
         "whatIf": "◐ Et si ?",
         "whatIfTitle": "Et si ? · retirer des agents et recalculer la dérive depuis la trajectoire existante",
         "director": "⚡ Réalisateur",
@@ -1123,7 +1123,7 @@
     "header": {
       "title": "Explorer",
       "subtitle": "Simulations publiques de la communauté Bassira",
-      "verified": "Prédictions vérifiées",
+      "verified": "Issues vérifiées",
       "all": "Toutes"
     },
     "filters": {
@@ -1319,7 +1319,7 @@
         "title": "Supprimer la simulation",
         "confirmTitle": "Supprimer cette simulation ?",
         "confirmBody": "La simulation {id} et toutes ses données (profils d’agents, configuration, trajectoire, rapport, intervieuws) seront supprimés définitivement. Cette action est irréversible.",
-        "publicCalibrationWarning": "Attention : cette simulation est publique et a un verdict enregistré. La supprimer la retirera de la page /verified.",
+        "publicCalibrationWarning": "Attention : cette simulation est publique et a une issue enregistrée. La supprimer la retirera de la page /verified.",
         "cancel": "Annuler",
         "confirm": "Supprimer définitivement",
         "deleting": "Suppression…"
@@ -1393,8 +1393,8 @@
       "noData": "Aucune donnée de graphe."
     },
     "polymarket": {
-      "title": "Marchés de prédiction",
-      "subtitle": "Prix de marché en direct",
+      "title": "Arène de convictions",
+      "subtitle": "Prix en direct de l’arène",
       "yes": "OUI",
       "no": "NON",
       "price": "Prix",
@@ -1483,7 +1483,7 @@
     "CHAT_FAILED": "La conversation avec l'agent rapport a échoué.",
     "SCENARIO_SUGGEST_FAILED": "La suggestion de scénarios a échoué.",
     "POLYMARKET_NOT_ENABLED": "Polymarket n'est pas activé pour cette simulation.",
-    "MARKET_NOT_FOUND": "Marché de prédiction introuvable.",
+    "MARKET_NOT_FOUND": "Question introuvable.",
     "INVALID_WEBHOOK_URL": "URL webhook invalide.",
     "MISSING_WEBHOOK_URL": "Aucune URL webhook configurée.",
     "WEBHOOK_TEST_FAILED": "Le test du webhook a échoué.",
@@ -1551,9 +1551,9 @@
         "fineprint": "Pour founders solo avant Série A",
         "bullets": {
           "b1": "50 prospects synthétiques pan-Afrique",
-          "b2": "Verdict viable / borderline / nope",
+          "b2": "Issue viable / limite / non concluante",
           "b3": "Top 3 segments + top 3 frictions",
-          "b4": "Intervalle de confiance sur le verdict",
+          "b4": "Fourchette de convergence sur l’issue",
           "b5": "Recommandations de pivot si nope",
           "b6": "1 session de débrief de 30 min"
         }
@@ -1578,15 +1578,15 @@
         "sectorBadge": "Directions marketing",
         "name": "Adcheck Lite",
         "delay": "3 jours",
-        "description": "Test de 2 concepts publicitaires sur audience marocaine 25-45 ans synthétique. Verdict en 72 h, idéal pour itération rapide avant achat media.",
+        "description": "Test de 2 concepts publicitaires sur audience marocaine 25-45 ans synthétique. Issue en 72 h, idéal pour itération rapide avant achat media.",
         "cta": "Tester ma campagne",
         "bullets": {
           "b1": "2 concepts × 50 agents",
-          "b2": "Classement A/B avec confidence",
+          "b2": "Classement A/B avec degré de convergence",
           "b3": "Top 3 arguments + top 3 objections",
           "b4": "Risque de backfire identifié",
           "b5": "Heatmap de sentiment par persona",
-          "b6": "Verdict GO / NO-GO simple"
+          "b6": "Issue GO / NO-GO simple"
         }
       },
       "adcheck_pro": {
@@ -1604,7 +1604,7 @@
         "bullets": {
           "b1": "3 concepts × 80 agents segmentés",
           "b2": "Persona breakdown (urbain/rural, jeune/sénior)",
-          "b3": "Verdict GO / NO-GO / ITERATE chiffré",
+          "b3": "Issue GO / NO-GO / ITERATE chiffrée",
           "b4": "Top 5 ajustements créatifs",
           "b5": "Sentiment par segment géographique",
           "b6": "2 sessions de débrief de 45 min"
@@ -1633,7 +1633,7 @@
         "cta": "Stress-tester mon brief",
         "bullets": {
           "b1": "80 agents segmentés (citoyens, opposition, presse, autorités)",
-          "b2": "Verdict survives_yes / no avec confidence",
+          "b2": "Issue survives_yes / no avec degré de convergence",
           "b3": "Top 3 amendements de compromis",
           "b4": "Cartographie des coalitions émergentes",
           "b5": "Top 3 arguments qui ne tiennent pas en réel",
@@ -2221,7 +2221,7 @@
       "section": {
         "decision": {
           "kicker": "QUESTION DE DÉCISION",
-          "title": "Le verdict que ce modèle est conçu pour produire"
+          "title": "L’issue que ce modèle est conçu pour produire"
         },
         "context": {
           "kicker": "CONTEXTE",
@@ -2250,7 +2250,7 @@
         "methodology": {
           "kicker": "MÉTHODOLOGIE",
           "title": "Comment ce modèle est calibré et audité",
-          "body": "Chaque modèle expose ses agents, ses director events injectés et son verdict shape attendu. La méthodologie complète — et ses limites — est publiée et vérifiable. Les données utilisées dans le cadre d’un mandat client restent souveraines, hébergées sous NDA renforcé.",
+          "body": "Chaque modèle expose ses agents, ses director events injectés et sa forme d’issue attendue. La méthodologie complète — et ses limites — est publiée et vérifiable. Les données utilisées dans le cadre d’un mandat client restent souveraines, hébergées sous NDA renforcé.",
           "calibrationLink": "Consulter notre méthodologie",
           "allModelsLink": "Revenir à la liste des modèles"
         }
@@ -2801,7 +2801,7 @@
     },
     "not": {
       "title": "Ce que Bassira ne fait pas",
-      "n1t": "Prédire l’avenir",
+      "n1t": "Annoncer l’avenir",
       "n1b": "Des personas synthétiques ne remplacent pas le monde réel. La simulation explore des possibles ; elle n’annonce pas ce qui arrivera.",
       "n2t": "Remplacer l’étude terrain",
       "n2b": "Le stress-test complète les enquêtes et entretiens réels ; il ne s’y substitue pas pour une décision engageante.",

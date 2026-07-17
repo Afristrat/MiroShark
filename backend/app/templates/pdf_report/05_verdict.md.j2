@@ -1,8 +1,8 @@
 {% from '_macros.md.j2' import kpi_card, callout %}
 
-## 5. Verdict & Lecture stratégique
+## 5. Issue & Lecture stratégique
 
-### Lecture stratégique et Verdict
+### Lecture stratégique et Issue
 
 {% if context.outcome %}
 {{ kpi_card(
@@ -50,8 +50,8 @@
 | Paramètre | Valeur |
 | --- | --- |
 | Round d'injection | {{ cf.round_injected }} |
-| Δ Verdict | {{ cf.delta_verdict | normalize(context.lang) if cf.delta_verdict else '—' }} |
-| Δ Confiance | {{ '%+.1f' | format(cf.delta_confidence * 100) }} % |
+| Δ Issue | {{ cf.delta_verdict | normalize(context.lang) if cf.delta_verdict else '—' }} |
+| Δ Convergence | {{ '%+.1f' | format(cf.delta_confidence * 100) }} % |
 
 {% if cf.notes %}
 *{{ cf.notes | normalize(context.lang) }}*

@@ -44,7 +44,7 @@ branding_version: {{ branding_version | default('default') }}
 
 ---
 
-## Verdict de Simulation
+## Issue de Simulation
 
 {% if context.outcome %}
 {{ kpi_card(
@@ -56,11 +56,11 @@ branding_version: {{ branding_version | default('default') }}
 
 | Métrique | Valeur |
 | --- | --- |
-| Confiance globale | {{ (context.outcome.confidence * 100) | round(1) }} % |
+| Convergence globale | {{ (context.outcome.confidence * 100) | round(1) }} % |
 | Consensus | {{ 'Atteint ✓' if context.outcome.consensus_reached else 'Non atteint ✗' }} |
 
 {% else %}
-{{ callout('info', 'Verdict', 'Verdict non disponible dans cet extrait.') }}
+{{ callout('info', 'Issue', 'Issue non disponible dans cet extrait.') }}
 {% endif %}
 
 ---

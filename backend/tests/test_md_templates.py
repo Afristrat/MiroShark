@@ -332,7 +332,7 @@ def test_render_section_02_toc(minimal_context: PDFReportContext) -> None:
     assert "Table des Matières" in result
     assert "Diagnostic" in result
     assert "Dynamique" in result
-    assert "Verdict" in result
+    assert "Issue" in result
     assert "Recommandations" in result
     assert "Annexes" in result
 
@@ -376,7 +376,7 @@ def test_render_section_04_dynamic(full_context: PDFReportContext) -> None:
 def test_render_section_05_verdict(full_context: PDFReportContext) -> None:
     """La section 05_verdict.md.j2 affiche le verdict et les contrefactuels."""
     result = render_section("05_verdict.md.j2", full_context, generated_at=GENERATED_AT)
-    assert "Verdict" in result
+    assert "Issue" in result
     assert "67" in result or "0.67" in result or "67.0" in result
     # Contrefactuel présent
     assert "ban total" in result or "Contrefactuel" in result
@@ -433,7 +433,7 @@ def test_render_full_report(full_context: PDFReportContext) -> None:
     assert "Résumé Exécutif" in result
     assert "Diagnostic" in result
     assert "Dynamique" in result
-    assert "Verdict" in result
+    assert "Issue" in result
     assert "Recommandations" in result
     assert "Annexes" in result
 
@@ -547,7 +547,7 @@ def test_verdict_section_counterfactuals_vides() -> None:
         outcome=Outcome(verdict="Test verdict", confidence=0.6),
     )
     result = render_section("05_verdict.md.j2", ctx, generated_at=GENERATED_AT)
-    assert "Verdict" in result
+    assert "Issue" in result
     assert "Contrefactuel" in result or "contrefactuel" in result.lower() or "NOTE" in result
 
 

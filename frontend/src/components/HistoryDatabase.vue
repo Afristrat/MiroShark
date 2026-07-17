@@ -327,7 +327,7 @@
             <div v-if="selectedProject.status === 'completed' || selectedProject.current_round > 0" class="modal-resolve-section">
               <div class="modal-divider">
                 <span class="divider-line"></span>
-                <span class="divider-text">Prediction Outcome</span>
+                <span class="divider-text">Real-World Outcome</span>
                 <span class="divider-line"></span>
               </div>
 

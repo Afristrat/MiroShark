@@ -4990,12 +4990,22 @@
         "Un PDF généré en fr, en et ar contient le nouveau vocabulaire (nom + glossaire) dans l'encart Méthode et limites",
         "npm run build vert ; suite pytest verte (snapshots PDF mis à jour si nécessaire)"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-07-17T11:00:00+01:00",
       "dependencies": [],
       "metadata": {
         "estimated_hours": 2,
         "priority": "P0",
-        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md"
+        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md",
+        "files_touched": [
+          "backend/app/templates/pdf_report/**/*.md.j2",
+          "backend/tests/test_md_templates.py",
+          "frontend/src/locales/{fr,en,ar}.json",
+          "frontend/src/components/{HistoryDatabase,Step4Report}.vue",
+          "frontend/src/views/{ComparisonView,EmbedView}.vue"
+        ],
+        "test_result": "2309 passed, 42 skipped, 18 deselected; frontend build and i18n parity passed",
+        "implementation_notes": "Renommage client complet selon ADR-018, halo lexical wargaming inclus; identifiants techniques et regex de compatibilité préservés. Quatre assertions PDF mises à jour de Verdict vers Issue."
       }
     },
     {
