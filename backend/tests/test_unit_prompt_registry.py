@@ -142,5 +142,5 @@ class TestPolymarketBuilderIntegration:
 
         user_info = SimpleNamespace(name="Karim", profile=None)
         out = PolymarketPromptBuilder().build_system_prompt(user_info)
-        assert "# RÔLE" in out
+        assert "# MISSION" in out
         assert "Karim" in out
