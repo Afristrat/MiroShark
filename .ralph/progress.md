@@ -2325,16 +2325,19 @@ absence du contexte agent comme du pré-seed.
 
 Gates : Ruff vert, mypy 0 erreur sur 116 fichiers, ESLint 0 erreur/warning,
 build Vite vert, tests ciblés backend 492/492 puis suite complète **2 324
-passed, 60 skipped, 0 failed**. E2E IQ-05 local réel : 1/1 vert. La suite
-Playwright locale : 112 réussites, 1 ignorée, 2 échecs non fonctionnels — un
-appel API nécessitant le backend absent du serveur preview et un sélecteur CTA
-devenu ambigu, ce dernier corrigé avant déploiement. La suite production doit
-être rejouée après déploiement.
+passed, 60 skipped, 0 failed**. E2E IQ-05 local réel : 1/1 vert. Après
+déploiement de l’image exacte `934c2faf6639`, `/` et `/health` répondent 200 et
+la suite Playwright complète contre la production donne **114 réussites, 1
+ignorée, 0 échec**. Les trois colonnes SQL des deux migrations sont présentes en
+production et Coolify expose bien une variable `INTAKE_SEAL_KEY` au service,
+sans que sa valeur ait été imprimée.
 
-**INCIDENT SOP-001** : une inspection Docker trop large a imprimé plusieurs
-variables sensibles du service Supabase MiroShark dans le transcript. Les
-credentials exposés doivent être considérés compromis et rotatés : mot de passe
-Postgres, secrets JWT/service-role/anon, identifiants MinIO/S3, secrets
-Logflare/Supavisor/PGMeta et identifiants dashboard visibles dans cette sortie.
-Ne pas considérer la clôture opérationnelle définitive tant que cette rotation
-n’est pas achevée et les services dépendants redéployés.
+**INCIDENT SOP-001** : une inspection Docker trop large a imprimé dans le
+transcript plusieurs variables sensibles de Supabase MiroShark **et de services
+d’autres projets inclus dans la même sortie**. Toute valeur effectivement
+imprimée doit être considérée compromise et rotatée, sans limiter le périmètre à
+MiroShark : mots de passe, clés JWT/API/service-role/anon, identifiants MinIO/S3,
+secrets Logflare/Supavisor/PGMeta, dashboard et credentials applicatifs visibles.
+Ne pas considérer la clôture opérationnelle définitive tant que la rotation
+exhaustive, la mise à jour des consommateurs et leur redéploiement ne sont pas
+achevés et recertifiés.

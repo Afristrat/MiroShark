@@ -74,11 +74,13 @@ Par conséquent :
 ## DETTES ET RISQUES ENCORE OUVERTS
 
 - **P0 sécurité — rotation SOP-001 obligatoire** : le 2026-07-17, une sortie
-  `docker inspect` a exposé dans le transcript des credentials du service
-  Supabase MiroShark. Rotater l’ensemble du périmètre listé dans
-  `.ralph/progress.md`, mettre à jour Coolify, puis redéployer et retester.
+  `docker inspect` a exposé dans le transcript des credentials de Supabase
+  MiroShark et de services d’autres projets inclus dans la même sortie. Rotater
+  exhaustivement toutes les valeurs imprimées listées par l’incident dans
+  `.ralph/progress.md`, mettre à jour chaque consommateur, puis redéployer et
+  recertifier.
 
-- **17 stories Ralph restent à `passes: false`.**
+- **15 stories Ralph restent à `passes: false`.**
 - Les 298 warnings ESLint historiques et les warnings Vite de chunks/compression ont été
   éliminés dans la recertification locale. Les notes mypy `annotation-unchecked` ne sont
   pas des erreurs, mais US-212b reste le chantier structurel de typage complet.
@@ -90,12 +92,11 @@ Par conséquent :
 
 ### P0 Intake Qualification
 
-- **US-IQ-05 — porte AAR « Testez-nous sur du connu »** ; dépendance satisfaite : US-IQ-01.
-  - Scellement de l’issue réelle.
-  - Preuve qu’elle n’entre ni dans le contexte agent ni dans le pré-seed.
-  - Parcours complet trilingue et Playwright.
+- **US-IQ-05 — clôturée** : porte AAR scellée, non-fuite prouvée et parcours
+  trilingue certifié en production.
+- **US-IQ-07 — clôturée** : pré-seed éditable, traçabilité durable et test partagé
+  de non-divulgation certifiés en production.
 - **US-IQ-06 — vue admin enrichie** ; dépendance satisfaite : US-IQ-03.
-- **US-IQ-07 — pré-seed depuis le brief** ; dépendance satisfaite : US-IQ-03.
 
 ### Lot prompts et simulation
 
@@ -106,21 +107,20 @@ Par conséquent :
 
 ## ENCHAÎNEMENT HARD THINGS FIRST RECOMMANDÉ
 
-1. **Committer et pousser atomiquement la recertification**, puis vérifier que le remote
-   pointe sur ce nouveau HEAD et que le déploiement correspondant est sain.
-2. **US-IQ-05 — porte AAR scellée**.
-   - C’est le risque P0 le plus difficile : confidentialité, scellement cryptographique, non-fuite vers deux consommateurs et preuve E2E.
-3. **US-IQ-07 — pré-seed depuis le brief**.
-   - À enchaîner immédiatement après IQ-05 pour fermer la frontière de non-divulgation de `aar_known_outcome` avec un test partagé.
-4. **US-IQ-06 — vue admin enrichie**.
-5. **US-231 — prompts d’arènes L99**, puis **US-225** et **US-229** selon la valeur produit recherchée.
+1. **Rotation SOP-001 exhaustive**, mise à jour des consommateurs, redéploiement
+   et recertification : c’est désormais le risque P0 réel et il traverse plusieurs
+   services/projets.
+2. **US-IQ-06 — vue admin enrichie**, dernière story P0 du lot Intake Qualification.
+3. **US-231 — prompts d’arènes L99**, puis **US-225** et **US-229** selon la valeur produit recherchée.
 
 ## PROCHAINE ACTION EXACTE
 
-La recertification locale est terminée. La prochaine action technique est de la rendre
-permanente par commit/push et preuve du déploiement, puis de démarrer **US-IQ-05** comme
-première story fonctionnelle — avant US-231.
+La recertification, US-IQ-05 et US-IQ-07 sont poussées et certifiées sur l’image
+de production `934c2faf6639` : backend **2 324/0**, Playwright production **114/0**
+(60 et 1 tests ignorés respectivement), `/` et `/health` à 200. La prochaine
+action exacte est la **rotation SOP-001 exhaustive** ; seulement ensuite,
+enchaîner sur **US-IQ-06**.
 
 ## SIGNAL DE COMPLÉTION
 
-Ne jamais émettre `<promise>COMPLETE</promise>` tant que les 17 stories restantes ne sont pas toutes à `passes: true` et que les quality gates complets n’ont pas été vérifiés sur `main` au même HEAD.
+Ne jamais émettre `<promise>COMPLETE</promise>` tant que les 15 stories restantes ne sont pas toutes à `passes: true` et que les quality gates complets n’ont pas été vérifiés sur `main` au même HEAD.
