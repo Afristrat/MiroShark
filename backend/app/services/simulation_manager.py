@@ -596,12 +596,12 @@ class SimulationManager:
             # Update status
             state.status = SimulationStatus.READY
             self._save_simulation_state(state)
-            
+
             logger.info(f"Simulation preparation complete: {simulation_id}, "
                        f"entities={state.entities_count}, profiles={state.profiles_count}")
-            
+
             return state
-            
+
         except Exception as e:
             logger.error(f"Simulation preparation failed: {simulation_id}, error={str(e)}")
             import traceback
@@ -610,6 +610,15 @@ class SimulationManager:
             state.error = str(e)
             self._save_simulation_state(state)
             raise
+        finally:
+            # US-221 : synchronise le répertoire vers Supabase Storage à la
+            # fin de la phase de préparation (succès ou échec — tout ce qui a
+            # été produit doit survivre à un volume Coolify vidé). Best-effort,
+            # ne lève jamais (cf. artifact_storage.sync_directory_to_storage).
+            from . import artifact_storage
+            artifact_storage.sync_directory_to_storage(
+                simulation_id, self._get_simulation_dir(simulation_id, create=False),
+            )
     
     def get_simulation(self, simulation_id: str) -> Optional[SimulationState]:
         """Get simulation state"""

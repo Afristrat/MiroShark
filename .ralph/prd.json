@@ -4896,13 +4896,25 @@
         "Tests unitaires du module de persistance (upload, download, fallback) verts",
         "Aucune régression : suite pytest complète verte"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [],
       "metadata": {
         "estimated_hours": 8,
         "priority": "P0",
-        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md"
-      }
+        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md",
+        "files_touched": [
+          "backend/app/services/artifact_storage.py",
+          "backend/app/services/simulation_manager.py",
+          "backend/app/services/simulation_runner.py",
+          "backend/app/services/report_agent.py",
+          "backend/tests/test_unit_artifact_storage.py",
+          "backend/tests/test_unit_artifact_storage_wiring.py",
+          "supabase/migrations/20260716_004_simulation_artifacts.sql",
+          "docs/02-data-dictionary.md"
+        ],
+        "note": "Migration 004 (bucket simulation-artifacts + table) jouée et vérifiée en prod le 2026-07-17 (objets confirmés par information_schema + storage.buckets sur supabase-db-dgybi9q5e2ggkjtaxlu2ukai). Écriture câblée à 3 checkpoints : fin de SimulationManager.prepare_simulation (finally, succès ET échec — best-effort), fin de SimulationRunner._monitor_simulation (finally, couvre complétion naturelle/échec/arrêt manuel via stop_simulation puisque les trois convergent sur ce thread), fin de ReportAgent.generate_report (après save_report). Lecture rétro-compatible : chokepoint ensure_simulation_dir_hydrated déjà câblé sur ~35 sites lors du WIP précédent (simulation.py, simulation_manager._load_simulation_state, graph_tools.py, report_pdf/loader.py, observability.py, calibration.py) + AJOUTÉ cette session sur SimulationRunner.start_simulation (gap réel trouvé : /start lisait simulation_config.json sans jamais tenter l'hydratation — un redeploy entre /prepare et /start aurait fait échouer /start avec un faux 'config manquante' malgré une préparation durablement persistée). Scripts subprocess (scripts/run_*_simulation.py, 8 occurrences) et SSE tailer live délibérément NON couverts (streaming temps réel / process séparé, hors du design 'sync en fin de phase' — à concevoir séparément si besoin confirmé). 17 tests nouveaux : 12 unitaires artifact_storage.py (upload/index/résilience fichier-par-fichier/Supabase absent + round-trip AC2 complet sync→suppression locale→hydratation), 5 de câblage (prepare succès/échec, monitor complétion/échec, start_simulation rematérialisation). Le 3e checkpoint d'écriture (generate_report) n'est PAS testé end-to-end (pipeline LLM/ReAct trop coûteux à mocker pour le risque d'une ligne d'appel vers une fonction déjà testée isolément) — décision de portée documentée dans le test. Suite complète : 2309 passed, 0 failed, 42 skipped (attendus), 18 deselected. ruff + mypy 0 erreur."
+      },
+      "completedAt": "2026-07-17T00:55:00Z"
     },
     {
       "id": "US-222",
@@ -4932,7 +4944,7 @@
           "backend/tests/test_unit_simulation_manager_ownership.py",
           "docs/02-data-dictionary.md"
         ],
-        "note": "arena_registry.py = source unique (ARENA_STATE_FLAGS) remplaçant l'enum en dur sur 4 sites de simulation.py. Validation croisée /start ajoutée (PLATFORM_NOT_ENABLED 400, angle mort documenté fermé). Colonne enabled_platforms peuplée à la création (org_id requis, même périmètre que le reste de simulation_ownership) — migration créée, PAS encore jouée en prod (convention projet). 14 tests nouveaux, pytest 2283 passed 42 skipped 0 failed."
+        "note": "arena_registry.py = source unique (ARENA_STATE_FLAGS) remplaçant l'enum en dur sur 4 sites de simulation.py. Validation croisée /start ajoutée (PLATFORM_NOT_ENABLED 400, angle mort documenté fermé). Colonne enabled_platforms peuplée à la création (org_id requis, même périmètre que le reste de simulation_ownership) — migration jouée et vérifiée en prod le 2026-07-16 (colonne confirmée par information_schema.columns sur supabase-db-dgybi9q5e2ggkjtaxlu2ukai, app prod déployée sur ce commit exact). 14 tests nouveaux, pytest 2283 passed 42 skipped 0 failed."
       },
       "completedAt": "2026-07-16T20:35:28Z"
     },
@@ -4961,7 +4973,7 @@
           "backend/tests/test_unit_prompt_registry.py",
           "docs/02-data-dictionary.md"
         ],
-        "note": "Table simulation_prompts + RLS + seed v1 (migration NON encore jouée en prod — à exécuter par Amine via SQL Editor, cf. convention établie). PromptRegistry.get()/invalidate() : cache in-process, fallback silencieux (SupabaseConfigError + toute exception -> None). Builder Polymarket branché en pilote (1er prompt réel résolu via le registre, fallback identique au comportement actuel si table vide/absente). 11 tests unitaires nouveaux, pytest 2269 passed 42 skipped 0 failed."
+        "note": "Table simulation_prompts + RLS + seed v1 — migration jouée et vérifiée en prod le 2026-07-16 (table + seed 'arena.polymarket.system' v1 is_active=true confirmés par requête directe sur supabase-db-dgybi9q5e2ggkjtaxlu2ukai, app prod déployée sur ce commit exact). PromptRegistry.get()/invalidate() : cache in-process, fallback silencieux (SupabaseConfigError + toute exception -> None). Builder Polymarket branché en pilote (1er prompt réel résolu via le registre, fallback identique au comportement actuel si table vide/absente). 11 tests unitaires nouveaux, pytest 2269 passed 42 skipped 0 failed."
       },
       "completedAt": "2026-07-16T20:17:24Z"
     },
@@ -5078,7 +5090,7 @@
           "backend/tests/test_unit_esco_client.py",
           "docs/02-data-dictionary.md"
         ],
-        "note": "get_occupation_profile(query, lang, client=None) : cache Supabase (label,lang) normalisé d'abord, API ESCO publique sinon (urllib stdlib, 2 temps search->resource, adapté du script de référence prouvé esco-role.py testé FR/AR 2026-07-05). Fallback silencieux total. 9 tests unitaires verts. Suite complète 2291 passed 42 skipped — 1 flaky pre-existant (test_md_hash_stable_with_deterministic_enricher, app/services/report_pdf/renderer.py, PDF pipeline, zero reference croisee avec esco_client.py) confirme recidiver 2x cette session apres avoir ete propre sur US-212/223/222 -- isole = vert a chaque fois. Cause racine exacte NON investiguee (hors scope US-228) -- juste confirme non lie et non bloquant. Severite (recidive x2) tracee dans progress.md pour visibilite future."
+        "note": "Migration occupation_profiles jouée et vérifiée en prod le 2026-07-16 (table confirmée par information_schema.tables sur supabase-db-dgybi9q5e2ggkjtaxlu2ukai, app prod déployée sur ce commit exact). get_occupation_profile(query, lang, client=None) : cache Supabase (label,lang) normalisé d'abord, API ESCO publique sinon (urllib stdlib, 2 temps search->resource, adapté du script de référence prouvé esco-role.py testé FR/AR 2026-07-05). Fallback silencieux total. 9 tests unitaires verts. Suite complète 2291 passed 42 skipped — 1 flaky pre-existant (test_md_hash_stable_with_deterministic_enricher, app/services/report_pdf/renderer.py, PDF pipeline, zero reference croisee avec esco_client.py) confirme recidiver 2x cette session apres avoir ete propre sur US-212/223/222 -- isole = vert a chaque fois. Cause racine exacte NON investiguee (hors scope US-228) -- juste confirme non lie et non bloquant. Severite (recidive x2) tracee dans progress.md pour visibilite future."
       },
       "completedAt": "2026-07-16T20:57:28Z"
     },

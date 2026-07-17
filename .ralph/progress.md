@@ -52,6 +52,110 @@ curl -s "https://prospectives.ai-mpower.com/api/simulation/<id>/config/realtime"
 
 ## Log d'itérations
 
+### 2026-07-17 — US-221 Persistance durable des artefacts CLÔTURÉE (ADR-005)
+
+- **Statut** : passes:true. Suite complète 2309 passed, 0 failed, 42 skipped (attendus),
+  18 deselected. ruff + mypy 0 erreur. 17 tests nouveaux (2292 → 2309).
+- **Écriture câblée à 3 checkpoints** (tous en thread d'arrière-plan, jamais dans le
+  thread HTTP Werkzeug — vérifié avant câblage) :
+  - `SimulationManager.prepare_simulation` : `finally` global, best-effort sur succès
+    ET échec — ce qui a été produit doit survivre même si la préparation plante en
+    cours de route.
+  - `SimulationRunner._monitor_simulation` : `finally`, APRÈS fermeture des handles de
+    log (pour que `simulation.log` soit flush avant l'upload). Couvre complétion
+    naturelle, échec, ET arrêt manuel via `stop_simulation` — les trois convergent sur
+    ce même thread puisqu'il détecte la fin du process dans tous les cas.
+  - `ReportAgent.generate_report` : après `ReportManager.save_report(report)` (succès
+    uniquement — la clôture de rapport en échec n'a pas semblé justifier le même
+    traitement que les 2 checkpoints précédents, scope volontairement plus restreint).
+- **Gap réel trouvé et fermé côté lecture** : `SimulationRunner.start_simulation`
+  lisait `simulation_config.json` directement sans jamais appeler
+  `ensure_simulation_dir_hydrated` — un redeploy Coolify entre `/prepare` et `/start`
+  aurait fait échouer `/start` avec un faux "config manquante" malgré une préparation
+  réussie et durablement persistée. Câblé juste avant la vérification d'existence du
+  fichier config (simulation_runner.py, dans `start_simulation`).
+- **Non retouché, scope confirmé correct** : les ~35 sites de lecture déjà câblés lors
+  du WIP précédent (simulation.py ~27, `_load_simulation_state` chokepoint,
+  graph_tools.py, report_pdf/loader.py, observability.py, calibration.py). Scripts
+  subprocess (`scripts/run_*_simulation.py`, 8 occurrences) et le tailer SSE live
+  délibérément NON couverts — process séparés / streaming temps réel, hors du design
+  "sync en fin de phase" ; à concevoir séparément si un besoin réel se confirme.
+- **Tests** (`test_unit_artifact_storage.py`, 12 tests ; `test_unit_artifact_storage_wiring.py`,
+  5 tests) :
+  - Module isolé : upload + indexation, résilience Supabase absent, résilience à
+    l'échec d'un fichier individuel (les autres continuent), `is_durably_persisted`,
+    `ensure_simulation_dir_hydrated` (no-op si contenu local, résilience, rematérialisation
+    réelle). **Round-trip AC2 complet** : sync → suppression réelle du dossier local
+    (`shutil.rmtree`) → hydratation → contenu identique reconstruit. C'est la preuve
+    directe de l'AC "après suppression simulée du dossier local, ça fonctionne toujours".
+  - Câblage : `prepare_simulation` appelle sync même en échec (branche "0 entité" existante
+    ET exception levée) ; `_monitor_simulation` appelle sync en complétion ET en échec ;
+    `start_simulation` rematérialise réellement un fichier depuis un client Supabase
+    factice quand le dossier local est totalement absent, puis démarre normalement.
+  - **Piège rencontré** : `push_notification_service` importe `fcntl` (POSIX-only,
+    absent sous Windows) — ne pas le mocker par import direct en tête de fichier de
+    test (casse la collecte pytest sous Windows), le SUT l'encapsule déjà dans un
+    `try/except Exception` donc le `ModuleNotFoundError` est avalé nativement.
+  - **Piège rencontré (race condition)** : `start_simulation` démarre un VRAI thread
+    daemon (`_monitor_simulation`) qui mute le même objet `SimulationRunState` que
+    celui retourné au test — sans mocker `threading.Thread`, le thread réel course
+    contre les assertions du test (comportement non déterministe observé : le state
+    passait de RUNNING à COMPLETED puis FAILED via la logique de réconciliation
+    d'orphelins pendant que le test tournait encore). Fix : mocker `threading.Thread`
+    pour ce test précis (le comportement de `_monitor_simulation` est déjà couvert par
+    ailleurs).
+  - **Décision de portée assumée** : le 3ᵉ checkpoint d'écriture (`generate_report`)
+    n'est PAS testé end-to-end — la méthode mobilise un pipeline LLM/ReAct multi-phases
+    (planning, génération de sections en parallèle via ThreadPoolExecutor, synthèse)
+    dont le mock complet aurait été disproportionné par rapport au risque réel d'une
+    ligne d'appel supplémentaire vers une fonction déjà testée en isolation et qui ne
+    lève jamais. Documenté dans la docstring du fichier de test.
+- **`docs/02-data-dictionary.md`** : section `simulation_artifacts` ajoutée (table
+  manquante depuis le commit WIP — gap de la règle CLAUDE.md "documenter au commit de
+  la migration" comblé a posteriori), compteur RLS 17→18 tables, note sur le payload
+  filesystem mise à jour pour refléter l'état réel (lecture/écriture partiellement
+  câblées, scripts subprocess non couverts).
+- **`.ralph/prd.json`** : US-221 passes:true, `completedAt` renseigné, `files_touched`
+  + note détaillée (mêmes faits que ci-dessus, condensés).
+
+### 2026-07-16 (session fraîche, suite de la passation ~22h20) — Migrations US-222/223/228/221 jouées et vérifiées en prod
+
+- **Contexte** : reprise de session sur demande Amine « migration réussie priorité absolue,
+  les 3 US juste après ». Les 4 migrations (`001_simulation_prompts`, `002_enabled_platforms`,
+  `003_occupation_profiles`, `004_simulation_artifacts`) étaient poussées/committées mais
+  jamais jouées en base Supabase prod (cf. passation).
+- **Ciblage conteneur** : après un incident sentinelle (grep `docker ps | grep supabase-db`
+  trop générique, a pu cibler le conteneur d'un AUTRE projet — cf. mémoire Claude
+  `incident_nahda_secret_leak_20260716`), le conteneur exact a été reconfirmé par
+  `docker ps --filter name=supabase-db-dgybi9q5e2ggkjtaxlu2ukai` + labels Coolify
+  (`coolify.projectName: miroshark`) AVANT toute exécution SQL.
+- **Exécution** : les 4 fichiers `.sql` joués un par un via `docker exec -i
+  supabase-db-dgybi9q5e2ggkjtaxlu2ukai psql -U postgres -d postgres -v ON_ERROR_STOP=1 <
+  fichier` (stdin, pas de heredoc). Sortie DDL propre sur les 4 (`CREATE TABLE`, `ALTER
+  TABLE`, `CREATE POLICY`, `INSERT 0 1` pour le seed pilote US-223, `INSERT 0 1` pour le
+  bucket Storage US-221). Aucune erreur (`ON_ERROR_STOP=1` n'a jamais interrompu).
+- **Vérification fraîche indépendante** (pas juste l'écho DDL) : requête directe
+  `information_schema.tables`/`columns` + `storage.buckets` confirme les 3 tables
+  (`simulation_prompts`, `occupation_profiles`, `simulation_artifacts`), la colonne
+  `enabled_platforms` et le bucket `simulation-artifacts` tous présents.
+- **App prod confirmée sur le bon commit** : `docker ps --filter
+  name=u6pn5mr2pgi88s13un55pkzb` → image taguée exactement `c342495...` (= `origin/main`
+  HEAD au moment du check) — le code qui lit/écrit ces tables est bien celui qui tourne.
+  Logs des 10 dernières minutes post-migration : zéro erreur/traceback.
+- **Effet** : US-222, US-223, US-228 passent de « code vert, DB inerte » à
+  **fonctionnellement live en prod**. `prd.json` mis à jour (notes des 3 stories) pour
+  refléter la migration jouée — ne plus lire l'ancienne mention « PAS encore jouée en
+  prod » comme état actuel, elle est maintenant fausse/obsolète.
+- **US-221 débloquée pour la suite** : le bucket `simulation-artifacts` + la table
+  `simulation_artifacts` existent maintenant réellement en prod — la tâche #62 (câblage de
+  l'écriture aux checkpoints, cf. passation ~22h20) peut désormais être testée en conditions
+  réelles dès qu'elle sera codée. Avant cette migration, tout test aurait échoué faute de
+  cible Storage existante.
+- **Incident annexe** : sentinelle secrets a re-déclenché 4× sur `NAHJ_SUPABASE_POSTGRES_DB`
+  (secret d'un autre projet, Nahda) malgré un conteneur cible confirmé correct — faux positif
+  quasi certain sur la chaîne générique `postgres` (nom de base par défaut). Amine informé,
+  pas de rotation demandée. Détail complet dans la mémoire Claude Code (pas dupliqué ici).
+
 ### 2026-07-09 — Fix bloquant Checkout Stripe self-service (régression US-205)
 
 - **Symptôme signalé par Amine en usage réel** : clic sur un CTA d'achat self-service

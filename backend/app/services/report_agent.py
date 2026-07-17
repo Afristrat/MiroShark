@@ -3054,6 +3054,16 @@ Write in the same analytical style as the report. Use **bold** for emphasis. Do 
                 report_id, "completed", 100, "Report generation complete",
                 completed_sections=completed_section_titles
             )
+
+            # US-221 : synchronise le répertoire de simulation vers Supabase
+            # Storage à la clôture du rapport (dernier des 3 points de
+            # contrôle ADR-005 : prepare, run, rapport). Best-effort, ne
+            # lève jamais.
+            if self.simulation_id:
+                from . import artifact_storage
+                artifact_storage.sync_directory_to_storage(
+                    self.simulation_id, self._get_simulation_dir(),
+                )
             
             if progress_callback:
                 progress_callback("completed", 100, "Report generation complete")

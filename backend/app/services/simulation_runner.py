@@ -498,8 +498,15 @@ class SimulationRunner:
         
         # Load simulation config
         sim_dir = os.path.join(cls.RUN_STATE_DIR, simulation_id)
+        # US-221 : rematérialise depuis Supabase Storage si le volume local
+        # (éphémère Coolify) a été vidé entre /prepare et /start — sans ce
+        # chokepoint, un redeploy entre les deux ferait échouer /start avec
+        # un faux "config manquante" malgré une préparation réussie et
+        # durablement persistée.
+        from . import artifact_storage
+        artifact_storage.ensure_simulation_dir_hydrated(simulation_id, sim_dir)
         config_path = os.path.join(sim_dir, "simulation_config.json")
-        
+
         if not os.path.exists(config_path):
             raise ValueError("Simulation config does not exist, please call /prepare endpoint first")
         
@@ -849,7 +856,16 @@ class SimulationRunner:
                 except Exception:
                     pass
                 cls._stderr_files.pop(simulation_id, None)
-    
+
+            # US-221 : synchronise le répertoire vers Supabase Storage à la
+            # fin du run (complétion naturelle, échec, ou arrêt manuel via
+            # stop_simulation — les trois convergent ici puisque ce thread
+            # détecte la fin du process dans tous les cas). Placé APRÈS la
+            # fermeture des handles de log pour que simulation.log soit
+            # entièrement flush avant l'upload. Best-effort, ne lève jamais.
+            from . import artifact_storage
+            artifact_storage.sync_directory_to_storage(simulation_id, sim_dir)
+
     @classmethod
     def _read_action_log(
         cls, 

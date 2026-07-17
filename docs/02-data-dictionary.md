@@ -292,9 +292,31 @@ réseau → `None` journalisé (jamais d'exception — persona généré sans bl
 RLS : lecture `authenticated` (données non sensibles, taxonomie ESCO publique) ; écriture
 (insert/update/delete) réservée `is_super_admin()`.
 
+## `simulation_artifacts`
+ADR-005 (migration 20260716_004) — index requêtable des artefacts de simulation
+synchronisés vers le bucket Storage privé `simulation-artifacts` (US-221). La source de
+vérité binaire est le bucket ; cette table permet de savoir SANS lister le bucket quels
+fichiers existent durablement pour une simulation. Design « hydratation de répertoire » :
+un objet Storage par fichier local, sous le préfixe `simulations/<simulation_id>/<chemin
+relatif>`. Écrit par `sync_directory_to_storage()`, lu par `ensure_simulation_dir_hydrated()`
+et `is_durably_persisted()` (`backend/app/services/artifact_storage.py`) — jamais
+d'exception propagée, Supabase indisponible = comportement filesystem pur inchangé.
+| Colonne | Type | Contraintes | Description | PII |
+|---|---|---|---|---|
+| id | uuid | pk, default gen_random_uuid() | | non |
+| simulation_id | text | not null | unique avec (simulation_id, relative_path) | non |
+| relative_path | text | not null | chemin relatif au dossier de simulation (ex. state.json, twitter/actions.jsonl) | non |
+| storage_path | text | not null | chemin complet dans le bucket (simulations/<simulation_id>/<relative_path>) | non |
+| size_bytes | bigint | not null, default 0 | | non |
+| synced_at | timestamptz | not null, default now() | | non |
+
+RLS : toutes opérations réservées `is_super_admin()`, aucune policy anon (backend lit/écrit
+via service_role, contourne RLS — même pattern que `simulation_prompts`). Bucket Storage
+`simulation-artifacts` : privé, accès exclusivement service_role.
+
 ## Conventions transverses
 
-- **RLS activée sur les 17 tables** (règle absolue) — état vérifié dans les migrations.
+- **RLS activée sur les 18 tables** (règle absolue) — état vérifié dans les migrations.
 - Toute table porte `created_at` ; soft-delete : **non** (suppression cascade par org) —
   réexaminer en ADR si un client exige la rétention.
 - Colonnes PII (marquées **oui** en gras) → reprises dans `docs/07-legal-compliance.md`.
@@ -307,8 +329,14 @@ RLS : lecture `authenticated` (données non sensibles, taxonomie ESCO publique) 
     Ne JAMAIS s'appuyer sur cette fonction.
   - Policies `FOR ALL TO authenticated` sur report_deliveries/report_downloads : un
     org-admin peut théoriquement forger des lignes de tracking via un client Supabase.
-  - Le payload riche (devis, snapshots rapports, artefacts simulation) est
-    filesystem-only sur volume éphémère — source de vérité à migrer (ADR-005 → US-221).
+  - Le payload riche (devis, snapshots rapports) reste filesystem-only sur volume
+    éphémère. Les artefacts de simulation ont désormais un chemin de persistance durable
+    (`simulation_artifacts` + bucket Storage, ADR-005 → US-221) : lecture rétro-compatible
+    câblée sur les principaux chokepoints (`SimulationManager`, `SimulationRunner.start_simulation`,
+    `graph_tools.py`, `report_pdf/loader.py`, `observability.py`, `calibration.py`) et écriture
+    câblée en fin de préparation/run (`report_pdf` : câblage fait, non testé end-to-end —
+    cf. `.ralph/progress.md`). Les scripts subprocess (`scripts/run_*_simulation.py`) ne sont
+    PAS encore couverts côté lecture — risque résiduel documenté, pas encore fermé.
 
 ## Tables et colonnes PLANIFIÉES — chantier Simulations V2 (spec 2026-07-16, PAS ENCORE MIGRÉES)
 
