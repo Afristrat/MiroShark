@@ -40,7 +40,12 @@ def _atomic_write_json(path: str, data):
         raise
 
 
-def add_event(simulation_dir: str, event_text: str, round_num: int) -> Dict[str, Any]:
+def add_event(
+    simulation_dir: str,
+    event_text: str,
+    round_num: int,
+    submitted_by: str | None = None,
+) -> Dict[str, Any]:
     """
     Queue an event for injection at the next round boundary.
 
@@ -48,6 +53,7 @@ def add_event(simulation_dir: str, event_text: str, round_num: int) -> Dict[str,
         simulation_dir: Path to the simulation data directory.
         event_text: Plain-text description of the event.
         round_num: The round the event was submitted during.
+        submitted_by: Authenticated user identifier for the audit trail.
 
     Returns:
         The event record that was queued.
@@ -58,6 +64,7 @@ def add_event(simulation_dir: str, event_text: str, round_num: int) -> Dict[str,
         "submitted_at_round": round_num,
         "injected_at_round": None,
         "timestamp": datetime.now().isoformat(),
+        "submitted_by": submitted_by,
     }
 
     path = _events_path(simulation_dir)

@@ -16,6 +16,7 @@ from ..models.project import ProjectManager
 from ..models.task import TaskManager, TaskStatus
 from ..utils.logger import get_logger
 from ..utils.validation import validate_simulation_id
+from ..auth.decorators import authorize_simulation_admin, require_auth
 
 logger = get_logger('miroshark.api.report')
 
@@ -575,9 +576,22 @@ def download_report(report_id: str):
 
 
 @report_bp.route('/<report_id>', methods=['DELETE'])
+@require_auth
 def delete_report(report_id: str):
     """Delete report"""
     try:
+        report = ReportManager.get_report(report_id)
+        if report is None:
+            return jsonify({
+                "success": False,
+                "error_code": "REPORT_NOT_FOUND",
+                "error": f"Report not found: {report_id}"
+            }), 404
+
+        denied = authorize_simulation_admin(report.simulation_id)
+        if denied is not None:
+            return denied
+
         success = ReportManager.delete_report(report_id)
 
         if not success:

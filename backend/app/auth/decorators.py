@@ -273,6 +273,81 @@ def require_owner_or_admin(view_func: Callable) -> Callable:
     return require_org_membership(role_min="admin")(view_func)
 
 
+def authorize_simulation_admin(simulation_id: str):
+    """Autorise un super-admin ou un admin de l'organisation propriétaire.
+
+    Pré-condition : ``@require_auth`` a posé ``g.current_user``. Ce contrôle
+    est strictement fail-closed : une simulation sans ownership durable ou
+    une erreur Supabase n'autorise jamais une mutation.
+    """
+    from . import supabase_client as sbc
+
+    user = getattr(g, "current_user", None) or {}
+    user_id = user.get("id")
+    email = user.get("email")
+    if not user_id:
+        return _err("INVALID_TOKEN", "Token missing 'sub' claim.", 401)
+
+    if is_super_admin_email(email):
+        return None
+
+    try:
+        owner = sbc.get_simulation_owner(simulation_id)
+    except sbc.SupabaseConfigError:
+        return _err(
+            "SUPABASE_NOT_CONFIGURED",
+            "Backend Supabase admin client is not configured.",
+            503,
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.error(
+            "simulation mutation ownership check failed for sim=%s: %s",
+            simulation_id,
+            exc.__class__.__name__,
+        )
+        return _err(
+            "INTERNAL_AUTH_ERROR",
+            "Could not verify simulation ownership.",
+            500,
+        )
+
+    org_id = owner.get("org_id") if owner else None
+    if not org_id:
+        return _err(
+            "OWNERSHIP_REQUIRED",
+            "This simulation has no verified owning organization.",
+            403,
+        )
+
+    try:
+        role = sbc.get_user_role_in_org(str(user_id), str(org_id))
+    except sbc.SupabaseConfigError:
+        return _err(
+            "SUPABASE_NOT_CONFIGURED",
+            "Backend Supabase admin client is not configured.",
+            503,
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.error(
+            "simulation mutation role check failed for sim=%s: %s",
+            simulation_id,
+            exc.__class__.__name__,
+        )
+        return _err(
+            "INTERNAL_AUTH_ERROR",
+            "Could not verify organization role.",
+            500,
+        )
+
+    if not role_meets_minimum(role, "admin"):
+        return _err(
+            "ROLE_TOO_LOW",
+            "Administrator role in the owning organization is required.",
+            403,
+        )
+    return None
+
+
 # ─── Super-admin Bassira (US-095) ───────────────────────────────────────────
 
 def _super_admin_emails() -> Set[str]:

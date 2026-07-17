@@ -14,7 +14,7 @@ import traceback
 from typing import Any
 from datetime import datetime, timezone
 from functools import wraps
-from flask import request, jsonify, send_file, current_app
+from flask import request, jsonify, send_file, current_app, g
 
 from . import simulation_bp
 from ..utils.llm_client import create_smart_llm_client, create_llm_client
@@ -33,6 +33,7 @@ from ..utils.file_parser import FileParser
 from ..models.project import ProjectManager
 from ..services.web_enrichment import WebEnricher
 from ..auth import soft_check_self_service
+from ..auth.decorators import authorize_simulation_admin, require_auth
 
 logger = get_logger('miroshark.api.simulation')
 
@@ -8082,6 +8083,7 @@ def test_push_notification():
 # ============================================================
 
 @simulation_bp.route('/<simulation_id>/director/inject', methods=['POST'])
+@require_auth
 def inject_director_event(simulation_id: str):
     """
     Inject a breaking event into a running simulation (Director Mode).
@@ -8107,6 +8109,10 @@ def inject_director_event(simulation_id: str):
     from director_events import add_event, get_event_count
 
     try:
+        denied = authorize_simulation_admin(simulation_id)
+        if denied is not None:
+            return denied
+
         data = request.get_json() or {}
         event_text = (data.get('event_text') or '').strip()
 
@@ -8152,7 +8158,13 @@ def inject_director_event(simulation_id: str):
             }), 400
 
         current_round = state.current_round or 0
-        event = add_event(sim_dir, event_text, current_round)
+        actor_id = str((getattr(g, "current_user", None) or {}).get("id"))
+        event = add_event(
+            sim_dir,
+            event_text,
+            current_round,
+            submitted_by=actor_id,
+        )
 
         return jsonify({
             "success": True,
