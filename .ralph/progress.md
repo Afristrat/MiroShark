@@ -2341,3 +2341,24 @@ secrets Logflare/Supavisor/PGMeta, dashboard et credentials applicatifs visibles
 Ne pas considérer la clôture opérationnelle définitive tant que la rotation
 exhaustive, la mise à jour des consommateurs et leur redéploiement ne sont pas
 achevés et recertifiés.
+
+### 2026-07-17 — Rotation SOP-001, lot 1/9 : Supabase MiroShark — CLÔTURÉ
+
+Périmètre exact reconstruit depuis la sortie fautive, sans réimprimer les
+valeurs : neuf conteneurs Kong Supabase avaient été inspectés (MiroShark, Nahda,
+Assas, Qalem, Saqr, Rami, Taqwim, Sawt et Ania), soit 72 variables visibles.
+Les neuf stacks réutilisaient notamment les mêmes clés Supabase historiques ;
+la remédiation doit donc créer un jeu unique par stack.
+
+Lot MiroShark terminé : rotation des générateurs JWT, clés anon/service-role,
+mot de passe PostgreSQL, credentials Studio/MinIO, secrets Logflare,
+PGMeta/Supavisor/Vault ; propagation des copies littérales dans l’application ;
+synchronisation du mot de passe sur les neuf rôles PostgreSQL connectables ;
+redémarrage Supabase et redéploiement applicatif. Une première tentative SQL a
+échoué avant redémarrage et a été rollbackée ; la cause racine était la pluralité
+des rôles PostgreSQL partageant le même mot de passe, désormais traitée.
+
+Preuves fraîches : tous les conteneurs critiques MiroShark actifs et sains,
+`/health` = 200, API REST Supabase = 200 avec la nouvelle clé anon, et suite
+Playwright ciblée production **22 réussites, 0 échec**. Les huit autres stacks
+et les clés tierces imprimées, notamment Stripe Rami, restent à rotater.
