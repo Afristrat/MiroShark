@@ -158,6 +158,10 @@
       }
     },
     "console": {
+      "intakePreseedTitle": "Brief issu du devis",
+      "intakeForks": "Options contrefactuelles",
+      "intakePopulation": "Population cible",
+      "intakeAnchors": "Données d’ancrage disponibles",
       "seedsLabel": "01 / Graines de réalité",
       "seedsMeta": "Formats pris en charge : PDF, MD, TXT",
       "uploadTitle": "Déposez vos fichiers à téléverser",
@@ -1764,6 +1768,12 @@
     }
   },
   "quote": {
+    "aar": {
+      "cta": "Testez-nous sur une décision déjà tranchée",
+      "outcomeLabel": "Quelle a été l’issue réelle ?",
+      "outcomePlaceholder": "Décrivez le résultat effectivement observé…",
+      "sealNotice": "Cette issue est chiffrée dès l’envoi et reste inaccessible avant la restitution."
+    },
     "nav": {
       "backTitle": "Retour aux offres"
     },
@@ -2603,6 +2613,7 @@
     "back": "Retour"
   },
   "adminQuotes": {
+    "createSimulationFromQuote": "Créer une simulation depuis ce devis",
     "title": "Tous les devis reçus",
     "subtitle": "Console super-admin Bassira — pilotage du tunnel commercial.",
     "loading": "Chargement des devis…",

@@ -20,6 +20,10 @@
         <span>{{ $t('quote.trustBanner') }}</span>
       </div>
 
+      <router-link v-if="!isAar" :to="{ name: 'Quote', query: { entry: 'aar' } }" class="quote-secondary-btn">
+        {{ $t('quote.aar.cta') }}
+      </router-link>
+
       <!-- ───────────── Card centrée (parcours 3 temps A1-A8) ───────────── -->
       <!-- quote-card--wide (étape 4 uniquement) : l'écran Assistant a un
            layout chat + brief qui a besoin de bien plus que 640px, sinon le
@@ -120,7 +124,13 @@
             </span>
           </div>
 
-          <div class="quote-field-row">
+          <label v-if="isAar" class="quote-field-stitch">
+            <span class="quote-field-stitch-label">{{ $t('quote.aar.outcomeLabel') }} <span class="quote-required">*</span></span>
+            <textarea v-model.trim="form.aar_known_outcome" class="quote-input-stitch quote-textarea" rows="3" maxlength="1000" :placeholder="$t('quote.aar.outcomePlaceholder')"></textarea>
+            <span class="quote-field-hint">{{ $t('quote.aar.sealNotice') }}</span>
+          </label>
+
+          <div v-else class="quote-field-row">
             <label class="quote-field-stitch">
               <span class="quote-field-stitch-label">{{ $t('quote.temps1.a3.deadlineLabel') }}</span>
               <input
@@ -543,6 +553,7 @@ const trustItems = [
 
 const { t, locale } = useI18n()
 const route = useRoute()
+const isAar = computed(() => route.query.entry === 'aar')
 
 const currentStep = ref(1)
 // Retour depuis le redirect de succès Cal.com (US-IQ-04, branche entretien)
@@ -565,6 +576,7 @@ const form = reactive({
   a3_deadline_date: '',
   a3_overdue: false,
   a3_governance: '',
+  aar_known_outcome: '',
   // Temps 2 — le passé (A4-A5)
   a4_past_method: [],
   a5_past_gap: '',
@@ -597,7 +609,7 @@ const a1Valid = computed(() => form.a1_decision.trim().length >= 15)
 const a2Valid = computed(() => form.a2_options.filter((o) => o.trim()).length >= 2)
 const a7Valid = computed(() => form.a7_countries.length > 0 && form.a7_segment.trim().length > 0)
 
-const temps1Valid = computed(() => a1Valid.value && a2Valid.value)
+const temps1Valid = computed(() => a1Valid.value && a2Valid.value && (!isAar.value || !!form.aar_known_outcome.trim()))
 const temps3Valid = computed(
   () =>
     a7Valid.value &&
@@ -669,6 +681,7 @@ async function submit() {
     geo: form.a7_countries.map((c) => ({ country: c, segment: form.a7_segment.trim() })),
     data_assets: form.a8_data_assets,
   }
+  if (isAar.value) brief.aar_known_outcome = form.aar_known_outcome.trim()
 
   const payload = {
     full_name: form.full_name.trim(),
@@ -681,7 +694,7 @@ async function submit() {
   if (form.role.trim()) payload.role = form.role.trim()
 
   try {
-    const sessionRes = await startIntakeSession({ locale: locale.value || 'fr' })
+    const sessionRes = await startIntakeSession({ locale: locale.value || 'fr', entry_door: isAar.value ? 'aar' : 'standard' })
     const sessionId = sessionRes?.data?.session_id
     const formRes = await submitIntakeForm(sessionId, payload)
     quoteId.value = formRes?.data?.quote_id || ''

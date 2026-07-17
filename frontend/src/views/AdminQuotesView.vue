@@ -95,6 +95,14 @@
           </header>
 
           <div class="aq-modal-body">
+            <router-link
+              v-if="modal.quote?.intake?.session_id"
+              :to="{ name: 'Console', query: { intake_session_id: modal.quote.intake.session_id } }"
+              class="aq-action"
+              @click="closeModal"
+            >
+              {{ $t('adminQuotes.createSimulationFromQuote') }}
+            </router-link>
             <!-- Payload dump -->
             <section class="aq-modal-section">
               <h4>{{ $t('adminQuotes.table.contact') }} / {{ $t('adminQuotes.table.situation') }}</h4>

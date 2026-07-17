@@ -350,6 +350,9 @@ EUR
       >
         {{ $t('offers.help.cta') }}
       </router-link>
+      <router-link :to="{ name: 'Quote', query: { entry: 'aar' } }" class="offers-cta-strip-btn">
+        {{ $t('quote.aar.cta') }}
+      </router-link>
     </section>
   </div>
 </template>

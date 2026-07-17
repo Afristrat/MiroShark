@@ -310,6 +310,7 @@ def record_simulation_ownership(
     user_id: Optional[str] = None,
     package_id: Optional[str] = None,
     enabled_platforms: Optional[List[str]] = None,
+    intake_session_id: Optional[str] = None,
     client: Any = None,
 ) -> None:
     """Enregistre une simulation comme appartenant à une org.
@@ -334,6 +335,8 @@ def record_simulation_ownership(
         payload["package_id"] = package_id
     if enabled_platforms:
         payload["enabled_platforms"] = list(enabled_platforms)
+    if intake_session_id:
+        payload["intake_session_id"] = intake_session_id
     try:
         cli.table("simulation_ownership").insert(payload).execute()
     except Exception as exc:  # noqa: BLE001 — duplicate key, etc.

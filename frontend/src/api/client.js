@@ -465,6 +465,10 @@ export function fetchIntakePlaybook() {
   return client.get('/api/admin/quotes/intake/playbook')
 }
 
+export function fetchIntakePreseed(sessionId) {
+  return client.get(`/api/client/intake/${encodeURIComponent(sessionId)}/preseed`)
+}
+
 /**
  * POST /api/admin/quotes/intake/playbook — ajoute une correction.
  * Body : { situation_pattern, corrected_response }

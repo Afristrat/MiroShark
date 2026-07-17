@@ -100,6 +100,13 @@
               >
                 {{ $t('client.dashboard.quotes.cta.viewReport') }}
               </a>
+              <router-link
+                v-if="canOrderSelfService && q.intake_session_id"
+                :to="{ name: 'Console', query: { intake_session_id: q.intake_session_id } }"
+                class="dash-quote-cta"
+              >
+                {{ $t('adminQuotes.createSimulationFromQuote') }}
+              </router-link>
             </div>
           </article>
         </div>

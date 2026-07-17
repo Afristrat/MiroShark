@@ -2306,3 +2306,35 @@ production et n’a pas été autorisé pendant cette campagne en lecture seule.
 État de permanence : corrections et preuves documentées dans l’arbre local, non
 commitées/non poussées à ce stade. Prochaine action : commit/push atomique,
 vérification du déploiement, puis **US-IQ-05**.
+
+### 2026-07-17 — [US-IQ-05 + US-IQ-07] Porte AAR scellée et pré-seed — CLÔTURÉES
+
+US-IQ-05 : CTA trilingue sur `/devis` et `/offres`, `entry_door=aar`, A3
+remplacé par l’issue réelle. Le clair est chiffré par Fernet avec une clé dédiée
+`INTAKE_SEAL_KEY`, stocké hors du brief, et accompagné d’un engagement SHA-256.
+Absence de clé = échec fermé 503. Les colonnes de scellement sont présentes en
+production.
+
+US-IQ-07 : projection minimale et éditable `decision → scenario`, `options →
+counterfactual_forks`, `geo → target_population`, `data_assets →
+anchor_reminder`. Action disponible dans la console super-admin et dans le
+tableau client lorsque le self-service de l’organisation est activé. La colonne
+`simulation_ownership.intake_session_id` et son index sont présents en
+production. Le test partagé injecte un marqueur dans le scellé et prouve son
+absence du contexte agent comme du pré-seed.
+
+Gates : Ruff vert, mypy 0 erreur sur 116 fichiers, ESLint 0 erreur/warning,
+build Vite vert, tests ciblés backend 492/492 puis suite complète **2 324
+passed, 60 skipped, 0 failed**. E2E IQ-05 local réel : 1/1 vert. La suite
+Playwright locale : 112 réussites, 1 ignorée, 2 échecs non fonctionnels — un
+appel API nécessitant le backend absent du serveur preview et un sélecteur CTA
+devenu ambigu, ce dernier corrigé avant déploiement. La suite production doit
+être rejouée après déploiement.
+
+**INCIDENT SOP-001** : une inspection Docker trop large a imprimé plusieurs
+variables sensibles du service Supabase MiroShark dans le transcript. Les
+credentials exposés doivent être considérés compromis et rotatés : mot de passe
+Postgres, secrets JWT/service-role/anon, identifiants MinIO/S3, secrets
+Logflare/Supavisor/PGMeta et identifiants dashboard visibles dans cette sortie.
+Ne pas considérer la clôture opérationnelle définitive tant que cette rotation
+n’est pas achevée et les services dépendants redéployés.

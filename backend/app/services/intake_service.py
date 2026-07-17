@@ -25,6 +25,8 @@ persistante sur volume éphémère »). Une panne Supabase retourne 503.
 from __future__ import annotations
 
 import html
+import base64
+import hashlib
 import json
 import uuid
 from datetime import datetime, timezone
@@ -33,6 +35,7 @@ from urllib.parse import quote_plus, urlencode
 
 import jsonschema
 import requests
+from cryptography.fernet import Fernet
 
 from ..auth.supabase_client import SupabaseConfigError, get_default_super_admin_org_id, get_supabase_admin
 from ..config import Config
@@ -58,6 +61,16 @@ _MIN_OPTIONS = 2
 _MAX_OPTIONS = 4
 
 BRIEF_VERSION = "1"
+
+
+def _seal_aar_outcome(value: str) -> Tuple[str, str]:
+    """Chiffre l'issue AAR et retourne son engagement SHA-256 public."""
+    key = Config.INTAKE_SEAL_KEY
+    if not key:
+        raise RuntimeError("INTAKE_SEAL_KEY is not configured")
+    clear = value.strip().encode("utf-8")
+    fernet_key = base64.urlsafe_b64encode(hashlib.sha256(key.encode("utf-8")).digest())
+    return Fernet(fernet_key).encrypt(clear).decode("ascii"), hashlib.sha256(clear).hexdigest()
 
 
 def _err(code: str, message: str) -> Tuple[Optional[str], Optional[str]]:
@@ -221,7 +234,6 @@ def _build_brief(payload: Dict[str, Any]) -> Dict[str, Any]:
             if isinstance(e, dict) and e.get("country") and e.get("segment")
         ],
         "data_assets": [d for d in (brief_in.get("data_assets") or []) if d in _VALID_DATA_ASSETS],
-        "aar_known_outcome": (brief_in.get("aar_known_outcome") or "").strip() or None,
         "agent_insights": [],
         "brief_version": BRIEF_VERSION,
     }
@@ -244,6 +256,21 @@ def get_session(session_id: str, *, client: Any = None) -> Optional[Dict[str, An
     (ex. l'admin devis, pour exposer les sujets confidentiels flaggés)."""
     cli = client or get_supabase_admin()
     return _get_session(session_id, client=cli)
+
+
+def build_simulation_preseed(session: Dict[str, Any]) -> Dict[str, Any]:
+    """Projette le brief Intake vers la console sans jamais lire le scellé AAR."""
+    raw_brief = session.get("brief")
+    brief: Dict[str, Any] = raw_brief if isinstance(raw_brief, dict) else {}
+    geo = brief.get("geo") if isinstance(brief.get("geo"), list) else []
+    assets = brief.get("data_assets") if isinstance(brief.get("data_assets"), list) else []
+    return {
+        "intake_session_id": session.get("id"),
+        "scenario": brief.get("decision") or "",
+        "counterfactual_forks": list(brief.get("options") or []),
+        "target_population": geo,
+        "anchor_reminder": assets,
+    }
 
 
 def submit_form(
@@ -287,6 +314,17 @@ def submit_form(
         }
 
     brief = _build_brief(payload)
+    sealed_outcome = None
+    outcome_commitment = None
+    if session.get("entry_door") == "aar":
+        outcome = ((payload.get("brief") or {}).get("aar_known_outcome") or "").strip()
+        if not outcome:
+            return 400, {"success": False, "error_code": "AAR_OUTCOME_REQUIRED", "error": "The known outcome is required."}
+        try:
+            sealed_outcome, outcome_commitment = _seal_aar_outcome(outcome)
+        except RuntimeError:
+            logger.error("submit_form: INTAKE_SEAL_KEY missing for AAR session")
+            return 503, {"success": False, "error_code": "AAR_SEAL_UNAVAILABLE", "error": "The secure seal is unavailable."}
     quote_id = f"q_{uuid.uuid4().hex[:8]}"
 
     # Rétrocompatibilité admin console (US-IQ-01 acceptance criteria) :
@@ -328,6 +366,9 @@ def submit_form(
         "state": "form_submitted",
         "brief": brief,
     }
+    if sealed_outcome:
+        update_row["aar_outcome_sealed"] = sealed_outcome
+        update_row["aar_outcome_commitment"] = outcome_commitment
     if quote_linked:
         update_row["quote_id"] = quote_id
 
@@ -343,6 +384,7 @@ def submit_form(
             "session_id": session_id,
             "state": "form_submitted",
             "quote_id": quote_id if quote_linked else None,
+            "aar_outcome_commitment": outcome_commitment,
         },
     }
 

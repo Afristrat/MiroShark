@@ -73,6 +73,11 @@ Par conséquent :
 
 ## DETTES ET RISQUES ENCORE OUVERTS
 
+- **P0 sécurité — rotation SOP-001 obligatoire** : le 2026-07-17, une sortie
+  `docker inspect` a exposé dans le transcript des credentials du service
+  Supabase MiroShark. Rotater l’ensemble du périmètre listé dans
+  `.ralph/progress.md`, mettre à jour Coolify, puis redéployer et retester.
+
 - **17 stories Ralph restent à `passes: false`.**
 - Les 298 warnings ESLint historiques et les warnings Vite de chunks/compression ont été
   éliminés dans la recertification locale. Les notes mypy `annotation-unchecked` ne sont

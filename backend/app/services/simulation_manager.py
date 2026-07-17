@@ -264,6 +264,7 @@ class SimulationManager:
         org_id: Optional[str] = None,
         created_by: Optional[str] = None,
         package_id: Optional[str] = None,
+        intake_session_id: Optional[str] = None,
     ) -> SimulationState:
         """
         Create a new simulation.
@@ -328,6 +329,7 @@ class SimulationManager:
                     user_id=created_by,
                     package_id=package_id,
                     enabled_platforms=enabled_platforms,
+                    intake_session_id=intake_session_id,
                 )
                 logger.info(
                     "simulation_ownership recorded: %s -> org=%s, user=%s, package=%s, "

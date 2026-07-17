@@ -36,7 +36,7 @@ from ..auth.supabase_client import (
     publish_simulation as _publish_simulation,
     get_simulation_owner,
 )
-from ..services import quote_ownership as qo
+from ..services import intake_service, quote_ownership as qo
 from ..services.simulation_manager import SimulationManager
 from ..utils.logger import get_logger
 
@@ -182,6 +182,7 @@ def list_org_quotes():
             "package_id": r.get("package_id"),
             "status": r.get("status"),
             "created_at": r.get("created_at"),
+            "intake_session_id": (r.get("payload") or {}).get("intake_session_id"),
         }
         for r in rows
     ]
@@ -192,6 +193,18 @@ def list_org_quotes():
 
 
 # ─── /simulations (création) ────────────────────────────────────────────────
+
+@client_bp.route("/intake/<session_id>/preseed", methods=["GET"])
+@require_org_membership(role_min="member")
+def get_intake_preseed(session_id: str):
+    session = intake_service.get_session(session_id)
+    if not session:
+        return _err("SESSION_NOT_FOUND", "Intake session not found.", 404)
+    org = getattr(g, "current_org", None) or {}
+    if not session.get("quote_id") or qo.get_org_for_quote(session["quote_id"]) != org.get("id"):
+        return _err("FORBIDDEN", "This intake session does not belong to the current organization.", 403)
+    return jsonify({"success": True, "data": intake_service.build_simulation_preseed(session)}), 200
+
 
 @client_bp.route("/simulations", methods=["POST"])
 @require_org_membership(role_min="member")
@@ -234,6 +247,7 @@ def create_org_simulation():
             org_id=org_id,
             created_by=user_id,
             package_id=(body.get("package_id") or None),
+            intake_session_id=(body.get("intake_session_id") or None),
         )
     except Exception as exc:  # noqa: BLE001
         logger.error("create_org_simulation failed: %s", exc.__class__.__name__)

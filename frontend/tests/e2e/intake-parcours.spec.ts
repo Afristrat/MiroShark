@@ -88,6 +88,21 @@ test.describe('Parcours intake /devis — 3 temps (US-IQ-01)', () => {
   }
 })
 
+test('US-IQ-05 — porte AAR remplace A3 par l’issue réelle et reste en lecture seule', async ({ page }) => {
+  await gotoLocalized(page, '/devis?entry=aar', 'fr')
+  await expect(page.getByText('Quelle a été l’issue réelle ?')).toBeVisible()
+  await expect(page.getByText(/chiffrée dès l’envoi/)).toBeVisible()
+  await expect(page.locator('input[type="date"]')).toHaveCount(0)
+  await page.locator('.quote-step-content textarea').first().fill('Lancer la filiale Sénégal maintenant ou attendre 2027')
+  const options = page.locator('.quote-option-row input')
+  await options.nth(0).fill('Lancer maintenant')
+  await options.nth(1).fill('Attendre')
+  const next = page.locator('.quote-step-content button[type="submit"]')
+  await expect(next).toBeDisabled()
+  await page.locator('.quote-step-content textarea').nth(1).fill('La filiale a atteint son seuil de rentabilité en neuf mois.')
+  await expect(next).toBeEnabled()
+})
+
 test.describe('Écran Assistant — clôtures mockées (US-IQ-02 frontend)', () => {
   async function fillAndSubmit(page: import('@playwright/test').Page, locale: Locale) {
     await gotoLocalized(page, '/devis', locale)

@@ -174,7 +174,7 @@ def list_quotes_for_org(
         response = (
             cli.table("quote_ownership")
             .select(
-                "quote_id, org_id, customer_email, package_id, status, created_at"
+                "quote_id, org_id, customer_email, package_id, status, created_at, payload"
             )
             .eq("org_id", org_id)
             .order("created_at", desc=True)

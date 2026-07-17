@@ -51,7 +51,7 @@ test.describe('Tunnel commercial /offres → /devis', () => {
     await gotoLocalized(page, '/offres', 'fr')
 
     // Le CTA pré-footer pointe vers /devis sans package query.
-    const preFooterCta = page.locator('.offers-cta-strip-btn')
+    const preFooterCta = page.locator('.offers-cta-strip-btn[href="/devis"]')
     await preFooterCta.scrollIntoViewIfNeeded()
     await expect(preFooterCta).toBeVisible()
     await preFooterCta.click()

@@ -230,6 +230,39 @@ class TestSubmitFormValidation:
 
 
 class TestSubmitFormHappyPath:
+    def test_simulation_preseed_excludes_aar_seal(self):
+        marker = "SECRET_MARKER_ISSUE_REELLE_XYZ"
+        seed = svc.build_simulation_preseed({
+            "id": "sess-aar",
+            "brief": _valid_brief(),
+            "aar_outcome_sealed": marker,
+            "aar_outcome_commitment": "hash",
+        })
+        assert marker not in str(seed)
+        assert seed["scenario"] == _valid_brief()["decision"]
+        assert seed["counterfactual_forks"] == _valid_brief()["options"]
+        assert seed["target_population"] == _valid_brief()["geo"]
+        assert seed["anchor_reminder"] == _valid_brief()["data_assets"]
+
+    def test_aar_outcome_is_sealed_outside_brief(self, fake_client, monkeypatch):
+        monkeypatch.setattr(svc.Config, "INTAKE_SEAL_KEY", "test-only-seal-key")
+        sid = svc.start_session(entry_door="aar", client=fake_client)["session_id"]
+        marker = "SECRET_MARKER_ISSUE_REELLE_XYZ"
+        status, body = svc.submit_form(sid, _valid_payload(brief_overrides={"aar_known_outcome": marker}), client=fake_client)
+        assert status == 200
+        session = svc._get_session(sid, client=fake_client)
+        assert "aar_known_outcome" not in session["brief"]
+        assert marker not in session["aar_outcome_sealed"]
+        assert body["data"]["aar_outcome_commitment"] == session["aar_outcome_commitment"]
+        assert marker not in str(svc._build_agent_messages(session["brief"], "fr", [], "bonjour", tour_courant=1, budget_max=10))
+
+    def test_aar_fails_closed_without_seal_key(self, fake_client, monkeypatch):
+        monkeypatch.setattr(svc.Config, "INTAKE_SEAL_KEY", "")
+        sid = svc.start_session(entry_door="aar", client=fake_client)["session_id"]
+        status, body = svc.submit_form(sid, _valid_payload(brief_overrides={"aar_known_outcome": "Issue connue"}), client=fake_client)
+        assert status == 503
+        assert body["error_code"] == "AAR_SEAL_UNAVAILABLE"
+
     def test_valid_payload_transitions_to_form_submitted(self, fake_client):
         sid = svc.start_session(client=fake_client)["session_id"]
         status, body = svc.submit_form(sid, _valid_payload(), client=fake_client)

@@ -158,6 +158,10 @@
       }
     },
     "console": {
+      "intakePreseedTitle": "Quote brief",
+      "intakeForks": "Counterfactual options",
+      "intakePopulation": "Target population",
+      "intakeAnchors": "Available anchoring data",
       "seedsLabel": "01 / Reality Seeds",
       "seedsMeta": "Supported formats: PDF, MD, TXT",
       "uploadTitle": "Drop Files to Upload",
@@ -1764,6 +1768,12 @@
     }
   },
   "quote": {
+    "aar": {
+      "cta": "Test us on a decision already made",
+      "outcomeLabel": "What was the actual outcome?",
+      "outcomePlaceholder": "Describe the outcome that was actually observed…",
+      "sealNotice": "This outcome is encrypted on submission and remains inaccessible until restitution."
+    },
     "nav": {
       "backTitle": "Back to offers"
     },
@@ -2523,6 +2533,7 @@
     "back": "Back"
   },
   "adminQuotes": {
+    "createSimulationFromQuote": "Create a simulation from this quote",
     "title": "All received quote requests",
     "subtitle": "Bassira super-admin console — commercial pipeline overview.",
     "loading": "Loading quotes…",

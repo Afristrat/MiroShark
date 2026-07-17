@@ -4765,7 +4765,7 @@
         "Parcours complet porte 2 fonctionnel de bout en bout (formulaire adapté → agent → routage)",
         "pytest + ruff + npm build + Playwright (parcours porte 2) verts"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-IQ-01"
       ],
@@ -4773,9 +4773,10 @@
         "origin": "docs/intake/04-feature-backlog.md (US-IQ-05)",
         "adr": "docs/intake/08-decisions-log.md",
         "priority": "P0",
-        "council_20260716": "Fil rouge « premier cas Porte 2 réel au plus tôt » — arbitrage Chairman"
+        "council_20260716": "Fil rouge « premier cas Porte 2 réel au plus tôt » — arbitrage Chairman",
+        "implementation": "Issue chiffrée Fernet avec clé dédiée INTAKE_SEAL_KEY, stockage hors brief, engagement SHA-256, test partagé de non-fuite agent/pré-seed."
       },
-      "completedAt": null
+      "completedAt": "2026-07-17T20:00:00Z"
     },
     {
       "id": "US-IQ-06",
@@ -4814,7 +4815,7 @@
         "Le champ aar_known_outcome (porte 2) n'est JAMAIS lu par cette fonctionnalité (test unitaire partagé avec US-IQ-05)",
         "pytest + ruff + npm build verts"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-IQ-03"
       ],
@@ -4822,9 +4823,10 @@
         "origin": "docs/intake/04-feature-backlog.md (US-IQ-07)",
         "adr": "docs/intake/08-decisions-log.md",
         "priority": "P0",
-        "council_20260716": "Fil rouge « premier cas Porte 2 réel au plus tôt » — arbitrage Chairman"
+        "council_20260716": "Fil rouge « premier cas Porte 2 réel au plus tôt » — arbitrage Chairman",
+        "implementation": "Projection sûre decision/options/geo/data_assets, accès super-admin ou org self-service, traçabilité simulation_ownership.intake_session_id."
       },
-      "completedAt": null
+      "completedAt": "2026-07-17T20:00:00Z"
     },
     {
       "id": "US-212",

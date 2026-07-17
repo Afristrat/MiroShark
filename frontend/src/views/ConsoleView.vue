@@ -375,6 +375,7 @@ import {
   postResearchFromSeed,
 } from '../api/research'
 import { supabase } from '../lib/supabase'
+import { fetchIntakePreseed } from '../api/client'
 
 const { t, locale } = useI18n()
 const router = useRouter()
@@ -429,6 +430,20 @@ const fileInput = ref(null)
 
 // Pré-remplir l'URL si ?url= présent (depuis TrendingTopics ailleurs)
 onMounted(async () => {
+  const intakeSessionId = route.query.intake_session_id
+  if (typeof intakeSessionId === 'string' && intakeSessionId) {
+    try {
+      const res = await fetchIntakePreseed(intakeSessionId)
+      const seed = res?.data
+      if (seed?.scenario) formData.value.simulationRequirement = seed.scenario
+      if (seed) previewDoc.value = {
+        title: t('home.console.intakePreseedTitle'),
+        text: `${t('home.console.intakeForks')}: ${(seed.counterfactual_forks || []).join(' | ')}\n${t('home.console.intakePopulation')}: ${JSON.stringify(seed.target_population || [])}\n${t('home.console.intakeAnchors')}: ${(seed.anchor_reminder || []).join(', ')}`,
+      }
+    } catch (err) {
+      console.warn('[ConsoleView] intake pre-seed unavailable:', err)
+    }
+  }
   const preloadUrl = route.query.url
   if (preloadUrl && typeof preloadUrl === 'string') {
     urlInput.value = preloadUrl
