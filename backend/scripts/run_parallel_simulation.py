@@ -232,10 +232,36 @@ try:
     from wonderwall.social_agent.agent import SocialAgent
     from wonderwall.social_platform.config import UserInfo
     from wonderwall.simulations.polymarket import polymarket_simulation
+    from wonderwall.simulations.polymarket.prompts import PolymarketPromptBuilder
+    from wonderwall.simulations.social_media import reddit_simulation, twitter_simulation
+    from wonderwall.simulations.social_media.prompts import RedditPromptBuilder, TwitterPromptBuilder
 except ImportError as e:
     print(f"Error: Missing dependency {e}")
     print("Please install first: pip install -e ../wonderwall camel-ai")
     sys.exit(1)
+
+
+def _configure_arena_prompts(config: Dict[str, Any], simulation_dir: str) -> None:
+    """Bind the run's locale and arena topology to the three prompt builders."""
+    locale = config.get("locale", "fr")
+    event_config = config.get("event_config", {})
+    market_count = len(event_config.get("initial_markets", []))
+    enabled = [
+        label for label, filename in (
+            ("Twitter", "twitter_profiles.csv"),
+            ("Reddit", "reddit_profiles.json"),
+            ("Polymarket", "polymarket_profiles.json"),
+        ) if os.path.exists(os.path.join(simulation_dir, filename))
+    ]
+    platforms = ", ".join(enabled) or "cette arène"
+
+    # ponytail: état global par processus, à remplacer par un contexte explicite
+    # si un même processus exécute un jour plusieurs simulations simultanément.
+    twitter_simulation.prompt_builder = TwitterPromptBuilder(locale, platforms)
+    reddit_simulation.prompt_builder = RedditPromptBuilder(locale, platforms)
+    polymarket_simulation.prompt_builder = PolymarketPromptBuilder(
+        locale, market_count, platforms,
+    )
 
 
 # Available Twitter actions (excluding INTERVIEW, which can only be triggered manually via ManualAction)
@@ -2863,6 +2889,7 @@ async def main():
 
     config = load_config(args.config)
     simulation_dir = os.path.dirname(args.config) or "."
+    _configure_arena_prompts(config, simulation_dir)
     wait_for_commands = not args.no_wait
 
     # Initialize logging configuration (disable Wonderwall logs, clean up old files)

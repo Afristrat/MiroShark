@@ -251,8 +251,12 @@ simulation. Une ligne = une version IMMUABLE ; éditer crée une nouvelle versio
 activer = basculer `is_active`. Résolu par `PromptRegistry.get(key, locale)`
 (`backend/app/services/prompt_registry.py`), cache in-process, fallback sur le prompt
 codé en dur si table vide/injoignable — le moteur ne casse jamais à cause du registre.
-Pilote branché (US-223) : `arena.polymarket.system` (locale `en`, version 1 = seed du
-prompt actuellement codé dans `wonderwall/simulations/polymarket/prompts.py`).
+Prompts d'arènes branchés (US-231, migration `20260717_002`) :
+`arena.twitter.system`, `arena.reddit.system` et `arena.polymarket.system`, chacun en
+`fr` / `en` / `ar`. Les seeds L99 sont strictement identiques aux fallbacks Python ;
+Polymarket `en` passe en version 2, les huit nouvelles combinaisons commencent en
+version 1. Variables : `persona`, `platforms`, plus `demographics` pour Reddit et
+`risk_tolerance` / `market_count` pour Polymarket.
 | Colonne | Type | Contraintes | Description | PII |
 |---|---|---|---|---|
 | id | uuid | pk, default gen_random_uuid() | | non |
@@ -263,7 +267,7 @@ prompt actuellement codé dans `wonderwall/simulations/polymarket/prompts.py`).
 | content | text | not null | corps du prompt, placeholders `{var}` | non |
 | variables | jsonb | not null, default [] | liste informative des placeholders attendus | non |
 | is_active | boolean | not null, default false | une seule version active par (key, locale) — index partiel unique | non |
-| created_by | text | not null | email admin ou `system-seed-US-223` | non |
+| created_by | text | not null | email admin ou identifiant de seed système (`system-seed-US-223`, `system-seed-US-231`) | non |
 | created_at | timestamptz | not null, default now() | | non |
 
 RLS : toutes opérations réservées `is_super_admin()`, aucune policy anon (backend lit/

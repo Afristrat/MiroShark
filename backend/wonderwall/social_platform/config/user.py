@@ -29,6 +29,8 @@ class UserInfo:
     is_controllable: bool = False
 
     def to_custom_system_message(self, user_info_template: TextPrompt) -> str:
+        if self.profile is None:
+            raise ValueError("UserInfo.profile is required for a custom system message")
         required_keys = user_info_template.key_words
         info_keys = set(self.profile.keys())
         missing = required_keys - info_keys
@@ -42,10 +44,15 @@ class UserInfo:
         return user_info_template.format(**self.profile)
 
     def to_system_message(self) -> str:
-        if self.recsys_type != "reddit":
-            return self.to_twitter_system_message()
-        else:
-            return self.to_reddit_system_message()
+        # Les deux arènes sociales historiques passent encore par UserInfo ;
+        # déléguer ici évite un second chemin de prompt hors PromptRegistry.
+        from wonderwall.simulations.social_media import (
+            reddit_simulation,
+            twitter_simulation,
+        )
+
+        simulation = reddit_simulation if self.recsys_type == "reddit" else twitter_simulation
+        return simulation.prompt_builder.build_system_prompt(self)
 
     def to_twitter_system_message(self) -> str:
         name_string = ""

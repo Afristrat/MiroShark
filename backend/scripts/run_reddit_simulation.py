@@ -135,6 +135,8 @@ try:
         ManualAction,
         generate_reddit_agent_graph
     )
+    from wonderwall.simulations.social_media import reddit_simulation
+    from wonderwall.simulations.social_media.prompts import RedditPromptBuilder
 except ImportError as e:
     print(f"Error: Missing dependency {e}")
     print("Please install first: pip install camel-ai")
@@ -422,6 +424,9 @@ class RedditSimulationRunner:
         """
         self.config_path = config_path
         self.config = self._load_config()
+        reddit_simulation.prompt_builder = RedditPromptBuilder(
+            self.config.get("locale", "fr"), "Reddit",
+        )
         self.simulation_dir = os.path.dirname(config_path)
         self.wait_for_commands = wait_for_commands
         self.env = None

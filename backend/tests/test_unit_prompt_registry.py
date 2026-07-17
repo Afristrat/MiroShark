@@ -130,7 +130,7 @@ class TestPolymarketBuilderIntegration:
 
         user_info = SimpleNamespace(name="Karim", profile=None)
         out = PolymarketPromptBuilder().build_system_prompt(user_info)
-        assert out == "Registre actif : Your name is Karim.||moderate"
+        assert out == "Registre actif : Your name is Karim.|Background: Karim|non précisée"
 
     def test_falls_back_to_hardcoded_prompt_when_registry_empty(self, monkeypatch):
         from wonderwall.simulations.polymarket.prompts import PolymarketPromptBuilder
@@ -142,5 +142,5 @@ class TestPolymarketBuilderIntegration:
 
         user_info = SimpleNamespace(name="Karim", profile=None)
         out = PolymarketPromptBuilder().build_system_prompt(user_info)
-        assert "# WHO YOU ARE" in out
-        assert "Your name is Karim." in out
+        assert "# RÔLE" in out
+        assert "Karim" in out
