@@ -243,7 +243,9 @@ class ChartFactory:
 
         ax.legend(loc="best", ncol=3, fontsize=7)
         ax.set_xticks(round_indices)
-        fig.tight_layout()
+        # Les annotations verticales des pivots débordent volontairement ;
+        # des marges déterministes sont plus fiables que tight_layout ici.
+        fig.subplots_adjust(left=0.10, right=0.97, bottom=0.14, top=0.90)
         return _fig_to_png(fig)
 
     # ── 2. Polymarket curves ──────────────────────────────────────────────────

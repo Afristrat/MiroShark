@@ -100,7 +100,7 @@
         <div class="iv-network-canvas">
           <InteractionNetwork
             v-if="simulationId"
-            :simulationId="simulationId"
+            :simulation-id="simulationId"
             :visible="true"
           />
           <div v-else class="iv-network-placeholder">
@@ -225,8 +225,8 @@
     <!-- Interaction sandbox : Step5Interaction réintégré -->
     <main v-else class="iv-sandbox">
       <Step5Interaction
-        :reportId="reportId"
-        :simulationId="simulationId"
+        :report-id="reportId"
+        :simulation-id="simulationId"
         @add-log="onSandboxLog"
         @update-status="onSandboxStatus"
       />

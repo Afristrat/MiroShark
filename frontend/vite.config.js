@@ -15,8 +15,7 @@ export default defineConfig({
       ],
       runtimeOnly: true,
     }),
-    compression({ algorithm: 'gzip' }),
-    compression({ algorithm: 'brotliCompress' }),
+    compression({ algorithms: ['gzip', 'brotliCompress'] }),
   ],
   server: {
     port: 3000,
@@ -52,6 +51,25 @@ export default defineConfig({
         manualChunks: {
           'd3': ['d3'],
           'vue-vendor': ['vue', 'vue-router'],
+          'data-vendor': ['@supabase/supabase-js', 'axios'],
+          'i18n-vendor': ['pinia', 'vue-i18n'],
+          'i18n-locales': [
+            './src/locales/ar.json',
+            './src/locales/en.json',
+            './src/locales/fr.json',
+          ],
+          'codemirror-editor': [
+            '@codemirror/commands',
+            '@codemirror/lang-markdown',
+            '@codemirror/state',
+            '@codemirror/view',
+          ],
+          'tiptap-editor': [
+            '@tiptap/extension-placeholder',
+            '@tiptap/starter-kit',
+            '@tiptap/vue-3',
+          ],
+          'markdown-vendor': ['dompurify', 'marked'],
         }
       }
     }

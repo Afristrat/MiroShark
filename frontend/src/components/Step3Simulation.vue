@@ -7,7 +7,9 @@
         v-if="phase !== 1"
         class="action-btn secondary"
         @click="emit('go-back')"
-      >{{ $t('process.step3.actions.config') }}</button>
+      >
+{{ $t('process.step3.actions.config') }}
+</button>
 
       <!-- Pause (while running) -->
       <button
@@ -225,7 +227,7 @@
         <!-- X (Twitter) -->
         <div class="platform-status twitter" :class="{ active: runStatus.twitter_running, completed: runStatus.twitter_completed, selected: filteredPlatform === 'twitter', dimmed: filteredPlatform && filteredPlatform !== 'twitter' }" @click="filterByPlatform('twitter')">
           <div class="platform-left">
-            <svg class="platform-icon" viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            <svg class="platform-icon" viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
             <span class="platform-name">X</span>
             <span v-if="runStatus.twitter_completed" class="status-badge done">{{ $t('process.step3.platforms.done') }}</span>
           </div>
@@ -272,7 +274,7 @@
     <!-- Influence Leaderboard (overlay when toggled) -->
     <InfluenceLeaderboard
       v-if="showInfluence"
-      :simulationId="simulationId"
+      :simulation-id="simulationId"
       :visible="showInfluence"
       class="influence-overlay"
     />
@@ -280,16 +282,16 @@
     <!-- Belief Drift Chart (overlay when toggled) -->
     <BeliefDriftChart
       v-if="showBeliefDrift"
-      :simulationId="simulationId"
+      :simulation-id="simulationId"
       :visible="showBeliefDrift"
-      :directorEvents="directorEventHistory"
+      :director-events="directorEventHistory"
       class="influence-overlay"
     />
 
     <!-- Interaction Network (overlay when toggled) -->
     <InteractionNetwork
       v-if="showNetwork"
-      :simulationId="simulationId"
+      :simulation-id="simulationId"
       :visible="showNetwork"
       class="influence-overlay"
     />
@@ -297,7 +299,7 @@
     <!-- Demographic Breakdown (overlay when toggled) -->
     <DemographicBreakdown
       v-if="showDemographics"
-      :simulationId="simulationId"
+      :simulation-id="simulationId"
       :visible="showDemographics"
       class="influence-overlay"
     />
@@ -305,7 +307,7 @@
     <!-- What If? Counterfactual (overlay when toggled) -->
     <WhatIfPanel
       v-if="showWhatIf"
-      :simulationId="simulationId"
+      :simulation-id="simulationId"
       :visible="showWhatIf"
       class="influence-overlay"
     />
@@ -313,7 +315,7 @@
     <!-- Prediction Markets (overlay when toggled — sibling of the other panels) -->
     <PolymarketChart
       v-if="showPolymarketChart"
-      :simulationId="simulationId"
+      :simulation-id="simulationId"
       :visible="showPolymarketChart"
       :live="phase === 1 && (runStatus.polymarket_running || false)"
       class="influence-overlay"
@@ -322,10 +324,10 @@
     <!-- Counterfactual Branch (overlay when toggled) -->
     <div v-if="showBranch" class="influence-overlay">
       <CounterfactualBranchPanel
-        :simulationId="simulationId"
-        :currentRound="runStatus.current_round || 0"
-        :totalRounds="runStatus.total_rounds || 0"
-        :presetBranches="presetCounterfactualBranches"
+        :simulation-id="simulationId"
+        :current-round="runStatus.current_round || 0"
+        :total-rounds="runStatus.total_rounds || 0"
+        :preset-branches="presetCounterfactualBranches"
         @close="showBranch = false"
       />
     </div>
@@ -406,7 +408,9 @@
         v-if="showScrollBtn"
         class="scroll-bottom-btn"
         @click="scrollToBottom"
-      >↓</button>
+      >
+↓
+</button>
       
       <!-- Platform Filter Bar -->
       <div v-if="filteredPlatform" class="agent-filter-bar">
@@ -462,7 +466,7 @@
                 
                 <div class="header-meta">
                   <div class="platform-indicator" :class="action.platform">
-                    <svg v-if="action.platform === 'twitter'" viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    <svg v-if="action.platform === 'twitter'" viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
                     <img v-else-if="action.platform === 'reddit'" src="/reddit.png" class="platform-logo" alt="Reddit" />
                     <img v-else-if="action.platform === 'polymarket'" src="/pm.png" class="platform-logo" alt="Polymarket" />
                   </div>
@@ -683,13 +687,17 @@
                 :disabled="isGeneratingArticle || !articleText"
                 @click="copyArticle"
                 :title="articleCopied ? 'Copied!' : 'Copy to clipboard'"
-              >{{ articleCopied ? 'Copied!' : 'Copy' }}</button>
+              >
+{{ articleCopied ? 'Copied!' : 'Copy' }}
+</button>
               <button
                 class="article-action-btn"
                 :disabled="isGeneratingArticle || !articleText"
                 @click="downloadArticle"
                 title="Download as .md"
-              >Download .md</button>
+              >
+Download .md
+</button>
               <button class="article-close-btn" @click="showArticleDrawer = false">&#x2715;</button>
             </div>
           </div>
@@ -728,14 +736,12 @@
         </div>
       </div>
     </Transition>
-
-  </div>
+</div>
 </template>
 
 <script setup>
 import { ref, computed, watch, watchEffect, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 import {
   startSimulation,
   stopSimulation,
@@ -773,7 +779,6 @@ const props = defineProps({
 const emit = defineEmits(['go-back', 'next-step', 'add-log', 'update-status', 'update-progress'])
 
 const router = useRouter()
-const { t } = useI18n()
 
 // State
 const isGeneratingReport = ref(false)

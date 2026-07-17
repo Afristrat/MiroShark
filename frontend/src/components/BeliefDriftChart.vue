@@ -156,10 +156,8 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { getBeliefDrift } from '../api/simulation'
 
-const { t } = useI18n()
 import {
   renderSvgToCanvas,
   downloadCanvas,
@@ -172,7 +170,6 @@ import { readChartPalette } from '../utils/css-vars'
 // US-013 : palette sémantique lue depuis les design tokens CSS au mount
 // (conservée pour chartExport / fallback). Les couleurs effectives du chart
 // sont désormais lues à la volée depuis les tokens --wi-* (Warm Intelligence).
-const palette = readChartPalette()
 
 // US-053 : helper de lecture des design tokens CSS Warm Intelligence.
 // Lu à chaque calcul pour permettre la bascule de thème (dark mode futur)

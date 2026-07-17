@@ -114,7 +114,7 @@
             <div class="narrative-card-bg" aria-hidden="true">
               <svg viewBox="0 0 120 120" width="120" height="120">
                 <path d="M60 10 L100 30 L100 70 L60 110 L20 70 L20 30 Z"
-                      fill="none" stroke="currentColor" stroke-width="2"/>
+                      fill="none" stroke="currentColor" stroke-width="2" />
               </svg>
             </div>
 
@@ -158,7 +158,7 @@
             <div class="drift-card-chart-wrap">
               <BeliefDriftChart
                 v-if="simulationId"
-                :simulationId="simulationId"
+                :simulation-id="simulationId"
                 :visible="true"
                 class="drift-card-chart"
               />
@@ -205,7 +205,7 @@
             title="Previous round"
           >
             <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
-              <path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/>
+              <path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z" />
             </svg>
           </button>
           <button
@@ -215,11 +215,11 @@
             :title="isPlaying ? 'Pause' : 'Play'"
           >
             <svg v-if="!isPlaying" viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
-              <polygon points="6 4 20 12 6 20 6 4"/>
+              <polygon points="6 4 20 12 6 20 6 4" />
             </svg>
             <svg v-else viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
-              <rect x="6" y="5" width="4" height="14"/>
-              <rect x="14" y="5" width="4" height="14"/>
+              <rect x="6" y="5" width="4" height="14" />
+              <rect x="14" y="5" width="4" height="14" />
             </svg>
           </button>
           <button
@@ -230,7 +230,7 @@
             title="Next round"
           >
             <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
-              <path d="M13 6v12l8.5-6L13 6zm-.5 6L4 6v12l8.5-6z"/>
+              <path d="M13 6v12l8.5-6L13 6zm-.5 6L4 6v12l8.5-6z" />
             </svg>
           </button>
         </div>

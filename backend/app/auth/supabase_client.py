@@ -66,14 +66,22 @@ def _build_admin_client():
         )
 
     try:
-        from supabase import create_client  # type: ignore
+        import httpx
+        from supabase import ClientOptions, create_client  # type: ignore
     except ImportError as exc:  # pragma: no cover — pyproject pin l'install
         raise SupabaseConfigError(
             "supabase Python SDK is not installed (pyproject.toml)."
         ) from exc
 
+    # Fournir le client HTTP évite les paramètres ``timeout``/``verify``
+    # dépréciés que supabase-py transmet encore à postgrest par défaut.
+    http_client = httpx.Client(timeout=120.0)
     logger.info("Supabase admin client initialized (service_role).")
-    return create_client(url, service_key)
+    return create_client(
+        url,
+        service_key,
+        options=ClientOptions(httpx_client=http_client),
+    )
 
 
 def get_supabase_admin():
@@ -97,6 +105,10 @@ def reset_supabase_admin() -> None:
     """Vide le singleton (utilisé par les tests pour réinitialiser)."""
     global _client_singleton
     with _client_lock:
+        if _client_singleton is not None:
+            close = getattr(_client_singleton, "close", None)
+            if callable(close):
+                close()
         _client_singleton = None
 
 

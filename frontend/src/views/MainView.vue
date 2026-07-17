@@ -61,9 +61,9 @@
         :aria-label="$t('charts.graph.title', 'Network Topology')"
       >
         <GraphPanel
-          :graphData="graphData"
+          :graph-data="graphData"
           :loading="graphLoading"
-          :currentPhase="currentPhase"
+          :current-phase="currentPhase"
           @refresh="refreshGraph"
           @toggle-maximize="toggleMaximize('graph')"
         />
@@ -113,20 +113,20 @@
         <!-- Step 1: Graph Construction -->
         <Step1GraphBuild
           v-if="currentStep === 1"
-          :currentPhase="currentPhase"
-          :projectData="projectData"
-          :ontologyProgress="ontologyProgress"
-          :buildProgress="buildProgress"
-          :graphData="graphData"
-          :systemLogs="systemLogs"
+          :current-phase="currentPhase"
+          :project-data="projectData"
+          :ontology-progress="ontologyProgress"
+          :build-progress="buildProgress"
+          :graph-data="graphData"
+          :system-logs="systemLogs"
           @next-step="handleNextStep"
         />
         <!-- Step 2: Agent Setup -->
         <Step2EnvSetup
           v-else-if="currentStep === 2"
-          :projectData="projectData"
-          :graphData="graphData"
-          :systemLogs="systemLogs"
+          :project-data="projectData"
+          :graph-data="graphData"
+          :system-logs="systemLogs"
           @go-back="handleGoBack"
           @next-step="handleNextStep"
           @add-log="addLog"

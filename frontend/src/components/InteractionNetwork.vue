@@ -178,10 +178,8 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { getInteractionNetwork } from '../api/simulation'
 
-const { t } = useI18n()
 import {
   renderSvgToCanvas,
   downloadCanvas,
@@ -192,7 +190,6 @@ import {
 import { readChartPalette } from '../utils/css-vars'
 
 // US-013 : palette sémantique conservée pour chartExport (canvas).
-const palette = readChartPalette()
 
 // US-053 : helper de lecture des design tokens Warm Intelligence à la volée.
 const cssVar = (name) => {

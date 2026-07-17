@@ -54,8 +54,7 @@
 
       <!-- Tab Content -->
       <div class="debug-content" ref="contentRef">
-
-        <!-- Live Feed -->
+<!-- Live Feed -->
         <div v-if="activeTab === 'feed'" class="debug-feed">
           <div v-if="filteredEvents.length === 0" class="debug-empty">
             {{ $t('panels.debug.noEvents') }}
@@ -220,11 +219,9 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick, reactive } from 'vue'
 import { useRoute } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 import { streamEvents, getObservabilityStats } from '../api/observability'
 
 const route = useRoute()
-const { t } = useI18n()
 
 // State
 const isVisible = ref(false)

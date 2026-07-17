@@ -76,7 +76,9 @@
                   v-for="p in presetOptions"
                   :key="p.id"
                   :value="p.id"
-                >{{ p.label }}</option>
+                >
+{{ p.label }}
+</option>
               </select>
             </div>
             <div class="field-hint">
@@ -161,7 +163,9 @@
                     v-for="m in curatedModelList"
                     :key="m.id"
                     :value="m.id"
-                  >{{ m.name }} — {{ m.desc }}</option>
+                  >
+{{ m.name }} — {{ m.desc }}
+</option>
                   <option value="__custom">{{ $t('settings.byok.customModel') }}…</option>
                 </select>
                 <!-- Champ libre si pas de liste curatée -->

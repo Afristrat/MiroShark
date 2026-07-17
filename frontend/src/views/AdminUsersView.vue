@@ -283,7 +283,9 @@
                       :disabled="orgsForm.busy"
                       :title="$t('adminUsers.orgs.remove')"
                       @click="removeOrg(org.id)"
-                    >×</button>
+                    >
+×
+</button>
                   </li>
                 </ul>
                 <span v-else class="au-muted">{{ $t('adminUsers.noOrg') }}</span>

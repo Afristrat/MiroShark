@@ -30,7 +30,9 @@
         class="compare-mode-btn"
         :class="{ active: compareMode }"
         @click="toggleCompareMode"
-      >{{ compareMode ? (compareSelections.length === 2 ? 'Compare →' : `${compareSelections.length}/2 selected`) : '⇄ Compare' }}</button>
+      >
+{{ compareMode ? (compareSelections.length === 2 ? 'Compare →' : `${compareSelections.length}/2 selected`) : '⇄ Compare' }}
+</button>
     </div>
 
     <!-- Search & Filter Bar -->
@@ -137,7 +139,9 @@
               :aria-label="$t('history.delete.title')"
               :disabled="deletingId === project.simulation_id"
               @click.stop="askDeleteConfirm(project)"
-            >✕</button>
+            >
+✕
+</button>
           </div>
         </div>
 
@@ -186,7 +190,9 @@
               class="compare-select-btn"
               :class="{ selected: compareSelections.includes(project.simulation_id) }"
               @click.stop="toggleCompareSelection(project.simulation_id)"
-            >{{ compareSelections.includes(project.simulation_id) ? '✓' : '+' }}</button>
+            >
+{{ compareSelections.includes(project.simulation_id) ? '✓' : '+' }}
+</button>
           </div>
         </div>
 
@@ -505,13 +511,17 @@
             <p
               v-if="deleteConfirmFor.is_public && deleteConfirmFor.outcome"
               class="delete-modal-warning"
-            >{{ $t('history.delete.publicCalibrationWarning') }}</p>
+            >
+{{ $t('history.delete.publicCalibrationWarning') }}
+</p>
             <div class="delete-modal-actions">
               <button
                 class="ms-btn ms-btn-secondary"
                 :disabled="deletingId === deleteConfirmFor.simulation_id"
                 @click="cancelDelete"
-              >{{ $t('history.delete.cancel') }}</button>
+              >
+{{ $t('history.delete.cancel') }}
+</button>
               <button
                 class="ms-btn ms-btn-danger"
                 :disabled="deletingId === deleteConfirmFor.simulation_id"

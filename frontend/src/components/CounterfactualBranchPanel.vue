@@ -25,7 +25,9 @@
           v-for="b in presetBranches"
           :key="b.id"
           :value="b.id"
-        >{{ b.label }} (r{{ b.trigger_round }})</option>
+        >
+{{ b.label }} (r{{ b.trigger_round }})
+</option>
       </select>
     </div>
 
@@ -88,7 +90,9 @@
         class="cf-cancel"
         @click="$emit('close')"
         :disabled="busy"
-      >{{ $t('panels.counterfactual.cancel') }}</button>
+      >
+{{ $t('panels.counterfactual.cancel') }}
+</button>
       <button
         class="cf-submit"
         :disabled="!canSubmit || busy"
@@ -104,10 +108,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 import { branchCounterfactual } from '../api/simulation'
 
-const { t } = useI18n()
 
 const props = defineProps({
   simulationId: { type: String, required: true },

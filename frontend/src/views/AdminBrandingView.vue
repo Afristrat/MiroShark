@@ -320,7 +320,9 @@
                       class="ab-lang-btn"
                       :class="{ 'ab-lang-btn--active': previewLang === l }"
                       @click="setPreviewLang(l)"
-                    >{{ l.toUpperCase() }}</button>
+                    >
+{{ l.toUpperCase() }}
+</button>
                   </div>
                 </div>
 

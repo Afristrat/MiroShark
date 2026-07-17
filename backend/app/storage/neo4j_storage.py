@@ -53,15 +53,21 @@ class Neo4jStorage(GraphStorage):
         self._driver = GraphDatabase.driver(
             self._uri, auth=(self._user, self._password)
         )
-        self._embedding = embedding_service or EmbeddingService()
-        self._ner = ner_extractor or NERExtractor()
-        self._search = SearchService(self._embedding)
-        self._resolver = EntityResolver()
-        self._contradiction = ContradictionDetector()
-        self._community = CommunityBuilder(self._driver, self._embedding)
+        try:
+            self._embedding = embedding_service or EmbeddingService()
+            self._ner = ner_extractor or NERExtractor()
+            self._search = SearchService(self._embedding)
+            self._resolver = EntityResolver()
+            self._contradiction = ContradictionDetector()
+            self._community = CommunityBuilder(self._driver, self._embedding)
 
-        # Initialize schema (indexes, constraints)
-        self._ensure_schema()
+            # Initialize schema (indexes, constraints)
+            self._ensure_schema()
+        except Exception:
+            # Le constructeur peut échouer avant que la factory puisse
+            # enregistrer son finalizer ; fermer ici le driver déjà créé.
+            self._driver.close()
+            raise
 
     def close(self):
         """Close the Neo4j driver connection."""

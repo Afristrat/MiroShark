@@ -51,7 +51,9 @@
             v-if="selectedNames.length"
             class="wi-clear"
             @click="clearSelection"
-          >Clear ({{ selectedNames.length }})</button>
+          >
+Clear ({{ selectedNames.length }})
+</button>
         </div>
         <div class="wi-agent-grid">
           <label
@@ -257,10 +259,8 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { getInfluenceLeaderboard, getCounterfactualDrift } from '../api/simulation'
 
-const { t } = useI18n()
 import {
   renderSvgToCanvas,
   downloadCanvas,

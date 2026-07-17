@@ -15,8 +15,7 @@
     Tokens --wi-* exclusivement. i18n FR/EN/AR.
   -->
   <div class="arr-page" :dir="$i18n.locale === 'ar' ? 'rtl' : 'ltr'">
-
-    <!-- Topbar ────────────────────────────────────────────────────────────── -->
+<!-- Topbar ────────────────────────────────────────────────────────────── -->
     <header class="arr-topbar">
       <router-link to="/admin/branding" class="arr-back">
         ← {{ $t('nav.brand') || 'BASSIRA' }}
@@ -96,8 +95,7 @@
 
     <!-- Split view ─────────────────────────────────────────────────────────── -->
     <div v-else class="arr-split">
-
-      <!-- Colonne gauche : PDF preview ────────────────────────────────────── -->
+<!-- Colonne gauche : PDF preview ────────────────────────────────────── -->
       <section class="arr-pdf-pane" :aria-label="$t('adminReportReview.pdfPreview') || 'Aperçu PDF'">
         <div class="arr-pdf-header">
           <span class="arr-pane-label">{{ $t('adminReportReview.pdfPreview') || 'Aperçu PDF' }}</span>
@@ -122,8 +120,7 @@
 
       <!-- Colonne droite : tree + éditeur ─────────────────────────────────── -->
       <section class="arr-editor-pane" :aria-label="$t('adminReportReview.editor') || 'Éditeur'">
-
-        <!-- Tree sections (1/4 de la hauteur) -->
+<!-- Tree sections (1/4 de la hauteur) -->
         <div class="arr-tree-wrap">
           <AdminReportTree
             :sections="outline.sections || []"
@@ -209,8 +206,7 @@
             </div>
           </div>
         </div>
-
-      </section>
+</section>
     </div>
 
     <!-- Modal : Sauvegarder la version ─────────────────────────────────────── -->
@@ -282,8 +278,7 @@
         </div>
       </div>
     </transition>
-
-  </div>
+</div>
 </template>
 
 <script setup lang="ts">

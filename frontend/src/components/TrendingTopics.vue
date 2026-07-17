@@ -11,7 +11,9 @@
         type="button"
         :title="$t('trending.refreshTitle')"
         @click="refresh"
-      >↻</button>
+      >
+↻
+</button>
     </div>
 
     <div v-if="loading && items.length === 0" class="tt-loading">

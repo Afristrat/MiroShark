@@ -73,29 +73,29 @@
       <div class="sim-run__panel sim-run__panel--left" :style="leftPanelStyle">
         <GraphPanel
           v-if="viewMode !== 'network'"
-          :graphData="graphData"
+          :graph-data="graphData"
           :loading="graphLoading"
-          :currentPhase="3"
-          :isSimulating="isSimulating"
-          :simulationId="currentSimulationId"
+          :current-phase="3"
+          :is-simulating="isSimulating"
+          :simulation-id="currentSimulationId"
           @refresh="refreshGraph"
           @toggle-maximize="toggleMaximize('graph')"
         />
         <NetworkPanel
           v-else
-          :simulationId="currentSimulationId"
-          :isSimulating="isSimulating"
+          :simulation-id="currentSimulationId"
+          :is-simulating="isSimulating"
         />
       </div>
 
       <div class="sim-run__panel sim-run__panel--right" :style="rightPanelStyle">
         <Step3Simulation
-          :simulationId="currentSimulationId"
-          :maxRounds="maxRounds"
-          :minutesPerRound="minutesPerRound"
-          :projectData="projectData"
-          :graphData="graphData"
-          :systemLogs="systemLogs"
+          :simulation-id="currentSimulationId"
+          :max-rounds="maxRounds"
+          :minutes-per-round="minutesPerRound"
+          :project-data="projectData"
+          :graph-data="graphData"
+          :system-logs="systemLogs"
           @go-back="handleGoBack"
           @next-step="handleNextStep"
           @add-log="addLog"

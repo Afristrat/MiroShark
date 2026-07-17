@@ -148,8 +148,7 @@
 
         <!-- Chat Mode -->
         <div v-if="activeTab === 'chat'" class="chat-container">
-
-          <!-- Report Agent Tools Card -->
+<!-- Report Agent Tools Card -->
           <div v-if="chatTarget === 'report_agent'" class="report-agent-tools-card">
             <div class="tools-card-header">
               <div class="tools-card-avatar">R</div>
@@ -484,12 +483,10 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { chatWithReport, getReport, getAgentLog } from '../api/report'
 import { interviewAgents, getSimulationProfilesRealtime, getSimulationActions } from '../api/simulation'
 import { renderMarkdown } from '../utils/markdown'
 
-const { t } = useI18n()
 
 const props = defineProps({
   reportId: String,

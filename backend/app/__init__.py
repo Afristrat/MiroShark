@@ -3,6 +3,7 @@ MiroShark Backend - Flask application factory
 """
 
 import os
+import weakref
 import warnings
 
 # Suppress multiprocessing resource_tracker warnings (from third-party libraries like transformers)
@@ -67,6 +68,10 @@ def create_app(config_class=Config):
     try:
         neo4j_storage = Neo4jStorage()
         app.extensions['neo4j_storage'] = neo4j_storage
+        # Flask n'expose pas de hook process-wide fiable dans la factory. Le
+        # finalizer lie donc explicitement la durée de vie du driver à celle
+        # de l'application, y compris pour les apps éphémères créées en test.
+        weakref.finalize(app, neo4j_storage.close)
         if should_log_startup:
             logger.info("Neo4jStorage initialized (connected to %s)", Config.NEO4J_URI)
     except Exception as e:
@@ -208,4 +213,3 @@ def create_app(config_class=Config):
         logger.info("MiroShark Backend startup complete")
     
     return app
-

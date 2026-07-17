@@ -6,6 +6,7 @@ Runs simulations in the background and records each Agent's actions, with real-t
 import os
 import sys
 import json
+import logging
 import time
 import threading
 import subprocess
@@ -1741,8 +1742,19 @@ class SimulationRunner:
                 # If original handler is not callable (e.g. SIG_DFL), use default behavior
                 raise KeyboardInterrupt
         
+        # À l'extinction, les flux des handlers peuvent déjà avoir été
+        # fermés (notamment par la capture pytest). Le nettoyage doit rester
+        # effectif, mais ne doit jamais écrire dans un stream fermé.
+        def cleanup_at_exit():
+            previous_disable_level = logging.root.manager.disable
+            logging.disable(logging.CRITICAL)
+            try:
+                cls.cleanup_all_simulations()
+            finally:
+                logging.disable(previous_disable_level)
+
         # Register atexit handler (as fallback)
-        atexit.register(cls.cleanup_all_simulations)
+        atexit.register(cleanup_at_exit)
         
         # Register signal handlers (only in main thread)
         try:
@@ -2167,4 +2179,3 @@ class SimulationRunner:
             results = results[:limit]
         
         return results
-

@@ -10,7 +10,9 @@
           to="/admin/analytics"
           class="aq-pill"
           :title="$t('nav.adminTitle')"
-        >{{ $t('nav.admin') }}</router-link>
+        >
+{{ $t('nav.admin') }}
+</router-link>
       </div>
     </header>
 
@@ -157,7 +159,9 @@
                 type="button"
                 :disabled="busy || !paymentLinkInput.trim()"
                 @click="onSendPaymentLink"
-              >{{ $t('adminQuotes.modal.sendPaymentLink') }}</button>
+              >
+{{ $t('adminQuotes.modal.sendPaymentLink') }}
+</button>
               <p v-if="modal.quote?.status?.last_email_sent_at" class="aq-meta">
                 {{ $t('adminQuotes.modal.sendPaymentLinkSent', { ago: formatDate(modal.quote.status.last_email_sent_at) }) }}
               </p>
@@ -177,7 +181,9 @@
                 type="button"
                 :disabled="busy || !deliveredUrlInput.trim()"
                 @click="onSendDelivered"
-              >{{ $t('adminQuotes.modal.markDelivered') }}</button>
+              >
+{{ $t('adminQuotes.modal.markDelivered') }}
+</button>
             </section>
 
             <!-- Notes admin -->
@@ -194,7 +200,9 @@
                 type="button"
                 :disabled="busy"
                 @click="onSaveNotes"
-              >{{ $t('adminQuotes.modal.saveNotes') }}</button>
+              >
+{{ $t('adminQuotes.modal.saveNotes') }}
+</button>
               <p v-if="notesMessage" class="aq-meta">{{ notesMessage }}</p>
             </section>
 

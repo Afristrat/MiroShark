@@ -12,7 +12,9 @@
           type="button"
           :title="$t('scenarios.dismissTitle')"
           @click="dismiss"
-        >×</button>
+        >
+×
+</button>
       </div>
 
       <!-- Framework selector (collapsible, shown only when not loading) -->
@@ -26,7 +28,9 @@
             class="ss-fw-btn"
             :class="{ 'ss-fw-btn--active': selectedFramework === fw.id }"
             @click="setFramework(fw.id)"
-          >{{ fw.label }}</button>
+          >
+{{ fw.label }}
+</button>
         </div>
       </details>
 
@@ -52,7 +56,9 @@
             class="ss-use"
             type="button"
             @click="useSuggestion(s, idx)"
-          >{{ $t('scenarios.useThis') }}</button>
+          >
+{{ $t('scenarios.useThis') }}
+</button>
         </div>
       </div>
 

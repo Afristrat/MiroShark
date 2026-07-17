@@ -110,10 +110,10 @@ def apply_watermark_to_pdf(
         overlay_reader = PdfReader(overlay_buffer)
         overlay_page = overlay_reader.pages[0]
 
-        # Copier la page originale (ne pas muter l'original)
-        page_copy = page
-        page_copy.merge_page(overlay_page)
-        writer.add_page(page_copy)
+        # Attacher d'abord la page au writer : pypdf >= 6 déprécie la
+        # mutation d'une page encore rattachée au PdfReader source.
+        writer.add_page(page)
+        writer.pages[-1].merge_page(overlay_page)
 
     # Exporter le PDF final
     output_buffer = io.BytesIO()

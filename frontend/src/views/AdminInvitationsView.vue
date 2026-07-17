@@ -9,7 +9,9 @@
         <router-link
           to="/client/dashboard"
           class="ai-pill ai-pill--ghost"
-        >{{ $t('adminInvitations.backToDashboard') || 'Mon espace' }}</router-link>
+        >
+{{ $t('adminInvitations.backToDashboard') || 'Mon espace' }}
+</router-link>
       </div>
     </header>
 

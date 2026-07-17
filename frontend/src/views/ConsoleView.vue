@@ -270,7 +270,9 @@
                     v-for="opt in availableScopeProfiles"
                     :key="opt.value || 'auto'"
                     :value="opt.value"
-                  >{{ opt.labelKey ? $t(opt.labelKey) : opt.text }}</option>
+                  >
+{{ opt.labelKey ? $t(opt.labelKey) : opt.text }}
+</option>
                 </select>
                 <span
                   v-if="!selectedScopeProfile && autoScopeProfile"
@@ -441,7 +443,7 @@ onMounted(async () => {
     }
   } catch (err) {
     // best-effort : log côté console mais ne pas bloquer l'UI
-    // eslint-disable-next-line no-console
+     
     console.warn('[ConsoleView] getScopeProfiles failed, falling back to hardcoded list:', err)
   }
 })

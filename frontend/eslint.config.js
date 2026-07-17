@@ -26,7 +26,11 @@ export default [
       },
     },
     rules: {
-      'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      'no-unused-vars': ['warn', {
+        argsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+      }],
       'vue/multi-word-component-names': 'off',
       'vue/no-v-html': 'off',
       'vue/require-default-prop': 'off',

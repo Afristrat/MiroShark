@@ -83,10 +83,10 @@
       <!-- Left Panel: Graph -->
       <div class="panel-wrapper left" :style="leftPanelStyle">
         <GraphPanel
-          :graphData="graphData"
+          :graph-data="graphData"
           :loading="graphLoading"
-          :currentPhase="2"
-          :simulationId="currentSimulationId"
+          :current-phase="2"
+          :simulation-id="currentSimulationId"
           @refresh="refreshGraph"
           @toggle-maximize="toggleMaximize('graph')"
         />
@@ -95,10 +95,10 @@
       <!-- Right Panel: Step2 Agent Setup -->
       <div class="panel-wrapper right" :style="rightPanelStyle">
         <Step2EnvSetup
-          :simulationId="currentSimulationId"
-          :projectData="projectData"
-          :graphData="graphData"
-          :systemLogs="systemLogs"
+          :simulation-id="currentSimulationId"
+          :project-data="projectData"
+          :graph-data="graphData"
+          :system-logs="systemLogs"
           @go-back="handleGoBack"
           @next-step="handleNextStep"
           @add-log="addLog"
@@ -121,7 +121,9 @@
         type="button"
         @click="showTrending = true"
         :title="$t('trending.showTitle', 'Actualités')"
-      >◉</button>
+      >
+◉
+</button>
     </main>
   </div>
 </template>

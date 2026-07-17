@@ -185,10 +185,8 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { getPolymarketMarkets, getPolymarketMarketPrices } from '../api/simulation'
 
-const { t } = useI18n()
 import {
   renderSvgToCanvas,
   downloadCanvas,

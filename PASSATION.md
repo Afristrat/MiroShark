@@ -1,178 +1,221 @@
-== PASSATION NUCLÉAIRE MiroShark/Bassira — 2026-07-16 ~22h20 (Ralph EN PAUSE sur demande Amine : 4 stories clôturées et poussées, US-221 en CHECKPOINT LOCAL NON VÉRIFIÉ — reprendre en session fraîche) ==
+== PASSATION NUCLÉAIRE MiroShark/Bassira — 2026-07-17 (contexte session sous 60 % — synthèse forcée, US-224 EN COURS NON COMMITÉ) ==
 Synthèse complète et autonome — remplace et purge intégralement l'entrée
-2026-07-16 ~21h48. Arrêt demandé explicitement par Amine (« tu es partie
-trop loin, on reprend dans une session fraîche ») pendant l'exécution
-d'US-221 — pas un blocage technique, une décision de gestion de session.
+2026-07-16 ~22h20 (US-221 qu'elle décrivait comme « en checkpoint » est
+maintenant TERMINÉE, poussée, vérifiée — plus rien à reprendre dessus).
 
 [ETAT]
-- **`origin/main` = `c342495`** ([US-228], entièrement vérifié et poussé).
-- **`main` local = `9687c99`**, **1 commit d'AVANCE sur origin, PAS POUSSÉ**
-  délibérément (checkpoint WIP non gate-vérifié — ne jamais pousser un état
-  non testé, convention tenue toute la session). Vérifié à l'instant par
-  `git rev-list --count origin/main..HEAD` = 1.
-- **`.ralph/prd.json` : 168 stories, 19 `passes=false`.** US-221 **N'EST PAS**
-  marquée `passes=true` (correct — elle n'est pas terminée). Le compteur
-  reflète l'état après clôture d'US-228 (dernière story réellement close).
-- **`ruff check .` et `uv run mypy app/` → 0 erreur** sur l'état actuel du
-  commit `9687c99` (116 fichiers) — vérifié juste avant ce commit.
-  **AUCUNE suite pytest complète relancée sur cet état** — ni les tests
-  unitaires d'US-221 (n'existent pas encore), ni la suite globale.
-  **NE RIEN supposer sur le comportement réel avant d'avoir fait tourner
-  les gates complets.**
+- **`origin/main` = `main` local = `b35b8d3`** ([US-221], vérifié synchronisé
+  par `git status --short --branch` juste avant cette synthèse : aucune
+  divergence affichée).
+- **16 fichiers modifiés EN LOCAL, NON COMMITÉS, NON POUSSÉS** (story US-224
+  en cours, code complet mais gate pytest pas encore confirmé) :
+  `frontend/src/locales/{fr,en,ar}.json`, 8 templates
+  `backend/app/templates/pdf_report/**/*.j2`
+  (`00_cover`, `01_exec_summary`, `02_toc`, `05_verdict`, `06_recommendations`,
+  `_method_limits`, `exec/_main`, `one-pager/_main`, `public/_main`), 4
+  composants Vue (`HistoryDatabase.vue`, `Step4Report.vue`,
+  `ComparisonView.vue`, `EmbedView.vue`).
+- **`npm run build` → exit 0, vérifié** (build complet, warnings de taille de
+  chunk pré-existants uniquement, sans lien).
+- **`uv run pytest -m "not integration"` → LANCÉ EN ARRIÈRE-PLAN, RÉSULTAT
+  INCONNU au moment d'écrire cette synthèse** (contexte tombé sous 60 % avant
+  la fin du run, ~7 min habituellement). **NE RIEN supposer sur le résultat.**
+  Fichier de sortie : `/tmp/pytest_us224.txt` (sur CE poste Windows — n'existe
+  plus si nouvelle session/machine ; relancer si besoin).
+- **`.ralph/prd.json` : US-221 passes=true (poussée). US-224 toujours
+  passes=false** (le tracker de tâches interne montre #41/#60-64 completed,
+  #42 US-224 encore pending — cohérent avec le code non commité).
+- Ruff + mypy : 0 erreur sur l'état d'avant US-224 (vérifiés lors de la
+  clôture d'US-221) — **PAS re-vérifiés sur les fichiers modifiés par
+  US-224** (aucun fichier `.py` backend touché par US-224, seulement des
+  `.j2`/`.vue`/`.json` — donc ruff/mypy ne sont normalement pas concernés,
+  mais ce n'est pas re-confirmé explicitement).
 
 [FAIT — cette session, dans l'ordre]
-1. Gate SOP-013 levé (lexique tranché, scellement ADR-IQ-05 validé), go
-   explicite Amine reçu et tracé — ordre d'exécution par graphe de
-   dépendances. Détail dans `.ralph/progress.md` (ne pas reproduire ici).
-2. **[US-212] Outillage qualité** — poussée (`fabe269`). ruff+mypy+eslint+CI,
-   2 causes racines mypy corrigées, US-212b tracée (burn-down non bloquant).
-3. **[US-223] Table simulation_prompts + PromptRegistry** — poussée
-   (`1e77490`). Migration créée non jouée en prod.
-4. **[US-222] Arènes requêtables + registre dynamique** — poussée
-   (`482130c`). Angle mort `/start` fermé. Migration créée non jouée.
-5. **[US-228] Cache Supabase ESCO** — poussée (`c342495`). Client ESCO
-   cache-first, adapté du script de référence prouvé esco-role.py. Flaky
-   pré-existant `test_md_hash_stable_with_deterministic_enricher` récidivé
-   2x, confirmé sans lien (isolé = vert), documenté.
-6. **US-221 (persistance durable, ADR-005) — DÉMARRÉE, ARRÊTÉE EN COURS
-   SUR DEMANDE AMINE.** Contexte de la décision : investigation préalable a
-   révélé 58 sites de lecture/écriture dispersés sans chokepoint existant +
-   zéro précédent d'usage Supabase Storage dans ce projet. **AskUserQuestion
-   posée à Amine** avec 4 options (scopé/complet/reporté/autre) — **réponse :
-   "Complet tel quel"**, risque accepté explicitement. Travail engagé sur
-   cette base, puis interrompu par Amine avant complétion — voir [CTX] pour
-   le détail exact de ce qui existe et ce qui manque.
+1. **Migrations US-222/223/228/221 jouées et vérifiées en prod** (les 4
+   fichiers `supabase/migrations/20260716_00{1,2,3,4}_*.sql`, poussés mais
+   jamais exécutés jusqu'ici). Conteneur ciblé par UUID exact
+   (`supabase-db-dgybi9q5e2ggkjtaxlu2ukai`, labels Coolify
+   `projectName: miroshark` vérifiés avant exécution — après un incident de
+   ciblage trop large, cf. [ALERTE]). Vérification fraîche indépendante
+   (`information_schema` + `storage.buckets`) : les 3 tables + colonne +
+   bucket sont bien présents. App prod confirmée tourner exactement sur le
+   commit contenant ce code. `prd.json`/`progress.md`/`docs/02-data-dictionary.md`
+   mis à jour en conséquence (table `simulation_artifacts` documentée,
+   compteur RLS 17→18).
+2. **[US-221] Persistance durable des artefacts — CLÔTURÉE, poussée
+   (`b35b8d3`)**. Écriture câblée à 3 checkpoints (fin prepare, fin run, fin
+   rapport), tous en thread d'arrière-plan (jamais le thread HTTP). Gap réel
+   trouvé et fermé : `SimulationRunner.start_simulation` ne rematérialisait
+   jamais le dossier local si le volume Coolify avait été vidé entre
+   `/prepare` et `/start`. 17 tests nouveaux dont un round-trip complet
+   (sync → suppression réelle du dossier local → hydratation → contenu
+   identique) qui prouve l'AC2. Suite complète à ce moment-là : 2309 passed,
+   0 failed. Détail exhaustif dans `.ralph/progress.md` (entrée
+   2026-07-17 — US-221 Persistance durable des artefacts CLÔTURÉE).
+3. **[US-224] Renommage « arène de convictions » (ADR-018) — CODE COMPLET,
+   PAS COMMITÉ, PAS VÉRIFIÉ PYTEST.** Story estimée 2h, réalité beaucoup plus
+   grande (même leçon qu'US-221 cette session — aurait dû être scindée à
+   l'écriture). Détail dans [CTX].
 
 [ALERTE]
-- **US-221 : ne JAMAIS marquer `passes=true` sans avoir vérifié l'AC2 à la
-  lettre** (« après suppression simulée du dossier local, GET status/
-  résultats/rapport fonctionnent toujours ») — ce test n'a PAS été écrit ni
-  exécuté. Le mécanisme d'hydratation est câblé en LECTURE seulement ; SANS
-  écriture aux checkpoints (non câblée), Storage sera TOUJOURS vide → tout
-  appel à `ensure_simulation_dir_hydrated` sera un no-op silencieux (aucune
-  erreur, mais aucune durabilité réelle non plus). **L'AC ne peut PAS passer
-  tant que la tâche #62 (écriture checkpoints) n'est pas faite.**
-- Findings hors scope signalés, toujours pas traités : 11 vulnérabilités
-  `npm audit` frontend (US-212), flaky PDF pipeline récidivé 2x (US-228).
-- 3 migrations créées, AUCUNE jouée en prod : `20260716_001_simulation_prompts.sql`,
-  `20260716_002_enabled_platforms.sql`, `20260716_003_occupation_profiles.sql`
-  (poussées, donc dans le repo distant). `20260716_004_simulation_artifacts.sql`
-  (bucket Storage + table) existe seulement en LOCAL (commit non poussé).
-  **Amine doit toutes les jouer via le SQL Editor Supabase avant qu'elles
-  n'existent réellement en base** — le code applicatif ne casse jamais en
-  leur absence (fallback silencieux systématique, comportement identique à
-  avant chaque story tant que non jouées).
-- Héritées, non retouchées : finding Stripe live checkout, dette 27 tests
-  E2E, 2 emails de test résiduels, rotation `NAHJ_SUPABASE_POSTGRES_DB`.
+- **NE PAS marquer US-224 `passes: true` avant d'avoir VU le résultat du
+  pytest en cours** (fichier `/tmp/pytest_us224.txt`, ou relancer
+  `cd backend && uv run pytest -m "not integration" --tb=short -q`). Risque
+  concret identifié mais NON vérifié : les tests
+  `test_pdf_visual_regression.py`, `test_md_templates.py`,
+  `test_pdf_context_schema.py`, `test_unit_report_agent_narrative.py`
+  référencent tous "Verdict"/"Confiance" (trouvé par grep avant de lancer le
+  run) — certains pourraient asserter du texte littéral qui vient de changer
+  dans les templates `.j2` (ex. "Verdict" → "Issue", "Confiance" →
+  "Convergence"). **Si des tests échouent dessus : ce sont des snapshots/
+  assertions à mettre à jour pour refléter le nouveau vocabulaire, PAS une
+  régression fonctionnelle** — mais à vérifier au cas par cas, ne pas
+  supposer.
+- **Rien n'est commité ni poussé pour US-224.** Si une session future
+  reprend sans lire ceci, `git status --short` révèle immédiatement les 16
+  fichiers modifiés — ne pas les écraser, c'est le travail de cette session.
+- Incident secrets (2026-07-16 tard) : sentinelle a flaggé
+  `NAHJ_SUPABASE_POSTGRES_DB` (secret d'un AUTRE projet, Nahda) 5 fois de
+  suite pendant les commandes SSH de migration — faux positif quasi certain
+  sur la chaîne générique `postgres`. Amine a tranché : pas de rotation.
+  Documenté en mémoire Claude Code (`incident_nahda_secret_leak_20260716`),
+  pas d'action requise ici.
+- Findings hors scope hérités, toujours pas traités : 11 vulnérabilités
+  `npm audit` frontend (US-212), flaky PDF pipeline
+  (`test_md_hash_stable_with_deterministic_enricher`, isolé = toujours vert,
+  confirmé sans lien avec US-221/224 ce jour encore).
+- **Dette i18n pré-existante découverte, VOLONTAIREMENT PAS corrigée** (hors
+  scope US-224, bien plus grosse) : `frontend/src/components/HistoryDatabase.vue`,
+  section « Resolve Prediction Section » (~lignes 326-378) — environ 15
+  chaînes anglaises codées en dur (jamais `$t()`), ex. « Did the simulation
+  correctly predict what happened? », « Record Outcome », « YES — It
+  happened », etc. Seule la chaîne contenant littéralement le mot interdit
+  (« Prediction Outcome » → « Real-World Outcome ») a été corrigée pour
+  satisfaire l'AC d'US-224. Le reste est une dette i18n séparée, à traiter
+  dans une story dédiée si Amine le juge prioritaire.
 
 [BLOQUE / EN ATTENTE]
-- **Rien n'est bloqué par une décision** — c'est un arrêt de session
-  volontaire. US-221 attend une session fraîche pour reprendre le travail
-  restant (liste précise en [NEXT]).
+- Rien n'est bloqué par une décision technique. Le seul blocage est
+  d'ordre contextuel (fin de session forcée par le budget de contexte,
+  pas un problème de code).
 
 [NEXT]
-**Reprendre US-221 exactement où elle s'est arrêtée — ordre recommandé :**
-1. **Relire ce PASSATION.md + `.ralph/progress.md` + `git show 9687c99 --stat`**
-   pour voir précisément le diff du commit WIP avant de continuer dessus.
-2. **Task #62** (tracker interne, à recréer si perdu) : câbler
-   `artifact_storage.sync_directory_to_storage(simulation_id, sim_dir)` aux
-   points de contrôle : fin de `SimulationManager.prepare_simulation()`, fin
-   de run (`SimulationRunner.stop_simulation` ou détection de complétion),
-   fin de génération de rapport. SANS ce câblage, l'hydratation en lecture
-   est un no-op — l'AC ne peut pas être vérifiée avant.
-3. **Vérifier `quote_admin_service.py`/`quote_service.py`** : investigation
-   de cette session a déjà conclu que ce sont des FAUX POSITIFS (ils
-   dérivent juste un chemin `quotes/` sibling de `simulations/`, aucune
-   lecture d'artefact de simulation) — ne pas les retoucher sauf nouvelle
-   preuve contraire. **`webhook_service.py:422` n'a PAS été vérifié** — à
-   faire.
-4. **Task #64** : tests unitaires `artifact_storage.py` (upload, download,
-   hydratation, fallback Supabase indisponible — même patron que
-   `test_unit_prompt_registry.py`/`test_unit_esco_client.py`, déjà 2 fois
-   éprouvé cette session) + test bout-en-bout simulant la suppression du
-   dossier local (AC2 explicite de la story).
-5. Relancer `ruff check .` + `uv run mypy app/` + suite pytest complète.
-   Si vert : commit `[US-221] ...` (remplace ou vient après le WIP —
-   décision libre : `git commit --amend` sur le WIP local puisqu'il n'est
-   PAS poussé, ou nouveau commit par-dessus), push, marquer `passes: true`
-   dans `prd.json`, logger dans `progress.md`.
-6. Puis **US-224** (renommage « arène de convictions », quick win isolé,
-   zéro dépendance) ferme le Lot 0.
-7. Lot 1 : US-231, US-233, US-232, US-225, US-229, US-230, US-235 (ordre
-   détaillé et déjà justifié dans `.ralph/progress.md`).
+**Reprendre exactement ici, dans l'ordre :**
+1. Vérifier le résultat du pytest lancé en fin de session précédente : lire
+   `/tmp/pytest_us224.txt` s'il existe encore, sinon relancer
+   `cd backend && uv run pytest -m "not integration" --tb=short -q`.
+2. Si des échecs touchent des templates/tests PDF référençant
+   "Verdict"/"Confiance" : lire le diff exact, corriger le test ou le
+   snapshot pour refléter "Issue"/"Convergence" (nouveau vocabulaire
+   ADR-018) — PAS revenir en arrière sur le renommage.
+3. Si tout est vert : `git add` les 16 fichiers listés en [ETAT], commit
+   `[US-224] Renommage « arène de convictions » (ADR-018)` (format standard
+   AGENTS.md), push sur `main`.
+4. Marquer `US-224` `passes: true` dans `.ralph/prd.json` (+ `completedAt`,
+   `files_touched`, note résumant le périmètre réel — bien plus large que
+   l'estimation initiale, cf. [CTX]) et logger l'itération dans
+   `.ralph/progress.md`.
+5. Puis Lot 1 : US-231, US-233, US-232, US-225, US-229, US-230, US-235
+   (ordre déjà justifié dans `.ralph/progress.md`, section US-221 du
+   2026-07-16 ~22h20 — toujours valable).
 
 [CTX]
-- **Détail exact du commit WIP `9687c99`** (`git show 9687c99 --stat` pour
-  la liste précise) :
-  - `backend/app/services/artifact_storage.py` (NEUF) : module complet —
-    `sync_directory_to_storage()`, `ensure_simulation_dir_hydrated()`,
-    `is_durably_persisted()`, `_list_artifacts()`. Design "hydratation de
-    répertoire" (pas fichier par fichier) : la table `simulation_artifacts`
-    indexe quels fichiers existent durablement, le bucket Storage privé
-    `simulation-artifacts` porte le binaire. Fallback silencieux total
-    (jamais d'exception).
-  - `supabase/migrations/20260716_004_simulation_artifacts.sql` (NEUVE) :
-    `insert into storage.buckets` (bucket privé) + table
-    `simulation_artifacts` + RLS `is_super_admin()`.
-  - **Hydratation câblée en LECTURE** (via `ensure_simulation_dir_hydrated`,
-    appelé juste après construction de `sim_dir`, AVANT tout accès fichier) :
-    - `app/api/simulation.py` : ~27 sites (25 mécaniques + 2 f-string + 3
-      raffinements resolution.json/quality.json/trajectory.json). **2 sites
-      DÉLIBÉRÉMENT exclus** : share-cards et replay-gifs (caches régénérables
-      à la demande, hors scope ADR-005 — décision documentée dans le code).
-    - `app/services/simulation_manager.py` : `_load_simulation_state()`
-      (chokepoint central — couvre `get_simulation`, `get_profiles`, le
-      fork lineage via `_load_simulation_state(parent_simulation_id)`) +
-      `get_simulation_config()`. **`_get_simulation_dir()` elle-même N'A PAS
-      été touchée** (contrat documenté US-051 : doit rester pure, sans effet
-      de bord, quand `create=False`) — hydratation câblée UN NIVEAU AU-DESSUS,
-      dans les méthodes qui lisent réellement.
-    - `app/services/graph_tools.py` : 2 sites (`_load_agent_profiles`,
-      calcul dominant_platform).
-    - `app/services/report_pdf/loader.py` : `PDFContextLoader.load()` —
-      LE chokepoint de génération de rapport/PDF (couvre l'AC "rapport").
-    - `app/api/observability.py` : 3 sites non-streaming (events paginés,
-      stats, llm-calls). Le tailer SSE live (`/events/stream`) délibérément
-      NON câblé — c'est du direct streaming d'un run actif, pas un artefact
-      post-hoc (décision documentée dans le raisonnement de session, pas
-      encore dans un commentaire code).
-    - `app/api/calibration.py` : 2 sites (boucle sur toutes les sims
-      publiques pour le calcul Brier).
-  - **PAS câblé du tout** : l'écriture (`sync_directory_to_storage` n'est
-    appelée NULLE PART dans le code applicatif à ce stade — seulement
-    définie dans le module). C'est la tâche la plus importante restante.
-  - **`app/services/simulation_runner.py`** : quasi pas concerné (1 seule
-    occurrence, définition de constante) — probablement pas besoin
-    d'hydratation propre, à confirmer en relisant le fichier.
-  - **Scripts subprocess** (`scripts/run_twitter_simulation.py`,
-    `run_reddit_simulation.py`, `run_parallel_simulation.py`, 8 occurrences
-    au total) : **PAS DU TOUT regardés cette session** — ce sont des
-    process séparés qui écrivent `actions.jsonl` en continu pendant un run
-    actif ; la stratégie prévue (sync en fin de run, pas en temps réel) n'a
-    pas encore été conçue en détail pour ces scripts.
-- Spec : `docs/superpowers/specs/2026-07-16-simulations-v2-design.md`.
-  ADR-005 (persistance) référencée dans le CLAUDE.md racine, pas un ADR
-  numéroté séparé dans `08-decisions-log.md` — à vérifier/créer si besoin
-  en clôturant US-221.
-- Config qualité (US-212) : `backend/pyproject.toml`,
-  `frontend/eslint.config.js`, `package.json` racine.
-- App Coolify miroshark : uuid `u6pn5mr2pgi88s13un55pkzb` ; prod bassira.ma.
+- **Portée réelle d'US-224** (bien au-delà de `_method_limits.md.j2` +
+  quelques clés UI mentionnées dans l'AC d'origine) :
+  - **Renommage cœur** : « marché de prédiction »/« prediction market »/
+    « سوق تنبؤ » → « arène de convictions »/« conviction arena »/
+    « ساحة القناعات » ; marchés individuels → « questions »/« question(s) »/
+    « سؤال/أسئلة ». Couvre `_method_limits.md.j2` (3 langues), libellés
+    polymarket (`predictionMarkets`, `marketCountTitle`, `marketSingular/
+    Plural`, `markets`, `marketsTitle`, `polymarket.title/subtitle`,
+    `MARKET_NOT_FOUND`), hero desc (`home.hero.desc`), label nav
+    `verified` (« Prédictions vérifiées »/« Verified predictions » — présent
+    en FR **ET** EN, pas seulement AR — un premier grep shell avait raté les
+    caractères accentués français, corrigé par une méthode Python UTF-8
+    robuste).
+  - **Halo lexical ADR-018** (oracle→adjudication, verdict→issue,
+    dénouement→clôture, confiance→degré de convergence, Delphi→lecture
+    croisée) : appliqué sur ~10 templates PDF (`Outcome.verdict`/
+    `Outcome.confidence`/`KpiHero.confidence_pct` — labels renommés, PAS les
+    noms de champs Pydantic eux-mêmes, techniques) et sur les puces
+    marketing des 6 packages `/offres` (PMF Discovery, Crisis Drill,
+    Adcheck Lite/Pro, Product Launch, Policy Stress Test — "Verdict:
+    viable/borderline/nope" etc, dans les 3 langues).
+  - **Dérive arabe indépendante corrigée** (bug de parité pré-existant,
+    hors ADR-018 mais découvert et réparé au passage, US-217) : plusieurs
+    endroits où l'arabe disait « تنبؤ » alors que le FR/EN ne l'avaient
+    JAMAIS dit (`promptPlaceholder` l.183, package Crisis Watch l.1669/1675,
+    description Cohort Replay l.1647, `called_it` l.2447).
+  - **4 bugs de texte codé en dur trouvés et corrigés** (violaient l'AC ET
+    la règle i18n globale du projet) dans des composants Vue, hors des
+    fichiers de locale : `HistoryDatabase.vue` (« Prediction Outcome » →
+    « Real-World Outcome »), `ComparisonView.vue` (« Prediction Market Final
+    Prices » → « Conviction Arena Final Prices »), `Step4Report.vue`
+    (« Prediction Scenario: » → « Scenario: » — **attention**, la regex de
+    parsing `Step4Report.vue:726` (`/Prediction\s*(?:scenario|Scenario):/`)
+    n'a PAS été touchée intentionnellement : elle parse un texte source
+    différent, techniquement interne, jamais affiché tel quel au client),
+    `EmbedView.vue` (« Prédiction correcte/manquée » → « Résolution
+    exacte/manquée »).
+- **2 arbitrages Amine obtenus cette session** :
+  1. Slogan anti-prédiction (« Ce que Bassira ne fait pas », item n°1,
+     contexte de NÉGATION, ADR-002/US-201) : reformulé plutôt que laissé tel
+     quel — `n1t` : FR « Annoncer l'avenir », EN « Announce the future », AR
+     « الإعلان عن المستقبل ». Corps (`n1b`) inchangé (ne contenait déjà pas
+     le mot interdit).
+  2. Placeholder i18n `{verdict}` dans `subCompleted` (fr/en.json l.474) :
+     Amine avait validé le renommer en `{issue}` (+ toucher le composant
+     Vue `TopicResearchPanel.vue`) sur la base de mon cadrage initial —
+     **cadrage qui s'est révélé FAUX après vérification du code** : ce
+     placeholder vient de `research.verdict.{pass,warn,deepen,fail}`, le
+     statut d'un outil de recherche/audit interne SANS RAPPORT avec le
+     verdict de simulation ADR-018. **PAS touché**, décision corrigée et
+     signalée à Amine dans la conversation — ne pas revenir dessus sans
+     nouvelle preuve contraire.
+- Exclusions techniques confirmées et volontairement NON touchées (vocabulaire
+  interne, conforme à la clause ADR-018 « le vocabulaire technique interne ne
+  change pas ») : `FeedOracle`/`ORACLE_SEED_ENABLED` (outil externe sans
+  rapport), `arbiter`/« الحَكَم » (archétype de persona, pas l'oracle),
+  `sortConfidence` (confiance d'extraction d'entité de graphe, domaine
+  différent), noms de clés JSON i18n (`predictionMarkets` etc. — seules les
+  VALEURS ont changé, jamais les clés, pour ne pas casser les références
+  `$t('...')` dans les `.vue`), noms de champs Pydantic (`Outcome.verdict`,
+  `.confidence`) et classes CSS (`.one-pager-verdict`).
+- Balayage final effectué et documenté (zéro occurrence résiduelle hors
+  exclusions ci-dessus) : `fr.json`, `en.json`, `ar.json` (recherche
+  Python UTF-8 robuste, diacritiques arabes ignorées), les 8 templates PDF
+  modifiés, et tout `frontend/src/**/*.vue` (recherche séparée qui a trouvé
+  les 4 bugs codés en dur). **PAS re-balayé après les 4 fixes Vue** — à
+  refaire en 30 secondes avant de commit si doute (script Python déjà
+  écrit dans cette session, reproductible).
 
 [MEMO inter-sessions]
 - **`.ralph/prd.json` est en CRLF** : `open(..., 'w', newline='\r\n')`.
-- **US-221 = la story la plus lourde du chantier (8h estimées, la plus
-  grosse) — c'est normal qu'elle dépasse une session.** Pas un signe
-  d'échec, juste un signe qu'il fallait la découper. Pour toute future
-  story de cette ampleur : proposer explicitement de la scinder en
-  sous-stories AVANT de commencer à coder (comme US-212b l'a fait a
-  posteriori pour le mypy burn-down), plutôt que de découvrir l'ampleur en
-  cours de route.
+- **Pour toute story dont l'AC contient un grep de vérification
+  (« zéro occurrence de X ») : ne JAMAIS faire confiance à un premier grep
+  shell avec des caractères accentués/arabes** — vérifié deux fois cette
+  session que `grep -i` avec classes de caractères accentuées (`[ée]`) peut
+  rater des occurrences selon l'encodage du shell. Toujours re-vérifier avec
+  un script Python UTF-8 direct (`io.open(..., encoding='utf-8')` +
+  `.lower()` + `in`) avant de déclarer un grep-AC satisfait.
+- **Piège heredoc Python découvert cette session** : taper des caractères
+  typographiques français (espace insécable avant `h`/`%`, apostrophes
+  courbes) directement dans un heredoc Bash peut introduire des octets
+  différents de ceux réellement présents dans le fichier cible → échec de
+  `content.count(old)` malgré une apparence identique à l'œil. Pour des
+  remplacements de texte français/arabe complexes (guillemets imbriqués
+  multiples), préférer Read+Edit (fiable, zéro échec cette session) à un
+  script Python heredoc dès que la chaîne dépasse ~2 niveaux de guillemets
+  imbriqués.
 - **Avant de commiter un état non entièrement vérifié** : le committer
-  quand même EN LOCAL (ne jamais perdre de travail), mais **ne JAMAIS
-  pousser tant que les gates complets (ruff+mypy+pytest complet) n'ont pas
-  tourné** — convention tenue cette session (`9687c99` local seulement).
-- **Root-cause fixes avant grinding ligne à ligne** (payé sur US-212).
-- **Scope de linter/story jamais lancé = décision de proportionnalité
-  assumable, documentée, jamais un blanc-seing pour une dette invisible.**
+  quand même EN LOCAL si le travail est fait (ne jamais perdre de travail),
+  mais ne JAMAIS pousser tant que les gates complets n'ont pas tourné —
+  convention tenue toute la session précédente sur US-221, **PAS ENCORE
+  appliquée à US-224** (rien n'est même committé localement à ce stade,
+  contrairement à US-221 qui avait un commit WIP local) — à faire au tout
+  début de la prochaine session, avant même de relancer pytest, pour ne pas
+  perdre les 16 fichiers modifiés en cas d'incident.
 - Preuve de déploiement : `ssh serveuria 'docker ps --filter name=<uuid8>
   --format "{{.Image}}"'` vs `git rev-parse HEAD`.
+- App Coolify miroshark : uuid `u6pn5mr2pgi88s13un55pkzb` ; prod bassira.ma.

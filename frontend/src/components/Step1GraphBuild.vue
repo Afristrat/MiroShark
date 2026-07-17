@@ -184,7 +184,9 @@
                 class="refine-add-btn ms-btn"
                 :disabled="!canAddActor"
                 @click="addActor"
-              >{{ $t('process.step1.refineContext.add') }}</button>
+              >
+{{ $t('process.step1.refineContext.add') }}
+</button>
             </div>
             <div v-if="contextRefinement.key_actors.length" class="chip-list">
               <span
@@ -282,7 +284,9 @@
                 class="refine-add-btn ms-btn"
                 :disabled="!canAddStakeholder"
                 @click="addStakeholder"
-              >{{ $t('process.step1.refineContext.add') }}</button>
+              >
+{{ $t('process.step1.refineContext.add') }}
+</button>
             </div>
             <div v-if="contextRefinement.expected_stakeholders.length" class="chip-list">
               <span
@@ -315,7 +319,9 @@
               class="refine-reset-btn ms-btn"
               :disabled="refineSaving"
               @click="resetRefinement"
-            >{{ $t('process.step1.refineContext.reset') }}</button>
+            >
+{{ $t('process.step1.refineContext.reset') }}
+</button>
             <span v-if="refineError" class="refine-error">{{ refineError }}</span>
           </div>
         </div>

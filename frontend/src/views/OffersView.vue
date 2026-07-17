@@ -36,7 +36,9 @@
             :class="{ 'offers-toggle-btn--active': currencyPref === 'MAD' }"
             :aria-selected="currencyPref === 'MAD'"
             @click="setCurrencyPref('MAD')"
-          >MAD</button>
+          >
+MAD
+</button>
           <button
             type="button"
             role="tab"
@@ -44,7 +46,9 @@
             :class="{ 'offers-toggle-btn--active': currencyPref === 'USD' }"
             :aria-selected="currencyPref === 'USD'"
             @click="setCurrencyPref('USD')"
-          >USD</button>
+          >
+USD
+</button>
           <button
             type="button"
             role="tab"
@@ -52,7 +56,9 @@
             :class="{ 'offers-toggle-btn--active': currencyPref === 'EUR' }"
             :aria-selected="currencyPref === 'EUR'"
             @click="setCurrencyPref('EUR')"
-          >EUR</button>
+          >
+EUR
+</button>
         </div>
 
         <div class="offers-toggle offers-toggle--accent" role="tablist" aria-label="Mode de facturation par défaut">
@@ -63,7 +69,9 @@
             :class="{ 'offers-toggle-btn--active': defaultBilling === 'monthly' }"
             :aria-selected="defaultBilling === 'monthly'"
             @click="setDefaultBilling('monthly')"
-          >{{ $t('offers.billing.monthly') }}</button>
+          >
+{{ $t('offers.billing.monthly') }}
+</button>
           <button
             type="button"
             role="tab"
@@ -71,7 +79,9 @@
             :class="{ 'offers-toggle-btn--active': defaultBilling === 'annual' }"
             :aria-selected="defaultBilling === 'annual'"
             @click="setDefaultBilling('annual')"
-          >{{ $t('offers.billing.annual') }}</button>
+          >
+{{ $t('offers.billing.annual') }}
+</button>
         </div>
       </div>
 

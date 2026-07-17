@@ -23,7 +23,9 @@
             :class="{ active: viewMode === mode.id }"
             @click="viewMode = mode.id"
             :aria-pressed="viewMode === mode.id"
-          >{{ mode.label }}</button>
+          >
+{{ mode.label }}
+</button>
         </nav>
 
         <div class="toolbar-actions">
@@ -116,10 +118,10 @@
         <!-- Body — Step4Report renders the full markdown report (sections, charts, exports) -->
         <section class="magazine-card magazine-body">
           <Step4Report
-            :reportId="currentReportId"
-            :simulationId="simulationId"
-            :systemLogs="systemLogs"
-            :initialReport="reportMeta"
+            :report-id="currentReportId"
+            :simulation-id="simulationId"
+            :system-logs="systemLogs"
+            :initial-report="reportMeta"
             @add-log="addLog"
             @update-status="updateStatus"
           />
@@ -129,11 +131,11 @@
       <!-- Graph mode -->
       <section v-else-if="viewMode === 'graph'" class="report-fullscreen-panel">
         <GraphPanel
-          :graphData="graphData"
+          :graph-data="graphData"
           :loading="graphLoading"
-          :currentPhase="4"
-          :isSimulating="false"
-          :simulationId="simulationId"
+          :current-phase="4"
+          :is-simulating="false"
+          :simulation-id="simulationId"
           @refresh="refreshGraph"
           @toggle-maximize="viewMode = 'workbench'"
         />
@@ -142,8 +144,8 @@
       <!-- Network mode -->
       <section v-else-if="viewMode === 'network'" class="report-fullscreen-panel">
         <NetworkPanel
-          :simulationId="simulationId"
-          :isSimulating="false"
+          :simulation-id="simulationId"
+          :is-simulating="false"
         />
       </section>
     </main>
@@ -152,8 +154,8 @@
          toolbar chat button. Persists history in localStorage. -->
     <ReportChatPanel
       :open="chatOpen"
-      :reportId="currentReportId"
-      :simulationId="simulationId"
+      :report-id="currentReportId"
+      :simulation-id="simulationId"
       @close="closeChat"
     />
   </div>

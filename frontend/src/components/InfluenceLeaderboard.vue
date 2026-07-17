@@ -177,10 +177,8 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { getInfluenceLeaderboard, traceInterviewAgent, getAgentInterview } from '../api/simulation'
 
-const { t } = useI18n()
 
 const props = defineProps({
   simulationId: { type: String, required: true },

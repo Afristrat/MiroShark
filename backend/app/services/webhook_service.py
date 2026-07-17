@@ -437,7 +437,17 @@ def fire_webhook_for_simulation(
     )
 
     def _send() -> None:
-        ok, msg = _post_json(url, payload, WEBHOOK_TIMEOUT_SECONDS)
+        try:
+            ok, msg = _post_json(url, payload, WEBHOOK_TIMEOUT_SECONDS)
+        except Exception as exc:  # noqa: BLE001 — frontière d'un thread daemon
+            logger.warning(
+                "Webhook delivery raised for %s (%s) → %s: %s",
+                simulation_id,
+                status,
+                mask_url(url),
+                exc.__class__.__name__,
+            )
+            return
         if ok:
             logger.info(f"Webhook fired for {simulation_id} ({status}) → {mask_url(url)} [{msg}]")
         else:

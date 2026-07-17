@@ -354,9 +354,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 
-const { t } = useI18n()
 import { compareSimulations, listSimulations } from '../api/simulation'
 import { useScrollFadeIn } from '../composables/useScrollFadeIn'
 
