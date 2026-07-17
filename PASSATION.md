@@ -78,8 +78,9 @@ Par conséquent :
   MiroShark et de services d’autres projets inclus dans la même sortie. Rotater
   exhaustivement toutes les valeurs imprimées listées par l’incident dans
   `.ralph/progress.md`, mettre à jour chaque consommateur, puis redéployer et
-  recertifier. **Lot MiroShark terminé et recertifié le 2026-07-17 ; huit stacks
-  Supabase et les credentials tiers exposés restent ouverts.**
+  recertifier. **Lot MiroShark terminé et recertifié le 2026-07-17. Les huit
+  autres expositions sont des dettes propres à leurs projets : cette session ne
+  doit ni les traiter ni piloter leur rotation.**
 
 - **15 stories Ralph restent à `passes: false`.**
 - Les 298 warnings ESLint historiques et les warnings Vite de chunks/compression ont été
@@ -108,20 +109,17 @@ Par conséquent :
 
 ## ENCHAÎNEMENT HARD THINGS FIRST RECOMMANDÉ
 
-1. **Poursuivre la rotation SOP-001 stack par stack** : MiroShark est close ;
-   restent Nahda, Assas, Qalem, Saqr, Rami, Taqwim, Sawt et Ania, puis les
-   credentials tiers exposés. Chaque stack doit recevoir des clés uniques et
-   être recertifiée avant de passer à la suivante.
-2. **US-IQ-06 — vue admin enrichie**, dernière story P0 du lot Intake Qualification.
-3. **US-231 — prompts d’arènes L99**, puis **US-225** et **US-229** selon la valeur produit recherchée.
+1. **US-IQ-06 — vue admin enrichie**, dernière story P0 du lot Intake Qualification.
+2. **US-231 — prompts d’arènes L99**, puis **US-225** et **US-229** selon la valeur produit recherchée.
 
 ## PROCHAINE ACTION EXACTE
 
 La recertification, US-IQ-05 et US-IQ-07 sont poussées et certifiées sur l’image
 de production `934c2faf6639` : backend **2 324/0**, Playwright production **114/0**
 (60 et 1 tests ignorés respectivement), `/` et `/health` à 200. La prochaine
-action exacte est de poursuivre la **rotation SOP-001 exhaustive** par **Nahda**,
-puis les sept autres stacks ; seulement ensuite, enchaîner sur **US-IQ-06**.
+action exacte dans cette session est **US-IQ-06 — vue admin enrichie**. Les
+dettes de sécurité des autres projets seront notifiées et traitées uniquement
+dans leurs sessions propriétaires respectives.
 
 ## SIGNAL DE COMPLÉTION
 

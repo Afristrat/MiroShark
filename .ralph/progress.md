@@ -2362,3 +2362,11 @@ Preuves fraîches : tous les conteneurs critiques MiroShark actifs et sains,
 `/health` = 200, API REST Supabase = 200 avec la nouvelle clé anon, et suite
 Playwright ciblée production **22 réussites, 0 échec**. Les huit autres stacks
 et les clés tierces imprimées, notamment Stripe Rami, restent à rotater.
+
+**Frontière de propriété corrigée sur instruction d’Amine** : cette session
+MiroShark/Bassira ne doit effectuer aucune mutation sur les huit autres projets.
+Leur exposition est enregistrée comme dette de sécurité individualisée dans le
+registre global Codex. Chaque dette doit être notifiée à l’ouverture de la
+session propriétaire correspondante, puis diagnostiquée, rotatée et recertifiée
+uniquement depuis cette session. Aucun ordre d’exécution inter-projets ne fait
+partie de la passation Bassira.
