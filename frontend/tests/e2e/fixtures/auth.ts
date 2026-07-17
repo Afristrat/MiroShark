@@ -326,36 +326,14 @@ export async function navigateAuthenticated(
     await onbDialog.waitFor({ state: 'hidden', timeout: 3_000 }).catch(() => undefined)
   }
 
-  // Phase 4 : naviguer via le header link si disponible (client-side nav)
-  // ou directement par URL en dernier recours
-  const headerLink = page.locator(`a[href="${targetPath}"]`).first()
-  let headerLinkVisible = await headerLink.isVisible().catch(() => false)
-
-  // Les routes super-admin vivent désormais dans un menu replié. Ouvrir
-  // ce menu conserve la navigation SPA et évite de perdre la session mockée
-  // lors d'un rechargement complet d'une route protégée.
-  if (!headerLinkVisible && await headerLink.count()) {
-    const adminToggle = page.locator('.app-header__admin-toggle').first()
-    if (await adminToggle.isVisible().catch(() => false)) {
-      await adminToggle.click()
-      headerLinkVisible = await headerLink.waitFor({ state: 'visible', timeout: 2_000 })
-        .then(() => true)
-        .catch(() => false)
-    }
-  }
-
-  if (headerLinkVisible) {
-    // Le lien existe dans le header → Vue Router push (no reload)
-    await headerLink.click()
-  } else {
-    // Route profonde absente du menu : utiliser le routeur déjà monté pour
-    // conserver le store Pinia et la session injectée.
-    await page.evaluate((path: string) => {
-      const appEl = document.querySelector('#app')
-      const vueApp = (appEl as Element & { __vue_app__?: { config: { globalProperties: { $router?: { push: (target: string) => unknown } } } } })?.__vue_app__
-      const router = vueApp?.config.globalProperties.$router
-      if (!router) throw new Error('Vue Router indisponible')
-      return router.push(`${path}?lang=fr`)
-    }, targetPath)
-  }
+  // Phase 4 : utiliser directement l'instance Vue Router déjà montée.
+  // Les clics dans le menu super-admin replié introduisent une course sous
+  // forte concurrence Playwright entre l'ouverture du menu et la navigation.
+  await page.evaluate((path: string) => {
+    const appEl = document.querySelector('#app')
+    const vueApp = (appEl as Element & { __vue_app__?: { config: { globalProperties: { $router?: { push: (target: string) => unknown } } } } })?.__vue_app__
+    const router = vueApp?.config.globalProperties.$router
+    if (!router) throw new Error('Vue Router indisponible')
+    return router.push(`${path}${path.includes('?') ? '&' : '?'}lang=fr`)
+  }, targetPath)
 }

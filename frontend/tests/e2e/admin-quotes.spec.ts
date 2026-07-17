@@ -105,7 +105,7 @@ test.describe('US-117 — /admin/quotes accès super-admin', () => {
     const filtersSection = page.locator('.aq-filters')
     await expect(filtersSection).toBeVisible({ timeout: 10_000 })
 
-    const statusSelect = page.locator('.aq-filters select')
+    const statusSelect = filtersSection.getByLabel(/statut/i)
     await expect(statusSelect).toBeVisible()
   })
 

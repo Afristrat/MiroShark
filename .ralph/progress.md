@@ -2426,3 +2426,25 @@ altéré les six prompts Unicode. Les neuf seules lignes `system-seed-US-231` on
 été supprimées (`DELETE 9`), puis la migration rejouée en flux binaire base64
 UTF-8 (`INSERT 0 9`). La comparaison finale des neuf empreintes base/code est
 exacte ; aucune ligne corrompue ne subsiste.
+
+### 2026-07-18 — [US-231 / SOP-001] Rotation interne recertifiée, clôture externe bloquée
+
+Le jeu complet de secrets internes MiroShark a été régénéré, propagé et
+redéployé. Les corrections de cause racine couvrent les credentials Kong
+modernes distincts des JWT legacy, la taille de clé AES Supavisor et son état
+chiffré persistant. Les conteneurs Supabase critiques sont sains, l’application
+répond 200, les empreintes Coolify/runtime contrôlées correspondent et les clés
+JWT legacy anon/service-role répondent 200 via Kong. Une clé intermédiaire
+imprimée dans les logs Kong a été supersédée immédiatement par la génération
+finale.
+
+Les contrats Playwright ont été stabilisés à la racine : sélecteur accessible
+du filtre statut et navigation authentifiée directe par l’instance Vue Router.
+Preuve finale production : **115 passed, 1 skipped, 0 failed** avec 2 workers.
+Les runs à 6/11 workers ont montré des pages d’erreur Chromium et des crashs de
+processus, puis les contrats concernés ont repassé 23/23 à faible concurrence.
+
+Blocage restant : les clés fournisseurs externes nécessitent des consoles
+authentifiées ; Resend est partagé avec Rami et Taqwim ; la clé Intake LLM
+appartient au proxy LiteLLM. Aucune mutation transfrontalière n’est autorisée.
+US-231 reste donc `passes:false`. Recomptage frais : **14 stories ouvertes**.

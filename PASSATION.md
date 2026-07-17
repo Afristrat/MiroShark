@@ -136,3 +136,52 @@ autres projets restent exclusivement dans leurs sessions propriétaires.
 ## SIGNAL DE COMPLÉTION
 
 Ne jamais émettre `<promise>COMPLETE</promise>` tant que les 15 stories restantes ne sont pas toutes à `passes: true` et que les quality gates complets n’ont pas été vérifiés sur `main` au même HEAD.
+
+## MISE À JOUR NUCLÉAIRE DU 2026-07-18 — ROTATION INTERNE RECERTIFIÉE, CLÔTURE EXTERNE BLOQUÉE
+
+Cette section remplace l’état opérationnel antérieur lorsqu’il le contredit.
+
+### Acquis prouvés à l’instant de la campagne
+
+- Le HEAD fonctionnel et `origin/main` étaient identiques au commit
+  `6ad8127b62a9d5f32da747801c9fef7e2291a08a` (`[US-231] Durcir les prompts
+  d'arènes au niveau L99`). Le déploiement Coolify final a terminé sur ce commit.
+- Un nouveau jeu de secrets **internes MiroShark** a été généré et propagé :
+  Supabase/JWT, clés applicatives Bassira, scellement Intake, PostgreSQL et
+  secrets internes des services Supabase. Les neuf rôles PostgreSQL concernés
+  ont été synchronisés.
+- Les causes racines rencontrées pendant la rotation ont été corrigées : clés
+  Kong modernes distinctes des JWT legacy, clé AES Supavisor de taille valide,
+  et purge de son état chiffré devenu illisible après rotation.
+- Tous les conteneurs Supabase MiroShark critiques étaient sains ; l’application
+  redéployée répondait 200. Les empreintes des variables Coolify et du nouveau
+  conteneur correspondaient pour les secrets internes contrôlés, sans imprimer
+  leurs valeurs. Les JWT anon et service-role legacy répondaient 200 via Kong.
+- Une clé service-role intermédiaire a été imprimée par les logs Kong pendant
+  une tentative. Elle a été immédiatement rendue caduque par une nouvelle
+  génération complète ; aucune valeur n’est conservée dans cette passation.
+- La suite navigateur finale contre `https://bassira.ma`, exécutée avec deux
+  workers pour éviter les crashs Chromium observés sous forte concurrence, est
+  verte : **115 réussites, 1 ignorée, 0 échec** sur 116 tests. Le test ignoré
+  reste le round-trip mutatif de production soumis à `BASSIRA_E2E_WRITE=1`.
+
+### Ce qui n’est pas certifié et interdit de sur-vendre
+
+- Les credentials des fournisseurs externes visibles lors de l’incident n’ont
+  pas tous été rotatés : les consoles fournisseurs exigent une authentification
+  interactive non disponible dans cette campagne.
+- `RESEND_API_KEY` est partagée avec Rami et Taqwim. La rotater depuis MiroShark
+  casserait deux projets étrangers et violerait la frontière de propriété.
+- `INTAKE_LLM_API_KEY` cible le proxy LiteLLM, qui doit être traité dans sa propre
+  session propriétaire si une rotation est requise.
+- En conséquence, la **rotation interne MiroShark est recertifiée**, mais la
+  clôture SOP-001 exhaustive ne l’est pas. **US-231 reste `passes:false`.**
+
+### État Ralph frais et enchaînement
+
+Le recomptage système du PRD donne **14 stories** à `passes:false` : US-208,
+US-212b, US-225, US-226, US-227, US-229, US-230, US-231, US-232, US-233,
+US-234, US-235, US-236 et US-237. Le prochain travail hard-things-first reste
+la rotation des fournisseurs externes de MiroShark avec accès authentifié et
+coordination explicite des consommateurs partagés. Ne marquer US-231 terminée
+qu’après cette preuve. Ensuite, enchaîner sur US-225.

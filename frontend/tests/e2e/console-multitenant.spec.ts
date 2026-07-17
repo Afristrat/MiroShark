@@ -98,21 +98,10 @@ test.describe('US-117 — /console avec auth super-admin', () => {
     // User normal sans self_service_enabled → guard requiresSelfService KO
     await seedRegularUserAuth(page)
 
-    // Pré-charger une page publique pour stabiliser le store auth
-    await page.goto('/?lang=fr', { waitUntil: 'domcontentloaded' })
-    // Signal : lien « Mon espace » visible pour user normal authentifié
-    await page.waitForSelector('a[href="/client/dashboard"]', {
-      timeout: 15_000
-    })
-
-    // Navigation côté client vers /console
-    // (le store Pinia est stable et persisté en mémoire)
-    await page.evaluate(() => {
-      // Utilise l'API vue-router via window.__vueRouter si disponible
-      // Sinon pushState + popstate pour déclencher le guard
-      window.history.pushState({}, '', '/console?lang=fr')
-      window.dispatchEvent(new PopStateEvent('popstate'))
-    })
+    // Stabilise le store puis navigue avec l'instance Vue Router montée.
+    // Un pushState manuel contourne le routeur et peut déclencher un reload
+    // qui perd la session mockée avant l'évaluation du guard.
+    await navigateAuthenticated(page, '/console')
 
     // Doit rediriger vers /client/dashboard?reason=no-self-service
     await page.waitForURL(
