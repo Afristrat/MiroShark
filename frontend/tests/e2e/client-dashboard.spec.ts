@@ -86,7 +86,7 @@ test.describe('US-117 — /client/dashboard avec user normal (no self-service)',
     await mockDashboardApis(page)
 
     // Navigation 2 phases via « Mon espace » dans le header
-    await navigateAuthenticated(page, '/client/dashboard', 'a[href="/client/dashboard"]')
+    await navigateAuthenticated(page, '/client/dashboard')
 
     await page.waitForURL(
       (url: URL): boolean => url.pathname === '/client/dashboard',
@@ -105,7 +105,7 @@ test.describe('US-117 — /client/dashboard avec user normal (no self-service)',
     await seedRegularUserAuth(page)
     await mockDashboardApis(page)
 
-    await navigateAuthenticated(page, '/client/dashboard', 'a[href="/client/dashboard"]')
+    await navigateAuthenticated(page, '/client/dashboard')
 
     await page.waitForURL(
       (url: URL): boolean => url.pathname === '/client/dashboard',
@@ -123,7 +123,7 @@ test.describe('US-117 — /client/dashboard avec user normal (no self-service)',
     await seedRegularUserAuth(page)
     await mockDashboardApis(page)
 
-    await navigateAuthenticated(page, '/client/dashboard', 'a[href="/client/dashboard"]')
+    await navigateAuthenticated(page, '/client/dashboard')
 
     await page.waitForURL(
       (url: URL): boolean => url.pathname === '/client/dashboard',
@@ -149,7 +149,7 @@ test.describe('US-117 — /client/dashboard avec super-admin', () => {
     await seedSuperAdminAuth(page)
     await mockDashboardApis(page)
 
-    await navigateAuthenticated(page, '/client/dashboard', 'a[href="/client/dashboard"]')
+    await navigateAuthenticated(page, '/client/dashboard')
 
     await page.waitForURL(
       (url: URL): boolean => url.pathname === '/client/dashboard',
@@ -168,7 +168,7 @@ test.describe('US-117 — /client/dashboard avec super-admin', () => {
     await seedSuperAdminAuth(page)
     await mockDashboardApis(page)
 
-    await navigateAuthenticated(page, '/client/dashboard', 'a[href="/client/dashboard"]')
+    await navigateAuthenticated(page, '/client/dashboard')
 
     await page.waitForURL(
       (url: URL): boolean => url.pathname === '/client/dashboard',
@@ -197,7 +197,7 @@ test.describe('US-117 — /client/dashboard avec super-admin', () => {
     await seedSuperAdminAuth(page)
     await mockDashboardApis(page)
 
-    await navigateAuthenticated(page, '/client/dashboard', 'a[href="/client/dashboard"]')
+    await navigateAuthenticated(page, '/client/dashboard')
 
     await page.waitForURL(
       (url: URL): boolean => url.pathname === '/client/dashboard',
@@ -236,7 +236,7 @@ test.describe('Lot B (US-B5) — section "Mes demandes"', () => {
       }
     ])
 
-    await navigateAuthenticated(page, '/client/dashboard', 'a[href="/client/dashboard"]')
+    await navigateAuthenticated(page, '/client/dashboard')
     await page.waitForURL(
       (url: URL): boolean => url.pathname === '/client/dashboard',
       { timeout: 10_000 }
@@ -265,7 +265,7 @@ test.describe('Lot B (US-B5) — section "Mes demandes"', () => {
     await seedRegularUserAuth(page)
     await mockDashboardApis(page, [])
 
-    await navigateAuthenticated(page, '/client/dashboard', 'a[href="/client/dashboard"]')
+    await navigateAuthenticated(page, '/client/dashboard')
     await page.waitForURL(
       (url: URL): boolean => url.pathname === '/client/dashboard',
       { timeout: 10_000 }

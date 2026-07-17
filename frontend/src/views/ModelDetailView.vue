@@ -262,7 +262,7 @@ const props = defineProps({
 // L'eager glob est équivalent en performance à des imports nommés statiques :
 // Vite tree-shake et bundle les JSON dans le chunk de la vue.
 const _modulesGlob = import.meta.glob('../models/*.json', { eager: true })
-const REGISTRY = Object.entries(_modulesGlob).reduce((acc, [path, mod]) => {
+const REGISTRY = Object.entries(_modulesGlob).reduce((acc, [_path, mod]) => {
   const data = mod.default || mod
   if (data && typeof data.slug === 'string') {
     acc[data.slug] = data

@@ -62,7 +62,7 @@ async function loadDiff() {
 
   try {
     const resp = await (client as unknown as {
-      get: (url: string) => Promise<{ success: boolean; data: { diff: DiffOp[] } }>
+      get: (_url: string) => Promise<{ success: boolean; data: { diff: DiffOp[] } }>
     }).get(
       `/api/admin/reports/${encodeURIComponent(props.reportId)}/versions/${encodeURIComponent(props.fromVersionId)}/diff/${encodeURIComponent(props.toVersionId)}`
     )

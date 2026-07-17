@@ -738,7 +738,7 @@ const getCardStyle = (index) => {
     // Expanded state: grid layout
     const transition = 'transform 700ms cubic-bezier(0.23, 1, 0.32, 1), opacity 700ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.3s ease, border-color 0.3s ease'
 
-    const col = index % CARDS_PER_ROW
+    const _col = index % CARDS_PER_ROW
     const row = Math.floor(index / CARDS_PER_ROW)
 
     // Compute the number of cards in the current row to center each row

@@ -67,7 +67,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 defineEmits<{
-  (e: 'select-section', index: number): void
+  (_e: 'select-section', _index: number): void
 }>()
 
 // Compte les commentaires non résolus par section (matching par index ou anchor)

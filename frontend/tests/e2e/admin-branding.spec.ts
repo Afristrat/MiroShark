@@ -22,6 +22,23 @@ import { seedSuperAdminAuth, seedRegularUserAuth, navigateAuthenticated } from '
 // ── Mock de l'API branding ───────────────────────────────────────────────────
 
 async function mockBrandingApi(page: import('@playwright/test').Page): Promise<void> {
+  await page.route('**/api/admin/organizations**', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        success: true,
+        data: {
+          organizations: [{
+            id: '00000000-0000-0000-0000-000000000099',
+            name: 'AI-Mpower Bassira',
+            slug: 'aimpower-bassira',
+          }],
+        },
+      }),
+    })
+  })
+
   await page.route('**/api/admin/branding**', async (route) => {
     const method = route.request().method()
     const url = route.request().url()
@@ -172,11 +189,7 @@ test.describe('US-120 — /admin/branding accès super-admin', () => {
     await seedSuperAdminAuth(page)
     await mockBrandingApi(page)
 
-    await navigateAuthenticated(
-      page,
-      '/admin/branding',
-      'a[href="/client/dashboard"]'
-    )
+    await navigateAuthenticated(page, '/admin/branding')
 
     await page.waitForURL(
       (url: URL): boolean => url.pathname === '/admin/branding',
@@ -193,11 +206,7 @@ test.describe('US-120 — /admin/branding accès super-admin', () => {
     await seedSuperAdminAuth(page)
     await mockBrandingApi(page)
 
-    await navigateAuthenticated(
-      page,
-      '/admin/branding',
-      'a[href="/client/dashboard"]'
-    )
+    await navigateAuthenticated(page, '/admin/branding')
 
     await page.waitForURL(
       (url: URL): boolean => url.pathname === '/admin/branding',
@@ -205,7 +214,7 @@ test.describe('US-120 — /admin/branding accès super-admin', () => {
     )
 
     // Le topbar contient un lien vers /admin/quotes
-    const quotesLink = page.locator('a[href="/admin/quotes"]').first()
+    const quotesLink = page.locator('.ab-topbar a[href="/admin/quotes"]')
     await expect(quotesLink).toBeVisible({ timeout: 8_000 })
   })
 
@@ -215,11 +224,7 @@ test.describe('US-120 — /admin/branding accès super-admin', () => {
     await seedSuperAdminAuth(page)
     await mockBrandingApi(page)
 
-    await navigateAuthenticated(
-      page,
-      '/admin/branding',
-      'a[href="/client/dashboard"]'
-    )
+    await navigateAuthenticated(page, '/admin/branding')
 
     await page.waitForURL(
       (url: URL): boolean => url.pathname === '/admin/branding',
@@ -227,8 +232,8 @@ test.describe('US-120 — /admin/branding accès super-admin', () => {
     )
 
     // Input org_id visible
-    const orgInput = page.locator('input#ab-org-id')
-    await expect(orgInput).toBeVisible({ timeout: 8_000 })
+    const orgSelect = page.locator('select#ab-org-select')
+    await expect(orgSelect).toBeVisible({ timeout: 8_000 })
 
     // Bouton « Nouveau branding » visible
     const newBtn = page.locator('button:has-text("Nouveau branding"), button:has-text("New branding")').first()
@@ -241,11 +246,7 @@ test.describe('US-120 — /admin/branding accès super-admin', () => {
     await seedSuperAdminAuth(page)
     await mockBrandingApi(page)
 
-    await navigateAuthenticated(
-      page,
-      '/admin/branding',
-      'a[href="/client/dashboard"]'
-    )
+    await navigateAuthenticated(page, '/admin/branding')
 
     await page.waitForURL(
       (url: URL): boolean => url.pathname === '/admin/branding',
@@ -272,11 +273,7 @@ test.describe('US-120 — /admin/branding accès super-admin', () => {
     await seedSuperAdminAuth(page)
     await mockBrandingApi(page)
 
-    await navigateAuthenticated(
-      page,
-      '/admin/branding',
-      'a[href="/client/dashboard"]'
-    )
+    await navigateAuthenticated(page, '/admin/branding')
 
     await page.waitForURL(
       (url: URL): boolean => url.pathname === '/admin/branding',
@@ -307,11 +304,7 @@ test.describe('US-120 — /admin/branding accès super-admin', () => {
     await seedSuperAdminAuth(page)
     await mockBrandingApi(page)
 
-    await navigateAuthenticated(
-      page,
-      '/admin/branding',
-      'a[href="/client/dashboard"]'
-    )
+    await navigateAuthenticated(page, '/admin/branding')
 
     await page.waitForURL(
       (url: URL): boolean => url.pathname === '/admin/branding',
@@ -319,13 +312,13 @@ test.describe('US-120 — /admin/branding accès super-admin', () => {
     )
 
     // Remplir l'org_id et charger
-    const orgInput = page.locator('input#ab-org-id')
-    await expect(orgInput).toBeVisible({ timeout: 8_000 })
+    const orgSelect = page.locator('select#ab-org-select')
+    await expect(orgSelect).toBeVisible({ timeout: 8_000 })
 
     // Attendre que l'API mock réponde (la liste est pré-remplie avec l'org du super-admin)
     // Si la table ou l'état vide est visible → la vue s'est bien chargée
     const table = page.locator('.ab-table, table')
-    const emptyState = page.locator('.ab-state, .ab-preview-placeholder')
+    const emptyState = page.locator('.ab-empty-card, .ab-state')
 
     const tableVisible = await table.first().isVisible().catch(() => false)
     const emptyVisible = await emptyState.first().isVisible().catch(() => false)

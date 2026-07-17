@@ -282,7 +282,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import client from '../api/client'
@@ -398,7 +398,7 @@ onMounted(async () => {
 async function loadWorkflowState() {
   try {
     const resp = await (client as unknown as {
-      get: (url: string) => Promise<{ success: boolean; data: Record<string, unknown> }>
+      get: (_url: string) => Promise<{ success: boolean; data: Record<string, unknown> }>
     }).get(`/api/admin/reports/${encodeURIComponent(reportId.value)}/state`)
     if (resp.success && resp.data) {
       workflowState.value = String(resp.data.state || '')
@@ -411,7 +411,7 @@ async function loadWorkflowState() {
 async function loadReport() {
   try {
     const resp = await (client as unknown as {
-      get: (url: string) => Promise<{ success?: boolean; outline?: { sections: Array<{ title: string; content?: string }> }; markdown_content?: string }>
+      get: (_url: string) => Promise<{ success?: boolean; outline?: { sections: Array<{ title: string; content?: string }> }; markdown_content?: string }>
     }).get(`/api/report/${encodeURIComponent(reportId.value)}`)
 
     if (resp?.outline?.sections) {
@@ -431,7 +431,7 @@ async function loadReport() {
 async function loadVersions() {
   try {
     const resp = await (client as unknown as {
-      get: (url: string) => Promise<{ success: boolean; data: { versions: VersionRow[] } }>
+      get: (_url: string) => Promise<{ success: boolean; data: { versions: VersionRow[] } }>
     }).get(`/api/admin/reports/${encodeURIComponent(reportId.value)}/versions`)
     if (resp.success && resp.data) {
       versions.value = resp.data.versions || []
@@ -453,7 +453,7 @@ async function loadComments() {
   commentsLoading.value = true
   try {
     const resp = await (client as unknown as {
-      get: (url: string) => Promise<{ success: boolean; data: { comments: CommentRow[] } }>
+      get: (_url: string) => Promise<{ success: boolean; data: { comments: CommentRow[] } }>
     }).get(`/api/admin/reports/${encodeURIComponent(reportId.value)}/comments`)
     if (resp.success && resp.data) {
       comments.value = resp.data.comments || []
@@ -483,7 +483,7 @@ async function saveVersion() {
   saving.value = true
   try {
     const resp = await (client as unknown as {
-      post: (url: string, data: object) => Promise<{ success: boolean; data: { version: VersionRow } }>
+      post: (_url: string, _data: object) => Promise<{ success: boolean; data: { version: VersionRow } }>
     }).post(
       `/api/admin/reports/${encodeURIComponent(reportId.value)}/versions`,
       { markdown_content: editorContent.value, comment: versionComment.value || null }
@@ -559,7 +559,7 @@ async function addComment() {
   addingComment.value = true
   try {
     const resp = await (client as unknown as {
-      post: (url: string, data: object) => Promise<{ success: boolean; data: { comment: CommentRow } }>
+      post: (_url: string, _data: object) => Promise<{ success: boolean; data: { comment: CommentRow } }>
     }).post(
       `/api/admin/reports/${encodeURIComponent(reportId.value)}/comments`,
       { paragraph_anchor: newCommentAnchor.value, body: newCommentBody.value }
@@ -578,7 +578,7 @@ async function addComment() {
 async function resolveComment(commentId: string) {
   try {
     await (client as unknown as {
-      patch: (url: string, data: object) => Promise<{ success: boolean }>
+      patch: (_url: string, _data: object) => Promise<{ success: boolean }>
     }).patch(
       `/api/admin/reports/${encodeURIComponent(reportId.value)}/comments/${encodeURIComponent(commentId)}`,
       { resolved: true }

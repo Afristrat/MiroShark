@@ -13,7 +13,7 @@
  */
 
 import { expect, test } from '@playwright/test'
-import { seedSuperAdminAuth, seedRegularUserAuth } from './fixtures/auth'
+import { navigateAuthenticated, seedSuperAdminAuth, seedRegularUserAuth } from './fixtures/auth'
 
 test.describe('US-117 — /console guards (non-auth)', () => {
   // Ces tests dupliquent intentionnellement la couverture de console.spec.ts
@@ -54,31 +54,7 @@ test.describe('US-117 — /console avec auth super-admin', () => {
   }) => {
     await seedSuperAdminAuth(page)
 
-    // Étape 1 : page publique pour init auth store complet
-    await page.goto('/?lang=fr', { waitUntil: 'domcontentloaded' })
-
-    // Signal : lien « Console » dans le header (visible uniquement si
-    // isSuperAdmin || self_service_enabled — injecté par fetchSuperStatus)
-    // Ou « ADMIN » (super-admin only). Attente jusqu'à 15s (fetchSuperStatus async)
-    await page.waitForSelector(
-      'a.app-header__link[href="/console"], a[href="/admin/quotes"]',
-      { timeout: 15_000 }
-    )
-
-    // Étape 2 : navigation côté client vers /console (pas de rechargement)
-    await page.evaluate(() => { window.history.pushState({}, '', '/console') })
-    await page.dispatchEvent('body', 'popstate')
-
-    // Alternativement : click sur le lien Console du header
-    const consoleLink = page.locator('a.app-header__link[href="/console"]').first()
-    if (await consoleLink.isVisible().catch(() => false)) {
-      await consoleLink.click()
-    } else {
-      // Fallback : navigate directement
-      await page.goto('/console?lang=fr', { waitUntil: 'domcontentloaded' })
-    }
-
-    await page.waitForLoadState('load').catch(() => undefined)
+    await navigateAuthenticated(page, '/console')
 
     // Vérifier que l'URL est bien /console
     await page.waitForURL(
@@ -95,30 +71,7 @@ test.describe('US-117 — /console avec auth super-admin', () => {
   test('/console avec super-admin → bouton Lancer visible', async ({ page }) => {
     await seedSuperAdminAuth(page)
 
-    // Pré-charger une page publique pour stabiliser le store auth
-    await page.goto('/?lang=fr', { waitUntil: 'domcontentloaded' })
-    await page.waitForSelector(
-      'a.app-header__link[href="/console"], a[href="/admin/quotes"]',
-      { timeout: 15_000 }
-    )
-
-    // Si une modale d'onboarding bloque les interactions, la fermer.
-    // La modale a un bouton « Passer » ou peut être fermée via Escape.
-    const onbDialog = page.locator('[role="dialog"].onb-root, .onb-root')
-    if (await onbDialog.isVisible().catch(() => false)) {
-      const passerBtn = onbDialog.getByText('Passer').first()
-      if (await passerBtn.isVisible().catch(() => false)) {
-        await passerBtn.click({ force: true })
-      } else {
-        await page.keyboard.press('Escape')
-      }
-      // Attendre que le dialog disparaisse
-      await onbDialog.waitFor({ state: 'hidden', timeout: 3_000 }).catch(() => undefined)
-    }
-
-    // Cliquer sur le lien Console du header (vue-router push, pas de rechargement)
-    const consoleLink = page.locator('a.app-header__link[href="/console"]').first()
-    await consoleLink.click()
+    await navigateAuthenticated(page, '/console')
 
     await page.waitForURL((url: URL): boolean => url.pathname === '/console', {
       timeout: 10_000

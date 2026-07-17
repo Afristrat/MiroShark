@@ -4,6 +4,11 @@ import { waitForEmail, extractMagicLink, trashMessage } from './fixtures/gmail-r
 
 const ADMIN_EMAIL = 'medamine.mansouriidrissi@gmail.com'
 
+test.skip(
+  process.env.BASSIRA_E2E_WRITE !== '1',
+  'Test d’intégration mutatif : définir BASSIRA_E2E_WRITE=1 pour autoriser les écritures en production.'
+)
+
 async function createQuote(baseURL: string, customerEmail: string, tag: string) {
   const res = await fetch(`${baseURL}/api/quote`, {
     method: 'POST',

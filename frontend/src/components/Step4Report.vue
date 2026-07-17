@@ -616,7 +616,7 @@ const toggleRawResult = (timestamp, event) => {
   }
 }
 
-const toggleSectionContent = (idx) => {
+const _toggleSectionContent = (idx) => {
   if (!generatedSections.value[idx + 1]) return
   const newSet = new Set(expandedContent.value)
   if (newSet.has(idx)) {
@@ -1884,7 +1884,7 @@ const completedSections = computed(() => {
   return Object.keys(generatedSections.value).length
 })
 
-const progressPercent = computed(() => {
+const _progressPercent = computed(() => {
   if (totalSections.value === 0) return 0
   return Math.round((completedSections.value / totalSections.value) * 100)
 })
@@ -2132,7 +2132,7 @@ const fetchAgentLog = async () => {
 }
 
 // Extract final answer content - extract section content from LLM response
-const extractFinalContent = (response) => {
+const _extractFinalContent = (response) => {
   if (!response) return null
   
   // Try to extract content within <final_answer> tags

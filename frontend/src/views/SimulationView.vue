@@ -129,7 +129,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watchEffect, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watchEffect, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 
@@ -144,7 +144,7 @@ const route = useRoute()
 const router = useRouter()
 
 // Props
-const props = defineProps({
+defineProps({
   simulationId: String
 })
 
@@ -828,4 +828,3 @@ onMounted(async () => {
   outline-offset: 2px;
 }
 </style>
-

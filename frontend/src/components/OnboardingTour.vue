@@ -132,8 +132,6 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import { getTemplate } from '../api/templates'
-import { setPendingTemplate } from '../store/pendingUpload'
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },

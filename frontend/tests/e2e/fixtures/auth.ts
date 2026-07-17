@@ -303,19 +303,16 @@ export async function clearAuth(page: Page): Promise<void> {
  *
  * @param page        - Page Playwright
  * @param targetPath  - Chemin cible (ex: '/console', '/admin/quotes')
- * @param authSignal  - Sélecteur CSS du signal d'auth dans le header
- *                      (défaut: 'a[href="/client/dashboard"]')
  */
 export async function navigateAuthenticated(
   page: Page,
-  targetPath: string,
-  authSignal = 'a[href="/client/dashboard"]'
+  targetPath: string
 ): Promise<void> {
   // Phase 1 : charger une page publique
   await page.goto('/?lang=fr', { waitUntil: 'domcontentloaded' })
 
   // Phase 2 : attendre que l'auth soit stable (signal DOM)
-  await page.waitForSelector(authSignal, { timeout: 15_000 })
+  await page.waitForSelector('a[href="/client/dashboard"]', { timeout: 15_000 })
 
   // Phase 3 : fermer les modales d'onboarding si présentes
   const onbDialog = page.locator('[role="dialog"].onb-root, .onb-root')
@@ -332,15 +329,33 @@ export async function navigateAuthenticated(
   // Phase 4 : naviguer via le header link si disponible (client-side nav)
   // ou directement par URL en dernier recours
   const headerLink = page.locator(`a[href="${targetPath}"]`).first()
-  const headerLinkVisible = await headerLink.isVisible().catch(() => false)
+  let headerLinkVisible = await headerLink.isVisible().catch(() => false)
+
+  // Les routes super-admin vivent désormais dans un menu replié. Ouvrir
+  // ce menu conserve la navigation SPA et évite de perdre la session mockée
+  // lors d'un rechargement complet d'une route protégée.
+  if (!headerLinkVisible && await headerLink.count()) {
+    const adminToggle = page.locator('.app-header__admin-toggle').first()
+    if (await adminToggle.isVisible().catch(() => false)) {
+      await adminToggle.click()
+      headerLinkVisible = await headerLink.waitFor({ state: 'visible', timeout: 2_000 })
+        .then(() => true)
+        .catch(() => false)
+    }
+  }
 
   if (headerLinkVisible) {
     // Le lien existe dans le header → Vue Router push (no reload)
     await headerLink.click()
   } else {
-    // Pas de lien direct → naviguer par URL (full reload, store se reinit
-    // mais les mocks addInitScript sont toujours actifs)
-    await page.goto(`${targetPath}?lang=fr`, { waitUntil: 'domcontentloaded' })
-    await page.waitForLoadState('load').catch(() => undefined)
+    // Route profonde absente du menu : utiliser le routeur déjà monté pour
+    // conserver le store Pinia et la session injectée.
+    await page.evaluate((path: string) => {
+      const appEl = document.querySelector('#app')
+      const vueApp = (appEl as Element & { __vue_app__?: { config: { globalProperties: { $router?: { push: (target: string) => unknown } } } } })?.__vue_app__
+      const router = vueApp?.config.globalProperties.$router
+      if (!router) throw new Error('Vue Router indisponible')
+      return router.push(`${path}?lang=fr`)
+    }, targetPath)
   }
 }

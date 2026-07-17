@@ -70,11 +70,7 @@ test.describe('US-117 — /api/admin/organizations accès super-admin (via mock 
       })
     })
 
-    await navigateAuthenticated(
-      page,
-      '/admin/quotes',
-      'a[href="/admin/quotes"], a.app-header__link[href="/admin/quotes"]'
-    )
+    await navigateAuthenticated(page, '/admin/quotes')
 
     await page.waitForURL(
       (url: URL): boolean => url.pathname === '/admin/quotes',
@@ -82,6 +78,7 @@ test.describe('US-117 — /api/admin/organizations accès super-admin (via mock 
     )
 
     // Le topbar admin doit afficher un lien vers /admin/analytics
+    await page.locator('.app-header__admin-toggle').click()
     const analyticsLink = page.locator('a[href="/admin/analytics"], .aq-pill[href="/admin/analytics"]')
     await expect(analyticsLink.first()).toBeVisible({ timeout: 8_000 })
   })

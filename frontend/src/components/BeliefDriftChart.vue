@@ -165,7 +165,6 @@ import {
   canCopyImageToClipboard,
   buildTitledHeader,
 } from '../utils/chartExport'
-import { readChartPalette } from '../utils/css-vars'
 
 // US-013 : palette sémantique lue depuis les design tokens CSS au mount
 // (conservée pour chartExport / fallback). Les couleurs effectives du chart

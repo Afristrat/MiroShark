@@ -748,7 +748,7 @@ import {
   prepareSimulation,
   getPrepareStatus,
   getSimulationProfilesRealtime,
-  getSimulationConfig,
+  getSimulationConfig as _getSimulationConfig,
   getSimulationConfigRealtime,
   retrySimulationConfig,
   getRunStatus
@@ -899,7 +899,7 @@ let profilesTimer = null
 let configTimer = null
 
 // Computed
-const displayProfiles = computed(() => {
+const _displayProfiles = computed(() => {
   if (showProfilesDetail.value) {
     return profiles.value
   }
@@ -952,7 +952,7 @@ const handleStartSimulation = () => {
   emit('next-step', params)
 }
 
-const truncateBio = (bio) => {
+const _truncateBio = (bio) => {
   if (bio.length > 80) {
     return bio.substring(0, 80) + '...'
   }
@@ -1110,7 +1110,7 @@ const fetchProfilesRealtime = async () => {
     const res = await getSimulationProfilesRealtime(props.simulationId, 'reddit')
     
     if (res.success && res.data) {
-      const prevCount = profiles.value.length
+      const _prevCount = profiles.value.length
       profiles.value = res.data.profiles || []
       // Only update when API returns valid value, avoid overwriting existing valid value
       if (res.data.total_expected) {
@@ -1324,7 +1324,7 @@ onMounted(async () => {
       if (res.success && res.data && res.data.current_round > 0) {
         hasRunBefore.value = true
       }
-    } catch (err) {
+    } catch (_err) {
       // no run state — fresh simulation
     }
 

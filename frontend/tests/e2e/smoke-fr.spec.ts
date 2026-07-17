@@ -69,7 +69,7 @@ test.describe('FR — smoke', () => {
     await expect(faq.locator('details').first()).toBeVisible()
   })
 
-  test('/devis affiche stepper 3 dots + Step 1 avec 3 radios + banner', async ({ page }) => {
+  test('/devis affiche le stepper et les champs structurés du Temps 1', async ({ page }) => {
     await gotoLocalized(page, '/devis', 'fr')
 
     // Banner top "Votre message arrive directement aux fondateurs".
@@ -79,15 +79,9 @@ test.describe('FR — smoke', () => {
     const steps = page.locator('.quote-step')
     await expect(steps).toHaveCount(3)
 
-    // Step 1 actif et 3 radio options. Les inputs natifs sont visuellement
-    // masqués (custom radio Stitch : opacity:0 + label stylé) — on vérifie
-    // donc l'attachement DOM, pas la visibilité.
-    const radios = page.locator('input[type="radio"]')
-    await expect(radios.first()).toBeAttached()
-    expect(await radios.count()).toBeGreaterThanOrEqual(3)
-
-    // Et au moins un label de radio est visible (preuve que Step 1 est rendu).
-    await expect(page.locator('.quote-radio-group label').first()).toBeVisible()
+    await expect(page.locator('.quote-step-content textarea').first()).toBeVisible()
+    await expect(page.locator('.quote-option-row input[type="text"]')).toHaveCount(2)
+    await expect(page.locator('.quote-step-content input[type="date"]')).toBeAttached()
   })
 
   test('/explore charge sans erreur 4xx/5xx', async ({ page }) => {

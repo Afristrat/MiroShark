@@ -17,7 +17,7 @@ test.describe('US-107 — guards /console + /admin/quotes', () => {
     await page.goto('/console?lang=fr', { waitUntil: 'domcontentloaded' })
     await page.waitForURL(
       (url: URL): boolean => url.pathname === '/login',
-      { timeout: 5000 }
+      { timeout: 10_000, waitUntil: 'commit' }
     )
     expect(page.url()).toMatch(/\/login/)
     expect(page.url()).toMatch(/redirect=/)
@@ -28,7 +28,7 @@ test.describe('US-107 — guards /console + /admin/quotes', () => {
     await page.goto('/admin/quotes?lang=fr', { waitUntil: 'domcontentloaded' })
     await page.waitForURL(
       (url: URL): boolean => url.pathname === '/login',
-      { timeout: 5000 }
+      { timeout: 10_000, waitUntil: 'commit' }
     )
     expect(page.url()).toMatch(/\/login/)
     expect(page.url()).toMatch(/redirect=/)

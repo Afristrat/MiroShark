@@ -620,7 +620,7 @@ function mergeCandidatesFor(entity) {
   )
 }
 
-function additionsByType(type) {
+function _additionsByType(type) {
   return additions.value.filter(a => a.entity_type === type)
 }
 

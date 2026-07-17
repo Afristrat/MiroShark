@@ -482,7 +482,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { chatWithReport, getReport, getAgentLog } from '../api/report'
 import { interviewAgents, getSimulationProfilesRealtime, getSimulationActions } from '../api/simulation'
 import { renderMarkdown } from '../utils/markdown'
@@ -499,8 +499,8 @@ const emit = defineEmits(['add-log', 'update-status'])
 const activeTab = ref('chat')
 const chatTarget = ref('report_agent')
 const showAgentDropdown = ref(false)
-const dropdownMenuRef = ref(null)
-const dropdownStyle = ref({})
+const _dropdownMenuRef = ref(null)
+const _dropdownStyle = ref({})
 const showProfilePopup = ref(false)
 const profilePopupAgent = ref(null)
 const profilePopupActions = ref([])
@@ -600,7 +600,7 @@ const toggleSectionCollapse = (idx) => {
   collapsedSections.value = newSet
 }
 
-const selectChatTarget = (target) => {
+const _selectChatTarget = (target) => {
   chatTarget.value = target
   if (target === 'report_agent') {
     showAgentDropdown.value = false

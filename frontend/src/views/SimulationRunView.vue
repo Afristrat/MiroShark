@@ -138,7 +138,7 @@ const route = useRoute()
 const router = useRouter()
 
 // Props
-const props = defineProps({
+defineProps({
   simulationId: String
 })
 
@@ -248,7 +248,7 @@ const handleStopSimulation = async () => {
       try {
         await closeSimulationEnv({ simulation_id: currentSimulationId.value, timeout: 10 })
         addLog('Simulation environment closed')
-      } catch (closeErr) {
+      } catch (_closeErr) {
         addLog('Graceful close failed, attempting force stop...')
         await stopSimulation({ simulation_id: currentSimulationId.value })
         addLog('Simulation force stopped')
@@ -293,7 +293,7 @@ const handleGoBack = async () => {
           timeout: 10
         })
         addLog('Simulation environment closed')
-      } catch (closeErr) {
+      } catch (_closeErr) {
         addLog(`Failed to close simulation environment, attempting force stop...`)
         try {
           await stopSimulation({ simulation_id: currentSimulationId.value })
@@ -345,7 +345,7 @@ const loadSimulationData = async () => {
           minutesPerRound.value = configRes.data.time_config.minutes_per_round
           addLog(`Time config: ${minutesPerRound.value} minutes per round`)
         }
-      } catch (configErr) {
+      } catch (_configErr) {
         addLog(`Failed to get time config, using default: ${minutesPerRound.value} min/round`)
       }
 

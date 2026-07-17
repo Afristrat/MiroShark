@@ -54,7 +54,7 @@ test.describe('EN — smoke', () => {
     await expect(faq.locator('details').first()).toBeVisible()
   })
 
-  test('/devis affiche stepper 3 dots + Step 1 + banner EN', async ({ page }) => {
+  test('/devis affiche le stepper et les champs structurés du Temps 1 en anglais', async ({ page }) => {
     await gotoLocalized(page, '/devis', 'en')
 
     await expect(page.getByText(FX.quote.trustBannerSnippet, { exact: false })).toBeVisible()
@@ -62,12 +62,9 @@ test.describe('EN — smoke', () => {
     const steps = page.locator('.quote-step')
     await expect(steps).toHaveCount(3)
 
-    // Inputs natifs masqués (custom radio) — on assert sur l'attachement DOM.
-    const radios = page.locator('input[type="radio"]')
-    await expect(radios.first()).toBeAttached()
-    expect(await radios.count()).toBeGreaterThanOrEqual(3)
-
-    await expect(page.locator('.quote-radio-group label').first()).toBeVisible()
+    await expect(page.locator('.quote-step-content textarea').first()).toBeVisible()
+    await expect(page.locator('.quote-option-row input[type="text"]')).toHaveCount(2)
+    await expect(page.locator('.quote-step-content input[type="date"]')).toBeAttached()
   })
 
   test('/explore charge sans erreur 4xx/5xx', async ({ page }) => {

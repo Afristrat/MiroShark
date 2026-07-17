@@ -740,7 +740,7 @@ Download .md
 </template>
 
 <script setup>
-import { ref, computed, watch, watchEffect, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   startSimulation,
@@ -1032,15 +1032,15 @@ const chronologicalActions = computed(() => {
 })
 
 // Per-platform action counts
-const twitterActionsCount = computed(() => {
+const _twitterActionsCount = computed(() => {
   return allActions.value.filter(a => a.platform === 'twitter').length
 })
 
-const redditActionsCount = computed(() => {
+const _redditActionsCount = computed(() => {
   return allActions.value.filter(a => a.platform === 'reddit').length
 })
 
-const polymarketActionsCount = computed(() => {
+const _polymarketActionsCount = computed(() => {
   return allActions.value.filter(a => a.platform === 'polymarket').length
 })
 
@@ -1375,7 +1375,7 @@ const fetchRunStatusDetail = async () => {
       const serverActions = res.data.all_actions || []
       
       // Incrementally add new actions (deduplicated)
-      let newActionsAdded = 0
+      let _newActionsAdded = 0
       serverActions.forEach(action => {
         // Generate unique ID
         const actionId = action.id || `${action.timestamp}-${action.platform}-${action.agent_id}-${action.action_type}`
@@ -1386,7 +1386,7 @@ const fetchRunStatusDetail = async () => {
             ...action,
             _uniqueId: actionId
           })
-          newActionsAdded++
+          _newActionsAdded++
         }
       })
       
@@ -1591,7 +1591,7 @@ const tryResumeOrStart = async () => {
         addLog('Previous simulation failed with no data — starting fresh')
       }
     }
-  } catch (err) {
+  } catch (_err) {
     // No existing state — that's fine, start fresh
   }
 

@@ -665,7 +665,7 @@ const loadExistingSimulations = async () => {
     if (res.success && res.data) {
       existingSimulations.value = res.data
     }
-  } catch (err) {
+  } catch (_err) {
     // silent
   }
 }
@@ -768,7 +768,7 @@ const graphStats = computed(() => {
   return { nodes, edges, types }
 })
 
-const formatDate = (dateStr) => {
+const _formatDate = (dateStr) => {
   if (!dateStr) return '--:--:--'
   const d = new Date(dateStr)
   return d.toLocaleTimeString('en-US', { hour12: false }) + '.' + d.getMilliseconds()

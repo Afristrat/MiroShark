@@ -188,7 +188,7 @@ test('accès super-admin → page review rendue avec topbar', async ({ page }) =
   await seedSuperAdminAuth(page)
   await mockReportApis(page)
 
-  await navigateAuthenticated(page, REVIEW_PATH, 'a[href="/admin/quotes"]')
+  await navigateAuthenticated(page, REVIEW_PATH)
 
   // La page doit afficher la topbar avec le report ID
   await page.waitForSelector('.arr-topbar', { timeout: 15_000 })
@@ -210,7 +210,7 @@ test('toggle mode Markdown brut → RawMdEditor visible', async ({ page }) => {
   await seedSuperAdminAuth(page)
   await mockReportApis(page)
 
-  await navigateAuthenticated(page, REVIEW_PATH, 'a[href="/admin/quotes"]')
+  await navigateAuthenticated(page, REVIEW_PATH)
   await page.waitForSelector('.arr-topbar', { timeout: 15_000 })
 
   // Trouver le bouton toggle Raw/Rich
@@ -238,7 +238,7 @@ test('bouton Sauvegarder → modal s\'ouvre avec champ commentaire', async ({ pa
   await seedSuperAdminAuth(page)
   await mockReportApis(page)
 
-  await navigateAuthenticated(page, REVIEW_PATH, 'a[href="/admin/quotes"]')
+  await navigateAuthenticated(page, REVIEW_PATH)
   await page.waitForSelector('.arr-topbar', { timeout: 15_000 })
 
   // Cliquer sur le bouton Sauvegarder
@@ -270,7 +270,7 @@ test('bouton Comparer désactivé quand aucune version sauvegardée', async ({ p
   await seedSuperAdminAuth(page)
   await mockReportApis(page)
 
-  await navigateAuthenticated(page, REVIEW_PATH, 'a[href="/admin/quotes"]')
+  await navigateAuthenticated(page, REVIEW_PATH)
   await page.waitForSelector('.arr-topbar', { timeout: 15_000 })
 
   // Le bouton Comparer doit être désactivé (versions.length < 2)
@@ -287,7 +287,7 @@ test('ajout commentaire → liste annotations mise à jour', async ({ page }) =>
   await seedSuperAdminAuth(page)
   await mockReportApis(page)
 
-  await navigateAuthenticated(page, REVIEW_PATH, 'a[href="/admin/quotes"]')
+  await navigateAuthenticated(page, REVIEW_PATH)
   await page.waitForSelector('.arr-topbar', { timeout: 15_000 })
 
   // Trouver le textarea de commentaire
@@ -369,7 +369,7 @@ test('diff modal s\'ouvre quand 2+ versions disponibles', async ({ page }) => {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, data: { comments: [], count: 0 } }) })
   })
 
-  await navigateAuthenticated(page, REVIEW_PATH, 'a[href="/admin/quotes"]')
+  await navigateAuthenticated(page, REVIEW_PATH)
   await page.waitForSelector('.arr-topbar', { timeout: 15_000 })
 
   // Le bouton Comparer doit être activé (2 versions)

@@ -78,11 +78,7 @@ test.describe('US-117 — /admin/quotes accès super-admin', () => {
   test('/admin/quotes avec super-admin → h1 visible', async ({ page }) => {
     await seedSuperAdminAuth(page)
 
-    await navigateAuthenticated(
-      page,
-      '/admin/quotes',
-      'a[href="/admin/quotes"], a.app-header__link[href="/admin/quotes"]'
-    )
+    await navigateAuthenticated(page, '/admin/quotes')
 
     await page.waitForURL(
       (url: URL): boolean => url.pathname === '/admin/quotes',
@@ -98,11 +94,7 @@ test.describe('US-117 — /admin/quotes accès super-admin', () => {
   test('/admin/quotes super-admin → filtre status visible', async ({ page }) => {
     await seedSuperAdminAuth(page)
 
-    await navigateAuthenticated(
-      page,
-      '/admin/quotes',
-      'a[href="/admin/quotes"], a.app-header__link[href="/admin/quotes"]'
-    )
+    await navigateAuthenticated(page, '/admin/quotes')
 
     await page.waitForURL(
       (url: URL): boolean => url.pathname === '/admin/quotes',
@@ -122,11 +114,7 @@ test.describe('US-117 — /admin/quotes accès super-admin', () => {
   }) => {
     await seedSuperAdminAuth(page)
 
-    await navigateAuthenticated(
-      page,
-      '/admin/quotes',
-      'a[href="/admin/quotes"], a.app-header__link[href="/admin/quotes"]'
-    )
+    await navigateAuthenticated(page, '/admin/quotes')
 
     await page.waitForURL(
       (url: URL): boolean => url.pathname === '/admin/quotes',
@@ -134,6 +122,7 @@ test.describe('US-117 — /admin/quotes accès super-admin', () => {
     )
 
     // Le topbar de AdminQuotesView affiche un lien vers /admin/analytics
+    await page.locator('.app-header__admin-toggle').click()
     const analyticsLink = page.locator('a[href="/admin/analytics"]').first()
     await expect(analyticsLink).toBeVisible({ timeout: 8_000 })
   })
@@ -141,11 +130,7 @@ test.describe('US-117 — /admin/quotes accès super-admin', () => {
   test('/admin/quotes super-admin → table OU état vide visibles', async ({ page }) => {
     await seedSuperAdminAuth(page)
 
-    await navigateAuthenticated(
-      page,
-      '/admin/quotes',
-      'a[href="/admin/quotes"], a.app-header__link[href="/admin/quotes"]'
-    )
+    await navigateAuthenticated(page, '/admin/quotes')
 
     await page.waitForURL(
       (url: URL): boolean => url.pathname === '/admin/quotes',
@@ -172,11 +157,7 @@ test.describe('US-117 — /admin/quotes accès super-admin', () => {
   }) => {
     await seedSuperAdminAuth(page)
 
-    await navigateAuthenticated(
-      page,
-      '/admin/quotes',
-      'a[href="/admin/quotes"], a.app-header__link[href="/admin/quotes"]'
-    )
+    await navigateAuthenticated(page, '/admin/quotes')
 
     await page.waitForURL(
       (url: URL): boolean => url.pathname === '/admin/quotes',

@@ -147,10 +147,12 @@ test.describe('US-117 — /signup UI', () => {
   }) => {
     await gotoLocalized(page, '/signup', 'fr')
 
-    // Champs texte (nom + orga)
-    const textInputs = page.locator('input[type="text"]')
-    const textCount = await textInputs.count()
-    expect(textCount, 'Au moins 2 champs texte (nom + organisation)').toBeGreaterThanOrEqual(2)
+    // Champs nom + organisation, vérifiés par leur nom accessible plutôt que
+    // par le type HTML implicite, que le navigateur peut omettre du DOM sérialisé.
+    await expect(page.getByRole('textbox', { name: 'Nom complet', exact: true })).toBeVisible()
+    await expect(
+      page.getByRole('textbox', { name: 'Nom de votre organisation', exact: true })
+    ).toBeVisible()
 
     // Champ email
     await expect(page.locator('input[type="email"]').first()).toBeVisible()

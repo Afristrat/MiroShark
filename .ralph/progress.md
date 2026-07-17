@@ -2281,3 +2281,28 @@ Dette distincte confirmée, non masquée : ESLint retourne 0 erreur mais 298
 warnings historiques ; pytest retourne 47 warnings ; Vite émet des warnings de
 compression dupliquée et de chunks > 500 kB. Ces dettes ne sont pas causées par
 les mises à niveau et nécessitent un chantier qualité dédié.
+
+### 2026-07-17 — Recertification du commit `162f9a4` — VERTE LOCALEMENT
+
+Audit du diff : 45 fichiers et 7 316+/7 175− au brut ; 43 fichiers et
+448+/307− en ignorant les espaces. Les changements étaient donc partiellement
+sémantiques et ont été contrôlés comme tels.
+
+Corrections de recertification : suppression des 298 warnings ESLint dans les
+composants et vues touchés ; contrats Playwright actualisés pour la navigation
+admin repliée, le nouvel intake `/devis`, le checkout direct Crisis Drill et le
+formulaire `/signup` ; navigation authentifiée stabilisée via Vue Router. Le test
+mutatif `client-account-email-roundtrip` est désormais fail-safe par défaut et ne
+s’exécute qu’avec `BASSIRA_E2E_WRITE=1`.
+
+Preuves fraîches : ESLint **0 erreur / 0 warning** ; Ruff vert ; mypy **0 erreur
+sur 116 fichiers source** ; build Vite vert (**948 modules**, aucun warning de
+chunk) ; parité i18n **2 060 clés** ; audits npm racine et frontend **0
+vulnérabilité** ; pytest complet **2 321 passed, 60 skipped, 0 failed** ;
+Playwright complet contre `https://bassira.ma` **113 passed, 1 skipped, 0
+failed**. Réserve explicite : le test ignoré effectue une écriture réelle en
+production et n’a pas été autorisé pendant cette campagne en lecture seule.
+
+État de permanence : corrections et preuves documentées dans l’arbre local, non
+commitées/non poussées à ce stade. Prochaine action : commit/push atomique,
+vérification du déploiement, puis **US-IQ-05**.

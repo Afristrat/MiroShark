@@ -187,7 +187,6 @@ import {
   canCopyImageToClipboard,
   buildTitledHeader,
 } from '../utils/chartExport'
-import { readChartPalette } from '../utils/css-vars'
 
 // US-013 : palette sémantique conservée pour chartExport (canvas).
 

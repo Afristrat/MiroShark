@@ -509,7 +509,7 @@ const fetchReplay = async () => {
   }
 }
 
-const loadData = fetchReplay
+const _loadData = fetchReplay
 
 // ─── Playback ───────────────────────────────────────────────────
 const togglePlay = () => {

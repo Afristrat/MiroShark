@@ -137,7 +137,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watchEffect, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, watchEffect, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import GraphPanel from '../components/GraphPanel.vue'
 import Step1GraphBuild from '../components/Step1GraphBuild.vue'

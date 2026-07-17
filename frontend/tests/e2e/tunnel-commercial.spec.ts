@@ -1,5 +1,5 @@
 /**
- * Tunnel commercial — /offres → /devis (US-010, parcours A1-A8 US-IQ-01)
+ * Tunnel commercial — /offres → checkout ou /devis
  *
  * Vérifie que le CTA d'un package sur /offres redirige bien vers /devis
  * et que le Temps 1 (« La décision ») du nouveau parcours structuré
@@ -19,7 +19,16 @@ import { expect, test } from '@playwright/test'
 import { gotoLocalized } from './helpers'
 
 test.describe('Tunnel commercial /offres → /devis', () => {
-  test('CTA Crisis Drill amène sur /devis avec ?package=crisis_drill_24h', async ({ page }) => {
+  test('CTA Crisis Drill ouvre le checkout direct avec le bon package', async ({ page }) => {
+    let requestedPackage = ''
+    await page.route('**/api/stripe/create-checkout-session', async (route) => {
+      requestedPackage = (await route.request().postDataJSON()).package_id
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, data: { checkout_url: '/offres?checkout_test=1' } }),
+      })
+    })
     await gotoLocalized(page, '/offres', 'fr')
 
     // 10 cards rendues dans le carousel (1 par package, dont 9 packs + custom).
@@ -34,22 +43,8 @@ test.describe('Tunnel commercial /offres → /devis', () => {
     await crisisCta.scrollIntoViewIfNeeded()
     await crisisCta.click()
 
-    // Navigation vers /devis avec le package en query.
-    await expect(page).toHaveURL(/\/devis(\?|$)/)
-    await expect(page).toHaveURL(/package=crisis_drill_24h/)
-
-    // Temps 1 visible : stepper 3 dots + le champ A1 (décision).
-    const steps = page.locator('.quote-step')
-    await expect(steps).toHaveCount(3)
-
-    const decisionField = page.locator('.quote-step-content textarea')
-    await expect(decisionField).toBeAttached()
-
-    // GARDE-FOU : on s'assure qu'aucun bouton de soumission n'a été cliqué.
-    // L'étape courante doit toujours être 1 (vérifié par le label visible).
-    const stepCurrent = page.locator('.quote-step--current')
-    await expect(stepCurrent.first()).toBeVisible()
-    // Idempotent : on quitte la page sans soumettre.
+    await expect(page).toHaveURL(/checkout_test=1/)
+    expect(requestedPackage).toBe('crisis_drill_24h')
   })
 
   test('Pre-Footer CTA (sans query) amène sur /devis', async ({ page }) => {

@@ -152,23 +152,7 @@ test.describe('US-130 — /admin/reports/:id/tracking guards (non-auth)', () => 
 test.describe('US-130 — /admin/reports/:id/tracking guard user normal', () => {
   test('tracking avec user normal → redirect /client/dashboard', async ({ page }) => {
     await seedRegularUserAuth(page)
-
-    await page.goto('/?lang=fr', { waitUntil: 'domcontentloaded' })
-    await page.waitForSelector('a[href="/client/dashboard"]', { timeout: 15_000 })
-
-    await page.evaluate((path: string) => {
-      const appEl = document.querySelector('#app')
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const vueApp = (appEl as any)?.__vue_app__
-      if (vueApp) {
-        const router = vueApp.config.globalProperties.$router
-        if (router) {
-          router.push(`${path}?lang=fr`)
-          return
-        }
-      }
-      window.location.href = `${path}?lang=fr`
-    }, TARGET_PATH)
+    await navigateAuthenticated(page, TARGET_PATH)
 
     await page.waitForURL(
       (url: URL): boolean => url.pathname === '/client/dashboard',
@@ -190,7 +174,7 @@ test.describe('US-130 — /admin/reports/:id/tracking accès super-admin', () =>
     await seedSuperAdminAuth(page)
     await mockDeliveryApi(page)
 
-    await navigateAuthenticated(page, TARGET_PATH, 'a[href="/client/dashboard"]')
+    await navigateAuthenticated(page, TARGET_PATH)
 
     await page.waitForURL(
       (url: URL): boolean => url.pathname.startsWith('/admin/reports/'),
@@ -210,7 +194,7 @@ test.describe('US-130 — /admin/reports/:id/tracking accès super-admin', () =>
     await seedSuperAdminAuth(page)
     await mockDeliveryApi(page)
 
-    await navigateAuthenticated(page, TARGET_PATH, 'a[href="/client/dashboard"]')
+    await navigateAuthenticated(page, TARGET_PATH)
 
     await page.waitForURL(
       (url: URL): boolean => url.pathname.startsWith('/admin/reports/'),
@@ -243,7 +227,7 @@ test.describe('US-130 — /admin/reports/:id/tracking accès super-admin', () =>
     await seedSuperAdminAuth(page)
     await mockDeliveryApi(page)
 
-    await navigateAuthenticated(page, TARGET_PATH, 'a[href="/client/dashboard"]')
+    await navigateAuthenticated(page, TARGET_PATH)
 
     await page.waitForURL(
       (url: URL): boolean => url.pathname.startsWith('/admin/reports/'),
@@ -261,7 +245,7 @@ test.describe('US-130 — /admin/reports/:id/tracking accès super-admin', () =>
     await seedSuperAdminAuth(page)
     await mockDeliveryApi(page)
 
-    await navigateAuthenticated(page, TARGET_PATH, 'a[href="/client/dashboard"]')
+    await navigateAuthenticated(page, TARGET_PATH)
 
     await page.waitForURL(
       (url: URL): boolean => url.pathname.startsWith('/admin/reports/'),

@@ -331,7 +331,7 @@ import * as d3 from 'd3'
 import { getSimulationActions } from '../api/simulation'
 import { readChartPalette } from '../utils/css-vars'
 
-const { t } = useI18n()
+const { t: _t } = useI18n()
 
 // US-052 : palette catégorielle des entités graph + couleur de surlignage
 // (sélection D3) lue depuis les design tokens CSS au lieu d'hex hardcodés.
@@ -348,7 +348,7 @@ const props = defineProps({
   simulationId: String
 })
 
-const emit = defineEmits(['refresh', 'toggle-maximize'])
+const _emit = defineEmits(['refresh', 'toggle-maximize'])
 
 // Agent actions state
 const agentActions = ref([])
@@ -390,12 +390,12 @@ const copyText = (text) => {
 const wasSimulating = ref(false) // Track whether simulation was previously running
 
 // Dismiss simulation finished hint
-const dismissFinishedHint = () => {
+const _dismissFinishedHint = () => {
   showSimulationFinishedHint.value = false
 }
 
 // Watch isSimulating changes to detect simulation end
-watch(() => props.isSimulating, (newValue, oldValue) => {
+watch(() => props.isSimulating, (newValue, _oldValue) => {
   if (wasSimulating.value && !newValue) {
     // Transitioned from simulating to not simulating, show finished hint
     showSimulationFinishedHint.value = true

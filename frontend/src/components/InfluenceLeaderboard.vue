@@ -318,7 +318,7 @@ const scrollThread = () => {
   }
 }
 
-const shareQA = (qa) => {
+const _shareQA = (qa) => {
   const name = interviewAgent.value?.agent_name || 'Agent'
   const text = `I interviewed ${name} (AI simulation agent)\n\nQ: ${qa.question}\n\nA: ${qa.answer}`
   const card = text.length > 280 ? text.slice(0, 277) + '...' : text

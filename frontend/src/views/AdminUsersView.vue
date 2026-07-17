@@ -632,7 +632,7 @@ async function loadAllOrgs() {
           .filter((o) => o.id)
           .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
       : []
-  } catch (err) {
+  } catch (_err) {
     // Silencieux — la section Orgs gère l'absence (dropdown vide).
     allOrgs.value = []
   }

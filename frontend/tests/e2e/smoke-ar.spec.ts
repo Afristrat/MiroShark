@@ -69,7 +69,7 @@ test.describe('AR — smoke + RTL', () => {
     await expect(faq.locator('details').first()).toBeVisible()
   })
 
-  test('/devis RTL + Step 1 + banner AR', async ({ page }) => {
+  test('/devis RTL affiche les champs structurés du Temps 1 en arabe', async ({ page }) => {
     await gotoLocalized(page, '/devis', 'ar')
 
     await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
@@ -80,12 +80,9 @@ test.describe('AR — smoke + RTL', () => {
     const steps = page.locator('.quote-step')
     await expect(steps).toHaveCount(3)
 
-    // Inputs natifs masqués (custom radio) — on assert sur l'attachement DOM.
-    const radios = page.locator('input[type="radio"]')
-    await expect(radios.first()).toBeAttached()
-    expect(await radios.count()).toBeGreaterThanOrEqual(3)
-
-    await expect(page.locator('.quote-radio-group label').first()).toBeVisible()
+    await expect(page.locator('.quote-step-content textarea').first()).toBeVisible()
+    await expect(page.locator('.quote-option-row input[type="text"]')).toHaveCount(2)
+    await expect(page.locator('.quote-step-content input[type="date"]')).toBeAttached()
   })
 
   test('/explore RTL et pas d\'erreur 4xx/5xx', async ({ page }) => {

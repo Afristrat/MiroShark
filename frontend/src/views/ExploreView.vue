@@ -506,7 +506,7 @@ const shareCardSrc = (item) => {
   return getShareCardUrl(item.simulation_id)
 }
 
-const onThumbError = (event, item) => {
+const onThumbError = (event, _item) => {
   // Hide broken images (e.g. if the simulation was unpublished between
   // fetch and image load) — fall back to a monochrome tile so the card
   // still lays out evenly.

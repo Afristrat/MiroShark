@@ -22,7 +22,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: string): void
+  (_e: 'update:modelValue', _value: string): void
 }>()
 
 const rootEl = ref<HTMLElement | null>(null)

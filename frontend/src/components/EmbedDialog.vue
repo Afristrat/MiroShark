@@ -536,7 +536,7 @@ const copy = async (which) => {
     setTimeout(() => {
       if (copied.value === which) copied.value = ''
     }, 1800)
-  } catch (err) {
+  } catch (_err) {
     // Fallback: select-able textarea
     const ta = document.createElement('textarea')
     ta.value = text
@@ -596,7 +596,7 @@ const loadOutcome = async () => {
   try {
     const res = await getSimulationOutcome(props.simulationId)
     _applyOutcomeToForm(res?.data || null)
-  } catch (err) {
+  } catch (_err) {
     // 404 here means the simulation doesn't exist yet — surface nothing.
     outcome.value = null
   }

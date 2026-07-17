@@ -574,13 +574,13 @@ import { useI18n } from 'vue-i18n'
 import { getSettings, updateSettings, testLlmConnection, testWebhook } from '../api/settings'
 import { getMcpStatus } from '../api/mcp'
 
-const { t } = useI18n()
+const { t: _t } = useI18n()
 
 const props = defineProps({
   open: { type: Boolean, required: true }
 })
 
-const emit = defineEmits(['close'])
+const _emit = defineEmits(['close'])
 
 // ─── Provider catalog & curated model lists ───────────────────────────────────
 
@@ -773,7 +773,7 @@ const MODEL_TIERS = [
   { label: 'Capable (> $5/M)', max: Infinity },
 ]
 
-const modelTiers = computed(() => {
+const _modelTiers = computed(() => {
   if (modelList.value.length === 0) return []
   return MODEL_TIERS.map(tier => ({
     label: tier.label,
