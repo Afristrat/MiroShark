@@ -2371,7 +2371,7 @@ session propriétaire correspondante, puis diagnostiquée, rotatée et recertifi
 uniquement depuis cette session. Aucun ordre d’exécution inter-projets ne fait
 partie de la passation Bassira.
 
-### 2026-07-17 — [US-IQ-06] Vue admin Intake enrichie — CLÔTURÉE LOCALEMENT
+### 2026-07-17 — [US-IQ-06] Vue admin Intake enrichie — CLÔTURÉE
 
 Le détail super-admin d’un devis lié à Intake expose désormais le brief
 structuré, le transcript intégral durable, les seuls libellés de sujets
@@ -2388,5 +2388,6 @@ Preuves locales : test backend ciblé **46 réussites**, suite backend complète
 **2 325 réussites, 60 ignorées, 0 échec** ; Ruff et ESLint zéro erreur/warning ;
 mypy zéro erreur sur 116 fichiers ; build Vite 948 modules ; parité i18n stricte
 **2 085 clés** ; Playwright IQ-06 contre le build local **1 réussite, 0 échec**.
-Reste avant permanence totale : push, déploiement et replay Playwright en
-production.
+Permanence vérifiée : commit fonctionnel `ce6faf6` poussé, image Coolify active
+exacte `ce6faf66fc94dee4ce0647216507599ea7cf8d56`, `/health` = 200 et replay
+Playwright IQ-06 contre la production **1 réussite, 0 échec**.
