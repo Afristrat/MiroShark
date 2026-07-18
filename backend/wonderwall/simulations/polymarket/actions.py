@@ -123,7 +123,8 @@ class PolymarketAction(BaseAction):
     async def create_market(self, question: str,
                             outcome_a: str = "YES",
                             outcome_b: str = "NO",
-                            initial_probability: float = 0.5):
+                            initial_probability: float = 0.5,
+                            resolution_spec: dict | None = None):
         """Create a new prediction market (used internally for seeding).
 
         Args:
@@ -131,12 +132,13 @@ class PolymarketAction(BaseAction):
             outcome_a (str): First outcome label (default: 'YES').
             outcome_b (str): Second outcome label (default: 'NO').
             initial_probability (float): Starting YES price (0.1-0.9).
+            resolution_spec (dict): Versioned, measurable resolution contract.
 
         Returns:
             dict: Contains 'market_id' of the newly created market.
         """
         return await self.perform_action(
-            (question, outcome_a, outcome_b, initial_probability), "create_market"
+            (question, outcome_a, outcome_b, initial_probability, resolution_spec), "create_market"
         )
 
     async def comment_on_market(self, market_id: int, content: str):

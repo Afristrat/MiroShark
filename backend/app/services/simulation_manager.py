@@ -7,7 +7,7 @@ Uses preset scripts + LLM-powered configuration parameter generation
 import os
 import json
 import shutil
-from typing import Dict, Any, List, Optional, TYPE_CHECKING
+from typing import Any, Callable, Dict, List, Optional, TYPE_CHECKING, TypedDict
 from dataclasses import dataclass, field
 
 if TYPE_CHECKING:
@@ -23,6 +23,17 @@ from .wonderwall_profile_generator import WonderwallProfileGenerator
 from .simulation_config_generator import SimulationConfigGenerator
 
 logger = get_logger('miroshark.simulation')
+
+
+class CounterfactualInjection(TypedDict):
+    """Persisted payload consumed by the parallel simulation runner."""
+
+    parent_simulation_id: str
+    trigger_round: int
+    injection_text: str
+    label: str
+    branch_id: Optional[str]
+    created_at: str
 
 
 class SimulationStatus(str, Enum):
@@ -351,9 +362,9 @@ class SimulationManager:
         document_text: str,
         defined_entity_types: Optional[List[str]] = None,
         use_llm_for_profiles: bool = True,
-        progress_callback: Optional[callable] = None,
+        progress_callback: Optional[Callable[..., None]] = None,
         parallel_profile_count: int = 3,
-        storage: 'GraphStorage' = None,
+        storage: Optional['GraphStorage'] = None,
         locale: Optional[str] = None,
     ) -> SimulationState:
         """
@@ -562,6 +573,7 @@ class SimulationManager:
                 enable_twitter=state.enable_twitter,
                 enable_reddit=state.enable_reddit,
                 polymarket_market_count=state.polymarket_market_count,
+                locale=state.locale,
             )
             
             if progress_callback:
@@ -756,7 +768,7 @@ class SimulationManager:
         # stay DRY.
         child = self.fork_simulation(parent_simulation_id=parent_simulation_id)
 
-        injection_payload = {
+        injection_payload: CounterfactualInjection = {
             "parent_simulation_id": parent_simulation_id,
             "trigger_round": int(trigger_round),
             "injection_text": injection_text.strip(),
@@ -887,7 +899,7 @@ class SimulationManager:
         )
         return state
 
-    def get_run_instructions(self, simulation_id: str) -> Dict[str, str]:
+    def get_run_instructions(self, simulation_id: str) -> Dict[str, str | Dict[str, str]]:
         """Get run instructions"""
         sim_dir = self._get_simulation_dir(simulation_id)
         config_path = os.path.join(sim_dir, "simulation_config.json")

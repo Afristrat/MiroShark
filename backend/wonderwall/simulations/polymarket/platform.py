@@ -18,6 +18,7 @@ and portfolio management using a constant-product AMM.
 """
 from __future__ import annotations
 
+import json
 import logging
 from datetime import datetime
 from typing import Any
@@ -25,6 +26,7 @@ from typing import Any
 from wonderwall.clock.clock import Clock
 from wonderwall.simulations.base import BasePlatform
 from wonderwall.simulations.polymarket.amm import get_prices, quote_buy, quote_sell
+from wonderwall.simulations.polymarket.resolution_spec import validate_resolution_spec
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +36,7 @@ class PolymarketPlatform(BasePlatform):
 
     required_schemas = [
         "market.sql",
+        "market_price_snapshot.sql",
         "portfolio.sql",
         "position.sql",
         "trade.sql",
@@ -82,15 +85,20 @@ class PolymarketPlatform(BasePlatform):
 
     async def create_market(self, agent_id, market_message):
         """Create a new prediction market."""
-        # Support optional initial_probability as 4th element
-        if len(market_message) >= 4:
-            question, outcome_a, outcome_b, initial_prob = market_message
+        # The resolution contract is mandatory: no market exists without it.
+        if len(market_message) >= 5:
+            question, outcome_a, outcome_b, initial_prob, resolution_spec = market_message
             initial_prob = max(0.05, min(0.95, float(initial_prob)))
         else:
-            question, outcome_a, outcome_b = market_message
-            initial_prob = 0.5
+            return {"success": False, "error": "resolution_spec is required"}
+        if not isinstance(resolution_spec, dict):
+            return {"success": False, "error": "resolution_spec must be an object"}
+        try:
+            validate_resolution_spec(resolution_spec)
+        except ValueError as error:
+            return {"success": False, "error": str(error)}
 
-        current_time = self.get_current_time()
+        current_time = self.get_current_time().isoformat()
         try:
             liq = self.initial_liquidity
             # Set reserves so price_YES = initial_prob
@@ -102,11 +110,11 @@ class PolymarketPlatform(BasePlatform):
             reserve_a = k / reserve_b
 
             self._execute_db_command(
-                "INSERT INTO market (creator_id, question, outcome_a, "
-                "outcome_b, reserve_a, reserve_b, created_at) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO market (creator_id, question, outcome_a, outcome_b, "
+                "reserve_a, reserve_b, resolution_spec, created_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                 (agent_id, question, outcome_a, outcome_b, reserve_a, reserve_b,
-                 current_time),
+                 json.dumps(resolution_spec, sort_keys=True, separators=(",", ":")), current_time),
                 commit=True,
             )
             market_id = self.db_cursor.lastrowid
@@ -123,7 +131,7 @@ class PolymarketPlatform(BasePlatform):
         """Buy shares in a market outcome using the AMM."""
         market_id, outcome, amount_usd = trade_message
         amount_usd = float(amount_usd)
-        current_time = self.get_current_time()
+        current_time = self.get_current_time().isoformat()
 
         # Check balance
         self._execute_db_command(
@@ -217,7 +225,7 @@ class PolymarketPlatform(BasePlatform):
         """Sell shares back to the AMM."""
         market_id, outcome, num_shares = trade_message
         num_shares = float(num_shares)
-        current_time = self.get_current_time()
+        current_time = self.get_current_time().isoformat()
 
         # Check position
         self._execute_db_command(
@@ -358,7 +366,7 @@ class PolymarketPlatform(BasePlatform):
     async def comment_on_market(self, agent_id, comment_message):
         """Comment on a market."""
         market_id, content = comment_message
-        current_time = self.get_current_time()
+        current_time = self.get_current_time().isoformat()
         try:
             self._execute_db_command(
                 "INSERT INTO market_comment (market_id, user_id, content, "
@@ -378,7 +386,7 @@ class PolymarketPlatform(BasePlatform):
     async def resolve_market(self, agent_id, resolve_message):
         """Resolve a market and pay out winning positions."""
         market_id, winning_outcome = resolve_message
-        current_time = self.get_current_time()
+        current_time = self.get_current_time().isoformat()
 
         # Only creator can resolve
         self._execute_db_command(
@@ -429,5 +437,20 @@ class PolymarketPlatform(BasePlatform):
         }
 
     def tick_clock(self):
-        """Advance the simulation clock by one step."""
+        """Persist each market price for this round, then advance the clock."""
+        current_round = self.sandbox_clock.time_step
+        rows = self.db_cursor.execute(
+            "SELECT market_id, reserve_a, reserve_b FROM market"
+        ).fetchall()
+        snapshots = [
+            (market_id, current_round, get_prices(reserve_a, reserve_b)[0], reserve_a, reserve_b)
+            for market_id, reserve_a, reserve_b in rows
+        ]
+        with self.db:
+            self.db_cursor.executemany(
+                "INSERT INTO market_price_snapshot "
+                "(market_id, round, price_yes, reserve_a, reserve_b) VALUES (?, ?, ?, ?, ?) "
+                "ON CONFLICT(market_id, round) DO NOTHING",
+                snapshots,
+            )
         self.sandbox_clock.time_step += 1

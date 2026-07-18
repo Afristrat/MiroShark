@@ -5024,14 +5024,34 @@
         "Tests unitaires de validation de spec verts ; suite pytest verte",
         "Table SQLite market_price_snapshot (market_id, round, price_yes, reserve_a, reserve_b) écrite au tick de chaque round (spec §7.1)"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-07-18T19:55:31.7922053+01:00",
       "dependencies": [
         "US-223"
       ],
       "metadata": {
         "estimated_hours": 6,
         "priority": "P1",
-        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md"
+        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md",
+        "measured_duration_seconds": 2894,
+        "duration_basis": "Création système du premier artefact US-225 jusqu'à la clôture ; exploration préalable exclue.",
+        "files_touched": [
+          ".gitattributes",
+          "backend/app/api/simulation.py",
+          "backend/app/services/simulation_config_generator.py",
+          "backend/app/services/simulation_manager.py",
+          "backend/pyproject.toml",
+          "backend/scripts/run_parallel_simulation.py",
+          "backend/wonderwall/simulations/polymarket/actions.py",
+          "backend/wonderwall/simulations/polymarket/platform.py",
+          "backend/wonderwall/simulations/polymarket/resolution_spec.py",
+          "backend/wonderwall/simulations/polymarket/schema/market.sql",
+          "backend/wonderwall/simulations/polymarket/schema/market_price_snapshot.sql",
+          "backend/tests/test_us225_market_resolution_spec.py",
+          "supabase/migrations/20260718_001_market_generation_prompt.sql",
+          "docs/02-data-dictionary.md"
+        ],
+        "verification": "Golden set et tests US-225 : 14 réussites avec DeprecationWarning traité en erreur. Suite backend finale : 2 364 réussites, 60 ignorées, 0 échec, 0 warning. Ruff backend, mypy racine et build Vite verts. Migration PostgreSQL auditée statiquement mais non appliquée à la production ; application requise au déploiement."
       }
     },
     {

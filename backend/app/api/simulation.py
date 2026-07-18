@@ -3392,11 +3392,14 @@ def retry_simulation_config(simulation_id: str):
                     enable_twitter=state.enable_twitter,
                     enable_reddit=state.enable_reddit,
                     polymarket_market_count=state.polymarket_market_count,
+                    locale=state.locale,
                 )
 
                 config_path = os.path.join(sim_dir, "simulation_config.json")
+                config_data = json.loads(sim_params.to_json())
+                config_data["locale"] = state.locale
                 with open(config_path, 'w', encoding='utf-8') as f:
-                    f.write(sim_params.to_json())
+                    json.dump(config_data, f, ensure_ascii=False, indent=2)
 
                 # Mark as complete
                 reload_state = manager.get_simulation(simulation_id)

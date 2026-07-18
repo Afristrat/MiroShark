@@ -2091,6 +2091,7 @@ async def run_polymarket_simulation(
     )
 
     await result.env.reset()
+    result.env.platform.sandbox_clock.time_step = start_round
     log_info(
         "Environment started"
         + (f" (resuming from round {start_round})" if is_resume else "")
@@ -2125,6 +2126,8 @@ async def run_polymarket_simulation(
                         "question": market.get("question", ""),
                         "outcome_a": market.get("outcome_a", "YES"),
                         "outcome_b": market.get("outcome_b", "NO"),
+                        "initial_probability": market.get("initial_probability", 0.5),
+                        "resolution_spec": market.get("resolution_spec"),
                     },
                 ))
                 initial_action_count += 1
@@ -2420,6 +2423,7 @@ async def run_synchronized_simulation(
             semaphore=60,
         )
         await polymarket_result.env.reset()
+        polymarket_result.env.platform.sandbox_clock.time_step = start_round
         log_info("[Polymarket] Environment ready")
 
     # Universal agent guidelines (e.g. "no hashtags"), injected once per
@@ -2486,6 +2490,7 @@ async def run_synchronized_simulation(
                     "outcome_a": market.get("outcome_a", "YES"),
                     "outcome_b": market.get("outcome_b", "NO"),
                     "initial_probability": prob,
+                    "resolution_spec": market.get("resolution_spec"),
                 },
             ))
         if seed_actions:

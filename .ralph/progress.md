@@ -2448,3 +2448,33 @@ Blocage restant : les clés fournisseurs externes nécessitent des consoles
 authentifiées ; Resend est partagé avec Rami et Taqwim ; la clé Intake LLM
 appartient au proxy LiteLLM. Aucune mutation transfrontalière n’est autorisée.
 US-231 reste donc `passes:false`. Recomptage frais : **14 stories ouvertes**.
+
+### 2026-07-18 — [US-225] Contrats de dénouement et snapshots de prix — CLÔTURÉE LOCALEMENT
+
+Chaque marché généré porte désormais une `resolution_spec` ADR-015 validée par un
+validateur canonique partagé. Le générateur contrôle aussi la borne supérieure de
+`deadline_round`, régénère au plus deux fois et échoue explicitement ensuite. La
+frontière SQLite refuse tout contrat absent ou structurellement invalide avant
+l'insertion. Les deux chemins du runner propagent le contrat et recalent l'horloge
+Polymarket sur `start_round` lors d'une reprise.
+
+Le prompt L99 `config.market_generation` possède un fallback Python identique au seed
+PostgreSQL version 1 pour `fr`, `en` et `ar`. Le golden set exécutable couvre huit cas,
+dont quatre invalides, complété par quatre rejets adversariaux directs à la frontière
+`create_market`. La table SQLite `market_price_snapshot` enregistre avant chaque
+incrément d'horloge le prix YES et les réserves de chaque marché ; sa clé composite rend
+le tick idempotent.
+
+Preuves finales : tests US-225 **14 réussites** avec les `DeprecationWarning` traités en
+erreurs ; suite backend complète **2 364 réussites, 60 ignorées, 0 échec, 0 warning**
+sur 2 424 tests collectés ; Ruff backend vert ; mypy **0 erreur sur 116 fichiers** ;
+build Vite **948 modules**. `git diff --check` est vert après ajout d'une règle
+versionnée `cr-at-eol` pour les fichiers Python CRLF historiques ; un vrai espace final
+injecté temporairement a bien été détecté, puis intégralement retiré.
+
+**Limite de déploiement** : la migration
+`20260718_001_market_generation_prompt.sql` a été auditée statiquement et couverte par
+le test anti-dérive, mais n'a pas été appliquée à PostgreSQL en production. Elle doit
+être appliquée et vérifiée lors du déploiement. Aucun commit, push ni changement de
+production n'a été effectué pendant cette clôture locale. Recomptage après clôture :
+**13 stories ouvertes**.

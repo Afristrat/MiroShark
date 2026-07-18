@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS market (
     -- AMM pool reserves (constant-product: reserve_a * reserve_b = k)
     reserve_a   REAL NOT NULL DEFAULT 100.0,
     reserve_b   REAL NOT NULL DEFAULT 100.0,
+    resolution_spec TEXT NOT NULL,
     -- Derived from reserves: price_a = reserve_b / (reserve_a + reserve_b)
     resolved    INTEGER NOT NULL DEFAULT 0,
     winning_outcome TEXT DEFAULT NULL,

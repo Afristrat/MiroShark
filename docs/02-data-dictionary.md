@@ -273,6 +273,67 @@ version 1. Variables : `persona`, `platforms`, plus `demographics` pour Reddit e
 RLS : toutes opérations réservées `is_super_admin()`, aucune policy anon (backend lit/
 écrit via service_role, contourne RLS — même pattern que `intake_agent_playbook`).
 
+### Prompt `config.market_generation`
+
+US-225 (migration `20260718_001`) — prompt L99 version 1 pour générer les marchés
+et leur contrat de dénouement. Un seul template immuable est seedé pour `fr`, `en` et
+`ar` ; `{locale_name}` rend la langue de sortie explicite. Variables :
+`market_count`, `total_rounds`, `locale_name`. Le générateur résout la locale de la
+simulation avec `PromptRegistry`, puis utilise le même fallback codé si le registre est
+vide ou indisponible.
+
+## SQLite `polymarket_simulation.db`
+
+Ces tables sont des artefacts de run, synchronisés comme artefacts de simulation ; elles
+ne sont pas des tables Supabase et ne portent donc pas de RLS.
+
+### `market.resolution_spec`
+
+US-225 / ADR-015 — colonne SQLite `TEXT NOT NULL` contenant le JSON sérialisé du
+contrat de dénouement, validé avant le seed. Schéma exact :
+
+```json
+{
+  "version": 1,
+  "deadline_round": 1,
+  "aggregation": "all",
+  "criteria": [
+    {
+      "id": "stable_snake_case_id",
+      "description": "test mesurable",
+      "signal": "final_stances|contents|trajectory|events",
+      "operator": "opérateur compatible avec signal",
+      "threshold": 1
+    }
+  ],
+  "invalid_conditions": [
+    {"id": "stable_snake_case_id", "description": "condition structurée"}
+  ]
+}
+```
+
+`version` vaut `1`; `deadline_round` est un entier de `1` au nombre de rounds ;
+`aggregation` vaut `all` ou `any`; les deux listes sont non vides et leurs identifiants
+sont uniques (`[a-z][a-z0-9_]{0,63}`). Les paires compatibles sont :
+`final_stances` → `count_gte|count_lte|share_gte|share_lte`, `contents` →
+`count_gte|count_lte`, `trajectory` → `delta_gte|delta_lte`, `events` →
+`count_gte|count_lte`. `threshold` est un nombre fini (pour `share_*`, entre 0 et 1).
+
+### `market_price_snapshot`
+
+US-225 — série des prix AMM au tick, dans la même base SQLite.
+
+| Colonne | Type | Contraintes | Description |
+|---|---|---|---|
+| market_id | integer | PK composite, FK → market.market_id | marché concerné |
+| round | integer | PK composite, `>= 0` | round courant avant l’incrément d’horloge |
+| price_yes | real | `0..1` | prix AMM de l’issue YES, dérivé des réserves |
+| reserve_a | real | `> 0` | réserve AMM de l’issue A |
+| reserve_b | real | `> 0` | réserve AMM de l’issue B |
+
+L’insertion est transactionnelle et idempotente sur `(market_id, round)` : un second
+tick du même round ne remplace pas le point déjà enregistré.
+
 ## `occupation_profiles`
 ADR-016 (migration 20260716_003) — cache des fiches métiers ESCO (+ enrichissement 122B
 hors-taxonomie, US-230). Clé de cache `(label, lang)` = terme de recherche normalisé
