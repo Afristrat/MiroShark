@@ -5069,14 +5069,46 @@
         "Prompt oracle dans simulation_prompts + golden set (≥ 10 cas dont ≥ 2 INVALID) qui passe",
         "Migration + data dictionary même commit ; suite pytest verte"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-07-18T23:13:19+01:00",
       "dependencies": [
         "US-225"
       ],
       "metadata": {
         "estimated_hours": 8,
         "priority": "P1",
-        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md"
+        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md",
+        "files_touched": [
+          "backend/app/api/__init__.py",
+          "backend/app/api/market_resolutions.py",
+          "backend/app/services/market_resolution_oracle.py",
+          "backend/app/services/market_resolution_service.py",
+          "backend/app/services/prompt_registry.py",
+          "backend/openapi.yaml",
+          "backend/scripts/run_parallel_simulation.py",
+          "backend/tests/fixtures/us226_oracle_adversarial.json",
+          "backend/tests/fixtures/us226_oracle_golden.json",
+          "backend/tests/test_unit_arena_prompts_l99.py",
+          "backend/tests/test_unit_openapi.py",
+          "backend/tests/test_us226_market_resolution_oracle.py",
+          "backend/tests/test_us226_market_resolution_service.py",
+          "backend/tests/test_us226_market_resolutions_api.py",
+          "backend/tests/test_us226_market_resolutions_migration.py",
+          "backend/tests/test_us226_market_settlement.py",
+          "backend/tests/test_us226_runner_resolution_hook.py",
+          "backend/wonderwall/simulations/polymarket/environment.py",
+          "backend/wonderwall/simulations/polymarket/platform.py",
+          "docs/02-data-dictionary.md",
+          "docs/08-decisions-log.md",
+          "docs/superpowers/specs/2026-07-16-simulations-v2-design.md",
+          "supabase/migrations/20260718_002_market_resolutions.sql"
+        ],
+        "test_result": "2456 passed, 60 skipped, 0 failed sur 2516 tests collectés",
+        "quality_gates": "ESLint + Ruff verts ; mypy 0 erreur sur 119 fichiers ; Vite 948 modules ; git diff --check vert",
+        "golden_set": "10 cas dont 2 INVALID, complétés par 6 cas adversariaux",
+        "production_check": "Conteneur MiroShark Up 3 hours via Tailscale ; /health HTTP 200",
+        "migration_status": "20260718_002 créée et auditée, non appliquée en production",
+        "commit_status": "Clôture locale uniquement ; aucun commit ni push"
       }
     },
     {

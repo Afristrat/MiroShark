@@ -164,10 +164,53 @@ from wonderwall.social_agent.belief_state import inject_belief_context
 from director_events import consume_pending_events, inject_director_event_context
 from counterfactual_loader import load_counterfactual
 from agent_guidelines import inject_posting_rules_into_graph
+from app.services.market_resolution_service import load_resolution_trajectory, resolve_all_markets
+from app.utils.validation import validate_simulation_id
 
 # Per-round hard timeout (seconds). Bounded so a hung LLM call can't freeze
 # the whole run forever. Override via env for slow backends.
 _ROUND_TIMEOUT_SECONDS = int(os.environ.get('MIROSHARK_ROUND_TIMEOUT', '600'))
+
+
+def _resolution_simulation_id(simulation_dir: str) -> str:
+    """Return the runner's explicit simulation id, or its validated directory name."""
+    candidate = os.environ.get("MIROSHARK_SIMULATION_ID") or os.path.basename(os.path.normpath(simulation_dir))
+    return validate_simulation_id(candidate)
+
+
+def _resolution_events(simulation_dir: str, runtime_events: list[dict]) -> list[dict]:
+    """Load injected director history strictly and retain direct runtime injections."""
+    history_path = os.path.join(simulation_dir, "director_events_history.json")
+    history = []
+    if os.path.exists(history_path):
+        try:
+            with open(history_path, "r", encoding="utf-8") as handle:
+                history = json.load(handle)
+        except (OSError, json.JSONDecodeError) as exc:
+            raise RuntimeError("director event history is invalid") from exc
+    if not isinstance(history, list) or any(not isinstance(event, dict) for event in history):
+        raise RuntimeError("director event history is invalid")
+    normalized = []
+    for event in history:
+        round_number, content = event.get("injected_at_round"), event.get("event_text")
+        if not isinstance(round_number, int) or isinstance(round_number, bool) or not isinstance(content, str) or not content.strip():
+            raise RuntimeError("director event history is invalid")
+        normalized.append({"round": round_number, "source": "director", "content": content})
+    if not isinstance(runtime_events, list):
+        raise RuntimeError("runtime injected events are invalid")
+    for event in runtime_events:
+        if (
+            not isinstance(event, dict)
+            or not isinstance(event.get("round"), int)
+            or isinstance(event["round"], bool)
+            or not isinstance(event.get("source"), str)
+            or not event["source"].strip()
+            or not isinstance(event.get("content"), str)
+            or not event["content"].strip()
+        ):
+            raise RuntimeError("runtime injected event is invalid")
+        normalized.append(event)
+    return list({(event["round"], event.get("source"), event["content"]): event for event in normalized}.values())
 
 
 async def _safe_env_step(env, actions, round_num: int, log_info) -> bool:
@@ -2164,6 +2207,7 @@ async def run_polymarket_simulation(
     # Initialize belief tracking for Polymarket
     belief_tracker = BeliefTracker(config, simulation_dir, "polymarket")
     log_info(f"Belief tracking: {len(belief_tracker.topics)} topics")
+    injected_events = []
 
     start_time = datetime.now()
     total_actions = 0
@@ -2236,6 +2280,7 @@ async def run_polymarket_simulation(
             cf_text = f"[COUNTERFACTUAL] {label}: {cf_spec['injection_text'].strip()}"
             for _, agent in active_agents:
                 inject_director_event_context(agent, cf_text)
+            injected_events.append({"round": round_num + 1, "source": "counterfactual", "content": cf_text})
             log_info(f"Counterfactual fired at round {round_num + 1}: {label}")
 
         actions = {agent: LLMAction() for _, agent in active_agents}
@@ -2293,9 +2338,6 @@ async def run_polymarket_simulation(
                 f"Round {round_num + 1}/{total_rounds} ({progress:.1f}%)"
             )
 
-    if action_logger:
-        action_logger.log_simulation_end(total_rounds, total_actions)
-
     result.total_actions = total_actions
     elapsed = (datetime.now() - start_time).total_seconds()
     log_info(f"Simulation loop completed! Elapsed: {elapsed:.1f}s, total actions: {total_actions}")
@@ -2304,6 +2346,17 @@ async def run_polymarket_simulation(
     traj_path = belief_tracker.save_trajectory()
     log_info(f"Belief trajectory saved: {traj_path}")
     log_info(belief_tracker.get_summary())
+
+    await resolve_all_markets(
+        _resolution_simulation_id(simulation_dir),
+        platform=result.env.platform,
+        trajectory_payload=load_resolution_trajectory(simulation_dir),
+        config=config,
+        injected_events=_resolution_events(simulation_dir, injected_events),
+    )
+
+    if action_logger:
+        action_logger.log_simulation_end(total_rounds, total_actions)
 
     return result
 
@@ -2582,12 +2635,6 @@ async def run_synchronized_simulation(
         # ── Director Mode + Counterfactual: build unified injection text ──
         director_events = consume_pending_events(simulation_dir, round_num + 1)
         event_texts = [e["event_text"] for e in director_events] if director_events else []
-        if cf_spec and round_num == int(cf_spec.get("trigger_round", -1)):
-            label = cf_spec.get("label") or "counterfactual event"
-            event_texts.append(
-                f"[COUNTERFACTUAL] {label}: {cf_spec['injection_text'].strip()}"
-            )
-            log_info(f"Counterfactual fired at round {round_num + 1}: {label}")
         director_text = " | ".join(event_texts) if event_texts else None
         if director_events:
             log_info(f"Director Mode: injected {len(director_events)} event(s) at round {round_num + 1}")
@@ -2819,6 +2866,15 @@ async def run_synchronized_simulation(
             traj_path = tracker.save_trajectory()
             log_info(f"[{name}] Trajectory saved: {traj_path}")
             log_info(f"[{name}] {tracker.get_summary()}")
+
+    if polymarket_result is not None and polymarket_belief is not None:
+        await resolve_all_markets(
+            _resolution_simulation_id(simulation_dir),
+            platform=polymarket_result.env.platform,
+            trajectory_payload=load_resolution_trajectory(simulation_dir),
+            config=config,
+            injected_events=_resolution_events(simulation_dir, []),
+        )
 
     # End loggers
     for logger, name in [(twitter_logger, "Twitter"), (reddit_logger, "Reddit"), (polymarket_logger, "Polymarket")]:

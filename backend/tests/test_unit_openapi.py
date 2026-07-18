@@ -81,6 +81,19 @@ def test_openapi_yaml_has_every_required_tag():
     assert not missing, f"operations reference undeclared tags: {sorted(missing)}"
 
 
+def test_us226_market_resolutions_endpoint_documents_conditional_public_access() -> None:
+    spec = _load_spec()
+    operation = spec["paths"]["/api/report/{simulation_id}/market-resolutions"]["get"]
+
+    assert operation["parameters"] == [{"$ref": "#/components/parameters/SimulationIdPath"}]
+    assert "published" in operation["description"].lower()
+    assert "401" in operation["responses"]
+    assert "403" in operation["responses"]
+    assert operation["responses"]["200"]["content"]["application/json"]["schema"] == {
+        "$ref": "#/components/schemas/MarketResolutionsEnvelope"
+    }
+
+
 # ──────────────────────────────────────────────────────────────────────────
 # Drift detection — documented paths vs. actual Flask routes
 # ──────────────────────────────────────────────────────────────────────────

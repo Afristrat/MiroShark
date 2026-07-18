@@ -1695,6 +1695,33 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/SuccessEnvelope" }
 
+  /api/report/{simulation_id}/market-resolutions:
+    get:
+      tags: [Report Agent]
+      summary: Durable market adjudications and verified final wealth.
+      description: |
+        Returns the Oracle adjudications persisted for a simulation. The
+        endpoint is public only when that simulation is published; otherwise
+        it applies the same bearer-token access control as report reads.
+        `final_wealth` is returned only when every durable payout summary
+        agrees on the same complete final state.
+      parameters:
+        - $ref: "#/components/parameters/SimulationIdPath"
+      responses:
+        "200":
+          description: Durable resolution records, in ascending market order.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MarketResolutionsEnvelope" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "503":
+          description: Durable ownership or resolution storage is unavailable.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+
   /api/report/{report_id}/download:
     get:
       tags: [Report Agent]
@@ -2350,6 +2377,40 @@ components:
       properties:
         success: { type: boolean, enum: [false] }
         error: { type: string }
+
+    MarketResolutionsEnvelope:
+      allOf:
+        - $ref: "#/components/schemas/SuccessEnvelope"
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [simulation_id, resolutions, final_wealth, complete]
+              properties:
+                simulation_id: { type: string }
+                resolutions:
+                  type: array
+                  items:
+                    type: object
+                    required: [market_id, question, resolution_spec, verdict, payout_summary]
+                    properties:
+                      market_id: { type: integer }
+                      question: { type: string }
+                      resolution_spec: { type: object }
+                      verdict: { type: string, enum: [YES, NO, INVALID, UNRESOLVED] }
+                      justification: { type: string }
+                      confidence: { oneOf: [{ type: number }, { type: "null" }] }
+                      evidence: { type: array, items: { type: object } }
+                      price_series: { type: array, items: { type: object } }
+                      payout_summary: { type: object }
+                      prompt_key: { type: string }
+                      prompt_version: { type: integer, minimum: 1 }
+                      resolved_at: { oneOf: [{ type: string, format: date-time }, { type: "null" }] }
+                final_wealth:
+                  type: array
+                  description: Empty unless all durable payout summaries agree.
+                  items: { type: object }
+                complete: { type: boolean }
 
     SimulationIdBody:
       type: object

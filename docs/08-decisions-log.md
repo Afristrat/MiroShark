@@ -336,6 +336,16 @@ sur la stance) ; laisser les marchés sans dénouement (contredit la directive).
 **Signal de réexamen** : taux de verdicts INVALID > ~20 % sur les simulations réelles →
 le prompt de génération des specs produit des contrats non mesurables, le durcir.
 
+**Amendement US-226 (2026-07-18)** : `market_resolutions` est le contrat durable de
+l'adjudication. `org_id` y est une donnée normative, et non une dénormalisation de
+confort : il sert simultanément à la RLS et à la FK composite vers
+`simulation_ownership`, donc une issue ne peut jamais être écrite pour le mauvais tenant.
+`question` et `resolution_spec` sont des snapshots auditables. `evidence` ne stocke que
+des références `{round, type, ref}` au digest borné effectivement soumis au modèle.
+L'IA ne tranche que l'ambiguïté des preuves ; deux sorties invalides ou un échec technique
+produisent déterministement `UNRESOLVED`, sans paiement. Les mises à jour de
+`payout_summary` restent contrôlées par le seul `service_role`.
+
 ## ADR-016 — Personas fondées ESCO (cache Supabase) + enrichissement 122B hors-taxonomie
 **Date** : 2026-07-16 (directive Amine) · **Statut** : accepté · réversible
 **Quoi** : le system prompt de chaque persona reçoit un bloc `<expertise_metier>` fondé

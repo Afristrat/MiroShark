@@ -153,7 +153,7 @@ individuels deviennent des « questions » côté client. Le vocabulaire techniq
 |---|---|---|
 | `simulation_prompts` (nouvelle) | Registre versionné des prompts (une ligne = une version) | super-admin uniquement |
 | `occupation_profiles` (nouvelle) | Cache fiches métiers ESCO + 122B, par langue, provenance tracée | lecture service, écriture super-admin/pipeline |
-| `market_resolutions` (nouvelle) | Verdicts d'oracle : spec, verdict, justification, confiance, version prompt | lecture org propriétaire, écriture service |
+| `market_resolutions` (migrée US-226) | Adjudication durable : snapshots, preuves digest, issue, prix et état payout | lecture org propriétaire, écriture service_role |
 | `simulation_ownership.enabled_platforms` (colonne `text[]`) | Arènes activées, requêtables | héritée de la table |
 
 ## 5. Contraintes transverses
@@ -224,17 +224,26 @@ round. Décision :
   `price_series`) + `market` (question, outcomes).
 - **Sortie** (structured output validé par schéma) : `{ verdict: YES|NO|INVALID,
   justification (citant rounds et preuves), confidence ∈ [0,1],
-  evidence: [{round, type, ref}] }`.
+  evidence: [{round, type, ref}] }`. `UNRESOLVED` n'est jamais une sortie LLM : il est
+  produit exclusivement par le service après deux sorties invalides ou un échec technique.
 - **Modes d'échec** : sortie invalide → 1 retry ; échec persistant → statut
   `UNRESOLVED` persisté, AUCUN paiement, le PDF affiche « non clôturé — incident
   technique ». L'oracle n'invente jamais de verdict par défaut. `INVALID` → void :
   remboursement de chaque position au coût réel.
-- **`market_resolutions` (schéma gelé)** : `simulation_id`, `market_id`,
-  `resolution_spec` jsonb, `verdict`, `justification`, `confidence`,
-  `price_series` jsonb, `payout_summary` jsonb, `prompt_key`, `prompt_version`,
-  `resolved_at`. **Clés/index cross-simulations** (recommandation Council) : PK
-  composite (`simulation_id`, `market_id`) + index (`org_id`, `resolved_at`) pour les
-  requêtes croisées entre simulations d'une même organisation.
+- **`market_resolutions` (schéma gelé)** : `simulation_id`, `market_id` bigint,
+  `org_id`, `question`, `resolution_spec` jsonb, `verdict`, `justification`,
+  `confidence`, `evidence` jsonb, `price_series` jsonb not null (défaut `[]`),
+  `payout_summary` jsonb not null (défaut `{}`), `prompt_key`, `prompt_version`,
+  `resolved_at`. PK (`simulation_id`, `market_id`), FK composite vers ownership et index
+  (`org_id`, `resolved_at`) pour les requêtes cross-simulations de l'organisation.
+
+**Précision US-226** : `market_resolutions` emploie `market_id bigint` et la PK
+`(simulation_id, market_id)`. `org_id` est requis pour la RLS et la FK composite vers
+`simulation_ownership` ; il ne s'agit donc pas d'une simple dénormalisation. `question`
+et `resolution_spec` sont des snapshots durables. `evidence` est un tableau borné de
+`{round,type,ref}` pointant exclusivement dans le digest déterministe. `price_series`
+et `payout_summary` sont non nuls (défauts `[]` et `{}`) afin de fournir un état durable
+et idempotent ; leurs mises à jour sont limitées au `service_role`.
 
 ### 7.2 Scellement ADR-IQ-05 — TRANCHÉ, validé par Amine (US-IQ-05)
 

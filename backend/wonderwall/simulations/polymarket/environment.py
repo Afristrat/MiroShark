@@ -39,7 +39,7 @@ class PolymarketEnvironment(BaseEnvironment):
                 total_value = 0
                 parts.append("  Open positions:")
                 for pos in positions:
-                    cost_basis = pos['shares'] * 0.50  # approximate (bought near 0.50)
+                    cost_basis = pos['cost_basis']
                     current_value = pos['current_value']
                     pnl = current_value - cost_basis
                     total_value += current_value

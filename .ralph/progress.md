@@ -2478,3 +2478,36 @@ le test anti-dérive, mais n'a pas été appliquée à PostgreSQL en production.
 être appliquée et vérifiée lors du déploiement. Aucun commit, push ni changement de
 production n'a été effectué pendant cette clôture locale. Recomptage après clôture :
 **13 stories ouvertes**.
+
+### 2026-07-18 — [US-226] Oracle de clôture et paiement réel — CLÔTURÉE LOCALEMENT
+
+L'oracle de clôture consomme un digest déterministe et borné des trajectoires fusionnées,
+des prix et des événements, puis produit exclusivement `YES`, `NO` ou `INVALID` avec des
+preuves liées au digest. Deux sorties invalides ou un échec technique produisent
+`UNRESOLVED`, persisté sans paiement. Le runner persiste l'adjudication avant tout
+dénouement SQLite ; le replay recharge la ligne durable, revalide ses snapshots et ses
+preuves, puis rejoue le paiement de façon idempotente. En mode synchronisé,
+`consume_pending_events()` reste l'unique voie des contre-factuels : aucune seconde copie
+runtime n'est transmise à l'oracle.
+
+`YES` et `NO` paient les positions gagnantes ; `INVALID` annule le marché et rembourse
+la somme nette exacte de `trade.cost`, ventes comprises, sans le coût fictif `0.50`.
+La richesse finale de chaque persona est persistée dans `payout_summary` et l'API ne
+l'expose que si toutes les lignes durables concordent, sous le propriétaire canonique de
+la simulation. La migration respecte le schéma gelé : PK
+`(simulation_id, market_id)`, FK composite vers `simulation_ownership`, index
+`(org_id, resolved_at)`, RLS en lecture organisationnelle et écritures réservées au
+`service_role`. Le registre contient les prompts `fr` / `en` / `ar` version 1 ; le
+golden set compte **10 cas dont 2 INVALID**, complétés par **6 cas adversariaux**.
+
+Preuves finales fraîches : ESLint et Ruff verts ; mypy **0 erreur sur 119 fichiers** ;
+build Vite **948 modules** ; suite backend complète **2 456 réussites, 60 ignorées,
+0 échec** sur **2 516 tests collectés** ; `git diff --check` vert. Contrôle production
+en lecture seule via Tailscale : conteneur MiroShark **Up 3 hours** et `/health` =
+HTTP 200, sans état `restarting:unknown`.
+
+**Limite de permanence** : la migration
+`20260718_002_market_resolutions.sql` est créée, documentée et testée mais n'a pas été
+appliquée à PostgreSQL en production. Aucun commit, push ni déploiement n'a été effectué ;
+la migration et sa vérification restent obligatoires lors du déploiement autorisé.
+Recomptage après clôture locale : **12 stories ouvertes**.

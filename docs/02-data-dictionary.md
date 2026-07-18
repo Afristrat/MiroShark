@@ -24,6 +24,7 @@
 | report_deliveries | 20260506_004 | **recipient_email, recipient_name** | Livraison URL signée TTL |
 | report_downloads | 20260506_004 | **ip_address, user_agent, country_code** | Tracking téléchargements |
 | intake_sessions | 20260709_001 | **transcript, brief** | Parcours de qualification /devis (US-IQ-01, module Intake) |
+| market_resolutions | 20260718_002 | non | Adjudications durables des questions simulées (US-226, ADR-015) |
 
 ## `organizations`
 Tenant racine du multi-org.
@@ -282,6 +283,32 @@ et leur contrat de dénouement. Un seul template immuable est seedé pour `fr`, 
 simulation avec `PromptRegistry`, puis utilise le même fallback codé si le registre est
 vide ou indisponible.
 
+## `market_resolutions`
+
+US-226 / ADR-015 (migration `20260718_002`) — registre durable d'adjudication.
+`org_id` est conservé dans chaque ligne afin que la RLS filtre sans jointure et que la FK
+composite `(simulation_id, org_id)` interdise tout rattachement inter-tenant. `question`
+et `resolution_spec` sont des snapshots immuables au sens métier ; `evidence` conserve les
+références `{round, type, ref}` au digest réellement soumis au modèle. La ligne est lue par
+les membres de l'organisation propriétaire ; aucune politique d'écriture client n'existe,
+les mises à jour contrôlées relèvent exclusivement du `service_role`.
+
+| Colonne | Type | Contraintes | Description | PII |
+|---|---|---|---|---|
+| simulation_id | text | PK composite, FK composite vers simulation_ownership | Simulation propriétaire | non |
+| market_id | bigint | PK composite | Identifiant SQLite naturel du marché | non |
+| org_id | uuid | not null, FK composite | Tenant pour RLS et intégrité | non |
+| question | text | not null, non vide | Snapshot de la question | non |
+| resolution_spec | jsonb | not null, objet | Snapshot du contrat de résolution | non |
+| verdict | text | YES, NO, INVALID ou UNRESOLVED | Issue persistée | non |
+| justification | text | not null, non vide | Motif auditable et borné côté service | non |
+| confidence | double precision | [0,1], null seulement si UNRESOLVED | Degré de convergence | non |
+| evidence | jsonb | tableau, défaut [] | Preuves liées au digest `{round,type,ref}` | non |
+| price_series | jsonb | tableau, défaut [] | Snapshots de prix par round | non |
+| payout_summary | jsonb | objet, défaut {} | État durable du paiement contrôlé côté service | non |
+| prompt_key / prompt_version | text / integer | non nuls | Prompt exact ayant produit l'adjudication | non |
+| resolved_at | timestamptz | not null, défaut now() | Horodatage de résolution | non |
+
 ## SQLite `polymarket_simulation.db`
 
 Ces tables sont des artefacts de run, synchronisés comme artefacts de simulation ; elles
@@ -411,4 +438,3 @@ via service_role, contourne RLS — même pattern que `simulation_prompts`). Buc
 
 | Objet planifié | Story | Rôle | RLS prévue |
 |---|---|---|---|
-| `market_resolutions` | US-226 | Verdicts de l'oracle de clôture (`simulation_id`, `market_id`, `question`, `resolution_spec` jsonb, `verdict` ∈ {YES, NO, INVALID}, `justification`, `confidence`, `oracle_prompt_version`, `resolved_at`) | lecture org propriétaire ; écriture service |

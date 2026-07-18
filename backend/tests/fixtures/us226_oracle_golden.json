@@ -1,0 +1,102 @@
+[
+  {
+    "name": "yes_final_stances_count",
+    "market": {"market_id": 1, "question": "Will at least two personas support the proposal?", "outcome_a": "YES", "outcome_b": "NO"},
+    "resolution_spec": {"version": 1, "deadline_round": 4, "aggregation": "all", "criteria": [{"id": "support_count", "description": "At least two final stances support the proposal.", "signal": "final_stances", "operator": "count_gte", "threshold": 2}], "invalid_conditions": [{"id": "missing_final_stances", "description": "Final stances are absent at the deadline."}]},
+    "trajectories": [{"round": 4, "final_stances": {"jobs": {"support": 2, "neutral": 1, "oppose": 0}}}],
+    "price_series": [{"round": 4, "price_yes": 0.72}],
+    "events": [],
+    "expected_verdict": "YES",
+    "output": {"verdict": "YES", "justification": "round:4:0 records two supporting final stances.", "confidence": 0.92, "evidence": [{"round": 4, "type": "trajectory", "ref": "round:4:0"}]}
+  },
+  {
+    "name": "no_final_stances_share",
+    "market": {"market_id": 2, "question": "Will support exceed sixty percent?", "outcome_a": "YES", "outcome_b": "NO"},
+    "resolution_spec": {"version": 1, "deadline_round": 4, "aggregation": "all", "criteria": [{"id": "support_share", "description": "The final support share is at least sixty percent.", "signal": "final_stances", "operator": "share_gte", "threshold": 0.6}], "invalid_conditions": [{"id": "missing_population", "description": "The final population count is absent."}]},
+    "trajectories": [{"round": 4, "final_stances": {"policy": {"support": 2, "neutral": 2, "oppose": 2}}}],
+    "price_series": [{"round": 4, "price_yes": 0.41}],
+    "events": [],
+    "expected_verdict": "NO",
+    "output": {"verdict": "NO", "justification": "round:4:0 records support below sixty percent.", "confidence": 0.88, "evidence": [{"round": 4, "type": "trajectory", "ref": "round:4:0"}]}
+  },
+  {
+    "name": "yes_contents_count",
+    "market": {"market_id": 3, "question": "Will at least three relevant contents be produced?", "outcome_a": "YES", "outcome_b": "NO"},
+    "resolution_spec": {"version": 1, "deadline_round": 4, "aggregation": "all", "criteria": [{"id": "content_volume", "description": "At least three relevant contents are produced.", "signal": "contents", "operator": "count_gte", "threshold": 3}], "invalid_conditions": [{"id": "missing_content_count", "description": "The content count is unavailable."}]},
+    "trajectories": [{"round": 4, "contents": [{"content": "a"}, {"content": "b"}, {"content": "c"}]}],
+    "price_series": [],
+    "events": [],
+    "expected_verdict": "YES",
+    "output": {"verdict": "YES", "justification": "round:4:0 contains the three relevant contents.", "confidence": 0.9, "evidence": [{"round": 4, "type": "trajectory", "ref": "round:4:0"}]}
+  },
+  {
+    "name": "no_trajectory_delta",
+    "market": {"market_id": 4, "question": "Will support rise by at least twenty points?", "outcome_a": "YES", "outcome_b": "NO"},
+    "resolution_spec": {"version": 1, "deadline_round": 4, "aggregation": "all", "criteria": [{"id": "support_delta", "description": "Support rises by at least 0.2 from the first to final snapshot.", "signal": "trajectory", "operator": "delta_gte", "threshold": 0.2}], "invalid_conditions": [{"id": "missing_endpoints", "description": "A first or final trajectory snapshot is absent."}]},
+    "trajectories": [{"round": 1, "stance_shares": {"policy": {"support": 0.4, "neutral": 0.4, "oppose": 0.2}}}, {"round": 4, "stance_shares": {"policy": {"support": 0.5, "neutral": 0.3, "oppose": 0.2}}}],
+    "price_series": [],
+    "events": [],
+    "expected_verdict": "NO",
+    "output": {"verdict": "NO", "justification": "round:1:0 and round:4:1 show a support delta of only 0.1.", "confidence": 0.86, "evidence": [{"round": 1, "type": "trajectory", "ref": "round:1:0"}, {"round": 4, "type": "trajectory", "ref": "round:4:1"}]}
+  },
+  {
+    "name": "yes_event_count",
+    "market": {"market_id": 5, "question": "Will a director intervention occur?", "outcome_a": "YES", "outcome_b": "NO"},
+    "resolution_spec": {"version": 1, "deadline_round": 4, "aggregation": "all", "criteria": [{"id": "event_count", "description": "At least one director event occurs.", "signal": "events", "operator": "count_gte", "threshold": 1}], "invalid_conditions": [{"id": "event_history_unavailable", "description": "The event history cannot be read."}]},
+    "trajectories": [{"round": 4, "final_stances": {}}],
+    "price_series": [],
+    "events": [{"round": 3, "source": "director", "content": "A supply shock is announced."}],
+    "expected_verdict": "YES",
+    "output": {"verdict": "YES", "justification": "event:3:0 records the director intervention.", "confidence": 0.98, "evidence": [{"round": 3, "type": "event", "ref": "event:3:0"}]}
+  },
+  {
+    "name": "no_events_zero",
+    "market": {"market_id": 6, "question": "Will any external intervention occur?", "outcome_a": "YES", "outcome_b": "NO"},
+    "resolution_spec": {"version": 1, "deadline_round": 4, "aggregation": "all", "criteria": [{"id": "external_event", "description": "At least one external event occurs.", "signal": "events", "operator": "count_gte", "threshold": 1}], "invalid_conditions": [{"id": "event_history_unavailable", "description": "The event history cannot be read."}]},
+    "trajectories": [{"round": 4, "final_stances": {}}],
+    "price_series": [],
+    "events": [],
+    "expected_verdict": "NO",
+    "output": {"verdict": "NO", "justification": "metric:4:0 records an exact event_count of zero.", "confidence": 0.99, "evidence": [{"round": 4, "type": "metric", "ref": "metric:4:0"}]}
+  },
+  {
+    "name": "yes_aggregation_all",
+    "market": {"market_id": 7, "question": "Will support and discussion both clear their thresholds?", "outcome_a": "YES", "outcome_b": "NO"},
+    "resolution_spec": {"version": 1, "deadline_round": 4, "aggregation": "all", "criteria": [{"id": "support_count", "description": "At least two personas support the proposal.", "signal": "final_stances", "operator": "count_gte", "threshold": 2}, {"id": "content_count", "description": "At least two contents are produced.", "signal": "contents", "operator": "count_gte", "threshold": 2}], "invalid_conditions": [{"id": "missing_final_snapshot", "description": "The final snapshot is absent."}]},
+    "trajectories": [{"round": 4, "final_stances": {"policy": {"support": 2, "neutral": 0, "oppose": 0}}, "contents": [{"content": "a"}, {"content": "b"}]}],
+    "price_series": [{"round": 4, "price_yes": 0.8}],
+    "events": [],
+    "expected_verdict": "YES",
+    "output": {"verdict": "YES", "justification": "round:4:0 proves both criteria required by aggregation all.", "confidence": 0.93, "evidence": [{"round": 4, "type": "trajectory", "ref": "round:4:0"}]}
+  },
+  {
+    "name": "yes_aggregation_any",
+    "market": {"market_id": 8, "question": "Will discussion volume or an intervention meet the trigger?", "outcome_a": "YES", "outcome_b": "NO"},
+    "resolution_spec": {"version": 1, "deadline_round": 4, "aggregation": "any", "criteria": [{"id": "content_count", "description": "At least five contents are produced.", "signal": "contents", "operator": "count_gte", "threshold": 5}, {"id": "event_count", "description": "At least one event occurs.", "signal": "events", "operator": "count_gte", "threshold": 1}], "invalid_conditions": [{"id": "missing_inputs", "description": "Both content and event records are unavailable."}]},
+    "trajectories": [{"round": 4, "contents": []}],
+    "price_series": [],
+    "events": [{"round": 2, "source": "runtime", "content": "An external constraint appears."}],
+    "expected_verdict": "YES",
+    "output": {"verdict": "YES", "justification": "event:2:0 satisfies one criterion under aggregation any.", "confidence": 0.95, "evidence": [{"round": 2, "type": "event", "ref": "event:2:0"}]}
+  },
+  {
+    "name": "invalid_missing_final_stances",
+    "market": {"market_id": 9, "question": "Will a majority support the proposal?", "outcome_a": "YES", "outcome_b": "NO"},
+    "resolution_spec": {"version": 1, "deadline_round": 4, "aggregation": "all", "criteria": [{"id": "support_share", "description": "Final support is a majority.", "signal": "final_stances", "operator": "share_gte", "threshold": 0.5}], "invalid_conditions": [{"id": "missing_final_stances", "description": "Final stances are absent at the deadline."}]},
+    "trajectories": [{"round": 4, "contents": [{"content": "Only content was recorded."}]}],
+    "price_series": [{"round": 4, "price_yes": 0.5}],
+    "events": [],
+    "expected_verdict": "INVALID",
+    "output": {"verdict": "INVALID", "justification": "round:4:0 shows that the required final stances are absent.", "confidence": 1.0, "evidence": [{"round": 4, "type": "trajectory", "ref": "round:4:0"}]}
+  },
+  {
+    "name": "invalid_missing_trajectory_endpoint",
+    "market": {"market_id": 10, "question": "Will support increase over the simulation?", "outcome_a": "YES", "outcome_b": "NO"},
+    "resolution_spec": {"version": 1, "deadline_round": 4, "aggregation": "all", "criteria": [{"id": "support_delta", "description": "Support increases from the first to final snapshot.", "signal": "trajectory", "operator": "delta_gte", "threshold": 0.1}], "invalid_conditions": [{"id": "missing_trajectory_endpoint", "description": "The first or final trajectory endpoint is absent."}]},
+    "trajectories": [],
+    "price_series": [{"round": 4, "price_yes": 0.63}],
+    "events": [],
+    "expected_verdict": "INVALID",
+    "output": {"verdict": "INVALID", "justification": "price:4:0 is the only final-state record; both trajectory endpoints are absent.", "confidence": 1.0, "evidence": [{"round": 4, "type": "price", "ref": "price:4:0"}]}
+  }
+]

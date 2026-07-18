@@ -30,6 +30,10 @@ from wonderwall.simulations.polymarket.resolution_spec import validate_resolutio
 
 logger = logging.getLogger(__name__)
 
+# Internal-only capability for the future closure hook. Identity, rather than
+# a serializable value, prevents an agent payload from impersonating the system.
+SYSTEM_SETTLEMENT_ACTOR = object()
+
 
 class PolymarketPlatform(BasePlatform):
     """Prediction market platform with AMM-based pricing."""
@@ -338,14 +342,19 @@ class PolymarketPlatform(BasePlatform):
         # Positions
         self._execute_db_command(
             "SELECT p.market_id, p.outcome, p.shares, m.question, "
-            "m.reserve_a, m.reserve_b, m.outcome_a "
+            "m.reserve_a, m.reserve_b, m.outcome_a, "
+            "COALESCE(SUM(t.cost), 0) "
             "FROM position p JOIN market m ON p.market_id = m.market_id "
-            "WHERE p.user_id = ? AND p.shares > 0",
+            "LEFT JOIN trade t ON t.user_id = p.user_id "
+            "AND t.market_id = p.market_id AND t.outcome = p.outcome "
+            "WHERE p.user_id = ? AND p.shares > 0 AND m.resolved = 0 "
+            "GROUP BY p.market_id, p.outcome, p.shares, m.question, "
+            "m.reserve_a, m.reserve_b, m.outcome_a",
             (agent_id,))
         rows = self.db_cursor.fetchall()
         positions = []
         for row in rows:
-            mid, outcome, shares, question, ra, rb, oa = row
+            mid, outcome, shares, question, ra, rb, oa, cost_basis = row
             price_a, price_b = get_prices(ra, rb)
             current_price = price_a if outcome == oa else price_b
             positions.append({
@@ -355,6 +364,7 @@ class PolymarketPlatform(BasePlatform):
                 "shares": round(shares, 4),
                 "current_price": round(current_price, 3),
                 "current_value": round(shares * current_price, 2),
+                "cost_basis": round(cost_basis, 2),
             })
 
         return {
@@ -384,56 +394,127 @@ class PolymarketPlatform(BasePlatform):
             return {"success": False, "error": str(e)}
 
     async def resolve_market(self, agent_id, resolve_message):
-        """Resolve a market and pay out winning positions."""
-        market_id, winning_outcome = resolve_message
+        """Resolve through the creator path, or the internal system closure path."""
+        market_id, requested_outcome = resolve_message
         current_time = self.get_current_time().isoformat()
 
-        # Only creator can resolve
+        if agent_id is SYSTEM_SETTLEMENT_ACTOR:
+            if requested_outcome == "UNRESOLVED":
+                return {"success": False, "error": "UNRESOLVED cannot be settled"}
+            if requested_outcome not in {"YES", "NO", "INVALID"}:
+                return {"success": False, "error": "Invalid settlement verdict"}
+            return self._settle_market(market_id, requested_outcome)
+
         self._execute_db_command(
-            "SELECT creator_id, resolved FROM market WHERE market_id = ?",
+            "SELECT creator_id, outcome_a, outcome_b FROM market WHERE market_id = ?",
             (market_id,))
         row = self.db_cursor.fetchone()
         if not row:
             return {"success": False, "error": "Market not found"}
-        creator_id, resolved = row
-        if resolved:
-            return {"success": False, "error": "Already resolved"}
+        creator_id, outcome_a, outcome_b = row
         if creator_id != agent_id:
             return {"success": False, "error": "Only the creator can resolve"}
+        if requested_outcome == outcome_a:
+            verdict = "YES"
+        elif requested_outcome == outcome_b:
+            verdict = "NO"
+        else:
+            return {"success": False, "error": "Resolution must select a market outcome"}
 
-        # Mark resolved
-        self._execute_db_command(
-            "UPDATE market SET resolved = 1, winning_outcome = ? "
-            "WHERE market_id = ?",
-            (winning_outcome, market_id),
-            commit=True,
-        )
-
-        # Pay out winners: each winning share = $1.00
-        self._execute_db_command(
-            "SELECT user_id, shares FROM position "
-            "WHERE market_id = ? AND outcome = ? AND shares > 0",
-            (market_id, winning_outcome))
-        winners = self.db_cursor.fetchall()
-        for user_id, shares in winners:
-            self._execute_db_command(
-                "UPDATE portfolio SET balance = balance + ? "
-                "WHERE user_id = ?",
-                (shares, user_id),  # $1 per winning share
-                commit=True,
-            )
+        result = self._settle_market(market_id, verdict)
+        if not result["success"]:
+            return result
 
         self._record_trace(
             agent_id, "resolve_market",
-            {"market_id": market_id, "winning_outcome": winning_outcome,
-             "num_winners": len(winners)},
+            {"market_id": market_id, "winning_outcome": result["winning_outcome"],
+             "recipient_count": result["payout_summary"]["recipient_count"]},
             current_time,
         )
+        return result
 
+    def _settle_market(self, market_id, verdict):
+        """Atomically settle once; a same-verdict replay is a read-only success."""
+        if verdict == "UNRESOLVED":
+            return {"success": False, "error": "UNRESOLVED cannot be settled"}
+        if verdict not in {"YES", "NO", "INVALID"}:
+            return {"success": False, "error": "Invalid settlement verdict"}
+
+        try:
+            with self.db:
+                market = self.db_cursor.execute(
+                    "SELECT outcome_a, outcome_b, resolved, winning_outcome FROM market WHERE market_id = ?",
+                    (market_id,),
+                ).fetchone()
+                if not market:
+                    return {"success": False, "error": "Market not found"}
+                outcome_a, outcome_b, resolved, stored_outcome = market
+                winning_outcome = {"YES": outcome_a, "NO": outcome_b, "INVALID": "INVALID"}[verdict]
+                if resolved:
+                    if stored_outcome != winning_outcome:
+                        return {"success": False, "error": "Conflicting settlement verdict"}
+                    summary = self._payout_summary(market_id, verdict, winning_outcome, already_resolved=True)
+                    return {
+                        "success": True,
+                        "winning_outcome": winning_outcome,
+                        "payout_summary": summary,
+                        "already_resolved": True,
+                    }
+
+                updated = self.db_cursor.execute(
+                    "UPDATE market SET resolved = 1, winning_outcome = ? "
+                    "WHERE market_id = ? AND resolved = 0",
+                    (winning_outcome, market_id),
+                ).rowcount
+                if updated != 1:
+                    return {"success": False, "error": "Settlement lock was not acquired"}
+
+                summary = self._payout_summary(market_id, verdict, winning_outcome, already_resolved=False)
+                for recipient in summary["recipients"]:
+                    credited = self.db_cursor.execute(
+                        "UPDATE portfolio SET balance = balance + ? WHERE user_id = ?",
+                        (recipient["amount"], recipient["user_id"]),
+                    ).rowcount
+                    if credited != 1:
+                        raise RuntimeError("settlement recipient portfolio is missing")
+                return {
+                    "success": True,
+                    "winning_outcome": winning_outcome,
+                    "payout_summary": summary,
+                    "already_resolved": False,
+                }
+        except Exception as exc:  # noqa: BLE001 - transactional money boundary
+            logger.warning("Settlement transaction failed: %s", exc.__class__.__name__)
+            return {"success": False, "error": "Settlement transaction failed"}
+
+    def _payout_summary(self, market_id, verdict, winning_outcome, *, already_resolved):
+        """Return deterministic theoretical payouts from immutable trades/positions."""
+        if verdict == "INVALID":
+            rows = self.db_cursor.execute(
+                "SELECT user_id, COALESCE(SUM(cost), 0) FROM trade "
+                "WHERE market_id = ? GROUP BY user_id HAVING SUM(cost) != 0 ORDER BY user_id",
+                (market_id,),
+            ).fetchall()
+            settlement_type = "void_refund"
+        else:
+            rows = self.db_cursor.execute(
+                "SELECT user_id, shares FROM position WHERE market_id = ? "
+                "AND outcome = ? AND shares > 0 ORDER BY user_id",
+                (market_id, winning_outcome),
+            ).fetchall()
+            settlement_type = "payout"
+        recipients = [
+            {"user_id": user_id, "amount": float(amount)}
+            for user_id, amount in rows
+        ]
         return {
-            "success": True,
-            "winning_outcome": winning_outcome,
-            "num_winners": len(winners),
+            "status": "resolved",
+            "settlement_type": settlement_type,
+            "verdict": verdict,
+            "total_amount": sum(recipient["amount"] for recipient in recipients),
+            "recipient_count": len(recipients),
+            "recipients": recipients,
+            "already_resolved": already_resolved,
         }
 
     def tick_clock(self):

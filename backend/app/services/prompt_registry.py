@@ -15,6 +15,7 @@ du registre.
 from __future__ import annotations
 
 import threading
+from dataclasses import dataclass
 from typing import Any, Dict, Optional, Tuple
 
 from ..auth.supabase_client import SupabaseConfigError, get_supabase_admin
@@ -22,33 +23,42 @@ from ..utils.logger import get_logger
 
 logger = get_logger("miroshark.services.prompt_registry")
 
-_cache: Dict[Tuple[str, str], str] = {}
+
+@dataclass(frozen=True)
+class ActivePrompt:
+    """Contenu et version immuable de la version active."""
+
+    content: str
+    version: int
+
+
+_cache: Dict[Tuple[str, str], ActivePrompt] = {}
 _cache_lock = threading.Lock()
 
 
 def get(key: str, locale: str, client: Any = None) -> Optional[str]:
     """Retourne le contenu de la version active pour ``(key, locale)``.
 
-    Args:
-        key: identifiant technique stable du prompt (ex.
-            ``arena.polymarket.system``).
-        locale: locale du prompt (``fr`` | ``en`` | ``ar``).
-        client: client Supabase injectable (tests).
-
-    Returns:
-        Le contenu de la version active, ou ``None`` si absente/injoignable
-        (jamais d'exception — cf. docstring module).
+    La signature et le retour restent rétrocompatibles. Utiliser
+    :func:`get_active` lorsqu'un service doit également persister la version.
     """
+    active = get_active(key, locale, client=client)
+    return active.content if active is not None else None
+
+
+def get_active(key: str, locale: str, client: Any = None) -> Optional[ActivePrompt]:
+    """Retourne contenu et version active, ou ``None`` sans jamais lever."""
     cache_key = (key, locale)
     with _cache_lock:
-        if cache_key in _cache:
-            return _cache[cache_key]
+        cached = _cache.get(cache_key)
+    if cached is not None:
+        return cached
 
     try:
         cli = client or get_supabase_admin()
         response = (
             cli.table("simulation_prompts")
-            .select("content")
+            .select("content,version")
             .eq("key", key)
             .eq("locale", locale)
             .eq("is_active", True)
@@ -59,24 +69,34 @@ def get(key: str, locale: str, client: Any = None) -> Optional[str]:
         if not rows:
             return None
         content = rows[0].get("content")
-        if not isinstance(content, str) or not content:
+        # simulation_prompts.version est NOT NULL. Le défaut maintient les
+        # doubles legacy injectables de get() compatibles.
+        version = rows[0].get("version", 1)
+        if (
+            not isinstance(content, str)
+            or not content
+            or not isinstance(version, int)
+            or isinstance(version, bool)
+            or version < 1
+        ):
             return None
     except SupabaseConfigError:
         logger.debug(
-            "PromptRegistry.get(%s, %s): Supabase non configuré — fallback codé.",
+            "PromptRegistry.get_active(%s, %s): Supabase non configuré.",
             key, locale,
         )
         return None
     except Exception as exc:  # noqa: BLE001 — jamais casser le moteur pour le registre
         logger.warning(
-            "PromptRegistry.get(%s, %s) failed: %s — fallback codé.",
+            "PromptRegistry.get_active(%s, %s) failed: %s.",
             key, locale, exc.__class__.__name__,
         )
         return None
 
+    active = ActivePrompt(content=content, version=version)
     with _cache_lock:
-        _cache[cache_key] = content
-    return content
+        _cache[cache_key] = active
+    return active
 
 
 def invalidate(key: Optional[str] = None, locale: Optional[str] = None) -> None:

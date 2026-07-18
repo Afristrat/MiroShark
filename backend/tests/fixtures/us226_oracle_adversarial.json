@@ -1,0 +1,8 @@
+[
+  {"name": "unknown_verdict", "output": {"verdict": "MAYBE", "justification": "round:4:0 exists.", "confidence": 0.5, "evidence": [{"round": 4, "type": "trajectory", "ref": "round:4:0"}]}},
+  {"name": "boolean_confidence", "output": {"verdict": "YES", "justification": "round:4:0 exists.", "confidence": true, "evidence": [{"round": 4, "type": "trajectory", "ref": "round:4:0"}]}},
+  {"name": "out_of_range_confidence", "output": {"verdict": "NO", "justification": "price:4:0 exists.", "confidence": 1.1, "evidence": [{"round": 4, "type": "price", "ref": "price:4:0"}]}},
+  {"name": "unknown_reference", "output": {"verdict": "YES", "justification": "round:9:0 exists.", "confidence": 0.5, "evidence": [{"round": 9, "type": "trajectory", "ref": "round:9:0"}]}},
+  {"name": "reference_type_mismatch", "output": {"verdict": "YES", "justification": "round:4:0 exists.", "confidence": 0.5, "evidence": [{"round": 4, "type": "price", "ref": "round:4:0"}]}},
+  {"name": "extra_output_key", "output": {"verdict": "YES", "justification": "round:4:0 exists.", "confidence": 0.5, "evidence": [{"round": 4, "type": "trajectory", "ref": "round:4:0"}], "reasoning": "hidden chain"}}
+]

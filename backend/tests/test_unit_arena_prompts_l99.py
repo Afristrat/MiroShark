@@ -101,7 +101,7 @@ def test_base_do_nothing_description_is_arena_neutral():
 
 @pytest.mark.asyncio
 async def test_polymarket_observation_reports_facts_without_trading_nudges():
-    action = SimpleNamespace(view_portfolio=AsyncMock(return_value={"success": True, "balance": 500.0, "positions": [{"market_id": 1, "question": "Q?", "shares": 10.0, "current_value": 9.5, "current_price": 0.95, "outcome": "YES"}]}), browse_markets=AsyncMock(return_value={"success": True, "markets": [{"market_id": 1, "question": "Q?", "price_YES": 0.95, "price_NO": 0.05, "num_trades": 4}]}))
+    action = SimpleNamespace(view_portfolio=AsyncMock(return_value={"success": True, "balance": 500.0, "positions": [{"market_id": 1, "question": "Q?", "shares": 10.0, "current_value": 9.5, "current_price": 0.95, "cost_basis": 7.5, "outcome": "YES"}]}), browse_markets=AsyncMock(return_value={"success": True, "markets": [{"market_id": 1, "question": "Q?", "price_YES": 0.95, "price_NO": 0.05, "num_trades": 4}]}))
     prompt = await PolymarketEnvironment(action).to_text_prompt()
     assert all(term not in prompt.lower() for term in ("consider", "contrarian", "signal", "taking profit", "cutting loss", "reassess"))
     assert "$0.950" in prompt and "P&L" in prompt
