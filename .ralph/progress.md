@@ -2511,3 +2511,40 @@ HTTP 200, sans état `restarting:unknown`.
 appliquée à PostgreSQL en production. Aucun commit, push ni déploiement n'a été effectué ;
 la migration et sa vérification restent obligatoires lors du déploiement autorisé.
 Recomptage après clôture locale : **12 stories ouvertes**.
+
+### 2026-07-19 — [US-227] Restitution durable API, PDF et frontend — CLÔTURÉE LOCALEMENT
+
+La table `market_resolutions` reste l'unique source de restitution. Un lecteur
+applicatif commun, filtré par `simulation_id` et `org_id`, alimente désormais
+l'endpoint existant et le chargeur PDF sans auto-appel HTTP, sans SQLite et sans
+reconstruction depuis les trades. Le schéma PDF type les adjudications, les séries de
+prix et la richesse finale ; il distingue l'absence durable, `UNRESOLVED` et les
+erreurs de stockage. Les séries de zéro ou un point sont des états valides, et leurs
+rounds doivent rester ordonnés et uniques.
+
+Le graphique PDF `polymarket_curves` trace exclusivement les valeurs
+`market_resolutions.price_series`. La nouvelle section des rapports complets restitue
+la question, l'issue d'adjudication, la clôture de scénario, la justification, le
+degré de convergence, les références probantes et la richesse finale. Les libellés
+FR, EN et AR suivent ADR-018 ; aucun nouveau libellé client n'emploie le vocabulaire
+proscrit.
+
+Dans `PolymarketChart`, `live=false` charge une seule fois l'API durable et ne touche
+jamais aux endpoints Polymarket historiques. `live=true` conserve seul la vue en
+direct et son polling de quatre secondes. La restitution n'assimile plus les snapshots
+à des trades : elle affiche des **points de prix**, sans volume inventé. Les états
+résolu, non finalisé, vide, zéro point et un point sont couverts dans un vrai navigateur,
+avec vérification qu'aucune requête legacy ne part en mode durable.
+
+Preuves finales fraîches : suite backend complète **2 473 réussites, 60 ignorées,
+0 échec** sur **2 533 tests collectés** ; matrice API/PDF **268 réussites, 19 ignorées,
+0 échec** ; lint global ESLint + Ruff vert ; mypy **0 erreur sur 119 fichiers** ; build
+Vite **948 modules** ; parité i18n **2 115 clés** ; Playwright US-227 **1/1** ;
+`git diff --check` vert. Contrôle production en lecture seule : conteneur MiroShark
+**Up 57 minutes** et `/health` = HTTP 200.
+
+**Limite de permanence** : `20260718_002_market_resolutions.sql` n'est toujours pas
+appliquée en production. L'API durable doit donc rester fail-closed en production
+jusqu'à l'application et la vérification explicites de cette migration ; aucun fallback
+SQLite/trades n'a été ajouté. Aucun commit, push ni déploiement n'a été effectué.
+Recomptage après clôture locale : **11 stories ouvertes**.

@@ -43,6 +43,14 @@ export const getReport = (reportId) => {
 }
 
 /**
+ * Get durable conviction-arena adjudications for a simulation.
+ * @param {string} simulationId
+ */
+export const getMarketResolutions = (simulationId) => {
+  return service.get(`/api/report/${simulationId}/market-resolutions`)
+}
+
+/**
  * Chat with Report Agent
  * @param {Object} data - { simulation_id, message, chat_history? }
  */

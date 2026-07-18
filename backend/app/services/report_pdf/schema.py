@@ -34,10 +34,12 @@ Sous-models et leurs sources artifact :
 
 from __future__ import annotations
 
+import math
 import re
+from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 # ─── Regexes de validation des identifiants ──────────────────────────────────
 # Formats générés dans simulation_manager.py et report_agent.py :
@@ -573,6 +575,77 @@ class ScoredRecommendation(BaseModel):
     composite_note: str = Field(default="")
 
 
+class MarketPricePoint(BaseModel):
+    """A durable price snapshot copied into a market resolution at closure."""
+
+    round: int = Field(ge=0)
+    price_yes: float = Field(ge=0.0, le=1.0)
+    reserve_a: float = Field(ge=0.0)
+    reserve_b: float = Field(ge=0.0)
+
+    @field_validator("price_yes", "reserve_a", "reserve_b", mode="before")
+    @classmethod
+    def validate_finite_number(cls, value: Any) -> Any:
+        if not isinstance(value, (int, float)) or isinstance(value, bool) or not math.isfinite(value):
+            raise ValueError("La valeur doit être un nombre fini.")
+        return value
+
+
+class MarketResolution(BaseModel):
+    """Durable adjudication DTO; it is never reconstructed from SQLite trades."""
+
+    market_id: int = Field(gt=0)
+    question: str = Field(min_length=1)
+    resolution_spec: Dict[str, Any]
+    verdict: Literal["YES", "NO", "INVALID", "UNRESOLVED"]
+    justification: str = Field(min_length=1)
+    confidence: Optional[float] = None
+    evidence: List[Dict[str, Any]] = Field(default_factory=list)
+    price_series: List[MarketPricePoint] = Field(default_factory=list)
+    payout_summary: Dict[str, Any] = Field(default_factory=dict)
+    prompt_key: str = Field(min_length=1)
+    prompt_version: int = Field(ge=1)
+    resolved_at: datetime
+
+    @field_validator("confidence", mode="before")
+    @classmethod
+    def validate_confidence_number(cls, value: Any) -> Any:
+        if value is None:
+            return value
+        if not isinstance(value, (int, float)) or isinstance(value, bool) or not math.isfinite(value):
+            raise ValueError("La confiance doit être un nombre fini.")
+        return value
+
+    @model_validator(mode="after")
+    def validate_adjudication(self) -> "MarketResolution":
+        if self.verdict == "UNRESOLVED":
+            if self.confidence is not None or self.evidence:
+                raise ValueError("Une issue non résolue ne peut avoir ni confiance ni preuve.")
+        elif self.confidence is None or not 0.0 <= self.confidence <= 1.0:
+            raise ValueError("La confiance d'une issue résolue doit être comprise entre 0 et 1.")
+        rounds = [point.round for point in self.price_series]
+        if rounds != sorted(rounds) or len(rounds) != len(set(rounds)):
+            raise ValueError("La série de prix doit être strictement ordonnée par round.")
+        return self
+
+
+class FinalWealth(BaseModel):
+    """Final persona wealth shared by every durable market resolution."""
+
+    user_id: int
+    cash_balance: float
+    open_position_value: float
+    wealth: float
+    complete: bool
+
+    @field_validator("cash_balance", "open_position_value", "wealth", mode="before")
+    @classmethod
+    def validate_finite_number(cls, value: Any) -> Any:
+        if not isinstance(value, (int, float)) or isinstance(value, bool) or not math.isfinite(value):
+            raise ValueError("La richesse doit être un nombre fini.")
+        return value
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # Objet racine — PDFReportContext
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -688,6 +761,18 @@ class PDFReportContext(BaseModel):
         default_factory=list,
         description="Interviews chain-of-thought des agents (interviews.jsonl).",
     )
+    market_resolutions: List[MarketResolution] = Field(
+        default_factory=list,
+        description="Issues d'adjudication durables lues depuis market_resolutions.",
+    )
+    final_wealth: List[FinalWealth] = Field(
+        default_factory=list,
+        description="Richesse finale cohérente de chaque persona.",
+    )
+    complete: bool = Field(
+        default=False,
+        description="Vrai seulement si toutes les adjudications sont résolues.",
+    )
 
     # ── Données report ────────────────────────────────────────────────────────
     outline: Optional[Outline] = Field(
@@ -774,6 +859,18 @@ class PDFReportContext(BaseModel):
                 f"framework invalide : '{v}'. Valeurs autorisées : {sorted(allowed)}."
             )
         return v
+
+    @model_validator(mode="after")
+    def validate_resolution_state(self) -> "PDFReportContext":
+        if not self.market_resolutions:
+            if self.final_wealth or self.complete:
+                raise ValueError("Une absence d'adjudication ne peut pas être complète ni exposer de richesse finale.")
+            return self
+        if self.complete and any(resolution.verdict == "UNRESOLVED" for resolution in self.market_resolutions):
+            raise ValueError("Une issue non résolue interdit un état complet.")
+        if any(entry.complete is not self.complete for entry in self.final_wealth):
+            raise ValueError("La richesse finale doit être cohérente avec l'état complet.")
+        return self
 
     model_config = {
         # Autorise les champs extra pour absorber des clés inconnues

@@ -5122,14 +5122,45 @@
         "Aucune occurrence de « prédiction » dans les nouveaux éléments (3 locales, parité même commit)",
         "npm run build vert ; suite pytest verte"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-07-19T00:28:01+01:00",
       "dependencies": [
         "US-226"
       ],
       "metadata": {
         "estimated_hours": 5,
         "priority": "P1",
-        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md"
+        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md",
+        "files_touched": [
+          "backend/app/api/market_resolutions.py",
+          "backend/app/services/market_resolution_service.py",
+          "backend/app/services/report_pdf/__init__.py",
+          "backend/app/services/report_pdf/charts.py",
+          "backend/app/services/report_pdf/loader.py",
+          "backend/app/services/report_pdf/schema.py",
+          "backend/app/templates/pdf_report/_arena_adjudication.md.j2",
+          "backend/app/templates/pdf_report/_full.md.j2",
+          "backend/app/templates/pdf_report/full/_main.md.j2",
+          "backend/tests/test_charts.py",
+          "backend/tests/test_md_templates.py",
+          "backend/tests/test_pdf_context_loader.py",
+          "backend/tests/test_pdf_context_schema.py",
+          "backend/tests/test_us226_market_resolutions_api.py",
+          "frontend/src/api/report.js",
+          "frontend/src/components/PolymarketChart.vue",
+          "frontend/src/locales/ar.json",
+          "frontend/src/locales/en.json",
+          "frontend/src/locales/fr.json",
+          "frontend/tests/e2e/fixtures/us227-harness.js",
+          "frontend/tests/e2e/us227-market-resolutions.spec.ts"
+        ],
+        "test_result": "2473 passed, 60 skipped, 0 failed sur 2533 tests backend collectés",
+        "pdf_test_result": "268 passed, 19 skipped, 0 failed sur 287 tests API/PDF ciblés",
+        "quality_gates": "ESLint + Ruff verts ; mypy 0 erreur sur 119 fichiers ; Vite 948 modules ; i18n 2115 clés en parité stricte fr/en/ar ; Playwright US-227 1/1 ; git diff --check vert",
+        "production_check": "Conteneur MiroShark Up 57 minutes ; /health HTTP 200 ; contrôle en lecture seule",
+        "source_contract": "Restitution exclusivement depuis market_resolutions via le lecteur applicatif commun ; aucun fallback SQLite/trades hors mode live=true",
+        "migration_status": "20260718_002 reste non appliquée en production ; aucun contournement legacy ajouté",
+        "commit_status": "Clôture locale uniquement ; aucun commit ni push"
       }
     },
     {

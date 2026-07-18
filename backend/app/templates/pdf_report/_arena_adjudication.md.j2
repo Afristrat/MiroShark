@@ -1,0 +1,104 @@
+{% from '_macros.md.j2' import callout, chart_with_narrative %}
+{% set copy = {
+  'fr': {
+    'title': '## Arène de convictions — adjudication durable',
+    'absence': 'Aucune adjudication durable n’est disponible pour cette simulation.',
+    'adjudication': 'Adjudication', 'outcome': 'Issue d’adjudication',
+    'unresolved': 'Adjudication non finalisée', 'closure': 'Clôture de scénario',
+    'justification': 'Justification', 'convergence': 'Degré de convergence',
+    'evidence': 'Références probantes', 'round': 'Round', 'no_evidence': 'Aucune référence probante durable disponible.',
+    'chart_alt': 'Évolution durable des prix des questions',
+    'chart_caption': 'Chaque courbe représente le prix OUI durablement enregistré à chaque round.',
+    'chart_text': 'Le graphique repose exclusivement sur les séries de prix conservées avec les adjudications.',
+    'wealth_title': '### Richesse finale des personas notables',
+    'wealth_complete': 'État des données : complet.', 'wealth_incomplete': 'État des données : incomplet.',
+    'wealth_absence': 'Aucune richesse finale durable n’est disponible pour cette simulation.',
+    'persona': 'Persona', 'wealth': 'Richesse finale', 'cash': 'Solde disponible', 'position': 'Valeur des positions ouvertes',
+    'yes': 'Oui', 'no': 'Non', 'invalid': 'Invalide'
+  },
+  'en': {
+    'title': '## Conviction arena — durable adjudication',
+    'absence': 'No durable adjudication is available for this simulation.',
+    'adjudication': 'Adjudication', 'outcome': 'Adjudicated outcome',
+    'unresolved': 'Adjudication not finalized', 'closure': 'Scenario closure',
+    'justification': 'Rationale', 'convergence': 'Convergence score',
+    'evidence': 'Evidence references', 'round': 'Round', 'no_evidence': 'No durable evidence reference is available.',
+    'chart_alt': 'Durable question price evolution',
+    'chart_caption': 'Each curve represents the YES price durably recorded at each round.',
+    'chart_text': 'The chart relies exclusively on price series stored with the adjudications.',
+    'wealth_title': '### Final wealth of notable personas',
+    'wealth_complete': 'Data state: complete.', 'wealth_incomplete': 'Data state: incomplete.',
+    'wealth_absence': 'No durable final wealth is available for this simulation.',
+    'persona': 'Persona', 'wealth': 'Final wealth', 'cash': 'Available balance', 'position': 'Open-position value',
+    'yes': 'Yes', 'no': 'No', 'invalid': 'Invalid'
+  },
+  'ar': {
+    'title': '## ساحة القناعات — التحكيم الدائم',
+    'absence': 'لا تتوفر أي عملية تحكيم دائمة لهذه المحاكاة.',
+    'adjudication': 'التحكيم', 'outcome': 'محصلة التحكيم',
+    'unresolved': 'لم يُستكمل التحكيم', 'closure': 'إغلاق السيناريو',
+    'justification': 'التبرير', 'convergence': 'درجة التقارب',
+    'evidence': 'مراجع الأدلة', 'round': 'الجولة', 'no_evidence': 'لا يتوفر مرجع أدلة دائم.',
+    'chart_alt': 'تطور أسعار الأسئلة الدائم',
+    'chart_caption': 'يمثل كل منحنى سعر نعم المسجل بصورة دائمة في كل جولة.',
+    'chart_text': 'يعتمد الرسم حصراً على سلاسل الأسعار المحفوظة مع عمليات التحكيم.',
+    'wealth_title': '### الثروة النهائية للشخصيات البارزة',
+    'wealth_complete': 'حالة البيانات: مكتملة.', 'wealth_incomplete': 'حالة البيانات: غير مكتملة.',
+    'wealth_absence': 'لا تتوفر ثروة نهائية دائمة لهذه المحاكاة.',
+    'persona': 'شخصية', 'wealth': 'الثروة النهائية', 'cash': 'الرصيد المتاح', 'position': 'قيمة المراكز المفتوحة',
+    'yes': 'نعم', 'no': 'لا', 'invalid': 'غير صالح'
+  }
+}[context.lang] %}
+
+{{ copy.title }}
+
+{% if not context.market_resolutions %}
+{{ callout('info', copy.adjudication, copy.absence) }}
+{% else %}
+{% for resolution in context.market_resolutions %}
+### {{ resolution.question | normalize(context.lang) }}
+
+{% if resolution.verdict == 'UNRESOLVED' %}
+**{{ copy.adjudication }} :** {{ copy.unresolved }}
+{% else %}
+**{{ copy.outcome }} :** {{ copy[resolution.verdict | lower] }}
+
+**{{ copy.closure }} :** {{ resolution.resolved_at | format_date(lang=context.lang) }}
+{% if resolution.confidence is not none %}
+
+**{{ copy.convergence }} :** {{ '%.0f' | format(resolution.confidence * 100) }} %
+{% endif %}
+{% endif %}
+
+**{{ copy.justification }} :** {{ resolution.justification | normalize(context.lang) }}
+
+**{{ copy.evidence }} :**
+{% if resolution.evidence %}
+{% for evidence in resolution.evidence %}
+- {{ evidence.ref | default('—', true) }}{% if evidence.type is defined %} · {{ evidence.type }}{% endif %}{% if evidence.round is defined %} · {{ copy.round }} {{ evidence.round }}{% endif %}
+{% endfor %}
+{% else %}
+{{ copy.no_evidence }}
+{% endif %}
+
+{% endfor %}
+{{ chart_with_narrative('polymarket_curves.png', copy.chart_alt, copy.chart_caption, copy.chart_text) }}
+{% endif %}
+
+{{ copy.wealth_title }}
+
+{% if context.final_wealth %}
+{% if context.complete %}
+{{ copy.wealth_complete }}
+{% else %}
+{{ copy.wealth_incomplete }}
+{% endif %}
+
+| {{ copy.persona }} | {{ copy.wealth }} | {{ copy.cash }} | {{ copy.position }} |
+| --- | ---: | ---: | ---: |
+{% for entry in (context.final_wealth | sort(attribute='wealth', reverse=true))[:10] %}
+| {{ copy.persona }} {{ entry.user_id }} | {{ '%.2f' | format(entry.wealth) }} | {{ '%.2f' | format(entry.cash_balance) }} | {{ '%.2f' | format(entry.open_position_value) }} |
+{% endfor %}
+{% else %}
+{{ callout('info', copy.wealth_title | replace('### ', ''), copy.wealth_absence) }}
+{% endif %}

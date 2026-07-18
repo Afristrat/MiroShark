@@ -3,26 +3,26 @@
     <!-- Header — matches .lb-header in InfluenceLeaderboard -->
     <div class="pm-header">
       <div class="pm-header-left">
-        <img src="/pm.png" alt="Polymarket" class="pm-logo" />
+        <img src="/pm.png" :alt="$t('charts.polymarket.logoAlt')" class="pm-logo" />
         <span class="pm-header-title">{{ $t('charts.polymarket.title') }}</span>
-        <span v-if="live" class="pm-live-dot"><span class="pm-live-pulse"></span>LIVE</span>
+        <span v-if="live" class="pm-live-dot"><span class="pm-live-pulse"></span>{{ $t('charts.polymarket.live') }}</span>
       </div>
       <div v-if="selected" class="pm-header-actions">
         <button
           class="pm-export-btn"
-          :disabled="exporting || !copySupported"
-          :title="copySupported ? 'Copy chart as PNG (with Bassira watermark)' : 'Image copy not supported in this browser'"
+          :disabled="exporting || !copySupported || !selected.points.length"
+          :title="copySupported ? $t('charts.polymarket.copyChartTitle') : $t('charts.polymarket.copyUnsupportedTitle')"
           @click="copyChart"
         >
           {{ copiedFlash ? $t('embed.copied') : $t('embed.copy') }}
         </button>
         <button
           class="pm-export-btn"
-          :disabled="exporting"
-          title="Download chart as PNG (with Bassira watermark)"
+          :disabled="exporting || !selected.points.length"
+          :title="$t('charts.polymarket.downloadChartTitle')"
           @click="downloadChart"
         >
-          Download ↓
+          {{ $t('charts.polymarket.download') }} ↓
         </button>
       </div>
     </div>
@@ -32,7 +32,7 @@
         <!-- Market list -->
         <aside class="pm-market-list">
           <div v-if="marketsLoading && !markets.length" class="pm-empty">{{ $t('charts.common.loading') }}</div>
-          <div v-else-if="marketsError" class="pm-empty pm-error">{{ marketsError }}</div>
+          <div v-else-if="marketsError" class="pm-empty pm-error">{{ $t('charts.polymarket.loadError') }}</div>
           <div v-else-if="!markets.length" class="pm-empty">
             <div class="pm-empty-title">{{ $t('charts.polymarket.noMarkets') }}</div>
             <div class="pm-empty-hint">{{ $t('charts.polymarket.subtitle') }}</div>
@@ -40,46 +40,76 @@
           <button
             v-for="m in markets"
             :key="m.market_id"
+            :data-testid="`market-${m.market_id}`"
             class="pm-market-row"
             :class="{ 'pm-market-row-active': selectedId === m.market_id }"
             @click="selectMarket(m.market_id)"
           >
-            <div class="pm-market-q">{{ m.question || `Market #${m.market_id}` }}</div>
+            <div class="pm-market-q">{{ marketQuestion(m) }}</div>
             <div class="pm-market-meta">
               <span class="pm-market-price" :class="priceClass(m.price_yes)">
                 {{ formatPct(m.price_yes) }}
               </span>
-              <span class="pm-market-trades">{{ m.trade_count }} trades</span>
-              <span v-if="m.resolved" class="pm-market-resolved">{{ m.winning_outcome || 'RESOLVED' }}</span>
+              <span class="pm-market-trades">{{ live ? $t('charts.polymarket.trades', { count: m.trade_count }) : $t('charts.polymarket.pricePoints', { count: m.point_count }) }}</span>
+              <span v-if="m.resolved" class="pm-market-resolved">{{ outcomeLabel(m.winning_outcome) }}</span>
             </div>
           </button>
         </aside>
 
         <!-- Chart -->
         <section class="pm-chart-section">
-          <div v-if="!selected" class="pm-placeholder">
+          <div v-if="selectedError" class="pm-empty pm-error">{{ $t('charts.polymarket.loadPriceError') }}</div>
+          <div v-else-if="!selected" class="pm-placeholder">
             <div class="pm-placeholder-icon">◎</div>
-            <div class="pm-placeholder-text">Select a market to view its price history</div>
+            <div class="pm-placeholder-text">{{ $t('charts.polymarket.selectQuestion') }}</div>
           </div>
           <template v-else>
             <!-- Question + price header -->
             <div class="pm-chart-header">
-              <div class="pm-chart-q">{{ selected.market.question || `Market #${selected.market.market_id}` }}</div>
+              <div class="pm-chart-q">{{ marketQuestion(selected.market) }}</div>
               <div class="pm-chart-price-row">
                 <div class="pm-chart-price" :class="priceClass(latestPrice)">
                   {{ formatPct(latestPrice) }}
-                  <span class="pm-chart-outcome-label">chance {{ selected.market.outcome_a || 'YES' }}</span>
+                  <span v-if="latestPrice !== null" class="pm-chart-outcome-label">{{ $t('charts.polymarket.chance', { outcome: outcomeLabel(selected.market.outcome_a || 'YES') }) }}</span>
                 </div>
                 <div v-if="priceDelta !== null" class="pm-chart-delta" :class="deltaClass(priceDelta)">
                   {{ priceDelta >= 0 ? '▲' : '▼' }} {{ formatPct(Math.abs(priceDelta)) }}
                 </div>
               </div>
-              <div class="pm-chart-stats">
-                <span class="pm-stat"><span class="pm-stat-k">TRADES</span><span class="pm-stat-v">{{ selected.points.length - 1 }}</span></span>
-                <span class="pm-stat"><span class="pm-stat-k">VOLUME</span><span class="pm-stat-v">{{ tradeVolume.toFixed(1) }}</span></span>
-                <span class="pm-stat"><span class="pm-stat-k">OUTCOMES</span><span class="pm-stat-v">{{ selected.market.outcome_a }}/{{ selected.market.outcome_b }}</span></span>
-                <span v-if="selected.market.resolved" class="pm-stat pm-stat-resolved">RESOLVED: {{ selected.market.winning_outcome }}</span>
+              <div class="pm-chart-stats" data-testid="chart-stats">
+                <template v-if="live">
+                  <span class="pm-stat"><span class="pm-stat-k">{{ $t('charts.polymarket.tradesLabel') }}</span><span class="pm-stat-v">{{ Math.max(selected.points.length - 1, 0) }}</span></span>
+                  <span class="pm-stat"><span class="pm-stat-k">{{ $t('charts.polymarket.volume') }}</span><span class="pm-stat-v">{{ tradeVolume.toFixed(1) }}</span></span>
+                  <span class="pm-stat"><span class="pm-stat-k">{{ $t('charts.polymarket.outcomes') }}</span><span class="pm-stat-v">{{ outcomeLabel(selected.market.outcome_a || 'YES') }}/{{ outcomeLabel(selected.market.outcome_b || 'NO') }}</span></span>
+                </template>
+                <span v-else class="pm-stat"><span class="pm-stat-k">{{ $t('charts.polymarket.pricePointsLabel') }}</span><span class="pm-stat-v">{{ selected.points.length }}</span></span>
+                <span v-if="selected.market.resolved" class="pm-stat pm-stat-resolved">{{ $t('charts.polymarket.adjudicated', { outcome: outcomeLabel(selected.market.winning_outcome) }) }}</span>
               </div>
+            </div>
+
+            <div v-if="!selected.points.length" class="pm-no-series" data-testid="no-price-series">{{ $t('charts.polymarket.noPriceSeries') }}</div>
+
+            <div v-if="selected.resolution" class="pm-resolution" data-testid="resolution-details">
+              <template v-if="selected.market.resolved">
+                <span class="pm-resolution-item" data-testid="adjudication-outcome">{{ $t('charts.polymarket.issue', { outcome: outcomeLabel(selected.market.winning_outcome) }) }}</span>
+                <span v-if="selected.resolution.resolved_at" class="pm-resolution-item" data-testid="adjudication-date">{{ $t('charts.polymarket.closedAt', { date: formatDate(selected.resolution.resolved_at) }) }}</span>
+              </template>
+              <span v-else class="pm-resolution-item" data-testid="unresolved-status">{{ $t('charts.polymarket.notFinalized') }}</span>
+              <p v-if="selected.resolution.justification" class="pm-resolution-justification" data-testid="adjudication-justification">{{ selected.resolution.justification }}</p>
+              <span v-if="selected.resolution.confidence !== null && selected.resolution.confidence !== undefined" class="pm-resolution-item" data-testid="convergence-score">{{ $t('charts.polymarket.convergenceScore', { score: formatPct(selected.resolution.confidence) }) }}</span>
+              <ul v-if="selected.resolution.evidence?.length" class="pm-evidence" data-testid="adjudication-evidence">
+                <li v-for="(item, index) in selected.resolution.evidence" :key="`${item.ref}-${index}`">{{ evidenceLabel(item) }}</li>
+              </ul>
+            </div>
+
+            <div v-if="!live && durableEnvelope.final_wealth.length" class="pm-final-wealth" data-testid="final-wealth">
+              <div class="pm-final-wealth-title">{{ $t('charts.polymarket.finalWealth') }}</div>
+              <ul>
+                <li v-for="entry in durableEnvelope.final_wealth" :key="entry.user_id">
+                  <span>{{ $t('charts.polymarket.participant', { id: entry.user_id }) }}</span>
+                  <strong>{{ formatWealth(entry.wealth) }}</strong>
+                </li>
+              </ul>
             </div>
 
             <!-- SVG chart -->
@@ -131,14 +161,15 @@
 
                 <!-- Latest point dot -->
                 <circle
-                  v-if="hasPath"
+                  v-if="selected.points.length"
                   :cx="xScale(selected.points.length - 1)"
                   :cy="yScale(latestPrice)"
                   r="4"
                   :fill="lineColor"
+                  data-testid="latest-point"
                 />
                 <circle
-                  v-if="hasPath"
+                  v-if="selected.points.length"
                   :cx="xScale(selected.points.length - 1)"
                   :cy="yScale(latestPrice)"
                   r="8"
@@ -171,9 +202,9 @@
                 <div v-if="selected.points[hoverPoint].side" class="pm-tooltip-trade">
                   {{ selected.points[hoverPoint].side.toUpperCase() }}
                   {{ selected.points[hoverPoint].outcome }}
-                  · {{ selected.points[hoverPoint].shares?.toFixed(1) }} shares
+                  · {{ $t('charts.polymarket.shares', { count: selected.points[hoverPoint].shares?.toFixed(1) }) }}
                 </div>
-                <div v-else class="pm-tooltip-trade">Origin (no trades yet)</div>
+                <div v-else class="pm-tooltip-trade">{{ $t('charts.polymarket.origin') }}</div>
                 <div class="pm-tooltip-time">{{ formatTime(selected.points[hoverPoint].t) }}</div>
               </div>
             </div>
@@ -185,7 +216,9 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { getPolymarketMarkets, getPolymarketMarketPrices } from '../api/simulation'
+import { getMarketResolutions } from '../api/report'
 
 import {
   renderSvgToCanvas,
@@ -238,6 +271,8 @@ const props = defineProps({
   live: { type: Boolean, default: false },
 })
 
+const { t, locale } = useI18n()
+
 const W = 900
 const H = 360
 const ML = 16
@@ -251,6 +286,7 @@ const marketsError = ref('')
 const selectedId = ref(null)
 const selected = ref(null)
 const selectedError = ref('')
+const durableEnvelope = ref({ resolutions: [], final_wealth: [], complete: false })
 const pollTimer = ref(null)
 const hoverPoint = ref(null)
 const hoverTooltipStyle = ref(null)
@@ -263,7 +299,7 @@ const copySupported = canCopyImageToClipboard()
 const gradId = computed(() => `pm-grad-${selectedId.value ?? 'x'}`)
 
 const latestPrice = computed(() => {
-  if (!selected.value?.points?.length) return 0.5
+  if (!selected.value?.points?.length) return null
   return selected.value.points[selected.value.points.length - 1].price_yes
 })
 
@@ -288,7 +324,7 @@ const tradeVolume = computed(() => {
 
 const xScale = (i) => {
   const pts = selected.value?.points || []
-  if (pts.length <= 1) return ML
+  if (pts.length <= 1) return (ML + W - MR) / 2
   const w = W - ML - MR
   return ML + (i / (pts.length - 1)) * w
 }
@@ -312,6 +348,36 @@ const areaPath = computed(() => {
   const baseY = (H - MB).toFixed(2)
   return `${top} L${xScale(pts.length - 1).toFixed(2)},${baseY} L${xScale(0).toFixed(2)},${baseY} Z`
 })
+
+function marketQuestion(market) {
+  return market.question || t('charts.polymarket.questionFallback', { id: market.market_id })
+}
+
+function outcomeLabel(outcome) {
+  if (outcome === 'YES') return t('charts.polymarket.yes')
+  if (outcome === 'NO') return t('charts.polymarket.no')
+  if (outcome === 'INVALID') return t('charts.polymarket.invalid')
+  return outcome || ''
+}
+
+function evidenceLabel(item) {
+  return t('charts.polymarket.evidenceEntry', {
+    round: item.round,
+    type: item.type,
+    ref: item.ref,
+  })
+}
+
+function formatDate(value) {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  return new Intl.DateTimeFormat(locale.value, { dateStyle: 'medium', timeStyle: 'short' }).format(date)
+}
+
+function formatWealth(value) {
+  if (!Number.isFinite(value)) return '—'
+  return new Intl.NumberFormat(locale.value, { maximumFractionDigits: 2 }).format(value)
+}
 
 function formatPct(v) {
   if (v === null || v === undefined || Number.isNaN(v)) return '—'
@@ -370,19 +436,65 @@ async function fetchSelected() {
   }
 }
 
+function durableMarket(resolution) {
+  const points = Array.isArray(resolution.price_series) ? resolution.price_series : []
+  return {
+    market_id: resolution.market_id,
+    question: resolution.question,
+    price_yes: points.at(-1)?.price_yes ?? null,
+    point_count: points.length,
+    resolved: resolution.verdict !== 'UNRESOLVED',
+    winning_outcome: resolution.verdict,
+  }
+}
+
+function selectDurableMarket(id) {
+  const resolution = durableEnvelope.value.resolutions.find((item) => item.market_id === id)
+  if (!resolution) return
+  const points = Array.isArray(resolution.price_series) ? resolution.price_series : []
+  selected.value = { market: durableMarket(resolution), points, resolution }
+  selectedError.value = ''
+}
+
+async function fetchDurableResolutions() {
+  if (!props.simulationId) return
+  marketsLoading.value = true
+  marketsError.value = ''
+  try {
+    const res = await getMarketResolutions(props.simulationId)
+    const data = res?.data?.data || res?.data || {}
+    durableEnvelope.value = {
+      resolutions: Array.isArray(data.resolutions) ? data.resolutions : [],
+      final_wealth: Array.isArray(data.final_wealth) ? data.final_wealth : [],
+      complete: data.complete === true,
+    }
+    markets.value = durableEnvelope.value.resolutions.map(durableMarket)
+    if (markets.value.length) {
+      selectedId.value = markets.value[0].market_id
+      selectDurableMarket(selectedId.value)
+    }
+  } catch (_) {
+    marketsError.value = 'load_error'
+  } finally {
+    marketsLoading.value = false
+  }
+}
+
 function selectMarket(id) {
   selectedId.value = id
   selected.value = null
   hoverPoint.value = null
-  fetchSelected()
+  if (props.live) fetchSelected()
+  else selectDurableMarket(id)
 }
 
 function startPolling() {
+  if (!props.live) return
   if (pollTimer.value) clearInterval(pollTimer.value)
   pollTimer.value = setInterval(async () => {
     await fetchMarkets()
     if (selectedId.value !== null) await fetchSelected()
-  }, props.live ? 4000 : 20000)
+  }, 4000)
 }
 
 function handleHover(event) {
@@ -423,27 +535,29 @@ const _priceColor = (p) => {
 
 const _buildExportCanvas = async () => {
   if (!chartSvg.value || !selected.value) {
-    throw new Error('No chart to export')
+    throw new Error(t('charts.polymarket.noChartToExport'))
   }
   const m = selected.value.market
   const pts = selected.value.points || []
-  const question = m.question || `Market #${m.market_id}`
+  const question = marketQuestion(m)
   const priceVal = latestPrice.value
   const priceColor = _priceColor(priceVal)
-  const priceStr = `${(priceVal * 100).toFixed(1)}%`
-  const outcomeLabel = (m.outcome_a || 'YES').toUpperCase()
+  const priceStr = formatPct(priceVal)
+  const exportOutcomeLabel = outcomeLabel(m.outcome_a || 'YES')
   const delta = priceDelta.value
   const deltaStr = delta != null ? `${delta >= 0 ? '▲' : '▼'} ${(Math.abs(delta) * 100).toFixed(1)}%` : null
   const deltaColor = delta == null
     ? null
     : (delta > 0.005 ? wiColors.yes : (delta < -0.005 ? wiColors.no : wiColors.neutral))
 
-  const stats = [
-    { k: 'TRADES', v: String(Math.max(pts.length - 1, 0)) },
-    { k: 'VOLUME', v: tradeVolume.value.toFixed(1) },
-    { k: 'OUTCOMES', v: `${m.outcome_a || 'YES'}/${m.outcome_b || 'NO'}` },
-  ]
-  if (m.resolved) stats.push({ k: 'RESOLVED', v: m.winning_outcome || 'YES' })
+  const stats = props.live
+    ? [
+      { k: t('charts.polymarket.tradesLabel'), v: String(Math.max(pts.length - 1, 0)) },
+      { k: t('charts.polymarket.volume'), v: tradeVolume.value.toFixed(1) },
+      { k: t('charts.polymarket.outcomes'), v: `${outcomeLabel(m.outcome_a || 'YES')}/${outcomeLabel(m.outcome_b || 'NO')}` },
+    ]
+    : [{ k: t('charts.polymarket.pricePointsLabel'), v: String(pts.length) }]
+  if (m.resolved) stats.push({ k: t('charts.polymarket.adjudicatedLabel'), v: outcomeLabel(m.winning_outcome) })
 
   // ── Measure title height so the header sizes to its content ──
   // Fonts: Young Serif 44px for the title, Space Mono for everything else.
@@ -483,7 +597,7 @@ const _buildExportCanvas = async () => {
     // "CHANCE YES" label next to the price
     ctx.fillStyle = 'rgba(10, 10, 10, 0.5)'
     ctx.font = '400 13px "Space Mono", "JetBrains Mono", ui-monospace, monospace'
-    ctx.fillText(`CHANCE ${outcomeLabel}`, PX + priceWidth + 18, priceBaseline - 4)
+    ctx.fillText(t('charts.polymarket.chance', { outcome: exportOutcomeLabel }), PX + priceWidth + 18, priceBaseline - 4)
 
     // Delta pill, right-aligned to keep from colliding with the label
     if (deltaStr) {
@@ -580,9 +694,14 @@ const start = async () => {
   hoverPoint.value = null
   selected.value = null
   selectedId.value = null
-  await fetchMarkets({ autoSelect: true })
-  if (selectedId.value !== null) await fetchSelected()
-  startPolling()
+  durableEnvelope.value = { resolutions: [], final_wealth: [], complete: false }
+  if (props.live) {
+    await fetchMarkets({ autoSelect: true })
+    if (selectedId.value !== null) await fetchSelected()
+    startPolling()
+  } else {
+    await fetchDurableResolutions()
+  }
 }
 
 watch(() => props.simulationId, () => {
@@ -594,7 +713,11 @@ watch(() => props.simulationId, () => {
 })
 
 watch(() => props.live, () => {
-  if (pollTimer.value) startPolling()
+  if (pollTimer.value) {
+    clearInterval(pollTimer.value)
+    pollTimer.value = null
+  }
+  start()
 })
 
 onMounted(() => { start() })
@@ -975,6 +1098,50 @@ onBeforeUnmount(() => {
   border: 1px solid var(--wi-outline-variant, rgba(10, 10, 10, 0.06));
   border-radius: var(--wi-radius-md, 0);
   padding: 4px;
+}
+
+.pm-resolution,
+.pm-final-wealth,
+.pm-no-series {
+  border: 1px solid var(--wi-outline-variant, rgba(10, 10, 10, 0.12));
+  border-radius: var(--wi-radius-md, 8px);
+  padding: 12px;
+  font-family: var(--wi-font-body, var(--font-mono));
+  font-size: 12px;
+}
+
+.pm-resolution {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+
+.pm-resolution-item,
+.pm-final-wealth-title {
+  color: var(--wi-on-surface, var(--color-black));
+  font-weight: 700;
+}
+
+.pm-resolution-justification,
+.pm-evidence,
+.pm-final-wealth ul {
+  width: 100%;
+  margin: 0;
+}
+
+.pm-evidence,
+.pm-final-wealth ul {
+  padding-inline-start: 18px;
+}
+
+.pm-final-wealth li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pm-no-series {
+  color: var(--wi-on-surface-variant, rgba(10, 10, 10, 0.55));
 }
 
 .pm-chart-svg {

@@ -35,6 +35,9 @@ from app.services.report_pdf.schema import (
     DirectorEvent,
     GeneratedArticle,
     KPIHero,
+    FinalWealth,
+    MarketPricePoint,
+    MarketResolution,
     Outline,
     Outcome,
     PDFReportContext,
@@ -55,6 +58,84 @@ from app.services.report_pdf.schema import (
 
 VALID_REPORT_ID = "report_a1b2c3d4e5f6"
 VALID_SIM_ID = "sim_aabbcc112233"
+
+
+def _resolution(*, verdict: str = "YES", price_series: list[dict] | None = None) -> dict:
+    return {
+        "market_id": 1,
+        "question": "La réforme sera-t-elle adoptée ?",
+        "resolution_spec": {"version": 1},
+        "verdict": verdict,
+        "justification": "Les critères contractuels sont remplis.",
+        "confidence": None if verdict == "UNRESOLVED" else 0.8,
+        "evidence": [] if verdict == "UNRESOLVED" else [{"round": 1, "type": "trajectory", "ref": "r1"}],
+        "price_series": price_series if price_series is not None else [],
+        "payout_summary": {"status": "unresolved" if verdict == "UNRESOLVED" else "paid"},
+        "prompt_key": "oracle.resolution",
+        "prompt_version": 1,
+        "resolved_at": "2026-07-18T00:00:00+00:00",
+    }
+
+
+class TestUS227DurableResolutionSchema:
+    def test_empty_and_single_point_series_roundtrip(self) -> None:
+        resolution = _resolution(price_series=[{"round": 0, "price_yes": 0.5, "reserve_a": 100, "reserve_b": 100}])
+        ctx = PDFReportContext(
+            report_id=VALID_REPORT_ID,
+            simulation_id=VALID_SIM_ID,
+            market_resolutions=[resolution],
+            final_wealth=[{"user_id": 7, "cash_balance": 10, "open_position_value": 0, "wealth": 10, "complete": True}],
+            complete=True,
+        )
+
+        restored = PDFReportContext.model_validate_json(ctx.model_dump_json())
+
+        assert isinstance(restored.market_resolutions[0], MarketResolution)
+        assert isinstance(restored.market_resolutions[0].price_series[0], MarketPricePoint)
+        assert restored.market_resolutions[0].resolved_at.isoformat() == "2026-07-18T00:00:00+00:00"
+        assert isinstance(restored.final_wealth[0], FinalWealth)
+
+    def test_unresolved_requires_null_confidence_empty_evidence_and_incomplete_context(self) -> None:
+        ctx = PDFReportContext(
+            report_id=VALID_REPORT_ID,
+            simulation_id=VALID_SIM_ID,
+            market_resolutions=[_resolution(verdict="UNRESOLVED")],
+            complete=False,
+        )
+        assert ctx.market_resolutions[0].confidence is None
+        with pytest.raises(ValidationError):
+            PDFReportContext(
+                report_id=VALID_REPORT_ID,
+                simulation_id=VALID_SIM_ID,
+                market_resolutions=[_resolution(verdict="UNRESOLVED")],
+                complete=True,
+            )
+
+    def test_incoherent_final_wealth_is_rejected_but_incomplete_resolved_state_is_allowed(self) -> None:
+        with pytest.raises(ValidationError):
+            PDFReportContext(
+                report_id=VALID_REPORT_ID,
+                simulation_id=VALID_SIM_ID,
+                market_resolutions=[_resolution()],
+                final_wealth=[{"user_id": 7, "cash_balance": 1, "open_position_value": 0, "wealth": 1, "complete": False}],
+                complete=True,
+            )
+
+        ctx = PDFReportContext(
+            report_id=VALID_REPORT_ID,
+            simulation_id=VALID_SIM_ID,
+            market_resolutions=[_resolution()],
+            complete=False,
+        )
+        assert ctx.complete is False
+
+    def test_duplicate_or_unordered_price_rounds_are_rejected(self) -> None:
+        points = [
+            {"round": 1, "price_yes": 0.6, "reserve_a": 100, "reserve_b": 70},
+            {"round": 0, "price_yes": 0.5, "reserve_a": 100, "reserve_b": 100},
+        ]
+        with pytest.raises(ValidationError):
+            MarketResolution.model_validate(_resolution(price_series=points))
 
 
 def _minimal_context() -> dict:

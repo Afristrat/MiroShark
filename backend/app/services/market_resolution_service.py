@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import json
 import math
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence
 
-from ..auth.supabase_client import get_supabase_admin
+from ..auth.supabase_client import get_simulation_owner, get_supabase_admin
 from ..utils.logger import get_logger
 from . import market_resolution_oracle
 from wonderwall.simulations.polymarket.amm import get_prices
@@ -21,9 +22,202 @@ class MarketResolutionError(RuntimeError):
     """Fail-closed boundary for durable resolution and settlement."""
 
 
+class MarketResolutionReadError(RuntimeError):
+    """Fail-closed error returned by the durable read boundary."""
+
+    def __init__(self, code: str) -> None:
+        super().__init__(code)
+        self.code = code
+
+
+@dataclass(frozen=True)
+class MarketResolutionRead:
+    """Validated public DTO sourced exclusively from market_resolutions."""
+
+    resolutions: List[Dict[str, Any]]
+    final_wealth: List[Dict[str, Any]]
+    complete: bool
+
+
+_PUBLIC_RESOLUTION_FIELDS = (
+    "market_id",
+    "question",
+    "resolution_spec",
+    "verdict",
+    "justification",
+    "confidence",
+    "evidence",
+    "price_series",
+    "payout_summary",
+    "prompt_key",
+    "prompt_version",
+    "resolved_at",
+)
+_VALID_VERDICTS = {"YES", "NO", "INVALID", "UNRESOLVED"}
+_STATUS_BY_VERDICT = {
+    "YES": "paid",
+    "NO": "paid",
+    "INVALID": "refunded",
+    "UNRESOLVED": "unresolved",
+}
+
+
 def _rows(response: Any) -> List[Dict[str, Any]]:
     data = getattr(response, "data", None)
     return data if isinstance(data, list) else []
+
+
+def _valid_number(value: Any) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+
+
+def _valid_final_wealth(final_wealth: Any, complete: bool) -> bool:
+    if not isinstance(final_wealth, list):
+        return False
+    for item in final_wealth:
+        if not isinstance(item, dict) or item.get("complete") is not complete:
+            return False
+        if not isinstance(item.get("user_id"), int) or isinstance(item["user_id"], bool):
+            return False
+        if not all(_valid_number(item.get(key)) for key in ("cash_balance", "open_position_value", "wealth")):
+            return False
+    return True
+
+
+def _read_final_wealth(rows: Sequence[Mapping[str, Any]]) -> tuple[List[Dict[str, Any]], bool]:
+    """Expose wealth only when every durable row agrees on a coherent final state."""
+    if not rows:
+        return [], False
+
+    summaries = [row.get("payout_summary") for row in rows]
+    for row, summary in zip(rows, summaries):
+        verdict = row.get("verdict")
+        if (
+            not isinstance(verdict, str)
+            or not isinstance(summary, dict)
+            or summary.get("status") != _STATUS_BY_VERDICT.get(verdict)
+        ):
+            return [], False
+    first_summary = summaries[0]
+    assert isinstance(first_summary, dict)
+    final_wealth = first_summary.get("final_wealth")
+    complete = first_summary.get("complete")
+    if not isinstance(complete, bool) or not _valid_final_wealth(final_wealth, complete):
+        return [], False
+    assert isinstance(final_wealth, list)
+    typed_final_wealth = [item for item in final_wealth if isinstance(item, dict)]
+    if len(typed_final_wealth) != len(final_wealth):
+        return [], False
+    if any(
+        summary.get("final_wealth") != final_wealth or summary.get("complete") is not complete
+        for summary in summaries[1:]
+        if isinstance(summary, dict)
+    ):
+        return [], False
+    if complete != all(row.get("verdict") != "UNRESOLVED" for row in rows):
+        return [], False
+    return typed_final_wealth, complete
+
+
+def _valid_resolution_row(row: Mapping[str, Any], simulation_id: str, org_id: str) -> bool:
+    if row.get("simulation_id") != simulation_id or row.get("org_id") != org_id:
+        return False
+    market_id = row.get("market_id")
+    if not isinstance(market_id, int) or isinstance(market_id, bool) or market_id <= 0:
+        return False
+    if not isinstance(row.get("question"), str) or not row["question"].strip():
+        return False
+    verdict = row.get("verdict")
+    if not isinstance(row.get("resolution_spec"), dict) or not isinstance(verdict, str) or verdict not in _VALID_VERDICTS:
+        return False
+    if not isinstance(row.get("justification"), str) or not row["justification"].strip():
+        return False
+    if not isinstance(row.get("evidence"), list) or not all(isinstance(item, dict) for item in row["evidence"]):
+        return False
+    confidence = row.get("confidence")
+    if verdict == "UNRESOLVED":
+        if confidence is not None or row["evidence"]:
+            return False
+    elif (
+        not isinstance(confidence, (int, float))
+        or isinstance(confidence, bool)
+        or not math.isfinite(confidence)
+        or not 0 <= confidence <= 1
+    ):
+        return False
+    if not isinstance(row.get("price_series"), list):
+        return False
+    rounds: List[int] = []
+    for point in row["price_series"]:
+        if (
+            not isinstance(point, dict)
+            or not isinstance(point.get("round"), int)
+            or isinstance(point["round"], bool)
+            or point["round"] < 0
+            or not all(_valid_number(point.get(key)) for key in ("price_yes", "reserve_a", "reserve_b"))
+            or not 0 <= point["price_yes"] <= 1
+            or point["reserve_a"] < 0
+            or point["reserve_b"] < 0
+        ):
+            return False
+        rounds.append(point["round"])
+    if rounds != sorted(rounds) or len(rounds) != len(set(rounds)):
+        return False
+    if not isinstance(row.get("payout_summary"), dict):
+        return False
+    if not isinstance(row.get("prompt_key"), str) or not row["prompt_key"].strip():
+        return False
+    if not isinstance(row.get("prompt_version"), int) or isinstance(row["prompt_version"], bool) or row["prompt_version"] < 1:
+        return False
+    return isinstance(row.get("resolved_at"), str) and bool(row["resolved_at"].strip())
+
+
+def read_market_resolutions(
+    simulation_id: str,
+    *,
+    client: Any = None,
+    owner_reader: Optional[Callable[[str], Optional[Dict[str, Any]]]] = None,
+) -> MarketResolutionRead:
+    """Read and validate durable resolutions without HTTP or SQLite artifacts."""
+    if not isinstance(simulation_id, str) or not simulation_id.strip():
+        raise MarketResolutionReadError("OWNERSHIP_INVALID")
+    try:
+        owner = (owner_reader or get_simulation_owner)(simulation_id)
+    except Exception as exc:  # noqa: BLE001 - durable ownership is fail-closed
+        raise MarketResolutionReadError("OWNERSHIP_UNAVAILABLE") from exc
+    if owner is None:
+        raise MarketResolutionReadError("SIMULATION_NOT_FOUND")
+    org_id = owner.get("org_id") if isinstance(owner, dict) else None
+    if not isinstance(org_id, str) or not org_id.strip():
+        raise MarketResolutionReadError("OWNERSHIP_INVALID")
+
+    try:
+        response = (
+            (client or get_supabase_admin())
+            .table("market_resolutions")
+            .select(",".join(("simulation_id", "org_id", *_PUBLIC_RESOLUTION_FIELDS)))
+            .eq("simulation_id", simulation_id)
+            .eq("org_id", org_id)
+            .order("market_id")
+            .execute()
+        )
+        rows = getattr(response, "data", None)
+    except Exception as exc:  # noqa: BLE001 - never turn storage failures into absence
+        raise MarketResolutionReadError("RESOLUTIONS_UNAVAILABLE") from exc
+    if not isinstance(rows, list) or any(not isinstance(row, dict) for row in rows):
+        raise MarketResolutionReadError("RESOLUTIONS_UNAVAILABLE")
+    if any(not _valid_resolution_row(row, simulation_id, org_id) for row in rows):
+        raise MarketResolutionReadError("RESOLUTIONS_UNAVAILABLE")
+    market_ids = [row["market_id"] for row in rows]
+    if market_ids != sorted(market_ids) or len(market_ids) != len(set(market_ids)):
+        raise MarketResolutionReadError("RESOLUTIONS_UNAVAILABLE")
+
+    final_wealth, complete = _read_final_wealth(rows)
+    return MarketResolutionRead(
+        resolutions=[{field: row[field] for field in _PUBLIC_RESOLUTION_FIELDS} for row in rows],
+        final_wealth=final_wealth,
+        complete=complete,
+    )
 
 
 def _require_org_id(client: Any, simulation_id: str) -> str:

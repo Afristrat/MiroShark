@@ -251,77 +251,68 @@ class ChartFactory:
     # ── 2. Polymarket curves ──────────────────────────────────────────────────
 
     def polymarket_curves(self) -> bytes:
-        """
-        Courbes bullish vs bearish par round (style marché prédictif).
+        """Trace les prix YES durables des questions de l'arène de convictions.
 
-        Utilise le pourcentage d'agents bullish/bearish par round calculé
-        depuis la trajectoire (AgentState.stance). Si l'Outcome fournit
-        les valeurs finales (bullish_pct / bearish_pct), elles sont annotées.
-
-        Si données insuffisantes → placeholder PNG.
+        La source est strictement ``MarketResolution.price_series`` : ni
+        trajectoire, ni stances, ni SQLite, ni trades ne peuvent reconstruire
+        ce graphique après la clôture du scénario.
         """
         apply_causse_style()
 
         ctx = self._ctx
-        if ctx.trajectory is None or not ctx.trajectory.rounds:
-            return _placeholder_png("Trajectoire non disponible\n(polymarket curves)")
+        labels = {
+            "fr": {
+                "title": "Évolution des prix des questions",
+                "x": "Round",
+                "y": "Prix OUI (%)",
+                "placeholder": "Aucune série de prix durable disponible",
+                "question": "Question",
+            },
+            "en": {
+                "title": "Question price evolution",
+                "x": "Round",
+                "y": "YES price (%)",
+                "placeholder": "No durable price series available",
+                "question": "Question",
+            },
+            "ar": {
+                "title": "تطور أسعار الأسئلة",
+                "x": "الجولة",
+                "y": "سعر نعم (%)",
+                "placeholder": "لا تتوفر سلسلة أسعار دائمة",
+                "question": "سؤال",
+            },
+        }[ctx.lang]
 
-        rounds = sorted(ctx.trajectory.rounds, key=lambda r: r.round_idx)
-
-        xs: list[int] = []
-        bullish_series: list[float] = []
-        bearish_series: list[float] = []
-        neutral_series: list[float] = []
-
-        for rnd in rounds:
-            if not rnd.agents:
-                continue
-            total = len(rnd.agents)
-            bullish = sum(1 for a in rnd.agents if a.stance.lower() in ("bullish", "bull", "positive", "optimistic"))
-            bearish = sum(1 for a in rnd.agents if a.stance.lower() in ("bearish", "bear", "negative", "pessimistic"))
-            neutral = total - bullish - bearish
-            xs.append(rnd.round_idx)
-            bullish_series.append(100.0 * bullish / total)
-            bearish_series.append(100.0 * bearish / total)
-            neutral_series.append(100.0 * max(neutral, 0) / total)
-
-        if not xs:
-            return _placeholder_png("Aucun agent dans les rounds\n(polymarket curves)")
+        series = [
+            resolution
+            for resolution in ctx.market_resolutions
+            if resolution.price_series
+        ]
+        if not series:
+            return _placeholder_png(labels["placeholder"])
 
         fig, ax = plt.subplots(figsize=(7, 3.8))
-        ax.set_title("Évolution comparative adhésion / résistance par round", pad=10)
-        ax.set_xlabel("Round")
-        ax.set_ylabel("% des agents")
+        ax.set_title(labels["title"], pad=10)
+        ax.set_xlabel(labels["x"])
+        ax.set_ylabel(labels["y"])
         ax.set_ylim(0, 105)
 
-        ax.plot(xs, bullish_series, marker="o", markersize=4, label="Adhésion", color=WI_MINT, linewidth=2)
-        ax.plot(xs, bearish_series, marker="o", markersize=4, label="Résistance", color=WI_TERRA, linewidth=2)
-        ax.plot(xs, neutral_series, marker="o", markersize=4, label="En observation", color=WI_SAND, linewidth=1.5, linestyle="--")
-
-        ax.fill_between(xs, bullish_series, alpha=0.08, color=WI_MINT)
-        ax.fill_between(xs, bearish_series, alpha=0.08, color=WI_TERRA)
-
-        # Annotation valeur finale depuis outcome si disponible
-        if ctx.outcome is not None:
-            ax.annotate(
-                f"Adhésion finale : {ctx.outcome.bullish_pct:.0f} %",
-                xy=(xs[-1], bullish_series[-1]),
-                xytext=(xs[-1] - 0.5, bullish_series[-1] + 6),
-                fontsize=6,
-                color=WI_MINT,
-                arrowprops={"arrowstyle": "->", "color": WI_MINT, "lw": 0.7},
-            )
-            ax.annotate(
-                f"Résistance finale : {ctx.outcome.bearish_pct:.0f} %",
-                xy=(xs[-1], bearish_series[-1]),
-                xytext=(xs[-1] - 0.5, bearish_series[-1] - 10),
-                fontsize=6,
-                color=WI_TERRA,
-                arrowprops={"arrowstyle": "->", "color": WI_TERRA, "lw": 0.7},
+        for index, resolution in enumerate(series):
+            xs = [point.round for point in resolution.price_series]
+            ys = [point.price_yes * 100 for point in resolution.price_series]
+            label = f"{labels['question']} {resolution.market_id}"
+            ax.plot(
+                xs,
+                ys,
+                marker="o",
+                markersize=5 if len(xs) == 1 else 4,
+                label=label,
+                color=CAUSSE_PALETTE[index % len(CAUSSE_PALETTE)],
+                linewidth=2,
             )
 
-        ax.legend(loc="best")
-        ax.set_xticks(xs)
+        ax.legend(loc="best", fontsize=7)
         fig.tight_layout()
         return _fig_to_png(fig)
 

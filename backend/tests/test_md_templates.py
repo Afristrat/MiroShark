@@ -29,7 +29,9 @@ vers une liste vide d'issues (comportement normal attendu).
 from __future__ import annotations
 
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
+from typing import Literal
 from unittest.mock import patch
 
 import pytest
@@ -49,6 +51,9 @@ from app.services.report_pdf.schema import (
     DirectorEvent,
     GeneratedArticle,
     KPIHero,
+    FinalWealth,
+    MarketPricePoint,
+    MarketResolution,
     Outline,
     Outcome,
     PDFReportContext,
@@ -552,6 +557,121 @@ def test_verdict_section_counterfactuals_vides() -> None:
 
 
 # ─── Test 17 — executive_takeaways vides avec outline.summary → fallback ─────
+
+def _durable_adjudication_context(
+    lang: Literal["fr", "en", "ar"],
+    verdict: Literal["YES", "NO", "INVALID", "UNRESOLVED"] = "YES",
+) -> PDFReportContext:
+    """Construit le contexte durable minimal de la section US-227."""
+    unresolved = verdict == "UNRESOLVED"
+    return PDFReportContext(
+        report_id=VALID_REPORT_ID,
+        simulation_id=VALID_SIM_ID,
+        title="Arène durable",
+        framework="market",
+        lang=lang,
+        market_resolutions=[
+            MarketResolution(
+                market_id=7,
+                question="La mesure sera-t-elle adoptée ?",
+                resolution_spec={"criterion": "publication officielle"},
+                verdict=verdict,
+                justification="Le digest final apporte les éléments nécessaires.",
+                confidence=None if unresolved else 0.82,
+                evidence=[] if unresolved else [{"round": 4, "type": "digest", "ref": "digest-4"}],
+                price_series=[
+                    MarketPricePoint(round=1, price_yes=0.31, reserve_a=10.0, reserve_b=10.0),
+                    MarketPricePoint(round=4, price_yes=0.82, reserve_a=10.0, reserve_b=10.0),
+                ],
+                prompt_key="market_resolution",
+                prompt_version=1,
+                resolved_at=datetime(2026, 7, 18, 14, tzinfo=timezone.utc),
+            )
+        ],
+        final_wealth=[] if unresolved else [
+            FinalWealth(user_id=4, cash_balance=10.0, open_position_value=2.0, wealth=12.0, complete=True),
+            FinalWealth(user_id=9, cash_balance=8.0, open_position_value=7.0, wealth=15.0, complete=True),
+        ],
+        complete=not unresolved,
+    )
+
+
+@pytest.mark.parametrize(
+    ("lang", "title", "outcome", "closure", "convergence"),
+    [
+        ("fr", "Arène de convictions", "Issue d’adjudication", "Clôture de scénario", "Degré de convergence"),
+        ("en", "Conviction arena", "Adjudicated outcome", "Scenario closure", "Convergence score"),
+        ("ar", "ساحة القناعات", "محصلة التحكيم", "إغلاق السيناريو", "درجة التقارب"),
+    ],
+)
+def test_arena_adjudication_section_localizes_durable_data(
+    lang: Literal["fr", "en", "ar"],
+    title: str,
+    outcome: str,
+    closure: str,
+    convergence: str,
+) -> None:
+    """La section full restitue les données durables dans les trois locales."""
+    result = render_section(
+        "_arena_adjudication.md.j2",
+        _durable_adjudication_context(lang),
+        generated_at=GENERATED_AT,
+    )
+
+    assert title in result
+    assert outcome in result
+    assert closure in result
+    assert convergence in result
+    assert "digest-4" in result
+    assert "polymarket_curves.png" in result
+    assert "Persona 9" in result or "شخصية 9" in result
+    assert result.index("15.00") < result.index("12.00")
+    for forbidden in ("oracle", "verdict", "confidence", "confiance", "dénouement", "prédiction", "prediction", "تنبؤ"):
+        assert forbidden not in result.lower()
+
+
+def test_arena_adjudication_unresolved_has_no_invented_outcome_or_score() -> None:
+    """UNRESOLVED reste explicitement non finalisé, sans issue ni score."""
+    result = render_section(
+        "_arena_adjudication.md.j2",
+        _durable_adjudication_context("fr", verdict="UNRESOLVED"),
+        generated_at=GENERATED_AT,
+    )
+
+    assert "Adjudication non finalisée" in result
+    assert "Issue d’adjudication" not in result
+    assert "Degré de convergence" not in result
+    assert "Le digest final" in result
+
+
+def test_arena_adjudication_explicitly_reports_durable_absence() -> None:
+    """Zéro adjudication et zéro richesse n'appellent aucun fallback."""
+    context = PDFReportContext(
+        report_id=VALID_REPORT_ID,
+        simulation_id=VALID_SIM_ID,
+        framework="market",
+        lang="fr",
+    )
+    result = render_section("_arena_adjudication.md.j2", context, generated_at=GENERATED_AT)
+
+    assert "Aucune adjudication durable" in result
+    assert "Aucune richesse finale durable" in result
+    assert "polymarket_curves.png" not in result
+
+
+def test_arena_adjudication_is_in_both_full_template_paths() -> None:
+    """Les deux voies full incluent la même restitution durable."""
+    context = _durable_adjudication_context("en")
+    env = get_jinja_env()
+    for template_name in ("_full.md.j2", "full/_main.md.j2"):
+        result = env.get_template(template_name).render(
+            context=context,
+            generated_at=GENERATED_AT,
+            branding_version="default",
+        )
+        assert "Conviction arena — durable adjudication" in result
+        assert "polymarket_curves.png" in result
+
 
 def test_exec_summary_fallback_outline_summary() -> None:
     """Quand executive_takeaways=[] mais outline.summary est disponible, on utilise le fallback."""

@@ -40,6 +40,7 @@ from app.services.report_pdf.loader import (
     _SIMULATIONS_DIR,
 )
 from app.services.report_pdf.schema import PDFReportContext
+from app.services.market_resolution_service import MarketResolutionRead, MarketResolutionReadError
 
 # ─── Chemins des fixtures ─────────────────────────────────────────────────────
 # Les dossiers fixtures sont nommés avec les IDs de test pour que le loader
@@ -72,6 +73,94 @@ def _write_jsonl(path: Path, records: list) -> None:
     with open(path, "w", encoding="utf-8") as fh:
         for record in records:
             fh.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+
+class TestUS227DurableResolutionLoader:
+    def _sim_dir(self, tmp_path: Path) -> Path:
+        sim_dir = tmp_path / _TEST_SIM_ID
+        sim_dir.mkdir(parents=True)
+        _write_json(sim_dir / "simulation_config.json", {"title": "Test", "framework": "cerberus", "lang": "fr"})
+        return sim_dir
+
+    def test_injected_reader_populates_durable_dto_without_sqlite(self, tmp_path: Path) -> None:
+        self._sim_dir(tmp_path)
+        calls: list[str] = []
+
+        def reader(simulation_id: str) -> MarketResolutionRead:
+            calls.append(simulation_id)
+            return MarketResolutionRead(
+                resolutions=[{
+                    "market_id": 1,
+                    "question": "Question durable",
+                    "resolution_spec": {"version": 1},
+                    "verdict": "YES",
+                    "justification": "Critères remplis.",
+                    "confidence": 0.8,
+                    "evidence": [{"round": 1, "type": "trajectory", "ref": "r1"}],
+                    "price_series": [{"round": 0, "price_yes": 0.5, "reserve_a": 100, "reserve_b": 100}],
+                    "payout_summary": {"status": "paid"},
+                    "prompt_key": "oracle.resolution",
+                    "prompt_version": 1,
+                    "resolved_at": "2026-07-18T00:00:00+00:00",
+                }],
+                final_wealth=[{"user_id": 1, "cash_balance": 10, "open_position_value": 0, "wealth": 10, "complete": True}],
+                complete=True,
+            )
+
+        ctx = PDFContextLoader.load(
+            simulation_id=_TEST_SIM_ID,
+            sim_base_dir=tmp_path,
+            market_resolution_reader=reader,
+        )
+
+        assert calls == [_TEST_SIM_ID]
+        assert ctx.market_resolutions[0].price_series[0].reserve_a == 100
+        assert ctx.final_wealth[0].wealth == 10
+        assert ctx.complete is True
+
+    def test_zero_rows_and_unresolved_are_distinct_durable_states(self, tmp_path: Path) -> None:
+        self._sim_dir(tmp_path)
+        absent = PDFContextLoader.load(
+            simulation_id=_TEST_SIM_ID,
+            sim_base_dir=tmp_path,
+            market_resolution_reader=lambda _: MarketResolutionRead([], [], False),
+        )
+        unresolved = PDFContextLoader.load(
+            simulation_id=_TEST_SIM_ID,
+            sim_base_dir=tmp_path,
+            market_resolution_reader=lambda _: MarketResolutionRead([{
+                "market_id": 1,
+                "question": "Question durable",
+                "resolution_spec": {"version": 1},
+                "verdict": "UNRESOLVED",
+                "justification": "Données insuffisantes.",
+                "confidence": None,
+                "evidence": [],
+                "price_series": [],
+                "payout_summary": {"status": "unresolved"},
+                "prompt_key": "oracle.resolution",
+                "prompt_version": 1,
+                "resolved_at": "2026-07-18T00:00:00+00:00",
+            }], [], False),
+        )
+
+        assert absent.market_resolutions == []
+        assert absent.complete is False
+        assert unresolved.market_resolutions[0].verdict == "UNRESOLVED"
+        assert unresolved.complete is False
+
+    def test_reader_error_is_not_translated_to_durable_absence(self, tmp_path: Path) -> None:
+        self._sim_dir(tmp_path)
+
+        def unavailable(_: str) -> MarketResolutionRead:
+            raise MarketResolutionReadError("RESOLUTIONS_UNAVAILABLE")
+
+        with pytest.raises(PDFContextLoaderError, match="Résolutions durables indisponibles"):
+            PDFContextLoader.load(
+                simulation_id=_TEST_SIM_ID,
+                sim_base_dir=tmp_path,
+                market_resolution_reader=unavailable,
+            )
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

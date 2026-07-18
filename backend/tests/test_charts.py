@@ -25,7 +25,9 @@ Couverture :
 from __future__ import annotations
 
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
@@ -44,6 +46,8 @@ from app.services.report_pdf.schema import (
     AgentState,
     Demographics,
     DemographicSegment,
+    MarketPricePoint,
+    MarketResolution,
     Outcome,
     PDFReportContext,
     PivotalMoment,
@@ -163,6 +167,26 @@ def _make_context_genre() -> PDFReportContext:
     )
 
 
+def _market_resolution(market_id: int, points: list[tuple[int, float]]) -> MarketResolution:
+    """Construit une adjudication durable minimale pour les courbes de prix."""
+    return MarketResolution(
+        market_id=market_id,
+        question=f"Question durable {market_id}",
+        resolution_spec={"criterion": "test"},
+        verdict="YES",
+        justification="Justification de test.",
+        confidence=0.8,
+        evidence=[{"round": 1, "type": "digest", "ref": "evidence-1"}],
+        price_series=[
+            MarketPricePoint(round=round_idx, price_yes=price, reserve_a=1.0, reserve_b=1.0)
+            for round_idx, price in points
+        ],
+        prompt_key="market_resolution",
+        prompt_version=1,
+        resolved_at=datetime(2026, 7, 18, tzinfo=timezone.utc),
+    )
+
+
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 
 def _is_png(data: bytes) -> bool:
@@ -252,30 +276,74 @@ class TestBeliefDrift:
 
 
 class TestPolymarketCurves:
-    """Tests 05-06 + 18 : polymarket_curves()."""
+    """Les courbes utilisent seulement les séries de prix durables."""
 
     def test_05_polymarket_curves_returns_png(self):
-        """Avec trajectoire, retourne un PNG valide."""
-        ctx = _make_context_full()
+        """Une série durable produit un PNG valide, même sans trajectoire."""
+        ctx = _make_context_minimal()
+        ctx.market_resolutions = [_market_resolution(1, [(1, 0.35), (2, 0.72)])]
         factory = ChartFactory(ctx)
         data = factory.polymarket_curves()
         assert _is_png(data)
         assert len(data) > 1000
 
-    def test_06_polymarket_curves_placeholder_no_trajectory(self):
-        """Sans trajectoire, placeholder PNG valide."""
-        ctx = _make_context_minimal()
-        factory = ChartFactory(ctx)
-        data = factory.polymarket_curves()
-        assert _is_png(data)
-
-    def test_18_polymarket_curves_with_outcome_annotation(self):
-        """Avec outcome (bullish_pct/bearish_pct), génère le chart sans crash."""
+    def test_06_polymarket_curves_placeholder_without_durable_series(self):
+        """Une trajectoire ne remplace jamais une série durable absente."""
         ctx = _make_context_full()
-        assert ctx.outcome is not None
         factory = ChartFactory(ctx)
-        data = factory.polymarket_curves()
-        assert _is_png(data)
+        with patch("app.services.report_pdf.charts._placeholder_png", return_value=b"placeholder") as placeholder:
+            assert factory.polymarket_curves() == b"placeholder"
+        placeholder.assert_called_once_with("Aucune série de prix durable disponible")
+
+    def test_polymarket_curves_trace_true_price_yes_not_trajectory(self):
+        """Les points tracés sont exactement round / price_yes * 100."""
+        ctx = _make_context_full()
+        ctx.market_resolutions = [_market_resolution(4, [(2, 0.15), (5, 0.91)])]
+
+        def assert_figure(fig):
+            line = fig.axes[0].lines[0]
+            assert list(line.get_xdata()) == [2, 5]
+            assert list(line.get_ydata()) == pytest.approx([15.0, 91.0])
+            assert list(line.get_xdata()) != [round_.round_idx for round_ in ctx.trajectory.rounds]
+            return b"captured"
+
+        with patch("app.services.report_pdf.charts._fig_to_png", side_effect=assert_figure):
+            assert ChartFactory(ctx).polymarket_curves() == b"captured"
+
+    def test_polymarket_curves_one_point_is_stable(self):
+        """Une série à un point garde un marqueur et ne provoque pas d'erreur."""
+        ctx = _make_context_minimal()
+        ctx.market_resolutions = [_market_resolution(2, [(3, 0.55)])]
+
+        def assert_figure(fig):
+            line = fig.axes[0].lines[0]
+            assert list(line.get_xdata()) == [3]
+            assert list(line.get_ydata()) == pytest.approx([55.0])
+            assert line.get_marker() == "o"
+            return b"captured"
+
+        with patch("app.services.report_pdf.charts._fig_to_png", side_effect=assert_figure):
+            assert ChartFactory(ctx).polymarket_curves() == b"captured"
+
+    def test_polymarket_curves_traces_each_market_and_localizes_arabic(self):
+        """Chaque marché durable a une courbe et les libellés suivent la locale."""
+        ctx = _make_context_minimal()
+        ctx.lang = "ar"
+        ctx.market_resolutions = [
+            _market_resolution(1, [(1, 0.2), (2, 0.4)]),
+            _market_resolution(2, [(1, 0.7), (2, 0.6)]),
+        ]
+
+        def assert_figure(fig):
+            axis = fig.axes[0]
+            assert len(axis.lines) == 2
+            assert axis.get_title() == "تطور أسعار الأسئلة"
+            assert axis.get_xlabel() == "الجولة"
+            assert axis.get_ylabel() == "سعر نعم (%)"
+            return b"captured"
+
+        with patch("app.services.report_pdf.charts._fig_to_png", side_effect=assert_figure):
+            assert ChartFactory(ctx).polymarket_curves() == b"captured"
 
 
 class TestDemographicPyramid:

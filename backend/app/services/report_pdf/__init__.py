@@ -33,6 +33,9 @@ from .schema import (
     Outline,
     KPIHero,
     PivotalMoment,
+    MarketPricePoint,
+    MarketResolution,
+    FinalWealth,
 )
 from .loader import PDFContextLoader, PDFContextLoaderError
 from .jinja_env import get_jinja_env, render_section, render_full_report
@@ -61,6 +64,9 @@ __all__ = [
     "Outline",
     "KPIHero",
     "PivotalMoment",
+    "MarketPricePoint",
+    "MarketResolution",
+    "FinalWealth",
     # loader
     "PDFContextLoader",
     "PDFContextLoaderError",

@@ -34,8 +34,13 @@ import logging
 import re
 import uuid
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
+from ..market_resolution_service import (
+    MarketResolutionRead,
+    MarketResolutionReadError,
+    read_market_resolutions,
+)
 from .schema import (
     AgentProfile,
     Counterfactual,
@@ -79,6 +84,11 @@ _RE_REPORT_ID = re.compile(r"^report_[a-f0-9]{12}$")
 
 class PDFContextLoaderError(Exception):
     """Levée quand un artifact obligatoire est absent ou malformé."""
+
+
+def _empty_market_resolution_reader(_: str) -> MarketResolutionRead:
+    """Deterministic durable absence for explicit offline artifact fixtures."""
+    return MarketResolutionRead(resolutions=[], final_wealth=[], complete=False)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -975,6 +985,7 @@ class PDFContextLoader:
         *,
         sim_base_dir: Optional[Path] = None,
         rep_base_dir: Optional[Path] = None,
+        market_resolution_reader: Optional[Callable[[str], MarketResolutionRead]] = None,
     ) -> PDFReportContext:
         """
         Charge tous les artifacts et retourne un PDFReportContext complet.
@@ -987,6 +998,8 @@ class PDFContextLoader:
             lang:           Langue du rendu {fr, en, ar}. Défaut : 'fr'.
             sim_base_dir:   Répertoire racine des simulations (override de défaut).
             rep_base_dir:   Répertoire racine des rapports (override de défaut).
+            market_resolution_reader: Lecteur durable injectable. Un sim_base_dir
+                explicite active le lecteur vide déterministe des fixtures si absent.
 
         Returns:
             PDFReportContext valide.
@@ -1022,6 +1035,18 @@ class PDFContextLoader:
             sim_dir / "simulation_config.json", required=True
         )
         sim_config = _parse_sim_config(config_data)
+
+        reader = market_resolution_reader
+        if reader is None:
+            reader = _empty_market_resolution_reader if sim_base_dir is not None else read_market_resolutions
+        try:
+            durable_resolutions = reader(simulation_id)
+        except MarketResolutionReadError as exc:
+            raise PDFContextLoaderError("Résolutions durables indisponibles.") from exc
+        except Exception as exc:  # noqa: BLE001 - injected storage readers fail closed too
+            raise PDFContextLoaderError("Lecture des résolutions durables impossible.") from exc
+        if not isinstance(durable_resolutions, MarketResolutionRead):
+            raise PDFContextLoaderError("Lecteur de résolutions durables invalide.")
 
         # state.json — optionnel
         state_data = _load_json_file(sim_dir / "state.json")
@@ -1147,6 +1172,9 @@ class PDFContextLoader:
             counterfactuals=counterfactuals,
             director_events=director_events,
             articles=articles,
+            market_resolutions=durable_resolutions.resolutions,
+            final_wealth=durable_resolutions.final_wealth,
+            complete=durable_resolutions.complete,
             # Report
             outline=outline,
             full_report_md=full_report_md,
