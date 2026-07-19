@@ -1,31 +1,13 @@
-"""Endpoints génération PDF hybride sync/async (US-129).
-
-Blueprint ``pdf_generation_bp`` monté sur ``/api/admin/reports``.
-
-Routes :
-  POST   /api/admin/reports/<report_id>/preview
-         → Preview sync (≤ 5 s) — retourne PDF cover 1 page
-  POST   /api/admin/reports/<report_id>/generate
-         → Body {variant, lang, simulation_id, branding_id}
-         → Enqueue async RQ, retourne {job_id, status_url}
-  GET    /api/admin/reports/<report_id>/jobs/<job_id>
-         → Polling status : queued|started|finished|failed + URL PDF
-
-Queue :
-  - RQ + Redis (REDIS_URL env).
-  - Si Redis absent → mode synchrone fallback (génère immédiatement).
-
-Sécurité :
-  - Toutes les routes exigent @require_auth (JWT Supabase valide).
-  - Super-admin only via @require_super_admin.
-"""
+"""Génération PDF asynchrone via Redis/RQ (US-208)."""
 
 from __future__ import annotations
 
+import hashlib
+import json
 import logging
 import os
-import uuid
-from typing import Any, Dict, Optional
+import re
+from typing import Any, Optional
 
 from flask import Blueprint, Response, jsonify, request
 from flask.typing import ResponseReturnValue
@@ -36,133 +18,221 @@ logger = logging.getLogger("miroshark.api.pdf_generation")
 
 pdf_generation_bp = Blueprint("pdf_generation", __name__)
 
-# ─── Helpers Redis / RQ ───────────────────────────────────────────────────────
+_VALID_VARIANTS = frozenset({"full", "exec", "public", "one-pager"})
+_REPORT_ID_RE = re.compile(r"^report_[a-f0-9]{12}$")
+_SIMULATION_ID_RE = re.compile(r"^sim_[a-f0-9]{12}$")
+_JOB_VERSION = "2"
+_JOB_TTL_SECONDS = 7 * 24 * 60 * 60
+_ENQUEUE_LOCK_TTL_SECONDS = 60
 
 
-def _get_redis_connection() -> Optional[Any]:
-    """Retourne une connexion Redis si REDIS_URL est configuré, sinon None."""
-    redis_url = os.environ.get("REDIS_URL", "")
+class RedisUnavailable(RuntimeError):
+    """Redis ou RQ est configuré mais ne peut pas accepter de travail."""
+
+
+def _redis_url() -> str:
+    return os.environ.get("REDIS_URL", "").strip()
+
+
+def _get_redis_connection() -> Any:
+    """Retourne une connexion Redis vérifiée, ou lève si elle est indisponible."""
+    redis_url = _redis_url()
     if not redis_url:
         return None
     try:
         from redis import Redis  # type: ignore[import-not-found]
 
-        return Redis.from_url(redis_url)
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("Redis non disponible (%s) — mode sync fallback.", exc)
-        return None
+        connection = Redis.from_url(redis_url)
+        connection.ping()
+        return connection
+    except Exception as exc:  # noqa: BLE001 - frontière d'infrastructure
+        raise RedisUnavailable("Redis configuré mais indisponible") from exc
 
 
-def _get_queue(redis_conn: Any) -> Optional[Any]:
-    """Retourne la Queue RQ 'pdf-generation', ou None si RQ absent."""
+def _get_queue(redis_conn: Any) -> Any:
+    """Construit la queue RQ dédiée ou lève, sans basculer silencieusement en sync."""
     try:
         from rq import Queue  # type: ignore[import-not-found]
 
         return Queue("pdf-generation", connection=redis_conn)
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("RQ non disponible (%s) — mode sync fallback.", exc)
-        return None
+    except Exception as exc:  # noqa: BLE001 - frontière d'infrastructure
+        raise RedisUnavailable("RQ indisponible") from exc
 
 
-def _job_status(redis_conn: Any, job_id: str) -> Dict[str, Any]:
-    """Retourne le statut d'un job RQ depuis Redis.
+def _job_metadata(
+    report_id: str,
+    simulation_id: str,
+    variant: str,
+    lang: str,
+    branding_id: Optional[str],
+    input_digest: str,
+) -> dict[str, str]:
+    return {
+        "report_id": report_id,
+        "simulation_id": simulation_id,
+        "variant": variant,
+        "lang": lang,
+        "branding_id": branding_id or "",
+        "input_digest": input_digest,
+        "job_version": _JOB_VERSION,
+    }
 
-    Returns:
-        Dict avec keys: job_id, status, pdf_path, error.
-    """
+
+def _job_id(metadata: dict[str, str]) -> str:
+    payload = json.dumps(metadata, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return f"pdf-{hashlib.sha256(payload).hexdigest()[:32]}"
+
+
+def _render_input_digest(
+    report_id: str,
+    simulation_id: str,
+    variant: str,
+    lang: str,
+    branding_id: Optional[str],
+) -> str:
+    """Empreinte le contexte durable et le branding effectivement rendus."""
+    from app.services.report_pdf.loader import PDFContextLoader
+
+    context = PDFContextLoader.load(
+        report_id=report_id,
+        simulation_id=simulation_id,
+        lang=lang,
+    )
+    branding: Optional[dict[str, Any]] = None
+    if branding_id:
+        try:
+            from app.workers.pdf_generation_worker import _load_branding
+
+            branding = _load_branding(branding_id)
+        except Exception:  # noqa: BLE001 - identique au fallback du worker
+            logger.warning("Branding PDF indisponible pour l'empreinte ; défaut utilisé", exc_info=True)
+
+    canonical = json.dumps(
+        {
+            "context": context.model_dump(mode="json"),
+            "branding": branding or {},
+            "variant": variant,
+            "template_version": _JOB_VERSION,
+        },
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+        default=str,
+    ).encode("utf-8")
+    return hashlib.sha256(canonical).hexdigest()
+
+
+def _validated_ids(report_id: str, simulation_id: str) -> bool:
+    return bool(_REPORT_ID_RE.fullmatch(report_id) and _SIMULATION_ID_RE.fullmatch(simulation_id))
+
+
+def _get_existing_job(redis_conn: Any, job_id: str, metadata: dict[str, str]) -> Any:
+    """Retourne uniquement le job identique ; un ID connu ne suffit jamais seul."""
     try:
         from rq.job import Job  # type: ignore[import-not-found]
 
         job = Job.fetch(job_id, connection=redis_conn)
-        status = job.get_status()
-        # RQ status: queued | started | finished | failed | stopped | canceled
-        status_str = str(status.value) if hasattr(status, "value") else str(status)
-
-        # job.return_value() est la API non-dépréciée (rq >= 1.15) ;
-        # fallback sur job.result pour compatibilité versions antérieures.
-        if status_str == "finished":
-            try:
-                result_data = job.return_value()
-            except Exception:  # noqa: BLE001
-                result_data = getattr(job, "result", None)
-        else:
-            result_data = None
-        error = None
-        if status_str == "failed":
-            error = str(job.exc_info) if job.exc_info else "Erreur inconnue."
-
-        pdf_path: Optional[str] = None
-        if isinstance(result_data, dict):
-            pdf_path = result_data.get("pdf_path")
-
-        return {
-            "job_id": job_id,
-            "status": status_str,
-            "pdf_path": pdf_path,
-            "error": error,
-        }
-    except Exception as exc:  # noqa: BLE001
-        return {
-            "job_id": job_id,
-            "status": "failed",
-            "pdf_path": None,
-            "error": str(exc),
-        }
+    except Exception:  # noqa: BLE001 - absence normale après expiration TTL
+        return None
+    return job if getattr(job, "meta", {}) == metadata else None
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# Endpoint : POST /api/admin/reports/<report_id>/preview  (sync ≤ 5 s)
-# ═══════════════════════════════════════════════════════════════════════════════
+def _lock_key(job_id: str) -> str:
+    return f"pdf-generation:enqueue:{job_id}"
+
+
+def _claim_enqueue_lock(redis_conn: Any, job_id: str) -> bool:
+    """Acquiert le verrou Redis court qui sérialise les enqueue concurrents."""
+    return bool(redis_conn.set(_lock_key(job_id), job_id, nx=True, ex=_ENQUEUE_LOCK_TTL_SECONDS))
+
+
+def _release_enqueue_lock(redis_conn: Any, job_id: str) -> None:
+    """Libère seulement le verrou qui porte encore la valeur de ce processus."""
+    key = _lock_key(job_id)
+    try:
+        with redis_conn.pipeline() as pipeline:
+            while True:
+                try:
+                    pipeline.watch(key)
+                    value = pipeline.get(key)
+                    if value == job_id or value == job_id.encode("utf-8"):
+                        pipeline.multi()
+                        pipeline.delete(key)
+                        pipeline.execute()
+                    pipeline.unwatch()
+                    return
+                except Exception as exc:  # WatchError uniquement, sans dépendance de type Redis
+                    if exc.__class__.__name__ != "WatchError":
+                        raise
+    except Exception:  # noqa: BLE001 - le TTL nettoie le verrou si Redis devient indisponible
+        logger.warning("Libération du verrou PDF différée job=%s", job_id, exc_info=True)
+
+
+def _job_status(redis_conn: Any, job_id: str, report_id: str) -> dict[str, Optional[str]]:
+    """Retourne un statut sûr, lié au rapport demandé et sans détail interne."""
+    try:
+        from rq.job import Job  # type: ignore[import-not-found]
+
+        job = Job.fetch(job_id, connection=redis_conn)
+    except Exception:  # noqa: BLE001 - ne pas divulguer le backend Redis/RQ
+        return {"status": "missing", "error_code": "JOB_NOT_FOUND"}
+
+    if getattr(job, "meta", {}).get("report_id") != report_id:
+        return {"status": "missing", "error_code": "JOB_NOT_FOUND"}
+
+    status = job.get_status()
+    status_str = str(status.value) if hasattr(status, "value") else str(status)
+    if status_str == "failed":
+        return {"status": status_str, "error_code": "PDF_GENERATION_FAILED"}
+    return {"status": status_str, "error_code": None}
+
+
+def _error(error_code: str, message: str, status: int) -> ResponseReturnValue:
+    return jsonify({"success": False, "error_code": error_code, "error": message}), status
 
 
 @pdf_generation_bp.route("/<report_id>/preview", methods=["POST"])
 @require_auth
 @require_super_admin
 def preview_report(report_id: str) -> ResponseReturnValue:
-    """Génère et retourne la page de couverture du rapport PDF (1 page, sync).
-
-    Body JSON (optionnel) :
-      {
-        "simulation_id": "sim_...",   // requis si pas dans les métadonnées du rapport
-        "lang": "fr",                 // défaut : "fr"
-        "branding_id": null           // défaut : null (Bassira defaults)
-      }
-
-    Returns:
-      application/pdf — bytes de la cover page (1 page).
-    """
-    data: Dict[str, Any] = request.get_json(silent=True) or {}
-    simulation_id: str = data.get("simulation_id", "")
-    lang: str = data.get("lang", "fr")
-    branding_id: Optional[str] = data.get("branding_id") or None
-
+    """Génère la couverture immédiatement ; une preview n'est jamais mise en queue."""
+    data: dict[str, Any] = request.get_json(silent=True) or {}
+    simulation_id = str(data.get("simulation_id", ""))
     if not simulation_id:
-        return jsonify(
-            {"success": False, "error_code": "MISSING_SIMULATION_ID",
-             "error": "simulation_id est requis."}
-        ), 400
+        return _error("MISSING_SIMULATION_ID", "simulation_id est requis.", 400)
+    if not _validated_ids(report_id, simulation_id):
+        return _error("INVALID_REPORT_INPUT", "Identifiants de rapport invalides.", 400)
 
-    # Générer directement (sync) — variante one-pager = 1 page cover
+    lang = str(data.get("lang", "fr"))
+    branding_id = data.get("branding_id") or None
+    try:
+        input_digest = _render_input_digest(
+            report_id, simulation_id, "one-pager", lang, branding_id
+        )
+    except Exception:  # noqa: BLE001 - contexte durable indisponible
+        logger.exception("Contexte de preview PDF indisponible report=%s", report_id)
+        return _error("PDF_INPUT_UNAVAILABLE", "Les données du rapport sont indisponibles.", 503)
+
     from app.workers.pdf_generation_worker import generate_pdf_job
 
-    result = generate_pdf_job(
-        report_id=report_id,
-        simulation_id=simulation_id,
-        variant="one-pager",
-        lang=lang,
-        branding_id=branding_id,
-    )
+    try:
+        metadata = _job_metadata(
+            report_id, simulation_id, "one-pager", lang, branding_id, input_digest
+        )
+        result = generate_pdf_job(
+            report_id=report_id,
+            simulation_id=simulation_id,
+            variant="one-pager",
+            lang=lang,
+            branding_id=branding_id,
+            job_id=_job_id(metadata),
+        )
+        from pathlib import Path
 
-    if result.get("status") != "finished" or not result.get("pdf_path"):
-        return jsonify(
-            {"success": False, "error_code": "PREVIEW_FAILED",
-             "error": result.get("error", "Génération preview échouée.")}
-        ), 500
-
-    from pathlib import Path
-
-    pdf_path = Path(result["pdf_path"])
-    pdf_bytes = pdf_path.read_bytes()
+        pdf_bytes = Path(result["pdf_path"]).read_bytes()
+    except Exception:  # noqa: BLE001 - le détail ne doit pas sortir de l'API admin
+        logger.exception("Échec de la preview PDF report=%s", report_id)
+        return _error("PREVIEW_FAILED", "La preview PDF n'a pas pu être générée.", 500)
 
     return Response(
         pdf_bytes,
@@ -174,179 +244,138 @@ def preview_report(report_id: str) -> ResponseReturnValue:
     )
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# Endpoint : POST /api/admin/reports/<report_id>/generate  (async)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
 @pdf_generation_bp.route("/<report_id>/generate", methods=["POST"])
 @require_auth
 @require_super_admin
 def generate_report(report_id: str) -> ResponseReturnValue:
-    """Enqueue une génération PDF async via RQ.
-
-    Body JSON :
-      {
-        "simulation_id": "sim_...",   // requis
-        "variant":        "full",     // défaut : "full" {full|exec|public|one-pager}
-        "lang":           "fr",       // défaut : "fr"
-        "branding_id":    null        // défaut : null
-      }
-
-    Returns (202 Accepted) :
-      {
-        "success":    true,
-        "job_id":     "...",
-        "status_url": "/api/admin/reports/<id>/jobs/<job_id>",
-        "mode":       "async" | "sync"
-      }
-    """
-    data: Dict[str, Any] = request.get_json(silent=True) or {}
-    simulation_id: str = data.get("simulation_id", "")
-    variant: str = data.get("variant", "full")
-    lang: str = data.get("lang", "fr")
-    branding_id: Optional[str] = data.get("branding_id") or None
+    """Enqueue une génération durable ; le sync n'est autorisé que sans REDIS_URL."""
+    data: dict[str, Any] = request.get_json(silent=True) or {}
+    simulation_id = str(data.get("simulation_id", ""))
+    variant = str(data.get("variant", "full"))
+    lang = str(data.get("lang", "fr"))
+    branding_id = data.get("branding_id") or None
 
     if not simulation_id:
-        return jsonify(
-            {"success": False, "error_code": "MISSING_SIMULATION_ID",
-             "error": "simulation_id est requis."}
-        ), 400
-
-    _VALID_VARIANTS = {"full", "exec", "public", "one-pager"}
+        return _error("MISSING_SIMULATION_ID", "simulation_id est requis.", 400)
     if variant not in _VALID_VARIANTS:
-        return jsonify(
-            {"success": False, "error_code": "INVALID_VARIANT",
-             "error": f"variant doit être l'un de : {', '.join(sorted(_VALID_VARIANTS))}."}
-        ), 400
+        return _error("INVALID_VARIANT", "variant est invalide.", 400)
+    if not _validated_ids(report_id, simulation_id):
+        return _error("INVALID_REPORT_INPUT", "Identifiants de rapport invalides.", 400)
 
-    # ── Tenter mode async (Redis + RQ) ────────────────────────────────────
-    redis_conn = _get_redis_connection()
-    if redis_conn is not None:
-        queue = _get_queue(redis_conn)
-        if queue is not None:
-            from app.workers.pdf_generation_worker import generate_pdf_job
+    try:
+        input_digest = _render_input_digest(
+            report_id, simulation_id, variant, lang, branding_id
+        )
+    except Exception:  # noqa: BLE001 - contexte durable indisponible
+        logger.exception("Contexte de génération PDF indisponible report=%s", report_id)
+        return _error("PDF_INPUT_UNAVAILABLE", "Les données du rapport sont indisponibles.", 503)
 
-            job = queue.enqueue(
-                generate_pdf_job,
-                report_id,
-                simulation_id,
-                variant,
-                lang,
-                branding_id,
-                job_timeout=300,  # 5 min max
-            )
-            status_url = f"/api/admin/reports/{report_id}/jobs/{job.id}"
-            logger.info(
-                "Job PDF enqueued : %s (report=%s, sim=%s, variant=%s, lang=%s).",
-                job.id, report_id, simulation_id, variant, lang,
-            )
-            return jsonify(
-                {
-                    "success": True,
-                    "job_id": job.id,
-                    "status_url": status_url,
-                    "mode": "async",
-                }
-            ), 202
-
-    # ── Fallback sync si Redis absent ─────────────────────────────────────
-    logger.info(
-        "Mode sync fallback (Redis absent) — génération immédiate report=%s.",
-        report_id,
+    metadata = _job_metadata(
+        report_id, simulation_id, variant, lang, branding_id, input_digest
     )
-    from app.workers.pdf_generation_worker import generate_pdf_job
+    job_id = _job_id(metadata)
 
-    job_id = f"sync-{uuid.uuid4().hex[:8]}"
-    result = generate_pdf_job(
-        report_id=report_id,
-        simulation_id=simulation_id,
-        variant=variant,
-        lang=lang,
-        branding_id=branding_id,
-        job_id=job_id,
-    )
+    if not _redis_url():
+        logger.warning("REDIS_URL absente : fallback PDF synchrone report=%s", report_id)
+        from app.workers.pdf_generation_worker import generate_pdf_job
 
-    if result.get("status") == "finished":
-        return jsonify(
-            {
-                "success": True,
-                "job_id": job_id,
-                "status": "finished",
-                "pdf_path": result.get("pdf_path"),
-                "mode": "sync",
-            }
-        ), 200
-    else:
-        return jsonify(
-            {
-                "success": False,
-                "job_id": job_id,
-                "status": "failed",
-                "error": result.get("error"),
-                "mode": "sync",
-            }
-        ), 500
+        try:
+            generate_pdf_job(
+                report_id=report_id,
+                simulation_id=simulation_id,
+                variant=variant,
+                lang=lang,
+                branding_id=branding_id,
+                job_id=job_id,
+            )
+        except Exception:  # noqa: BLE001 - le détail est journalisé, pas exposé
+            logger.exception("Échec PDF synchrone report=%s job=%s", report_id, job_id)
+            return _error("PDF_GENERATION_FAILED", "La génération PDF a échoué.", 500)
+        return jsonify({"success": True, "job_id": job_id, "status": "finished", "mode": "sync"}), 200
 
+    try:
+        redis_conn = _get_redis_connection()
+        existing_job = _get_existing_job(redis_conn, job_id, metadata)
+        if existing_job is None:
+            if not _claim_enqueue_lock(redis_conn, job_id):
+                existing_job = _get_existing_job(redis_conn, job_id, metadata)
+                if existing_job is not None:
+                    job = existing_job
+                else:
+                    # Un autre processus vient d'acquérir le verrou : même ID, aucun double render.
+                    return jsonify(
+                        {
+                            "success": True,
+                            "job_id": job_id,
+                            "status_url": f"/api/admin/reports/{report_id}/jobs/{job_id}",
+                            "mode": "async",
+                        }
+                    ), 202
+            else:
+                try:
+                    existing_job = _get_existing_job(redis_conn, job_id, metadata)
+                    if existing_job is not None:
+                        job = existing_job
+                    else:
+                        queue = _get_queue(redis_conn)
+                        from rq import Retry  # type: ignore[import-not-found]
+                        from app.workers.pdf_generation_worker import generate_pdf_job
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# Endpoint : GET /api/admin/reports/<report_id>/jobs/<job_id>  (polling)
-# ═══════════════════════════════════════════════════════════════════════════════
+                        job = queue.enqueue_call(
+                            generate_pdf_job,
+                            kwargs={
+                                "report_id": report_id,
+                                "simulation_id": simulation_id,
+                                "variant": variant,
+                                "lang": lang,
+                                "branding_id": branding_id,
+                            },
+                            timeout=300,
+                            result_ttl=_JOB_TTL_SECONDS,
+                            failure_ttl=_JOB_TTL_SECONDS,
+                            job_id=job_id,
+                            meta=metadata,
+                            retry=Retry(max=2, interval=[30, 120]),
+                        )
+                except Exception:
+                    existing_job = _get_existing_job(redis_conn, job_id, metadata)
+                    if existing_job is not None:
+                        job = existing_job
+                    else:
+                        raise
+                finally:
+                    _release_enqueue_lock(redis_conn, job_id)
+        else:
+            job = existing_job
+    except RedisUnavailable:
+        logger.warning("Redis/RQ indisponible pour report=%s", report_id, exc_info=True)
+        return _error("REDIS_UNAVAILABLE", "Le service de génération asynchrone est indisponible.", 503)
+    except Exception:  # noqa: BLE001 - enqueue peut échouer après le ping
+        logger.exception("Échec enqueue PDF report=%s", report_id)
+        return _error("PDF_QUEUE_UNAVAILABLE", "Le service de génération asynchrone est indisponible.", 503)
+
+    return jsonify(
+        {
+            "success": True,
+            "job_id": job.id,
+            "status_url": f"/api/admin/reports/{report_id}/jobs/{job.id}",
+            "mode": "async",
+        }
+    ), 202
 
 
 @pdf_generation_bp.route("/<report_id>/jobs/<job_id>", methods=["GET"])
 @require_auth
 @require_super_admin
 def get_job_status(report_id: str, job_id: str) -> ResponseReturnValue:
-    """Retourne le statut d'un job de génération PDF.
+    """Expose le seul statut sûr du job, jamais ses chemins ou traces internes."""
+    if not _redis_url():
+        return _error("REDIS_UNAVAILABLE", "Le statut synchrone n'est pas conservé.", 503)
+    try:
+        status_data = _job_status(_get_redis_connection(), job_id, report_id)
+    except RedisUnavailable:
+        return _error("REDIS_UNAVAILABLE", "Le service de génération asynchrone est indisponible.", 503)
 
-    Returns :
-      {
-        "job_id":     "...",
-        "status":     "queued" | "started" | "finished" | "failed",
-        "pdf_path":   "..." | null,        // renseigné si finished
-        "download_url": "..." | null,      // URL relative si finished
-        "error":      "..." | null
-      }
-    """
-    # Mode sync : le job_id commence par "sync-" → pas de Redis à interroger
-    if job_id.startswith("sync-"):
-        return jsonify(
-            {
-                "job_id": job_id,
-                "status": "finished",
-                "pdf_path": None,
-                "download_url": None,
-                "error": "Mode sync — résultat retourné directement par /generate.",
-            }
-        ), 200
-
-    redis_conn = _get_redis_connection()
-    if redis_conn is None:
-        return jsonify(
-            {
-                "success": False,
-                "error_code": "REDIS_UNAVAILABLE",
-                "error": "Redis non disponible — impossible de récupérer le statut du job.",
-            }
-        ), 503
-
-    status_data = _job_status(redis_conn, job_id)
-
-    # Construire l'URL de téléchargement si le job est terminé
-    download_url: Optional[str] = None
-    if status_data.get("status") == "finished" and status_data.get("pdf_path"):
-        # On expose le path sous forme d'URL de téléchargement (à implémenter côté client)
-        # Pour l'instant, le path disque absolu est exposé — le frontend peut
-        # construire un lien vers /api/admin/reports/<id>/download ou similaire.
-        download_url = f"/api/admin/reports/{report_id}/download/{job_id}"
-
-    return jsonify(
-        {
-            "job_id": job_id,
-            "status": status_data.get("status"),
-            "pdf_path": status_data.get("pdf_path"),
-            "download_url": download_url,
-            "error": status_data.get("error"),
-        }
-    ), 200
+    if status_data["status"] == "missing":
+        return _error("JOB_NOT_FOUND", "Job introuvable.", 404)
+    return jsonify({"job_id": job_id, **status_data}), 200

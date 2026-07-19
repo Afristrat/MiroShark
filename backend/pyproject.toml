@@ -63,6 +63,7 @@ dependencies = [
     "pyyaml>=6.0",
     # US-129 : Génération hybride sync/async — queue RQ + Redis
     "rq>=1.15",
+    "redis>=5",
     # US-136 : Formatage des dates en langage naturel (fr/en/ar) dans les templates PDF
     "babel>=2.14",
     "gunicorn>=26.0.0",
@@ -181,6 +182,5 @@ module = [
     "app.storage.reranker_service",
     "app.utils.llm_client",
     "app.utils.retry",
-    "app.workers.pdf_generation_worker",
 ]
 ignore_errors = true

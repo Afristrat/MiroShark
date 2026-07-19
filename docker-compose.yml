@@ -37,11 +37,24 @@ services:
         echo "Done.";
     restart: "no"
 
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
   miroshark:
     build:
       context: .
       dockerfile: Dockerfile
-    environment:
+    environment: &miroshark_environment
       - FLASK_DEBUG=${FLASK_DEBUG:-false}
       - FLASK_ENV=${FLASK_ENV:-production}
       - SECRET_KEY=${SECRET_KEY:-}
@@ -57,12 +70,17 @@ services:
       - EMBEDDING_BASE_URL=${EMBEDDING_BASE_URL:-http://ollama:11434}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-${LLM_API_KEY:-ollama}}
       - OPENAI_API_BASE_URL=${OPENAI_API_BASE_URL:-${LLM_BASE_URL:-http://ollama:11434/v1}}
+      - REDIS_URL=redis://redis:6379/0
     expose:
       - "3000"
       - "5001"
     depends_on:
-      - neo4j
-      - ollama
+      neo4j:
+        condition: service_started
+      ollama:
+        condition: service_started
+      redis:
+        condition: service_healthy
     restart: unless-stopped
     volumes:
       # US-203 : volume NOMMÉ (survit à la recréation du conteneur, y compris
@@ -71,7 +89,29 @@ services:
       # ce volume protège les artefacts de simulation (state, profils, PDF).
       - miroshark_uploads:/app/backend/uploads
 
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /app/backend
+    command: ["/bin/sh", "-c", "exec uv run --frozen rq worker --url \"$$REDIS_URL\" --with-scheduler --name \"pdf-worker-$${HOSTNAME}\" pdf-generation"]
+    environment: *miroshark_environment
+    volumes:
+      - miroshark_uploads:/app/backend/uploads
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "uv run --frozen python -c 'import os; from redis import Redis; from rq import Worker; connection = Redis.from_url(os.environ[\"REDIS_URL\"]); expected = \"pdf-worker-\" + os.environ[\"HOSTNAME\"]; raise SystemExit(not (connection.ping() and any(worker.name == expected for worker in Worker.all(connection=connection))))'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    stop_grace_period: 6m
+    restart: unless-stopped
+
 volumes:
   neo4j_data_v2:
   ollama_data:
   miroshark_uploads:
+  redis_data:
