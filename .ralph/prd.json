@@ -5203,7 +5203,7 @@
         "Golden set : ≥ 5 professions → blocs conformes au pattern de la skill (structure, compétences numérotées)",
         "Suite pytest verte"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-228",
         "US-223"
@@ -5211,8 +5211,22 @@
       "metadata": {
         "estimated_hours": 6,
         "priority": "P1",
-        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md"
-      }
+        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md",
+        "files_touched": [
+          "backend/app/services/esco_client.py",
+          "backend/app/services/wonderwall_profile_generator.py",
+          "backend/tests/test_unit_esco_client.py",
+          "backend/tests/test_unit_wonderwall_expertise_metier.py",
+          "supabase/migrations/20260718_003_occupation_profile_unresolved.sql",
+          "docs/02-data-dictionary.md"
+        ],
+        "functional_commit": "19c575def34401a6b14b6797f49454d17488d372",
+        "production_image": "u6pn5mr2pgi88s13un55pkzb_miroshark:19c575def34401a6b14b6797f49454d17488d372",
+        "migration_status": "20260718_003 appliquée en production le 2026-07-19 sur la base MiroShark ciblée ; table, colonnes, checks, PK, index unique et RLS vérifiés par catalogues PostgreSQL ; zéro policy cliente intentionnel",
+        "test_result": "31 tests ciblés verts ; suite backend complète 2483 passed, 60 skipped, 0 failed ; Ruff et ESLint verts ; mypy 0 erreur sur 119 fichiers ; build Vite 948 modules",
+        "production_smoke": "ESCO réel analyste financier : source esco, définition non vide, 15 compétences ; bloc expertise_metier FR présent dans Twitter, Reddit et Polymarket ; MBTI/risk_tolerance préservés ; trace hors-ESCO écrite/lue/supprimée via service_role ; /health 200 ; zéro erreur applicative agrégée sur 10 minutes"
+      },
+      "completedAt": "2026-07-19T00:33:59Z"
     },
     {
       "id": "US-230",

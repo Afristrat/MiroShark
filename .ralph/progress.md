@@ -2548,3 +2548,38 @@ appliquée en production. L'API durable doit donc rester fail-closed en producti
 jusqu'à l'application et la vérification explicites de cette migration ; aucun fallback
 SQLite/trades n'a été ajouté. Aucun commit, push ni déploiement n'a été effectué.
 Recomptage après clôture locale : **11 stories ouvertes**.
+
+### 2026-07-19 — [US-229] Blocs expertise métier ESCO — CLÔTURÉE
+
+Le générateur de personas résout désormais les professions par le cache
+`occupation_profiles`, puis par l'API ESCO, et injecte un bloc
+`<expertise_metier>` localisé FR/EN/AR dans le system prompt canonique. Le même bloc
+est consommé par les formats Twitter, Reddit et Polymarket. MBTI et
+`risk_tolerance` restent strictement la couche de style.
+
+Le matching ESCO est volontairement conservateur : seul un titre exact, ou une
+variante exacte séparée par `/`, est accepté parmi les cinq résultats. Une absence
+confirmée est dédupliquée dans `occupation_profile_unresolved` pour US-230 ; une panne
+réseau ou une réponse malformée ne pollue jamais cette file. Les contenus métier sont
+bornés et échappés avant insertion dans le prompt.
+
+Preuves locales du commit fonctionnel `19c575def34401a6b14b6797f49454d17488d372` :
+golden set et tests ciblés **31 réussites** ; suite backend complète **2 483
+réussites, 60 ignorées, 0 échec** sur 2 543 cas ; Ruff et ESLint verts ; mypy
+**0 erreur sur 119 fichiers** ; build Vite **948 modules** ; `git diff --check` vert.
+
+Preuves de permanence via Tailscale : image Coolify exacte `19c575def34401a6b14b6797f49454d17488d372`
+active ; migration `20260718_003` appliquée avec `ON_ERROR_STOP` sur la base PostgreSQL
+MiroShark explicitement ciblée. Catalogues PostgreSQL : trois colonnes attendues,
+checks `label/lang` non vides, PK et index unique `(label, lang)`, RLS active, zéro
+policy cliente conformément au contrat `service_role`.
+
+Smoke dans le runtime déployé (`uv run`, `/app/backend`) : la fiche réelle
+« analyste financier » est `source=esco`, avec définition non vide et 15 compétences ;
+le bloc FR apparaît dans Twitter, Reddit et Polymarket ; MBTI `INTJ` et risque `low`
+restent inchangés. Un rôle hors-taxonomie a été tracé, relu puis supprimé ; la file est
+revenue à zéro. `/health` répond 200 et les logs applicatifs agrégés des dix dernières
+minutes ne contiennent aucune erreur.
+
+Recomptage après clôture : **10 stories ouvertes**. US-230 reste `passes:false` :
+l'accès effectif au modèle 122B via la gateway doit être prouvé séparément.
