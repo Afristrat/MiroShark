@@ -2583,3 +2583,24 @@ minutes ne contiennent aucune erreur.
 
 Recomptage après clôture : **10 stories ouvertes**. US-230 reste `passes:false` :
 l'accès effectif au modèle 122B via la gateway doit être prouvé séparément.
+
+### 2026-07-19 — [US-208] Redis et worker RQ PDF en production — CLÔTURÉE
+
+Le commit fonctionnel `88dd3abca36d47b42505d5b7252e00af9e71696e` est déployé sur
+l'application et le worker du même projet Compose. Redis 7 est déclaré avec un volume
+nommé `redis-data` et AOF actif ; l'application et le worker partagent le volume nommé
+des uploads. Les trois services utilisent la politique `unless-stopped`. Le worker
+exécute RQ avec `--with-scheduler`, reste sain sans redémarrage et la file
+`pdf-generation` est vide après nettoyage.
+
+Le smoke réel `us208-smoke-88dd3ab` a terminé en **12,603 s** avec
+`retries_left=1`. Le PDF partagé mesurait **263 074 octets** et son empreinte SHA-256
+commençait par `32066dab`. Après preuve, les deux fixtures strictement circonscrites à
+`/tmp/us208-smoke`, l'artefact PDF et l'enregistrement RQ ont été supprimés ; leur
+absence a été re-vérifiée. Aucun autre job ni artefact n'a été touché.
+
+Preuves finales fraîches : backend `/health` interne **HTTP 200** ; Redis **PONG**,
+`aof_enabled=1`, dernier rewrite et dernière écriture AOF `ok` ; worker `healthy`, zéro
+redémarrage, zéro job en attente/exécution/terminé/échec après nettoyage. Quality gates
+locaux : build Vite vert (**948 modules**) ; suite backend complète **2 479 réussites,
+57 ignorées, 0 échec** sur **2 536 tests collectés**.

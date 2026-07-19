@@ -4648,15 +4648,27 @@
         "Fallback sync loggé WARNING si Redis absent (test)",
         "pytest verts"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-207"
       ],
       "metadata": {
         "origin": "docs/04-feature-backlog.md (cadrage V2 2026-07-07, verdict ratifié)",
-        "adr": "docs/08-decisions-log.md"
+        "adr": "docs/08-decisions-log.md",
+        "code_commit": "88dd3abca36d47b42505d5b7252e00af9e71696e",
+        "files_touched": [
+          "backend/app/api/pdf_generation.py",
+          "backend/app/workers/pdf_generation_worker.py",
+          "backend/pyproject.toml",
+          "backend/tests/test_pdf_async.py",
+          "backend/uv.lock",
+          "docker-compose.yml"
+        ],
+        "production_smoke": "RQ réel us208-smoke-88dd3ab terminé en 12,603 s ; PDF 263074 octets ; retries_left=1 ; artefact, fixtures et job smoke supprimés après vérification",
+        "production_certification": "Application et worker sur l'image exacte 88dd3abca36d47b42505d5b7252e00af9e71696e ; backend /health HTTP 200 ; worker RQ healthy avec scheduler, 0 restart ; Redis PONG, AOF sain et volume redis-data persistant ; volume uploads partagé app/worker",
+        "test_result": "2479 passed, 57 skipped, 0 failed sur 2536 tests ; build Vite vert, 948 modules"
       },
-      "completedAt": null
+      "completedAt": "2026-07-19T10:05:45.5647754Z"
     },
     {
       "id": "US-IQ-01",
