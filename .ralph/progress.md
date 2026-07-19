@@ -2699,3 +2699,19 @@ idempotent vérifiés.
 Preuves locales fraîches : golden sets **13 réussites** ; suite backend complète
 **2 550 tests collectés, exit 0** ; Ruff et mypy ciblés sans erreur ; build Vite vert
 en **65 s** ; `git diff --check` vert.
+
+### 2026-07-19 — [US-233] API super-admin des prompts — TERMINÉE
+
+L'API REST super-admin des prompts est disponible avec lecture par clé, locale et
+version, création immuable de versions, diff unifié, activation conditionnée au
+golden set et rollback par réactivation atomique d'une version antérieure. Les
+évaluations de golden sets sont persistées ; un résultat en échec retourne les cas
+concernés et interdit l'activation.
+
+Les routes sont protégées par le guard super-admin existant : 401 sans jeton et 403
+hors super-admin sont couverts. Les tests prouvent l'immutabilité des versions et un
+rollback de bout en bout sur un prompt pilote.
+
+Preuves locales fraîches : tests ciblés **16 réussites** ; suite backend complète
+**2 566 tests collectés, exit 0** ; Ruff et mypy ciblés sans erreur ; build Vite vert
+en **22,75 s** ; `git diff --check` vert.

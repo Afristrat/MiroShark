@@ -5370,14 +5370,24 @@
         "Rollback restaure le comportement précédent (testé bout-en-bout sur un prompt pilote)",
         "Suite pytest verte"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-07-19T17:50:37Z",
       "dependencies": [
         "US-223"
       ],
       "metadata": {
         "estimated_hours": 6,
         "priority": "P2",
-        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md"
+        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md",
+        "files_touched": [
+          "backend/app/api/admin_prompts.py",
+          "backend/app/services/prompt_admin_service.py",
+          "backend/app/services/prompt_golden_sets.py",
+          "backend/tests/test_us233_prompt_admin.py",
+          "backend/tests/test_us233_prompt_admin_migration.py",
+          "supabase/migrations/20260719_002_prompt_admin_evaluations.sql"
+        ],
+        "test_result": "16 tests ciblés verts ; 2566 tests backend collectés, exit 0 ; Ruff, mypy et build Vite verts"
       }
     },
     {

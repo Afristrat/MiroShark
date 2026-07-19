@@ -198,6 +198,11 @@ def create_app(config_class=Config):
     from .api.admin_users import admin_users_bp
     app.register_blueprint(admin_users_bp, url_prefix='/api/admin/users')
 
+    # admin_prompts_bp â€” immutable prompt versions, deterministic evaluation
+    # and SQL-gated activation/rollback (US-233).
+    from .api.admin_prompts import admin_prompts_bp
+    app.register_blueprint(admin_prompts_bp, url_prefix='/api/admin/prompts')
+
     # research_bp — proxy Kairos recherche dynamique seed → topics (US-B01).
     #   POST /api/research/from-seed    — soumet une graine
     #   GET  /api/research/status       — polling status + result
