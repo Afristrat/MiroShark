@@ -5312,14 +5312,20 @@
         "L'observation Polymarket n'injecte plus de recommandations de trading (les flags/nudges de environment.py:49-56,103-107 sont retirés ou dérivés du persona)",
         "Golden set par prompt (≥ 8 cas) qui passe ; suite pytest verte"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-07-19T14:35:49Z",
       "dependencies": [
         "US-223"
       ],
       "metadata": {
         "estimated_hours": 8,
         "priority": "P1",
-        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md"
+        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md",
+        "files_touched": [
+          "backend/scripts/market_media_bridge.py",
+          "backend/tests/test_unit_arena_prompts_l99.py"
+        ],
+        "test_result": "2537 tests collectés, suite backend complète exit 0 ; test ciblé 26 réussites ; Ruff, mypy ciblé, diff-check et build Vite verts"
       }
     },
     {

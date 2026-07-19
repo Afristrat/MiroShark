@@ -33,8 +33,7 @@ class MarketSnapshot:
 
         lines = ["# PREDICTION MARKET PRICES (Polymarket)"]
         lines.append(
-            "These are live prices from the prediction market. "
-            "You may discuss, agree, or disagree with these prices in your posts."
+            "Current prediction-market prices from the simulation."
         )
         lines.append("")
 
@@ -56,11 +55,6 @@ class MarketSnapshot:
             if details:
                 lines.append(f"    ({', '.join(details)})")
 
-        lines.append("")
-        lines.append(
-            "Consider: Do you think the market is overpricing or underpricing this? "
-            "What information might the market be missing?"
-        )
         return "\n".join(lines)
 
 
@@ -75,53 +69,37 @@ class SentimentSnapshot:
 
     def to_trading_prompt(self) -> str:
         """Format sentiment data for injection into Polymarket agent prompts."""
-        if not self.topic_sentiments and not self.viral_posts:
-            return ""
+        return _format_sentiment_prompt([self])
 
-        lines = ["# SOCIAL MEDIA SENTIMENT"]
-        lines.append(
-            "This is what people on Twitter and Reddit are saying about the markets. "
-            "Social media sentiment can signal information the market hasn't priced in yet, "
-            "but it can also be noise. Use your judgment."
-        )
-        lines.append("")
 
-        for topic, data in self.topic_sentiments.items():
+def _format_sentiment_prompt(snapshots: List[SentimentSnapshot]) -> str:
+    """Render factual social-media observations from one or more platforms."""
+    snapshots = [snapshot for snapshot in snapshots if snapshot.topic_sentiments or snapshot.viral_posts]
+    if not snapshots:
+        return ""
+
+    lines = ["# SOCIAL MEDIA ACTIVITY", "Recorded social-media activity by platform.", ""]
+    for snapshot in snapshots:
+        lines.append(f"## {snapshot.platform or 'social media'}")
+        for topic, data in snapshot.topic_sentiments.items():
             pos = data.get("positive_pct", 0)
             neg = data.get("negative_pct", 0)
             count = data.get("post_count", 0)
             top_arg = data.get("top_argument", "")
-
             if count == 0:
                 continue
-
-            # Determine dominant sentiment
-            if pos > neg + 15:
-                mood = "strongly bullish"
-            elif pos > neg:
-                mood = "leaning bullish"
-            elif neg > pos + 15:
-                mood = "strongly bearish"
-            elif neg > pos:
-                mood = "leaning bearish"
-            else:
-                mood = "divided"
-
-            lines.append(f"  On \"{topic}\": {mood} ({count} posts)")
-            lines.append(f"    Positive: {pos:.0f}% | Negative: {neg:.0f}% | Neutral: {100-pos-neg:.0f}%")
+            lines.append(f"  On \"{topic}\" ({count} posts)")
+            lines.append(f"    Positive: {pos:.0f}% | Negative: {neg:.0f}% | Neutral: {100 - pos - neg:.0f}%")
             if top_arg:
-                lines.append(f"    Key argument: \"{top_arg[:150]}\"")
-            lines.append("")
+                lines.append(f"    Recorded post: \"{top_arg[:150]}\"")
 
-        if self.viral_posts:
-            lines.append("  Most discussed posts:")
-            for vp in self.viral_posts[:3]:
-                content = vp.get("content", "")[:120]
-                likes = vp.get("num_likes", 0)
-                lines.append(f"    - \"{content}\" ({likes} likes)")
-            lines.append("")
+        if snapshot.viral_posts:
+            lines.append("  Recorded posts:")
+            for post in snapshot.viral_posts[:3]:
+                lines.append(f"    - \"{post.get('content', '')[:120]}\"")
+        lines.append("")
 
-        return "\n".join(lines)
+    return "\n".join(lines).rstrip()
 
 
 class MarketMediaBridge:
@@ -148,6 +126,7 @@ class MarketMediaBridge:
     def __init__(self):
         self.latest_prices: Optional[MarketSnapshot] = None
         self.latest_sentiment: Optional[SentimentSnapshot] = None
+        self.latest_sentiments: Dict[str, SentimentSnapshot] = {}
         self._price_history: List[MarketSnapshot] = []
 
     # ── Polymarket → Social Media ──────────────────────────────
@@ -271,24 +250,28 @@ class MarketMediaBridge:
                     "agent_name": a.get("agent_name", ""),
                 })
 
-        self.latest_sentiment = SentimentSnapshot(
+        snapshot = SentimentSnapshot(
             round_num=round_num,
             platform=platform,
             topic_sentiments=topic_sentiments,
             viral_posts=viral_posts[:5],
         )
+        self.latest_sentiment = snapshot
+        self.latest_sentiments[platform] = snapshot
 
     def get_sentiment_prompt(self) -> str:
         """Called by Polymarket loop to get social media sentiment for trader injection."""
-        if not self.latest_sentiment:
-            return ""
-        return self.latest_sentiment.to_trading_prompt()
+        snapshots = list(self.latest_sentiments.values())
+        if not snapshots and self.latest_sentiment:
+            snapshots = [self.latest_sentiment]
+        return _format_sentiment_prompt(snapshots)
 
 
 # ── Injection helpers (same pattern as cross_platform_digest) ──
 
 _MARKET_MARKER = "\n\n# PREDICTION MARKET PRICES"
-_SENTIMENT_MARKER = "\n\n# SOCIAL MEDIA SENTIMENT"
+_SENTIMENT_MARKER = "\n\n# SOCIAL MEDIA ACTIVITY"
+_LEGACY_SENTIMENT_MARKER = "\n\n# SOCIAL MEDIA SENTIMENT"
 
 
 def inject_market_context(agent, market_text: str):
@@ -312,6 +295,8 @@ def inject_sentiment_context(agent, sentiment_text: str):
         return
     content = agent.system_message.content
     marker_pos = content.find(_SENTIMENT_MARKER)
+    if marker_pos == -1:
+        marker_pos = content.find(_LEGACY_SENTIMENT_MARKER)
     if marker_pos != -1:
         next_marker = content.find("\n\n# ", marker_pos + len(_SENTIMENT_MARKER))
         if next_marker != -1:

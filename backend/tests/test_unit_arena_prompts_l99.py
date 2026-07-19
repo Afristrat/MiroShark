@@ -1,4 +1,5 @@
 """Golden sets, injection regressions, and bias checks for US-231 prompts."""
+import sqlite3
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
@@ -6,6 +7,7 @@ from unittest.mock import AsyncMock
 import pytest
 
 from app.services import prompt_registry
+from market_media_bridge import MarketMediaBridge, inject_sentiment_context
 from wonderwall.simulations.base import BaseAction
 from wonderwall.simulations.polymarket.environment import PolymarketEnvironment
 from wonderwall.simulations.polymarket.prompts import PolymarketPromptBuilder
@@ -105,3 +107,44 @@ async def test_polymarket_observation_reports_facts_without_trading_nudges():
     prompt = await PolymarketEnvironment(action).to_text_prompt()
     assert all(term not in prompt.lower() for term in ("consider", "contrarian", "signal", "taking profit", "cutting loss", "reassess"))
     assert "$0.950" in prompt and "P&L" in prompt
+
+
+def test_market_media_bridge_renders_facts_for_all_active_platforms(tmp_path):
+    db_path = tmp_path / "polymarket.db"
+    with sqlite3.connect(db_path) as conn:
+        conn.executescript(
+            """
+            CREATE TABLE market (
+                market_id INTEGER PRIMARY KEY,
+                question TEXT,
+                reserve_a REAL,
+                reserve_b REAL,
+                resolved INTEGER
+            );
+            CREATE TABLE trade (market_id INTEGER);
+            INSERT INTO market VALUES (1, 'Will policy pass?', 40, 60, 0);
+            INSERT INTO market VALUES (2, 'Will turnout rise?', 70, 30, 0);
+            INSERT INTO trade VALUES (1);
+            """
+        )
+
+    bridge = MarketMediaBridge()
+    bridge.update_prices(str(db_path), 4)
+    bridge.update_sentiment({1: SimpleNamespace(positions={"policy": 0.6})}, [], 4, "twitter")
+    bridge.update_sentiment({2: SimpleNamespace(positions={"turnout": -0.6})}, [], 4, "reddit")
+    bridge.update_sentiment({3: SimpleNamespace(positions={"policy": 0.0})}, [], 4, "forum")
+
+    market_prompt = bridge.get_market_prompt().lower()
+    sentiment_prompt_raw = bridge.get_sentiment_prompt()
+    sentiment_prompt = sentiment_prompt_raw.lower()
+
+    assert "will policy pass?" in market_prompt
+    assert "will turnout rise?" in market_prompt
+    assert all(term not in market_prompt for term in ("consider", "overpric", "underpric", "agree", "disagree"))
+    assert all(f"## {platform}" in sentiment_prompt for platform in ("twitter", "reddit", "forum"))
+    assert all(term not in sentiment_prompt for term in ("twitter and reddit", "signal", "judgment", "bullish", "bearish"))
+
+    agent = SimpleNamespace(system_message=SimpleNamespace(content="base prompt"))
+    inject_sentiment_context(agent, sentiment_prompt_raw)
+    inject_sentiment_context(agent, sentiment_prompt_raw)
+    assert agent.system_message.content.count("# SOCIAL MEDIA ACTIVITY") == 1

@@ -2632,3 +2632,52 @@ Preuves locales fraîches : suite backend complète **2 479 réussites, 57 ignor
 0 échec** sur **2 536 tests collectés** ; lint global ESLint + Ruff vert ; mypy
 **0 erreur sur 119 fichiers** ; build Vite vert (**948 modules**) ;
 `git diff --check` vert. Recomptage après clôture : **8 stories ouvertes**.
+
+### 2026-07-19 — [US-231 / SOP-001] Recertification runtime et registre P0 — EN COURS
+
+Le swap Coolify du commit exact `3f2c50375264a411e560f35d20545ec3bf43c9f7`
+est terminé. L’application, le worker et Redis sont actifs ; `/health` répond HTTP
+200. Les variables `SECRET_KEY`, `BASSIRA_DELIVERY_HMAC_SECRET`,
+`INTAKE_SEAL_KEY` et `BASSIRA_ADMIN_TOKEN` sont non vides et identiques entre
+l’application et le worker. Les clés anon, service-role et JWT correspondent aux
+consommateurs Supabase attendus. Kong répond 200 avec les rôles anon et
+service-role, ainsi que sur la configuration Auth. Les 17 tables du schéma public
+ont RLS activée ; aucune table publique n’a RLS désactivée. Toutes ces comparaisons
+ont été effectuées sans afficher de valeur ni d’empreinte.
+
+Registre P0 explicite :
+
+- `SUPABASE_DB_URL` / mot de passe PostgreSQL MiroShark : rotation bloquée avant
+  toute mutation, car le presse-papier système refuse `clip.exe` et
+  `Get-Clipboard`, seule voie d’entrée autorisée par le SAS. Les consommateurs
+  cartographiés sont `DB_PASSWORD`, `POSTGRES_PASSWORD`,
+  `PG_META_DB_PASSWORD`, `SERVICE_PASSWORD_POSTGRES` et `SUPABASE_DB_URL`.
+- `KAIROS_API_KEY` : dette propriétaire Saqr ; aucune mutation depuis MiroShark.
+- `INTAKE_LLM_API_KEY` : dette propriétaire LiteLLM ; aucune mutation depuis
+  MiroShark.
+- Redis partagé : dette inter-projets ; aucune mutation depuis MiroShark.
+- Kimi/Moonshot et Agenda : rotations antérieures recertifiées ; aucun nouveau
+  signal d’exposition active pendant cette campagne.
+- Stripe Bassira : la clé runtime est présente ; les API Checkout Sessions et
+  Webhook Endpoints répondent HTTP 200. La rotation reste bloquée par l’absence
+  d’un contrôle Dashboard authentifié dans cette session. Aucune nouvelle clé
+  n’a été créée et l’ancienne n’a pas été révoquée.
+
+Les rotations replacement-first restent suivies dans ce registre P0 indépendamment
+des stories fonctionnelles ; aucun secret ancien n’est révoqué avant preuve de son
+remplacement opérationnel.
+
+### 2026-07-19 — [US-231] Prompts d’arènes L99 — TERMINÉE
+
+Le dernier écart applicatif a été corrigé dans le bridge marché–médias : les
+observations restent factuelles, sans vocabulaire d’orientation (sur/sous-évaluation,
+signal, jugement, biais haussier/baissier), et les instantanés de sentiment sont
+désormais conservés pour un nombre arbitraire de plateformes au lieu d’être écrasés
+par la dernière plateforme. La réinjection remplace le bloc courant ou historique
+sans duplication.
+
+Preuves locales fraîches : test ciblé **26 réussites** ; suite backend complète
+**2 537 tests collectés, exit 0** ; Ruff vert ; mypy ciblé sans erreur ; build Vite
+vert en **38,73 s** ; `git diff --check` vert. Les rotations de secrets restantes
+demeurent suivies dans le registre P0 ci-dessus mais ne font pas partie des critères
+fonctionnels de cette story de prompts.
