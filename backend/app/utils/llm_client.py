@@ -141,6 +141,7 @@ def create_ner_llm_client(timeout: float = 120.0):
 
 
 class LLMClient:
+    _extra_body_logged = False
     """LLM client using OpenAI-compatible APIs"""
 
     def __init__(
@@ -288,7 +289,8 @@ class LLMClient:
             else messages
         )
 
-        kwargs = {
+        # OpenAI-compatible gateways accept provider-specific keys in this SDK boundary.
+        kwargs: dict[str, Any] = {
             "model": self.model,
             "messages": effective_messages,
             "temperature": temperature,

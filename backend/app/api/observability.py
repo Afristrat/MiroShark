@@ -12,6 +12,7 @@ import json
 import os
 import time
 from datetime import datetime
+from typing import Any, Dict, List
 
 from flask import request, Response, stream_with_context
 
@@ -309,7 +310,8 @@ def _read_jsonl_paginated(
     platform=None,
 ):
     """Read and filter JSONL events with pagination."""
-    events = []
+    # JSONL is an external event boundary; values vary by event_type.
+    events: List[Dict[str, Any]] = []
     total_lines = 0
 
     if not os.path.exists(path):

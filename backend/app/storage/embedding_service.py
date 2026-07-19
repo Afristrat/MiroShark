@@ -144,7 +144,7 @@ class EmbeddingService:
 
     def _request_ollama(self, texts: List[str]) -> List[List[float]]:
         """Ollama /api/embed endpoint."""
-        payload = {
+        payload: dict[str, str | list[str] | int] = {
             "model": self.model,
             "input": texts,
         }
@@ -152,7 +152,7 @@ class EmbeddingService:
 
     def _request_openai(self, texts: List[str]) -> List[List[float]]:
         """OpenAI-compatible /v1/embeddings endpoint."""
-        payload = {
+        payload: dict[str, str | list[str] | int] = {
             "model": self.model,
             "input": texts,
         }

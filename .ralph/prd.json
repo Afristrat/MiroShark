@@ -4889,16 +4889,54 @@
         "Aucune régression : ruff check . reste vert, suite pytest complète verte",
         "Root causes systémiques documentées dans .ralph/progress.md si de nouveaux patterns récurrents sont trouvés (comme US-212 l'a fait pour Blueprint/TaskManager)"
       ],
-      "passes": false,
+      "passes": true,
       "dependencies": [
         "US-212"
       ],
       "metadata": {
         "estimated_hours": 6,
         "priority": "P2",
-        "origin": "US-212 (scope proportionné, dette visible trackée)"
+        "origin": "US-212 (scope proportionné, dette visible trackée)",
+        "inventory_modules": 28,
+        "inventory_errors": 132,
+        "mypy_source_files": 119,
+        "filesTouched": [
+          "backend/app/api/admin_reports.py",
+          "backend/app/api/admin_users.py",
+          "backend/app/api/mcp.py",
+          "backend/app/api/observability.py",
+          "backend/app/api/pdf_export.py",
+          "backend/app/api/report.py",
+          "backend/app/api/settings.py",
+          "backend/app/models/project.py",
+          "backend/app/services/email_service.py",
+          "backend/app/services/graph_tools.py",
+          "backend/app/services/kairos_proxy.py",
+          "backend/app/services/push_notification_service.py",
+          "backend/app/services/replay_gif.py",
+          "backend/app/services/report_agent.py",
+          "backend/app/services/report_pdf/enricher.py",
+          "backend/app/services/report_pdf/jinja_env.py",
+          "backend/app/services/report_pdf/loader.py",
+          "backend/app/services/share_card.py",
+          "backend/app/services/simulation_ipc.py",
+          "backend/app/services/simulation_runner.py",
+          "backend/app/services/wonderwall_profile_generator.py",
+          "backend/app/storage/embedding_service.py",
+          "backend/app/storage/graph_storage.py",
+          "backend/app/storage/neo4j_storage.py",
+          "backend/app/storage/ner_extractor.py",
+          "backend/app/storage/reranker_service.py",
+          "backend/app/utils/llm_client.py",
+          "backend/app/utils/retry.py",
+          "backend/pyproject.toml",
+          "backend/tests/test_snapshot_watermark.py",
+          ".ralph/prd.json",
+          ".ralph/progress.md"
+        ],
+        "duration_basis": "Durée non mesurée : exécution orchestrée multi-agents sans chronomètre système continu."
       },
-      "completedAt": null
+      "completedAt": "2026-07-19T11:18:27Z"
     },
     {
       "id": "US-221",

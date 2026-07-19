@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import pathlib
 from datetime import datetime
+from typing import SupportsFloat, cast
 
 from jinja2 import Environment, FileSystemLoader
 
@@ -241,7 +242,7 @@ def get_jinja_env() -> Environment:
     # Brier 0 = parfait → 100 %. Brier 1 = totalement faux → 0 %.
     def _reliability_pct_filter(brier: object) -> float:
         try:
-            b = float(brier)
+            b = float(cast(str | bytes | bytearray | SupportsFloat, brier))
         except (TypeError, ValueError):
             return 0.0
         return round(max(0.0, min(1.0, 1.0 - b)) * 100.0, 1)

@@ -84,6 +84,7 @@ class RerankerService:
             return None
 
         try:
+            assert self._model is not None
             pairs = [(query, doc) for doc in docs]
             scores = self._model.predict(pairs, show_progress_bar=False)
             return [float(s) for s in scores]

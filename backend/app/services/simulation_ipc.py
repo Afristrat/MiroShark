@@ -180,7 +180,7 @@ class SimulationIPCClient:
         self,
         agent_id: int,
         prompt: str,
-        platform: str = None,
+        platform: Optional[str] = None,
         timeout: float = 60.0
     ) -> IPCResponse:
         """
@@ -214,7 +214,7 @@ class SimulationIPCClient:
     def send_batch_interview(
         self,
         interviews: List[Dict[str, Any]],
-        platform: str = None,
+        platform: Optional[str] = None,
         timeout: float = 120.0
     ) -> IPCResponse:
         """
@@ -231,7 +231,8 @@ class SimulationIPCClient:
         Returns:
             IPCResponse with all interview results in the result field
         """
-        args = {"interviews": interviews}
+        # IPC command arguments are a heterogeneous serialized payload boundary.
+        args: Dict[str, Any] = {"interviews": interviews}
         if platform:
             args["platform"] = platform
             

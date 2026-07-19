@@ -4,6 +4,7 @@ Runs simulations in the background and records each Agent's actions, with real-t
 """
 
 import os
+import importlib
 import sys
 import json
 import logging
@@ -12,7 +13,7 @@ import threading
 import subprocess
 import signal
 import atexit
-from typing import Dict, Any, List, Optional, TextIO, TYPE_CHECKING
+from typing import Dict, Any, List, Optional, TextIO, TYPE_CHECKING, Protocol, cast
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -33,6 +34,25 @@ _cleanup_registered = False
 
 # Platform detection
 IS_WINDOWS = sys.platform == 'win32'
+
+
+class _PosixOS(Protocol):
+    def getpgid(self, pid: int) -> int: ...
+
+    def killpg(self, pgid: int, sig: int) -> None: ...
+
+
+class _PosixSignal(Protocol):
+    SIGTERM: int
+    SIGKILL: int
+
+
+_posix_process_control = (
+    None if IS_WINDOWS else cast(_PosixOS, importlib.import_module("os"))
+)
+_posix_signal = (
+    None if IS_WINDOWS else cast(_PosixSignal, importlib.import_module("signal"))
+)
 
 
 def _is_pid_alive(pid: Optional[int]) -> bool:
@@ -313,7 +333,7 @@ class SimulationRunner:
         polle en croyant que la sim tourne toujours.
         """
         if simulation_id in cls._run_states:
-            state = cls._run_states[simulation_id]
+            state: Optional[SimulationRunState] = cls._run_states[simulation_id]
         else:
             state = cls._load_run_state(simulation_id)
             if state:
@@ -471,10 +491,10 @@ class SimulationRunner:
         cls,
         simulation_id: str,
         platform: str = "parallel",  # twitter / reddit / polymarket / parallel
-        max_rounds: int = None,  # Max simulation rounds (optional, to truncate overly long simulations)
+        max_rounds: Optional[int] = None,  # Max simulation rounds (optional, to truncate overly long simulations)
         enable_graph_memory_update: bool = False,  # Whether to update activities to knowledge graph
-        graph_id: str = None,  # Graph ID (required when graph update is enabled)
-        storage: 'GraphStorage' = None,  # GraphStorage instance (required if enable_graph_memory_update)
+        graph_id: Optional[str] = None,  # Graph ID (required when graph update is enabled)
+        storage: Optional['GraphStorage'] = None,  # GraphStorage instance (required if enable_graph_memory_update)
         start_round: int = 0,  # Resume from this round (0 = start fresh)
         env_only: bool = False,  # Just load environments for interviews, no simulation
         enable_cross_platform: bool = True,  # Enable cross-platform awareness between agents
@@ -587,7 +607,7 @@ class SimulationRunner:
             raise ValueError(f"Script does not exist: {script_path}")
         
         # Create action queue
-        action_queue = Queue()
+        action_queue: Queue = Queue()
         cls._action_queues[simulation_id] = action_queue
         
         # Start simulation process
@@ -663,7 +683,7 @@ class SimulationRunner:
             )
             
             # Save file handles for later closing
-            cls._stdout_files[simulation_id] = main_log_file
+            cls._stdout_files[simulation_id] = cast(TextIO, main_log_file)
             cls._stderr_files[simulation_id] = None  # No longer need separate stderr
             
             state.process_pid = process.pid
@@ -847,13 +867,17 @@ class SimulationRunner:
             # Close log file handles
             if simulation_id in cls._stdout_files:
                 try:
-                    cls._stdout_files[simulation_id].close()
+                    file_handle = cls._stdout_files[simulation_id]
+                    if file_handle is not None:
+                        file_handle.close()
                 except Exception:
                     pass
                 cls._stdout_files.pop(simulation_id, None)
             if simulation_id in cls._stderr_files and cls._stderr_files[simulation_id]:
                 try:
-                    cls._stderr_files[simulation_id].close()
+                    file_handle = cls._stderr_files[simulation_id]
+                    if file_handle is not None:
+                        file_handle.close()
                 except Exception:
                     pass
                 cls._stderr_files.pop(simulation_id, None)
@@ -1106,18 +1130,20 @@ class SimulationRunner:
         else:
             # Unix: Use process group termination
             # Since start_new_session=True was used, process group ID equals the main process PID
-            pgid = os.getpgid(process.pid)
+            assert _posix_process_control is not None
+            assert _posix_signal is not None
+            pgid = _posix_process_control.getpgid(process.pid)
             logger.info(f"Terminating process group (Unix): simulation={simulation_id}, pgid={pgid}")
             
             # First send SIGTERM to the entire process group
-            os.killpg(pgid, signal.SIGTERM)
+            _posix_process_control.killpg(pgid, _posix_signal.SIGTERM)
             
             try:
                 process.wait(timeout=timeout)
             except subprocess.TimeoutExpired:
                 # If still not finished after timeout, force send SIGKILL
                 logger.warning(f"Process group not responding to SIGTERM, force terminating: {simulation_id}")
-                os.killpg(pgid, signal.SIGKILL)
+                _posix_process_control.killpg(pgid, _posix_signal.SIGKILL)
                 process.wait(timeout=5)
     
     @classmethod
@@ -1844,7 +1870,7 @@ class SimulationRunner:
         simulation_id: str,
         agent_id: int,
         prompt: str,
-        platform: str = None,
+        platform: Optional[str] = None,
         timeout: float = 60.0
     ) -> Dict[str, Any]:
         """
@@ -1907,7 +1933,7 @@ class SimulationRunner:
         cls,
         simulation_id: str,
         interviews: List[Dict[str, Any]],
-        platform: str = None,
+        platform: Optional[str] = None,
         timeout: float = 120.0
     ) -> Dict[str, Any]:
         """
@@ -1966,7 +1992,7 @@ class SimulationRunner:
         cls,
         simulation_id: str,
         prompt: str,
-        platform: str = None,
+        platform: Optional[str] = None,
         timeout: float = 180.0
     ) -> Dict[str, Any]:
         """
@@ -2131,7 +2157,7 @@ class SimulationRunner:
     def get_interview_history(
         cls,
         simulation_id: str,
-        platform: str = None,
+        platform: Optional[str] = None,
         agent_id: Optional[int] = None,
         limit: int = 100
     ) -> List[Dict[str, Any]]:

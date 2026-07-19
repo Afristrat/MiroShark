@@ -526,7 +526,7 @@ def user_simulations_endpoint(user_id: str):
     if not is_super:
         sims_rows = [
             r for r in sims_rows
-            if str(r.get("org_id") or "") in admin_org_ids
+            if str(r.get("org_id") or "") in (admin_org_ids or [])
         ]
 
     total = len(sims_rows)

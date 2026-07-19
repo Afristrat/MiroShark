@@ -27,6 +27,8 @@ from typing import Optional
 
 from PIL import Image, ImageDraw, ImageFont
 
+_Font = ImageFont.ImageFont | ImageFont.FreeTypeFont
+
 
 # Canvas geometry — same 1200×630 (1.91:1) as the share card so X/Discord
 # preview shapes stay consistent across the static + animated formats.
@@ -88,7 +90,7 @@ def _find_font(candidates: list[str]) -> Optional[str]:
     return None
 
 
-def _load_font(size: int, bold: bool = False) -> ImageFont.ImageFont:
+def _load_font(size: int, bold: bool = False) -> _Font:
     path = _find_font(_FONT_BOLD_CANDIDATES if bold else _FONT_CANDIDATES)
     if path:
         try:
@@ -105,7 +107,7 @@ def _text_width(draw: ImageDraw.ImageDraw, text: str, font) -> int:
     if not text:
         return 0
     bbox = draw.textbbox((0, 0), text, font=font)
-    return bbox[2] - bbox[0]
+    return int(bbox[2] - bbox[0])
 
 
 def _wrap_text(

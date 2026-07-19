@@ -67,8 +67,8 @@ class ReportLogger:
         action: str,
         stage: str,
         details: Dict[str, Any],
-        section_title: str = None,
-        section_index: int = None
+        section_title: Optional[str] = None,
+        section_index: Optional[int] = None
     ):
         """
         Record a log entry
@@ -288,7 +288,7 @@ class ReportLogger:
             }
         )
     
-    def log_error(self, error_message: str, stage: str, section_title: str = None):
+    def log_error(self, error_message: str, stage: str, section_title: Optional[str] = None):
         """Record error"""
         self.log(
             action="error",
@@ -1514,6 +1514,9 @@ class ReportAgent:
         logger.info(f"Executing tool: {tool_name}, parameters: {parameters}")
         
         try:
+            # Tool adapters return heterogeneous dataclasses/JSON; each branch
+            # formats its concrete result before it leaves this boundary.
+            result: Any
             if tool_name == "insight_forge":
                 query = parameters.get("query", "")
                 ctx = parameters.get("report_context", "") or report_context
@@ -1749,7 +1752,7 @@ class ReportAgent:
                 lines.append("")
 
                 # Summarize which agents changed most
-                agent_shifts = {}
+                agent_shifts: Dict[str, float] = {}
                 for tp in turning_points:
                     aid = tp['agent_id']
                     agent_shifts[aid] = agent_shifts.get(aid, 0) + abs(tp['delta'])
@@ -2238,10 +2241,10 @@ class ReportAgent:
 
         # Response may contain thinking text + bare JSON, try to extract the last JSON object
         json_pattern = r'(\{"(?:name|tool)"\s*:.*?\})\s*$'
-        match = re.search(json_pattern, stripped, re.DOTALL)
-        if match:
+        json_match = re.search(json_pattern, stripped, re.DOTALL)
+        if json_match:
             try:
-                call_data = json.loads(match.group(1))
+                call_data = json.loads(json_match.group(1))
                 if self._is_valid_tool_call(call_data):
                     tool_calls.append(call_data)
             except json.JSONDecodeError:
@@ -2464,7 +2467,7 @@ class ReportAgent:
         max_iterations = 8  # Maximum iteration rounds
         min_tool_calls = 2  # Minimum tool call count
         conflict_retries = 0  # Consecutive conflict count when tool call and Final Answer appear simultaneously
-        used_tools = set()  # Track names of tools already called
+        used_tools: set[str] = set()  # Track names of tools already called
         all_tools = {"insight_forge", "panorama_search", "quick_search", "interview_agents", "browse_clusters"}
 
         # Report context, used for InsightForge sub-question generation
@@ -2849,7 +2852,7 @@ Write in the same analytical style as the report. Use **bold** for emphasis. Do 
         )
         
         # Completed section titles list (for progress tracking)
-        completed_section_titles = []
+        completed_section_titles: List[str] = []
         
         try:
             # Initialize: create report folder and save initial state
@@ -3125,7 +3128,7 @@ Write in the same analytical style as the report. Use **bold** for emphasis. Do 
     def chat(
         self, 
         message: str,
-        chat_history: List[Dict[str, str]] = None
+        chat_history: Optional[List[Dict[str, str]]] = None
     ) -> Dict[str, Any]:
         """
         Chat with Report Agent
@@ -3179,7 +3182,7 @@ Write in the same analytical style as the report. Use **bold** for emphasis. Do 
         })
         
         # ReACT loop (simplified version)
-        tool_calls_made = []
+        tool_calls_made: List[Dict[str, Any]] = []
         max_iterations = 2  # Reduced iteration rounds
         
         for iteration in range(max_iterations):
@@ -3560,8 +3563,8 @@ class ReportManager:
         status: str, 
         progress: int, 
         message: str,
-        current_section: str = None,
-        completed_sections: List[str] = None
+        current_section: Optional[str] = None,
+        completed_sections: Optional[List[str]] = None
     ) -> None:
         """
         Update report generation progress
@@ -3671,7 +3674,7 @@ class ReportManager:
         import re
         
         lines = content.split('\n')
-        processed_lines = []
+        processed_lines: List[str] = []
         prev_was_heading = False
         
         # Collect all section titles from outline

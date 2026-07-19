@@ -1044,9 +1044,9 @@ class Enricher:
                             activity[k] = activity.get(k, 0.0) + abs(a.score)
                 if not activity:
                     return "Aucun agent."
-                top = sorted(activity.items(), key=lambda kv: kv[1], reverse=True)[:5]
-                names = [k[:20] for k, _ in top]
-                return f"Top 5 agents engagés (activité cumulée) : {', '.join(names)}."
+                activity_top = sorted(activity.items(), key=lambda kv: kv[1], reverse=True)[:5]
+                agent_names = [k[:20] for k, _ in activity_top]
+                return f"Top 5 agents engagés (activité cumulée) : {', '.join(agent_names)}."
             return "Trajectoire absente."
 
         return f"Chart {chart_id}: données non disponibles."

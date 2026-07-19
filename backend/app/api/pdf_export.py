@@ -34,7 +34,7 @@ from __future__ import annotations
 
 import json
 import traceback
-from typing import Optional
+from typing import Literal, Optional, cast
 
 from flask import jsonify, make_response, request
 
@@ -51,21 +51,21 @@ _ALLOWED_VARIANTS = frozenset({"full", "exec", "public", "one-pager"})
 _DEFAULT_VARIANT = "full"
 
 
-def _parse_variant(raw: Optional[str]) -> str:
+def _parse_variant(raw: Optional[str]) -> Literal["full", "exec", "public", "one-pager"]:
     """Valide et normalise un nom de variante PDF/MD.
 
     Retourne `_DEFAULT_VARIANT` si `raw` est None/vide. Lève `ValueError`
     sur une valeur inconnue (l'appelant transforme en 400 INVALID_VARIANT).
     """
     if not raw:
-        return _DEFAULT_VARIANT
+        return cast(Literal["full", "exec", "public", "one-pager"], _DEFAULT_VARIANT)
     candidate = str(raw).strip().lower()
     if candidate not in _ALLOWED_VARIANTS:
         raise ValueError(
             f"Variante inconnue : {raw!r}. "
             f"Variantes autorisées : {sorted(_ALLOWED_VARIANTS)}."
         )
-    return candidate
+    return cast(Literal["full", "exec", "public", "one-pager"], candidate)
 
 
 # ── Helpers de résolution ────────────────────────────────────────────────────
@@ -153,7 +153,7 @@ def _resolve_lang_for_simulation(simulation_id: str) -> str:
 def _build_pdf(
     simulation_id: str,
     graph_image_b64: str = "",
-    variant: str = _DEFAULT_VARIANT,
+    variant: Literal["full", "exec", "public", "one-pager"] = "full",
 ) -> bytes:
     """Génère le PDF rapport via le pipeline (US-118 → 125 + Enricher + US-131).
 
@@ -209,7 +209,7 @@ def _build_pdf(
 
 def _build_markdown(
     simulation_id: str,
-    variant: str = _DEFAULT_VARIANT,
+    variant: Literal["full", "exec", "public", "one-pager"] = "full",
 ) -> str:
     """Génère le rapport Markdown via Renderer.render_md() (Jinja2 GFM).
 

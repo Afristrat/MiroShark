@@ -2604,3 +2604,31 @@ Preuves finales fraîches : backend `/health` interne **HTTP 200** ; Redis **PON
 redémarrage, zéro job en attente/exécution/terminé/échec après nettoyage. Quality gates
 locaux : build Vite vert (**948 modules**) ; suite backend complète **2 479 réussites,
 57 ignorées, 0 échec** sur **2 536 tests collectés**.
+
+### 2026-07-19 — [US-212b] Burn-down mypy complet — CLÔTURÉE
+
+L'inventaire système frais a corrigé le cadrage historique de la story : l'override
+`[[tool.mypy.overrides]]` couvrait encore **28 modules**, et non 30, pour **132 erreurs**
+mypy réelles en configuration normale. Les 28 exclusions ont été traitées et la
+section `ignore_errors=true` a été intégralement supprimée de `backend/pyproject.toml`.
+`uv run mypy app/` contrôle maintenant les **119 fichiers source** sans exclusion
+applicative et retourne zéro erreur.
+
+Les causes récurrentes ont été corrigées à leur frontière commune : le contrat abstrait
+`GraphStorage` expose désormais les opérations communautaires déjà implémentées par
+Neo4j ; les payloads dynamiques sont bornés par des `TypedDict`, `Protocol`,
+`Literal`, validations Pydantic ou `cast` localisés aux frontières runtime. Les imports
+POSIX du runner passent par deux protocoles minimaux, ce qui conserve le verrouillage
+Linux tout en permettant le contrôle mypy réel sous Windows. Aucun `# type: ignore` de
+masse ni nouvel override n'a été introduit.
+
+Le typage a aussi révélé deux défauts d'exécution : l'approbation d'un rapport appelait
+le chargeur sans `simulation_id`, et la transition de workflow utilisait le mauvais nom
+de paramètre. Les deux chemins ont été corrigés à la source ; les fixtures nominales de
+watermark représentent désormais explicitement un rapport existant, tandis que le cas
+absent reste couvert en 404.
+
+Preuves locales fraîches : suite backend complète **2 479 réussites, 57 ignorées,
+0 échec** sur **2 536 tests collectés** ; lint global ESLint + Ruff vert ; mypy
+**0 erreur sur 119 fichiers** ; build Vite vert (**948 modules**) ;
+`git diff --check` vert. Recomptage après clôture : **8 stories ouvertes**.

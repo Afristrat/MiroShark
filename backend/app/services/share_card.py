@@ -24,6 +24,8 @@ from typing import Optional
 
 from PIL import Image, ImageDraw, ImageFont
 
+_Font = ImageFont.ImageFont | ImageFont.FreeTypeFont
+
 
 # Card geometry — fixed 1.91:1 (1200x630) to match Twitter/X / LinkedIn /
 # Slack large-image previews. Anything else gets cropped or letterboxed by
@@ -81,7 +83,7 @@ def _find_font(candidates: list[str]) -> Optional[str]:
     return None
 
 
-def _load_font(size: int, bold: bool = False) -> ImageFont.ImageFont:
+def _load_font(size: int, bold: bool = False) -> _Font:
     path = _find_font(_FONT_BOLD_CANDIDATES if bold else _FONT_CANDIDATES)
     if path:
         try:
@@ -100,7 +102,7 @@ def _text_width(draw: ImageDraw.ImageDraw, text: str, font) -> int:
     if not text:
         return 0
     bbox = draw.textbbox((0, 0), text, font=font)
-    return bbox[2] - bbox[0]
+    return int(bbox[2] - bbox[0])
 
 
 def _wrap_text(
@@ -195,7 +197,7 @@ def _draw_pill(
     draw.rounded_rectangle((x, y, x + w, y + h), radius=radius, fill=bg)
     # textbbox y0 isn't always 0 — offset so glyphs sit centered.
     draw.text((x + pad_x - th_bbox[0], y + pad_y - th_bbox[1]), text, fill=fg, font=font)
-    return x + w, y + h
+    return int(x + w), int(y + h)
 
 
 def _draw_belief_bar(
@@ -290,7 +292,7 @@ def render_share_card(summary: dict) -> bytes:
     if not scenario_lines or _text_width(draw, scenario_lines[0], f_scenario) > body_w:
         scenario_font = f_scenario_sm
         scenario_lines = _wrap_text(draw, scenario, scenario_font, body_w, max_lines=3)
-    line_h = scenario_font.size + 8 if hasattr(scenario_font, "size") else 56
+    line_h = int(scenario_font.size + 8) if hasattr(scenario_font, "size") else 56
     for line in scenario_lines:
         draw.text((body_x, cur_y), line, fill=INK, font=scenario_font)
         cur_y += line_h

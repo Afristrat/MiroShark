@@ -608,7 +608,8 @@ class Neo4jStorage(GraphStorage):
                 if k not in ("fact", "belief", "observation"):
                     raise ValueError(f"Invalid kind: {k!r}")
 
-        result = {"edges": [], "nodes": [], "query": query}
+        # Public graph-search payload: edges, nodes and query have distinct shapes.
+        result: Dict[str, Any] = {"edges": [], "nodes": [], "query": query}
 
         with self._driver.session() as session:
             if scope in ("edges", "both"):

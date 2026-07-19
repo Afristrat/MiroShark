@@ -441,6 +441,10 @@ class TestApproveEndpoint:
 
             with (
                 patch(
+                    "app.services.report_agent.ReportManager.get_report",
+                    return_value=MagicMock(simulation_id="sim_test123"),
+                ),
+                patch(
                     "app.services.report_pdf.loader.PDFContextLoader.load",
                     return_value=MagicMock(org_id="org-1"),
                 ),
@@ -510,6 +514,10 @@ class TestApproveEndpoint:
                 patch("app.auth.decorators.verify_supabase_jwt",
                       return_value={"sub": "u1", "email": "amine@bassira.ai"}),
                 patch.dict(os.environ, {"BASSIRA_SUPER_ADMIN_EMAILS": "amine@bassira.ai"}),
+                patch(
+                    "app.services.report_agent.ReportManager.get_report",
+                    return_value=MagicMock(simulation_id="sim_test123"),
+                ),
                 patch(
                     "app.services.report_pdf.loader.PDFContextLoader.load",
                     return_value=MagicMock(org_id="org-1"),

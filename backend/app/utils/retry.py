@@ -41,7 +41,7 @@ def retry_with_backoff(
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
         def wrapper(*args, **kwargs) -> Any:
-            last_exception = None
+            last_exception: Exception | None = None
             delay = initial_delay
             
             for attempt in range(max_retries + 1):
@@ -71,6 +71,7 @@ def retry_with_backoff(
                     time.sleep(current_delay)
                     delay *= backoff_factor
             
+            assert last_exception is not None
             raise last_exception
         
         return wrapper
@@ -94,7 +95,7 @@ def retry_with_backoff_async(
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
         async def wrapper(*args, **kwargs) -> Any:
-            last_exception = None
+            last_exception: Exception | None = None
             delay = initial_delay
             
             for attempt in range(max_retries + 1):
@@ -123,6 +124,7 @@ def retry_with_backoff_async(
                     await asyncio.sleep(current_delay)
                     delay *= backoff_factor
             
+            assert last_exception is not None
             raise last_exception
         
         return wrapper
@@ -165,7 +167,7 @@ class RetryableAPIClient:
         Returns:
             Function return value
         """
-        last_exception = None
+        last_exception: Exception | None = None
         delay = self.initial_delay
         
         for attempt in range(self.max_retries + 1):
@@ -190,6 +192,7 @@ class RetryableAPIClient:
                 time.sleep(current_delay)
                 delay *= self.backoff_factor
         
+        assert last_exception is not None
         raise last_exception
     
     def call_batch_with_retry(

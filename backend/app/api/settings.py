@@ -7,6 +7,7 @@ POST /api/settings/test-llm — make a minimal test call and return latency
 """
 
 import time
+from typing import TypedDict
 from flask import request, jsonify
 
 from . import settings_bp
@@ -23,6 +24,12 @@ from ..utils.logger import get_logger
 logger = get_logger('miroshark.api.settings')
 
 
+class _Preset(TypedDict):
+    label: str
+    fields: dict[str, str | int]
+    key_slots: list[str]
+
+
 def _mask_key(key: str) -> str:
     """Return only the last 4 characters of an API key."""
     if not key:
@@ -33,7 +40,7 @@ def _mask_key(key: str) -> str:
 # Preset blueprints mirror the .env.example Cheap / Best / Local blocks.
 # The `key_slots` list names the fields the preset's API key should be
 # copied into when the caller supplies `preset_api_key`.
-_PRESETS = {
+_PRESETS: dict[str, _Preset] = {
     'cheap': {
         'label': 'Cheap — ~$1/run (Qwen3.5 Flash + DeepSeek V3.2 + Grok-4.1 Fast)',
         'fields': {

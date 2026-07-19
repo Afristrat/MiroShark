@@ -24,7 +24,7 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
-from typing import Any, Dict, Mapping, Optional
+from typing import Any, Mapping, Optional
 
 
 logger = logging.getLogger("miroshark.email")
@@ -96,7 +96,7 @@ def _send_via_resend(
 
     try:
         resend.api_key = api_key
-        params: Dict[str, Any] = {
+        params: resend.Emails.SendParams = {
             "from": from_email,
             "to": [to_email],
             "subject": subject,
@@ -104,7 +104,7 @@ def _send_via_resend(
         }
         if reply_to:
             params["reply_to"] = reply_to
-        result = resend.Emails.send(params)  # type: ignore[attr-defined]
+        result = resend.Emails.send(params)
         # Resend returns ``{"id": "..."}`` on success.
         if isinstance(result, dict) and result.get("id"):
             logger.info("Resend email %s sent to %s", result.get("id"), to_email)

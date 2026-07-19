@@ -360,9 +360,9 @@ def _try_workflow_transition(report_id: str, target_status: str, *,
         cli = get_supabase_admin()
         rw.transition(
             report_id,
-            target_state=target_status,
-            actor_id=actor_id,
-            actor_email=actor_email,
+            to_state=target_status,
+            actor_id=actor_id or "system",
+            actor_email=actor_email or "system@miroshark.local",
             snapshot_hash=snapshot_hash,
             client=cli,
         )
@@ -400,7 +400,11 @@ def approve_report(report_id: str):
 
     try:
         from ..services.report_pdf.loader import PDFContextLoader
-        context = PDFContextLoader.load(report_id=report_id)
+        from ..services.report_agent import ReportManager
+        report = ReportManager.get_report(report_id)
+        if report is None:
+            return _err("REPORT_NOT_FOUND", "Rapport introuvable.", 404)
+        context = PDFContextLoader.load(simulation_id=report.simulation_id, report_id=report_id)
     except Exception as exc:  # noqa: BLE001
         logger.error("PDFContextLoader.load() echec %s : %s", report_id, exc)
         return _err("CONTEXT_LOAD_ERROR", str(exc), 500)

@@ -4,17 +4,30 @@ Manages VAPID keys, push subscriptions, and sends Web Push notifications
 when simulations complete. Uses the pywebpush library (optional dependency).
 """
 
-import fcntl
+import importlib
 import os
 import json
 import base64
 import threading
 from datetime import datetime
-from typing import Dict, Any, Optional, List
+from typing import Any, Dict, List, Optional, Protocol, cast
 
 from ..utils.logger import get_logger
 
 logger = get_logger('miroshark.push_notification')
+
+
+class _Fcntl(Protocol):
+    LOCK_EX: int
+    LOCK_UN: int
+
+    def flock(self, fd: int, operation: int) -> None: ...
+
+
+try:
+    _fcntl: _Fcntl | None = cast(_Fcntl, importlib.import_module("fcntl"))
+except ModuleNotFoundError:
+    _fcntl = None
 
 _UPLOADS_DIR = os.path.join(os.path.dirname(__file__), '../../uploads')
 # SECURITY: contains the VAPID private key in plaintext. Do not expose the
@@ -116,7 +129,8 @@ def save_subscription(simulation_id: str, subscription: Dict[str, Any]) -> None:
 
     lock_path = path + '.lock'
     with open(lock_path, 'w') as lock_f:
-        fcntl.flock(lock_f, fcntl.LOCK_EX)
+        if _fcntl is not None:
+            _fcntl.flock(lock_f.fileno(), _fcntl.LOCK_EX)
         try:
             subscriptions: List[Dict[str, Any]] = []
             if os.path.exists(path):
@@ -134,7 +148,8 @@ def save_subscription(simulation_id: str, subscription: Dict[str, Any]) -> None:
             with open(path, 'w') as f:
                 json.dump(subscriptions, f, indent=2)
         finally:
-            fcntl.flock(lock_f, fcntl.LOCK_UN)
+            if _fcntl is not None:
+                _fcntl.flock(lock_f.fileno(), _fcntl.LOCK_UN)
 
     logger.info(f"Stored push subscription for simulation {simulation_id}")
 

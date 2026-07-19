@@ -84,7 +84,7 @@ class NERExtractor:
             {"role": "user", "content": user_msg},
         ]
 
-        last_error = None
+        last_error: Exception | None = None
         for attempt in range(self.max_retries + 1):
             try:
                 result = self.llm.chat_json(

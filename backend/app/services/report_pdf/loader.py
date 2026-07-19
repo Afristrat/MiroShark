@@ -34,7 +34,7 @@ import logging
 import re
 import uuid
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Literal, Optional, cast
 
 from ..market_resolution_service import (
     MarketResolutionRead,
@@ -47,6 +47,8 @@ from .schema import (
     Demographics,
     DirectorEvent,
     GeneratedArticle,
+    FinalWealth,
+    MarketResolution,
     Outline,
     Outcome,
     PDFReportContext,
@@ -1148,7 +1150,7 @@ class PDFContextLoader:
         package = (sim_config.package if sim_config else "") or ""
 
         # La lang passée en paramètre prime sur celle du sim_config
-        effective_lang = lang
+        effective_lang = cast(Literal["fr", "en", "ar"], lang if lang in {"fr", "en", "ar"} else "fr")
 
         # ─────────────────────────────────────────────────────────────────────
         # Assemblage du PDFReportContext
@@ -1172,8 +1174,8 @@ class PDFContextLoader:
             counterfactuals=counterfactuals,
             director_events=director_events,
             articles=articles,
-            market_resolutions=durable_resolutions.resolutions,
-            final_wealth=durable_resolutions.final_wealth,
+            market_resolutions=[MarketResolution.model_validate(item) for item in durable_resolutions.resolutions],
+            final_wealth=[FinalWealth.model_validate(item) for item in durable_resolutions.final_wealth],
             complete=durable_resolutions.complete,
             # Report
             outline=outline,

@@ -33,11 +33,35 @@ class GraphStorage(ABC):
     # --- Add data ---
 
     @abstractmethod
-    def add_text(self, graph_id: str, text: str) -> str:
+    def add_text(
+        self,
+        graph_id: str,
+        text: str,
+        valid_at: Optional[str] = None,
+        kind: str = "fact",
+        source_type: str = "document",
+        source_id: Optional[str] = None,
+    ) -> str:
         """
         Process text: NER/RE → create nodes/edges → return episode_id.
         This is synchronous (unlike Zep Cloud's async episodes).
         """
+
+    # --- Community retrieval ---
+
+    @abstractmethod
+    def build_communities(self, graph_id: str) -> Dict[str, int]:
+        """Build and persist graph communities."""
+
+    @abstractmethod
+    def search_communities(
+        self, graph_id: str, query: str, limit: int = 5,
+    ) -> List[Dict[str, Any]]:
+        """Search persisted community summaries."""
+
+    @abstractmethod
+    def list_communities(self, graph_id: str) -> List[Dict[str, Any]]:
+        """List graph communities, largest first."""
 
     @abstractmethod
     def add_text_batch(
@@ -127,3 +151,37 @@ class GraphStorage(ABC):
             graph_id, nodes, edges, node_count, edge_count
         Edge dicts include derived fields: fact_type, source_node_name, target_node_name
         """
+
+    # --- Structural analysis ---
+
+    @abstractmethod
+    def get_degree_centrality(
+        self, graph_id: str, limit: int = 20,
+    ) -> List[Dict[str, Any]]:
+        """Return entities ordered by relationship degree."""
+
+    @abstractmethod
+    def get_bridge_entities(
+        self, graph_id: str, limit: int = 10,
+    ) -> List[Dict[str, Any]]:
+        """Return entities connecting otherwise separate graph areas."""
+
+    @abstractmethod
+    def get_shortest_path(
+        self,
+        graph_id: str,
+        source_name: str,
+        target_name: str,
+        max_hops: int = 6,
+    ) -> List[Dict[str, Any]]:
+        """Return relationship steps on the shortest matching entity path."""
+
+    @abstractmethod
+    def get_entity_communities(self, graph_id: str) -> List[List[Dict[str, Any]]]:
+        """Return connected entity communities, largest first."""
+
+    @abstractmethod
+    def detect_contradictions(
+        self, graph_id: str, limit: int = 20,
+    ) -> List[Dict[str, Any]]:
+        """Return graph relationships with conflicting evidence."""

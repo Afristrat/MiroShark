@@ -404,6 +404,7 @@ class GraphToolsService:
         """Lazy initialization of smart LLM client (for reasoning tasks)"""
         if self._llm_client is None:
             self._llm_client = create_smart_llm_client()
+        assert self._llm_client is not None
         return self._llm_client
 
     @property
@@ -411,6 +412,7 @@ class GraphToolsService:
         """Lazy initialization of fast LLM client (for interviews, selection, questions)"""
         if self._fast_llm_client is None:
             self._fast_llm_client = create_llm_client()
+        assert self._fast_llm_client is not None
         return self._fast_llm_client
 
     # ========== Basic Tools ==========
@@ -827,13 +829,13 @@ class GraphToolsService:
         nodes = self.get_all_nodes(graph_id)
         edges = self.get_all_edges(graph_id)
 
-        entity_types = {}
+        entity_types: Dict[str, int] = {}
         for node in nodes:
             for label in node.labels:
                 if label not in ["Entity", "Node"]:
                     entity_types[label] = entity_types.get(label, 0) + 1
 
-        relation_types = {}
+        relation_types: Dict[str, int] = {}
         for edge in edges:
             relation_types[edge.name] = relation_types.get(edge.name, 0) + 1
 
@@ -1163,8 +1165,8 @@ Return the sub-questions as a JSON list."""
         interview_requirement: str,
         simulation_requirement: str = "",
         max_agents: int = 8,
-        custom_questions: List[str] = None,
-        agent_names: List[str] = None,
+        custom_questions: Optional[List[str]] = None,
+        agent_names: Optional[List[str]] = None,
         dual_platform: bool = False,
     ) -> InterviewResult:
         """
@@ -1649,8 +1651,8 @@ Select up to {max_agents} agents. Return their indices."""
         Matches against realname and username fields (case-insensitive, substring match).
         Falls back to LLM selection if no names match.
         """
-        selected_agents = []
-        selected_indices = []
+        selected_agents: List[Dict[str, Any]] = []
+        selected_indices: List[int] = []
         names_lower = [n.lower() for n in agent_names]
 
         for i, profile in enumerate(profiles):

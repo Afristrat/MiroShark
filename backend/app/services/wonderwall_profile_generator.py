@@ -419,7 +419,7 @@ class WonderwallProfileGenerator:
         occupation_profile = None
         if profession and str(profession).strip():
             try:
-                occupation_profile = self.occupation_profile_resolver(str(profession), self.locale)
+                occupation_profile = self.occupation_profile_resolver(str(profession), self.locale or "fr")
             except Exception as exc:  # noqa: BLE001 — enrichment never blocks persona generation
                 logger.warning("Occupation profile lookup failed (%s).", exc.__class__.__name__)
 
@@ -448,7 +448,7 @@ class WonderwallProfileGenerator:
         system_prompt = self._build_agent_system_prompt(
             profile=system_prompt_input,
             simulation_requirement=self.simulation_requirement,
-            locale=self.locale,
+            locale=self.locale or "fr",
             occupation_profile=occupation_profile,
         )
 
@@ -939,7 +939,7 @@ class WonderwallProfileGenerator:
 
         # Try multiple times until success or max retries reached
         max_attempts = 3
-        last_error = None
+        last_error: Exception | None = None
         
         for attempt in range(max_attempts):
             try:
@@ -1315,7 +1315,7 @@ IMPORTANT: Do NOT include karma, friend_count, follower_count, or statuses_count
         self,
         entities: List[EntityNode],
         use_llm: bool = True,
-        progress_callback: Optional[callable] = None,
+        progress_callback: Optional[Callable[..., None]] = None,
         graph_id: Optional[str] = None,
         parallel_count: int = 15,
         realtime_output_path: Optional[str] = None,
@@ -1348,7 +1348,7 @@ IMPORTANT: Do NOT include karma, friend_count, follower_count, or statuses_count
         entities = self._interleave_by_type(entities)
 
         total = len(entities)
-        profiles = [None] * total  # Pre-allocate list to maintain order
+        profiles: List[Optional[WonderwallAgentProfile]] = [None] * total  # Pre-allocate list to maintain order
         completed_count = [0]  # Use list so it can be modified in closure
         lock = Lock()
 
@@ -1479,7 +1479,7 @@ IMPORTANT: Do NOT include karma, friend_count, follower_count, or statuses_count
         print(f"Persona generation complete! Generated {len([p for p in profiles if p])} Agents")
         print(f"{'='*60}\n")
         
-        return profiles
+        return [profile for profile in profiles if profile is not None]
     
     def _print_generated_profile(self, entity_name: str, entity_type: str, profile: WonderwallAgentProfile):
         """Output generated persona to console in real time (full content, no truncation)"""

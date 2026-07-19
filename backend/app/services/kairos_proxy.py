@@ -26,7 +26,7 @@ import logging
 import threading
 import time
 from dataclasses import dataclass
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple, cast
 
 import requests
 
@@ -57,7 +57,7 @@ class _TtlCache:
             try:
                 # `redis` est déjà tiré par `rq>=1.15` (US-129) donc pas
                 # de nouvelle dépendance ajoutée au pyproject.
-                import redis  # type: ignore
+                import redis
 
                 self._client = redis.Redis.from_url(
                     url, decode_responses=True, socket_timeout=2.0
@@ -83,7 +83,7 @@ class _TtlCache:
             try:
                 raw = self._client.get(full)
                 if raw:
-                    return json.loads(raw)
+                    return json.loads(cast(str | bytes | bytearray, raw))
                 return None
             except Exception as exc:  # noqa: BLE001
                 logger.warning("redis get(%s) failed: %s", full, exc)

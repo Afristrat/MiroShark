@@ -246,7 +246,7 @@ class ProjectManager:
         return True
 
     @classmethod
-    def save_file_to_project(cls, project_id: str, file_storage, original_filename: str) -> Dict[str, str]:
+    def save_file_to_project(cls, project_id: str, file_storage, original_filename: str) -> Dict[str, str | int]:
         """
         Save uploaded file to project directory
 
