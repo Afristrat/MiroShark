@@ -5339,14 +5339,23 @@
         "Golden set par prompt externalisé qui passe",
         "Suite pytest verte ; npm run build vert"
       ],
-      "passes": false,
+      "passes": true,
+      "completedAt": "2026-07-19T15:48:11Z",
       "dependencies": [
         "US-223"
       ],
       "metadata": {
         "estimated_hours": 8,
         "priority": "P2",
-        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md"
+        "spec": "docs/superpowers/specs/2026-07-16-simulations-v2-design.md",
+        "files_touched": [
+          "backend/app/services/simulation_config_generator.py",
+          "backend/app/services/wonderwall_profile_generator.py",
+          "backend/tests/test_us232_time_profiles.py",
+          "backend/tests/test_us232_service_prompts.py",
+          "supabase/migrations/20260719_001_us232_service_prompts.sql"
+        ],
+        "test_result": "13 golden tests verts ; 2550 tests backend collectés, exit 0 ; Ruff, mypy et build Vite verts"
       }
     },
     {

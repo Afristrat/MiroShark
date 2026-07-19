@@ -2681,3 +2681,21 @@ Preuves locales fraîches : test ciblé **26 réussites** ; suite backend compl�
 vert en **38,73 s** ; `git diff --check` vert. Les rotations de secrets restantes
 demeurent suivies dans le registre P0 ci-dessus mais ne font pas partie des critères
 fonctionnels de cette story de prompts.
+
+### 2026-07-19 — [US-232] Prompts services L99 et profils temporels — TERMINÉE
+
+Les cinq contrats LLM de cette tranche sont maintenant servis par le PromptRegistry :
+temps, événements, activité des agents, profil individuel et profil institutionnel.
+Chaque contrat existe réellement en français, anglais et arabe. Les instructions sont
+en rôle système ; les données de scénario, d'entité et de profil sont isolées en rôle
+utilisateur dans des enveloppes non fiables.
+
+`CHINA_TIMEZONE_CONFIG` a été supprimé. Les profils `mena` (défaut) et `europe`
+sont validés, sélectionnés via `recommended_settings.time_profile` et persistés dans
+la configuration de simulation sérialisée. La migration contient quinze seeds
+explicites (cinq clés × trois locales), avec `scope`, schéma public et conflit
+idempotent vérifiés.
+
+Preuves locales fraîches : golden sets **13 réussites** ; suite backend complète
+**2 550 tests collectés, exit 0** ; Ruff et mypy ciblés sans erreur ; build Vite vert
+en **65 s** ; `git diff --check` vert.
