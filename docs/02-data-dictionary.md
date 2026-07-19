@@ -384,6 +384,19 @@ réseau → `None` journalisé (jamais d'exception — persona généré sans bl
 RLS : lecture `authenticated` (données non sensibles, taxonomie ESCO publique) ; écriture
 (insert/update/delete) réservée `is_super_admin()`.
 
+## `occupation_profile_unresolved`
+ADR-016 (migration 20260718_003) — trace durable, best-effort et dédupliquée des
+métiers dont l’absence dans ESCO est confirmée. Une panne ou une réponse malformée de
+l’API ne crée aucune entrée. Cette table sert d’entrée minimale au pipeline US-230.
+
+| Colonne | Type | Contraintes | Description | PII |
+|---|---|---|---|---|
+| label | text | PK composite, non vide | terme de recherche normalisé | non |
+| lang | text | PK composite, non vide | locale demandée | non |
+| created_at | timestamptz | non null, default now() | première détection | non |
+
+RLS est activée sans policy cliente : le backend `service_role` est le seul écrivain.
+
 ## `simulation_artifacts`
 ADR-005 (migration 20260716_004) — index requêtable des artefacts de simulation
 synchronisés vers le bucket Storage privé `simulation-artifacts` (US-221). La source de

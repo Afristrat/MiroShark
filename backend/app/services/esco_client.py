@@ -22,7 +22,7 @@ from __future__ import annotations
 import json
 import urllib.error
 import urllib.request
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 from urllib.parse import quote
 
 from ..auth.supabase_client import SupabaseConfigError, get_supabase_admin
@@ -38,12 +38,23 @@ def _normalize(label: str) -> str:
     return label.strip().lower()
 
 
+def _title_matches_query(query: str, title: Any) -> bool:
+    """Accept only an exact ESCO title or one exact slash-separated variant."""
+    if not isinstance(title, str):
+        return False
+    normalized_query = _normalize(query)
+    return any(normalized_query == _normalize(variant) for variant in title.split("/"))
+
+
 def _esco_get(url: str) -> Optional[Dict[str, Any]]:
     """GET JSON sur l'API ESCO — ne lève jamais, retourne None sur échec."""
     try:
         req = urllib.request.Request(url, headers={"Accept": "application/json"})
         with urllib.request.urlopen(req, timeout=_REQUEST_TIMEOUT_SECONDS) as response:
-            return json.loads(response.read().decode("utf-8"))
+            payload = json.loads(response.read().decode("utf-8"))
+            if isinstance(payload, dict):
+                return payload
+            logger.warning("ESCO API : objet JSON attendu sur %s", url)
     except urllib.error.HTTPError as exc:
         logger.warning("ESCO API HTTP %s sur %s", exc.code, url)
     except urllib.error.URLError as exc:
@@ -63,22 +74,37 @@ def _extract_description(resource: Dict[str, Any], lang: str) -> str:
     return ""
 
 
-def _fetch_from_esco_api(query: str, lang: str) -> Optional[Dict[str, Any]]:
-    """Requête ESCO en 2 temps. Retourne le profil brut ou None."""
+def _fetch_from_esco_api(query: str, lang: str) -> Tuple[Optional[Dict[str, Any]], bool]:
+    """Return ``(profile, definitive_miss)`` after the ESCO lookup."""
     search_url = (
         f"{ESCO_API_BASE}/search?"
         f"text={quote(query)}&language={lang}&type=occupation&limit=5"
     )
     data = _esco_get(search_url)
     if not data:
-        return None
-    results = (data.get("_embedded") or {}).get("results") or []
+        return None, False
+    embedded = data.get("_embedded")
+    if not isinstance(embedded, dict):
+        return None, False
+    results = embedded.get("results")
+    if not isinstance(results, list):
+        return None, False
     if not results:
-        return None
-    best = results[0]
+        return None, True
+    best = next(
+        (
+            result
+            for result in results
+            if isinstance(result, dict) and _title_matches_query(query, result.get("title"))
+        ),
+        None,
+    )
+    if best is None:
+        logger.info("ESCO search result rejected as non-exact match for '%s'.", query)
+        return None, True
     occupation_uri = best.get("uri")
     if not occupation_uri:
-        return None
+        return None, False
 
     detail_url = (
         f"{ESCO_API_BASE}/resource/occupation?"
@@ -86,18 +112,45 @@ def _fetch_from_esco_api(query: str, lang: str) -> Optional[Dict[str, Any]]:
     )
     detail = _esco_get(detail_url)
     if not detail:
-        return None
-    links = detail.get("_links") or {}
-    return {
-        "occupation_uri": occupation_uri,
-        "definition": _extract_description(detail, lang),
-        "essential_skills": [
-            s.get("title", "") for s in links.get("hasEssentialSkill", []) if s.get("title")
-        ],
-        "optional_skills": [
-            s.get("title", "") for s in links.get("hasOptionalSkill", []) if s.get("title")
-        ],
-    }
+        return None, False
+    links = detail.get("_links")
+    if not isinstance(links, dict):
+        links = {}
+    essential = links.get("hasEssentialSkill")
+    optional = links.get("hasOptionalSkill")
+    if not isinstance(essential, list):
+        essential = []
+    if not isinstance(optional, list):
+        optional = []
+    return (
+        {
+            "occupation_uri": occupation_uri,
+            "definition": _extract_description(detail, lang),
+            "essential_skills": [
+                skill.get("title", "")
+                for skill in essential
+                if isinstance(skill, dict) and skill.get("title")
+            ],
+            "optional_skills": [
+                skill.get("title", "")
+                for skill in optional
+                if isinstance(skill, dict) and skill.get("title")
+            ],
+        },
+        False,
+    )
+
+
+def _record_unresolved_occupation(label: str, lang: str, client: Any = None) -> None:
+    """Persist an absent ESCO term for US-230 without affecting persona generation."""
+    try:
+        (client or get_supabase_admin()).table("occupation_profile_unresolved").insert(
+            {"label": label, "lang": lang}
+        ).execute()
+    except SupabaseConfigError:
+        pass
+    except Exception as exc:  # noqa: BLE001 — duplicate and unavailable storage are best-effort
+        logger.debug("ESCO unresolved trace unavailable (%s) for '%s'.", exc.__class__.__name__, label)
 
 
 def get_occupation_profile(
@@ -139,12 +192,14 @@ def get_occupation_profile(
         logger.warning("ESCO cache lookup failed (%s) — appel API direct.", exc.__class__.__name__)
 
     # Cache miss (ou cache injoignable) — appel API.
-    fetched = _fetch_from_esco_api(query, lang)
+    fetched, definitive_miss = _fetch_from_esco_api(query, lang)
     if fetched is None:
         logger.warning(
             "ESCO: profil introuvable pour '%s' (%s) — persona sans bloc expertise.",
             query, lang,
         )
+        if definitive_miss:
+            _record_unresolved_occupation(normalized, lang, client=client)
         return None
 
     profile: Dict[str, Any] = {

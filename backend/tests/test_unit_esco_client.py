@@ -46,7 +46,15 @@ def _fake_urlopen_sequence(*json_bodies):
 _SEARCH_RESPONSE = {
     "_embedded": {
         "results": [
-            {"title": "Financial analyst", "uri": "http://data.europa.eu/esco/occupation/fake-1"},
+            {"title": "analyste financier/analyste financière", "uri": "http://data.europa.eu/esco/occupation/fake-1"},
+        ]
+    }
+}
+
+_AR_SEARCH_RESPONSE = {
+    "_embedded": {
+        "results": [
+            {"title": "محلل مالي", "uri": "http://data.europa.eu/esco/occupation/fake-1"},
         ]
     }
 }
@@ -107,11 +115,43 @@ class TestCacheMiss:
         client = _fake_supabase_client([])
         with patch(
             "urllib.request.urlopen",
-            _fake_urlopen_sequence(_SEARCH_RESPONSE, _DETAIL_RESPONSE),
+            _fake_urlopen_sequence(_AR_SEARCH_RESPONSE, _DETAIL_RESPONSE),
         ):
             result = esco_client.get_occupation_profile("محلل مالي", lang="ar", client=client)
         assert result["label"] == "محلل مالي"
         assert result["lang"] == "ar"
+
+    def test_rejects_non_exact_first_result_without_detail_or_cache_write(self):
+        client = _fake_supabase_client([])
+        false_positive = {
+            "_embedded": {
+                "results": [
+                    {"title": "convoyeur de fonds/convoyeuse de fonds", "uri": "wrong-uri"},
+                ]
+            }
+        }
+        with patch("urllib.request.urlopen", _fake_urlopen_sequence(false_positive)) as urlopen:
+            assert esco_client.get_occupation_profile("CTO et co-fondateur", lang="fr", client=client) is None
+
+        assert urlopen.call_count == 1
+        assert client.insert.call_args.args[0] == {"label": "cto et co-fondateur", "lang": "fr"}
+
+    def test_uses_exact_second_result_after_rejecting_false_first_result(self):
+        client = _fake_supabase_client([])
+        search = {
+            "_embedded": {
+                "results": [
+                    {"title": "convoyeur de fonds/convoyeuse de fonds", "uri": "wrong-uri"},
+                    {"title": "analyste financier/analyste financière", "uri": "right-uri"},
+                ]
+            }
+        }
+        with patch("urllib.request.urlopen", _fake_urlopen_sequence(search, _DETAIL_RESPONSE)) as urlopen:
+            result = esco_client.get_occupation_profile("analyste financier", lang="fr", client=client)
+
+        assert urlopen.call_count == 2
+        assert result["occupation_uri"] == "right-uri"
+        assert client.insert.call_args.args[0]["occupation_uri"] == "right-uri"
 
 
 class TestNetworkFailure:
@@ -125,6 +165,7 @@ class TestNetworkFailure:
         ):
             result = esco_client.get_occupation_profile("analyste financier", lang="fr", client=client)
         assert result is None
+        assert all(call.args != ("occupation_profile_unresolved",) for call in client.table.call_args_list)
 
     def test_occupation_not_found_returns_none(self):
         client = _fake_supabase_client([])
@@ -132,6 +173,16 @@ class TestNetworkFailure:
         with patch("urllib.request.urlopen", _fake_urlopen_sequence(empty_search)):
             result = esco_client.get_occupation_profile("xyzzy-inexistant", lang="fr", client=client)
         assert result is None
+        assert client.table.call_args_list[-1].args == ("occupation_profile_unresolved",)
+
+    def test_unresolved_occupation_is_traced_without_network_dependency(self):
+        client = _fake_supabase_client([])
+        empty_search = {"_embedded": {"results": []}}
+        with patch("urllib.request.urlopen", _fake_urlopen_sequence(empty_search)):
+            assert esco_client.get_occupation_profile("role inconnu", lang="fr", client=client) is None
+
+        assert client.table.call_args_list[-1].args == ("occupation_profile_unresolved",)
+        assert client.insert.call_args.args[0] == {"label": "role inconnu", "lang": "fr"}
 
     def test_malformed_json_returns_none(self):
         resp = MagicMock()
@@ -142,6 +193,15 @@ class TestNetworkFailure:
         with patch("urllib.request.urlopen", return_value=resp):
             result = esco_client.get_occupation_profile("analyste financier", lang="fr", client=client)
         assert result is None
+        assert all(call.args != ("occupation_profile_unresolved",) for call in client.table.call_args_list)
+
+    def test_unexpected_json_shape_is_unavailable_and_not_traced(self):
+        client = _fake_supabase_client([])
+        with patch("urllib.request.urlopen", _fake_urlopen_sequence(["not", "an", "object"])):
+            result = esco_client.get_occupation_profile("analyste financier", lang="fr", client=client)
+
+        assert result is None
+        assert all(call.args != ("occupation_profile_unresolved",) for call in client.table.call_args_list)
 
 
 class TestSupabaseUnavailable:
