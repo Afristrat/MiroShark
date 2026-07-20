@@ -1,7 +1,7 @@
 import pytest
 
 from app.config import Config
-from app.utils.llm_client import LLMClient
+from app.utils.llm_client import LLMClient, create_ner_llm_client
 
 
 class _Completions:
@@ -39,3 +39,16 @@ def test_temperature_override_wins_over_caller_value(monkeypatch):
 def test_invalid_temperature_override_fails_closed(monkeypatch):
     with pytest.raises(ValueError, match="LLM_TEMPERATURE_OVERRIDE"):
         _client(monkeypatch, "invalid")
+
+
+def test_ner_uses_smart_slot_when_no_dedicated_model_is_configured(monkeypatch):
+    monkeypatch.setattr(Config, "NER_MODEL_NAME", "")
+    monkeypatch.setattr(Config, "SMART_PROVIDER", "openai")
+    monkeypatch.setattr(Config, "SMART_API_KEY", "smart-key")
+    monkeypatch.setattr(Config, "SMART_BASE_URL", "https://smart.example.test/v1")
+    monkeypatch.setattr(Config, "SMART_MODEL_NAME", "deepseek-v4-flash")
+
+    client = create_ner_llm_client()
+
+    assert client.model == "deepseek-v4-flash"
+    assert client.base_url == "https://smart.example.test/v1"

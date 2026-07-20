@@ -54,6 +54,28 @@ def _validate_url_simulation_id():
             }), 400
 
 
+@simulation_bp.route('/routing/recommend', methods=['POST'])
+def recommend_simulation_arenas():
+    """Expose the ADR-019 recommendation without creating any simulation.
+
+    This endpoint is deliberately public and read-only: it evaluates only the
+    submitted routing context and never persists a decision.  A simulation
+    creation flow is responsible for recording its own approved decision.
+    """
+    from ..services.arena_routing import parse_context, recommend
+
+    try:
+        context = parse_context(request.get_json(silent=True))
+    except ValueError as exc:
+        return jsonify({
+            "success": False,
+            "error_code": "INVALID_ROUTING_CONTEXT",
+            "error": str(exc),
+        }), 400
+
+    return jsonify({"success": True, "data": recommend(context)})
+
+
 # ============== Admin Auth (mutation endpoints) ==============
 #
 # Mutation endpoints that write to a simulation's on-disk state

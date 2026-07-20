@@ -584,6 +584,36 @@ paths:
   # Simulation Lifecycle
   # ────────────────────────────────────────────────────────────────────
 
+  /api/simulation/routing/recommend:
+    post:
+      tags: [Simulation Lifecycle]
+      summary: Recommend implemented simulation arenas and disclose coverage gaps.
+      description: >
+        Evaluates the ADR-019 routing policy without creating a simulation.
+        Arenas not yet implemented are returned only as explicit coverage gaps.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [scenario_type]
+              properties:
+                scenario_type:
+                  type: string
+                  enum: [public_reaction, community_deliberation, private_diffusion, authority_response, market_outcome]
+                populations:
+                  type: array
+                  items: { type: string }
+                outcome_measurable: { type: boolean }
+      responses:
+        "200":
+          description: Explainable routing recommendation.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SuccessEnvelope" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
   /api/simulation/create:
     post:
       tags: [Simulation Lifecycle]

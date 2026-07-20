@@ -200,8 +200,10 @@ class Config:
     # Wonderwall is the #1 cost driver — 850+ calls per run. Keep it cheap.
     WONDERWALL_MODEL_NAME = os.environ.get('WONDERWALL_MODEL_NAME', '')
 
-    # NER model — faster model for entity extraction (high-volume, mechanical task)
-    # When not set, NER uses the default LLM config above.
+    # NER model — dedicated model for entity extraction (high-volume,
+    # structured-document task). When not set, NER uses the SMART model when
+    # available, then the default LLM config. This keeps self-hosted models on
+    # simulation traffic while document ingestion stays reliable.
     # Cheap preset: x-ai/grok-4.1-fast (stable JSON with reasoning disabled)
     NER_MODEL_NAME = os.environ.get('NER_MODEL_NAME', '')
     NER_BASE_URL = os.environ.get('NER_BASE_URL', '')

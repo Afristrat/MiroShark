@@ -126,11 +126,12 @@ def create_intake_llm_client(timeout: float = 30.0):
 
 def create_ner_llm_client(timeout: float = 120.0):
     """
-    Factory for NER extraction — a mechanical task that works fine on smaller/faster models.
-    Uses NER_* config when set, otherwise falls back to the default LLM client.
+    Factory for NER extraction. Uses NER_* config when set. Otherwise it uses
+    the SMART slot (document-quality model) before falling back to the default
+    simulation model.
     """
     if not Config.NER_MODEL_NAME:
-        return create_llm_client(timeout=timeout)
+        return create_smart_llm_client(timeout=timeout)
 
     return LLMClient(
         api_key=Config.NER_API_KEY or Config.LLM_API_KEY,
