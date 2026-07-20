@@ -180,6 +180,12 @@ class Config:
     # for grounded search, or "perplexity/sonar" for fast search). If empty, uses default LLM.
     WEB_SEARCH_MODEL = os.environ.get('WEB_SEARCH_MODEL', '')
 
+    # Shared Crawl4AI service used for deterministic URL ingestion.  Search and
+    # crawling are deliberately separate: Serper discovers sources; Crawl4AI
+    # extracts the source the user selected.
+    CRAWL4AI_URL = os.environ.get('CRAWL4AI_URL', '').rstrip('/')
+    CRAWL4AI_API_TOKEN = os.environ.get('CRAWL4AI_API_TOKEN', '')
+
     # Wonderwall model — model for Wonderwall/CAMEL agent simulation loop.
     # When not set, uses LLM_MODEL_NAME.
     # Cheap preset: qwen/qwen3.5-flash-02-23 (same as default to reuse quota)

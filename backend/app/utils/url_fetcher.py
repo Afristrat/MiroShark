@@ -1,164 +1,83 @@
-"""
-URL fetching and text extraction utility for MiroShark document ingestion.
+"""Safe URL ingestion through the shared Crawl4AI service."""
 
-Primary path: ask the configured web-search LLM (WEB_SEARCH_MODEL, e.g.
-`x-ai/grok-4.1-fast:online`) to read the URL and return the main readable
-content. This bypasses brittle HTML parsing and handles JS-heavy pages
-that a static parser can't. The model MUST have web access — use an
-`:online` variant on OpenRouter for any model without native browsing,
-otherwise it'll reject URLs dated past its training cutoff.
-
-SSRF protection: host + resolved-IP validation is still applied so a
-malicious URL can't coerce the model into fetching an internal address.
-"""
-
-import json
-import re
-import socket
 import ipaddress
+import socket
 from urllib.parse import urlparse
 
+import requests
+
 from ..config import Config
-from ..utils.llm_client import create_llm_client
 from ..utils.logger import get_logger
 
 logger = get_logger("miroshark.url_fetcher")
 
 
 def _check_ip(ip_str: str) -> None:
-    """Raises ValueError if the IP is private/loopback/reserved."""
-    addr = ipaddress.ip_address(ip_str)
-    if addr.is_private or addr.is_loopback or addr.is_link_local or addr.is_reserved:
-        raise ValueError(
-            f"Requests to private or internal addresses are not allowed ({ip_str})"
-        )
+    """Raise when a URL resolves to an address that must not be crawled."""
+    address = ipaddress.ip_address(ip_str)
+    if address.is_private or address.is_loopback or address.is_link_local or address.is_reserved:
+        raise ValueError(f"Requests to private or internal addresses are not allowed ({ip_str})")
 
 
 def _validate_url(url: str) -> str:
-    """Validate scheme/host and check resolved IP. Returns the hostname."""
+    """Validate the user-controlled URL before it reaches the crawler."""
     parsed = urlparse(url)
-    if parsed.scheme not in ('http', 'https'):
-        raise ValueError(
-            f"Only http and https URLs are supported (got '{parsed.scheme}')"
-        )
+    if parsed.scheme not in ("http", "https"):
+        raise ValueError(f"Only http and https URLs are supported (got '{parsed.scheme}')")
     if not parsed.netloc:
         raise ValueError("Invalid URL: missing host")
-    host = parsed.netloc.split(':')[0]
+    host = parsed.hostname
+    if not host:
+        raise ValueError("Invalid URL: missing host")
     try:
         _check_ip(socket.gethostbyname(host))
     except socket.gaierror:
-        pass  # let the model surface the DNS error
+        pass
     return host
 
 
-_EXTRACT_SYSTEM_PROMPT = """\
-You are a web page extractor. Given a URL, fetch it and return its main \
-readable content (article body, post text, documentation, etc.) as plain text. \
-Strip navigation, ads, footers, cookie banners, sidebars, and boilerplate.
-
-Respond with STRICT JSON only, no markdown fences, matching this schema:
-{"title": "<page title>", "text": "<full readable body text>"}
-
-Rules:
-- If the page is inaccessible or you cannot retrieve it, respond with:
-  {"title": "", "text": "", "error": "<short reason>"}
-- Do NOT summarize. Return the full readable content verbatim.
-- Do NOT invent content. If unsure, return the error shape above.\
-"""
-
-
-def _parse_model_json(raw: str) -> dict:
-    """Parse model output as JSON, tolerating ``` fences and stray prose."""
-    s = raw.strip()
-    s = re.sub(r'^```(?:json)?\s*', '', s)
-    s = re.sub(r'\s*```$', '', s)
-    try:
-        return json.loads(s)
-    except json.JSONDecodeError:
-        pass
-    # Fallback: find first {...} block
-    match = re.search(r'\{.*\}', s, re.DOTALL)
-    if match:
-        try:
-            return json.loads(match.group(0))
-        except json.JSONDecodeError:
-            pass
-    raise ValueError(f"Model did not return valid JSON: {raw[:200]}")
+def _crawl_result_text(result: dict) -> str:
+    """Return the best text field from Crawl4AI's stable result envelope."""
+    markdown = result.get("markdown")
+    if isinstance(markdown, dict):
+        return str(markdown.get("fit_markdown") or markdown.get("raw_markdown") or "").strip()
+    return str(markdown or result.get("extracted_content") or "").strip()
 
 
 def fetch_url_text(url: str, timeout: int = 60) -> dict:
-    """
-    Fetch a URL via the configured web-search LLM and return its readable content.
-
-    Args:
-        url: The URL to fetch (must be http or https).
-        timeout: LLM request timeout in seconds.
-
-    Returns:
-        dict with keys:
-            - title (str): Page title (or hostname fallback)
-            - text (str): Extracted plain text content
-            - url (str): The original URL
-            - char_count (int): Length of extracted text
-
-    Raises:
-        ValueError: For invalid URLs, blocked addresses, or unextractable content.
-    """
+    """Fetch one public URL with Crawl4AI and normalize it for simulation ingestion."""
     _validate_url(url)
+    if not Config.CRAWL4AI_URL or not Config.CRAWL4AI_API_TOKEN:
+        raise ValueError("Crawl4AI is not configured")
 
-    model = Config.WEB_SEARCH_MODEL or Config.LLM_MODEL_NAME
-    if not model:
-        raise ValueError(
-            "No web-search model configured. Set WEB_SEARCH_MODEL in .env "
-            "(e.g. x-ai/grok-4.1-fast:online)."
+    try:
+        response = requests.post(
+            f"{Config.CRAWL4AI_URL}/crawl",
+            headers={"Authorization": f"Bearer {Config.CRAWL4AI_API_TOKEN}"},
+            json={"urls": [url]},
+            timeout=timeout,
         )
+        response.raise_for_status()
+        payload = response.json()
+    except requests.RequestException as exc:
+        logger.error("Crawl4AI URL fetch failed: %s", exc)
+        raise ValueError("Crawl4AI could not fetch this URL") from exc
+    except ValueError as exc:
+        raise ValueError("Crawl4AI returned an invalid response") from exc
 
-    logger.info(f"Fetching URL via LLM ({model}): {url}")
+    results = payload.get("results") if isinstance(payload, dict) else None
+    result = results[0] if isinstance(results, list) and results else None
+    if not isinstance(result, dict) or not result.get("success"):
+        detail = result.get("error_message") if isinstance(result, dict) else "empty result"
+        raise ValueError(f"Crawl4AI could not fetch this URL: {detail}")
 
-    client = create_llm_client(model=model, timeout=timeout)
-
-    messages = [
-        {"role": "system", "content": _EXTRACT_SYSTEM_PROMPT},
-        {"role": "user", "content": f"Extract the readable content from this URL: {url}"},
-    ]
-
-    try:
-        raw = client.chat(messages, temperature=0.0, max_tokens=16000)
-    except Exception as exc:
-        logger.error(f"LLM URL fetch failed: {exc}")
-        raise ValueError(f"Failed to fetch URL via model: {exc}") from exc
-
-    try:
-        parsed = _parse_model_json(raw)
-    except ValueError:
-        # Model returned plain text — treat it as the body, derive title from URL.
-        text = raw.strip()
-        parsed = {"title": "", "text": text}
-
-    if parsed.get("error"):
-        raise ValueError(f"Model could not fetch URL: {parsed['error']}")
-
-    text = (parsed.get("text") or "").strip()
-    title = (parsed.get("title") or "").strip()
-
+    text = _crawl_result_text(result)
     if len(text) < 100:
-        raise ValueError(
-            "Could not extract meaningful text from the page. "
-            "The page may be blocked, empty, or unreachable."
-        )
+        raise ValueError("Could not extract meaningful text from the page")
 
-    if not title:
-        parsed_url = urlparse(url)
-        title = parsed_url.netloc or url
-
-    # Cap title length — some sites stuff the entire deck into <title>.
-    MAX_TITLE_CHARS = 120
-    if len(title) > MAX_TITLE_CHARS:
-        title = title[:MAX_TITLE_CHARS - 1].rstrip() + '…'
-
-    return {
-        'title': title,
-        'text': text,
-        'url': url,
-        'char_count': len(text),
-    }
+    metadata = result.get("metadata")
+    title = ""
+    if isinstance(metadata, dict):
+        title = str(metadata.get("title") or metadata.get("og:title") or "").strip()
+    title = title or urlparse(url).netloc
+    return {"title": title[:120], "text": text, "url": url, "char_count": len(text)}
