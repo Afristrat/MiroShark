@@ -560,7 +560,7 @@ def build_graph():
                 episode_uuids = builder.add_text_batches(
                     graph_id,
                     chunks,
-                    max_workers=6,
+                    max_workers=Config.GRAPH_BUILD_MAX_WORKERS,
                     progress_callback=add_progress_callback
                 )
                 
