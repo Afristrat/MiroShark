@@ -618,7 +618,11 @@ export const getTrendingTopics = (options = {}) => {
  * @param {Object} data - { text_preview: string, no_cache?: boolean }
  */
 export const suggestScenarios = (data) => {
-  return service.post('/api/simulation/suggest-scenarios', data, { timeout: 25000 })
+  // Smart-model suggestions can legitimately exceed the generic interactive
+  // budget when the seed is a full crawled article. Keep this scoped endpoint
+  // allowance aligned with the configuration workflow rather than changing
+  // the timeout for unrelated requests.
+  return service.post('/api/simulation/suggest-scenarios', data, { timeout: 90000 })
 }
 
 /**
