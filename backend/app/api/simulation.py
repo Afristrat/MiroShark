@@ -18,7 +18,7 @@ from functools import wraps
 from flask import request, jsonify, send_file, current_app, g
 
 from . import simulation_bp
-from ..utils.llm_client import create_smart_llm_client, create_llm_client
+from ..utils.llm_client import create_smart_llm_client
 from ..utils.locale_prompt import get_request_locale, localize_system_prompt
 from ..utils.validation import validate_simulation_id
 from ..config import Config
