@@ -11,7 +11,6 @@ import json
 import hashlib
 import time
 import traceback
-import uuid
 from typing import Any
 from datetime import datetime, timezone
 from functools import wraps
@@ -26,7 +25,6 @@ from ..services.entity_reader import EntityReader
 from ..services.wonderwall_profile_generator import WonderwallProfileGenerator
 from ..services.simulation_manager import SimulationManager, SimulationStatus
 from ..services import arena_registry
-from ..services import arena_routing
 from ..services import artifact_storage
 from ..services.simulation_config_generator import SimulationConfigGenerator
 from ..services.simulation_runner import SimulationRunner, RunnerStatus
@@ -1740,16 +1738,6 @@ def get_entities_by_type(graph_id: str, entity_type: str):
 
 # ============== Simulation Management Endpoints ==============
 
-@simulation_bp.route('/routing/recommend', methods=['POST'])
-@soft_check_self_service
-def recommend_arenas():
-    """Évalue ADR-019 sans créer de simulation ni masquer ses lacunes."""
-    try:
-        context = arena_routing.parse_context(request.get_json() or {})
-        return jsonify({"success": True, "data": arena_routing.recommend(context)})
-    except ValueError as exc:
-        return jsonify({"success": False, "error_code": "INVALID_ROUTING_CONTEXT", "error": str(exc)}), 400
-
 @simulation_bp.route('/create', methods=['POST'])
 @soft_check_self_service
 def create_simulation():
@@ -1909,35 +1897,7 @@ def create_simulation():
                 # Continue sans org_id (mode legacy fallback).
 
         manager = SimulationManager()
-        routing_context = data.get("routing_context")
-        routing_decision = None
-        decision_source = "policy"
-        preallocated_simulation_id = None
-        if routing_context is not None:
-            try:
-                routing_decision = arena_routing.recommend(arena_routing.parse_context(routing_context))
-            except ValueError as exc:
-                return jsonify({"success": False, "error_code": "INVALID_ROUTING_CONTEXT", "error": str(exc)}), 400
-            override = data.get("arena_override")
-            if override is not None:
-                if not isinstance(override, list) or not all(arena in arena_registry.list_arena_names() for arena in override):
-                    return jsonify({"success": False, "error_code": "INVALID_ARENA_OVERRIDE", "error": "arena_override must contain only implemented arena names"}), 400
-                routing_decision["selected_arenas"] = list(dict.fromkeys(override))
-                decision_source = "user_override"
-            else:
-                routing_decision["selected_arenas"] = routing_decision["recommended_arenas"]
-            selected = set(routing_decision["selected_arenas"])
-            data["enable_twitter"] = "twitter" in selected
-            data["enable_reddit"] = "reddit" in selected
-            data["enable_polymarket"] = "polymarket" in selected
-            preallocated_simulation_id = f"sim_{uuid.uuid4().hex[:12]}"
-            try:
-                arena_routing.record_decision(preallocated_simulation_id, routing_decision, decision_source)
-            except Exception as exc:  # noqa: BLE001
-                logger.error("US-235 routing audit persistence failed: %s", type(exc).__name__)
-                return jsonify({"success": False, "error_code": "ROUTING_AUDIT_UNAVAILABLE", "error": "Routing decision could not be durably recorded."}), 503
-        try:
-            state = manager.create_simulation(
+        state = manager.create_simulation(
             project_id=project_id,
             graph_id=graph_id,
             enable_twitter=data.get('enable_twitter', True),
@@ -1947,19 +1907,11 @@ def create_simulation():
             org_id=resolved_org_id,
             created_by=resolved_user_id,
             package_id=data.get('package_id'),
-                simulation_id=preallocated_simulation_id,
-            )
-        except Exception:
-            if preallocated_simulation_id:
-                try:
-                    arena_routing.delete_decision(preallocated_simulation_id)
-                except Exception as rollback_exc:  # noqa: BLE001
-                    logger.critical("US-235 routing audit compensation failed: %s", type(rollback_exc).__name__)
-            raise
+        )
 
         return jsonify({
             "success": True,
-            "data": {**state.to_dict(), "routing": routing_decision}
+            "data": state.to_dict()
         })
 
     except Exception as e:
