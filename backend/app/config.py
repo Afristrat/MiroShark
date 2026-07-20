@@ -59,6 +59,9 @@ class Config:
     LLM_API_KEY = os.environ.get('LLM_API_KEY')
     LLM_BASE_URL = os.environ.get('LLM_BASE_URL', 'https://api.openai.com/v1')
     LLM_MODEL_NAME = os.environ.get('LLM_MODEL_NAME', 'qwen/qwen3.5-flash-02-23')
+    # Optional provider constraint. Some models accept only one temperature;
+    # configure it at the gateway boundary instead of changing every caller.
+    LLM_TEMPERATURE_OVERRIDE = os.environ.get('LLM_TEMPERATURE_OVERRIDE', '').strip()
 
     # Smart model — stronger model for intelligence-sensitive workflows
     # (report generation, ontology extraction, graph reasoning).

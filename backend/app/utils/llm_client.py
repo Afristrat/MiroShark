@@ -154,6 +154,9 @@ class LLMClient:
         self.api_key = api_key or Config.LLM_API_KEY
         self.base_url = base_url or Config.LLM_BASE_URL
         self.model = model or Config.LLM_MODEL_NAME
+        self._temperature_override = self._parse_temperature_override(
+            Config.LLM_TEMPERATURE_OVERRIDE
+        )
 
         if not self.api_key:
             raise ValueError("LLM_API_KEY is not configured")
@@ -176,6 +179,19 @@ class LLMClient:
     def _is_ollama(self) -> bool:
         """Check if we're talking to an Ollama server."""
         return '11434' in (self.base_url or '')
+
+    @staticmethod
+    def _parse_temperature_override(raw: str) -> Optional[float]:
+        """Validate an optional provider-mandated temperature once per client."""
+        if not raw:
+            return None
+        try:
+            value = float(raw)
+        except ValueError as exc:
+            raise ValueError("LLM_TEMPERATURE_OVERRIDE must be a number between 0 and 2") from exc
+        if not 0 <= value <= 2:
+            raise ValueError("LLM_TEMPERATURE_OVERRIDE must be a number between 0 and 2")
+        return value
 
     def _supports_anthropic_prompt_cache(self) -> bool:
         """Return True when the configured model is Claude-family and cache flag is on.
@@ -283,6 +299,7 @@ class LLMClient:
         Returns:
             Model response text
         """
+        effective_temperature = self._temperature_override if self._temperature_override is not None else temperature
         effective_messages = (
             self._maybe_cache_wrap_messages(messages)
             if self._supports_anthropic_prompt_cache()
@@ -293,7 +310,7 @@ class LLMClient:
         kwargs: dict[str, Any] = {
             "model": self.model,
             "messages": effective_messages,
-            "temperature": temperature,
+            "temperature": effective_temperature,
             "max_tokens": max_tokens,
         }
 
@@ -383,14 +400,14 @@ class LLMClient:
         try:
             response = self.client.chat.completions.create(**kwargs)
         except Exception as exc:
-            self._emit_llm_event(messages, None, t0, error=exc, temperature=temperature)
+            self._emit_llm_event(messages, None, t0, error=exc, temperature=effective_temperature)
             raise
 
         content = response.choices[0].message.content
         # Some models (e.g., MiniMax M2.5) include <think> reasoning content in the content field, which needs to be removed
         content = re.sub(r'<think>[\s\S]*?</think>', '', content).strip()
 
-        self._emit_llm_event(messages, content, t0, response=response, temperature=temperature)
+        self._emit_llm_event(messages, content, t0, response=response, temperature=effective_temperature)
         return content
 
     def chat_json(

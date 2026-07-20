@@ -18,7 +18,7 @@ import os
 import threading
 import uuid
 from collections import deque
-from datetime import datetime
+from datetime import datetime, timezone
 from queue import Queue, Empty
 from typing import Any, Dict, List, Optional, Set
 
@@ -62,7 +62,7 @@ def write_simulation_event(
     event = {
         'event_id': f'evt_{uuid.uuid4().hex[:12]}',
         'event_type': event_type,
-        'timestamp': datetime.utcnow().isoformat(timespec='milliseconds') + 'Z',
+        'timestamp': datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z'),
         'simulation_id': simulation_id,
         'trace_id': trace_id,
         'round_num': round_num,
@@ -149,7 +149,7 @@ class EventLogger:
         event = {
             'event_id': f'evt_{uuid.uuid4().hex[:12]}',
             'event_type': event_type,
-            'timestamp': datetime.utcnow().isoformat(timespec='milliseconds') + 'Z',
+            'timestamp': datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z'),
             'simulation_id': simulation_id,
             'trace_id': trace_id,
             'round_num': round_num,
