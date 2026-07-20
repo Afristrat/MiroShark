@@ -189,6 +189,7 @@ const systemLogs = ref([])
 // Polling timers
 let pollTimer = null
 let graphPollTimer = null
+let recoveredOrphanedBuild = false
 
 // --- Project context (header dense info) ---
 const projectTitle = computed(() => {
@@ -451,13 +452,13 @@ const updatePhaseByStatus = (status) => {
   }
 }
 
-const startBuildGraph = async () => {
+const startBuildGraph = async ({ force = false } = {}) => {
   try {
     currentPhase.value = 1
     buildProgress.value = { progress: 0, message: 'Starting build...' }
     addLog('Initiating graph build...')
     
-    const res = await buildGraph({ project_id: currentProjectId.value })
+    const res = await buildGraph({ project_id: currentProjectId.value, force })
     if (res.success) {
       addLog(`Graph build task started. Task ID: ${res.data.task_id}`)
       startGraphPolling()
@@ -533,6 +534,16 @@ const pollTaskStatus = async (taskId) => {
       }
     }
   } catch (e) {
+    // Graph build tasks are intentionally ephemeral. A deployment can leave a
+    // persisted project pointing to a task that no longer exists in memory.
+    // Recover once by explicitly rebuilding instead of polling a permanent 404.
+    if (e.response?.status === 404 && !recoveredOrphanedBuild) {
+      recoveredOrphanedBuild = true
+      stopPolling()
+      addLog('The previous graph task was interrupted by a restart. Rebuilding the graph...')
+      await startBuildGraph({ force: true })
+      return
+    }
     console.error(e)
   }
 }
