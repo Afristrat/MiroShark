@@ -94,7 +94,7 @@ services:
       context: .
       dockerfile: Dockerfile
     working_dir: /app/backend
-    command: ["/bin/sh", "-c", "exec uv run --frozen rq worker --url \"$$REDIS_URL\" --with-scheduler --name \"pdf-worker-$${HOSTNAME}\" pdf-generation"]
+    command: ["/bin/sh", "-c", "exec uv run --frozen rq worker --url \"$$REDIS_URL\" --with-scheduler --name \"simulation-worker-$${HOSTNAME}\" pdf-generation simulation-preparation"]
     environment: *miroshark_environment
     volumes:
       - miroshark_uploads:/app/backend/uploads
@@ -102,7 +102,7 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "uv run --frozen python -c 'import os; from redis import Redis; from rq import Worker; connection = Redis.from_url(os.environ[\"REDIS_URL\"]); expected = \"pdf-worker-\" + os.environ[\"HOSTNAME\"]; raise SystemExit(not (connection.ping() and any(worker.name == expected for worker in Worker.all(connection=connection))))'"]
+      test: ["CMD-SHELL", "uv run --frozen python -c 'import os; from redis import Redis; from rq import Worker; connection = Redis.from_url(os.environ[\"REDIS_URL\"]); expected = \"simulation-worker-\" + os.environ[\"HOSTNAME\"]; raise SystemExit(not (connection.ping() and any(worker.name == expected for worker in Worker.all(connection=connection))))'"]
       interval: 30s
       timeout: 10s
       retries: 3

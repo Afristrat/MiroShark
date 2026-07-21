@@ -425,6 +425,7 @@ class WonderwallProfileGenerator:
             api_key=api_key,
             base_url=base_url,
             model=model_name,
+            timeout=Config.PROFILE_LLM_TIMEOUT_SECONDS,
         )
 
         # GraphStorage for hybrid search enrichment
@@ -1011,8 +1012,11 @@ class WonderwallProfileGenerator:
                 entity_name, entity_type, entity_summary, entity_attributes, context
             )
 
-        # Try multiple times until success or max retries reached
-        max_attempts = 3
+        # La préparation peut appeler ce chemin pour des dizaines d'entités.
+        # Les retries longs derrière Cloudflare épuisent le worker sans donner
+        # plus d'information au client : une tentative bornée, puis fallback
+        # déterministe et explicitement journalisé.
+        max_attempts = max(1, Config.PROFILE_LLM_MAX_ATTEMPTS)
         last_error: Exception | None = None
         
         for attempt in range(max_attempts):
@@ -1053,8 +1057,9 @@ class WonderwallProfileGenerator:
             except Exception as e:
                 logger.warning(f"LLM call failed (attempt {attempt+1}): {str(e)[:80]}")
                 last_error = e
-                import time
-                time.sleep(1 * (attempt + 1))  # Exponential backoff
+                if attempt + 1 < max_attempts:
+                    import time
+                    time.sleep(attempt + 1)
         
         logger.warning(f"LLM persona generation failed ({max_attempts} attempts): {last_error}, using rule-based generation")
         return self._generate_profile_rule_based(

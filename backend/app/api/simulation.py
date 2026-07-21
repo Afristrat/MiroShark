@@ -38,6 +38,66 @@ from ..auth.decorators import authorize_simulation_admin, require_auth
 logger = get_logger('miroshark.api.simulation')
 
 
+class SimulationQueueUnavailable(RuntimeError):
+    """La file durable requise pour préparer une simulation est indisponible."""
+
+
+def _enqueue_simulation_preparation(task_id: str, kwargs: dict[str, Any]) -> None:
+    """Enqueue sans fallback thread : un travail long doit survivre à Gunicorn."""
+    redis_url = (Config.REDIS_URL or '').strip()
+    if not redis_url:
+        raise SimulationQueueUnavailable('REDIS_URL est absente')
+    try:
+        from redis import Redis
+        from rq import Queue, Retry
+        from app.workers.simulation_preparation_worker import prepare_simulation_job
+
+        connection = Redis.from_url(redis_url)
+        connection.ping()
+        Queue('simulation-preparation', connection=connection).enqueue_call(
+            prepare_simulation_job,
+            kwargs={'task_id': task_id, **kwargs},
+            job_id=task_id,
+            timeout=45 * 60,
+            result_ttl=24 * 60 * 60,
+            failure_ttl=7 * 24 * 60 * 60,
+            retry=Retry(max=1, interval=60),
+            meta={'progress': 0, 'message': 'En attente du worker de préparation', 'progress_detail': {}},
+        )
+    except Exception as exc:  # noqa: BLE001 - frontière Redis/RQ
+        raise SimulationQueueUnavailable('La file de préparation est indisponible') from exc
+
+
+def _get_rq_prepare_status(task_id: str) -> dict[str, Any] | None:
+    """Lit la progression durable d'un job RQ, si ce task_id lui appartient."""
+    redis_url = (Config.REDIS_URL or '').strip()
+    if not redis_url:
+        return None
+    try:
+        from redis import Redis
+        from rq.job import Job
+
+        job = Job.fetch(task_id, connection=Redis.from_url(redis_url))
+    except Exception:  # noqa: BLE001 - fallback TaskManager historique
+        return None
+    status = job.get_status(refresh=True)
+    if status not in {'queued', 'started', 'finished', 'failed', 'deferred', 'scheduled'}:
+        return None
+    meta = job.meta or {}
+    state_map = {'queued': 'pending', 'started': 'processing', 'finished': 'completed', 'failed': 'failed', 'deferred': 'pending', 'scheduled': 'pending'}
+    return {
+        'task_id': task_id,
+        'task_type': 'simulation_prepare',
+        'status': state_map[status],
+        'progress': 100 if status == 'finished' else int(meta.get('progress', 0)),
+        'message': meta.get('message', 'Préparation en attente'),
+        'progress_detail': meta.get('progress_detail', {}),
+        'result': job.result if status == 'finished' else None,
+        'error': str(job.exc_info or '') if status == 'failed' else None,
+        'metadata': {'rq_job_id': task_id},
+    }
+
+
 @simulation_bp.before_request
 def _validate_url_simulation_id():
     """Reject requests whose URL-derived simulation_id could cause path traversal."""
@@ -2259,8 +2319,7 @@ def prepare_simulation():
             }
         }
     """
-    import threading
-    from ..models.task import TaskManager, TaskStatus
+    from ..models.task import TaskManager
     
     try:
         data = request.get_json() or {}
@@ -2373,128 +2432,39 @@ def prepare_simulation():
         # Update simulation state (includes pre-fetched entity count)
         state.status = SimulationStatus.PREPARING
         manager._save_simulation_state(state)
-        
-        # Define background task
-        def run_prepare():
-            try:
-                task_manager.update_task(
-                    task_id,
-                    status=TaskStatus.PROCESSING,
-                    progress=0,
-                    message="Starting simulation environment preparation..."
-                )
-                
-                # Prepare simulation (with progress callback)
-                # Store stage progress details
-                stage_details = {}
-                
-                def progress_callback(stage, progress, message, **kwargs):
-                    # Calculate overall progress
-                    stage_weights = {
-                        "reading": (0, 20),           # 0-20%
-                        "generating_profiles": (20, 70),  # 20-70%
-                        "generating_config": (70, 90),    # 70-90%
-                        "copying_scripts": (90, 100)       # 90-100%
-                    }
-                    
-                    start, end = stage_weights.get(stage, (0, 100))
-                    current_progress = int(start + (end - start) * progress / 100)
-                    
-                    # Build detailed progress info
-                    stage_names = {
-                        "reading": "Reading graph entities",
-                        "generating_profiles": "Generating Agent profiles",
-                        "generating_config": "Generating simulation config",
-                        "copying_scripts": "Preparing simulation scripts"
-                    }
-                    
-                    stage_index = list(stage_weights.keys()).index(stage) + 1 if stage in stage_weights else 1
-                    total_stages = len(stage_weights)
-                    
-                    # Update stage details
-                    stage_details[stage] = {
-                        "stage_name": stage_names.get(stage, stage),
-                        "stage_progress": progress,
-                        "current": kwargs.get("current", 0),
-                        "total": kwargs.get("total", 0),
-                        "item_name": kwargs.get("item_name", "")
-                    }
-                    
-                    # Build detailed progress info
-                    detail = stage_details[stage]
-                    progress_detail_data = {
-                        "current_stage": stage,
-                        "current_stage_name": stage_names.get(stage, stage),
-                        "stage_index": stage_index,
-                        "total_stages": total_stages,
-                        "stage_progress": progress,
-                        "current_item": detail["current"],
-                        "total_items": detail["total"],
-                        "item_description": message
-                    }
-                    
-                    # Build concise message
-                    if detail["total"] > 0:
-                        detailed_message = (
-                            f"[{stage_index}/{total_stages}] {stage_names.get(stage, stage)}: "
-                            f"{detail['current']}/{detail['total']} - {message}"
-                        )
-                    else:
-                        detailed_message = f"[{stage_index}/{total_stages}] {stage_names.get(stage, stage)}: {message}"
-                    
-                    task_manager.update_task(
-                        task_id,
-                        progress=current_progress,
-                        message=detailed_message,
-                        progress_detail=progress_detail_data
-                    )
-                
-                result_state = manager.prepare_simulation(
-                    simulation_id=simulation_id,
-                    simulation_requirement=simulation_requirement,
-                    document_text=document_text,
-                    defined_entity_types=entity_types_list,
-                    use_llm_for_profiles=use_llm_for_profiles,
-                    progress_callback=progress_callback,
-                    parallel_profile_count=parallel_profile_count,
-                    storage=storage,
-                    locale=request_locale,  # US-038: forward request locale
-                )
-                
-                # Task complete
-                task_manager.complete_task(
-                    task_id,
-                    result=result_state.to_simple_dict()
-                )
-                
-            except Exception as e:
-                logger.error(f"Failed to prepare simulation: {str(e)}")
-                task_manager.fail_task(task_id, str(e))
-                
-                # Update simulation status to failed
-                state = manager.get_simulation(simulation_id)
-                if state:
-                    state.status = SimulationStatus.FAILED
-                    state.error = str(e)
-                    manager._save_simulation_state(state)
-        
-        # Start background thread
-        thread = threading.Thread(target=run_prepare, daemon=True)
-        thread.start()
-        
+
+        try:
+            _enqueue_simulation_preparation(task_id, {
+                'simulation_id': simulation_id,
+                'simulation_requirement': simulation_requirement,
+                'document_text': document_text,
+                'entity_types': entity_types_list,
+                'use_llm_for_profiles': use_llm_for_profiles,
+                'parallel_profile_count': parallel_profile_count,
+                'locale': request_locale,
+            })
+        except SimulationQueueUnavailable as exc:
+            state.status = SimulationStatus.FAILED
+            state.error = str(exc)
+            manager._save_simulation_state(state)
+            return jsonify({
+                'success': False,
+                'error_code': 'SIMULATION_QUEUE_UNAVAILABLE',
+                'error': 'Le service de préparation asynchrone est indisponible.',
+            }), 503
+
         return jsonify({
-            "success": True,
-            "data": {
-                "simulation_id": simulation_id,
-                "task_id": task_id,
-                "status": "preparing",
-                "message": "Preparation task started, query progress via /api/simulation/prepare/status",
-                "already_prepared": False,
-                "expected_entities_count": state.entities_count,  # Expected total Agent count
-                "entity_types": state.entity_types  # Entity type list
+            'success': True,
+            'data': {
+                'simulation_id': simulation_id,
+                'task_id': task_id,
+                'status': 'preparing',
+                'message': 'Préparation confiée au worker durable.',
+                'already_prepared': False,
+                'expected_entities_count': state.entities_count,
+                'entity_types': state.entity_types,
             }
         })
-        
     except ValueError as e:
         return jsonify({
             "success": False,
@@ -2592,6 +2562,11 @@ def get_prepare_status():
                 "error_code": "MISSING_FIELD",
                 "error": "Please provide task_id or simulation_id"
             }), 400
+
+        rq_task = _get_rq_prepare_status(task_id)
+        if rq_task is not None:
+            rq_task["already_prepared"] = False
+            return jsonify({"success": True, "data": rq_task})
 
         task_manager = TaskManager()
         task = task_manager.get_task(task_id)
