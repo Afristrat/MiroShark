@@ -26,7 +26,6 @@ from ..services.wonderwall_profile_generator import WonderwallProfileGenerator
 from ..services.simulation_manager import SimulationManager, SimulationStatus
 from ..services import arena_registry
 from ..services import artifact_storage
-from ..services.simulation_config_generator import SimulationConfigGenerator
 from ..services.simulation_runner import SimulationRunner, RunnerStatus
 from ..utils.logger import get_logger
 from ..utils.file_parser import FileParser
@@ -96,6 +95,28 @@ def _get_rq_prepare_status(task_id: str) -> dict[str, Any] | None:
         'error': str(job.exc_info or '') if status == 'failed' else None,
         'metadata': {'rq_job_id': task_id},
     }
+
+
+def _enqueue_config_retry(task_id: str, kwargs: dict[str, Any]) -> None:
+    """Enqueue le retry de configuration sans recréer de thread Gunicorn."""
+    redis_url = (Config.REDIS_URL or '').strip()
+    if not redis_url:
+        raise SimulationQueueUnavailable('REDIS_URL est absente')
+    try:
+        from redis import Redis
+        from rq import Queue, Retry
+        from app.workers.simulation_preparation_worker import retry_simulation_config_job
+
+        connection = Redis.from_url(redis_url)
+        connection.ping()
+        Queue('simulation-preparation', connection=connection).enqueue_call(
+            retry_simulation_config_job, kwargs={'task_id': task_id, **kwargs}, job_id=task_id,
+            timeout=15 * 60, result_ttl=24 * 60 * 60, failure_ttl=7 * 24 * 60 * 60,
+            retry=Retry(max=1, interval=60),
+            meta={'progress': 0, 'message': 'En attente du worker de configuration', 'progress_detail': {}},
+        )
+    except Exception as exc:  # noqa: BLE001
+        raise SimulationQueueUnavailable('La file de configuration est indisponible') from exc
 
 
 @simulation_bp.before_request
@@ -3308,9 +3329,7 @@ def retry_simulation_config(simulation_id: str):
     Returns:
         { "success": true, "data": { "simulation_id": "...", "status": "preparing" } }
     """
-    import threading
-    from ..models.task import TaskManager, TaskStatus
-    from ..config import Config
+    from ..models.task import TaskManager
 
     try:
         manager = SimulationManager()
@@ -3368,61 +3387,19 @@ def retry_simulation_config(simulation_id: str):
             metadata={"simulation_id": simulation_id}
         )
 
-        def run_config_retry():
-            try:
-                task_manager.update_task(task_id, status=TaskStatus.PROCESSING, progress=0,
-                                         message="Retrying config generation...")
-
-                # Re-read entities for config generation context
-                reader = EntityReader(storage)
-                filtered = reader.filter_defined_entities(
-                    graph_id=state.graph_id,
-                    enrich_with_edges=True
-                )
-
-                config_generator = SimulationConfigGenerator()
-                sim_params = config_generator.generate_config(
-                    simulation_id=simulation_id,
-                    project_id=state.project_id,
-                    graph_id=state.graph_id,
-                    simulation_requirement=simulation_requirement,
-                    document_text=document_text,
-                    entities=filtered.entities,
-                    enable_twitter=state.enable_twitter,
-                    enable_reddit=state.enable_reddit,
-                    polymarket_market_count=state.polymarket_market_count,
-                    locale=state.locale,
-                )
-
-                config_path = os.path.join(sim_dir, "simulation_config.json")
-                config_data = json.loads(sim_params.to_json())
-                config_data["locale"] = state.locale
-                with open(config_path, 'w', encoding='utf-8') as f:
-                    json.dump(config_data, f, ensure_ascii=False, indent=2)
-
-                # Mark as complete
-                reload_state = manager.get_simulation(simulation_id)
-                if reload_state:
-                    reload_state.config_generated = True
-                    reload_state.config_reasoning = sim_params.generation_reasoning
-                    reload_state.status = SimulationStatus.READY
-                    reload_state.error = None
-                    manager._save_simulation_state(reload_state)
-
-                task_manager.complete_task(task_id, result={"simulation_id": simulation_id})
-                logger.info(f"Config retry complete for {simulation_id}")
-
-            except Exception as e:
-                logger.error(f"Config retry failed for {simulation_id}: {e}")
-                task_manager.fail_task(task_id, str(e))
-                failed_state = manager.get_simulation(simulation_id)
-                if failed_state:
-                    failed_state.status = SimulationStatus.FAILED
-                    failed_state.error = str(e)
-                    manager._save_simulation_state(failed_state)
-
-        thread = threading.Thread(target=run_config_retry, daemon=True)
-        thread.start()
+        try:
+            _enqueue_config_retry(task_id, {
+                'simulation_id': simulation_id, 'project_id': state.project_id, 'graph_id': state.graph_id,
+                'simulation_requirement': simulation_requirement, 'document_text': document_text,
+                'enable_twitter': state.enable_twitter, 'enable_reddit': state.enable_reddit,
+                'polymarket_market_count': state.polymarket_market_count, 'locale': state.locale,
+            })
+        except SimulationQueueUnavailable as exc:
+            state.status = SimulationStatus.FAILED
+            state.error = str(exc)
+            manager._save_simulation_state(state)
+            return jsonify({'success': False, 'error_code': 'SIMULATION_QUEUE_UNAVAILABLE',
+                            'error': 'Le service de préparation asynchrone est indisponible.'}), 503
 
         return jsonify({
             "success": True,

@@ -133,8 +133,8 @@ def test_us225_fails_closed_after_bounded_invalid_retries(monkeypatch: pytest.Mo
 
 
 def test_us225_retry_generation_propagates_state_locale() -> None:
-    """The retry route must retain the locale for generation and persisted config."""
-    source = (Path(__file__).resolve().parents[1] / "app" / "api" / "simulation.py").read_text(
+    """Le job RQ de retry conserve la locale jusqu'au fichier persistant."""
+    source = (Path(__file__).resolve().parents[1] / "app" / "workers" / "simulation_preparation_worker.py").read_text(
         encoding="utf-8"
     )
     calls = [
@@ -146,27 +146,27 @@ def test_us225_retry_generation_propagates_state_locale() -> None:
     assert any(
         any(
             keyword.arg == "locale"
-            and isinstance(keyword.value, ast.Attribute)
-            and keyword.value.attr == "locale"
+            and isinstance(keyword.value, ast.Name)
+            and keyword.value.id == "locale"
             for keyword in call.keywords
         )
         for call in calls
     )
     retry = next(
         node for node in ast.walk(ast.parse(source))
-        if isinstance(node, ast.FunctionDef) and node.name == "run_config_retry"
+        if isinstance(node, ast.FunctionDef) and node.name == "retry_simulation_config_job"
     )
     assignments = [node for node in ast.walk(retry) if isinstance(node, ast.Assign)]
     assert any(
-        ast.unparse(assignment.targets[0]) == "config_data['locale']"
-        and ast.unparse(assignment.value) == "state.locale"
+        ast.unparse(assignment.targets[0]) == "config['locale']"
+        and ast.unparse(assignment.value) == "locale"
         for assignment in assignments
     )
     assert any(
         isinstance(node, ast.Call)
         and ast.unparse(node.func) == "json.dump"
         and node.args
-        and ast.unparse(node.args[0]) == "config_data"
+        and ast.unparse(node.args[0]) == "config"
         for node in ast.walk(retry)
     )
 

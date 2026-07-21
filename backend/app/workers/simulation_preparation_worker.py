@@ -8,6 +8,8 @@ thread et laisserait une simulation dans un état ambigu.
 from __future__ import annotations
 
 import logging
+import json
+import os
 from typing import Any
 
 from app import create_app
@@ -123,3 +125,59 @@ def prepare_simulation_job(
         result = result_state.to_simple_dict()
         _set_job_progress(job, progress=100, message="Préparation terminée", detail={"current_stage": "completed", "stage_index": 4, "total_stages": 4})
         return result
+
+
+def retry_simulation_config_job(
+    *, task_id: str, simulation_id: str, project_id: str, graph_id: str,
+    simulation_requirement: str, document_text: str, enable_twitter: bool,
+    enable_reddit: bool, polymarket_market_count: int, locale: str,
+) -> dict[str, Any]:
+    """Régénère la seule configuration depuis le worker durable RQ."""
+    from rq import get_current_job
+    from app.config import Config
+    from app.services import artifact_storage
+    from app.services.entity_reader import EntityReader
+    from app.services.simulation_config_generator import SimulationConfigGenerator
+    from app.services.simulation_manager import SimulationManager, SimulationStatus
+
+    job = get_current_job()
+    if job is None:
+        raise RuntimeError("La régénération exige un job RQ actif")
+    app = create_app()
+    with app.app_context():
+        storage = app.extensions.get("neo4j_storage")
+        if storage is None:
+            raise RuntimeError("Le stockage Neo4j est indisponible")
+        _set_job_progress(job, progress=10, message="Lecture des entités", detail={"current_stage": "reading"})
+        try:
+            entities = EntityReader(storage).filter_defined_entities(graph_id=graph_id, enrich_with_edges=True).entities
+            _set_job_progress(job, progress=45, message="Génération de la configuration", detail={"current_stage": "generating_config"})
+            params = SimulationConfigGenerator().generate_config(
+                simulation_id=simulation_id, project_id=project_id, graph_id=graph_id,
+                simulation_requirement=simulation_requirement, document_text=document_text,
+                entities=entities, enable_twitter=enable_twitter, enable_reddit=enable_reddit,
+                polymarket_market_count=polymarket_market_count, locale=locale,
+            )
+            sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)
+            artifact_storage.ensure_simulation_dir_hydrated(simulation_id, sim_dir)
+            with open(os.path.join(sim_dir, "simulation_config.json"), "w", encoding="utf-8") as handle:
+                config = json.loads(params.to_json())
+                config["locale"] = locale
+                json.dump(config, handle, ensure_ascii=False, indent=2)
+            manager = SimulationManager()
+            state = manager.get_simulation(simulation_id)
+            if state:
+                state.config_generated, state.config_reasoning = True, params.generation_reasoning
+                state.status, state.error = SimulationStatus.READY, None
+                manager._save_simulation_state(state)
+            _set_job_progress(job, progress=100, message="Configuration terminée", detail={"current_stage": "completed"})
+            return {"simulation_id": simulation_id}
+        except Exception:
+            manager = SimulationManager()
+            state = manager.get_simulation(simulation_id)
+            if state:
+                state.status = SimulationStatus.FAILED
+                state.error = "La génération de configuration a échoué."
+                manager._save_simulation_state(state)
+            logger.exception("Configuration échouée task=%s simulation=%s", task_id, simulation_id)
+            raise
