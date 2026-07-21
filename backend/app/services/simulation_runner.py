@@ -656,6 +656,11 @@ class SimulationRunner:
             env['PYTHONIOENCODING'] = 'utf-8'  # Ensure stdout/stderr use UTF-8
             env['MIROSHARK_SIM_DIR'] = sim_dir  # Observability: tell agents where to write events.jsonl
             env['MIROSHARK_SIMULATION_ID'] = simulation_id  # Observability: tag Wonderwall events with sim ID
+            # The web process already hosts Gunicorn and the runner is a child
+            # process. Loading the 1 GiB cross-encoder a second time breaches
+            # the simulation cgroup before round one; fused graph retrieval
+            # remains available without this final reranking pass.
+            env['RERANKER_ENABLED'] = 'false'
             # Forward run_id (when the orchestrator has set one) so the
             # subprocess's Langfuse `metadata.run_id` / `tags` line up with
             # the orchestrator-side calls — both ends end up under the same
