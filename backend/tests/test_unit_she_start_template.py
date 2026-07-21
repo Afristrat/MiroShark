@@ -23,6 +23,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from flask import Flask
 
 
 _BACKEND = Path(__file__).resolve().parent.parent
@@ -191,3 +192,16 @@ def test_template_paths_in_json_match_real_files():
         assert full.is_file(), (
             f"{field}={rel_path} doit pointer vers un fichier existant ({full})"
         )
+
+
+def test_template_api_expands_declared_seed_sources():
+    """Un lancement de template reÃ§oit le contenu, jamais un simple pointeur fichier."""
+    from app.api.templates import templates_bp
+
+    app = Flask(__name__)
+    app.register_blueprint(templates_bp, url_prefix="/api/templates")
+    resp = app.test_client().get("/api/templates/adcheck_pre_launch")
+    assert resp.status_code == 200, resp.data
+    seed = resp.get_json()["data"]["seed_document"]
+    assert "Demande de simulation Bassira" in seed
+    assert "Engine config" in seed

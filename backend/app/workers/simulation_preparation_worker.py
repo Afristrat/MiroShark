@@ -219,10 +219,13 @@ def build_graph_job(*, task_id: str, project_id: str, graph_name: str, text: str
             episodes = builder.add_text_batches(graph_id, chunks, max_workers=max_workers, progress_callback=progress)
             storage.wait_for_processing(episodes)
             data = builder.get_graph_data(graph_id)
+            node_count = data.get("node_count", 0)
+            if not node_count:
+                raise ValueError("Le graphe ne contient aucune entité exploitable")
             project.status = ProjectStatus.GRAPH_COMPLETED
             ProjectManager.save_project(project)
             result = {"project_id": project_id, "graph_id": graph_id,
-                      "node_count": data.get("node_count", 0), "edge_count": data.get("edge_count", 0),
+                      "node_count": node_count, "edge_count": data.get("edge_count", 0),
                       "chunk_count": total}
             _set_job_progress(job, progress=100, message="Graphe construit", detail={"current_stage": "completed"})
             return result

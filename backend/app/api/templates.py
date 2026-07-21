@@ -13,6 +13,7 @@ from ..services.oracle_seed import resolve_oracle_tools
 logger = get_logger('miroshark.api.templates')
 
 TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), '..', 'preset_templates')
+_SEED_SOURCE_FIELDS = ('attachment_path', 'engine_path', 'seed_template_path', 'personas_path')
 
 
 @templates_bp.route('/capabilities', methods=['GET'])
@@ -50,6 +51,25 @@ def _load_templates():
             logger.warning(f"Failed to load template {filename}: {e}")
 
     return templates
+
+
+def _expand_seed_document(template: dict) -> str:
+    """Return the seed together with the template sources it explicitly declares."""
+    base_dir = os.path.realpath(TEMPLATES_DIR)
+    sections = [str(template.get('seed_document') or '').strip()]
+    for field in _SEED_SOURCE_FIELDS:
+        relative_path = template.get(field)
+        if not isinstance(relative_path, str) or not relative_path.strip():
+            continue
+        source_path = os.path.realpath(os.path.join(base_dir, relative_path))
+        if not source_path.startswith(base_dir + os.sep) or not os.path.isfile(source_path):
+            logger.warning("Template %s declares invalid %s", template.get('id'), field)
+            continue
+        with open(source_path, 'r', encoding='utf-8') as source:
+            content = source.read().strip()
+        if content:
+            sections.append(f"## Source template : {relative_path}\n\n{content}")
+    return '\n\n'.join(section for section in sections if section)
 
 
 @templates_bp.route('/list', methods=['GET'])
@@ -108,8 +128,9 @@ def get_template(template_id: str):
     simulation_requirement for use in the creation flow.
     """
     try:
-        filepath = os.path.realpath(os.path.join(TEMPLATES_DIR, f"{template_id}.json"))
-        if not filepath.startswith(os.path.realpath(TEMPLATES_DIR)):
+        templates_root = os.path.realpath(TEMPLATES_DIR)
+        filepath = os.path.realpath(os.path.join(templates_root, f"{template_id}.json"))
+        if not filepath.startswith(templates_root + os.sep):
             return jsonify({
                 "success": False,
                 "error": "Invalid template ID"
@@ -122,6 +143,7 @@ def get_template(template_id: str):
 
         with open(filepath, 'r', encoding='utf-8') as f:
             template = json.load(f)
+        template['seed_document'] = _expand_seed_document(template)
 
         # Opt-in oracle enrichment: ?enrich=true causes declared oracle_tools
         # to be resolved against the FeedOracle MCP endpoint and appended to
