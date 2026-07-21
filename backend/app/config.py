@@ -103,6 +103,12 @@ class Config:
     EMBEDDING_BASE_URL = os.environ.get('EMBEDDING_BASE_URL', 'http://localhost:11434')
     EMBEDDING_API_KEY = os.environ.get('EMBEDDING_API_KEY', '')
     EMBEDDING_DIMENSIONS = int(os.environ.get('EMBEDDING_DIMENSIONS', '768'))
+    # Some OpenAI-compatible embedding servers (notably Qwen via vLLM) expose
+    # only their native vector size and reject even an identical `dimensions`
+    # request. Keep the schema dimension separate from this request capability.
+    EMBEDDING_REQUEST_DIMENSIONS = (
+        os.environ.get('EMBEDDING_REQUEST_DIMENSIONS', 'true').lower() == 'true'
+    )
     # How many texts to send per embedding HTTP request. OpenAI/OpenRouter
     # text-embedding-3-* accepts 2048; Ollama nomic-embed-text happily chews
     # through 128+. Lower if your provider 413s you.

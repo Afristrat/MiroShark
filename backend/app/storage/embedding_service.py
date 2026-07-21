@@ -30,6 +30,7 @@ class EmbeddingService:
         base_url: Optional[str] = None,
         api_key: Optional[str] = None,
         dimensions: Optional[int] = None,
+        request_dimensions: Optional[bool] = None,
         max_retries: int = 3,
         timeout: int = 30,
     ):
@@ -41,6 +42,7 @@ class EmbeddingService:
         self._base_url_override = base_url.rstrip('/') if base_url else None
         self._api_key_override = api_key
         self._dimensions_override = dimensions
+        self._request_dimensions_override = request_dimensions
         self.max_retries = max_retries
         self.timeout = timeout
 
@@ -67,6 +69,12 @@ class EmbeddingService:
     @property
     def dimensions(self) -> int:
         return self._dimensions_override or Config.EMBEDDING_DIMENSIONS
+
+    @property
+    def request_dimensions(self) -> bool:
+        if self._request_dimensions_override is not None:
+            return self._request_dimensions_override
+        return Config.EMBEDDING_REQUEST_DIMENSIONS
 
     @property
     def _embed_url(self) -> str:
@@ -156,7 +164,7 @@ class EmbeddingService:
             "model": self.model,
             "input": texts,
         }
-        if self.dimensions:
+        if self.request_dimensions and self.dimensions:
             payload["dimensions"] = self.dimensions
         return self._do_request(payload, self._parse_openai_response)
 

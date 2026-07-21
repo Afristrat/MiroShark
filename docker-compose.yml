@@ -91,6 +91,9 @@ services:
       - EMBEDDING_MODEL=${EMBEDDING_MODEL:-qwen3-emb-8b}
       - EMBEDDING_BASE_URL=${EMBEDDING_BASE_URL:-http://192.168.100.7:8004}
       - EMBEDDING_DIMENSIONS=${EMBEDDING_DIMENSIONS:-4096}
+      # Qwen3-VL-Embedding-8B serves its native 4 096 dimensions and rejects
+      # the OpenAI `dimensions` request parameter, even when it is identical.
+      - EMBEDDING_REQUEST_DIMENSIONS=${EMBEDDING_REQUEST_DIMENSIONS:-false}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-${LLM_API_KEY:-ollama}}
       - OPENAI_API_BASE_URL=${OPENAI_API_BASE_URL:-${LLM_BASE_URL:-http://ollama:11434/v1}}
       - REDIS_URL=redis://redis:6379/0
