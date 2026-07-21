@@ -1311,11 +1311,27 @@ Return JSON format (no markdown):
 
         last_error = "unknown validation failure"
         for attempt in range(1, MARKET_GENERATION_MAX_ATTEMPTS + 1):
+            repair_prompt = ""
+            if attempt > 1:
+                # Reflexion-style retry: repeating the same request after a
+                # deterministic validator rejects it merely reproduces the
+                # same failure. The evaluator feedback is internal and gives
+                # the model one bounded, actionable correction opportunity.
+                repair_prompt = (
+                    "\n<contract_repair>\n"
+                    "Your previous JSON was rejected by the deterministic "
+                    "contract evaluator: "
+                    f"{last_error}\n"
+                    "Return a complete replacement JSON object. Correct this "
+                    "specific violation while preserving every other required "
+                    "constraint; do not explain the correction.\n"
+                    "</contract_repair>"
+                )
             try:
                 result = self.smart_llm.chat_json(
                     messages=[
                         {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_prompt},
+                        {"role": "user", "content": user_prompt + repair_prompt},
                     ],
                     temperature=0.2,
                 )

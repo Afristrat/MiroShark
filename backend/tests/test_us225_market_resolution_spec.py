@@ -121,6 +121,25 @@ def test_us225_retries_invalid_contract_then_uses_valid_registry_prompt(monkeypa
     assert "locale=Arabic; count=1; rounds=4" in llm.calls[0]["messages"][0]["content"]
 
 
+def test_us225_retry_includes_actionable_deadline_feedback(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A bounded retry is a repair request, never the same blind prompt."""
+    invalid = _result()
+    invalid["markets"][0]["resolution_spec"]["deadline_round"] = 5
+    generator, llm = _generator_with([invalid, _result()])
+    monkeypatch.setattr(generator_module.prompt_registry, "get", lambda *_: None)
+
+    markets = generator._generate_prediction_markets(
+        "context", "requirement", EventConfig(), total_rounds=4,
+    )
+
+    assert len(markets) == 1
+    assert len(llm.calls) == 2
+    repair = llm.calls[1]["messages"][1]["content"]
+    assert "<contract_repair>" in repair
+    assert "deadline_round" in repair
+    assert "complete replacement JSON object" in repair
+
+
 def test_us225_fails_closed_after_bounded_invalid_retries(monkeypatch: pytest.MonkeyPatch) -> None:
     invalid = _result()
     invalid["markets"][0]["outcome_a"] = "MAYBE"
