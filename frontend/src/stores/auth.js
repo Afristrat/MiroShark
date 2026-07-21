@@ -147,9 +147,7 @@ export const useAuthStore = defineStore('auth', {
             // affichera le message d'erreur à l'utilisateur.
           })
           // US-095 — charge aussi le flag super-admin au boot
-          this.fetchSuperStatus().catch(() => {
-            /* fail-soft : false par défaut */
-          })
+          await this.fetchSuperStatus()
         }
       } finally {
         this.initializing = false
