@@ -6,7 +6,6 @@ Uses project context mechanism with server-side persistent state
 import json
 import os
 import traceback
-import threading
 from flask import request, jsonify
 
 from flask import current_app
@@ -18,12 +17,28 @@ from ..services.graph_builder import GraphBuilderService
 from ..services.text_processor import TextProcessor
 from ..utils.file_parser import FileParser
 from ..utils.logger import get_logger
-from ..models.task import TaskManager, TaskStatus
+from ..models.task import TaskManager
 from ..models.project import ProjectManager, ProjectStatus
 from ..auth import soft_check_self_service
 
 # Get logger
 logger = get_logger('miroshark.api')
+
+
+def _enqueue_graph_build(task_id: str, kwargs: dict) -> None:
+    from redis import Redis
+    from rq import Queue, Retry
+    from app.workers.simulation_preparation_worker import build_graph_job
+    url = (Config.REDIS_URL or '').strip()
+    if not url:
+        raise RuntimeError('La file de construction est indisponible')
+    connection = Redis.from_url(url)
+    connection.ping()
+    Queue('simulation-preparation', connection=connection).enqueue_call(
+        build_graph_job, kwargs={'task_id': task_id, **kwargs}, job_id=task_id,
+        timeout=45 * 60, result_ttl=24 * 60 * 60, failure_ttl=7 * 24 * 60 * 60,
+        retry=Retry(max=1, interval=60), meta={'progress': 0, 'message': 'En attente du worker de graphe'},
+    )
 
 
 def allowed_file(filename: str) -> bool:
@@ -526,138 +541,22 @@ def build_graph():
         project.status = ProjectStatus.GRAPH_BUILDING
         project.graph_build_task_id = task_id
         ProjectManager.save_project(project)
-        
-        # Start background task
-        def build_task():
-            build_logger = get_logger('miroshark.build')
-            try:
-                build_logger.info(f"[{task_id}] Starting graph build...")
-                task_manager.update_task(
-                    task_id, 
-                    status=TaskStatus.PROCESSING,
-                    message="Initializing graph build service..."
-                )
-                
-                # Create graph build service
-                builder = GraphBuilderService(storage=storage)
-                
-                # Chunking
-                task_manager.update_task(
-                    task_id,
-                    message="Chunking text...",
-                    progress=5
-                )
-                chunks = TextProcessor.split_text(
-                    text, 
-                    chunk_size=chunk_size, 
-                    overlap=chunk_overlap
-                )
-                total_chunks = len(chunks)
-                
-                # Create graph
-                task_manager.update_task(
-                    task_id,
-                    message="Creating graph...",
-                    progress=10
-                )
-                graph_id = builder.create_graph(name=graph_name)
-                
-                # Update project's graph_id
-                project.graph_id = graph_id
-                ProjectManager.save_project(project)
-                
-                # Set ontology
-                task_manager.update_task(
-                    task_id,
-                    message="Setting ontology definition...",
-                    progress=15
-                )
-                builder.set_ontology(graph_id, ontology)
-                
-                # Add text (progress_callback signature is (msg, progress_ratio))
-                def add_progress_callback(msg, progress_ratio):
-                    progress = 15 + int(progress_ratio * 40)  # 15% - 55%
-                    task_manager.update_task(
-                        task_id,
-                        message=msg,
-                        progress=progress
-                    )
-                
-                task_manager.update_task(
-                    task_id,
-                    message=f"Starting to add {total_chunks} text chunks...",
-                    progress=15
-                )
-                
-                episode_uuids = builder.add_text_batches(
-                    graph_id,
-                    chunks,
-                    max_workers=Config.GRAPH_BUILD_MAX_WORKERS,
-                    progress_callback=add_progress_callback
-                )
-                
-                # Wait for processing (no-op for Neo4j — synchronous)
-                storage.wait_for_processing(episode_uuids)
-                
-                # Get graph data
-                task_manager.update_task(
-                    task_id,
-                    message="Retrieving graph data...",
-                    progress=95
-                )
-                graph_data = builder.get_graph_data(graph_id)
-                
-                # Update project status
-                project.status = ProjectStatus.GRAPH_COMPLETED
-                ProjectManager.save_project(project)
-                
-                node_count = graph_data.get("node_count", 0)
-                edge_count = graph_data.get("edge_count", 0)
-                build_logger.info(f"[{task_id}] Graph build complete: graph_id={graph_id}, nodes={node_count}, edges={edge_count}")
-                
-                # Complete
-                task_manager.update_task(
-                    task_id,
-                    status=TaskStatus.COMPLETED,
-                    message="Graph build complete",
-                    progress=100,
-                    result={
-                        "project_id": project_id,
-                        "graph_id": graph_id,
-                        "node_count": node_count,
-                        "edge_count": edge_count,
-                        "chunk_count": total_chunks
-                    }
-                )
-                
-            except Exception as e:
-                # Update project status to failed
-                build_logger.error(f"[{task_id}] Graph build failed: {str(e)}")
-                build_logger.debug(traceback.format_exc())
-                
-                project.status = ProjectStatus.FAILED
-                project.error = str(e)
-                ProjectManager.save_project(project)
-                
-                task_manager.update_task(
-                    task_id,
-                    status=TaskStatus.FAILED,
-                    message=f"Build failed: {str(e)}",
-                    error=traceback.format_exc()
-                )
-        
-        # Start background thread
-        thread = threading.Thread(target=build_task, daemon=True)
-        thread.start()
-        
-        return jsonify({
-            "success": True,
-            "data": {
-                "project_id": project_id,
-                "task_id": task_id,
-                "message": "Graph build task started, query progress via /task/{task_id}"
-            }
-        })
+
+        try:
+            _enqueue_graph_build(task_id, {
+                'project_id': project_id, 'graph_name': graph_name, 'text': text, 'ontology': ontology,
+                'chunk_size': chunk_size, 'chunk_overlap': chunk_overlap,
+                'max_workers': Config.GRAPH_BUILD_MAX_WORKERS,
+            })
+        except Exception:
+            project.status = ProjectStatus.FAILED
+            project.error = 'Le worker de construction est indisponible.'
+            ProjectManager.save_project(project)
+            return jsonify({'success': False, 'error_code': 'GRAPH_QUEUE_UNAVAILABLE',
+                            'error': 'Le service de construction asynchrone est indisponible.'}), 503
+
+        return jsonify({'success': True, 'data': {'project_id': project_id, 'task_id': task_id,
+                        'message': 'Construction confiée au worker durable.'}})
         
     except Exception as e:
         return jsonify({
@@ -675,6 +574,13 @@ def get_task(task_id: str):
     """
     Query task status
     """
+    from .simulation import _get_rq_prepare_status
+
+    rq_task = _get_rq_prepare_status(task_id)
+    if rq_task is not None:
+        rq_task['task_type'] = 'graph_build'
+        return jsonify({'success': True, 'data': rq_task})
+
     task = TaskManager().get_task(task_id)
 
     if not task:

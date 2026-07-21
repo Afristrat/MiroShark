@@ -181,3 +181,53 @@ def retry_simulation_config_job(
                 manager._save_simulation_state(state)
             logger.exception("Configuration échouée task=%s simulation=%s", task_id, simulation_id)
             raise
+
+
+def build_graph_job(*, task_id: str, project_id: str, graph_name: str, text: str,
+                    ontology: dict[str, Any], chunk_size: int, chunk_overlap: int,
+                    max_workers: int) -> dict[str, Any]:
+    """Construit le graphe dans RQ ; jamais dans le worker HTTP Gunicorn."""
+    from rq import get_current_job
+    from app.models.project import ProjectManager, ProjectStatus
+    from app.services.graph_builder import GraphBuilderService
+    from app.services.text_processor import TextProcessor
+
+    job = get_current_job()
+    if job is None:
+        raise RuntimeError("La construction exige un job RQ actif")
+    app = create_app()
+    with app.app_context():
+        storage = app.extensions.get("neo4j_storage")
+        if storage is None:
+            raise RuntimeError("Le stockage Neo4j est indisponible")
+        project = ProjectManager.get_project(project_id)
+        if project is None:
+            raise ValueError("Projet introuvable")
+        graph_id: str | None = None
+        try:
+            _set_job_progress(job, progress=5, message="Découpage du texte", detail={"current_stage": "chunking"})
+            chunks = TextProcessor.split_text(text, chunk_size=chunk_size, overlap=chunk_overlap)
+            builder = GraphBuilderService(storage=storage)
+            graph_id = builder.create_graph(name=graph_name)
+            project.graph_id = graph_id
+            ProjectManager.save_project(project)
+            builder.set_ontology(graph_id, ontology)
+            total = len(chunks)
+            def progress(message: str, ratio: float) -> None:
+                _set_job_progress(job, progress=15 + int(ratio * 75), message=message,
+                                  detail={"current_stage": "extracting", "total_items": total})
+            episodes = builder.add_text_batches(graph_id, chunks, max_workers=max_workers, progress_callback=progress)
+            storage.wait_for_processing(episodes)
+            data = builder.get_graph_data(graph_id)
+            project.status = ProjectStatus.GRAPH_COMPLETED
+            ProjectManager.save_project(project)
+            result = {"project_id": project_id, "graph_id": graph_id,
+                      "node_count": data.get("node_count", 0), "edge_count": data.get("edge_count", 0),
+                      "chunk_count": total}
+            _set_job_progress(job, progress=100, message="Graphe construit", detail={"current_stage": "completed"})
+            return result
+        except Exception as exc:
+            project.status, project.error = ProjectStatus.FAILED, str(exc)
+            ProjectManager.save_project(project)
+            logger.exception("Construction graphe échouée task=%s project=%s graph=%s", task_id, project_id, graph_id)
+            raise
