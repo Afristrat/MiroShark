@@ -27,6 +27,11 @@ export default defineConfig({
         target: 'http://localhost:5001',
         changeOrigin: true,
         secure: false
+      },
+      '/health': {
+        target: 'http://localhost:5001',
+        changeOrigin: true,
+        secure: false
       }
     }
   },
@@ -39,6 +44,11 @@ export default defineConfig({
     allowedHosts: true,
     proxy: {
       '/api': {
+        target: 'http://localhost:5001',
+        changeOrigin: true,
+        secure: false
+      },
+      '/health': {
         target: 'http://localhost:5001',
         changeOrigin: true,
         secure: false
