@@ -72,6 +72,10 @@ services:
     restart: unless-stopped
 
   miroshark:
+    # Build once: the web service and the RQ worker run the same application
+    # image.  Two independent builds race while exporting identical layers on
+    # Coolify/Buildx and can leave a deployment stuck indefinitely.
+    image: miroshark-runtime:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -124,9 +128,9 @@ services:
     pids_limit: 256
 
   worker:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    # Reuse the image built by `miroshark` above; this is intentionally not a
+    # second build of the same Dockerfile.
+    image: miroshark-runtime:latest
     working_dir: /app/backend
     command: ["/bin/sh", "-c", "exec uv run --frozen rq worker --url \"$$REDIS_URL\" --with-scheduler --name \"simulation-worker-$${HOSTNAME}\" pdf-generation simulation-preparation"]
     environment: *miroshark_environment
