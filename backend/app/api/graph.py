@@ -34,6 +34,31 @@ def allowed_file(filename: str) -> bool:
     return ext in Config.ALLOWED_EXTENSIONS
 
 
+def _resolve_project_name(
+    requested_name: str | None,
+    file_names: list[str],
+    url_docs: list[dict],
+    simulation_requirement: str,
+) -> str:
+    """Return a useful stable project name without overwriting an explicit one."""
+    requested = (requested_name or "").strip()
+    if requested and requested.casefold() != "unnamed project":
+        return requested[:120]
+
+    for filename in file_names:
+        candidate = os.path.splitext(filename.strip())[0]
+        if candidate:
+            return candidate[:120]
+
+    for document in url_docs:
+        candidate = str(document.get("title") or document.get("url") or "").strip()
+        if candidate:
+            return candidate[:120]
+
+    normalized_requirement = " ".join(simulation_requirement.split())
+    return normalized_requirement[:120] or "Projet sans titre"
+
+
 # US-039 — Context refinement constants & sanitiser
 _REFINEMENT_GEO_VALUES = {"MA", "DZ", "TN", "SN", "CI", "multi"}
 _REFINEMENT_TIME_VALUES = {"24h", "72h", "1w", "2w", "30d", "60d"}
@@ -208,11 +233,10 @@ def generate_ontology():
 
         # Get parameters
         simulation_requirement = request.form.get('simulation_requirement', '')
-        project_name = request.form.get('project_name', 'Unnamed Project')
+        requested_project_name = request.form.get('project_name')
         additional_context = request.form.get('additional_context', '')
         url_docs_raw = request.form.get('url_docs', '')
 
-        logger.debug(f"Project name: {project_name}")
         logger.debug(f"Simulation requirement: {simulation_requirement[:100]}...")
 
         if not simulation_requirement:
@@ -240,6 +264,14 @@ def generate_ontology():
                 "error_code": "MISSING_FIELD",
                 "error": "Please upload at least one document file or provide URL documents"
             }), 400
+
+        project_name = _resolve_project_name(
+            requested_project_name,
+            [file.filename for file in uploaded_files if file and file.filename],
+            url_docs,
+            simulation_requirement,
+        )
+        logger.debug("Resolved project name: %s", project_name)
 
         # Create project
         project = ProjectManager.create_project(name=project_name)
@@ -801,5 +833,3 @@ def refine_entities():
             "error_code": "REFINE_FAILED",
             "traceback": traceback.format_exc(),
         }), 500
-
-

@@ -387,6 +387,8 @@ const handleNewProject = async () => {
       formData.append('url_docs', JSON.stringify(pending.urlDocs))
     }
     formData.append('simulation_requirement', pending.simulationRequirement)
+    const projectName = pending.templateName || pending.files[0]?.name || pending.urlDocs[0]?.title
+    if (projectName) formData.append('project_name', projectName)
     
     const res = await generateOntology(formData)
     if (res.success) {
