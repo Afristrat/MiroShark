@@ -1535,6 +1535,7 @@ class SimulationRunner:
         - stdout.log / stderr.log
         - twitter_simulation.db (simulation database)
         - reddit_simulation.db (simulation database)
+        - polymarket_simulation.db (simulation database)
         - env_status.json (environment status)
         
         Note: Configuration files (simulation_config.json) and profile files will not be deleted
@@ -1562,6 +1563,7 @@ class SimulationRunner:
             "stderr.log",
             "twitter_simulation.db",  # Twitter platform database
             "reddit_simulation.db",   # Reddit platform database
+            "polymarket_simulation.db",  # Polymarket platform database
             "env_status.json",        # Environment status file
         ]
         

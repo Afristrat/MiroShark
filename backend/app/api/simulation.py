@@ -3743,13 +3743,18 @@ def start_simulation():
         force = data.get('force', False)  # Optional: force restart
         resume = data.get('resume', False)  # Optional: resume from last round
 
+        # The runner cannot restore in-memory social environments from their
+        # SQLite files alone. Fail closed until durable checkpoints include
+        # both environment state and logs.
+        if resume:
+            return jsonify({
+                "success": False,
+                "error_code": "SIMULATION_RESUME_UNSUPPORTED",
+                "error": "Simulation resume requires durable environment checkpoints and is not available yet. Start a fresh run instead."
+            }), 409
+
         # If resume requested, read the last round from run_state
         start_round = 0
-        if resume:
-            existing_state = SimulationRunner.get_run_state(simulation_id)
-            if existing_state and existing_state.current_round > 0:
-                start_round = existing_state.current_round
-                logger.info(f"Resuming simulation {simulation_id} from round {start_round}")
 
         # Validate max_rounds parameter
         if max_rounds is not None:

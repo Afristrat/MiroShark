@@ -302,3 +302,17 @@ def test_create_fail_open_on_unexpected_exception(simulation_client, monkeypatch
     body = resp.get_json()
     assert body["success"] is True
     assert body.get("error_code") != "GRAPH_CHECK_FAILED"
+
+
+def test_start_rejects_unsafe_resume_before_touching_simulation_state(simulation_client):
+    """A checkpointless resume must fail instead of corrupting SQLite state."""
+    _, client = simulation_client
+
+    response = client.post(
+        "/api/simulation/start",
+        json={"simulation_id": "sim_resume", "resume": True},
+    )
+
+    assert response.status_code == 409
+    body = response.get_json()
+    assert body["error_code"] == "SIMULATION_RESUME_UNSUPPORTED"
