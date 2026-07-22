@@ -1,5 +1,6 @@
 import axios from 'axios'
 import i18nInstance from '../i18n'
+import { useAuthStore } from '../stores/auth'
 
 // Create axios instance
 //
@@ -36,13 +37,21 @@ service.interceptors.request.use(
     // Auto-attaché aux endpoints qui en ont besoin :
     //   - POST /api/simulation/<id>/outcome (US-020 publish/resolve)
     //   - GET  /api/admin/* (US-065 dashboard analytics)
+    const isAdminRequest = config.url && (
+      config.url.includes('/outcome') || config.url.includes('/admin')
+    )
     const adminToken = sessionStorage.getItem('bassira_admin_token')
-    if (
-      adminToken &&
-      config.url &&
-      (config.url.includes('/outcome') || config.url.includes('/admin'))
-    ) {
+    if (adminToken && isAdminRequest) {
       config.headers['Authorization'] = `Bearer ${adminToken}`
+    } else {
+      try {
+        const auth = useAuthStore()
+        const token = auth.session?.access_token
+        if (token) config.headers['Authorization'] = `Bearer ${token}`
+        if (auth.currentOrgId) config.headers['X-Org-Id'] = auth.currentOrgId
+      } catch (_) {
+        // Pinia may not be ready during bootstrap; protected routes return 401.
+      }
     }
     return config
   },
