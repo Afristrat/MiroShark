@@ -119,10 +119,10 @@ services:
       # ce volume protège les artefacts de simulation (state, profils, PDF).
       - miroshark_uploads:/app/backend/uploads
     # The simulation runner is a subprocess of the web service.  Its local
-    # cross-encoder and two synchronized arenas exceed the 1.5 GiB API-only
-    # budget, which causes an in-cgroup SIGKILL before round one.  Keep the
-    # reservation conservative while aligning the hard ceiling with worker.
-    mem_limit: 3g
+    # cross-encoder and the Twitter Twhin recommendation model run in the
+    # simulation subprocess.  Their peak exceeds 3 GiB before round one; keep
+    # the reservation conservative while allowing the faithful arena model.
+    mem_limit: 5g
     mem_reservation: 512m
     cpus: 2
     pids_limit: 256
