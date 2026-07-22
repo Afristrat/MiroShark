@@ -39,6 +39,7 @@ from typing import Literal, Optional, cast
 from flask import jsonify, make_response, request
 
 from . import simulation_bp
+from .report import _authorize_simulation_access
 from ..services.simulation_manager import SimulationManager
 from ..utils.logger import get_logger
 from ..utils.validation import validate_simulation_id
@@ -274,6 +275,10 @@ def export_simulation_pdf(simulation_id: str):
             return jsonify({"success": False, "error_code": "SIMULATION_NOT_FOUND",
                             "error": f"Simulation introuvable : {simulation_id}"}), 404
 
+        denied = _authorize_simulation_access(simulation_id, allow_published=True)
+        if denied is not None:
+            return denied
+
         body = request.get_json(silent=True) or {}
         graph_b64 = body.get("graph_image_b64") or ""
         try:
@@ -308,6 +313,10 @@ def export_simulation_markdown(simulation_id: str):
         if not manager.get_simulation(simulation_id):
             return jsonify({"success": False, "error_code": "SIMULATION_NOT_FOUND",
                             "error": f"Simulation introuvable : {simulation_id}"}), 404
+
+        denied = _authorize_simulation_access(simulation_id, allow_published=True)
+        if denied is not None:
+            return denied
 
         try:
             variant = _parse_variant(request.args.get("variant"))

@@ -184,6 +184,11 @@ def _patch_resolve_helpers():
     )
 
 
+def _patch_export_access_allowed():
+    """Isole les tests de rendu du guard d'accès couvert séparément."""
+    return patch("app.api.pdf_export._authorize_simulation_access", return_value=None)
+
+
 # ── Test : 404 pour simulation inconnue ─────────────────────────────────────
 
 class TestPdfExport404:
@@ -281,21 +286,21 @@ class TestMarkdownExport:
     def test_md_200_for_known_simulation(self, client):
         (p1,) = _patch_sim_manager_known()
         pr1, pr2 = _patch_resolve_helpers()
-        with p1, pr1, pr2, _patch_loader_to_fixture():
+        with p1, pr1, pr2, _patch_loader_to_fixture(), _patch_export_access_allowed():
             resp = client.get(f"/api/simulation/{_KNOWN_SIM_ID}/export-md")
         assert resp.status_code == 200
 
     def test_md_content_type(self, client):
         (p1,) = _patch_sim_manager_known()
         pr1, pr2 = _patch_resolve_helpers()
-        with p1, pr1, pr2, _patch_loader_to_fixture():
+        with p1, pr1, pr2, _patch_loader_to_fixture(), _patch_export_access_allowed():
             resp = client.get(f"/api/simulation/{_KNOWN_SIM_ID}/export-md")
         assert "markdown" in resp.content_type or "text" in resp.content_type
 
     def test_md_contains_bassira(self, client):
         (p1,) = _patch_sim_manager_known()
         pr1, pr2 = _patch_resolve_helpers()
-        with p1, pr1, pr2, _patch_loader_to_fixture():
+        with p1, pr1, pr2, _patch_loader_to_fixture(), _patch_export_access_allowed():
             resp = client.get(f"/api/simulation/{_KNOWN_SIM_ID}/export-md")
         text = resp.data.decode("utf-8")
         assert "Bassira" in text or "BASSIRA" in text or "bassira" in text.lower()
@@ -303,7 +308,7 @@ class TestMarkdownExport:
     def test_md_contains_disclaimer(self, client):
         (p1,) = _patch_sim_manager_known()
         pr1, pr2 = _patch_resolve_helpers()
-        with p1, pr1, pr2, _patch_loader_to_fixture():
+        with p1, pr1, pr2, _patch_loader_to_fixture(), _patch_export_access_allowed():
             resp = client.get(f"/api/simulation/{_KNOWN_SIM_ID}/export-md")
         text = resp.data.decode("utf-8")
         # Le nouveau template peut contenir 'disclaimer', 'probabiliste', ou 'avertissement'

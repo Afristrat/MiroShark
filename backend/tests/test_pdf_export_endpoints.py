@@ -274,6 +274,23 @@ class TestBuildMarkdown:
 
 class TestEndpointExportPdf:
 
+    def test_export_pdf_propagates_simulation_access_denial(self, client, monkeypatch):
+        """Un rapport privé ne doit jamais être exportable par son seul identifiant."""
+        from flask import jsonify
+        import app.api.pdf_export as pdf_export
+
+        def deny(_simulation_id, *, allow_published):
+            assert allow_published is True
+            return jsonify({"success": False, "error_code": "AUTH_REQUIRED"}), 401
+
+        monkeypatch.setattr(pdf_export, "_authorize_simulation_access", deny)
+        p1, p2 = _patch_sim_manager()
+        with p1, p2:
+            response = client.post(f"/api/simulation/{_VALID_SIM_ID}/export-pdf")
+
+        assert response.status_code == 401
+        assert response.get_json()["error_code"] == "AUTH_REQUIRED"
+
     @skip_no_weasyprint
     def test_export_pdf_200_application_pdf(self, client):
         """POST /export-pdf → 200 + Content-Type application/pdf."""
@@ -308,6 +325,23 @@ class TestEndpointExportPdf:
 
 
 class TestEndpointExportMd:
+
+    def test_export_md_propagates_simulation_access_denial(self, client, monkeypatch):
+        """Le Markdown suit exactement le même contrôle que le PDF."""
+        from flask import jsonify
+        import app.api.pdf_export as pdf_export
+
+        def deny(_simulation_id, *, allow_published):
+            assert allow_published is True
+            return jsonify({"success": False, "error_code": "AUTH_REQUIRED"}), 401
+
+        monkeypatch.setattr(pdf_export, "_authorize_simulation_access", deny)
+        p1, p2 = _patch_sim_manager()
+        with p1, p2:
+            response = client.get(f"/api/simulation/{_VALID_SIM_ID}/export-md")
+
+        assert response.status_code == 401
+        assert response.get_json()["error_code"] == "AUTH_REQUIRED"
 
     def test_export_md_200_text_markdown(self, client):
         """GET /export-md → 200 + Content-Type text/markdown."""
