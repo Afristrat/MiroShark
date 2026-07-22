@@ -119,6 +119,22 @@ def test_us226_retries_one_invalid_output_then_returns_valid_result(monkeypatch:
     assert "not" not in llm.calls[1]["messages"][-1]["content"]
 
 
+def test_us226_adds_missing_citations_from_valid_structured_evidence(monkeypatch: pytest.MonkeyPatch) -> None:
+    output = _valid_yes()
+    output["justification"] = "The observed support meets the stated criterion."
+    monkeypatch.setattr(oracle.prompt_registry, "get_active", lambda *_: _active_prompt())
+
+    result = oracle.resolve_market(
+        _market(),
+        _trajectory({"round": 2, "stance": "support"}),
+        [],
+        llm=_SequenceLLM([output]),
+    )
+
+    assert result.verdict == "YES"
+    assert "round:2:0" in result.justification
+
+
 def test_us226_persistent_invalid_output_is_deterministically_unresolved(monkeypatch: pytest.MonkeyPatch) -> None:
     llm = _SequenceLLM([{"not": "valid"}, RuntimeError("provider failure")])
     monkeypatch.setattr(oracle.prompt_registry, "get_active", lambda *_: _active_prompt())

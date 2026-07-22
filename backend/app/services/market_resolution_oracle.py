@@ -283,6 +283,28 @@ def validate_oracle_output(result: Any, digest: Mapping[str, Any]) -> OracleReso
     return OracleResolution(verdict, justification.strip(), float(confidence), validated_evidence, ORACLE_PROMPT_KEY, ORACLE_PROMPT_VERSION)
 
 
+def _normalize_structured_evidence_citations(result: Any) -> Any:
+    """Make explicit citations from the model's structured evidence auditable.
+
+    Some OpenAI-compatible providers return valid evidence objects but omit their
+    ``ref`` strings from the prose justification.  The refs are already part of
+    the same model response, so appending only missing refs neither invents a
+    source nor weakens the strict evidence boundary enforced below.
+    """
+    if not isinstance(result, dict) or not isinstance(result.get("justification"), str):
+        return result
+    evidence = result.get("evidence")
+    if not isinstance(evidence, list):
+        return result
+    refs = [item.get("ref") for item in evidence if isinstance(item, dict) and isinstance(item.get("ref"), str)]
+    missing_refs = [ref for ref in dict.fromkeys(refs) if ref and ref not in result["justification"]]
+    if not missing_refs:
+        return result
+    normalized = dict(result)
+    normalized["justification"] = f"{result['justification'].strip()} Sources : {', '.join(missing_refs)}."
+    return normalized
+
+
 def resolve_market(
     market: Mapping[str, Any],
     trajectory_payload: Mapping[str, Any],
@@ -309,7 +331,8 @@ def resolve_market(
     ]
     for attempt in range(ORACLE_MAX_ATTEMPTS):
         try:
-            resolution = validate_oracle_output(client.chat_json(messages=messages, temperature=0.0), digest)
+            response = client.chat_json(messages=messages, temperature=0.0)
+            resolution = validate_oracle_output(_normalize_structured_evidence_citations(response), digest)
             return OracleResolution(
                 resolution.verdict, resolution.justification, resolution.confidence,
                 resolution.evidence, ORACLE_PROMPT_KEY, version,
