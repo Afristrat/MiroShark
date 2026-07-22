@@ -1000,7 +1000,10 @@ _ASK_RATE_HITS: "dict[str, list[float]]" = {}
 _ASK_CACHE: "dict[str, dict]" = {}
 _ASK_CACHE_ORDER: "list[str]" = []
 _ASK_CACHE_MAX = 32
-_ASK_QUESTION_MAX_CHARS = 400
+# The console accepts a complete decision brief (actors, jurisdictions,
+# hypotheses and desired arenas), not merely a one-line question.  Keep this
+# aligned with /enrich-ask so the UI never accepts input that /ask rejects.
+_ASK_QUESTION_MAX_CHARS = 2000
 
 _ASK_SYSTEM_PROMPT = (
     "You are a research analyst producing a briefing that will seed an "
