@@ -416,6 +416,7 @@ class WonderwallProfileGenerator:
         graph_id: Optional[str] = None,
         simulation_requirement: Optional[str] = None,
         locale: Optional[str] = None,
+        use_hybrid_graph_context: bool = False,
         occupation_profile_resolver: Optional[
             Callable[[str, str], Optional[Dict[str, Any]]]
         ] = None,
@@ -431,6 +432,10 @@ class WonderwallProfileGenerator:
         # GraphStorage for hybrid search enrichment
         self.storage = storage
         self.graph_id = graph_id
+        # EntityReader already supplies incident edges and related nodes for
+        # every persona. Re-running hybrid retrieval per persona duplicates
+        # that context and can load a heavyweight reranker concurrently.
+        self.use_hybrid_graph_context = use_hybrid_graph_context
 
         # Web enrichment for notable figures / thin context
         self.web_enricher = WebEnricher()
@@ -933,8 +938,14 @@ class WonderwallProfileGenerator:
             if related_info:
                 context_parts.append("### Related Entity Information\n" + "\n".join(related_info))
         
-        # 4. Use knowledge graph hybrid search to get richer information
-        graph_results = self._search_graph_for_entity(entity)
+        # 4. Related edges/nodes above are the default persona context. Hybrid
+        # retrieval is opt-in because it is redundant here and expensive when
+        # many personas are prepared concurrently.
+        graph_results = (
+            self._search_graph_for_entity(entity)
+            if self.use_hybrid_graph_context
+            else {"facts": [], "node_summaries": [], "context": ""}
+        )
 
         if graph_results.get("facts"):
             # Deduplication: exclude existing facts

@@ -96,3 +96,29 @@ def test_blank_profession_does_not_call_resolver():
     profile = generator.generate_profile_from_entity(entity, user_id=4, use_llm=False)
     assert calls == []
     assert "<expertise_metier>" not in profile.system_prompt
+
+
+def test_persona_context_skips_redundant_hybrid_graph_search_by_default():
+    class _Storage:
+        def search(self, **_kwargs):
+            raise AssertionError("hybrid graph search must not run during persona preparation")
+
+    class _WebEnricher:
+        def enrich_if_needed(self, **_kwargs):
+            return ""
+
+    generator = object.__new__(WonderwallProfileGenerator)
+    generator.storage = _Storage()
+    generator.graph_id = "graph-1"
+    generator.use_hybrid_graph_context = False
+    generator.web_enricher = _WebEnricher()
+    generator.simulation_requirement = "Test scenario"
+    entity = EntityNode(
+        "entity-1", "Google", ["TechGiant"], "", {},
+        related_edges=[{"fact": "Google négocie avec le régulateur."}],
+        related_nodes=[],
+    )
+
+    context = generator._build_entity_context(entity)
+
+    assert "Google négocie avec le régulateur." in context
