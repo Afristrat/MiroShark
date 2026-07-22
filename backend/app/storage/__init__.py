@@ -3,7 +3,7 @@ MiroShark Storage Layer
 
 Local graph storage replacing Zep Cloud:
 - Neo4j CE for graph persistence
-- Ollama for embeddings (nomic-embed-text)
+- DGX-2 Qwen3-emb-8b for embeddings (OpenAI-compatible vLLM)
 - LLM-based NER/RE extraction
 - Hybrid search (vector + keyword)
 """

@@ -6,7 +6,7 @@ Supports two providers (set via EMBEDDING_PROVIDER env var):
   - "openai":            Uses OpenAI-compatible /v1/embeddings endpoint
                          (works with OpenRouter, OpenAI, Azure, any compatible API)
 
-Vector dimensions are configurable via EMBEDDING_DIMENSIONS (default: 768).
+Vector dimensions are configurable via EMBEDDING_DIMENSIONS (default: 4096).
 """
 
 import time
@@ -79,7 +79,8 @@ class EmbeddingService:
     @property
     def _embed_url(self) -> str:
         if self.provider == 'openai':
-            return f"{self.base_url}/v1/embeddings"
+            base = self.base_url
+            return f"{base}/embeddings" if base.endswith('/v1') else f"{base}/v1/embeddings"
         return f"{self.base_url}/api/embed"
 
     def embed(self, text: str) -> List[float]:
@@ -107,13 +108,11 @@ class EmbeddingService:
         """
         Generate embeddings for multiple texts in batches.
 
-        batch_size defaults to Config.EMBEDDING_BATCH_SIZE (128). Most providers
-        (OpenAI, text-embedding-3-*, OpenRouter, Cohere, Ollama nomic-embed-text)
-        accept 128-2048 inputs per request; 128 is a safe default that cuts
-        wall-clock time ~4x vs the old default of 32 for typical document sizes.
+        batch_size defaults to Config.EMBEDDING_BATCH_SIZE (16). This keeps
+        Qwen3-emb-8b responsive while DGX-2 also serves interactive inference.
         """
         if batch_size is None:
-            batch_size = getattr(Config, "EMBEDDING_BATCH_SIZE", 128)
+            batch_size = getattr(Config, "EMBEDDING_BATCH_SIZE", 16)
         if not texts:
             return []
 

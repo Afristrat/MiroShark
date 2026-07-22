@@ -96,23 +96,23 @@ class Config:
     NEO4J_USER = os.environ.get('NEO4J_USER', 'neo4j')
     NEO4J_PASSWORD = os.environ.get('NEO4J_PASSWORD', 'miroshark')
 
-    # Embedding configuration
-    # EMBEDDING_PROVIDER: "ollama" (default) uses /api/embed, "openai" uses /v1/embeddings
-    EMBEDDING_PROVIDER = os.environ.get('EMBEDDING_PROVIDER', 'ollama')
-    EMBEDDING_MODEL = os.environ.get('EMBEDDING_MODEL', 'nomic-embed-text')
-    EMBEDDING_BASE_URL = os.environ.get('EMBEDDING_BASE_URL', 'http://localhost:11434')
+    # Embedding configuration. Qwen3-emb-8b is served directly by DGX-2 via
+    # its OpenAI-compatible vLLM endpoint; the client accepts a base URL with
+    # or without the optional /v1 suffix.
+    EMBEDDING_PROVIDER = os.environ.get('EMBEDDING_PROVIDER', 'openai')
+    EMBEDDING_MODEL = os.environ.get('EMBEDDING_MODEL', 'qwen3-emb-8b')
+    EMBEDDING_BASE_URL = os.environ.get('EMBEDDING_BASE_URL', 'http://192.168.100.7:8005')
     EMBEDDING_API_KEY = os.environ.get('EMBEDDING_API_KEY', '')
-    EMBEDDING_DIMENSIONS = int(os.environ.get('EMBEDDING_DIMENSIONS', '768'))
+    EMBEDDING_DIMENSIONS = int(os.environ.get('EMBEDDING_DIMENSIONS', '4096'))
     # Some OpenAI-compatible embedding servers (notably Qwen via vLLM) expose
     # only their native vector size and reject even an identical `dimensions`
     # request. Keep the schema dimension separate from this request capability.
     EMBEDDING_REQUEST_DIMENSIONS = (
-        os.environ.get('EMBEDDING_REQUEST_DIMENSIONS', 'true').lower() == 'true'
+        os.environ.get('EMBEDDING_REQUEST_DIMENSIONS', 'false').lower() == 'true'
     )
-    # How many texts to send per embedding HTTP request. OpenAI/OpenRouter
-    # text-embedding-3-* accepts 2048; Ollama nomic-embed-text happily chews
-    # through 128+. Lower if your provider 413s you.
-    EMBEDDING_BATCH_SIZE = int(os.environ.get('EMBEDDING_BATCH_SIZE', '128'))
+    # DGX-2 shares GPU memory with inference services. Keep batches bounded so
+    # a graph build cannot starve interactive model requests.
+    EMBEDDING_BATCH_SIZE = int(os.environ.get('EMBEDDING_BATCH_SIZE', '16'))
 
     # Reranker configuration — cross-encoder reranking over hybrid search results.
     # Default: BAAI/bge-reranker-v2-m3 (multilingual, ~568M params). Downloaded on first
