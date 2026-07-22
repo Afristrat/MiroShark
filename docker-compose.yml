@@ -22,38 +22,6 @@ services:
     pids_limit: 512
     restart: unless-stopped
 
-  ollama:
-    image: ollama/ollama:latest
-    expose:
-      - "11434"
-    volumes:
-      - ollama_data:/root/.ollama
-    # qwen3:14b currently needs about 9 GiB once loaded.  The 12 GiB ceiling
-    # leaves headroom for inference without allowing one model to exhaust host RAM.
-    mem_limit: 12g
-    mem_reservation: 10g
-    cpus: 6
-    pids_limit: 512
-    restart: unless-stopped
-
-  ollama-init:
-    image: curlimages/curl:latest
-    depends_on:
-      - ollama
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - |
-        until curl -sf http://ollama:11434/ >/dev/null 2>&1; do
-          echo "Waiting for ollama...";
-          sleep 2;
-        done;
-        echo "Pulling nomic-embed-text...";
-        curl -fsS -X POST http://ollama:11434/api/pull \
-          -H "Content-Type: application/json" \
-          -d '{"name":"nomic-embed-text","stream":false}';
-        echo "Done.";
-    restart: "no"
-
   redis:
     image: redis:7-alpine
     command: ["redis-server", "--appendonly", "yes"]
@@ -85,8 +53,10 @@ services:
       - SECRET_KEY=${SECRET_KEY:-}
       - CORS_ORIGINS=${CORS_ORIGINS:-}
       - LLM_PROVIDER=${LLM_PROVIDER:-openai}
-      - LLM_API_KEY=${LLM_API_KEY:-ollama}
-      - LLM_BASE_URL=${LLM_BASE_URL:-http://ollama:11434/v1}
+      # The production gateway is configured through the environment.  Do not
+      # silently fall back to a removed local Ollama service.
+      - LLM_API_KEY=${LLM_API_KEY:-}
+      - LLM_BASE_URL=${LLM_BASE_URL:-}
       - LLM_MODEL_NAME=${LLM_MODEL_NAME:-qwen2.5:32b}
       # Explicitly pass every model-routing slot to both the web process and
       # the RQ worker.  Coolify stores them as runtime variables, but Compose
@@ -104,16 +74,14 @@ services:
       # Qwen3-VL-Embedding-8B serves its native 4 096 dimensions and rejects
       # the OpenAI `dimensions` request parameter, even when it is identical.
       - EMBEDDING_REQUEST_DIMENSIONS=${EMBEDDING_REQUEST_DIMENSIONS:-false}
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-${LLM_API_KEY:-ollama}}
-      - OPENAI_API_BASE_URL=${OPENAI_API_BASE_URL:-${LLM_BASE_URL:-http://ollama:11434/v1}}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-${LLM_API_KEY:-}}
+      - OPENAI_API_BASE_URL=${OPENAI_API_BASE_URL:-${LLM_BASE_URL:-}}
       - REDIS_URL=redis://redis:6379/0
     expose:
       - "3000"
       - "5001"
     depends_on:
       neo4j:
-        condition: service_started
-      ollama:
         condition: service_started
       redis:
         condition: service_healthy
@@ -160,6 +128,5 @@ services:
 
 volumes:
   neo4j_data_v2:
-  ollama_data:
   miroshark_uploads:
   redis_data:
