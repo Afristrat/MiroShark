@@ -1,6 +1,7 @@
 import axios from 'axios'
 import i18nInstance from '../i18n'
 import { useAuthStore } from '../stores/auth'
+import { supabase } from '../lib/supabase'
 
 // Create axios instance
 //
@@ -22,7 +23,7 @@ const service = axios.create({
 
 // Request interceptor
 service.interceptors.request.use(
-  config => {
+  async config => {
     // US-043 — propage la locale UI courante au backend pour que les
     // system prompts LLM (ontology, agents, rapport) répondent dans la
     // langue de l'utilisateur (cf backend/app/utils/locale_prompt.py).
@@ -44,13 +45,24 @@ service.interceptors.request.use(
     if (adminToken && isAdminRequest) {
       config.headers['Authorization'] = `Bearer ${adminToken}`
     } else {
+      let token = null
       try {
         const auth = useAuthStore()
-        const token = auth.session?.access_token
-        if (token) config.headers['Authorization'] = `Bearer ${token}`
+        token = auth.session?.access_token || null
         if (auth.currentOrgId) config.headers['X-Org-Id'] = auth.currentOrgId
       } catch (_) {
-        // Pinia may not be ready during bootstrap; protected routes return 401.
+        // Pinia may not be ready during bootstrap; Supabase remains the source of truth.
+      }
+      if (!token) {
+        try {
+          const { data } = await supabase.auth.getSession()
+          token = data.session?.access_token || null
+        } catch (_) {
+          // The protected endpoint will return 401 if the local session cannot be read.
+        }
+      }
+      if (token) {
+        config.headers['Authorization'] = `Bearer ${token}`
       }
     }
     return config
