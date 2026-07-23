@@ -62,6 +62,7 @@ services:
       # the RQ worker.  Coolify stores them as runtime variables, but Compose
       # only exposes variables declared in this service environment.
       - SMART_MODEL_NAME=${SMART_MODEL_NAME:-}
+      - REPORT_MAX_PARALLEL_SECTIONS=${REPORT_MAX_PARALLEL_SECTIONS:-1}
       - INTAKE_LLM_MODEL=${INTAKE_LLM_MODEL:-}
       - WONDERWALL_MODEL_NAME=${WONDERWALL_MODEL_NAME:-}
       - NEO4J_URI=bolt://neo4j:7687

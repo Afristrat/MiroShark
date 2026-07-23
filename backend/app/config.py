@@ -173,6 +173,14 @@ class Config:
     # queue and hide progress. Operators may increase this when their model
     # gateway demonstrably supports concurrent generation.
     GRAPH_BUILD_MAX_WORKERS = max(1, int(os.environ.get('GRAPH_BUILD_MAX_WORKERS', '1')))
+
+    # Deep analytical reports call both the writing model and graph tools.
+    # Serial generation is the reliable default for the shared DeepSeek
+    # gateway; operators may raise this only after proving that their gateway
+    # sustains concurrent long-context requests without starvation.
+    REPORT_MAX_PARALLEL_SECTIONS = max(
+        1, int(os.environ.get('REPORT_MAX_PARALLEL_SECTIONS', '1'))
+    )
     
     # Wonderwall simulation configuration
     WONDERWALL_DEFAULT_MAX_ROUNDS = int(os.environ.get('WONDERWALL_DEFAULT_MAX_ROUNDS', '10'))

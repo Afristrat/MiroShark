@@ -9,6 +9,7 @@ import pytest
 
 from app.api.report import ReportQueueUnavailable, _enqueue_report_generation
 from app.config import Config
+from app.services.report_agent import ReportAgent
 
 
 def test_report_generation_never_falls_back_to_gunicorn_thread(
@@ -66,6 +67,11 @@ def test_compose_worker_listens_to_report_generation_queue() -> None:
         encoding="utf-8"
     )
     assert "report-generation" in compose
+
+
+def test_report_sections_default_to_serial_generation() -> None:
+    assert Config.REPORT_MAX_PARALLEL_SECTIONS == 1
+    assert ReportAgent.MAX_PARALLEL_SECTIONS == 1
 
 
 def test_parallel_runner_preflights_the_selected_model() -> None:
