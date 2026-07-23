@@ -106,3 +106,11 @@ def test_docker_image_preloads_twhin_model() -> None:
     )
     assert "Twitter/twhin-bert-base" in dockerfile
     assert "HF_HOME=/opt/huggingface" in dockerfile
+
+
+def test_parallel_runner_limits_llm_concurrency() -> None:
+    source = (Path(__file__).resolve().parents[1] / "scripts" / "run_parallel_simulation.py").read_text(
+        encoding="utf-8"
+    )
+    assert "MIROSHARK_LLM_CONCURRENCY', '2'" in source
+    assert "semaphore=60" not in source
