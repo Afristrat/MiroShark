@@ -21,6 +21,11 @@ COPY --from=ghcr.io/astral-sh/uv:0.9.26 /uv /uvx /bin/
 
 WORKDIR /app
 
+# The Twitter recommender is part of the simulation runtime, not an optional
+# first-run download. Keep it in a deterministic image layer so production
+# never waits on Hugging Face after a user starts a simulation.
+ENV HF_HOME=/opt/huggingface
+
 # Copy dependency descriptor files first to leverage Docker cache
 COPY package.json package-lock.json ./
 COPY frontend/package.json frontend/package-lock.json ./frontend/
@@ -30,6 +35,10 @@ COPY backend/pyproject.toml backend/uv.lock ./backend/
 RUN npm ci \
   && npm ci --prefix frontend \
   && cd backend && uv sync --frozen
+
+# Public model preloaded at build time. Runtime loading is local-only.
+RUN cd backend \
+  && uv run python -c "from transformers import AutoModel, AutoTokenizer; model = 'Twitter/twhin-bert-base'; AutoTokenizer.from_pretrained(model); AutoModel.from_pretrained(model)"
 
 # Copy project source code
 COPY . .

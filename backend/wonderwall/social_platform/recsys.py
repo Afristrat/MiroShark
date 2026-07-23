@@ -67,7 +67,8 @@ def get_twhin_tokenizer():
         from transformers import AutoTokenizer
         twhin_tokenizer = AutoTokenizer.from_pretrained(
             pretrained_model_name_or_path="Twitter/twhin-bert-base",
-            model_max_length=512)
+            model_max_length=512,
+            local_files_only=True)
     return twhin_tokenizer
 
 
@@ -76,7 +77,8 @@ def get_twhin_model(device):
     if twhin_model is None:
         from transformers import AutoModel
         twhin_model = AutoModel.from_pretrained(
-            pretrained_model_name_or_path="Twitter/twhin-bert-base").to(device)
+            pretrained_model_name_or_path="Twitter/twhin-bert-base",
+            local_files_only=True).to(device)
     return twhin_model
 
 

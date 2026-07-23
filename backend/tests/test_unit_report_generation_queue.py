@@ -88,3 +88,21 @@ def test_parallel_runner_preflights_the_selected_model() -> None:
         and node.func.id == "_verify_model_available"
         for node in ast.walk(create_model)
     )
+
+
+def test_twhin_runtime_never_downloads_model() -> None:
+    source = (
+        Path(__file__).resolve().parents[1]
+        / "wonderwall"
+        / "social_platform"
+        / "recsys.py"
+    ).read_text(encoding="utf-8")
+    assert source.count("local_files_only=True") >= 2
+
+
+def test_docker_image_preloads_twhin_model() -> None:
+    dockerfile = (Path(__file__).resolve().parents[2] / "Dockerfile").read_text(
+        encoding="utf-8"
+    )
+    assert "Twitter/twhin-bert-base" in dockerfile
+    assert "HF_HOME=/opt/huggingface" in dockerfile
