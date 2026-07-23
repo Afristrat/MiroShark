@@ -1,0 +1,23 @@
+---
+title: {{ context.title }}
+report_id: {{ context.report_id }}
+simulation_id: {{ context.simulation_id }}
+lang: {{ context.lang }}
+framework: {{ context.framework }}
+variant: full
+generated_at: {{ generated_at }}
+template_version: {{ template_version }}
+branding_version: {{ branding_version | default('default') }}
+---
+
+{{ context.full_report_md }}
+
+---
+
+{% if context.lang == 'ar' %}
+> **حدود القراءة.** يعرض هذا التقرير ديناميات محتملة داخل محاكاة قائمة على افتراضات محددة، ولا يشكّل تنبؤاً أو توصية لاتخاذ قرار من دون مراجعة بشرية مستقلة.
+{% elif context.lang == 'en' %}
+> **Interpretation boundary.** This report presents plausible dynamics from an assumption-bound simulation. It is not a forecast or a decision recommendation without independent human review.
+{% else %}
+> **Limite d’interprétation.** Ce rapport restitue des dynamiques plausibles issues d’une simulation encadrée par des hypothèses. Il ne constitue ni une prévision ni une recommandation de décision sans revue humaine indépendante.
+{% endif %}

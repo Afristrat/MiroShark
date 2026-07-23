@@ -43,6 +43,12 @@ LOCALE_FULL_NAMES: Final[Mapping[str, str]] = {
 DEFAULT_LOCALE: Final[str] = "fr"
 
 
+def normalize_locale(locale: str | None, default: str = DEFAULT_LOCALE) -> str:
+    """Return a supported locale without relying on Flask request context."""
+    candidate = (locale or "").strip().lower()
+    return candidate if candidate in LOCALE_FULL_NAMES else default
+
+
 def get_request_locale(default: str = DEFAULT_LOCALE) -> str:
     """Read `X-Bassira-Locale` header from the current Flask request.
 
@@ -61,10 +67,7 @@ def get_request_locale(default: str = DEFAULT_LOCALE) -> str:
         # Outside a Flask context (e.g. pytest unit, background worker)
         return default
 
-    code = raw.strip().lower()
-    if code in LOCALE_FULL_NAMES:
-        return code
-    return default
+    return normalize_locale(raw, default=default)
 
 
 def localize_system_prompt(prompt: str, locale: str = DEFAULT_LOCALE) -> str:
@@ -79,8 +82,7 @@ def localize_system_prompt(prompt: str, locale: str = DEFAULT_LOCALE) -> str:
     detected), returns the prompt unchanged. Useful when a prompt is
     composed and might pass through this helper twice.
     """
-    if locale not in LOCALE_FULL_NAMES:
-        locale = DEFAULT_LOCALE
+    locale = normalize_locale(locale)
 
     sentinel = "[bassira-locale-instruction]"
     if sentinel in prompt:

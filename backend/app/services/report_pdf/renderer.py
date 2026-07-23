@@ -124,7 +124,14 @@ class Renderer:
         from .jinja_env import get_jinja_env
 
         env = get_jinja_env()
-        template_name = _VARIANT_TEMPLATE.get(variant, "_full.md.j2")
+        # The ReportAgent Markdown is the editorial source of truth. Rendering
+        # a second, template-only "full" report used to create incompatible
+        # web, Markdown and PDF narratives, and hard-coded French prose.
+        template_name = (
+            "_canonical_report.md.j2"
+            if variant == "full" and enriched_context.full_report_md
+            else _VARIANT_TEMPLATE.get(variant, "_full.md.j2")
+        )
         template = env.get_template(template_name)
 
         generated_at = datetime.now(tz=timezone.utc).isoformat()

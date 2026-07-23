@@ -117,6 +117,15 @@ def _resolve_report_id_for_simulation(simulation_id: str) -> Optional[str]:
 
 
 def _resolve_lang_for_simulation(simulation_id: str) -> str:
+    # The report carries the language that crossed the HTTP/background-worker
+    # boundary. Prefer it for every derived report representation.
+    try:
+        from ..services.report_agent import ReportManager
+        report = ReportManager.get_report_by_simulation(simulation_id)
+        if report is not None and report.locale in ("fr", "en", "ar"):
+            return report.locale
+    except Exception:
+        pass
     """Lit simulation_config.json::lang ou retourne 'fr' par défaut.
 
     Consulte aussi SimulationState.locale si la config est absente.

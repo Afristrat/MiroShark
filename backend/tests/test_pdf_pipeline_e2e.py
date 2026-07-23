@@ -154,6 +154,22 @@ class TestPipelineMarkdown:
         assert isinstance(fm, dict)
         assert "lang" in fm or "title" in fm  # front-matter minimal présent
 
+    def test_full_export_reuses_the_canonical_report_markdown(self, monkeypatch):
+        """Web, Markdown and PDF must share one editorial source of truth."""
+        from app.services.report_pdf.renderer import Renderer
+
+        ctx = _load_ctx(lang="en")
+        canonical = "# Evidence-led simulation report\n\n## A decisive tension\n\nBody."
+        ctx.full_report_md = canonical
+        renderer = Renderer(ctx)
+        monkeypatch.setattr(renderer, "_enrich_context", lambda: ctx)
+
+        markdown = renderer.render_md(variant="full")
+
+        assert canonical in markdown
+        assert "Interpretation boundary." in markdown
+        assert "MÃ©thodologie DÃ©taillÃ©e" not in markdown
+
     def test_multilang_fr(self):
         """Test 4 : Multilang FR — front-matter contient lang=fr."""
         from app.services.report_pdf.renderer import Renderer, extract_frontmatter

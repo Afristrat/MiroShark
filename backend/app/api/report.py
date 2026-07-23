@@ -16,6 +16,7 @@ from ..models.project import ProjectManager
 from ..models.task import TaskManager, TaskStatus
 from ..utils.logger import get_logger
 from ..utils.validation import validate_simulation_id
+from ..utils.locale_prompt import get_request_locale
 from ..auth.decorators import authorize_simulation_admin, require_auth
 
 logger = get_logger('miroshark.api.report')
@@ -177,6 +178,9 @@ def generate_report():
             return denied
 
         force_regenerate = data.get('force_regenerate', False)
+        # Flask request context does not cross the background-thread boundary.
+        # Capture the caller's language here and persist it with the report.
+        report_locale = get_request_locale()
 
         # Get simulation info
         manager = SimulationManager()
@@ -240,7 +244,8 @@ def generate_report():
             metadata={
                 "simulation_id": simulation_id,
                 "graph_id": graph_id,
-                "report_id": report_id
+                "report_id": report_id,
+                "locale": report_locale,
             }
         )
 
@@ -270,7 +275,8 @@ def generate_report():
                     graph_id=graph_id,
                     simulation_id=simulation_id,
                     simulation_requirement=simulation_requirement,
-                    graph_tools=graph_tools
+                    graph_tools=graph_tools,
+                    locale=report_locale,
                 )
 
                 # Progress callback
@@ -722,7 +728,8 @@ def chat_with_report_agent():
             graph_id=graph_id,
             simulation_id=simulation_id,
             simulation_requirement=simulation_requirement,
-            graph_tools=graph_tools
+            graph_tools=graph_tools,
+            locale=get_request_locale(),
         )
 
         result = agent.chat(message=message, chat_history=chat_history)

@@ -21,9 +21,10 @@ from enum import Enum
 
 from ..config import Config
 from ..utils.llm_client import LLMClient, create_smart_llm_client
-from ..utils.locale_prompt import get_request_locale, localize_system_prompt
+from ..utils.locale_prompt import DEFAULT_LOCALE, localize_system_prompt, normalize_locale
 from ..utils.logger import get_logger
 from ..utils.validation import validate_simulation_id
+from .report_editorial import compose_report_system_prompt, editorial_violations
 from .graph_tools import (
     GraphToolsService
 )
@@ -449,6 +450,7 @@ class Report:
     created_at: str = ""
     completed_at: str = ""
     error: Optional[str] = None
+    locale: str = DEFAULT_LOCALE
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -461,7 +463,8 @@ class Report:
             "markdown_content": self.markdown_content,
             "created_at": self.created_at,
             "completed_at": self.completed_at,
-            "error": self.error
+            "error": self.error,
+            "locale": self.locale,
         }
 
 
@@ -1122,10 +1125,10 @@ Do NOT overclaim — this is scenario exploration, not prophecy
    - Quote agent speech to show SURPRISES and CONTRADICTIONS, not just to illustrate expected behavior
    - Flag when an agent's actions contradict their persona — this is analytically valuable
 
-3. [Language Consistency - Report Must Be Written in English]
-   - All report content must be written in English
+3. [Language Consistency]
+   - The editorial contract appended to this prompt defines the report language
    - Content returned by tools may contain mixed-language expressions
-   - When quoting content returned by tools, translate it into fluent English
+   - Translate any quoted tool output into that required language
    - This rule applies to both body text and quoted blocks (> format) content
 
 4. [Analytical Integrity]
@@ -1368,7 +1371,8 @@ class ReportAgent:
         simulation_id: str,
         simulation_requirement: str,
         llm_client: Optional[LLMClient] = None,
-        graph_tools: Optional[GraphToolsService] = None
+        graph_tools: Optional[GraphToolsService] = None,
+        locale: str = DEFAULT_LOCALE,
     ):
         """
         Initialize Report Agent
@@ -1383,6 +1387,9 @@ class ReportAgent:
         self.graph_id = graph_id
         self.simulation_id = simulation_id
         self.simulation_requirement = simulation_requirement
+        # Request context is unavailable in background jobs. The API captures
+        # this value at its boundary and the report persists it as metadata.
+        self.locale = normalize_locale(locale)
 
         self.llm = llm_client or create_smart_llm_client()
         if graph_tools is None:
@@ -2322,7 +2329,7 @@ class ReportAgent:
         try:
             response = self.llm.chat_json(
                 messages=[
-                    {"role": "system", "content": localize_system_prompt(system_prompt, get_request_locale())},
+                    {"role": "system", "content": localize_system_prompt(compose_report_system_prompt(system_prompt, self.locale), self.locale)},
                     {"role": "user", "content": user_prompt}
                 ],
                 temperature=0.3
@@ -2458,7 +2465,7 @@ class ReportAgent:
         )
 
         messages = [
-            {"role": "system", "content": localize_system_prompt(system_prompt, get_request_locale())},
+            {"role": "system", "content": localize_system_prompt(compose_report_system_prompt(system_prompt, self.locale), self.locale)},
             {"role": "user", "content": user_prompt}
         ]
         
@@ -2795,7 +2802,7 @@ Write in the same analytical style as the report. Use **bold** for emphasis. Do 
         try:
             response = self.llm.chat(
                 messages=[
-                    {"role": "system", "content": localize_system_prompt(system_prompt, get_request_locale())},
+                    {"role": "system", "content": localize_system_prompt(compose_report_system_prompt(system_prompt, self.locale), self.locale)},
                     {"role": "user", "content": user_prompt},
                 ],
                 temperature=0.4,
@@ -2848,7 +2855,8 @@ Write in the same analytical style as the report. Use **bold** for emphasis. Do 
             graph_id=self.graph_id,
             simulation_requirement=self.simulation_requirement,
             status=ReportStatus.PENDING,
-            created_at=datetime.now().isoformat()
+            created_at=datetime.now().isoformat(),
+            locale=self.locale,
         )
         
         # Completed section titles list (for progress tracking)
@@ -3037,7 +3045,9 @@ Write in the same analytical style as the report. Use **bold** for emphasis. Do 
             )
 
             # Use ReportManager to assemble complete report
-            report.markdown_content = ReportManager.assemble_full_report(report_id, outline)
+            report.markdown_content = ReportManager.assemble_full_report(
+                report_id, outline, locale=self.locale,
+            )
             report.status = ReportStatus.COMPLETED
             report.completed_at = datetime.now().isoformat()
             
@@ -3169,7 +3179,7 @@ Write in the same analytical style as the report. Use **bold** for emphasis. Do 
         )
 
         # Build messages
-        messages = [{"role": "system", "content": localize_system_prompt(system_prompt, get_request_locale())}]
+        messages = [{"role": "system", "content": localize_system_prompt(compose_report_system_prompt(system_prompt, self.locale), self.locale)}]
         
         # Add chat history
         for h in chat_history[-10:]:  # Limit history length
@@ -3628,7 +3638,12 @@ class ReportManager:
         return sections
     
     @classmethod
-    def assemble_full_report(cls, report_id: str, outline: ReportOutline) -> str:
+    def assemble_full_report(
+        cls,
+        report_id: str,
+        outline: ReportOutline,
+        locale: str = DEFAULT_LOCALE,
+    ) -> str:
         """
         Assemble complete report
 
@@ -3646,6 +3661,14 @@ class ReportManager:
         
         # Post-processing: clean heading issues across the entire report
         md_content = cls._post_process_report(md_content, outline)
+
+        violations = editorial_violations(md_content, locale)
+        if violations:
+            logger.warning(
+                "Report %s failed deterministic editorial checks: %s",
+                report_id,
+                ", ".join(violations),
+            )
         
         # Save complete report
         full_path = cls._get_report_markdown_path(report_id)
@@ -3851,7 +3874,8 @@ class ReportManager:
             markdown_content=markdown_content,
             created_at=data.get('created_at', ''),
             completed_at=data.get('completed_at', ''),
-            error=data.get('error')
+            error=data.get('error'),
+            locale=normalize_locale(data.get('locale')),
         )
     
     @classmethod
