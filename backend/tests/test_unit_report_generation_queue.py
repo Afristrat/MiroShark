@@ -123,6 +123,14 @@ def test_parallel_runner_allows_a_full_quality_first_round() -> None:
     assert "MIROSHARK_ROUND_TIMEOUT', '1800'" in source
 
 
+def test_parallel_runner_bounds_each_agent_response() -> None:
+    source = (Path(__file__).resolve().parents[1] / "scripts" / "run_parallel_simulation.py").read_text(
+        encoding="utf-8"
+    )
+    assert "MIROSHARK_AGENT_MAX_TOKENS', '1200'" in source
+    assert '"max_tokens": _AGENT_MAX_TOKENS' in source
+
+
 def test_twitter_recommender_defaults_to_lightweight_feed() -> None:
     source = (
         Path(__file__).resolve().parents[1]

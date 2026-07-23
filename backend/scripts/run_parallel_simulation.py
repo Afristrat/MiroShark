@@ -174,6 +174,10 @@ from app.utils.validation import validate_simulation_id
 # protects only against a hung background round, not Cloudflare or Gunicorn.
 _ROUND_TIMEOUT_SECONDS = int(os.environ.get('MIROSHARK_ROUND_TIMEOUT', '1800'))
 _LLM_CONCURRENCY = max(1, int(os.environ.get('MIROSHARK_LLM_CONCURRENCY', '2')))
+# An agent turn only needs a concise tool decision.  Leaving generation
+# unbounded lets reasoning models spend thousands of tokens on one social
+# action and turns a bounded swarm into an effectively unbounded job.
+_AGENT_MAX_TOKENS = max(256, int(os.environ.get('MIROSHARK_AGENT_MAX_TOKENS', '1200')))
 _VERIFIED_MODEL_ENDPOINTS: set[tuple[str, str]] = set()
 
 
@@ -1182,7 +1186,10 @@ def create_model(config: Dict[str, Any], use_boost: bool = False):
         model_type=llm_model,
         # Bassira's MCP bridge is prompt/tag based, not native OpenAI function
         # calling. Prevent vLLM from receiving unsupported tool_choice=auto.
-        model_config_dict={"tool_choice": "none"},
+        model_config_dict={
+            "tool_choice": "none",
+            "max_tokens": _AGENT_MAX_TOKENS,
+        },
         default_headers={
             'HTTP-Referer': 'https://github.com/aaronjmars/MiroShark',
             'X-OpenRouter-Title': 'MiroShark - Universal Swarm Intelligence Engine',
