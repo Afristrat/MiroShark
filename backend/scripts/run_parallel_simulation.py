@@ -1174,6 +1174,9 @@ def create_model(config: Dict[str, Any], use_boost: bool = False):
     return ModelFactory.create(
         model_platform=ModelPlatformType.OPENAI,
         model_type=llm_model,
+        # Bassira's MCP bridge is prompt/tag based, not native OpenAI function
+        # calling. Prevent vLLM from receiving unsupported tool_choice=auto.
+        model_config_dict={"tool_choice": "none"},
         default_headers={
             'HTTP-Referer': 'https://github.com/aaronjmars/MiroShark',
             'X-OpenRouter-Title': 'MiroShark - Universal Swarm Intelligence Engine',

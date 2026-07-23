@@ -2000,7 +2000,18 @@ def create_simulation():
                     "Could not resolve default super-admin org: %s",
                     exc.__class__.__name__,
                 )
-                # Continue sans org_id (mode legacy fallback).
+                # Social-only legacy flows may continue without an owner.
+                # Prediction-market runs are rejected immediately below.
+
+        if data.get('enable_polymarket', False) and not resolved_org_id:
+            return jsonify({
+                "success": False,
+                "error_code": "SIMULATION_OWNERSHIP_REQUIRED",
+                "error": (
+                    "Prediction-market simulations require an authenticated organization. "
+                    "Sign in again or select an organization before launching."
+                ),
+            }), 403
 
         manager = SimulationManager()
         state = manager.create_simulation(
@@ -6569,7 +6580,7 @@ def close_simulation_env():
         # Update simulation status
         manager = SimulationManager()
         state = manager.get_simulation(simulation_id)
-        if state:
+        if state and result.get("success", False):
             state.status = SimulationStatus.COMPLETED
             manager._save_simulation_state(state)
         

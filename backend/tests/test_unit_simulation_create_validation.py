@@ -152,6 +152,26 @@ def test_create_accepts_populated_graph(simulation_client, monkeypatch):
     assert body["data"]["simulation_id"] == "sim_fake"
 
 
+def test_create_rejects_unowned_prediction_market(simulation_client, monkeypatch):
+    """A market run must never be created without durable ownership."""
+    _, client = simulation_client
+    _patch_create_dependencies(monkeypatch, entity_count=5)
+
+    resp = client.post(
+        "/api/simulation/create",
+        json={
+            "project_id": "proj_test",
+            "graph_id": "graph_xyz",
+            "enable_polymarket": True,
+        },
+    )
+
+    assert resp.status_code == 403
+    body = resp.get_json()
+    assert body["success"] is False
+    assert body["error_code"] == "SIMULATION_OWNERSHIP_REQUIRED"
+
+
 def test_create_does_not_block_on_pre_check_failure(simulation_client, monkeypatch):
     """If the pre-check itself errors (Neo4j down, malformed graph_id),
     we let the manager handle it rather than masking the real cause behind

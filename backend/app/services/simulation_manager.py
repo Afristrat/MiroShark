@@ -280,14 +280,11 @@ class SimulationManager:
         """
         Create a new simulation.
 
-        US-092 — extension multitenant :
-            Si ``org_id`` est fourni (mode client authentifié via le
-            décorateur ``@require_org_membership``), on enregistre la
-            simulation dans la table Supabase ``simulation_ownership``.
-            Sans ``org_id`` (mode public legacy : modèles statiques,
-            /explore, simulation anonyme), le comportement reste
-            strictement identique à l'avant-US-092 — aucune écriture
-            Supabase n'a lieu, garantissant la rétro-compatibilité.
+        A simulation with organisation ownership is persisted in Supabase
+        before its filesystem state is created.  This ordering prevents an
+        unowned run from reaching market settlement or client reporting.
+        Prediction-market simulations always require an ``org_id``.  Legacy
+        social-only simulations may still be created without one.
 
         Args:
             project_id: Project ID
@@ -319,13 +316,11 @@ class SimulationManager:
             status=SimulationStatus.CREATED,
         )
 
-        self._save_simulation_state(state)
-        logger.info(f"Created simulation: {simulation_id}, project={project_id}, graph={graph_id}")
+        if enable_polymarket and not org_id:
+            raise ValueError("Prediction-market simulations require organization ownership")
 
-        # Attribution multitenant — opportuniste : si l'enregistrement
-        # Supabase échoue (erreur réseau / config manquante), la sim
-        # filesystem reste créée et utilisable. On loggue l'erreur sans
-        # propager pour ne pas casser la création utilisateur.
+        # Persist ownership before filesystem state.  A failure must abort
+        # creation: a run without an owner cannot be settled or reported.
         if org_id:
             try:
                 from ..auth.supabase_client import record_simulation_ownership
@@ -349,10 +344,13 @@ class SimulationManager:
                 )
             except Exception as exc:  # noqa: BLE001 — défense en profondeur
                 logger.error(
-                    "Failed to record ownership for %s (org=%s): %s — sim still created on disk.",
+                    "Failed to record ownership for %s (org=%s): %s; creation aborted.",
                     simulation_id, org_id, exc.__class__.__name__,
                 )
+                raise
 
+        self._save_simulation_state(state)
+        logger.info(f"Created simulation: {simulation_id}, project={project_id}, graph={graph_id}")
         return state
     
     def prepare_simulation(

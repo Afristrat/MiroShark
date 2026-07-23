@@ -127,7 +127,7 @@ class TestCreateSimulationOwnership:
 
         assert captured["enabled_platforms"] == []
 
-    def test_supabase_failure_does_not_break_creation(
+    def test_supabase_failure_prevents_orphaned_creation(
         self, sim_dir, monkeypatch
     ):
         # Si Supabase est indisponible, la sim doit quand même être créée
@@ -141,13 +141,23 @@ class TestCreateSimulationOwnership:
         )
 
         sm = SimulationManager()
-        state = sm.create_simulation(
-            project_id="proj1",
-            graph_id="graph1",
-            org_id="org-uuid-1",
-        )
-        assert state.simulation_id.startswith("sim_")
-        assert state.status == SimulationStatus.CREATED
+        with pytest.raises(RuntimeError, match="Supabase unreachable"):
+            sm.create_simulation(
+                project_id="proj1",
+                graph_id="graph1",
+                org_id="org-uuid-1",
+            )
+        assert list(sim_dir.iterdir()) == []
+
+    def test_prediction_market_requires_ownership(self, sim_dir):
+        sm = SimulationManager()
+        with pytest.raises(ValueError, match="organization ownership"):
+            sm.create_simulation(
+                project_id="proj1",
+                graph_id="graph1",
+                enable_polymarket=True,
+            )
+        assert list(sim_dir.iterdir()) == []
 
 
 # ─── is_user_authorized_to_read ─────────────────────────────────────────────

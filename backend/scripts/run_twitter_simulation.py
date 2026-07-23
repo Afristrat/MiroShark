@@ -462,6 +462,9 @@ class TwitterSimulationRunner:
         return ModelFactory.create(
             model_platform=ModelPlatformType.OPENAI,
             model_type=llm_model,
+            # Bassira uses prompt/tag MCP calls, never native function calls.
+            # vLLM 35B must therefore not receive tool_choice=auto.
+            model_config_dict={"tool_choice": "none"},
             default_headers={
                 'HTTP-Referer': 'https://github.com/aaronjmars/MiroShark',
                 'X-OpenRouter-Title': 'MiroShark - Universal Swarm Intelligence Engine',
