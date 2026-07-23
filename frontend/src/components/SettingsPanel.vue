@@ -300,8 +300,8 @@
                 <label class="field-label">Provider</label>
                 <div class="select-wrapper">
                   <select v-model="form.embedding.provider" class="field-select ms-input">
-                    <option value="ollama">Ollama (local)</option>
-                    <option value="openai">OpenAI-compatible</option>
+                    <option value="openai">OpenAI-compatible (DGX-2)</option>
+                    <option value="ollama">Ollama (installation autonome)</option>
                   </select>
                 </div>
               </div>
@@ -311,7 +311,7 @@
                   v-model="form.embedding.model_name"
                   class="field-input ms-input"
                   type="text"
-                  placeholder="e.g. openai/text-embedding-3-small"
+                  placeholder="qwen3-emb-8b"
                 />
               </div>
             </div>
@@ -644,7 +644,7 @@ const form = reactive({
   smart: { model_name: '' },
   ner: { model_name: '' },
   wonderwall: { model_name: '' },
-  embedding: { provider: 'ollama', model_name: '' },
+  embedding: { provider: 'openai', model_name: 'qwen3-emb-8b' },
   web_search_model: '',
   neo4j: {
     uri: '',
@@ -737,8 +737,8 @@ const loadCurrentSettings = async () => {
       form.smart.model_name = d.smart?.model_name || ''
       form.ner.model_name = d.ner?.model_name || ''
       form.wonderwall.model_name = d.wonderwall?.model_name || ''
-      form.embedding.provider = d.embedding?.provider || 'ollama'
-      form.embedding.model_name = d.embedding?.model_name || ''
+      form.embedding.provider = d.embedding?.provider || 'openai'
+      form.embedding.model_name = d.embedding?.model_name || 'qwen3-emb-8b'
       form.web_search_model = d.web_search_model || ''
       form.neo4j.uri = d.neo4j?.uri || ''
       form.neo4j.user = d.neo4j?.user || ''

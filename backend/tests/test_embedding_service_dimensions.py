@@ -26,7 +26,7 @@ def test_qwen_native_dimensions_omits_the_openai_dimensions_parameter(monkeypatc
     service = EmbeddingService(
         provider="openai",
         model="qwen3-emb-8b",
-        base_url="http://dgx-2:8004",
+        base_url="http://192.168.100.7:8005",
         dimensions=4096,
         request_dimensions=False,
     )
@@ -46,13 +46,13 @@ def test_openai_base_url_with_v1_suffix_is_not_duplicated(monkeypatch) -> None:
     service = EmbeddingService(
         provider="openai",
         model="qwen3-emb-8b",
-        base_url="http://dgx-2:8004/v1",
+        base_url="http://192.168.100.7:8005/v1",
         dimensions=4096,
         request_dimensions=False,
     )
 
     assert service.embed("normalise v1") == [0.1, 0.2, 0.3]
-    assert captured["url"] == "http://dgx-2:8004/v1/embeddings"
+    assert captured["url"] == "http://192.168.100.7:8005/v1/embeddings"
 
 
 def test_provider_that_supports_dimension_control_keeps_the_parameter(monkeypatch) -> None:

@@ -1,6 +1,6 @@
 # Configuration
 
-All settings live in `.env` (copy from `.env.example`). The full reference below is organized by concern. For model selection (which model for which slot, benchmarks, Ollama context overrides) see [Models](MODELS.md).
+All settings live in `.env` (copy from `.env.example`). The full reference below is organized by concern. Bassira production uses Qwen3-emb-8b on DGX-2 for every embedding operation; standalone Ollama examples are optional alternatives only, never the Bassira default.
 
 ## Minimum required
 
@@ -16,10 +16,12 @@ NEO4J_USER=neo4j
 NEO4J_PASSWORD=miroshark
 
 # Embeddings
-EMBEDDING_PROVIDER=openai                     # or "ollama"
-EMBEDDING_MODEL=openai/text-embedding-3-large
-EMBEDDING_API_KEY=your-api-key
-EMBEDDING_DIMENSIONS=768
+EMBEDDING_PROVIDER=openai
+EMBEDDING_MODEL=qwen3-emb-8b
+EMBEDDING_BASE_URL=http://192.168.100.7:8005  # DGX-2; /v1 is added by the client
+EMBEDDING_API_KEY=
+EMBEDDING_DIMENSIONS=4096
+EMBEDDING_REQUEST_DIMENSIONS=false             # Qwen returns its native 4,096 dimensions
 ```
 
 ## Model slots
@@ -71,10 +73,12 @@ NEO4J_USER=neo4j
 NEO4J_PASSWORD=miroshark
 
 # ─── Embeddings ───
-EMBEDDING_PROVIDER=ollama          # "ollama" or "openai"
-EMBEDDING_MODEL=nomic-embed-text
-EMBEDDING_BASE_URL=http://localhost:11434
-EMBEDDING_DIMENSIONS=768
+EMBEDDING_PROVIDER=openai
+EMBEDDING_MODEL=qwen3-emb-8b
+EMBEDDING_BASE_URL=http://192.168.100.7:8005
+EMBEDDING_API_KEY=
+EMBEDDING_DIMENSIONS=4096
+EMBEDDING_REQUEST_DIMENSIONS=false
 
 # ─── Reranker (BGE cross-encoder, ~1GB one-time download) ───
 RERANKER_ENABLED=true

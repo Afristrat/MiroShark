@@ -39,7 +39,7 @@ Claude reports, Haiku personas, cheap Wonderwall. Best report quality at reasona
 | NER | `x-ai/grok-4.1-fast` | ~$0.20 | Stable JSON with reasoning off |
 | Wonderwall | `qwen/qwen3.5-flash-02-23` | ~$0.10 | Wonderwall doesn't drive quality — Smart does |
 
-> Cheap preset uses `openai/text-embedding-3-large` (truncated to 768 dims via Matryoshka) and `x-ai/grok-4.1-fast:online` for web research. Best preset inherits the same embedding + web-search defaults.
+> Bassira's Cheap and Best presets both use `qwen3-emb-8b` on DGX-2 (`http://192.168.100.7:8005`), with its native 4,096 dimensions. This keeps the Neo4j vector indexes and every retrieval path on one embedding space.
 >
 > **Latency note** — every OpenRouter call goes through `LLMClient`, which injects `reasoning: {enabled: false}` into `extra_body` by default. Turn it off with `LLM_DISABLE_REASONING=false` only if a specific slot benefits from chain-of-thought (rare for MiroShark's structured prompts).
 
@@ -68,7 +68,7 @@ Claude reports, Haiku personas, cheap Wonderwall. Best report quality at reasona
 | RTX 4070 / M1 Pro | `qwen3:14b` |
 | 8GB VRAM / laptop | `qwen3:8b` |
 
-**Embeddings locally:** `ollama pull nomic-embed-text` — 768 dimensions, matches the Neo4j default.
+**Embeddings for Bassira:** Qwen3-emb-8b is served by DGX-2 through its OpenAI-compatible endpoint and returns 4,096 dimensions. An Ollama embedding model may be used only in a separate standalone deployment with a correspondingly rebuilt Neo4j vector index; it is not compatible with Bassira's production graph.
 
 ## Hybrid mode
 
