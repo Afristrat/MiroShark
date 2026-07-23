@@ -116,6 +116,13 @@ def test_parallel_runner_limits_llm_concurrency() -> None:
     assert "semaphore=60" not in source
 
 
+def test_parallel_runner_allows_a_full_quality_first_round() -> None:
+    source = (Path(__file__).resolve().parents[1] / "scripts" / "run_parallel_simulation.py").read_text(
+        encoding="utf-8"
+    )
+    assert "MIROSHARK_ROUND_TIMEOUT', '1800'" in source
+
+
 def test_twitter_recommender_defaults_to_lightweight_feed() -> None:
     source = (
         Path(__file__).resolve().parents[1]

@@ -168,9 +168,11 @@ from agent_guidelines import inject_posting_rules_into_graph
 from app.services.market_resolution_service import load_resolution_trajectory, resolve_all_markets
 from app.utils.validation import validate_simulation_id
 
-# Per-round hard timeout (seconds). Bounded so a hung LLM call can't freeze
-# the whole run forever. Override via env for slow backends.
-_ROUND_TIMEOUT_SECONDS = int(os.environ.get('MIROSHARK_ROUND_TIMEOUT', '600'))
+# Per-round hard timeout (seconds). A 49-persona arena with two concurrent
+# calls per platform can legitimately take longer than ten minutes on the
+# quality-first 35B model. The runner is detached from HTTP, so this bound
+# protects only against a hung background round, not Cloudflare or Gunicorn.
+_ROUND_TIMEOUT_SECONDS = int(os.environ.get('MIROSHARK_ROUND_TIMEOUT', '1800'))
 _LLM_CONCURRENCY = max(1, int(os.environ.get('MIROSHARK_LLM_CONCURRENCY', '2')))
 _VERIFIED_MODEL_ENDPOINTS: set[tuple[str, str]] = set()
 
