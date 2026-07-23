@@ -42,7 +42,8 @@ from typing import Dict, List, Optional, Tuple
 
 from ...services.text_normalizer import TextNormalizer
 from ...utils.llm_client import create_llm_client
-from .schema import KPIHero, PDFReportContext, PivotalMoment, ScoredRecommendation
+from .schema import KPIHero, PDFReportContext, PivotalMoment
+from .strategic_options import build_strategic_options
 
 logger = logging.getLogger("miroshark.report_pdf.enricher")
 
@@ -194,7 +195,7 @@ class Enricher:
         self._generate_chart_narratives()
         self._extract_executive_takeaways()
         self._promote_recommendation_from_raw_md()
-        self._synthesize_scored_recommendations()
+        self._build_strategic_options()
         self._pass_through_normalizer()
         return self.context
 
@@ -385,178 +386,17 @@ class Enricher:
             ctx.outcome = outcome
             logger.info("Promu %d recommandation(s) depuis full_report_md.", len(extracted))
 
-    def _synthesize_scored_recommendations(self) -> None:
-        """Génère 3 recommandations C-Level scorées ZOPA/BATNA/MESO/WATNA (L99 v2).
-
-        Stratégie déterministe (pas d'appel LLM) :
-        - Pioche 3 archétypes de pistes adaptés au verdict observé :
-          A. Artefact reproductible public (preuve évidentiaire)
-          B. Segmentation explicite (gestion de la dispersion)
-          C. Découplage de l'incitatif (long terme structurel)
-        - Score chaque piste à partir de signaux observés dans la trajectoire :
-          dispersion du score final, nombre de pivots, ratio bullish/bearish.
-
-        Si le contexte contient déjà des `scored_recommendations` (extension future
-        ou import direct depuis l'outcome) : ne touche pas.
-        """
-        ctx = self.context
-        if ctx.scored_recommendations:
+    def _build_strategic_options(self) -> None:
+        """Construit des options sourcées au lieu d'inventer des conseils."""
+        context = self.context
+        if context.strategic_options:
             return
-
-        outcome = ctx.outcome
-        if outcome is None:
-            return
-
-        # Signaux observés
-        bullish = outcome.bullish_pct or 0.0
-        bearish = outcome.bearish_pct or 0.0
-        polarized = (bullish > 60.0 and bearish < 20.0) or (bearish > 60.0 and bullish < 20.0)
-        struct_polarization = "polarisation structurelle" in (outcome.verdict or "").lower()
-        nb_strong_pivots = sum(1 for p in ctx.pivotal_moments if abs(p.delta_score) >= 0.27)
-
-        # Calibration des scores : un terrain polarisé sans consensus favorise
-        # mécaniquement la segmentation (B) et l'artefact reproductible (A),
-        # le découplage de l'incitatif (C) restant un pari long terme.
-        piste_a_zopa = 9.0 if nb_strong_pivots >= 3 else 7.0
-        piste_a_batna = 7.0
-        piste_a_meso = 6.0
-        piste_a_watna = 3.0 if struct_polarization else 4.0
-        piste_a_composite = round((piste_a_zopa + piste_a_batna + piste_a_meso + piste_a_watna) / 4.0, 1)
-
-        piste_b_zopa = 8.0 if polarized or struct_polarization else 7.0
-        piste_b_batna = 8.0
-        piste_b_meso = 9.0
-        piste_b_watna = 5.0
-        piste_b_composite = round((piste_b_zopa + piste_b_batna + piste_b_meso + piste_b_watna) / 4.0, 1)
-
-        piste_c_zopa = 5.0
-        piste_c_batna = 4.0
-        piste_c_meso = 7.0
-        piste_c_watna = 7.0
-        piste_c_composite = round((piste_c_zopa + piste_c_batna + piste_c_meso + piste_c_watna) / 4.0, 1)
-
-        recs = [
-            ScoredRecommendation(
-                title="L'artefact reproductible public",
-                action=(
-                    "Consacrer le prochain sprint à un artefact public — repo Git + notebook reproductible + "
-                    "jeu de données opt-in — permettant à n'importe quel décideur ou auditeur de rejouer "
-                    "le scénario sur son poste en moins de 10 minutes."
-                ),
-                owner="Lead Data Engineering + Lead Partner Success",
-                horizon="Sprint 1 — 2 semaines maximum",
-                kpi_primary="Nombre d'exécutions externes vérifiées par semaine",
-                risk=(
-                    "Le dataset opt-in ne couvre pas tous les cas terrain. Mitigation : peer review interne "
-                    "avant publication, et minimum 30 % de diversité linguistique/sectorielle dans le corpus."
-                ),
-                zopa=piste_a_zopa,
-                zopa_rationale=(
-                    "Champions et sceptiques compétents convergent sur la nécessité d'un benchmark reproductible. "
-                    "Zone d'accord large." if piste_a_zopa >= 8.0
-                    else "Convergence partielle des champions et sceptiques sur la preuve évidentiaire."
-                ),
-                batna=piste_a_batna,
-                batna_rationale=(
-                    "En cas d'échec, repli sur des démos personnalisées par partie prenante. "
-                    "Coûteux en temps mais possible."
-                ),
-                meso=piste_a_meso,
-                meso_rationale=(
-                    "Plusieurs versions possibles de l'artefact (light / full / advanced) mais l'arbitrage "
-                    "de pondération reste central."
-                ),
-                watna=piste_a_watna,
-                watna_rationale=(
-                    "Si l'artefact est publié et invalidé publiquement, perte de crédibilité majeure. "
-                    "À sécuriser par un peer review interne avant publication."
-                ),
-                composite=piste_a_composite,
-                composite_note="Recommandation à fort levier mais sensible à la qualité d'exécution.",
-            ),
-            ScoredRecommendation(
-                title="La segmentation explicite à trois niveaux",
-                action=(
-                    "Acter la dispersion observée et la transformer en triple offre nommément qualifiée. "
-                    "Sprint strict pour les parties prenantes au-dessus du seuil de performance. "
-                    "Dérogation supervisée pour les cas border-line (mentor désigné + 90 jours monitoring). "
-                    "Parcours formation distinct pour les cas sous seuil (accompagnement 8 semaines, opt-in 60 jours)."
-                ),
-                owner="COMEX + Lead Partner Success",
-                horizon="Décision S+1, exécution sur 12 semaines",
-                kpi_primary="Taux de signature charte d'adoption sur le sprint effectif, cible 100 %",
-                risk=(
-                    "Fracture sociale interne — les acteurs hors sprint strict se vivent comme déclassés. "
-                    "Mitigation : communication parallèle dédiée, mentor désigné, transparence sur le motif."
-                ),
-                zopa=piste_b_zopa,
-                zopa_rationale=(
-                    "Les sceptiques compétents acceptent la segmentation, les champions également. "
-                    "Zone d'accord stable."
-                ),
-                batna=piste_b_batna,
-                batna_rationale=(
-                    "En cas d'échec, repli possible sur une offre unique allégée sur le sprint strict."
-                ),
-                meso=piste_b_meso,
-                meso_rationale=(
-                    "Multiplicité native, plusieurs parcours simultanés équivalents. C'est la force de cette piste."
-                ),
-                watna=piste_b_watna,
-                watna_rationale=(
-                    "Si la communication parallèle échoue, les acteurs hors sprint strict deviennent un foyer "
-                    "de résistance documentée."
-                ),
-                composite=piste_b_composite,
-                composite_note="Recommandation à fort levier, robuste, et compatible avec la piste A.",
-            ),
-            ScoredRecommendation(
-                title="Le découplage de l'incitatif structurel",
-                action=(
-                    "Découpler le modèle de compensation des indicateurs d'effort apparent (heures facturées, "
-                    "volume produit) et l'indexer sur les indicateurs de valeur (heures sauvées, ROI mesuré). "
-                    "Période transitoire de 6 mois, plafond sur la perte de variable à 8 %."
-                ),
-                owner="COMEX RH + CFO",
-                horizon="Arbitrage Q2, déploiement Q3 ou Q4 selon validation A et B",
-                kpi_primary="Pourcentage du variable indexé sur les indicateurs de valeur",
-                risk=(
-                    "Résistance des acteurs qui maximisent l'effort apparent. Mitigation : période transitoire "
-                    "de 6 mois et plafond sur la perte de variable."
-                ),
-                zopa=piste_c_zopa,
-                zopa_rationale=(
-                    "Zone d'accord étroite. Les sceptiques compétents soutiennent, les acteurs financiers "
-                    "sont divisés."
-                ),
-                batna=piste_c_batna,
-                batna_rationale=(
-                    "En cas d'échec, peu d'alternatives — le modèle de compensation reste un blocage structurel."
-                ),
-                meso=piste_c_meso,
-                meso_rationale=(
-                    "Plusieurs taux d'indexation possibles (10 %, 20 %, 30 %), plusieurs périodes transitoires."
-                ),
-                watna=piste_c_watna,
-                watna_rationale=(
-                    "Si la piste C échoue, le modèle de compensation continue de neutraliser la valeur produite. "
-                    "Perte silencieuse durable."
-                ),
-                composite=piste_c_composite,
-                composite_note=(
-                    "Recommandation à fort levier long terme mais à fort coût politique court terme. "
-                    "À séquencer après A et B."
-                ),
-            ),
-        ]
-
-        # Tri par score composite décroissant — pour que la lecture C-Level voie
-        # d'abord la piste à engager en sprint 1.
-        recs.sort(key=lambda r: r.composite, reverse=True)
-        ctx.scored_recommendations = recs
-        logger.info(
-            "Recommandations scorées synthétisées : %s",
-            [(r.title, r.composite) for r in recs],
+        context.scored_recommendations = []
+        context.strategic_options = build_strategic_options(
+            report_id=context.report_id,
+            outcome=context.outcome.model_dump() if context.outcome is not None else None,
+            pivotal_moments=context.pivotal_moments,
+            lang=context.lang,
         )
 
     def _compute_kpi_hero(self) -> None:

@@ -56,6 +56,7 @@ from .schema import (
     SimConfig,
     SimState,
     SocialNetwork,
+    StrategicOption,
     Trajectory,
 )
 
@@ -1112,6 +1113,7 @@ class PDFContextLoader:
         full_report_md: Optional[str] = None
         sections_md: Dict[int, str] = {}
         agent_log: List[Dict[str, Any]] = []
+        strategic_options: List[StrategicOption] = []
 
         if rep_dir is not None:
             # outline.json — OBLIGATOIRE si report_id fourni
@@ -1130,6 +1132,11 @@ class PDFContextLoader:
 
             # agent_log.jsonl — optionnel
             agent_log = _load_jsonl_file(rep_dir / "agent_log.jsonl")
+            ledger_data = _load_json_file(sim_dir / "decision_ledgers" / f"{effective_report_id}.json")
+            if isinstance(ledger_data, dict) and isinstance(ledger_data.get("options"), list):
+                strategic_options = [
+                    StrategicOption.model_validate(item) for item in ledger_data["options"]
+                ]
 
         # Les posts critiques sont injectés dans agent_log avec un type distinctif
         # afin d'être disponibles pour le rendu sans modifier le schéma.
@@ -1182,5 +1189,6 @@ class PDFContextLoader:
             full_report_md=full_report_md,
             sections_md=sections_md,
             agent_log=agent_log,
+            strategic_options=strategic_options,
         )
         return ctx

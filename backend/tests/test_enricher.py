@@ -473,11 +473,9 @@ def test_enrich_retourne_le_contexte():
     assert isinstance(result.pivotal_moments, list)
     assert len(result.interpretations) == len(_CHART_IDS)
     assert len(result.executive_takeaways) == 3
-    # L99 v2 : recommandations scorées ZOPA/BATNA/MESO/WATNA générées
-    assert len(result.scored_recommendations) == 3
-    for rec in result.scored_recommendations:
-        assert 0.0 <= rec.composite <= 10.0
-        assert rec.title
+    # Aucune option n'est créée sans recommandation issue de la simulation.
+    assert result.scored_recommendations == []
+    assert result.strategic_options == []
 
 
 def test_enrich_llm_none_pas_de_crash():
@@ -506,5 +504,5 @@ def test_enrich_llm_none_pas_de_crash():
     for t in result.executive_takeaways:
         assert isinstance(t, str)
         assert len(t) > 0
-    # L99 v2 — recommandations scorées générées de façon déterministe
-    assert len(result.scored_recommendations) == 3
+    assert result.scored_recommendations == []
+    assert result.strategic_options == []

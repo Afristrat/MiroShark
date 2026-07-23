@@ -575,6 +575,38 @@ class ScoredRecommendation(BaseModel):
     composite_note: str = Field(default="")
 
 
+class DecisionEvidence(BaseModel):
+    """Preuve traçable qui relie une option au résultat de la simulation.
+
+    Une recommandation sans source ne constitue jamais une décision validée. La
+    référence contient donc l'artefact, son emplacement stable et l'empreinte du
+    contenu cité afin qu'un lecteur puisse contrôler l'affirmation après coup.
+    """
+
+    artifact: str = Field(min_length=1)
+    locator: str = Field(min_length=1)
+    excerpt: str = Field(min_length=1)
+    sha256: str = Field(pattern=r"^[a-f0-9]{64}$")
+
+
+class StrategicOption(BaseModel):
+    """Option stratégique issue d'une simulation et prête à être réfutée.
+
+    ``moat_status`` reste obligatoirement ``unassessed`` tant qu'une évaluation
+    externe répétée n'a pas démontré un mécanisme défendable. Cela empêche le
+    produit de transformer un conseil plausible en « moat » par simple rhétorique.
+    """
+
+    option_id: str = Field(pattern=r"^opt_[a-f0-9]{12}$")
+    action: str = Field(min_length=1)
+    status: Literal["candidate", "refuted", "validated"] = "candidate"
+    moat_status: Literal["unassessed", "feature", "moat"] = "unassessed"
+    evidence: List[DecisionEvidence] = Field(default_factory=list, min_length=1)
+    refutation_question: str = Field(min_length=1)
+    next_validation: str = Field(min_length=1)
+    ledger_sha256: str = Field(pattern=r"^[a-f0-9]{64}$")
+
+
 class MarketPricePoint(BaseModel):
     """A durable price snapshot copied into a market resolution at closure."""
 
@@ -812,6 +844,10 @@ class PDFReportContext(BaseModel):
     scored_recommendations: List[ScoredRecommendation] = Field(
         default_factory=list,
         description="Recommandations C-Level scorées ZOPA/BATNA/MESO/WATNA (L99 v2).",
+    )
+    strategic_options: List[StrategicOption] = Field(
+        default_factory=list,
+        description="Options sourcées, réfutables et non assimilées abusivement à un moat.",
     )
 
     # ── Validators ────────────────────────────────────────────────────────────

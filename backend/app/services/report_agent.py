@@ -9,8 +9,8 @@ Features:
 4. Support user conversations with autonomous retrieval tool calls
 """
 
-import os
 import json
+import os
 import re
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -18,6 +18,7 @@ from typing import Dict, Any, List, Optional, Callable
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
+from pathlib import Path
 
 from ..config import Config
 from ..utils.llm_client import LLMClient, create_smart_llm_client
@@ -3048,6 +3049,34 @@ Write in the same analytical style as the report. Use **bold** for emphasis. Do 
             report.markdown_content = ReportManager.assemble_full_report(
                 report_id, outline, locale=self.locale,
             )
+            from .report_pdf.strategic_options import (
+                build_strategic_options,
+                render_strategic_options_markdown,
+                write_ledger,
+            )
+            outcome_path = Path(self._get_simulation_dir()) / "outcome.json"
+            try:
+                outcome_data = json.loads(outcome_path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                outcome_data = None
+            write_ledger(
+                simulation_dir=Path(self._get_simulation_dir()),
+                report_id=report_id,
+                outcome=outcome_data if isinstance(outcome_data, dict) else None,
+                lang=self.locale,
+            )
+            strategic_options = build_strategic_options(
+                report_id=report_id,
+                outcome=outcome_data if isinstance(outcome_data, dict) else None,
+                lang=self.locale,
+            )
+            appendix = render_strategic_options_markdown(strategic_options, lang=self.locale)
+            if appendix:
+                report.markdown_content = f"{report.markdown_content.rstrip()}\n\n{appendix}"
+                Path(ReportManager._get_report_markdown_path(report_id)).write_text(
+                    report.markdown_content,
+                    encoding="utf-8",
+                )
             report.status = ReportStatus.COMPLETED
             report.completed_at = datetime.now().isoformat()
             
