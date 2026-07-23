@@ -114,3 +114,14 @@ def test_parallel_runner_limits_llm_concurrency() -> None:
     )
     assert "MIROSHARK_LLM_CONCURRENCY', '2'" in source
     assert "semaphore=60" not in source
+
+
+def test_twitter_recommender_defaults_to_lightweight_feed() -> None:
+    source = (
+        Path(__file__).resolve().parents[1]
+        / "wonderwall"
+        / "simulations"
+        / "social_media"
+        / "__init__.py"
+    ).read_text(encoding="utf-8")
+    assert 'MIROSHARK_TWITTER_RECSYS", "random"' in source

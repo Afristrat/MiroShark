@@ -16,6 +16,8 @@
 This is the original Wonderwall simulation type, now packaged as a
 ``SimulationConfig`` that can be used with the generic engine.
 """
+import os
+
 from wonderwall.simulations.base import SimulationConfig
 from wonderwall.simulations.social_media.prompts import (
     RedditPromptBuilder,
@@ -52,7 +54,10 @@ twitter_simulation = SimulationConfig(
         "do_nothing", "quote_post",
     ],
     platform_kwargs={
-        "recsys_type": "twhin-bert",
+        # Twhin-BERT blocks the simulation event loop on CPU-only containers.
+        # A deterministic lightweight feed keeps the causal agent simulation
+        # live; deployments with dedicated recommender compute may opt in.
+        "recsys_type": os.environ.get("MIROSHARK_TWITTER_RECSYS", "random"),
         "refresh_rec_post_count": 5,
         "max_rec_post_len": 5,
         "following_post_count": 5,
