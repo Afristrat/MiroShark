@@ -75,6 +75,7 @@ import logging
 import random
 import signal
 import sqlite3
+import requests
 from datetime import datetime
 from typing import Dict, Any, List, Optional, Tuple
 
@@ -170,6 +171,7 @@ from app.utils.validation import validate_simulation_id
 # Per-round hard timeout (seconds). Bounded so a hung LLM call can't freeze
 # the whole run forever. Override via env for slow backends.
 _ROUND_TIMEOUT_SECONDS = int(os.environ.get('MIROSHARK_ROUND_TIMEOUT', '600'))
+_VERIFIED_MODEL_ENDPOINTS: set[tuple[str, str]] = set()
 
 
 def _resolution_simulation_id(simulation_dir: str) -> str:
@@ -1170,6 +1172,7 @@ def create_model(config: Dict[str, Any], use_boost: bool = False):
         os.environ["OPENAI_API_BASE_URL"] = llm_base_url
     
     print(f"{config_label} model={llm_model}, base_url={llm_base_url[:40] if llm_base_url else 'default'}...")
+    _verify_model_available(llm_base_url, llm_api_key, llm_model)
     
     return ModelFactory.create(
         model_platform=ModelPlatformType.OPENAI,
@@ -1184,6 +1187,48 @@ def create_model(config: Dict[str, Any], use_boost: bool = False):
             'User-Agent': f'MiroShark/1.0 (Wonderwall-Simulation; model={llm_model})',
         },
     )
+
+
+def _verify_model_available(base_url: str, api_key: str, model_name: str) -> None:
+    """Fail before round zero when the configured OpenAI model is unreachable.
+
+    A simulation with every agent receiving a 404 is not a completed
+    simulation.  The check is cached per runner process, so parallel arenas do
+    not multiply the gateway call.
+    """
+    normalized_base_url = (base_url or "https://api.openai.com/v1").rstrip("/")
+    cache_key = (normalized_base_url, model_name)
+    if cache_key in _VERIFIED_MODEL_ENDPOINTS:
+        return
+
+    headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
+    try:
+        response = requests.get(
+            f"{normalized_base_url}/models",
+            headers=headers,
+            timeout=10,
+        )
+        response.raise_for_status()
+        payload = response.json()
+    except (requests.RequestException, ValueError) as exc:
+        raise RuntimeError(
+            f"LLM model preflight failed for {model_name!r} at {normalized_base_url}: "
+            f"{exc.__class__.__name__}"
+        ) from exc
+
+    available_models = {
+        str(item.get("id"))
+        for item in payload.get("data", [])
+        if isinstance(item, dict) and item.get("id")
+    }
+    if model_name not in available_models:
+        available = ", ".join(sorted(available_models)) or "none"
+        raise RuntimeError(
+            f"Configured simulation model {model_name!r} is not served by "
+            f"{normalized_base_url}. Available models: {available}"
+        )
+
+    _VERIFIED_MODEL_ENDPOINTS.add(cache_key)
 
 
 def _build_social_summary_for_traders(round_memory, current_round: int, bridge) -> str:

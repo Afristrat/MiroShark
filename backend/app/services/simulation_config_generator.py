@@ -648,6 +648,7 @@ class SimulationConfigGenerator:
         entities: List[EntityNode],
         enable_twitter: bool = True,
         enable_reddit: bool = True,
+        enable_polymarket: bool = False,
         polymarket_market_count: int = 1,
         progress_callback: Optional[Callable[[int, int, str], None]] = None,
         recommended_settings: Optional[Dict[str, Any]] = None,
@@ -740,13 +741,18 @@ class SimulationConfigGenerator:
         reasoning_parts.append(f"Event config: {event_config_result.get('reasoning', 'success')}")
 
         # ========== Step 2b: Generate prediction markets ==========
-        report_progress(3, "Generating prediction markets...")
-        markets = self._generate_prediction_markets(
-            context, simulation_requirement, event_config,
-            num_markets=polymarket_market_count,
-            total_rounds=(time_config.total_simulation_hours * 60) // time_config.minutes_per_round,
-            locale=locale,
-        )
+        # A disabled arena must have no LLM work, no hidden market artifact,
+        # and no opportunity to fail an otherwise social-only simulation.
+        if enable_polymarket:
+            report_progress(3, "Generating prediction markets...")
+            markets = self._generate_prediction_markets(
+                context, simulation_requirement, event_config,
+                num_markets=polymarket_market_count,
+                total_rounds=(time_config.total_simulation_hours * 60) // time_config.minutes_per_round,
+                locale=locale,
+            )
+        else:
+            markets = []
         event_config.initial_markets = markets
         reasoning_parts.append(f"Prediction markets: {len(markets)} markets generated")
 

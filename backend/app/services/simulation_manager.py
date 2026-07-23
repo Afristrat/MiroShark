@@ -570,6 +570,7 @@ class SimulationManager:
                 entities=filtered.entities,
                 enable_twitter=state.enable_twitter,
                 enable_reddit=state.enable_reddit,
+                enable_polymarket=state.enable_polymarket,
                 polymarket_market_count=state.polymarket_market_count,
                 locale=state.locale,
             )

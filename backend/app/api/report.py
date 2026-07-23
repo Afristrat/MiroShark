@@ -5,7 +5,6 @@ Provides simulation report generation, retrieval, and conversation endpoints
 
 import os
 import traceback
-import threading
 from flask import request, jsonify, send_file, current_app
 
 from . import report_bp
@@ -13,13 +12,86 @@ from ..services.report_agent import ReportAgent, ReportManager, ReportStatus
 from ..services.graph_tools import GraphToolsService
 from ..services.simulation_manager import SimulationManager
 from ..models.project import ProjectManager
-from ..models.task import TaskManager, TaskStatus
+from ..config import Config
 from ..utils.logger import get_logger
 from ..utils.validation import validate_simulation_id
 from ..utils.locale_prompt import get_request_locale
 from ..auth.decorators import authorize_simulation_admin, require_auth
 
 logger = get_logger('miroshark.api.report')
+
+
+class ReportQueueUnavailable(RuntimeError):
+    """Raised when the durable report queue cannot accept work."""
+
+
+def _enqueue_report_generation(task_id: str, kwargs: dict[str, object]) -> None:
+    """Enqueue report work durably; never fall back to a Gunicorn thread."""
+    redis_url = (Config.REDIS_URL or "").strip()
+    if not redis_url:
+        raise ReportQueueUnavailable("REDIS_URL est absente")
+    try:
+        from redis import Redis
+        from rq import Queue, Retry
+
+        from app.workers.report_generation_worker import generate_report_job
+
+        connection = Redis.from_url(redis_url)
+        connection.ping()
+        Queue("report-generation", connection=connection).enqueue_call(
+            generate_report_job,
+            kwargs={"task_id": task_id, **kwargs},
+            job_id=task_id,
+            timeout=45 * 60,
+            result_ttl=24 * 60 * 60,
+            failure_ttl=7 * 24 * 60 * 60,
+            retry=Retry(max=1, interval=60),
+            meta={
+                "progress": 0,
+                "message": "En attente du worker de rapport",
+                "progress_detail": {"current_stage": "queued"},
+            },
+        )
+    except Exception as exc:  # noqa: BLE001 - Redis/RQ boundary
+        raise ReportQueueUnavailable("La file de rapports est indisponible") from exc
+
+
+def _get_rq_report_status(task_id: str) -> dict[str, object] | None:
+    """Return the durable state of a report job, if it exists in RQ."""
+    redis_url = (Config.REDIS_URL or "").strip()
+    if not redis_url:
+        return None
+    try:
+        from redis import Redis
+        from rq.job import Job
+
+        job = Job.fetch(task_id, connection=Redis.from_url(redis_url))
+    except Exception:  # noqa: BLE001 - legacy in-memory task or unavailable queue
+        return None
+
+    status = job.get_status(refresh=True)
+    state_map = {
+        "queued": "pending",
+        "started": "processing",
+        "finished": "completed",
+        "failed": "failed",
+        "deferred": "pending",
+        "scheduled": "pending",
+    }
+    if status not in state_map:
+        return None
+    meta = job.meta or {}
+    return {
+        "task_id": task_id,
+        "task_type": "report_generate",
+        "status": state_map[status],
+        "progress": 100 if status == "finished" else int(meta.get("progress", 0)),
+        "message": meta.get("message", "Rapport en attente"),
+        "progress_detail": meta.get("progress_detail", {}),
+        "result": job.result if status == "finished" else None,
+        "error": str(job.exc_info or "") if status == "failed" else None,
+        "metadata": {"rq_job_id": task_id},
+    }
 
 
 def _authorize_simulation_access(simulation_id, *, allow_published: bool):
@@ -237,84 +309,26 @@ def generate_report():
         import uuid
         report_id = f"report_{uuid.uuid4().hex[:12]}"
 
-        # Create async task
-        task_manager = TaskManager()
-        task_id = task_manager.create_task(
-            task_type="report_generate",
-            metadata={
-                "simulation_id": simulation_id,
-                "graph_id": graph_id,
-                "report_id": report_id,
-                "locale": report_locale,
-            }
-        )
-
-        # Initialize graph_tools in Flask context BEFORE spawning thread
-        # (current_app is not available inside background threads)
-        storage = current_app.extensions.get('neo4j_storage')
-        if not storage:
+        # Reuse the report identifier as the durable RQ task identifier.  The
+        # report can then be recovered after Gunicorn or Coolify replacement.
+        task_id = report_id
+        try:
+            _enqueue_report_generation(
+                task_id,
+                {
+                    "report_id": report_id,
+                    "simulation_id": simulation_id,
+                    "graph_id": graph_id,
+                    "simulation_requirement": simulation_requirement,
+                    "locale": report_locale,
+                },
+            )
+        except ReportQueueUnavailable:
             return jsonify({
                 "success": False,
-                "error_code": "STORAGE_UNAVAILABLE",
-                "error": "Neo4j storage not initialized"
+                "error_code": "REPORT_QUEUE_UNAVAILABLE",
+                "error": "Le service de génération de rapports est indisponible.",
             }), 503
-        graph_tools = GraphToolsService(storage=storage)
-
-        # Define background task
-        def run_generate():
-            try:
-                task_manager.update_task(
-                    task_id,
-                    status=TaskStatus.PROCESSING,
-                    progress=0,
-                    message="Initializing Report Agent..."
-                )
-
-                # Create Report Agent
-                agent = ReportAgent(
-                    graph_id=graph_id,
-                    simulation_id=simulation_id,
-                    simulation_requirement=simulation_requirement,
-                    graph_tools=graph_tools,
-                    locale=report_locale,
-                )
-
-                # Progress callback
-                def progress_callback(stage, progress, message):
-                    task_manager.update_task(
-                        task_id,
-                        progress=progress,
-                        message=f"[{stage}] {message}"
-                    )
-
-                # Generate report (pass pre-generated report_id)
-                report = agent.generate_report(
-                    progress_callback=progress_callback,
-                    report_id=report_id
-                )
-
-                # Save report
-                ReportManager.save_report(report)
-
-                if report.status == ReportStatus.COMPLETED:
-                    task_manager.complete_task(
-                        task_id,
-                        result={
-                            "report_id": report.report_id,
-                            "simulation_id": simulation_id,
-                            "status": "completed"
-                        }
-                    )
-                else:
-                    task_manager.fail_task(task_id, report.error or "Report generation failed")
-
-            except Exception as e:
-                logger.error(f"Report generation failed: {str(e)}\n" + traceback.format_exc())
-                task_manager.fail_task(task_id, str(e))
-
-        # Start background thread
-        thread = threading.Thread(target=run_generate, daemon=True)
-        thread.start()
 
         return jsonify({
             "success": True,
@@ -397,19 +411,31 @@ def get_generate_status():
                 "error": "Please provide task_id or simulation_id"
             }), 400
 
-        task_manager = TaskManager()
-        task = task_manager.get_task(task_id)
-
-        if not task:
+        task = _get_rq_report_status(task_id)
+        if task is None:
+            interrupted = ReportManager.get_report_by_simulation(simulation_id) if simulation_id else None
+            if interrupted and interrupted.status != ReportStatus.COMPLETED:
+                return jsonify({
+                    "success": True,
+                    "data": {
+                        "task_id": task_id,
+                        "task_type": "report_generate",
+                        "status": "failed",
+                        "progress": 0,
+                        "message": "La génération de rapport a été interrompue. Relancez-la pour reprendre.",
+                        "error": interrupted.error or "REPORT_GENERATION_INTERRUPTED",
+                        "metadata": {"report_id": interrupted.report_id},
+                    },
+                })
             return jsonify({
                 "success": False,
                 "error_code": "TASK_NOT_FOUND",
-                "error": f"Task not found: {task_id}"
+                "error": f"Task not found: {task_id}",
             }), 404
 
         return jsonify({
             "success": True,
-            "data": task.to_dict()
+            "data": task
         })
 
     except Exception as e:

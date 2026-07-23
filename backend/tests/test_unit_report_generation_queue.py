@@ -1,0 +1,84 @@
+"""Durability contracts for strategic report generation."""
+
+from __future__ import annotations
+
+import ast
+from pathlib import Path
+
+import pytest
+
+from app.api.report import ReportQueueUnavailable, _enqueue_report_generation
+from app.config import Config
+
+
+def test_report_generation_never_falls_back_to_gunicorn_thread(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(Config, "REDIS_URL", "")
+
+    with pytest.raises(ReportQueueUnavailable):
+        _enqueue_report_generation("report_task", {})
+
+
+def test_report_route_has_no_background_thread() -> None:
+    source = (Path(__file__).resolve().parents[1] / "app" / "api" / "report.py").read_text(
+        encoding="utf-8"
+    )
+    tree = ast.parse(source)
+    generate = next(
+        node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == "generate_report"
+    )
+    assert not any(
+        isinstance(node, ast.Attribute) and node.attr == "Thread"
+        for node in ast.walk(generate)
+    )
+
+
+def test_social_only_config_skips_prediction_market_generation() -> None:
+    source = (
+        Path(__file__).resolve().parents[1]
+        / "app"
+        / "services"
+        / "simulation_config_generator.py"
+    ).read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    generate = next(
+        node for node in tree.body if isinstance(node, ast.ClassDef) and node.name == "SimulationConfigGenerator"
+    )
+    method = next(
+        node for node in generate.body if isinstance(node, ast.FunctionDef) and node.name == "generate_config"
+    )
+    guards = [
+        node for node in ast.walk(method)
+        if isinstance(node, ast.If) and isinstance(node.test, ast.Name) and node.test.id == "enable_polymarket"
+    ]
+    assert guards, "Market generation must be explicitly guarded by the arena flag"
+    assert any(
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr == "_generate_prediction_markets"
+        for node in ast.walk(guards[0])
+    )
+
+
+def test_compose_worker_listens_to_report_generation_queue() -> None:
+    compose = (Path(__file__).resolve().parents[2] / "docker-compose.yml").read_text(
+        encoding="utf-8"
+    )
+    assert "report-generation" in compose
+
+
+def test_parallel_runner_preflights_the_selected_model() -> None:
+    source = (Path(__file__).resolve().parents[1] / "scripts" / "run_parallel_simulation.py").read_text(
+        encoding="utf-8"
+    )
+    tree = ast.parse(source)
+    create_model = next(
+        node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == "create_model"
+    )
+    assert any(
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "_verify_model_available"
+        for node in ast.walk(create_model)
+    )

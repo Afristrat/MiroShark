@@ -130,7 +130,7 @@ def prepare_simulation_job(
 def retry_simulation_config_job(
     *, task_id: str, simulation_id: str, project_id: str, graph_id: str,
     simulation_requirement: str, document_text: str, enable_twitter: bool,
-    enable_reddit: bool, polymarket_market_count: int, locale: str,
+    enable_reddit: bool, enable_polymarket: bool, polymarket_market_count: int, locale: str,
 ) -> dict[str, Any]:
     """Régénère la seule configuration depuis le worker durable RQ."""
     from rq import get_current_job
@@ -156,6 +156,7 @@ def retry_simulation_config_job(
                 simulation_id=simulation_id, project_id=project_id, graph_id=graph_id,
                 simulation_requirement=simulation_requirement, document_text=document_text,
                 entities=entities, enable_twitter=enable_twitter, enable_reddit=enable_reddit,
+                enable_polymarket=enable_polymarket,
                 polymarket_market_count=polymarket_market_count, locale=locale,
             )
             sim_dir = os.path.join(Config.WONDERWALL_SIMULATION_DATA_DIR, simulation_id)

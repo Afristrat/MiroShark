@@ -107,7 +107,7 @@ services:
     # second build of the same Dockerfile.
     image: miroshark-runtime:latest
     working_dir: /app/backend
-    command: ["/bin/sh", "-c", "exec uv run --frozen rq worker --url \"$$REDIS_URL\" --with-scheduler --name \"simulation-worker-$${HOSTNAME}\" pdf-generation simulation-preparation"]
+    command: ["/bin/sh", "-c", "exec uv run --frozen rq worker --url \"$$REDIS_URL\" --with-scheduler --name \"simulation-worker-$${HOSTNAME}\" pdf-generation simulation-preparation report-generation"]
     environment: *miroshark_environment
     volumes:
       - miroshark_uploads:/app/backend/uploads

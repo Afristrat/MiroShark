@@ -3406,6 +3406,7 @@ def retry_simulation_config(simulation_id: str):
                 'simulation_id': simulation_id, 'project_id': state.project_id, 'graph_id': state.graph_id,
                 'simulation_requirement': simulation_requirement, 'document_text': document_text,
                 'enable_twitter': state.enable_twitter, 'enable_reddit': state.enable_reddit,
+                'enable_polymarket': state.enable_polymarket,
                 'polymarket_market_count': state.polymarket_market_count, 'locale': state.locale,
             })
         except SimulationQueueUnavailable as exc:
