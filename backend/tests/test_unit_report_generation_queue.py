@@ -125,3 +125,14 @@ def test_twitter_recommender_defaults_to_lightweight_feed() -> None:
         / "__init__.py"
     ).read_text(encoding="utf-8")
     assert 'MIROSHARK_TWITTER_RECSYS", "random"' in source
+
+
+def test_legacy_twitter_environment_uses_the_lightweight_feed_by_default() -> None:
+    source = (
+        Path(__file__).resolve().parents[1]
+        / "wonderwall"
+        / "environment"
+        / "env.py"
+    ).read_text(encoding="utf-8")
+    assert 'MIROSHARK_TWITTER_RECSYS", "random"' in source
+    assert 'recsys_type="twhin-bert"' not in source

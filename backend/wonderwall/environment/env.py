@@ -138,7 +138,14 @@ class WonderwallEnv:
                 self.platform = Platform(
                     db_path=database_path,
                     channel=self.channel,
-                    recsys_type="twhin-bert",
+                    # The parallel runner uses this legacy enum path.  It
+                    # must honour the same deployment-level recommender
+                    # choice as the declarative Twitter simulation; otherwise
+                    # a CPU-bound Twhin model is silently loaded before every
+                    # round.
+                    recsys_type=os.environ.get(
+                        "MIROSHARK_TWITTER_RECSYS", "random"
+                    ),
                     refresh_rec_post_count=2,
                     max_rec_post_len=2,
                     following_post_count=3,
