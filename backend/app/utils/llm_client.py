@@ -404,7 +404,11 @@ class LLMClient:
             self._emit_llm_event(messages, None, t0, error=exc, temperature=effective_temperature)
             raise
 
-        content = response.choices[0].message.content
+        # OpenAI-compatible backends may return a tool call or reasoning-only
+        # completion with ``content=None``. Normalise at the provider boundary
+        # so every caller receives the documented string contract.
+        raw_content = response.choices[0].message.content
+        content = raw_content if isinstance(raw_content, str) else ""
         # Some models (e.g., MiniMax M2.5) include <think> reasoning content in the content field, which needs to be removed
         content = re.sub(r'<think>[\s\S]*?</think>', '', content).strip()
 

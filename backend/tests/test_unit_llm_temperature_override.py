@@ -41,6 +41,17 @@ def test_invalid_temperature_override_fails_closed(monkeypatch):
         _client(monkeypatch, "invalid")
 
 
+def test_none_completion_content_is_normalized_to_an_empty_string(monkeypatch):
+    client = _client(monkeypatch, "")
+    client.client.chat.completions.create = lambda **_: type(
+        "Response", (), {
+            "choices": [type("Choice", (), {"message": type("Message", (), {"content": None})()})()]
+        }
+    )()
+
+    assert client.chat([{"role": "user", "content": "hello"}]) == ""
+
+
 def test_ner_uses_smart_slot_when_no_dedicated_model_is_configured(monkeypatch):
     monkeypatch.setattr(Config, "NER_MODEL_NAME", "")
     monkeypatch.setattr(Config, "SMART_PROVIDER", "openai")
