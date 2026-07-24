@@ -63,9 +63,11 @@ def _get_rq_report_status(task_id: str) -> dict[str, object] | None:
         return None
     try:
         from redis import Redis
+        from rq import Worker
         from rq.job import Job
 
-        job = Job.fetch(task_id, connection=Redis.from_url(redis_url))
+        connection = Redis.from_url(redis_url)
+        job = Job.fetch(task_id, connection=connection)
     except Exception:  # noqa: BLE001 - legacy in-memory task or unavailable queue
         return None
 
@@ -80,6 +82,13 @@ def _get_rq_report_status(task_id: str) -> dict[str, object] | None:
     }
     if status not in state_map:
         return None
+    # A deployment can kill an RQ workhorse while the job keeps its "started"
+    # registry entry. Never expose that orphan as an indefinitely processing
+    # report: the caller already has a deterministic interrupted-job path.
+    if status == "started" and job.worker_name:
+        active_workers = {worker.name for worker in Worker.all(connection=connection)}
+        if job.worker_name not in active_workers:
+            return None
     meta = job.meta or {}
     return {
         "task_id": task_id,
