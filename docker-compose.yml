@@ -116,7 +116,10 @@ services:
     environment: *miroshark_environment
     volumes:
       - miroshark_uploads:/app/backend/uploads
-    mem_limit: 3g
+    # The ReACT reporter keeps the reranker and its section context in the
+    # workhorse. Three GiB is below its measured 2.5 GiB steady state and
+    # causes an OOM kill late in an otherwise healthy eight-section report.
+    mem_limit: 4g
     mem_reservation: 1g
     cpus: 4
     pids_limit: 256
